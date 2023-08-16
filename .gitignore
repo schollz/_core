@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 pico-extras*
+build*
 # Object files
 *.o
 *.ko
