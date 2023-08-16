@@ -1,6 +1,6 @@
 dobuild: pico-extras build
 	cd lib && python3 biquad.py > biquad.h
-	cd build && PICO_EXTRAS_PATH=pico-extras make
+	cd build && PICO_EXTRAS_PATH=../pico-extras make
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git
@@ -12,8 +12,8 @@ upload: dobuild
 build:
 	rm -rf build
 	mkdir build
-	cd build && cmake ..
-	cd build && make -j32
+	cd build && PICO_EXTRAS_PATH=../pico-extras cmake ..
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 	echo "build success"
 
 audio:
