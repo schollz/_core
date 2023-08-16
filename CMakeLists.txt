@@ -9,7 +9,7 @@ include(pico_extras_import.cmake)
 
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
-project(picocore C CXX ASM)
+project(zeptocore C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
