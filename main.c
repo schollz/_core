@@ -28,6 +28,7 @@
 #include "lib/biquad.h"
 #include "lib/envelope2.h"
 #include "lib/file_list.h"
+#include "lib/savefile.h"
 #include "lib/sdcard.h"
 #include "lib/wav.h"
 
