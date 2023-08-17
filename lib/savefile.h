@@ -35,6 +35,7 @@ SaveFile *SaveFile_Load(FIL *fil) {
     }
   }
 
+  f_close(fil);
   return sf;
 }
 
