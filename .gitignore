@@ -2,6 +2,7 @@
 *.d
 pico-extras*
 build*
+.vscode*
 # Object files
 *.o
 *.ko
