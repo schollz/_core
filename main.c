@@ -31,6 +31,9 @@
 #include "lib/sdcard.h"
 #include "lib/wav.h"
 
+#define SAMPLE_RATE 44100
+#define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
+
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 // audio_pool.h
 audio_buffer_pool_t *ap;
@@ -278,29 +281,22 @@ int main() {
         fil_current_change = true;
       }
       if (c == 'a') {
-        envelope3 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0, 1.0,
-                                     44100 / SAMPLES_PER_BUFFER * 1.5);
+        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
         debounce_quantize = 2;
       }
       if (c == 'q') {
-        envelope_pitch = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0.25, 1.0,
-                                          44100 / SAMPLES_PER_BUFFER * 1);
+        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.25, 1.0, 1);
         debounce_quantize = 2;
       }
       if (c == 'z') {
         debounce_quantize = 2;
-        envelope_pitch = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 1.0, 0.5,
-                                          44100 / SAMPLES_PER_BUFFER * 1);
+        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
       }
       if (c == 'x') {
-        envelope1 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0.01, 1,
-                                     44100 / SAMPLES_PER_BUFFER * 1.5);
-        envelope2 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 1, 0,
-                                     44100 / SAMPLES_PER_BUFFER * 0.01);
-        envelope3 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0.01, 1.0,
-                                     44100 / SAMPLES_PER_BUFFER * 1.5);
-        envelope_pitch = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0.5, 1.0,
-                                          44100 / SAMPLES_PER_BUFFER * 1.5);
+        envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
+        envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
+        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
+        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
         printf("\nz!!\n");
         run_mount();
         file_list = list_files("");
@@ -353,11 +349,9 @@ void i2s_callback_func() {
       phase_change = false;
       // initiate transition envelopes
       // jump point envelope grows
-      envelope1 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 0, 1.0,
-                                   44100 / SAMPLES_PER_BUFFER * 0.05);
+      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.05);
       // previous point degrades
-      envelope2 = Envelope2_create(44100 / SAMPLES_PER_BUFFER, 1.0, 0,
-                                   44100 / SAMPLES_PER_BUFFER * 0.05);
+      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.05);
     }
 
     vol3 = Envelope2_update(envelope3);

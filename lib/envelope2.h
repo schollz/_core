@@ -11,7 +11,7 @@ typedef struct Envelope2 {
 } Envelope2;
 
 Envelope2 *Envelope2_create(uint32_t mSampleRate, float start, float stop,
-                            uint32_t duration_samples) {
+                            float duration_time) {
   Envelope2 *envelope2 = (Envelope2 *)malloc(sizeof(Envelope2));
   envelope2->mSampleRate = mSampleRate;
   envelope2->start = (start);
@@ -19,9 +19,10 @@ Envelope2 *Envelope2_create(uint32_t mSampleRate, float start, float stop,
   //   envelope2->start = log(start);
   //   envelope2->stop = log(stop);
   envelope2->curr = envelope2->start;
-  envelope2->acc = (envelope2->stop - envelope2->start) / duration_samples;
+  envelope2->duration_samples = (uint32_t)round(mSampleRate * duration_time);
+  envelope2->acc =
+      (envelope2->stop - envelope2->start) / envelope2->duration_samples;
   envelope2->t = 0;
-  envelope2->duration_samples = duration_samples;
   return envelope2;
 }
 

@@ -10,12 +10,12 @@ int main() {
   // Create a Envelope2 instance
   uint32_t sampleRate = 44100;
 
-  Envelope2 *envelope2 = Envelope2_create(sampleRate, 3, 20, 30100);
-  for (int i = 0; i < 44100; i++) {
+  Envelope2 *envelope2 = Envelope2_create(sampleRate, 3, 20, 2);
+  for (int i = 0; i < 88200; i++) {
     float value = Envelope2_update(envelope2);
     printf("%2.3f\n", value);
   }
-  envelope2 = Envelope2_create(sampleRate, 20, 0.01, 44100);
+  envelope2 = Envelope2_create(sampleRate, 20, 0.01, 1);
   for (int i = 0; i < 44100; i++) {
     float value = Envelope2_update(envelope2);
     printf("%2.3f\n", value);
