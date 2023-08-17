@@ -9,7 +9,8 @@ typedef struct SaveFile {
 
 #define SAVEFILE_PATHNAME "save.bin"
 
-SaveFile *SaveFile_Load(FIL *fil) {
+SaveFile *SaveFile_Load() {
+  FIL fil; /* File object */
   printf("[SaveFile] reading\n");
   SaveFile *sf;
   sf = malloc(sizeof(SaveFile));
@@ -24,18 +25,18 @@ SaveFile *SaveFile_Load(FIL *fil) {
       sf->pattern_sequence[i][j] = 0;
     }
   }
-  if (f_open(fil, SAVEFILE_PATHNAME, FA_READ)) {
+  if (f_open(&fil, SAVEFILE_PATHNAME, FA_READ)) {
     printf("[SaveFile] no save file, skipping ");
   } else {
     unsigned int bytes_read;
-    if (f_read(fil, sf, sizeof(SaveFile), &bytes_read)) {
+    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read)) {
       printf("[SaveFile] problem reading save file");
     } else {
       printf("[SaveFile] bpm_tempo = %d\n", sf->bpm_tempo);
     }
   }
 
-  f_close(fil);
+  f_close(&fil);
   return sf;
 }
 
@@ -52,6 +53,7 @@ bool SaveFile_Save(SaveFile *sf) {
   fr = f_stat(SAVEFILE_PATHNAME, &fno);
   if (FR_OK == fr) fsz = fno.fsize;
   if (0 < fsz && fsz <= sizeof(SaveFile)) {
+    printf("[SaveFile] rewriting file from scratch\n");
     // This is an attempt at optimization:
     // rewriting the file should be faster than
     // writing it from scratch.
@@ -66,6 +68,7 @@ bool SaveFile_Save(SaveFile *sf) {
       return false;
     }
   } else {
+    printf("[SaveFile] opening savefile for writing\n");
     fr = f_open(&file, SAVEFILE_PATHNAME, FA_WRITE | FA_CREATE_ALWAYS);
     if (FR_OK != fr) {
       printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
@@ -91,13 +94,7 @@ bool SaveFile_Save(SaveFile *sf) {
   unsigned int bw;
   if (f_write(&file, sf, sizeof(SaveFile), &bw)) {
     printf("[SaveFile] problem writing save\n");
-  } else {
-    if (bw < sizeof(SaveFile)) {
-      printf("f_write(%s,,%d,): only wrote %d bytes\n", SAVEFILE_PATHNAME,
-             sizeof(SaveFile), bw);
-      return false;
-    }
   }
-
+  printf("[SaveFile] wrote %d bytes\n", bw);
   f_close(&file);
 }
