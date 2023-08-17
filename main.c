@@ -78,6 +78,8 @@ uint debounce_quantize = 0;
 uint32_t bpm_timer_counter = 0;
 uint16_t bpm_timer_reset = 96;
 
+SaveFile *sf;
+
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (bpm_last != bpm_target) {
@@ -161,6 +163,7 @@ int main() {
         if (bpm_target < 300) {
           bpm_target += 5;
         }
+        sf->bpm_tempo = bpm_target;
         printf("\nbpm: %d\n\n", bpm_target);
       }
       if (c == '[') {
@@ -274,8 +277,15 @@ int main() {
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
+      if (c == 'b') {
+        run_mount();
+      }
+      if (c == 'n') {
+        // big_file_test("testfile", 1, 1);
+        sf = SaveFile_Load();
+      }
       if (c == 'm') {
-        big_file_test("testfile", 1, 1);
+        SaveFile_Save(sf);
       }
       if (c == '1') {
         fil_current_id_next = 0;
@@ -307,7 +317,6 @@ int main() {
         envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
         envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
         printf("\nz!!\n");
-        run_mount();
         file_list = list_files("");
         printf("found %d files\n", file_list->num);
         for (int i = 0; i < file_list->num; i++) {
