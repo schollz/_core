@@ -1,6 +1,8 @@
-dobuild: pico-extras build
-	cd lib && python3 biquad.py > biquad.h
+dobuild: pico-extras lib/biquad.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make
+
+lib/biquad.h:
+	cd lib && python3 biquad.py > biquad.h
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git
@@ -23,4 +25,5 @@ audio:
 clean:
 	rm -rf build
 	rm -rf *.wav
+	rm -rf lib/biquad.h
 
