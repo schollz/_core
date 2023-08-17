@@ -273,6 +273,9 @@ int main() {
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
+      if (c == 'm') {
+        big_file_test("testfile", 1, 1);
+      }
       if (c == '1') {
         fil_current_id_next = 0;
         fil_current_change = true;
