@@ -24,138 +24,17 @@
 #include "sd_card.h"
 //
 #include "lib/array_resample.h"
+#include "lib/audio_pool.h"
 #include "lib/biquad.h"
 #include "lib/envelope2.h"
 #include "lib/file_list.h"
+#include "lib/sdcard.h"
 #include "lib/wav.h"
 
-// <audio>
-#define SINE_WAVE_TABLE_LEN 2048
-#define SAMPLES_PER_BUFFER 578  // Samples / channel
-
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
-
-static int16_t sine_wave_table[SINE_WAVE_TABLE_LEN];
-static int16_t sample_table[44100];
-uint32_t sample_pos = 0;
-
+// audio_pool.h
 audio_buffer_pool_t *ap;
-uint32_t step0 = 0x200000;
-uint32_t step1 = 0x200000;
-uint32_t pos0 = 0;
-uint32_t pos1 = 0;
-const uint32_t pos_max = 0x10000 * SINE_WAVE_TABLE_LEN;
 
-audio_buffer_pool_t *init_audio() {
-  static audio_format_t audio_format = {.pcm_format = AUDIO_PCM_FORMAT_S32,
-                                        .sample_freq = 44100,
-                                        .channel_count = 2};
-
-  static audio_buffer_format_t producer_format = {.format = &audio_format,
-                                                  .sample_stride = 8};
-
-  audio_buffer_pool_t *producer_pool =
-      audio_new_producer_pool(&producer_format, 3,
-                              SAMPLES_PER_BUFFER);  // todo correct size
-  bool __unused ok;
-  const audio_format_t *output_format;
-  audio_i2s_config_t config = {.data_pin = PICO_AUDIO_I2S_DATA_PIN,
-                               .clock_pin_base = PICO_AUDIO_I2S_CLOCK_PIN_BASE,
-                               .dma_channel = 0,
-                               .pio_sm = 0};
-
-  output_format = audio_i2s_setup(&audio_format, &audio_format, &config);
-  if (!output_format) {
-    panic("PicoAudio: Unable to open audio device.\n");
-  }
-
-  ok = audio_i2s_connect(producer_pool);
-  assert(ok);
-  {  // initial buffer data
-    audio_buffer_t *buffer = take_audio_buffer(producer_pool, true);
-    int32_t *samples = (int32_t *)buffer->buffer->bytes;
-    for (uint i = 0; i < buffer->max_sample_count; i++) {
-      samples[i * 2 + 0] = 0;
-      samples[i * 2 + 1] = 0;
-    }
-    buffer->sample_count = buffer->max_sample_count;
-    give_audio_buffer(producer_pool, buffer);
-  }
-  audio_i2s_set_enabled(true);
-  return producer_pool;
-}
-
-static inline uint32_t _millis(void) {
-  return to_ms_since_boot(get_absolute_time());
-}
-
-clock_t clock() { return (clock_t)time_us_64() / 10000; }
-
-// </audio>
-
-void doSomething(int seconds) { sleep_ms(seconds * 1000); }
-
-// <sdcard>
-static sd_card_t *sd_get_by_name(const char *const name) {
-  for (size_t i = 0; i < sd_get_num(); ++i)
-    if (0 == strcmp(sd_get_by_num(i)->pcName, name)) return sd_get_by_num(i);
-  DBG_PRINTF("%s: unknown name %s\n", __func__, name);
-  return NULL;
-}
-static FATFS *sd_get_fs_by_name(const char *name) {
-  for (size_t i = 0; i < sd_get_num(); ++i)
-    if (0 == strcmp(sd_get_by_num(i)->pcName, name))
-      return &sd_get_by_num(i)->fatfs;
-  DBG_PRINTF("%s: unknown name %s\n", __func__, name);
-  return NULL;
-}
-
-static void run_mount() {
-  const char *arg1 = strtok(NULL, " ");
-  arg1 = sd_get_by_num(0)->pcName;
-  FATFS *p_fs = sd_get_fs_by_name(arg1);
-  if (!p_fs) {
-    printf("Unknown logical drive number: \"%s\"\n", arg1);
-    return;
-  }
-  FRESULT fr = f_mount(p_fs, arg1, 1);
-  if (FR_OK != fr) {
-    printf("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
-    return;
-  }
-  sd_card_t *pSD = sd_get_by_name(arg1);
-  myASSERT(pSD);
-  pSD->mounted = true;
-}
-
-static void run_cat() {
-  char *arg1 = strtok(NULL, " ");
-  if (!arg1) {
-    arg1 = "2.raw";
-  }
-  FIL fil;
-  FRESULT fr = f_open(&fil, arg1, FA_READ);
-  if (FR_OK != fr) {
-    printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-    return;
-  }
-  char buf[256];
-  unsigned int bytes_read;
-  unsigned int pos;
-  f_lseek(&fil, 1);
-  f_read(&fil, buf, 256, &bytes_read);
-  printf("bytes_read: %d\n");
-  pos += bytes_read;
-  printf("run_cat read %d bytes\n", bytes_read);
-  fr = f_close(&fil);
-  if (FR_OK != fr) printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-}
-
-// </sdcard>
-
-// <testing>
-
-static int16_t sample_table2[498072];
 FIL fil_current;
 char *fil_current_name;
 bool fil_is_open;
@@ -184,15 +63,16 @@ bool phase_forward = 0;
 Envelope2 *envelope1;
 Envelope2 *envelope2;
 Envelope2 *envelope3;
+Envelope2 *envelope_pitch;
 uint vol = 20;
 uint vol1 = 0;
 uint vol2 = 0;
 float vol3 = 0;
-
-Envelope2 *envelope_pitch;
 float envelope_pitch_val;
 uint beat_current = 0;
 uint debounce_quantize = 0;
+
+// timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (bpm_last != bpm_target) {
     bpm_last = bpm_target;
@@ -220,7 +100,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // printf("Repeat at %lld\n", time_us_64());
   return true;
 }
-// </testing>
 
 int main() {
   // // Initialize chosen serial port
@@ -246,11 +125,6 @@ int main() {
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
 
-  for (int i = 0; i < SINE_WAVE_TABLE_LEN; i++) {
-    sine_wave_table[i] =
-        32767 * cosf(i * 2 * (float)(M_PI / SINE_WAVE_TABLE_LEN));
-  }
-
   ap = init_audio();
 
   // Implicitly called by disk_initialize,
@@ -274,12 +148,6 @@ int main() {
     if (c >= 0) {
       if (c == '-' && vol) vol--;
       if ((c == '=' || c == '+') && vol < 256) vol++;
-      // if (c == '[' && step0 > 0x10000) step0 -= 0x10000;
-      // if (c == ']' && step0 < (SINE_WAVE_TABLE_LEN / 16) * 0x20000)
-      //   step0 += 0x10000;
-      if (c == '{' && step1 > 0x10000) step1 -= 0x10000;
-      if (c == '}' && step1 < (SINE_WAVE_TABLE_LEN / 16) * 0x20000)
-        step1 += 0x10000;
       if (c == ']') {
         if (bpm_target < 300) {
           bpm_target += 5;
@@ -447,8 +315,7 @@ int main() {
         phase_new = 0;
         phase_change = true;
       }
-      printf("vol = %d, step0 = %d, step1 = %d      \r", vol, step0 >> 16,
-             step1 >> 16);
+      printf("vol = %d      \r", vol);
     }
   }
 }
