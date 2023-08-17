@@ -74,7 +74,8 @@ float vol3 = 0;
 float envelope_pitch_val;
 uint beat_current = 0;
 uint debounce_quantize = 0;
-uint16_t bpm_timer_counter = 0;
+uint32_t bpm_timer_counter = 0;
+uint16_t bpm_timer_reset = 96;
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
@@ -85,8 +86,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                            repeating_timer_callback, NULL, &timer);
   }
   bpm_timer_counter++;
-  if (bpm_timer_counter == 96) {
-    bpm_timer_counter = 0;
+  if (bpm_timer_counter % bpm_timer_reset == 0) {
     // keep to the beat
     if (fil_is_open && debounce_quantize == 0) {
       if (beat_current == 0 && !phase_forward) {
