@@ -74,30 +74,35 @@ float vol3 = 0;
 float envelope_pitch_val;
 uint beat_current = 0;
 uint debounce_quantize = 0;
+uint16_t bpm_timer_counter = 0;
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (bpm_last != bpm_target) {
     bpm_last = bpm_target;
     printf("updaing bpm timer: %d\n", cancel_repeating_timer(&timer));
-    add_repeating_timer_us(-(30000000 / bpm_target), repeating_timer_callback,
-                           NULL, &timer);
+    add_repeating_timer_us(-(round(30000000 / bpm_target / 96)),
+                           repeating_timer_callback, NULL, &timer);
   }
-  // keep to the beat
-  if (fil_is_open && debounce_quantize == 0) {
-    if (beat_current == 0 && !phase_forward) {
-      beat_current = file_list->beats[fil_current_id];
+  bpm_timer_counter++;
+  if (bpm_timer_counter == 96) {
+    bpm_timer_counter = 0;
+    // keep to the beat
+    if (fil_is_open && debounce_quantize == 0) {
+      if (beat_current == 0 && !phase_forward) {
+        beat_current = file_list->beats[fil_current_id];
+      }
+      beat_current += (phase_forward * 2 - 1);
+      phase_new = (file_list->size[fil_current_id]) *
+                  ((beat_current % file_list->beats[fil_current_id]) +
+                   (1 - phase_forward)) /
+                  file_list->beats[fil_current_id];
+      phase_change = true;
+      printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
     }
-    beat_current += (phase_forward * 2 - 1);
-    phase_new = (file_list->size[fil_current_id]) *
-                ((beat_current % file_list->beats[fil_current_id]) +
-                 (1 - phase_forward)) /
-                file_list->beats[fil_current_id];
-    phase_change = true;
-    printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
-  }
-  if (debounce_quantize > 0) {
-    debounce_quantize--;
+    if (debounce_quantize > 0) {
+      debounce_quantize--;
+    }
   }
 
   // printf("Repeat at %lld\n", time_us_64());
@@ -138,9 +143,9 @@ int main() {
   // init timers
   // Negative delay so means we will call repeating_timer_callback, and call it
   // again 500ms later regardless of how long the callback took to execute
-  add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
-  cancel_repeating_timer(&timer);
-  add_repeating_timer_us(-(30000000 / round(bpm_target)),
+  // add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
+  // cancel_repeating_timer(&timer);
+  add_repeating_timer_us(-(round(30000000 / bpm_target / 96)),
                          repeating_timer_callback, NULL, &timer);
 
   // Loop forever doing nothing
