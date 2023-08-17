@@ -338,10 +338,9 @@ void i2s_callback_func() {
       if (fil_current_id != fil_current_id_next) {
         phase = phase * file_list->size[fil_current_id_next] /
                 file_list->size[fil_current_id];
-        phase = (phase / 2) * 2;
         f_close(&fil_current);  // close and re-open trick
         f_open(&fil_current, file_list->name[fil_current_id_next], FA_READ);
-        f_lseek(&fil_current, WAV_HEADER_SIZE + phase);
+        f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2);
         fil_current_id = fil_current_id_next;
       }
       fil_current_change = false;
@@ -379,7 +378,7 @@ void i2s_callback_func() {
                                 file_list->bpm[fil_current_id];
       int16_t values[values_to_read];  // max limit
 
-      if (f_lseek(&fil_current, WAV_HEADER_SIZE + phase)) {
+      if (f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2)) {
         printf("problem seeking to phase (%d)\n", phase);
       }
 
@@ -439,7 +438,7 @@ void i2s_callback_func() {
                                 file_list->bpm[fil_current_id];
       int16_t values[values_to_read];  // max limit
 
-      if (f_lseek(&fil_current, WAV_HEADER_SIZE + phase2)) {
+      if (f_lseek(&fil_current, WAV_HEADER_SIZE + (phase2 / 2) * 2)) {
         printf("problem seeking to phase (%d)\n", phase2);
       }
 
