@@ -93,7 +93,7 @@ extern "C" {
 #endif
 #endif
 
-#define PICO_AUDIO_I2S_DATA_PIN 13        // 18 SDO -> DIN
+#define PICO_AUDIO_I2S_DATA_PIN 16        // 18 SDO -> DIN
 #define PICO_AUDIO_I2S_CLOCK_PIN_BASE 14  // 16 BCK -> BCK
 // note! LCK is implicitly defined as PICO_AUDIO_I2S_CLOCK_PIN_BASE + 1
 

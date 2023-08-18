@@ -62,7 +62,7 @@ static sd_card_t sd_cards[] = {  // One for each SD card
                     .D0_gpio = 19,
                     .SDIO_PIO = pio1,
                     .DMA_IRQ_num = DMA_IRQ_0},
-        .use_card_detect = true,
+        .use_card_detect = false,
         .card_detect_gpio = 16,  // Card detect
         .card_detected_true = 1  // What the GPIO read returns when a card is
                                  // present.
