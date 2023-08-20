@@ -7,7 +7,7 @@
 
 int main() {
   // Seed for random number generation (you can change this to any other value)
-  uint32_t seed = 12304;
+  uint32_t seed = 1234;
   uint32_t sampleRate = 44100;
   // Create a Noise instance
   Noise *noise = Noise_create(seed, sampleRate);
@@ -21,7 +21,7 @@ int main() {
 
   for (int i = 0; i < sampleRate * 4; i++) {
     float value = LFNoise0_seeded(noise, frequency, 8, seed);
-    printf("%f\n", value);
+    printf("%d\n", (uint8_t)Range(value, 0, 16));
   }
 
   for (int i = 0; i < sampleRate * 4; i++) {

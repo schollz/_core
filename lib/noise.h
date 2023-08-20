@@ -22,7 +22,7 @@ Noise *Noise_create(uint32_t seed, uint32_t mSampleRate);
 uint32_t RandUint32(Noise *noise);
 float Range(float f, float dlo, float dhi);
 float LFNoise0(Noise *noise, int32_t freq);
-float LFNoise0_seeded(Noise *noise, int32_t freq, uint8_t steps, uint32_t seed);
+float LFNoise0_seeded(Noise *noise, float freq, uint8_t steps, uint32_t seed);
 float LFNoise2(Noise *noise, int32_t freq);
 
 uint32_t trand(Noise *noise) {
@@ -83,8 +83,7 @@ float LFNoise0(Noise *noise, int32_t freq) {
   return noise->level;
 }
 
-float LFNoise0_seeded(Noise *noise, int32_t freq, uint8_t steps,
-                      uint32_t seed) {
+float LFNoise0_seeded(Noise *noise, float freq, uint8_t steps, uint32_t seed) {
   if (noise->counter <= 0) {
     if (noise->counter_steps == 0) {
       fseed(noise, seed);
