@@ -12,22 +12,23 @@ static FATFS *sd_get_fs_by_name(const char *name) {
   return NULL;
 }
 
-static void run_mount() {
+bool run_mount() {
   const char *arg1 = strtok(NULL, " ");
   arg1 = sd_get_by_num(0)->pcName;
   FATFS *p_fs = sd_get_fs_by_name(arg1);
   if (!p_fs) {
     printf("Unknown logical drive number: \"%s\"\n", arg1);
-    return;
+    return false;
   }
   FRESULT fr = f_mount(p_fs, arg1, 1);
   if (FR_OK != fr) {
     printf("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
-    return;
+    return false;
   }
   sd_card_t *pSD = sd_get_by_name(arg1);
   myASSERT(pSD);
   pSD->mounted = true;
+  return true;
 }
 
 static void run_cat() {
