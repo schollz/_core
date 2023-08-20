@@ -57,7 +57,8 @@ bool fil_current_change = false;
 FileList *file_list;
 FRESULT fil_result;
 struct repeating_timer timer;
-bool phase_forward = 0;
+bool phase_forward = 1;
+bool sync_using_sdcard = false;
 
 // voice 1 + 2
 // voice 1 is always an envelope UP
@@ -288,7 +289,7 @@ int main() {
         SaveFile_Load(sf);
       }
       if (c == 'm') {
-        SaveFile_Save(sf);
+        SaveFile_Save(sf, &sync_using_sdcard);
       }
       if (c == '1') {
         fil_current_id_next = 0;
@@ -315,6 +316,7 @@ int main() {
         envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
       }
       if (c == 'x') {
+        run_mount();
         envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
         envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
         envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
@@ -343,9 +345,21 @@ void i2s_callback_func() {
   if (buffer == NULL) {
     return;
   }
-
-  // update the envelope
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
+
+  if (sync_using_sdcard) {
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      int32_t value0 = 0;
+      samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+      samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+    }
+    buffer->sample_count = buffer->max_sample_count;
+    give_audio_buffer(ap, buffer);
+    printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    return;
+  }
+
+  sync_using_sdcard = true;
 
   // read files
   if (fil_is_open) {
@@ -517,6 +531,7 @@ void i2s_callback_func() {
 
   buffer->sample_count = buffer->max_sample_count;
   give_audio_buffer(ap, buffer);
+
   if (fil_is_open) {
     if (phase >= file_list->size[fil_current_id]) {
       phase -= file_list->size[fil_current_id];
@@ -529,5 +544,6 @@ void i2s_callback_func() {
       phase2 += file_list->size[fil_current_id];
     }
   }
+  sync_using_sdcard = false;
   return;
 }

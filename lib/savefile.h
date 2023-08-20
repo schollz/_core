@@ -43,7 +43,11 @@ bool SaveFile_Load(SaveFile *sf) {
   return true;
 }
 
-bool SaveFile_Save(SaveFile *sf) {
+bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
+  while (*sync_sd_card) {
+    sleep_us(100);
+  }
+  *sync_sd_card = true;
   printf("[SaveFile] writing\n");
   FRESULT fr;
   FIL file; /* File object */
@@ -51,6 +55,7 @@ bool SaveFile_Save(SaveFile *sf) {
   fr = f_open(&file, SAVEFILE_PATHNAME, FA_WRITE | FA_CREATE_ALWAYS);
   if (FR_OK != fr) {
     printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+    *sync_sd_card = false;
     return false;
   }
   unsigned int bw;
@@ -59,4 +64,6 @@ bool SaveFile_Save(SaveFile *sf) {
   }
   printf("[SaveFile] wrote %d bytes\n", bw);
   f_close(&file);
+  *sync_sd_card = false;
+  return true;
 }
