@@ -58,12 +58,12 @@ static sd_card_t sd_cards[] = {  // One for each SD card
             D2_gpio = D0_gpio + 2;
             D3_gpio = D0_gpio + 3;
         */
-        .sdio_if = {.CMD_gpio = 18,
-                    .D0_gpio = 19,
+        .sdio_if = {.CMD_gpio = SDCARD_CMD_GPIO,
+                    .D0_gpio = SDCARD_D0_GPIO,
                     .SDIO_PIO = pio1,
                     .DMA_IRQ_num = DMA_IRQ_0},
-        .use_card_detect = false,
-        .card_detect_gpio = 16,  // Card detect
+        .use_card_detect = SDCARD_USE_CD,
+        .card_detect_gpio = SDCARD_CD_GPIO,  // Card detect
         .card_detected_true = 1  // What the GPIO read returns when a card is
                                  // present.
     }};
