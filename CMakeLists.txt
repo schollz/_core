@@ -20,6 +20,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME} 
     main.c
     hw_config.c
+    lib/pcg_basic.c
 )
 
 # Tell CMake where to find other source code
