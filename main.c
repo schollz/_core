@@ -23,6 +23,8 @@
 #include "my_debug.h"
 #include "sd_card.h"
 //
+#include "lib/pcg_basic.h"
+//
 #include "lib/array_resample.h"
 #include "lib/audio_pool.h"
 #include "lib/biquad.h"
@@ -75,6 +77,7 @@ uint vol2 = 0;
 float vol3 = 0;
 float envelope_pitch_val;
 uint beat_current = 0;
+uint beat_total = 0;
 uint debounce_quantize = 0;
 uint32_t bpm_timer_counter = 0;
 uint16_t bpm_timer_reset = 96;
@@ -129,6 +132,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           beat_current = file_list->beats[fil_current_id];
         }
         beat_current += (phase_forward * 2 - 1);
+        beat_total++;
+        if (sf->pattern_on && sf->pattern_length[sf->pattern_current] > 0) {
+          beat_current =
+              sf->pattern_sequence[sf->pattern_current]
+                                  [beat_total %
+                                   sf->pattern_length[sf->pattern_current]];
+        }
         phase_new = (file_list->size[fil_current_id]) *
                     ((beat_current % file_list->beats[fil_current_id]) +
                      (1 - phase_forward)) /
@@ -190,6 +200,9 @@ int main() {
   // Loop forever doing nothing
   printf("-/+ to change volume");
 
+  pcg32_random_t rng;
+  pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
+
   while (true) {
     int c = getchar_timeout_us(0);
     if (c >= 0) {
@@ -200,6 +213,11 @@ int main() {
           sf->bpm_tempo += 5;
         }
         printf("\nbpm: %d\n\n", sf->bpm_tempo);
+      }
+      if (c == 'c') {
+        SaveFile_PatternRandom(sf, &rng, 0, 16);
+        SaveFile_PatternPrint(sf);
+        sf->pattern_on = !sf->pattern_on;
       }
       if (c == '[') {
         if (sf->bpm_tempo > 30) {
@@ -232,9 +250,18 @@ int main() {
             96 * random_integer_in_range(1, 3) / random_integer_in_range(1, 12);
         float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                            (float)(96 * sf->bpm_tempo);
+        if (total_time < 0.5) {
+          total_time *= 2;
+          retrig_beat_num *= 2;
+        }
+        if (total_time < 0.5) {
+          total_time *= 2;
+          retrig_timer_reset *= 2;
+        }
         printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
                retrig_beat_num, retrig_timer_reset, total_time);
-        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, total_time);
+        envelope3 =
+            Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, total_time * 2 / 3);
       }
       if (c == 't') {
         phase_new = (file_list->size[fil_current_id]) * 3 / 16;
@@ -355,23 +382,30 @@ int main() {
         envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
       }
       if (c == 'x') {
-        run_mount();
-        envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
-        envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
-        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
-        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
-        printf("\nz!!\n");
-        file_list = list_files("");
-        printf("found %d files\n", file_list->num);
-        for (int i = 0; i < file_list->num; i++) {
-          printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
-                 file_list->bpm[i], file_list->beats[i], file_list->size[i]);
+        fil_is_open = false;
+        while (sync_using_sdcard) {
+          sleep_us(100);
         }
-        fil_current_id = 0;
-        f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-        fil_is_open = true;
-        phase_new = 0;
-        phase_change = true;
+        sync_using_sdcard = true;
+        if (run_mount()) {
+          envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
+          envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
+          envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
+          envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
+          printf("\nz!!\n");
+          file_list = list_files("");
+          printf("found %d files\n", file_list->num);
+          for (int i = 0; i < file_list->num; i++) {
+            printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
+                   file_list->bpm[i], file_list->beats[i], file_list->size[i]);
+          }
+          fil_current_id = 0;
+          f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
+          fil_is_open = true;
+          phase_new = 0;
+          phase_change = true;
+        }
+        sync_using_sdcard = false;
       }
       printf("vol = %d      \r", vol);
     }

@@ -2,6 +2,8 @@
 typedef struct SaveFile {
   uint8_t chain_length;
   uint8_t chain_sequence[255];
+  bool pattern_on;
+  uint8_t pattern_current;
   uint8_t pattern_length[16];
   uint8_t pattern_sequence[16][255];
   uint16_t bpm_tempo;
@@ -17,6 +19,7 @@ SaveFile *SaveFile_New() {
   for (uint8_t i = 0; i < 255; i++) {
     sf->chain_sequence[i] = 0;
   }
+  sf->pattern_current = 0;
   for (uint8_t i = 0; i < 16; i++) {
     sf->pattern_length[i] = 0;
     for (uint8_t j = 0; j < 255; j++) {
@@ -25,6 +28,30 @@ SaveFile *SaveFile_New() {
   }
   return sf;
 }
+
+bool SaveFile_PatternRandom(SaveFile *sf, pcg32_random_t *rng,
+                            uint8_t pattern_id, uint8_t pattern_length) {
+  sf->pattern_length[pattern_id] = pattern_length;
+  for (uint8_t j = 0; j < sf->pattern_length[pattern_id]; j++) {
+    sf->pattern_sequence[pattern_id][j] = (int)pcg32_boundedrand_r(rng, 16) + 0;
+  }
+
+  return true;
+}
+
+void SaveFile_PatternPrint(SaveFile *sf) {
+  for (uint8_t i = 0; i < 16; i++) {
+    if (sf->pattern_length[i] > 0) {
+      printf("pattern %d\n", i);
+      for (uint8_t j = 0; j < sf->pattern_length[i]; j++) {
+        printf("%d ", sf->pattern_sequence[i][j]);
+      }
+      printf("\n");
+    }
+  }
+}
+
+#ifndef NOSDCARD
 
 bool SaveFile_Load(SaveFile *sf) {
   FIL fil; /* File object */
@@ -67,3 +94,4 @@ bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
   *sync_sd_card = false;
   return true;
 }
+#endif
