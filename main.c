@@ -78,8 +78,27 @@ uint beat_current = 0;
 uint debounce_quantize = 0;
 uint32_t bpm_timer_counter = 0;
 uint16_t bpm_timer_reset = 96;
+uint8_t retrig_beat_num = 0;
+uint16_t retrig_timer_reset = 96;
 
 SaveFile *sf;
+
+int random_integer_in_range(int min, int max) {
+  // Get a random number in the range [0, RAND_MAX).
+  int random_number = rand();
+
+  // Calculate the number of possible random numbers in the specified range.
+  int range_size = max - min + 1;
+
+  // Subtract the minimum value from the random number to get a number in the
+  // range [min, max).
+  random_number = random_number % range_size;
+
+  // Add the minimum value back to get the final random number.
+  random_number += min;
+
+  return random_number;
+}
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
@@ -90,25 +109,38 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                            repeating_timer_callback, NULL, &timer);
   }
   bpm_timer_counter++;
-  if (bpm_timer_counter % bpm_timer_reset == 0) {
-    // keep to the beat
-    if (fil_is_open && debounce_quantize == 0) {
-      if (beat_current == 0 && !phase_forward) {
-        beat_current = file_list->beats[fil_current_id];
+  if (retrig_beat_num > 0) {
+    if (bpm_timer_counter % retrig_timer_reset == 0) {
+      retrig_beat_num--;
+      if (fil_is_open && debounce_quantize == 0) {
+        phase_new = (file_list->size[fil_current_id]) *
+                    ((beat_current % file_list->beats[fil_current_id]) +
+                     (1 - phase_forward)) /
+                    file_list->beats[fil_current_id];
+        phase_change = true;
+        printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
       }
-      beat_current += (phase_forward * 2 - 1);
-      phase_new = (file_list->size[fil_current_id]) *
-                  ((beat_current % file_list->beats[fil_current_id]) +
-                   (1 - phase_forward)) /
-                  file_list->beats[fil_current_id];
-      phase_change = true;
-      printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
     }
-    if (debounce_quantize > 0) {
-      debounce_quantize--;
+  } else {
+    if (bpm_timer_counter % bpm_timer_reset == 0) {
+      // keep to the beat
+      if (fil_is_open && debounce_quantize == 0) {
+        if (beat_current == 0 && !phase_forward) {
+          beat_current = file_list->beats[fil_current_id];
+        }
+        beat_current += (phase_forward * 2 - 1);
+        phase_new = (file_list->size[fil_current_id]) *
+                    ((beat_current % file_list->beats[fil_current_id]) +
+                     (1 - phase_forward)) /
+                    file_list->beats[fil_current_id];
+        phase_change = true;
+        printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
+      }
+      if (debounce_quantize > 0) {
+        debounce_quantize--;
+      }
     }
   }
-
   // printf("Repeat at %lld\n", time_us_64());
   return true;
 }
@@ -191,10 +223,18 @@ int main() {
         debounce_quantize = 2;
       }
       if (c == 'r') {
-        phase_new = (file_list->size[fil_current_id]) * 2 / 16;
-        phase_new = (phase_new / 4) * 4;
-        phase_change = true;
-        debounce_quantize = 2;
+        // phase_new = (file_list->size[fil_current_id]) * 2 / 16;
+        // phase_new = (phase_new / 4) * 4;
+        // phase_change = true;
+        // debounce_quantize = 2;
+        retrig_beat_num = random_integer_in_range(2, 8);
+        retrig_timer_reset =
+            96 * random_integer_in_range(1, 3) / random_integer_in_range(1, 12);
+        float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
+                           (float)(96 * sf->bpm_tempo);
+        printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
+               retrig_beat_num, retrig_timer_reset, total_time);
+        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, total_time);
       }
       if (c == 't') {
         phase_new = (file_list->size[fil_current_id]) * 3 / 16;
