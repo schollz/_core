@@ -49,7 +49,7 @@ int32_t phase_new;
 bool phase_change;
 unsigned int fil_bytes_read;
 unsigned int fil_bytes_read2;
-uint16_t bpm_target = 185;
+// uint16_t sf->bpm_tempo = 185;
 uint16_t bpm_last = 185;
 uint16_t fil_current_id = 0;
 uint16_t fil_current_id_next = 0;
@@ -83,10 +83,10 @@ SaveFile *sf;
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
-  if (bpm_last != bpm_target) {
-    bpm_last = bpm_target;
+  if (bpm_last != sf->bpm_tempo) {
+    bpm_last = sf->bpm_tempo;
     printf("updaing bpm timer: %d\n", cancel_repeating_timer(&timer));
-    add_repeating_timer_us(-(round(30000000 / bpm_target / 96)),
+    add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                            repeating_timer_callback, NULL, &timer);
   }
   bpm_timer_counter++;
@@ -152,7 +152,7 @@ int main() {
   // again 500ms later regardless of how long the callback took to execute
   // add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
   // cancel_repeating_timer(&timer);
-  add_repeating_timer_us(-(round(30000000 / bpm_target / 96)),
+  add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                          repeating_timer_callback, NULL, &timer);
 
   // Loop forever doing nothing
@@ -164,17 +164,16 @@ int main() {
       if (c == '-' && vol) vol--;
       if ((c == '=' || c == '+') && vol < 256) vol++;
       if (c == ']') {
-        if (bpm_target < 300) {
-          bpm_target += 5;
+        if (sf->bpm_tempo < 300) {
+          sf->bpm_tempo += 5;
         }
-        sf->bpm_tempo = bpm_target;
-        printf("\nbpm: %d\n\n", bpm_target);
+        printf("\nbpm: %d\n\n", sf->bpm_tempo);
       }
       if (c == '[') {
-        if (bpm_target > 30) {
-          bpm_target -= 5;
+        if (sf->bpm_tempo > 30) {
+          sf->bpm_tempo -= 5;
         }
-        printf("\nbpm: %d\n\n", bpm_target);
+        printf("\nbpm: %d\n\n", sf->bpm_tempo);
       }
       if (c == 'p') {
         phase_forward = !phase_forward;
@@ -404,7 +403,7 @@ void i2s_callback_func() {
 
     if (vol1 >= 0) {
       uint32_t values_to_read = buffer->max_sample_count *
-                                round(bpm_target * envelope_pitch_val) /
+                                round(sf->bpm_tempo * envelope_pitch_val) /
                                 file_list->bpm[fil_current_id];
       int16_t values[values_to_read];  // max limit
 
@@ -464,7 +463,7 @@ void i2s_callback_func() {
     if (vol2 > 0) {
       // need to be reading through the second phase!
       uint32_t values_to_read = buffer->max_sample_count *
-                                (bpm_target * envelope_pitch_val) /
+                                (sf->bpm_tempo * envelope_pitch_val) /
                                 file_list->bpm[fil_current_id];
       int16_t values[values_to_read];  // max limit
 
