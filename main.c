@@ -60,7 +60,10 @@
 #include "lib/sdcard.h"
 #include "lib/wav.h"
 
+// sample rate is defined by the codec, PCM5102
 #define SAMPLE_RATE 44100
+// blocks per second is defined by SAMPLES_PER_BUFFER
+// which can be modified
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
 
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
@@ -200,7 +203,7 @@ void sdcard_startup() {
   envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
-  noise_wobble = Noise_create(123, BLOCKS_PER_SECOND);
+  noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
 
   printf("\nz!!\n");
   file_list = list_files("");
@@ -263,6 +266,7 @@ int main() {
   // Loop forever doing nothing
   printf("-/+ to change volume");
 
+  // initialize random library
   pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
 
   while (true) {
@@ -472,9 +476,9 @@ void i2s_callback_func() {
     return;
   }
 
+  // mutex
   sync_using_sdcard = true;
 
-  // read files
   if (fil_is_open) {
     // check if the file is the right one
     if (fil_current_change) {
