@@ -24,11 +24,13 @@
 
 typedef struct SaveFile {
   uint8_t chain_length;
-  uint8_t chain_sequence[255];
+  uint8_t chain_sequence[128];
   bool pattern_on;
   uint8_t pattern_current;
   uint8_t pattern_length[16];
-  uint8_t pattern_sequence[16][255];
+  uint8_t pattern_sequence[16][128];
+  uint8_t fx_length[16];
+  uint8_t fx_sequence[16][128];
   uint16_t bpm_tempo;
   uint8_t vol;
 } SaveFile;
@@ -41,13 +43,13 @@ SaveFile *SaveFile_New() {
   sf->vol = 20;
   sf->bpm_tempo = 165;
   sf->chain_length = 0;
-  for (uint8_t i = 0; i < 255; i++) {
+  for (uint8_t i = 0; i < 128; i++) {
     sf->chain_sequence[i] = 0;
   }
   sf->pattern_current = 0;
   for (uint8_t i = 0; i < 16; i++) {
     sf->pattern_length[i] = 0;
-    for (uint8_t j = 0; j < 255; j++) {
+    for (uint8_t j = 0; j < 128; j++) {
       sf->pattern_sequence[i][j] = 0;
     }
   }
