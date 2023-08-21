@@ -26,7 +26,7 @@ int main() {
 
   for (int i = 0; i < sampleRate * 4; i++) {
     float value = LFNoise2(noise, frequency);
-    printf("%f\n", value);
+    printf("%f\n", (float)Range(value, 0.8, 1.2));
   }
 
   // Don't forget to free the memory when you're done using the Noise struct
