@@ -55,6 +55,7 @@
 #include "lib/envelope2.h"
 #include "lib/envelopegate.h"
 #include "lib/file_list.h"
+#include "lib/noise.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
 #include "lib/wav.h"
@@ -98,10 +99,12 @@ Envelope2 *envelope2;
 Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
 EnvelopeGate *envelopegate;
+Noise *noise_wobble;
 uint vol1 = 0;
 uint vol2 = 0;
 float vol3 = 0;
 float envelope_pitch_val;
+float envelope_wobble_val;
 uint beat_current = 0;
 uint beat_total = 0;
 uint debounce_quantize = 0;
@@ -112,21 +115,10 @@ uint16_t retrig_timer_reset = 96;
 
 SaveFile *sf;
 
+pcg32_random_t rng;
+
 int random_integer_in_range(int min, int max) {
-  // Get a random number in the range [0, RAND_MAX).
-  int random_number = rand();
-
-  // Calculate the number of possible random numbers in the specified range.
-  int range_size = max - min + 1;
-
-  // Subtract the minimum value from the random number to get a number in the
-  // range [min, max).
-  random_number = random_number % range_size;
-
-  // Add the minimum value back to get the final random number.
-  random_number += min;
-
-  return random_number;
+  return (int)pcg32_boundedrand_r(&rng, max - min) + min;
 }
 
 // timer
@@ -208,6 +200,8 @@ void sdcard_startup() {
   envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
+  noise_wobble = Noise_create(123, BLOCKS_PER_SECOND);
+
   printf("\nz!!\n");
   file_list = list_files("");
   printf("found %d files\n", file_list->num);
@@ -269,7 +263,6 @@ int main() {
   // Loop forever doing nothing
   printf("-/+ to change volume");
 
-  pcg32_random_t rng;
   pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
 
   while (true) {
@@ -517,6 +510,9 @@ void i2s_callback_func() {
     // vol2 = 0;
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
+    // TODO: switch for if wobble is enabled
+    envelope_pitch_val =
+        envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
 
     // if (vol1 > 0 && vol2 > 0) {
     //   printf("vol1: %d, vol2: %d\n", vol1, vol2);
