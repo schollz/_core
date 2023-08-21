@@ -53,6 +53,7 @@
 #include "lib/audio_pool.h"
 #include "lib/biquad.h"
 #include "lib/envelope2.h"
+#include "lib/envelopegate.h"
 #include "lib/file_list.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
@@ -96,6 +97,7 @@ Envelope2 *envelope1;
 Envelope2 *envelope2;
 Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
+EnvelopeGate *envelopegate;
 uint vol1 = 0;
 uint vol2 = 0;
 float vol3 = 0;
@@ -140,6 +142,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
       retrig_beat_num--;
       if (fil_is_open && debounce_quantize == 0) {
+        envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0,
+                                           30 / (float)sf->bpm_tempo,
+                                           30 / (float)sf->bpm_tempo);
         phase_new = (file_list->size[fil_current_id]) *
                     ((beat_current % file_list->beats[fil_current_id]) +
                      (1 - phase_forward)) /
@@ -164,11 +169,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                   [beat_total %
                                    sf->pattern_length[sf->pattern_current]];
         }
+        envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         phase_new = (file_list->size[fil_current_id]) *
                     ((beat_current % file_list->beats[fil_current_id]) +
                      (1 - phase_forward)) /
                     file_list->beats[fil_current_id];
         phase_change = true;
+
         printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
                phase_new, cpu_utilization);
       }
@@ -200,6 +207,7 @@ void sdcard_startup() {
   envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
   envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
+  envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
   printf("\nz!!\n");
   file_list = list_files("");
   printf("found %d files\n", file_list->num);
@@ -500,7 +508,7 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.05);
     }
 
-    vol3 = Envelope2_update(envelope3);
+    vol3 = Envelope2_update(envelope3) * EnvelopeGate_update(envelopegate);
 
     vol1 = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
     vol2 = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
