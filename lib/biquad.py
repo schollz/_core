@@ -29,11 +29,11 @@ def coefficients(FC, FS, Q, dB, lowpass=True, ROUNDER=20):
     a1 = a1 / a0
     a2 = a2 / a0
 
-    # b0 = round((1 << ROUNDER) * b0)
-    # b1 = round((1 << ROUNDER) * b1)
-    # b2 = round((1 << ROUNDER) * b2)
-    # a1 = round((1 << ROUNDER) * a1)
-    # a2 = round((1 << ROUNDER) * a2)
+    b0 = round((1 << ROUNDER) * b0)
+    b1 = round((1 << ROUNDER) * b1)
+    b2 = round((1 << ROUNDER) * b2)
+    a1 = round((1 << ROUNDER) * a1)
+    a2 = round((1 << ROUNDER) * a2)
 
     # ic(FC, FS, Q, dB)
     # ic(a1, a2, b0, b1, b2)
@@ -49,11 +49,11 @@ ROUNDER = 20
 q = 0.707 * 2.5
 notes = list(range(76, 122))
 print(f"#define LPF_MAX {len(notes)-1}")
-print("int32_t x1_f, x2_f, y1_f, y2_f;")
-print("int32_t filter_lpf(int32_t x, int32_t f_, uint8_t q) {")
-print("  int32_t y;")
+print("long x1_f, x2_f, y1_f, y2_f;")
+print("int32_t filter_lpf(long x, long f_, uint8_t q) {")
+print("  long y;")
 print(
-    """int32_t f = f_;
+    """long f = f_;
 """
 )
 print("  if (f>LPF_MAX) f=LPF_MAX;")

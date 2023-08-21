@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 pico-extras*
+lib/biquad.h
+main
 build*
 .vscode*
 # Object files

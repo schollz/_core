@@ -68,6 +68,7 @@ audio_buffer_pool_t *ap;
 FIL fil_current;
 char *fil_current_name;
 bool fil_is_open;
+uint8_t cpu_utilization;
 uint8_t fil_buf[SAMPLES_PER_BUFFER * 4];
 int32_t phase;
 int32_t phase2;
@@ -145,7 +146,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      (1 - phase_forward)) /
                     file_list->beats[fil_current_id];
         phase_change = true;
-        printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
+        printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
+               phase_new, cpu_utilization);
       }
     }
   } else {
@@ -168,7 +170,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      (1 - phase_forward)) /
                     file_list->beats[fil_current_id];
         phase_change = true;
-        printf("current beat: %d, phase_new: %d\n", beat_current, phase_new);
+        printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
+               phase_new, cpu_utilization);
       }
       if (debounce_quantize > 0) {
         debounce_quantize--;
@@ -239,7 +242,7 @@ int main() {
         printf("\nbpm: %d\n\n", sf->bpm_tempo);
       }
       if (c == 'c') {
-        SaveFile_PatternRandom(sf, &rng, 0, 16);
+        SaveFile_PatternRandom(sf, &rng, 0, 3);
         SaveFile_PatternPrint(sf);
         sf->pattern_on = !sf->pattern_on;
       }
@@ -411,24 +414,25 @@ int main() {
           sleep_us(100);
         }
         sync_using_sdcard = true;
-        if (run_mount()) {
-          envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
-          envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
-          envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
-          envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
-          printf("\nz!!\n");
-          file_list = list_files("");
-          printf("found %d files\n", file_list->num);
-          for (int i = 0; i < file_list->num; i++) {
-            printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
-                   file_list->bpm[i], file_list->beats[i], file_list->size[i]);
-          }
-          fil_current_id = 0;
-          f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-          fil_is_open = true;
-          phase_new = 0;
-          phase_change = true;
+        while (!run_mount()) {
+          sleep_ms(5);
         }
+        envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
+        envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
+        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
+        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
+        printf("\nz!!\n");
+        file_list = list_files("");
+        printf("found %d files\n", file_list->num);
+        for (int i = 0; i < file_list->num; i++) {
+          printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
+                 file_list->bpm[i], file_list->beats[i], file_list->size[i]);
+        }
+        fil_current_id = 0;
+        f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
+        fil_is_open = true;
+        phase_new = 0;
+        phase_change = true;
         sync_using_sdcard = false;
       }
       printf("vol = %d      \r", vol);
@@ -438,6 +442,7 @@ int main() {
 
 // audio callback
 void i2s_callback_func() {
+  clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
   if (buffer == NULL) {
     return;
@@ -622,7 +627,7 @@ void i2s_callback_func() {
 
   // // LPF
   // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-  //   samples[i * 2] = filter_lpf(samples[i * 2], 35, 1);
+  //   samples[i * 2 + 0] = filter_lpf(samples[i * 2], 35, 1);
   //   samples[i * 2 + 1] = samples[i * 2];
   // }
 
@@ -642,5 +647,8 @@ void i2s_callback_func() {
     }
   }
   sync_using_sdcard = false;
+
+  clock_t endTime = time_us_64();
+  cpu_utilization = 100 * (endTime - startTime) / (US_PER_BLOCK);
   return;
 }
