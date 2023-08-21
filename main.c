@@ -96,7 +96,6 @@ Envelope2 *envelope1;
 Envelope2 *envelope2;
 Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
-uint vol = 20;
 uint vol1 = 0;
 uint vol2 = 0;
 float vol3 = 0;
@@ -233,8 +232,8 @@ int main() {
   while (true) {
     int c = getchar_timeout_us(0);
     if (c >= 0) {
-      if (c == '-' && vol) vol--;
-      if ((c == '=' || c == '+') && vol < 256) vol++;
+      if (c == '-' && sf->vol) sf->vol--;
+      if ((c == '=' || c == '+') && sf->vol < 256) sf->vol++;
       if (c == ']') {
         if (sf->bpm_tempo < 300) {
           sf->bpm_tempo += 5;
@@ -435,7 +434,7 @@ int main() {
         phase_change = true;
         sync_using_sdcard = false;
       }
-      printf("vol = %d      \r", vol);
+      printf("sf->vol = %d      \r", sf->vol);
     }
   }
 }
@@ -492,8 +491,8 @@ void i2s_callback_func() {
 
     vol3 = Envelope2_update(envelope3);
 
-    vol1 = (uint)round(Envelope2_update(envelope1) * vol * vol3);
-    vol2 = (uint)round(Envelope2_update(envelope2) * vol * vol3);
+    vol1 = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
+    vol2 = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
     // uncomment to turn off dual playheads
     // vol1 = vol;
     // vol2 = 0;

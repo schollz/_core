@@ -30,6 +30,7 @@ typedef struct SaveFile {
   uint8_t pattern_length[16];
   uint8_t pattern_sequence[16][255];
   uint16_t bpm_tempo;
+  uint8_t vol;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -37,6 +38,7 @@ typedef struct SaveFile {
 SaveFile *SaveFile_New() {
   SaveFile *sf;
   sf = malloc(sizeof(SaveFile));
+  sf->vol = 20;
   sf->bpm_tempo = 165;
   sf->chain_length = 0;
   for (uint8_t i = 0; i < 255; i++) {
