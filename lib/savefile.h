@@ -121,4 +121,5 @@ bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
   *sync_sd_card = false;
   return true;
 }
+
 #endif
