@@ -415,7 +415,7 @@ int main() {
         }
         sync_using_sdcard = true;
         while (!run_mount()) {
-          sleep_ms(5);
+          sleep_ms(200);
         }
         envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
         envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
