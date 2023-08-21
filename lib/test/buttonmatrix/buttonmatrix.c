@@ -33,7 +33,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   return bm;
 }
 
-int ButtonMatrix_read(ButtonMatrix *bm) {
+uint32_t ButtonMatrix_read(ButtonMatrix *bm) {
   uint32_t value = 0;
 
   pio_sm_clear_fifos(bm->pio, bm->sm);
@@ -44,23 +44,35 @@ int ButtonMatrix_read(ButtonMatrix *bm) {
   }
 
   value = pio_sm_get(bm->pio, bm->sm);
-  for (int i = 0; i < 16; i++) {
-    if ((value & (0x1 << i)) != 0) {
-      return i;
-    }
+  // for (int i = 0; i < 16; i++) {
+  //   if ((value & (0x1 << i)) != 0) {
+  //     return i;
+  //   }
+  // }
+  return value;
+}
+
+void printBinaryRepresentation(uint32_t num) {
+  // Iterate through each bit position (from 31 to 0)
+  for (int i = 31; i >= 0; i--) {
+    // Extract the i-th bit using bitwise operations
+    uint8_t bit = (num >> i) & 1;
+    printf("%u", bit);  // Print the bit
   }
-  return -1;
+  printf("\n");
 }
 
 int main(void) {
   stdio_init_all();
 
   ButtonMatrix *bm;
-  bm = ButtonMatrix_create(10, 18);
+  bm = ButtonMatrix_create(7, 12);
+  uint32_t keys_last;
   while (1) {
-    int key = ButtonMatrix_read(bm);
-    if (key >= 0) {
-      printf("key pressed = %d\n", key);
+    uint32_t keys = ButtonMatrix_read(bm);
+    if (keys != keys_last) {
+      printBinaryRepresentation(keys);
+      keys_last = keys;
     }
     sleep_ms(1000);
   }
