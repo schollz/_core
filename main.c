@@ -181,6 +181,41 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   return true;
 }
 
+bool sdcard_startup_is_starting = false;
+
+void sdcard_startup() {
+  if (sdcard_startup_is_starting) {
+    return;
+  }
+  sdcard_startup_is_starting = true;
+  fil_is_open = false;
+  while (sync_using_sdcard) {
+    sleep_us(100);
+  }
+  sync_using_sdcard = true;
+  while (!run_mount()) {
+    sleep_ms(200);
+  }
+  envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
+  envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
+  envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
+  envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
+  printf("\nz!!\n");
+  file_list = list_files("");
+  printf("found %d files\n", file_list->num);
+  for (int i = 0; i < file_list->num; i++) {
+    printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
+           file_list->bpm[i], file_list->beats[i], file_list->size[i]);
+  }
+  fil_current_id = 0;
+  f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
+  fil_is_open = true;
+  phase_new = 0;
+  phase_change = true;
+  sync_using_sdcard = false;
+  sdcard_startup_is_starting = false;
+}
+
 int main() {
   // // Initialize chosen serial port
 
@@ -408,31 +443,7 @@ int main() {
         envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
       }
       if (c == 'x') {
-        fil_is_open = false;
-        while (sync_using_sdcard) {
-          sleep_us(100);
-        }
-        sync_using_sdcard = true;
-        while (!run_mount()) {
-          sleep_ms(200);
-        }
-        envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
-        envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
-        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
-        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
-        printf("\nz!!\n");
-        file_list = list_files("");
-        printf("found %d files\n", file_list->num);
-        for (int i = 0; i < file_list->num; i++) {
-          printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
-                 file_list->bpm[i], file_list->beats[i], file_list->size[i]);
-        }
-        fil_current_id = 0;
-        f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-        fil_is_open = true;
-        phase_new = 0;
-        phase_change = true;
-        sync_using_sdcard = false;
+        sdcard_startup();
       }
       printf("sf->vol = %d      \r", sf->vol);
     }
@@ -511,6 +522,16 @@ void i2s_callback_func() {
 
       if (f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2)) {
         printf("problem seeking to phase (%d)\n", phase);
+        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+          int32_t value0 = 0;
+          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+          samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+        }
+        buffer->sample_count = buffer->max_sample_count;
+        give_audio_buffer(ap, buffer);
+        sync_using_sdcard = false;
+        sdcard_startup();
+        return;
       }
 
       if (f_read(&fil_current, values, values_to_read * 2, &fil_bytes_read)) {
