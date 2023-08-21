@@ -23,6 +23,7 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #define SAMPLES_PER_BUFFER 578  // Samples / channel
+#define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / 44100
 
 audio_buffer_pool_t *init_audio() {
   static audio_format_t audio_format = {.pcm_format = AUDIO_PCM_FORMAT_S32,
