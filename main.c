@@ -58,6 +58,7 @@
 #include "lib/noise.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
+#include "lib/transfer_doublesine.h"
 #include "lib/transfer_tanh.h"
 #include "lib/wav.h"
 
@@ -220,6 +221,14 @@ void sdcard_startup() {
   phase_change = true;
   sync_using_sdcard = false;
   sdcard_startup_is_starting = false;
+}
+
+int16_t transfer_fn(int16_t v) {
+  int32_t y = transfer_doublesine(v);
+  y = (sf->wet_doublesine * y) + ((128 - sf->wet_doublesine) * ((int32_t)v));
+  y = (y / 128);
+  y = transfer_tanh(y * (1 << sf->tanh_distortion));
+  return (int16_t)y;
 }
 
 int main() {
@@ -424,6 +433,16 @@ int main() {
       if (c == 'm') {
         SaveFile_Save(sf, &sync_using_sdcard);
       }
+      if (c == '9') {
+        sf->wet_doublesine++;
+        printf("wet_doublesine: %d\n", sf->wet_doublesine);
+      }
+      if (c == '8') {
+        if (sf->wet_doublesine > 0) {
+          sf->wet_doublesine--;
+        }
+        printf("wet_doublesine: %d\n", sf->wet_doublesine);
+      }
       if (c == '.') {
         sf->tanh_distortion++;
         printf("tanh_distortion: %d\n", sf->tanh_distortion);
@@ -594,7 +613,7 @@ void i2s_callback_func() {
       int16_t *newArray =
           array_resample_linear(values, values_to_read, arr_new_size);
       for (uint16_t i = 0; i < arr_new_size; i++) {
-        newArray[i] = transfer_tanh(newArray[i] * (1 << sf->tanh_distortion));
+        newArray[i] = transfer_fn(newArray[i]);
         int32_t value0 = (vol1 * newArray[i]) << 8u;
         samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
@@ -655,7 +674,7 @@ void i2s_callback_func() {
       int16_t *newArray =
           array_resample_linear(values, values_to_read, arr_new_size);
       for (uint16_t i = 0; i < arr_new_size; i++) {
-        newArray[i] = transfer_tanh(newArray[i] * (1 << sf->tanh_distortion));
+        newArray[i] = transfer_fn(newArray[i]);
         int32_t value0 = (vol2 * newArray[i]) << 8u;
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
