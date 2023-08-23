@@ -58,6 +58,7 @@
 #include "lib/noise.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
+#include "lib/transfer_tanh.h"
 #include "lib/wav.h"
 
 // sample rate is defined by the codec, PCM5102
@@ -423,6 +424,16 @@ int main() {
       if (c == 'm') {
         SaveFile_Save(sf, &sync_using_sdcard);
       }
+      if (c == '.') {
+        sf->tanh_distortion++;
+        printf("tanh_distortion: %d\n", sf->tanh_distortion);
+      }
+      if (c == ',') {
+        if (sf->tanh_distortion > 0) {
+          sf->tanh_distortion--;
+        }
+        printf("tanh_distortion: %d\n", sf->tanh_distortion);
+      }
       if (c == '1') {
         fil_current_id_next = 0;
         fil_current_change = true;
@@ -505,18 +516,18 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.05);
     }
 
-    vol3 = Envelope2_update(envelope3) * EnvelopeGate_update(envelopegate);
+    vol3 = Envelope2_update(envelope3);  // * EnvelopeGate_update(envelopegate);
 
     vol1 = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
     vol2 = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
     // uncomment to turn off dual playheads
-    // vol1 = vol;
+    // vol1 = sf->vol;
     // vol2 = 0;
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
     // TODO: switch for if wobble is enabled
-    envelope_pitch_val =
-        envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
+    // envelope_pitch_val =
+    //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
 
     // if (vol1 > 0 && vol2 > 0) {
     //   printf("vol1: %d, vol2: %d\n", vol1, vol2);
@@ -583,6 +594,7 @@ void i2s_callback_func() {
       int16_t *newArray =
           array_resample_linear(values, values_to_read, arr_new_size);
       for (uint16_t i = 0; i < arr_new_size; i++) {
+        newArray[i] = transfer_tanh(newArray[i] * (1 << sf->tanh_distortion));
         int32_t value0 = (vol1 * newArray[i]) << 8u;
         samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
@@ -643,6 +655,7 @@ void i2s_callback_func() {
       int16_t *newArray =
           array_resample_linear(values, values_to_read, arr_new_size);
       for (uint16_t i = 0; i < arr_new_size; i++) {
+        newArray[i] = transfer_tanh(newArray[i] * (1 << sf->tanh_distortion));
         int32_t value0 = (vol2 * newArray[i]) << 8u;
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
