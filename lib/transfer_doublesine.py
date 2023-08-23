@@ -2,7 +2,7 @@ import math
 
 print(
     """
-const uint16_t __in_flash() transfer_tanh_raw[] = {
+const uint16_t __in_flash() transfer_doublesine_raw[] = {
 """
 )
 for i, v in enumerate(range(-32767, 32768)):
@@ -10,7 +10,7 @@ for i, v in enumerate(range(-32767, 32768)):
     e = ""
     if i % 8 == 0:
         e = "\n"
-    x = round(32767 * ((3 * x) / (1 + abs(3 * x))))
+    x = round(32767 * math.sin(2 * math.pi * x))
     print("{},".format(x), end=e)
     if i % 8 == 0:
         print("\t", end="")
@@ -19,14 +19,14 @@ print("\n};")
 
 print(
     """
-int16_t transfer_tanh(int32_t v) {
+int16_t transfer_doublesine(int32_t v) {
     v = v + 32767;
     if (v<0) {
-        return 0;
+        return -32767;
     }
     if (v>65533) {
-        return 0;
+        return 32767;
     }
-    return transfer_tanh_raw[v];
+    return transfer_doublesine_raw[v];
 }"""
 )
