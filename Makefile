@@ -1,4 +1,6 @@
 dobuild: pico-extras lib/biquad.h build
+	cd lib && python3 transfer_doublesine.py > transfer_doublesine.h
+	cd lib && python3 transfer_tanh.py > transfer_tanh.h
 	cd build && PICO_EXTRAS_PATH=../pico-extras make
 
 lib/biquad.h:
