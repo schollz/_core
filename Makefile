@@ -1,6 +1,10 @@
 dobuild: pico-extras lib/biquad.h build
 	cd lib && python3 transfer_doublesine.py > transfer_doublesine.h
+# 	clang-format -i --style=Google lib/transfer_doublesine.h
 	cd lib && python3 transfer_tanh.py > transfer_tanh.h
+# 	clang-format -i --style=Google lib/transfer_tanh.h
+	cd lib && python3 selectx.py > selectx.h
+# 	clang-format -i --style=Google lib/selectx.h
 	cd build && PICO_EXTRAS_PATH=../pico-extras make
 
 lib/biquad.h:

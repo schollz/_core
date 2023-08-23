@@ -58,6 +58,7 @@
 #include "lib/noise.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
+#include "lib/selectx.h"
 #include "lib/transfer_doublesine.h"
 #include "lib/transfer_tanh.h"
 #include "lib/wav.h"
@@ -224,11 +225,11 @@ void sdcard_startup() {
 }
 
 int16_t transfer_fn(int16_t v) {
-  int32_t y = transfer_doublesine(v);
-  y = (sf->wet_doublesine * y) + ((128 - sf->wet_doublesine) * ((int32_t)v));
-  y = (y / 128);
-  y = transfer_tanh(y * (1 << sf->tanh_distortion));
-  return (int16_t)y;
+  v = selectx(sf->wet_doublesine, v, transfer_doublesine(v));
+  // y = (sf->wet_doublesine * y) + ((128 - sf->wet_doublesine) * ((int32_t)v));
+  // y = (y / 128);
+  // y = transfer_tanh(y * (1 << sf->tanh_distortion));
+  return v;
 }
 
 int main() {
