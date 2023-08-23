@@ -59,8 +59,8 @@
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
 #include "lib/selectx.h"
-#include "lib/transfer_doublesine.h"
-#include "lib/transfer_tanh.h"
+#include "lib/transfer_distortion.h"
+#include "lib/transfer_saturate.h"
 #include "lib/wav.h"
 
 // sample rate is defined by the codec, PCM5102
@@ -225,10 +225,12 @@ void sdcard_startup() {
 }
 
 int16_t transfer_fn(int16_t v) {
-  v = selectx(sf->wet_doublesine, v, transfer_doublesine(v));
-  // y = (sf->wet_doublesine * y) + ((128 - sf->wet_doublesine) * ((int32_t)v));
-  // y = (y / 128);
-  // y = transfer_tanh(y * (1 << sf->tanh_distortion));
+  v = selectx(sf->saturate_wet, v, transfer_doublesine(v));
+  v = selectx(sf->distortion_wet, v,
+              transfer_distortion(v * (1 << sf->distortion_level)));
+  // y = (sf->saturate_wet * y) + ((128 - sf->saturate_wet) *
+  // ((int32_t)v)); y = (y / 128); y = transfer_tanh(y * (1 <<
+  // sf->distortion_level));
   return v;
 }
 
@@ -435,24 +437,24 @@ int main() {
         SaveFile_Save(sf, &sync_using_sdcard);
       }
       if (c == '9') {
-        sf->wet_doublesine++;
-        printf("wet_doublesine: %d\n", sf->wet_doublesine);
+        sf->saturate_wet++;
+        printf("saturate_wet: %d\n", sf->saturate_wet);
       }
       if (c == '8') {
-        if (sf->wet_doublesine > 0) {
-          sf->wet_doublesine--;
+        if (sf->saturate_wet > 0) {
+          sf->saturate_wet--;
         }
-        printf("wet_doublesine: %d\n", sf->wet_doublesine);
+        printf("saturate_wet: %d\n", sf->saturate_wet);
       }
       if (c == '.') {
-        sf->tanh_distortion++;
-        printf("tanh_distortion: %d\n", sf->tanh_distortion);
+        sf->distortion_level++;
+        printf("distortion_level: %d\n", sf->distortion_level);
       }
       if (c == ',') {
-        if (sf->tanh_distortion > 0) {
-          sf->tanh_distortion--;
+        if (sf->distortion_level > 0) {
+          sf->distortion_level--;
         }
-        printf("tanh_distortion: %d\n", sf->tanh_distortion);
+        printf("distortion_level: %d\n", sf->distortion_level);
       }
       if (c == '1') {
         fil_current_id_next = 0;

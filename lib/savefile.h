@@ -33,8 +33,9 @@ typedef struct SaveFile {
   uint8_t fx_sequence[16][128];
   uint16_t bpm_tempo;
   uint8_t vol;
-  uint8_t tanh_distortion;
-  uint8_t wet_doublesine;
+  uint8_t distortion_level;
+  uint8_t distortion_wet;
+  uint8_t saturate_wet;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -45,8 +46,9 @@ SaveFile *SaveFile_New() {
   sf->vol = 20;
   sf->bpm_tempo = 165;
   sf->chain_length = 0;
-  sf->tanh_distortion = 0;
-  sf->wet_doublesine = 0;
+  sf->distortion_level = 0;
+  sf->distortion_wet = 0;
+  sf->saturate_wet = 0;
   for (uint8_t i = 0; i < 128; i++) {
     sf->chain_sequence[i] = 0;
   }
