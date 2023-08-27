@@ -29,7 +29,7 @@ print(
 #define CROSSFADE_UPDATE_SAMPLES """+str(samples_per_block)+"""
 #define CROSSFADE_MAX """+str(blocks*samples_per_block)+""" 
 uint8_t crossfade_vol(uint8_t current_vol, uint16_t phase_since) {
-    if (phase_since >= CROSSFADE_MAX) {
+    if (current_vol==0 || phase_since >= CROSSFADE_MAX) {
         return 0;
     }
     return crossfade_raw[(current_vol-1)*"""+str(blocks)+"""+(phase_since/CROSSFADE_UPDATE_SAMPLES)];
