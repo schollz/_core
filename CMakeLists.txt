@@ -64,7 +64,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_DIN_GPIO=16
     # useful toggle for debugging
     # since the transfer functions take a lot of space
-    # TRANSFER_OFF=1 
+    TRANSFER_OFF=1 
     WAV_CHANNELS=2
 )
 
