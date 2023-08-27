@@ -569,7 +569,7 @@ void i2s_callback_func() {
                                  round(sf->bpm_tempo * envelope_pitch_val) /
                                  file_list->bpm[fil_current_id];
       uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
-      int16_t values[values_to_read];  // max limit
+      int16_t values[samples_to_read * WAV_CHANNELS];  // max limit
 
       if (f_lseek(&fil_current,
                   WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR)) {
