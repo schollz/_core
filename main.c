@@ -79,6 +79,7 @@ bool fil_is_open;
 uint8_t cpu_utilization;
 uint8_t fil_buf[SAMPLES_PER_BUFFER * 4];
 int32_t phases[2];
+int32_t phases_old[2];
 int32_t phase_new;
 bool phase_change;
 unsigned int fil_bytes_read;
@@ -538,9 +539,9 @@ void i2s_callback_func() {
       phase_change = false;
       // initiate transition envelopes
       // jump point envelope grows
-      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.05);
+      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.075);
       // previous point degrades
-      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.05);
+      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.075);
     }
 
     vol3 = Envelope2_update(envelope3);  // * EnvelopeGate_update(envelopegate);
@@ -679,6 +680,7 @@ void i2s_callback_func() {
         free(newArrayR);
       }
       phases[head] += values_to_read * (phase_forward * 2 - 1);
+      phases_old[head] = phases[head];
     }
   }
 
@@ -692,15 +694,12 @@ void i2s_callback_func() {
   give_audio_buffer(ap, buffer);
 
   if (fil_is_open) {
-    if (phases[0] >= file_list->size[fil_current_id]) {
-      phases[0] -= file_list->size[fil_current_id];
-    } else if (phases[0] < 0) {
-      phases[0] += file_list->size[fil_current_id];
-    }
-    if (phases[1] >= file_list->size[fil_current_id]) {
-      phases[1] -= file_list->size[fil_current_id];
-    } else if (phases[1] < 0) {
-      phases[1] += file_list->size[fil_current_id];
+    for (uint8_t head = 0; head < 2; head++) {
+      if (phases[head] >= file_list->size[fil_current_id]) {
+        phases[head] -= file_list->size[fil_current_id];
+      } else if (phases[head] < 0) {
+        phases[head] += file_list->size[fil_current_id];
+      }
     }
   }
   sync_using_sdcard = false;
