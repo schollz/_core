@@ -551,8 +551,8 @@ void i2s_callback_func() {
     vol1 = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
     vol2 = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
     // uncomment to turn off dual playheads
-    vol1 = sf->vol;
-    vol2 = 0;
+    // vol1 = sf->vol;
+    // vol2 = 0;
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
     // TODO: switch for if wobble is enabled
@@ -722,7 +722,7 @@ void i2s_callback_func() {
             array_resample_linear(values, samples_to_read, arr_new_size);
         for (uint16_t i = 0; i < arr_new_size; i++) {
           newArray[i] = transfer_fn(newArray[i]);
-          int32_t value0 = (vol1 * newArray[i]) << 8u;
+          int32_t value0 = (vol2 * newArray[i]) << 8u;
           samples[i * 2 + 0] =
               samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
           samples[i * 2 + 1] =
@@ -746,9 +746,9 @@ void i2s_callback_func() {
             array_resample_linear(valuesR, samples_to_read, arr_new_size);
         for (uint16_t i = 0; i < arr_new_size; i++) {
           newArrayL[i] = transfer_fn(newArrayL[i]);
-          int32_t value0 = (vol1 * newArrayL[i]) << 8u;
+          int32_t value0 = (vol2 * newArrayL[i]) << 8u;
           newArrayR[i] = transfer_fn(newArrayR[i]);
-          int32_t value1 = (vol1 * newArrayR[i]) << 8u;
+          int32_t value1 = (vol2 * newArrayR[i]) << 8u;
           samples[i * 2 + 0] =
               samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
           samples[i * 2 + 1] =
@@ -787,5 +787,8 @@ void i2s_callback_func() {
 
   clock_t endTime = time_us_64();
   cpu_utilization = 100 * (endTime - startTime) / (US_PER_BLOCK);
+  // if (vol2 > 0) {
+  //   printf("cpu_utilization: %d\n", cpu_utilization);
+  // }
   return;
 }
