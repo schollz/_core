@@ -64,7 +64,6 @@
 #include "lib/wav.h"
 
 // sample rate is defined by the codec, PCM5102
-#define WAV_CHANNELS 2
 // blocks per second is defined by SAMPLES_PER_BUFFER
 // which can be modified
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
@@ -209,7 +208,7 @@ void sdcard_startup() {
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
 
   printf("\nz!!\n");
-  file_list = list_files("");
+  file_list = list_files("", WAV_CHANNELS);
   printf("found %d files\n", file_list->num);
   for (int i = 0; i < file_list->num; i++) {
     printf("%s [%d], %d beats, %d bytes\n", file_list->name[i],
@@ -504,7 +503,7 @@ void i2s_callback_func() {
   }
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
-  if (sync_using_sdcard) {
+  if (sync_using_sdcard || !fil_is_open) {
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
       samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -512,7 +511,7 @@ void i2s_callback_func() {
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
-    printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    // printf("[i2s_callback_func] sync_using_sdcard being used\n");
     return;
   }
 
@@ -727,8 +726,7 @@ void i2s_callback_func() {
           int32_t value0 = (vol2 * newArray[i]) << 8u;
           samples[i * 2 + 0] =
               samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-          samples[i * 2 + 1] =
-              samples[i * 2 + 1] + samples[i * 2 + 0];  // R = L
+          samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
         }
         free(newArray);
       } else {

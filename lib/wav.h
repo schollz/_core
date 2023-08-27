@@ -22,6 +22,7 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef WAVH
 typedef struct WavHeader {
   uint8_t RIFF[4];
   uint32_t ChunkSize;
@@ -38,31 +39,35 @@ typedef struct WavHeader {
   uint32_t Subchunk2Size;
 } WavHeader;
 
-WavHeader *WavFile_Load(FIL *fil) {
-  printf("reading wave header\n");
+WavHeader *WavFile_Load(char *fname) {
+  FIL fil;
+  f_open(&fil, fname, FA_READ);
   int headerSize = sizeof(WavHeader);
   WavHeader *wh;
   wh = malloc(headerSize);
-  printf("headerSize: %d\n", headerSize);
   unsigned int bytes_read;
-  FRESULT fr = f_read(fil, wh, headerSize, &bytes_read);
-  printf("bytes_read: %d\n");
-  if (fr != FR_OK) {
+  FRESULT fr = f_read(&fil, wh, headerSize, &bytes_read);
+  if (fr != FR_OK || bytes_read != headerSize) {
     printf("fr = %d, not OK!\n", fr);
     return NULL;
   }
+  printf("file: %s\n", fname);
+  printf("NumOfChan: %d\n", wh->NumOfChan);
+  printf("SamplesPerSec: %d\n", wh->SamplesPerSec);
   // printf("RIFF: %d\n", wh->RIFF);
-  printf("ChunkSize: %d\n", wh->ChunkSize);
+  // printf("ChunkSize: %d\n", wh->ChunkSize);
   // printf("WAVE: %d\n", wh->WAVE);
   // printf("fmt: %d\n", wh->fmt);
   // printf("Subchunk1Size: %d\n", wh->Subchunk1Size);
   // printf("AudioFormat: %d\n", wh->AudioFormat);
-  // printf("NumOfChan: %d\n", wh->NumOfChan);
-  // printf("SamplesPerSec: %d\n", wh->SamplesPerSec);
   // printf("bytesPerSec: %d\n", wh->bytesPerSec);
   // printf("blockAlign: %d\n", wh->blockAlign);
   // printf("bitsPerSample: %d\n", wh->bitsPerSample);
   // printf("Subchunk2ID: %d\n", wh->Subchunk2ID);
   // printf("Subchunk2Size: %d\n", wh->Subchunk2Size);
+
+  f_close(&fil);
   return wh;
 }
+#define WAVH 1
+#endif
