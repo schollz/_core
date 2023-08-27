@@ -1,11 +1,16 @@
 dobuild: pico-extras lib/biquad.h build
-	# cd lib && python3 transfer_saturate.py > transfer_saturate.h
-	# cd lib && python3 transfer_distortion.py > transfer_distortion.h
-	cd lib && python3 selectx.py > selectx.h
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j4
 
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
+
+libs:
+	cd lib && python3 transfer_saturate.py > transfer_saturate.h
+	cd lib && python3 transfer_distortion.py > transfer_distortion.h
+	cd lib && python3 selectx.py > selectx.h
+	cd lib && python3 biquad.py > biquad.h
+	cd lib && python3 crossfade.py > crossfade.h
+
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git
