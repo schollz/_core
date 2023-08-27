@@ -64,7 +64,8 @@
 #include "lib/wav.h"
 
 // sample rate is defined by the codec, PCM5102
-#define SAMPLE_RATE 44100
+#define WAV_CHANNELS 1
+#define PHASE_DIVISOR 2
 // blocks per second is defined by SAMPLES_PER_BUFFER
 // which can be modified
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
@@ -527,7 +528,8 @@ void i2s_callback_func() {
                 file_list->size[fil_current_id];
         f_close(&fil_current);  // close and re-open trick
         f_open(&fil_current, file_list->name[fil_current_id_next], FA_READ);
-        f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2);
+        f_lseek(&fil_current,
+                WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR);
         fil_current_id = fil_current_id_next;
       }
       fil_current_change = false;
@@ -536,7 +538,7 @@ void i2s_callback_func() {
     // flag for new phase
     if (phase_change) {
       phase2 = phase;  // old phase
-      phase = (phase_new / 2) * 2;
+      phase = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
       phase_change = false;
       // initiate transition envelopes
       // jump point envelope grows
@@ -568,7 +570,8 @@ void i2s_callback_func() {
                                 file_list->bpm[fil_current_id];
       int16_t values[values_to_read];  // max limit
 
-      if (f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2)) {
+      if (f_lseek(&fil_current,
+                  WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR)) {
         printf("problem seeking to phase (%d)\n", phase);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           int32_t value0 = 0;
@@ -586,7 +589,8 @@ void i2s_callback_func() {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
         f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-        f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2);
+        f_lseek(&fil_current,
+                WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
       if (fil_bytes_read < values_to_read * 2) {
         printf("asked for %d bytes, read %d bytes\n", values_to_read * 2,
@@ -600,7 +604,8 @@ void i2s_callback_func() {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
           f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-          f_lseek(&fil_current, WAV_HEADER_SIZE + (phase / 2) * 2);
+          f_lseek(&fil_current,
+                  WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR);
         }
         printf("asked for %d bytes, read %d bytes\n",
                values_to_read * 2 - fil_bytes_read, fil_bytes_read2);
