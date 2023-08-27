@@ -559,10 +559,13 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
-    vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol * retrig_vol);
-    vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol * retrig_vol);
-    // uncomment to turn off dual playheads
-    // vols[0] = sf->vol;
+    // TODO: remove these envelopes and instead hardcode the
+    // volume changes on a per-block basis, based on current olume
+    vols[0] = (uint)round(sf->vol * retrig_vol);
+    vols[1] = 0;  //(uint)round(sf->vol * retrig_vol);
+    // vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol *
+    // retrig_vol); vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol
+    // * retrig_vol); uncomment to turn off dual playheads vols[0] = sf->vol;
     // vols[1] = 0;
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
