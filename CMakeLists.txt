@@ -56,15 +56,15 @@ pico_enable_stdio_uart(${PROJECT_NAME} 1)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     #define for our example code
     USE_AUDIO_I2S=1
+    SDCARD_USE_CD=false
+    SDCARD_CD_GPIO=16 # not used...
     SDCARD_CMD_GPIO=18
     SDCARD_D0_GPIO=19 # CLK=17,D1=20,D2=21,D3=22
-    SDCARD_CD_GPIO=16 # not used...
-    SDCARD_USE_CD=false
-    AUDIO_DIN_GPIO=16
     AUDIO_CLK_GPIO=14 # LCK=15
+    AUDIO_DIN_GPIO=16
     # useful toggle for debugging
     # since the transfer functions take a lot of space
-    # TRANSFER_OFF=1 
+    TRANSFER_OFF=1 
     WAV_CHANNELS=2
 )
 
