@@ -567,8 +567,9 @@ void i2s_callback_func() {
       uint32_t samples_to_read = buffer->max_sample_count *
                                  round(sf->bpm_tempo * envelope_pitch_val) /
                                  file_list->bpm[fil_current_id];
+      uint32_t values_len = samples_to_read * WAV_CHANNELS;
       uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
-      int16_t values[samples_to_read * WAV_CHANNELS];  // max limit
+      int16_t values[values_len];  // max limit
 
       if (f_lseek(&fil_current,
                   WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR)) {
@@ -617,10 +618,10 @@ void i2s_callback_func() {
 
       if (!phase_forward) {
         // reverse audio
-        for (int i = 0; i < values_to_read / 2; i++) {
+        for (int i = 0; i < values_len / 2; i++) {
           int16_t temp = values[i];
-          values[i] = values[values_to_read - i - 1];
-          values[values_to_read - i - 1] = temp;
+          values[i] = values[values_len - i - 1];
+          values[values_len - i - 1] = temp;
         }
       }
 
@@ -669,8 +670,9 @@ void i2s_callback_func() {
       uint32_t samples_to_read = buffer->max_sample_count *
                                  round(sf->bpm_tempo * envelope_pitch_val) /
                                  file_list->bpm[fil_current_id];
+      uint32_t values_len = samples_to_read * WAV_CHANNELS;
       uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
-      int16_t values[samples_to_read * WAV_CHANNELS];  // max limit
+      int16_t values[values_len];  // max limit
 
       if (f_lseek(&fil_current,
                   WAV_HEADER_SIZE + (phase2 / PHASE_DIVISOR) * PHASE_DIVISOR)) {
@@ -709,10 +711,10 @@ void i2s_callback_func() {
 
       if (!phase_forward) {
         // reverse audio
-        for (int i = 0; i < values_to_read / 2; i++) {
+        for (int i = 0; i < values_len / 2; i++) {
           int16_t temp = values[i];
-          values[i] = values[values_to_read - i - 1];
-          values[values_to_read - i - 1] = temp;
+          values[i] = values[values_len - i - 1];
+          values[values_len - i - 1] = temp;
         }
       }
 
