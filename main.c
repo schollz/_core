@@ -120,6 +120,9 @@ uint32_t bpm_timer_counter = 0;
 uint16_t bpm_timer_reset = 96;
 uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
+bool retrig_first = false;
+bool retrig_ready = false;
+float retrig_vol = 1.0;
 
 SaveFile *sf;
 
@@ -140,19 +143,32 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   bpm_timer_counter++;
   if (retrig_beat_num > 0) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
-      retrig_beat_num--;
-      if (fil_is_open && debounce_quantize == 0) {
-        envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0,
-                                           30 / (float)sf->bpm_tempo,
-                                           30 / (float)sf->bpm_tempo);
-        phase_new = (file_list->size[fil_current_id]) *
-                    ((beat_current % (2 * file_list->beats[fil_current_id])) +
-                     (1 - phase_forward)) /
-                    (2 * file_list->beats[fil_current_id]);
-        phase_change = true;
-        // mem_use = true;
-        printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
-               phase_new, cpu_utilization);
+      if (retrig_ready) {
+        if (retrig_first) {
+          retrig_vol = 0;
+        }
+        retrig_beat_num--;
+        if (retrig_beat_num == 0) {
+          retrig_ready = false;
+          retrig_vol = 1.0;
+        }
+        if (retrig_vol < 1.0) {
+          retrig_vol = retrig_vol + 0.1;
+        }
+        if (fil_is_open && debounce_quantize == 0) {
+          envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0,
+                                             30 / (float)sf->bpm_tempo,
+                                             30 / (float)sf->bpm_tempo);
+          phase_new = (file_list->size[fil_current_id]) *
+                      ((beat_current % (2 * file_list->beats[fil_current_id])) +
+                       (1 - phase_forward)) /
+                      (2 * file_list->beats[fil_current_id]);
+          phase_change = true;
+          // mem_use = true;
+          printf("current beat: %d, phase_new: %d, cpu util: %d\n",
+                 beat_current, phase_new, cpu_utilization);
+        }
+        retrig_first = false;
       }
     }
   } else {
@@ -334,23 +350,17 @@ int main() {
         // phase_new = (phase_new / 4) * 4;
         // phase_change = true;
         // debounce_quantize = 2;
-        retrig_beat_num = random_integer_in_range(2, 8);
+        retrig_first = true;
+        retrig_beat_num = random_integer_in_range(3, 12);
         retrig_timer_reset =
-            96 * random_integer_in_range(1, 3) / random_integer_in_range(1, 12);
+            96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
         float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                            (float)(96 * sf->bpm_tempo);
-        if (total_time < 0.5) {
-          total_time *= 2;
-          retrig_beat_num *= 2;
-        }
-        if (total_time < 0.5) {
-          total_time *= 2;
-          retrig_timer_reset *= 2;
-        }
         printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
                retrig_beat_num, retrig_timer_reset, total_time);
         envelope3 =
             Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, total_time * 2 / 3);
+        retrig_ready = true;
       }
       if (c == 't') {
         phase_new = (file_list->size[fil_current_id]) * 3 / 16;
@@ -515,7 +525,9 @@ void i2s_callback_func() {
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
-    // printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    if (fil_is_open) {
+      printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    }
     return;
   }
 
@@ -551,10 +563,11 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
-    vol3 = Envelope2_update(envelope3);  // * EnvelopeGate_update(envelopegate);
+    // vol3 = Envelope2_update(envelope3);  // *
+    // EnvelopeGate_update(envelopegate);
 
-    vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
-    vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
+    vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol * retrig_vol);
+    vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol * retrig_vol);
     // uncomment to turn off dual playheads
     // vols[0] = sf->vol;
     // vols[1] = 0;
