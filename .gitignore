@@ -17,6 +17,7 @@ amen_bpm170_beats16_mono.wav
 amen_bpm170_beats16_stereo.wav
 lib/transfer_distortion.h
 lib/transfer_saturate.h
+crossfade.h
 
 
 # Object files

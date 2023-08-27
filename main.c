@@ -52,6 +52,7 @@
 #include "lib/array_resample.h"
 #include "lib/audio_pool.h"
 #include "lib/biquad.h"
+#include "lib/crossfade.h"
 #include "lib/envelope2.h"
 #include "lib/envelopegate.h"
 #include "lib/file_list.h"
@@ -79,6 +80,7 @@ bool fil_is_open;
 uint8_t cpu_utilization;
 uint8_t fil_buf[SAMPLES_PER_BUFFER * 4];
 int32_t phases[2];
+uint16_t phases_since_last[2];
 int32_t phases_old[2];
 int32_t phase_new;
 int16_t mem_samples[2][44100];
@@ -498,6 +500,9 @@ int main() {
       }
       if (c == 'x') {
         sdcard_startup();
+        // for (uint16_t i = 0; i < 2202; i++) {
+        //   printf("%d\n", sf->vol - crossfade_vol(sf->vol, i));
+        // }
       }
       printf("sf->vol = %d      \r", sf->vol);
     }
@@ -547,8 +552,9 @@ void i2s_callback_func() {
 
     // flag for new phase
     if (phase_change) {
-      mem_index[0] = 0;
-      mem_index[1] = 0;
+      phases_since_last[0] = 0;
+      phases_since_last[1] = 0;
+
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
       phase_change = false;
@@ -561,8 +567,8 @@ void i2s_callback_func() {
 
     // TODO: remove these envelopes and instead hardcode the
     // volume changes on a per-block basis, based on current olume
-    vols[0] = (uint)round(sf->vol * retrig_vol);
-    vols[1] = 0;  //(uint)round(sf->vol * retrig_vol);
+    // vols[0] = (uint)round(sf->vol * retrig_vol);
+    // vols[1] = 0;  //(uint)round(sf->vol * retrig_vol);
     // vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol *
     // retrig_vol); vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol
     // * retrig_vol); uncomment to turn off dual playheads vols[0] = sf->vol;
@@ -583,9 +589,10 @@ void i2s_callback_func() {
     uint32_t values_len = samples_to_read * WAV_CHANNELS;
     uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
     int16_t values[values_len];
+    uint vol_main = (uint)round(sf->vol * retrig_vol);
 
     for (uint8_t head = 0; head < 2; head++) {
-      if (vols[head] <= 0) {
+      if (head == 1 && phases_since_last[0] >= CROSSFADE_MAX) {
         continue;
       }
 
@@ -692,16 +699,30 @@ void i2s_callback_func() {
                                                    buffer->max_sample_count);
         int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
                                                    buffer->max_sample_count);
+
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           if (head == 0) {
             samples[i * 2 + 0] = 0;
             samples[i * 2 + 1] = 0;
           }
 
+          uint vol = vol_main;
+          if (phases_since_last[head] < CROSSFADE_MAX) {
+            if (head == 0) {
+              vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
+            } else {
+              vol = crossfade_vol(vol_main, phases_since_last[head]);
+              // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
+              //   printf("head1 vol: %d\n", vol);
+              // }
+            }
+            phases_since_last[head]++;
+          }
+
           newArrayL[i] = transfer_fn(newArrayL[i]);
-          int32_t value0 = (vols[head] * newArrayL[i]) << 8u;
+          int32_t value0 = (vol * newArrayL[i]) << 8u;
           newArrayR[i] = transfer_fn(newArrayR[i]);
-          int32_t value1 = (vols[head] * newArrayR[i]) << 8u;
+          int32_t value1 = (vol * newArrayR[i]) << 8u;
           samples[i * 2 + 0] =
               samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
           samples[i * 2 + 1] =
