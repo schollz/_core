@@ -107,6 +107,7 @@ bool sync_using_sdcard = false;
 // voice 2 takes place of old voice and continues
 Envelope2 *envelope1;
 Envelope2 *envelope2;
+Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
 EnvelopeGate *envelopegate;
 Noise *noise_wobble;
@@ -223,6 +224,7 @@ void sdcard_startup() {
   }
   envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
   envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
+  envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
@@ -487,7 +489,7 @@ int main() {
         fil_current_change = true;
       }
       if (c == 'a') {
-        // envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
+        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
         // debounce_quantize = 2;
       }
       if (c == 'q') {
@@ -565,6 +567,7 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
+    float env3 = Envelope2_update(envelope3);
     // TODO: remove these envelopes and instead hardcode the
     // volume changes on a per-block basis, based on current olume
     // vols[0] = (uint)round(sf->vol * retrig_vol);
@@ -589,7 +592,7 @@ void i2s_callback_func() {
     uint32_t values_len = samples_to_read * WAV_CHANNELS;
     uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
     int16_t values[values_len];
-    uint vol_main = (uint)round(sf->vol * retrig_vol);
+    uint vol_main = (uint)round(sf->vol * retrig_vol * env3);
 
     for (uint8_t head = 0; head < 2; head++) {
       if (head == 1 && phases_since_last[0] >= CROSSFADE_MAX) {
