@@ -637,25 +637,30 @@ void i2s_callback_func() {
         }
         free(newArray);
       } else {
-        //   // stereo
-        //   int16_t valuesL[values_to_read / 2];  // max limit
-        //   int16_t valuesR[values_to_read / 2];  // max limit
-        //   for (uint16_t i = 0; i < values_to_read; i++) {
-        //     if (i % 2 == 0) {
-        //       valuesL[i / 2] = values[i];
-        //     } else {
-        //       valuesR[i / 2] = values[i];
-        //     }
-        //   }
-        //   int16_t *newArrayL =
-        //       array_resample_linear(valuesL, values_to_read, arr_new_size);
-        //   for (uint16_t i = 0; i < arr_new_size; i++) {
-        //     newArray[i] = transfer_fn(newArray[i]);
-        //     int32_t value0 = (vol1 * newArray[i]) << 8u;
-        //     samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-        //     samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
-        //   }
-        //   free(newArray);
+        // stereo
+        int16_t valuesL[samples_to_read];  // max limit
+        int16_t valuesR[samples_to_read];  // max limit
+        for (uint16_t i = 0; i < samples_to_read * WAV_CHANNELS; i++) {
+          if (i % 2 == 0) {
+            valuesL[i / 2] = values[i];
+          } else {
+            valuesR[i / 2] = values[i];
+          }
+        }
+        int16_t *newArrayL =
+            array_resample_linear(valuesL, samples_to_read, arr_new_size);
+        int16_t *newArrayR =
+            array_resample_linear(valuesR, samples_to_read, arr_new_size);
+        for (uint16_t i = 0; i < arr_new_size; i++) {
+          newArrayL[i] = transfer_fn(newArrayL[i]);
+          int32_t value0 = (vol1 * newArrayL[i]) << 8u;
+          newArrayR[i] = transfer_fn(newArrayR[i]);
+          int32_t value1 = (vol1 * newArrayR[i]) << 8u;
+          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+          samples[i * 2 + 1] = value1 + (value1 >> 16u);  // L
+        }
+        free(newArrayL);
+        free(newArrayR);
       }
       phase += values_to_read * (phase_forward * 2 - 1);
     }
