@@ -638,12 +638,9 @@ void i2s_callback_func() {
           }
           newArray[i] = transfer_fn(newArray[i]);
           int32_t value0 = (vols[head] * newArray[i]) << 8u;
-          if (head == 0) {
-            samples[i * 2 + 0] =
-                samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-            samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
-          } else {
-          }
+          samples[i * 2 + 0] =
+              samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
+          samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
         }
         free(newArray);
       } else if (WAV_CHANNELS == 2) {
