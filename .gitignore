@@ -11,6 +11,13 @@ amen_bpm170_beats16.wav
 lib/selectx.h
 lib/transfer_doublesine.h
 lib/transfer_tanh.h
+amen_bpm165_beats8_mono.wav
+amen_bpm165_beats8_stereo.wav
+amen_bpm170_beats16_mono.wav
+amen_bpm170_beats16_stereo.wav
+lib/transfer_distortion.h
+lib/transfer_saturate.h
+
 
 # Object files
 *.o
