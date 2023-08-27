@@ -65,10 +65,10 @@
 
 // sample rate is defined by the codec, PCM5102
 #define WAV_CHANNELS 1
-#define PHASE_DIVISOR 2
 // blocks per second is defined by SAMPLES_PER_BUFFER
 // which can be modified
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
+static int PHASE_DIVISOR = WAV_CHANNELS * 2;
 
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 // audio_pool.h
@@ -552,8 +552,8 @@ void i2s_callback_func() {
     vol1 = (uint)round(Envelope2_update(envelope1) * sf->vol * vol3);
     vol2 = (uint)round(Envelope2_update(envelope2) * sf->vol * vol3);
     // uncomment to turn off dual playheads
-    // vol1 = sf->vol;
-    // vol2 = 0;
+    vol1 = sf->vol;
+    vol2 = 0;
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
     // TODO: switch for if wobble is enabled
@@ -633,8 +633,8 @@ void i2s_callback_func() {
         samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
       }
-      phase += values_to_read * 2 * (phase_forward * 2 - 1);
       free(newArray);
+      phase += values_to_read * 2 * (phase_forward * 2 - 1);
     }
 
     if (vol2 > 0) {
