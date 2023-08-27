@@ -7,7 +7,7 @@ scaler = 128
 
 print(
     """
-const uint16_t __in_flash() selectx_raw[] = {"""
+const uint8_t __in_flash() selectx_raw[] = {"""
 )
 for i, v in enumerate(range(0, scaler+1)):
     x = float(v) / scaler
