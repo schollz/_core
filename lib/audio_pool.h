@@ -23,7 +23,7 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #define SAMPLE_RATE 44100
-#define SAMPLES_PER_BUFFER 256  // Samples / channel
+#define SAMPLES_PER_BUFFER 441  // Samples / channel
 #define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / SAMPLE_RATE
 
 audio_buffer_pool_t *init_audio() {
