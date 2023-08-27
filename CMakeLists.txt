@@ -62,6 +62,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_USE_CD=false
     AUDIO_DIN_GPIO=16
     AUDIO_CLK_GPIO=14 # LCK=15
+    STEREO_MODE=1
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
