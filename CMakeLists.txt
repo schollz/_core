@@ -62,7 +62,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_USE_CD=false
     AUDIO_DIN_GPIO=16
     AUDIO_CLK_GPIO=14 # LCK=15
-    TRANSFER_OFF=1
+    # useful toggle for debugging
+    # since the transfer functions take a lot of space
+    # TRANSFER_OFF=1 
+    WAV_CHANNELS=2
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
