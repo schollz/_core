@@ -155,7 +155,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           retrig_vol = 1.0;
         }
         if (retrig_vol < 1.0) {
-          retrig_vol = retrig_vol + 0.1;
+          if (retrig_vol == 0) {
+            retrig_vol = 0.05;
+          } else {
+            retrig_vol = retrig_vol + retrig_vol;
+          }
         }
         if (fil_is_open && debounce_quantize == 0) {
           envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0,
