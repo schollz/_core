@@ -225,6 +225,10 @@ void sdcard_startup() {
 }
 
 int16_t transfer_fn(int16_t v) {
+#ifdef TRANSFER_OFF
+  return v;
+#endif
+#ifndef TRANSFER_OFF
   if (sf->saturate_wet > 0) {
     v = selectx(sf->saturate_wet, v, transfer_doublesine(v));
   }
@@ -234,6 +238,7 @@ int16_t transfer_fn(int16_t v) {
   }
   // transfer_distortion(v * (1 << sf->distortion_level)));
   return v;
+#endif
 }
 
 int main() {
