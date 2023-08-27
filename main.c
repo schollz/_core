@@ -565,9 +565,10 @@ void i2s_callback_func() {
     // }
 
     if (vol1 >= 0) {
-      uint32_t values_to_read = buffer->max_sample_count *
-                                round(sf->bpm_tempo * envelope_pitch_val) /
-                                file_list->bpm[fil_current_id] * WAV_CHANNELS;
+      uint32_t samples_to_read = buffer->max_sample_count *
+                                 round(sf->bpm_tempo * envelope_pitch_val) /
+                                 file_list->bpm[fil_current_id];
+      uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
       int16_t values[values_to_read];  // max limit
 
       if (f_lseek(&fil_current,
@@ -585,21 +586,21 @@ void i2s_callback_func() {
         return;
       }
 
-      if (f_read(&fil_current, values, values_to_read * 2, &fil_bytes_read)) {
+      if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
         f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
         f_lseek(&fil_current,
                 WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
-      if (fil_bytes_read < values_to_read * 2) {
-        printf("asked for %d bytes, read %d bytes\n", values_to_read * 2,
+      if (fil_bytes_read < values_to_read) {
+        printf("asked for %d bytes, read %d bytes\n", values_to_read,
                fil_bytes_read);
         if (f_lseek(&fil_current, WAV_HEADER_SIZE)) {
           printf("problem seeking to 0\n");
         }
-        int16_t values2[values_to_read * 2 - fil_bytes_read];  // max limit
-        if (f_read(&fil_current, values2, values_to_read * 2 - fil_bytes_read,
+        int16_t values2[values_to_read - fil_bytes_read];  // max limit
+        if (f_read(&fil_current, values2, values_to_read - fil_bytes_read,
                    &fil_bytes_read2)) {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
@@ -608,7 +609,7 @@ void i2s_callback_func() {
                   WAV_HEADER_SIZE + (phase / PHASE_DIVISOR) * PHASE_DIVISOR);
         }
         printf("asked for %d bytes, read %d bytes\n",
-               values_to_read * 2 - fil_bytes_read, fil_bytes_read2);
+               values_to_read - fil_bytes_read, fil_bytes_read2);
 
         for (uint16_t i = 0; i < fil_bytes_read2 / 2; i++) {
           values[i + fil_bytes_read / 2] = values2[i];
@@ -625,16 +626,38 @@ void i2s_callback_func() {
       }
 
       int16_t arr_new_size = buffer->max_sample_count;
-      int16_t *newArray =
-          array_resample_linear(values, values_to_read, arr_new_size);
-      for (uint16_t i = 0; i < arr_new_size; i++) {
-        newArray[i] = transfer_fn(newArray[i]);
-        int32_t value0 = (vol1 * newArray[i]) << 8u;
-        samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-        samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+      if (WAV_CHANNELS == 1) {
+        int16_t *newArray =
+            array_resample_linear(values, samples_to_read, arr_new_size);
+        for (uint16_t i = 0; i < arr_new_size; i++) {
+          newArray[i] = transfer_fn(newArray[i]);
+          int32_t value0 = (vol1 * newArray[i]) << 8u;
+          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+          samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+        }
+        free(newArray);
+      } else {
+        //   // stereo
+        //   int16_t valuesL[values_to_read / 2];  // max limit
+        //   int16_t valuesR[values_to_read / 2];  // max limit
+        //   for (uint16_t i = 0; i < values_to_read; i++) {
+        //     if (i % 2 == 0) {
+        //       valuesL[i / 2] = values[i];
+        //     } else {
+        //       valuesR[i / 2] = values[i];
+        //     }
+        //   }
+        //   int16_t *newArrayL =
+        //       array_resample_linear(valuesL, values_to_read, arr_new_size);
+        //   for (uint16_t i = 0; i < arr_new_size; i++) {
+        //     newArray[i] = transfer_fn(newArray[i]);
+        //     int32_t value0 = (vol1 * newArray[i]) << 8u;
+        //     samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+        //     samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+        //   }
+        //   free(newArray);
       }
-      free(newArray);
-      phase += values_to_read * 2 * (phase_forward * 2 - 1);
+      phase += values_to_read * (phase_forward * 2 - 1);
     }
 
     if (vol2 > 0) {
