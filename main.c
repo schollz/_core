@@ -105,7 +105,6 @@ bool sync_using_sdcard = false;
 // voice 2 takes place of old voice and continues
 Envelope2 *envelope1;
 Envelope2 *envelope2;
-Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
 EnvelopeGate *envelopegate;
 Noise *noise_wobble;
@@ -222,7 +221,6 @@ void sdcard_startup() {
   }
   envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
   envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
-  envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1.0, 1.5);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
@@ -351,15 +349,13 @@ int main() {
         // phase_change = true;
         // debounce_quantize = 2;
         retrig_first = true;
-        retrig_beat_num = random_integer_in_range(3, 12);
+        retrig_beat_num = random_integer_in_range(8, 24);
         retrig_timer_reset =
             96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
         float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                            (float)(96 * sf->bpm_tempo);
         printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
                retrig_beat_num, retrig_timer_reset, total_time);
-        envelope3 =
-            Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, total_time * 2 / 3);
         retrig_ready = true;
       }
       if (c == 't') {
@@ -489,8 +485,8 @@ int main() {
         fil_current_change = true;
       }
       if (c == 'a') {
-        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
-        debounce_quantize = 2;
+        // envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
+        // debounce_quantize = 2;
       }
       if (c == 'q') {
         envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.25, 1.0, 1);
@@ -562,9 +558,6 @@ void i2s_callback_func() {
       // previous point degrades
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
-
-    // vol3 = Envelope2_update(envelope3);  // *
-    // EnvelopeGate_update(envelopegate);
 
     vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol * retrig_vol);
     vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol * retrig_vol);
