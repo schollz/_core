@@ -567,7 +567,7 @@ void i2s_callback_func() {
     if (vol1 >= 0) {
       uint32_t values_to_read = buffer->max_sample_count *
                                 round(sf->bpm_tempo * envelope_pitch_val) /
-                                file_list->bpm[fil_current_id];
+                                file_list->bpm[fil_current_id] * WAV_CHANNELS;
       int16_t values[values_to_read];  // max limit
 
       if (f_lseek(&fil_current,
