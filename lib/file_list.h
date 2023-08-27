@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
+#include "wav.h"
 
 unsigned int extract_bpm(const char *input) {
   int len = strlen(input);
@@ -103,7 +104,7 @@ typedef struct FileList {
   unsigned int num;
 } FileList;
 
-FileList *list_files(const char *dir) {
+FileList *list_files(const char *dir, int num_channels) {
   FileList *filelist = malloc(sizeof(FileList));
   filelist->name = malloc(sizeof(char *) * FileList_max);
   filelist->size = malloc(sizeof(FSIZE_t) * FileList_max);
@@ -154,13 +155,18 @@ FileList *list_files(const char *dir) {
     // Check if the filename ends with ".wav"
     if (strstr(fno.fname, ".wav") && strstr(fno.fname, "bpm") &&
         strstr(fno.fname, "beats")) {
-      // Allocate memory for the name field and copy the filename into it
-      filelist->name[filelist->num] = malloc(strlen(fno.fname) + 1);
-      strcpy(filelist->name[filelist->num], fno.fname);
-      filelist->size[filelist->num] = (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
-      filelist->bpm[filelist->num] = extract_bpm(fno.fname);
-      filelist->beats[filelist->num] = extract_beats(fno.fname);
-      filelist->num++;
+      WavHeader *wh;
+      wh = WavFile_Load(fno.fname);
+      if (wh->NumOfChan == num_channels) {
+        // Allocate memory for the name field and copy the filename into it
+        filelist->name[filelist->num] = malloc(strlen(fno.fname) + 1);
+        strcpy(filelist->name[filelist->num], fno.fname);
+        filelist->size[filelist->num] = (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
+        filelist->bpm[filelist->num] = extract_bpm(fno.fname);
+        filelist->beats[filelist->num] = extract_beats(fno.fname);
+        filelist->num++;
+      }
+      free(wh);
     }
 
     fr = f_findnext(&dj, &fno); /* Search for next item */

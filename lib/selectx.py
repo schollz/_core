@@ -7,11 +7,10 @@ scaler = 128
 
 print(
     """
-const uint16_t __in_flash() selectx_raw[] = {
-"""
+const uint16_t __in_flash() selectx_raw[] = {"""
 )
-for i, v in enumerate(range(0, 101)):
-    x = float(v) / 100
+for i, v in enumerate(range(0, scaler+1)):
+    x = float(v) / scaler
     e = ""
     if i % 8 == 0:
         e = "\n"
@@ -27,16 +26,24 @@ print("\n};")
 
 print(
     """
-// selectx takes x, range: [0,100] and mixes
-// y1 and y2. x == 0 : full y1. x == 100: full y2.
+// selectx takes x, range: [0,"""
+    + "{}".format(scaler)
+    + """] and mixes
+// y1 and y2. x == 0 : full y1. x == """
+    + "{}".format(scaler)
+    + """: full y2.
 int16_t selectx(int8_t x, int16_t y1, int16_t y2) {
     if (x<=0) {
         return y1;
-    } else if (x>=100) {
+    } else if (x>="""
+    + "{}".format(scaler)
+    + """) {
         return y2;
     }
     int32_t y = y1 * selectx_raw[x];
-    y = y + (1-selectx_raw[x]) * y2;
+    y = y + ("""
+    + "{}".format(scaler)
+    + """-selectx_raw[x]) * y2;
     return y / """
     + "{}".format(scaler)
     + """;
