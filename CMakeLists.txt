@@ -65,7 +65,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # useful toggle for debugging
     # since the transfer functions take a lot of space
     TRANSFER_OFF=1 
-    WAV_CHANNELS=1
+    WAV_CHANNELS=2
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
