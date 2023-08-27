@@ -81,6 +81,9 @@ uint8_t fil_buf[SAMPLES_PER_BUFFER * 4];
 int32_t phases[2];
 int32_t phases_old[2];
 int32_t phase_new;
+int16_t mem_samples[2][44100];
+uint16_t mem_index[2];
+bool mem_use;
 bool phase_change;
 unsigned int fil_bytes_read;
 unsigned int fil_bytes_read2;
@@ -147,12 +150,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      (1 - phase_forward)) /
                     (2 * file_list->beats[fil_current_id]);
         phase_change = true;
+        // mem_use = true;
         printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
                phase_new, cpu_utilization);
       }
     }
   } else {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
+      mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (beat_current == 0 && !phase_forward) {
@@ -534,14 +539,16 @@ void i2s_callback_func() {
 
     // flag for new phase
     if (phase_change) {
+      mem_index[0] = 0;
+      mem_index[1] = 0;
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
       phase_change = false;
       // initiate transition envelopes
       // jump point envelope grows
-      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.075);
+      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.04);
       // previous point degrades
-      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.075);
+      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
     vol3 = Envelope2_update(envelope3);  // * EnvelopeGate_update(envelopegate);
@@ -573,38 +580,24 @@ void i2s_callback_func() {
         continue;
       }
 
-      if (f_lseek(&fil_current,
-                  WAV_HEADER_SIZE +
-                      (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
-        printf("problem seeking to phase (%d)\n", phases[head]);
-        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          int32_t value0 = 0;
-          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-          samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+      if (!mem_use) {
+        if (f_lseek(&fil_current,
+                    WAV_HEADER_SIZE +
+                        (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
+          printf("problem seeking to phase (%d)\n", phases[head]);
+          for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+            int32_t value0 = 0;
+            samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+            samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+          }
+          buffer->sample_count = buffer->max_sample_count;
+          give_audio_buffer(ap, buffer);
+          sync_using_sdcard = false;
+          sdcard_startup();
+          return;
         }
-        buffer->sample_count = buffer->max_sample_count;
-        give_audio_buffer(ap, buffer);
-        sync_using_sdcard = false;
-        sdcard_startup();
-        return;
-      }
 
-      if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
-        printf("ERROR READING!\n");
-        f_close(&fil_current);  // close and re-open trick
-        f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
-        f_lseek(&fil_current, WAV_HEADER_SIZE + (phases[head] / PHASE_DIVISOR) *
-                                                    PHASE_DIVISOR);
-      }
-      if (fil_bytes_read < values_to_read) {
-        printf("asked for %d bytes, read %d bytes\n", values_to_read,
-               fil_bytes_read);
-        if (f_lseek(&fil_current, WAV_HEADER_SIZE)) {
-          printf("problem seeking to 0\n");
-        }
-        int16_t values2[values_to_read - fil_bytes_read];  // max limit
-        if (f_read(&fil_current, values2, values_to_read - fil_bytes_read,
-                   &fil_bytes_read2)) {
+        if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
           f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
@@ -612,22 +605,54 @@ void i2s_callback_func() {
               &fil_current,
               WAV_HEADER_SIZE + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
         }
-        printf("asked for %d bytes, read %d bytes\n",
-               values_to_read - fil_bytes_read, fil_bytes_read2);
+        if (fil_bytes_read < values_to_read) {
+          printf("asked for %d bytes, read %d bytes\n", values_to_read,
+                 fil_bytes_read);
+          if (f_lseek(&fil_current, WAV_HEADER_SIZE)) {
+            printf("problem seeking to 0\n");
+          }
+          int16_t values2[values_to_read - fil_bytes_read];  // max limit
+          if (f_read(&fil_current, values2, values_to_read - fil_bytes_read,
+                     &fil_bytes_read2)) {
+            printf("ERROR READING!\n");
+            f_close(&fil_current);  // close and re-open trick
+            f_open(&fil_current, file_list->name[fil_current_id], FA_READ);
+            f_lseek(&fil_current,
+                    WAV_HEADER_SIZE +
+                        (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
+          }
+          printf("asked for %d bytes, read %d bytes\n",
+                 values_to_read - fil_bytes_read, fil_bytes_read2);
 
-        for (uint16_t i = 0; i < fil_bytes_read2 / 2; i++) {
-          values[i + fil_bytes_read / 2] = values2[i];
+          for (uint16_t i = 0; i < fil_bytes_read2 / 2; i++) {
+            values[i + fil_bytes_read / 2] = values2[i];
+          }
+        }
+
+        if (!phase_forward) {
+          // reverse audio
+          for (int i = 0; i < values_len / 2; i++) {
+            int16_t temp = values[i];
+            values[i] = values[values_len - i - 1];
+            values[values_len - i - 1] = temp;
+          }
         }
       }
 
-      if (!phase_forward) {
-        // reverse audio
-        for (int i = 0; i < values_len / 2; i++) {
-          int16_t temp = values[i];
-          values[i] = values[values_len - i - 1];
-          values[values_len - i - 1] = temp;
-        }
-      }
+      // // save to memory
+      // if (mem_use) {
+      //   for (int i = 0; i < values_len; i++) {
+      //     values[i] = mem_samples[head][mem_index[head]];
+      //     mem_index[head]++;
+      //   }
+      // } else {
+      //   for (int i = 0; i < values_len; i++) {
+      //     if (mem_index[head] < 44100) {
+      //       mem_samples[head][mem_index[head]] = values[i];
+      //       mem_index[head]++;
+      //     }
+      //   }
+      // }
 
       if (WAV_CHANNELS == 1) {
         int16_t *newArray = array_resample_linear(values, samples_to_read,
