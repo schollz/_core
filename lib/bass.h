@@ -22,29 +22,40 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-#include <stdint.h>
-#include <stdio.h>
+#ifndef BASS_LIB
+#include "bass_raw.h"
 
-void printBinaryRepresentation(unsigned int num) {
-  // Iterate through each bit position (from 31 to 0)
-  for (int i = 31; i >= 0; i--) {
-    // Extract the i-th bit using bitwise operations
-    uint8_t bit = (num >> i) & 1;
-    printf("%u", bit);  // Print the bit
+typedef struct Bass {
+  uint32_t phase;
+  int8_t phase_dir;
+} Bass;
+
+Bass *Bass_create() {
+  Bass *bass = (Bass *)malloc(sizeof(Bass));
+  bass->phase = 0;
+  bass->phase_dir = 1;
+  return bass;
+}
+
+void Bass_destroy(Bass *bass) { free(bass); }
+
+void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
+                   uint vol) {
+  for (uint32_t i = 0; i < sample_count; i++) {
+    int32_t value0 = (vol * 2 * bass_raw[bass->phase]) << 8u;
+    value0 = value0 + (value0 >> 16u);
+    samples[i * 2 + 0] = samples[i * 2 + 0] + value0;  // L
+    samples[i * 2 + 1] = samples[i * 2 + 1] + value0;  // R
+    // update the phase
+    bass->phase += bass->phase_dir;
+    if (bass->phase == BASS_RAW_LEN - 1) {
+      bass->phase_dir = -1;
+    } else if (bass->phase == 0) {
+      bass->phase_dir = 1;
+    }
   }
-  printf("\n");
+  return;
 }
 
-int main() {
-  unsigned int num;
-
-  printf("Enter a 32-bit unsigned integer: ");
-  scanf("%u", &num);
-
-  printf("Binary representation: ");
-  printBinaryRepresentation(num);
-  printf("%d\n", num << 8u);
-  printf("%d\n", (num << 8u) + ((num << 8u) >> 16u));
-
-  return 0;
-}
+#endif /* BASS_LIB */
+#define BASS_LIB 1
