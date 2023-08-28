@@ -26,32 +26,53 @@
 #include "bass_raw.h"
 
 typedef struct Bass {
-  uint32_t phase;
-  int8_t phase_dir;
+  uint32_t phase[2];
+  int8_t phase_dir[2];
+  uint32_t phases_since_last[2];
 } Bass;
 
 Bass *Bass_create() {
   Bass *bass = (Bass *)malloc(sizeof(Bass));
-  bass->phase = 0;
-  bass->phase_dir = 1;
+  for (uint8_t i = 0; i < 2; i++) {
+    bass->phase[i] = 0;
+    bass->phase_dir[i] = 1;
+    bass->phases_since_last[i] = 0;
+  }
+  bass->head = 0;
   return bass;
 }
 
 void Bass_destroy(Bass *bass) { free(bass); }
 
 void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
-                   uint vol) {
-  for (uint32_t i = 0; i < sample_count; i++) {
-    int32_t value0 = (vol * 2 * bass_raw[bass->phase]) << 8u;
-    value0 = value0 + (value0 >> 16u);
-    samples[i * 2 + 0] = samples[i * 2 + 0] + value0;  // L
-    samples[i * 2 + 1] = samples[i * 2 + 1] + value0;  // R
-    // update the phase
-    bass->phase += bass->phase_dir;
-    if (bass->phase == BASS_RAW_LEN - 1) {
-      bass->phase_dir = -1;
-    } else if (bass->phase == 0) {
-      bass->phase_dir = 1;
+                   uint volmain) {
+  for (uint8_t head = 0; head < 2; head++) {
+    for (uint32_t i = 0; i < sample_count; i++) {
+      uint vol = volmain;
+      if (bass->phases_since_last[head] < CROSSFADE_MAX) {
+        if (head == 0) {
+          vol =
+              vol_main - crossfade_vol(vol_main, bass->phases_since_last[head]);
+        } else {
+          vol = crossfade_vol(vol_main, bass->phases_since_last[head]);
+          // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
+          //   printf("head1 vol: %d\n", vol);
+          // }
+        }
+        phases_since_last[head]++;
+      }
+
+      int32_t value0 = (*2 * bass_raw[bass->phase]) << 8u;
+      value0 = value0 + (value0 >> 16u);
+      samples[i * 2 + 0] = samples[i * 2 + 0] + value0;  // L
+      samples[i * 2 + 1] = samples[i * 2 + 1] + value0;  // R
+      // update the phase
+      bass->phase += bass->phase_dir;
+      if (bass->phase == BASS_RAW_LEN - 1) {
+        bass->phase_dir = -1;
+      } else if (bass->phase == 0) {
+        bass->phase_dir = 1;
+      }
     }
   }
   return;

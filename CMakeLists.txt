@@ -65,7 +65,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # includes for different versions
     # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
-    # INCLUDE_BASS=1
+    INCLUDE_BASS=1
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
