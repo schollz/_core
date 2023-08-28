@@ -70,6 +70,13 @@
 // sample rate is defined by the codec, PCM5102
 // blocks per second is defined by SAMPLES_PER_BUFFER
 // which can be modified
+#ifdef INCLUDE_STEREO
+#define WAV_CHANNELS 2
+#endif
+#ifndef INCLUDE_STEREO
+#define WAV_CHANNELS 1
+#endif
+
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
 static int PHASE_DIVISOR = WAV_CHANNELS * 2;
 
@@ -690,81 +697,82 @@ void i2s_callback_func() {
       //   }
       // }
 
-      if (WAV_CHANNELS == 1) {
-        int16_t *newArray = array_resample_linear(values, samples_to_read,
-                                                  buffer->max_sample_count);
-        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          if (head == 0) {
-            samples[i * 2 + 0] = 0;
-          }
-
-          uint vol = vol_main;
-          if (phases_since_last[head] < CROSSFADE_MAX) {
-            if (head == 0) {
-              vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
-            } else {
-              vol = crossfade_vol(vol_main, phases_since_last[head]);
-              // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
-              //   printf("head1 vol: %d\n", vol);
-              // }
-            }
-            phases_since_last[head]++;
-          }
-
-          newArray[i] = transfer_fn(newArray[i]);
-          int32_t value0 = (vol * newArray[i]) << 8u;
-          samples[i * 2 + 0] =
-              samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-          samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
+#ifndef INCLUDE_STEREO
+      int16_t *newArray = array_resample_linear(values, samples_to_read,
+                                                buffer->max_sample_count);
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        if (head == 0) {
+          samples[i * 2 + 0] = 0;
         }
-        free(newArray);
-      } else if (WAV_CHANNELS == 2) {
-        // stereo
-        int16_t valuesL[samples_to_read];  // max limit
-        int16_t valuesR[samples_to_read];  // max limit
-        for (uint16_t i = 0; i < samples_to_read * WAV_CHANNELS; i++) {
-          if (i % 2 == 0) {
-            valuesL[i / 2] = values[i];
+
+        uint vol = vol_main;
+        if (phases_since_last[head] < CROSSFADE_MAX) {
+          if (head == 0) {
+            vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
           } else {
-            valuesR[i / 2] = values[i];
+            vol = crossfade_vol(vol_main, phases_since_last[head]);
+            // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
+            //   printf("head1 vol: %d\n", vol);
+            // }
           }
+          phases_since_last[head]++;
         }
-        int16_t *newArrayL = array_resample_linear(valuesL, samples_to_read,
-                                                   buffer->max_sample_count);
-        int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
-                                                   buffer->max_sample_count);
 
-        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          if (head == 0) {
-            samples[i * 2 + 0] = 0;
-            samples[i * 2 + 1] = 0;
-          }
-
-          uint vol = vol_main;
-          if (phases_since_last[head] < CROSSFADE_MAX) {
-            if (head == 0) {
-              vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
-            } else {
-              vol = crossfade_vol(vol_main, phases_since_last[head]);
-              // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
-              //   printf("head1 vol: %d\n", vol);
-              // }
-            }
-            phases_since_last[head]++;
-          }
-
-          newArrayL[i] = transfer_fn(newArrayL[i]);
-          int32_t value0 = (vol * newArrayL[i]) << 8u;
-          newArrayR[i] = transfer_fn(newArrayR[i]);
-          int32_t value1 = (vol * newArrayR[i]) << 8u;
-          samples[i * 2 + 0] =
-              samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-          samples[i * 2 + 1] =
-              samples[i * 2 + 1] + value1 + (value1 >> 16u);  // L
-        }
-        free(newArrayL);
-        free(newArrayR);
+        newArray[i] = transfer_fn(newArray[i]);
+        int32_t value0 = (vol * newArray[i]) << 8u;
+        samples[i * 2 + 0] =
+            samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
+        samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
       }
+      free(newArray);
+#endif
+#ifdef INCLUDE_STEREO
+      // stereo
+      int16_t valuesL[samples_to_read];  // max limit
+      int16_t valuesR[samples_to_read];  // max limit
+      for (uint16_t i = 0; i < samples_to_read * WAV_CHANNELS; i++) {
+        if (i % 2 == 0) {
+          valuesL[i / 2] = values[i];
+        } else {
+          valuesR[i / 2] = values[i];
+        }
+      }
+      int16_t *newArrayL = array_resample_linear(valuesL, samples_to_read,
+                                                 buffer->max_sample_count);
+      int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
+                                                 buffer->max_sample_count);
+
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        if (head == 0) {
+          samples[i * 2 + 0] = 0;
+          samples[i * 2 + 1] = 0;
+        }
+
+        uint vol = vol_main;
+        if (phases_since_last[head] < CROSSFADE_MAX) {
+          if (head == 0) {
+            vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
+          } else {
+            vol = crossfade_vol(vol_main, phases_since_last[head]);
+            // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
+            //   printf("head1 vol: %d\n", vol);
+            // }
+          }
+          phases_since_last[head]++;
+        }
+
+        newArrayL[i] = transfer_fn(newArrayL[i]);
+        int32_t value0 = (vol * newArrayL[i]) << 8u;
+        newArrayR[i] = transfer_fn(newArrayR[i]);
+        int32_t value1 = (vol * newArrayR[i]) << 8u;
+        samples[i * 2 + 0] =
+            samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
+        samples[i * 2 + 1] =
+            samples[i * 2 + 1] + value1 + (value1 >> 16u);  // L
+      }
+      free(newArrayL);
+      free(newArrayR);
+#endif
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];
     }
