@@ -62,6 +62,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_D0_GPIO=19 # CLK=17,D1=20,D2=21,D3=22
     AUDIO_CLK_GPIO=14 # LCK=15
     AUDIO_DIN_GPIO=16
+    # includes for different versions
     # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
