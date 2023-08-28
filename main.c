@@ -741,9 +741,6 @@ void i2s_callback_func() {
             vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
           } else {
             vol = crossfade_vol(vol_main, phases_since_last[head]);
-            // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
-            //   printf("head1 vol: %d\n", vol);
-            // }
           }
           phases_since_last[head]++;
         }

@@ -23,6 +23,77 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #define INTERPOLATE_VALUE 512
+
+int16_t *array_resample_linear2(int16_t *arr, int16_t arr_size,
+                                int16_t newSize) {
+  if (arr_size <= 0 || newSize <= 0) {
+    return NULL;  // Invalid input
+  }
+
+  int16_t *newArr = (int16_t *)malloc(sizeof(int16_t) * newSize);
+  if (newArr == NULL) {
+    return NULL;  // Memory allocation error
+  }
+
+  float step = (float)(arr_size - 1) / (newSize - 1);
+
+  for (int16_t i = 0; i < newSize; ++i) {
+    float index = i * step;
+    int16_t lowerIdx = (int16_t)index;
+    int16_t upperIdx = lowerIdx + 1;
+
+    if (upperIdx >= arr_size) {
+      newArr[i] = arr[lowerIdx];
+    } else {
+      float fraction = index - lowerIdx;
+      newArr[i] =
+          (int16_t)((1 - fraction) * arr[lowerIdx] + fraction * arr[upperIdx]);
+    }
+  }
+
+  return newArr;
+}
+
+int16_t *array_resample_quadratic(int16_t *arr, int16_t arr_size,
+                                  int16_t newSize) {
+  if (arr_size <= 0 || newSize <= 0) {
+    return NULL;  // Invalid input
+  }
+
+  int16_t *newArr = (int16_t *)malloc(sizeof(int16_t) * newSize);
+  if (newArr == NULL) {
+    return NULL;  // Memory allocation error
+  }
+
+  float step = (float)(arr_size - 1) / (newSize - 1);
+
+  for (int16_t i = 0; i < newSize; ++i) {
+    float index = i * step;
+    int16_t baseIdx = (int16_t)index;
+    int16_t lowerIdx = baseIdx - 1;
+    int16_t upperIdx = baseIdx + 1;
+
+    if (lowerIdx < 0) {
+      lowerIdx = 0;
+    }
+    if (upperIdx >= arr_size) {
+      upperIdx = arr_size - 1;
+    }
+
+    float fraction = index - baseIdx;
+
+    int16_t x0 = arr[lowerIdx];
+    int16_t x1 = arr[baseIdx];
+    int16_t x2 = arr[upperIdx];
+
+    newArr[i] =
+        (int16_t)(x1 +
+                  0.5 * (fraction * (x2 - x0 + fraction * (x0 - 2 * x1 + x2))));
+  }
+
+  return newArr;
+}
+
 int16_t *array_resample_linear(int16_t *arr, int16_t arr_size,
                                int16_t newSize) {
   int16_t *newArray;
