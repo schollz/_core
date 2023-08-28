@@ -51,6 +51,9 @@
 //
 #include "lib/array_resample.h"
 #include "lib/audio_pool.h"
+#ifdef INCLUDE_BASS
+#include "lib/bass.h"
+#endif
 #include "lib/biquad.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
@@ -125,8 +128,12 @@ uint16_t retrig_timer_reset = 96;
 bool retrig_first = false;
 bool retrig_ready = false;
 float retrig_vol = 1.0;
+float retrig_vol_step = 0;
 
 SaveFile *sf;
+#ifdef INCLUDE_BASS
+Bass *bass;
+#endif
 
 pcg32_random_t rng;
 
@@ -155,10 +162,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           retrig_vol = 1.0;
         }
         if (retrig_vol < 1.0) {
-          if (retrig_vol == 0) {
-            retrig_vol = 0.05;
-          } else {
-            retrig_vol = retrig_vol + retrig_vol;
+          retrig_vol += retrig_vol_step;
+          if (retrig_vol > 1.0) {
+            retrig_vol = 1.0;
           }
         }
         if (fil_is_open && debounce_quantize == 0) {
@@ -171,8 +177,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                       (2 * file_list->beats[fil_current_id]);
           phase_change = true;
           // mem_use = true;
-          printf("current beat: %d, phase_new: %d, cpu util: %d\n",
-                 beat_current, phase_new, cpu_utilization);
         }
         retrig_first = false;
       }
@@ -199,8 +203,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      (1 - phase_forward)) /
                     (2 * file_list->beats[fil_current_id]);
         phase_change = true;
-        printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
-               phase_new, cpu_utilization);
       }
       if (debounce_quantize > 0) {
         debounce_quantize--;
@@ -232,6 +234,9 @@ void sdcard_startup() {
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 1, 0.5, 0.5);
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
+#ifdef INCLUDE_BASS
+  bass = Bass_create();
+#endif
 
   printf("\nz!!\n");
   file_list = list_files("", WAV_CHANNELS);
@@ -250,10 +255,10 @@ void sdcard_startup() {
 }
 
 int16_t transfer_fn(int16_t v) {
-#ifdef TRANSFER_OFF
+#ifndef INCLUDE_TRANSFER
   return v;
 #endif
-#ifndef TRANSFER_OFF
+#ifdef INCLUDE_TRANSFER
   if (sf->saturate_wet > 0) {
     v = selectx(sf->saturate_wet, v, transfer_doublesine(v));
   }
@@ -330,6 +335,14 @@ int main() {
         SaveFile_PatternPrint(sf);
         sf->pattern_on = 1 - sf->pattern_on;
       }
+      if (c == 'v') {
+        printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
+               phase_new, cpu_utilization);
+#ifdef INCLUDE_BASS
+        bass->phase_dir = 1;
+        bass->phase = 0;
+#endif
+      }
       if (c == '[') {
         if (sf->bpm_tempo > 30) {
           sf->bpm_tempo -= 5;
@@ -362,6 +375,7 @@ int main() {
             96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
         float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                            (float)(96 * sf->bpm_tempo);
+        retrig_vol_step = 1.0 / ((float)retrig_beat_num);
         printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
                retrig_beat_num, retrig_timer_reset, total_time);
         retrig_ready = true;
@@ -629,8 +643,8 @@ void i2s_callback_func() {
               WAV_HEADER_SIZE + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
         }
         if (fil_bytes_read < values_to_read) {
-          printf("asked for %d bytes, read %d bytes\n", values_to_read,
-                 fil_bytes_read);
+          // printf("asked for %d bytes, read %d bytes\n", values_to_read,
+          //        fil_bytes_read);
           if (f_lseek(&fil_current, WAV_HEADER_SIZE)) {
             printf("problem seeking to 0\n");
           }
@@ -644,9 +658,8 @@ void i2s_callback_func() {
                     WAV_HEADER_SIZE +
                         (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
           }
-          printf("asked for %d bytes, read %d bytes\n",
-                 values_to_read - fil_bytes_read, fil_bytes_read2);
-
+          // printf("asked for %d bytes, read %d bytes\n",
+          //        values_to_read - fil_bytes_read, fil_bytes_read2);
           for (uint16_t i = 0; i < fil_bytes_read2 / 2; i++) {
             values[i + fil_bytes_read / 2] = values2[i];
           }
@@ -684,8 +697,22 @@ void i2s_callback_func() {
           if (head == 0) {
             samples[i * 2 + 0] = 0;
           }
+
+          uint vol = vol_main;
+          if (phases_since_last[head] < CROSSFADE_MAX) {
+            if (head == 0) {
+              vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
+            } else {
+              vol = crossfade_vol(vol_main, phases_since_last[head]);
+              // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
+              //   printf("head1 vol: %d\n", vol);
+              // }
+            }
+            phases_since_last[head]++;
+          }
+
           newArray[i] = transfer_fn(newArray[i]);
-          int32_t value0 = (vols[head] * newArray[i]) << 8u;
+          int32_t value0 = (vol * newArray[i]) << 8u;
           samples[i * 2 + 0] =
               samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
           samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
@@ -741,6 +768,10 @@ void i2s_callback_func() {
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];
     }
+#ifdef INCLUDE_BASS
+    // add bass
+    Bass_callback(bass, samples, buffer->max_sample_count, sf->vol);
+#endif
   }
 
   // // LPF
