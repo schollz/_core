@@ -34,6 +34,12 @@ audio2:
 	sox lib/audio/amen_5c2d11c8_beats16_bpm170.flac -c 2 --bits 16 --encoding signed-integer --endian little amen_bpm170_beats16_stereo.wav
 	sox lib/audio/amen_0efedaab_beats8_bpm165.flac -c 2 --bits 16 --encoding signed-integer --endian little amen_bpm165_beats8_stereo.wav
 
+bass:
+	sox lib/audio/bass_e.wav /tmp/1.wav fade 0.001 -0 0.001 norm gain -6
+	sox /tmp/1.wav -c 1 --bits 16 --encoding signed-integer --endian little -t raw bass.raw
+	gcc -o /tmp/convert lib/convert.c
+	/tmp/convert bass.raw > lib/bass_raw.h
+
 clean:
 	rm -rf build
 	rm -rf *.wav
