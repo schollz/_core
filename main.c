@@ -592,24 +592,10 @@ void i2s_callback_func() {
       envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
-    float env3 = Envelope2_update(envelope3);
-    // TODO: remove these envelopes and instead hardcode the
-    // volume changes on a per-block basis, based on current olume
-    // vols[0] = (uint)round(sf->vol * retrig_vol);
-    // vols[1] = 0;  //(uint)round(sf->vol * retrig_vol);
-    // vols[0] = (uint)round(Envelope2_update(envelope1) * sf->vol *
-    // retrig_vol); vols[1] = (uint)round(Envelope2_update(envelope2) * sf->vol
-    // * retrig_vol); uncomment to turn off dual playheads vols[0] = sf->vol;
-    // vols[1] = 0;
-
     envelope_pitch_val = Envelope2_update(envelope_pitch);
     // TODO: switch for if wobble is enabled
     // envelope_pitch_val =
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
-
-    // if (vols[0] > 0 && vols[1] > 0) {
-    //   printf("vols[0]: %d, vols[1]: %d\n", vols[0], vols[1]);
-    // }
 
     uint32_t samples_to_read = buffer->max_sample_count *
                                round(sf->bpm_tempo * envelope_pitch_val) /
@@ -617,7 +603,8 @@ void i2s_callback_func() {
     uint32_t values_len = samples_to_read * WAV_CHANNELS;
     uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
     int16_t values[values_len];
-    uint vol_main = (uint)round(sf->vol * retrig_vol * env3);
+    uint vol_main =
+        (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
     for (uint8_t head = 0; head < 2; head++) {
       if (head == 1 && phases_since_last[0] >= CROSSFADE_MAX) {
@@ -782,12 +769,6 @@ void i2s_callback_func() {
 #endif
   }
 
-  // // LPF
-  // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-  //   samples[i * 2 + 0] = filter_lpf(samples[i * 2], 35, 1);
-  //   samples[i * 2 + 1] = samples[i * 2];
-  // }
-
   buffer->sample_count = buffer->max_sample_count;
   give_audio_buffer(ap, buffer);
 
@@ -804,8 +785,5 @@ void i2s_callback_func() {
 
   clock_t endTime = time_us_64();
   cpu_utilization = 100 * (endTime - startTime) / (US_PER_BLOCK);
-  // if (vols[1] > 0) {
-  //   printf("cpu_utilization: %d\n", cpu_utilization);
-  // }
   return;
 }
