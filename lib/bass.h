@@ -38,11 +38,19 @@ Bass *Bass_create() {
     bass->phase_dir[i] = 1;
     bass->phases_since_last[i] = 0;
   }
-  bass->head = 0;
   return bass;
 }
 
 void Bass_destroy(Bass *bass) { free(bass); }
+
+void Bass_trig(Bass *bass) {
+  bass->phase[1] = bass->phase[0];
+  bass->phase_dir[1] = bass->phase_dir[0];
+  bass->phase[0] = 0;
+  bass->phase_dir[0] = 1;
+  bass->phases_since_last[0] = 0;
+  bass->phases_since_last[1] = 0;
+}
 
 void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
                    uint volmain) {
@@ -52,26 +60,25 @@ void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
       if (bass->phases_since_last[head] < CROSSFADE_MAX) {
         if (head == 0) {
           vol =
-              vol_main - crossfade_vol(vol_main, bass->phases_since_last[head]);
+              vol_main - crossfade_vol(volmain, bass->phases_since_last[head]);
         } else {
-          vol = crossfade_vol(vol_main, bass->phases_since_last[head]);
-          // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
-          //   printf("head1 vol: %d\n", vol);
-          // }
+          vol = crossfade_vol(volmain, bass->phases_since_last[head]);
         }
-        phases_since_last[head]++;
+        bass->phases_since_last[head]++;
+      } else if (head == 1) {
+        continue;
       }
 
-      int32_t value0 = (*2 * bass_raw[bass->phase]) << 8u;
+      int32_t value0 = (vol * 2 * bass_raw[bass->phase]) << 8u;
       value0 = value0 + (value0 >> 16u);
       samples[i * 2 + 0] = samples[i * 2 + 0] + value0;  // L
       samples[i * 2 + 1] = samples[i * 2 + 1] + value0;  // R
       // update the phase
-      bass->phase += bass->phase_dir;
-      if (bass->phase == BASS_RAW_LEN - 1) {
-        bass->phase_dir = -1;
-      } else if (bass->phase == 0) {
-        bass->phase_dir = 1;
+      bass->phase[head] += bass->phase_dir[head];
+      if (bass->phase[head] == BASS_RAW_LEN - 1) {
+        bass->phase_dir[head] = -1;
+      } else if (bass->phase[head] == 0) {
+        bass->phase_dir[head] = 1;
       }
     }
   }

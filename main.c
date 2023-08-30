@@ -346,8 +346,7 @@ int main() {
         printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
                phase_new, cpu_utilization);
 #ifdef INCLUDE_BASS
-        bass->phase_dir = 1;
-        bass->phase = 0;
+        Bass_trig(bass);
 #endif
       }
       if (c == '[') {
