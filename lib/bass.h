@@ -29,6 +29,7 @@
 typedef struct Bass {
   uint32_t phase[2];
   int8_t phase_dir[2];
+  uint8_t note[2];
   uint32_t phases_since_last[2];
 } Bass;
 
@@ -38,6 +39,7 @@ Bass *Bass_create() {
     bass->phase[i] = 0;
     bass->phase_dir[i] = 1;
     bass->phases_since_last[i] = 0;
+    bass->note[i] = 0;
   }
   return bass;
 }
@@ -45,6 +47,7 @@ Bass *Bass_create() {
 void Bass_destroy(Bass *bass) { free(bass); }
 
 void Bass_trig(Bass *bass) {
+  bass->note[1] = bass->note[0];
   bass->phase[1] = bass->phase[0];
   bass->phase_dir[1] = bass->phase_dir[0];
   bass->phase[0] = 0;

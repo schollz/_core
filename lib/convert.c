@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
   // Read the integers from the file.
   int16_t integer;
   int i = 0;
-  printf("const int16_t __in_flash() bass_raw[] = {\n\t");
   while (fread(&integer, sizeof(int16_t), 1, fp) == 1) {
     printf("%d,", integer);
     i++;
@@ -31,9 +30,6 @@ int main(int argc, char *argv[]) {
       printf("\n\t");
     }
   }
-  printf("\n};\n");
-
-  printf("#define BASS_RAW_LEN %d\n", i);
 
   // Close the file.
   fclose(fp);
