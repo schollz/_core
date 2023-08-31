@@ -36,9 +36,15 @@ audio2:
 
 bass:
 	sox lib/audio/bass_e.wav /tmp/1.wav fade 0.001 -0 0.001 norm gain -6
-	sox /tmp/1.wav -c 1 --bits 16 --encoding signed-integer --endian little -t raw bass.raw
 	gcc -o /tmp/convert lib/convert.c
-	/tmp/convert bass.raw > lib/bass_raw.h
+	rm -rf lib/bass_raw.h
+	touch lib/bass_raw.h
+	sox /tmp/1.wav -c 1 --bits 16 --encoding signed-integer --endian little /tmp/0.wav
+	sox /tmp/0.wav -t raw /tmp/0.raw
+	/tmp/convert /tmp/0.raw 0 >> lib/bass_raw.h
+	sox /tmp/0.wav /tmp/1.wav speed 2.0
+	sox /tmp/1.wav -t raw /tmp/1.raw
+	/tmp/convert /tmp/1.raw 1 >> lib/bass_raw.h
 
 clean:
 	rm -rf build
