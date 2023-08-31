@@ -8,6 +8,7 @@ blocks = 30
 
 print(
     """
+#ifndef CROSSFADE_LIB
 const uint8_t __in_flash() crossfade_raw[] = {"""
 )
 for _, scaler in enumerate(range(101)):
@@ -26,12 +27,22 @@ print("\n};")
 
 print(
     """
-#define CROSSFADE_UPDATE_SAMPLES """+str(samples_per_block)+"""
-#define CROSSFADE_MAX """+str(blocks*samples_per_block)+""" 
+#define CROSSFADE_UPDATE_SAMPLES """
+    + str(samples_per_block)
+    + """
+#define CROSSFADE_MAX """
+    + str(blocks * samples_per_block)
+    + """ 
 uint8_t crossfade_vol(uint8_t current_vol, uint16_t phase_since) {
     if (current_vol==0 || phase_since >= CROSSFADE_MAX) {
         return 0;
     }
-    return crossfade_raw[(current_vol-1)*"""+str(blocks)+"""+(phase_since/CROSSFADE_UPDATE_SAMPLES)];
-}"""
+    return crossfade_raw[(current_vol-1)*"""
+    + str(blocks)
+    + """+(phase_since/CROSSFADE_UPDATE_SAMPLES)];
+}
+
+#define CROSSFADE_LIB 1
+#endif
+"""
 )
