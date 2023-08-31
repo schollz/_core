@@ -24,6 +24,7 @@
 
 #ifndef BASS_LIB
 #include "bass_raw.h"
+#include "crossfade.h"
 
 typedef struct Bass {
   uint32_t phase[2];
@@ -59,8 +60,7 @@ void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
       uint vol = volmain;
       if (bass->phases_since_last[head] < CROSSFADE_MAX) {
         if (head == 0) {
-          vol =
-              vol_main - crossfade_vol(volmain, bass->phases_since_last[head]);
+          vol = volmain - crossfade_vol(volmain, bass->phases_since_last[head]);
         } else {
           vol = crossfade_vol(volmain, bass->phases_since_last[head]);
         }
@@ -69,7 +69,7 @@ void Bass_callback(Bass *bass, int32_t *samples, uint32_t sample_count,
         continue;
       }
 
-      int32_t value0 = (vol * 2 * bass_raw[bass->phase]) << 8u;
+      int32_t value0 = (vol * 2 * bass_raw[bass->phase[head]]) << 8u;
       value0 = value0 + (value0 >> 16u);
       samples[i * 2 + 0] = samples[i * 2 + 0] + value0;  // L
       samples[i * 2 + 1] = samples[i * 2 + 1] + value0;  // R
