@@ -63,7 +63,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_CLK_GPIO=14 # LCK=15
     AUDIO_DIN_GPIO=16
     # includes for different versions
-    # INCLUDE_STEREO=1
+    INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )

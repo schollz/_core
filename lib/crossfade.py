@@ -7,10 +7,9 @@ samples_per_block = 32
 blocks = 30
 
 print("#ifndef CROSSFADE_LIB")
+print(f"static uint crossfade_raw[101][{blocks}] = {{")
 for _, scaler in enumerate(range(101)):
-    if scaler == 0:
-        continue
-    print(f"const uint crossfade{scaler}[{blocks}] = {{")
+    print("{", end="")
     for v in range(blocks):
         x = float(v) / blocks
         x = round(
@@ -18,35 +17,21 @@ for _, scaler in enumerate(range(101)):
             * ((1 - math.sin(4 * math.pi * (x / 4) + math.pi / 2 + math.pi)) / 2)
         )
         print("{},".format(x), end="")
-    print("\n};\n", end="")
-
+    print("},\n", end="")
+print("};\n")
 print(f"static uint32_t CROSSFADE_UPDATE_SAMPLES = {samples_per_block};\n")
 print(f"static uint32_t CROSSFADE_MAX = {blocks * samples_per_block};\n")
 
 print(
-    """uint crossfade_vol(uint8_t current_vol, uint32_t phase_since) {
+    """uint crossfade_vol(uint current_vol, uint32_t phase_since) {
     if (current_vol==0 || phase_since >= CROSSFADE_MAX) {
         return 0;
     }
     """
 )
 print(f"phase_since = phase_since / {samples_per_block};")
-for _, scaler in enumerate(range(101)):
-    if scaler == 0:
-        continue
-    if scaler == 1:
-        print("if ", end="")
-    else:
-        print("else if ", end="")
-    print(f"(current_vol=={scaler}) {{")
-    print(f"return crossfade{scaler}[phase_since];")
-    print("}", end="")
+print("return crossfade_raw[current_vol][phase_since];")
 print("\n}")
-#    return crossfade_raw[(current_vol-1)*"""
-#     + str(blocks)
-#     + """+(phase_since/CROSSFADE_UPDATE_SAMPLES)];
-# }
-
 print(
     """
 #define CROSSFADE_LIB 1
