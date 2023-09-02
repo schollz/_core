@@ -346,7 +346,7 @@ int main() {
         printf("current beat: %d, phase_new: %d, cpu util: %d\n", beat_current,
                phase_new, cpu_utilization);
 #ifdef INCLUDE_BASS
-        Bass_trig(bass);
+        Bass_trig(bass, 0);
 #endif
       }
       if (c == '[') {
@@ -761,7 +761,7 @@ void i2s_callback_func() {
     }
 #ifdef INCLUDE_BASS
     // add bass
-    Bass_callback(bass, samples, buffer->max_sample_count, sf->vol);
+    Bass_callback(bass, samples, buffer->max_sample_count);
 #endif
   }
 

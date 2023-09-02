@@ -35,19 +35,12 @@ audio2:
 	sox lib/audio/amen_0efedaab_beats8_bpm165.flac -c 2 --bits 16 --encoding signed-integer --endian little amen_bpm165_beats8_stereo.wav
 
 bass:
-	sox lib/audio/bass_e.wav /tmp/1.wav fade 0.001 -0 0.001 norm gain -6
-	gcc -o /tmp/convert lib/convert.c
-	rm -rf lib/bass_raw.h
-	touch lib/bass_raw.h
-	sox /tmp/1.wav -c 1 --bits 16 --encoding signed-integer --endian little /tmp/0.wav
-	sox /tmp/0.wav -t raw /tmp/0.raw
-	/tmp/convert /tmp/0.raw 0 >> lib/bass_raw.h
-	sox /tmp/0.wav /tmp/1.wav speed 2.0
-	sox /tmp/1.wav -t raw /tmp/1.raw
-	/tmp/convert /tmp/1.raw 1 >> lib/bass_raw.h
+	cd lib && python3 bass_raw.py audio/bass_e.wav bass_sample.h
 
 clean:
 	rm -rf build
 	rm -rf *.wav
 	rm -rf lib/biquad.h
 
+debug:
+	sudo minicom -b 115200 -o -D /dev/ttyACM
