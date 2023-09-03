@@ -21,10 +21,12 @@ add_executable(${PROJECT_NAME}
     main.c
     hw_config.c
     lib/pcg_basic.c
-    lib/WS2812.c
+    # lib/WS2812.c
 )
 
-pico_generate_pio_header(zeptocore lib/WS2812.pio)
+# pico_generate_pio_header(zeptocore 
+#     lib/WS2812.pio
+# )
 
 # Tell CMake where to find other source code
 add_subdirectory(lib/my_pico_audio)
@@ -61,11 +63,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     #define for our example code
     USE_AUDIO_I2S=1
     SDCARD_USE_CD=false
-    SDCARD_CD_GPIO=16 # not used...
+    SDCARD_CD_GPIO=21 # not used...
     SDCARD_CMD_GPIO=18
     SDCARD_D0_GPIO=19 # CLK=17,D1=20,D2=21,D3=22
     AUDIO_CLK_GPIO=14 # LCK=15
-    AUDIO_DIN_GPIO=16
+    AUDIO_DIN_GPIO=13
     # includes for different versions
     # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
