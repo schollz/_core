@@ -19,6 +19,11 @@ pico-extras:
 upload: dobuild
 	./dev/upload.sh 
 
+bootreset: dobuild
+	python3 dev/reset_pico.py /dev/ttyACM0
+
+autoload: dobuild bootreset upload
+
 build:
 	rm -rf build
 	mkdir build

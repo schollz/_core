@@ -57,7 +57,7 @@
 #ifdef INCLUDE_BASS
 #include "lib/bass.h"
 #endif
-#include "lib/WS2812.hpp"
+// #include "lib/WS2812.hpp"
 #include "lib/biquad.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
@@ -534,7 +534,7 @@ int main() {
         //   printf("%d\n", sf->vol - crossfade_vol(sf->vol, i));
         // }
       }
-      printf("sf->vol = %d      \r", sf->vol);
+      // printf("sf->vol = %d      \r", sf->vol);
     }
   }
 }
