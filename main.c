@@ -32,11 +32,14 @@
 
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "hardware/pio.h"
 #include "hardware/pll.h"
 #include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
 #include "pico/audio_i2s.h"
 #include "pico/stdlib.h"
+#include "pico/types.h"
+
 //
 #include "ff.h" /* Obtains integer types */
 //
@@ -54,6 +57,7 @@
 #ifdef INCLUDE_BASS
 #include "lib/bass.h"
 #endif
+#include "lib/WS2812.hpp"
 #include "lib/biquad.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
