@@ -76,18 +76,29 @@ Charlieplex *Charlieplex_create() {
 }
 
 void Charlieplex_update(Charlieplex *cp) {
-  for (uint8_t i = 0; i < 5; i++) {
-    gpio_set_dir(cp->gpios[i], GPIO_IN);
-  }
-  gpio_set_dir(cp->gpios[cp->row], GPIO_OUT);
-  gpio_put(cp->gpios[cp->row], 1);
-
+  bool do_light = false;
   for (uint8_t i = 0; i < 20; i++) {
     if (cp->values[i] > 0 && cp->startpoints[i] == cp->row) {
-      gpio_set_dir(cp->gpios[cp->endpoints[i]], GPIO_OUT);
-      gpio_put(cp->gpios[cp->endpoints[i]], 0);
+      do_light = true;
+      break;
     }
   }
+  if (do_light) {
+    for (uint8_t i = 0; i < 5; i++) {
+      gpio_set_dir(cp->gpios[i], GPIO_IN);
+    }
+
+    gpio_set_dir(cp->gpios[cp->row], GPIO_OUT);
+    gpio_put(cp->gpios[cp->row], 1);
+
+    for (uint8_t i = 0; i < 20; i++) {
+      if (cp->values[i] > 0 && cp->startpoints[i] == cp->row) {
+        gpio_set_dir(cp->gpios[cp->endpoints[i]], GPIO_OUT);
+        gpio_put(cp->gpios[cp->endpoints[i]], 0);
+      }
+    }
+  }
+
   // update the curent row
   cp->row++;
   if (cp->row == 5) {
@@ -104,20 +115,40 @@ void Charlieplex_set(Charlieplex *cp, uint8_t pin, uint8_t val) {
 int main(void) {
   stdio_init_all();
 
+  // for (uint8_t i = 0; i < 5; i++) {
+  //   gpio_init(i);
+  //   gpio_pull_down(i);
+  // }
+  // gpio_set_dir(2, GPIO_IN);
+  // gpio_set_dir(3, GPIO_IN);
+  // gpio_set_dir(4, GPIO_IN);
+  // gpio_set_dir(1, GPIO_OUT);
+  // gpio_put(1, 0);
+  // gpio_set_dir(0, GPIO_OUT);
+  // gpio_put(0, 1);
+
   Charlieplex *cp;
   cp = Charlieplex_create();
   uint8_t c = 0;
+  uint8_t d = 0;
+
   while (true) {
+    sleep_ms(1);
+
     // reset all
     for (uint8_t i = 0; i < 20; i++) {
       Charlieplex_set(cp, i, 0);
     }
     Charlieplex_set(cp, c, 1);
     Charlieplex_update(cp);
-    sleep_ms(200);
-    c++;
-    if (c == 20) {
-      c = 0;
+
+    d++;
+    if (d == 0) {
+      printf("c: %d\n", c);
+      c++;
+      if (c == 20) {
+        c = 0;
+      }
     }
   }
   return 0;
