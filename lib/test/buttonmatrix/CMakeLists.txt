@@ -29,7 +29,11 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}.c)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_stdlib
         hardware_pio
-        )
+ )
+
+# enable usb output, disable uart output
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
