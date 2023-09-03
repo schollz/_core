@@ -21,7 +21,10 @@ add_executable(${PROJECT_NAME}
     main.c
     hw_config.c
     lib/pcg_basic.c
+    lib/WS2812.c
 )
+
+pico_generate_pio_header(zeptocore lib/WS2812.pio)
 
 # Tell CMake where to find other source code
 add_subdirectory(lib/my_pico_audio)
@@ -38,6 +41,7 @@ target_link_libraries(${PROJECT_NAME}
     FatFs_SPI
     hardware_clocks
     hardware_adc
+    hardware_pio
 )
 
 # target_compile_options(command_line PUBLIC -Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
@@ -63,7 +67,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_CLK_GPIO=14 # LCK=15
     AUDIO_DIN_GPIO=16
     # includes for different versions
-    INCLUDE_STEREO=1
+    # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )
