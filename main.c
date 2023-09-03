@@ -330,6 +330,9 @@ int main() {
   // initialize random library
   pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
 
+  sleep_ms(1000);
+  sdcard_startup();
+
   while (true) {
     int c = getchar_timeout_us(0);
     if (c >= 0) {
