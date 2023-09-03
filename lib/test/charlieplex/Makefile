@@ -7,3 +7,6 @@ build:
 
 clean:
 	rm -rf build
+
+upload: buildit
+	./upload.sh 
