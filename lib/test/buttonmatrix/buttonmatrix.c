@@ -13,7 +13,7 @@ typedef struct ButtonMatrix {
 ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   ButtonMatrix *bm = (ButtonMatrix *)malloc(sizeof(ButtonMatrix));
   bm->pio = pio0;
-  bm->sm = 0;
+  bm->sm = 1;
 
   for (int i = 0; i < 4; i++) {
     pio_gpio_init(bm->pio, base_output + i);
@@ -26,7 +26,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   sm_config_set_in_pins(&c, base_input);
   pio_sm_set_consecutive_pindirs(bm->pio, bm->sm, base_output, 4, true);
   sm_config_set_set_pins(&c, base_output, 4);
-  sm_config_set_in_shift(&c, false, false, 0);  // Corrected the shift setup
+  sm_config_set_in_shift(&c, 0, 0, 0);  // Corrected the shift setup
   pio_sm_init(bm->pio, bm->sm, offset, &c);
   pio_sm_set_enabled(bm->pio, bm->sm, true);
 
@@ -66,15 +66,15 @@ int main(void) {
   stdio_init_all();
 
   ButtonMatrix *bm;
-  bm = ButtonMatrix_create(7, 12);
-  uint32_t keys_last;
+  bm = ButtonMatrix_create(5,9);
+  uint32_t keys_last = 0;
   while (1) {
     uint32_t keys = ButtonMatrix_read(bm);
     if (keys != keys_last) {
       printBinaryRepresentation(keys);
       keys_last = keys;
     }
-    sleep_ms(1000);
+    sleep_ms(1);
   }
 
   return 0;
