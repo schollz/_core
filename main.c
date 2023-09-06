@@ -58,7 +58,9 @@
 #ifdef INCLUDE_BASS
 #include "lib/bass.h"
 #endif
-// #include "lib/WS2812.hpp"
+#ifdef INCLUDE_RGBLED
+#include "lib/WS2812.h"
+#endif
 #include "lib/biquad.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
@@ -286,6 +288,9 @@ int16_t transfer_fn(int16_t v) {
 
 IIR *myFilter0;
 IIR *myFilter1;
+#ifdef INCLUDE_RGBLED
+WS2812 *ws2812;
+#endif
 
 void core1_main() {
   float freqs[14] = {200,  300,  400,  600,  800,  1200,  1600,
@@ -372,6 +377,27 @@ int main() {
   sdcard_startup();
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
   myFilter1 = IIR_new(7200.0f, 0.707f, 1.0f, 44100.0f);
+
+#ifdef INCLUDE_RGBLED
+  ws2812 = WS2812_new(23, pio0, 2);
+  for (uint8_t i = 0; i < 255; i++) {
+    WS2812_fill(ws2812, i, 0, 0);
+    WS2812_show(ws2812);
+    sleep_ms(4);
+  }
+  for (uint8_t i = 0; i < 255; i++) {
+    WS2812_fill(ws2812, 0, i, 0);
+    WS2812_show(ws2812);
+    sleep_ms(4);
+  }
+  for (uint8_t i = 0; i < 255; i++) {
+    WS2812_fill(ws2812, 0, 0, i);
+    WS2812_show(ws2812);
+    sleep_ms(4);
+  }
+  WS2812_fill(ws2812, 20, 20, 0);
+  WS2812_show(ws2812);
+#endif
 
   while (true) {
     int c = getchar_timeout_us(0);
