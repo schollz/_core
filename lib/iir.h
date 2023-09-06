@@ -4,7 +4,7 @@
 
 #define CLAMP(x, a, b) (x > a ? a : (x < b ? b : x))
 
-#define q (15)
+#define q (31)
 #define scaleQ (powf(2.0, q))
 
 #define ACC_MAX ((int64_t)0x7FFFFFFFFF)
@@ -64,16 +64,6 @@ IIR *IIR_new(float Fc, float Q, float peakGain, float Fs) {
   a2 = a0;
   b1 = 2 * (K * K - 1) * norm;
   b2 = (1 - K / Q + K * K) * norm;
-  printf("norm: %2.5f\n", norm);
-  printf("a0: %2.5f\n", a0);
-  printf("a1: %2.5f\n", a1);
-  printf("a2: %2.5f\n", a2);
-  printf("b1: %2.5f\n", b1);
-  printf("b2: %2.5f\n", b2);
-  printf("K: %2.5f\n", K);
-  printf("scaleQ: %2.5f\n", scaleQ);
-  printf("(a0 * scaleQ): %2.5f\n", (a0 * scaleQ));
-  printf("int32_t(a0 * scaleQ): %d\n", (int32_t)(a0 * scaleQ));
 
   filter->b[0] = (int32_t)(a0 * scaleQ);
   filter->b[1] = (int32_t)(a1 * scaleQ);
@@ -86,11 +76,21 @@ IIR *IIR_new(float Fc, float Q, float peakGain, float Fs) {
   filter->y[1] = 0;
   filter->state_error = 0;
 
-  printf("filter->b[0]: %d\n", filter->b[0]);
-  printf("filter->b[1]: %d\n", filter->b[1]);
-  printf("filter->b[2]: %d\n", filter->b[2]);
-  printf("filter->a[0]: %d\n", filter->a[0]);
-  printf("filter->a[1]: %d\n", filter->a[1]);
+  // printf("norm: %2.5f\n", norm);
+  // printf("a0: %2.5f\n", a0);
+  // printf("a1: %2.5f\n", a1);
+  // printf("a2: %2.5f\n", a2);
+  // printf("b1: %2.5f\n", b1);
+  // printf("b2: %2.5f\n", b2);
+  // printf("K: %2.5f\n", K);
+  // printf("scaleQ: %2.5f\n", scaleQ);
+  // printf("(a0 * scaleQ): %2.5f\n", (a0 * scaleQ));
+  // printf("int32_t(a0 * scaleQ): %d\n", (int32_t)(a0 * scaleQ));
+  // printf("filter->b[0]: %d\n", filter->b[0]);
+  // printf("filter->b[1]: %d\n", filter->b[1]);
+  // printf("filter->b[2]: %d\n", filter->b[2]);
+  // printf("filter->a[0]: %d\n", filter->a[0]);
+  // printf("filter->a[1]: %d\n", filter->a[1]);
 
   return filter;
 }
