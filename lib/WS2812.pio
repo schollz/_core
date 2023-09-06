@@ -2,10 +2,6 @@
 ; supplied by Raspberry Pi (Trading) Ltd.
 ;
 ;   Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
-;
-; and code released under the GNU GPL-3 license
-; supplied by ForsakenNGS
-; Copyright (c) 2022 ForsakenNGS
 
 .program ws2812
 .side_set 1
@@ -13,10 +9,6 @@
 .define public T1 2
 .define public T2 5
 .define public T3 3
-
-.lang_opt python sideset_init = pico.PIO.OUT_HIGH
-.lang_opt python out_init     = pico.PIO.OUT_HIGH
-.lang_opt python out_shiftdir = 1
 
 .wrap_target
 
