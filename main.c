@@ -37,6 +37,7 @@
 #include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
 #include "pico/audio_i2s.h"
+#include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "pico/types.h"
 
@@ -286,6 +287,13 @@ int16_t transfer_fn(int16_t v) {
 IIR *myFilter0;
 IIR *myFilter1;
 
+void core1_main() {
+  while (1) {
+    printf("hello world from second core\n");
+    sleep_ms(1000);
+  }
+}
+
 int main() {
   // // Initialize chosen serial port
 
@@ -319,6 +327,9 @@ int main() {
   // but called here to set up the GPIOs
   // before enabling the card detect interrupt:
   sd_init_driver();
+
+  // init multicore
+  multicore_launch_core1(core1_main);
 
   // init timers
   // Negative delay so means we will call repeating_timer_callback, and call it
