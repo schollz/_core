@@ -39,6 +39,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 # Link to pico_stdlib (gpio, time, etc. functions)
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
+    pico_multicore
     my_pico_audio_i2s
     FatFs_SPI
     hardware_clocks
