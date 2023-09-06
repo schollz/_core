@@ -63,6 +63,7 @@
 #include "lib/envelope2.h"
 #include "lib/envelopegate.h"
 #include "lib/file_list.h"
+#include "lib/iir.h"
 #include "lib/noise.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
@@ -282,6 +283,9 @@ int16_t transfer_fn(int16_t v) {
 #endif
 }
 
+IIR *myFilter0;
+IIR *myFilter1;
+
 int main() {
   // // Initialize chosen serial port
 
@@ -332,6 +336,8 @@ int main() {
 
   sleep_ms(1000);
   sdcard_startup();
+  myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
+  myFilter1 = IIR_new(7200.0f, 0.707f, 1.0f, 44100.0f);
 
   while (true) {
     int c = getchar_timeout_us(0);
@@ -713,6 +719,7 @@ void i2s_callback_func() {
 
         newArray[i] = transfer_fn(newArray[i]);
         int32_t value0 = (vol * newArray[i]) << 8u;
+        IIR_filter(myFilter0, &value0);
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
@@ -753,8 +760,10 @@ void i2s_callback_func() {
 
         newArrayL[i] = transfer_fn(newArrayL[i]);
         int32_t value0 = (vol * newArrayL[i]) << 8u;
+        IIR_filter(myFilter0, &value0);
         newArrayR[i] = transfer_fn(newArrayR[i]);
         int32_t value1 = (vol * newArrayR[i]) << 8u;
+        IIR_filter(myFilter1, &value1);
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] =
