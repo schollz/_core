@@ -21,17 +21,16 @@ add_executable(${PROJECT_NAME}
     main.c
     hw_config.c
     lib/pcg_basic.c
-    # lib/WS2812.c
 )
 
-# pico_generate_pio_header(zeptocore 
-#     lib/WS2812.pio
-# )
 
 # Tell CMake where to find other source code
 add_subdirectory(lib/my_pico_audio)
 add_subdirectory(lib/my_pico_audio_i2s)
 add_subdirectory(lib/sdio build)
+
+# generate pio
+pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/WS2812.pio)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${PROJECT_NAME})
@@ -70,6 +69,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_CLK_GPIO=14 # LCK=15
     AUDIO_DIN_GPIO=13
     # includes for different versions
+    INCLUDE_RGBLED=1
     # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
