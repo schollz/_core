@@ -288,9 +288,28 @@ IIR *myFilter0;
 IIR *myFilter1;
 
 void core1_main() {
+  float freqs[14] = {200,  300,  400,  600,  800,  1200,  1600,
+                     2400, 3200, 4800, 6400, 9600, 12800, 18000};
+  uint adc0 = 0;
   while (1) {
-    printf("hello world from second core\n");
-    sleep_ms(1000);
+    sleep_ms(10);
+    adc_select_input(0);
+    sleep_ms(1);
+    float adc_temp = adc_read() * 40 / 4096 + 90;
+    if (adc_temp != adc0) {
+      adc0 = adc_temp;
+      float new_freq = powf(2.0f, (adc_temp - 69.0f) / 12.0f) * 440.0f;
+      // printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
+      myFilter0 = IIR_new(new_freq, 3.0f, 1.0f, 44100.0f);
+    }
+    sleep_ms(1);
+    adc_select_input(2);
+    sleep_ms(1);
+    uint8_t new_vol = adc_read() * 100 / 4096;
+    if (new_vol != sf->vol) {
+      sf->vol = new_vol;
+      // printf("sf-vol: %d\n", sf->vol);
+    }
   }
 }
 
@@ -329,6 +348,10 @@ int main() {
   sd_init_driver();
 
   // init multicore
+  adc_init();
+  adc_gpio_init(26);
+  adc_gpio_init(27);
+  adc_gpio_init(28);
   multicore_launch_core1(core1_main);
 
   // init timers
