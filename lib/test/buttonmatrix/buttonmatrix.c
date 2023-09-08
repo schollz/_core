@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../../sort.h"
 #include "hardware/pio.h"
 #include "pico/stdlib.h"
 //
@@ -13,10 +14,11 @@ int main(void) {
   bm = ButtonMatrix_create(5, 9);
   while (1) {
     ButtonMatrix_read(bm);
-    if (ButtonMatrix_changed(bm)) {
-      printf("pressed %d buttons\n", ButtonMatrix_num_pressed(bm));
-      // ButtonMatrix_print_history(bm);
-      ButtonMatrix_print_buttons(bm);
+    if (bm->changed) {
+      for (uint8_t i = 0; i < bm->num_pressed; i++) {
+        printf("%d ", bm->on[i]);
+      }
+      printf("\n");
     }
     sleep_ms(1);
   }
