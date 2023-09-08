@@ -107,12 +107,14 @@ void Charlieplex_set(Charlieplex *cp, uint8_t pin, uint8_t val) {
   return;
 }
 
-void Charlieplex_toggle(Charlieplex *cp, uint8_t pin) {
-  cp->values[pin] = 1 - cp->values[pin];
+void Charlieplex_reset(Charlieplex *cp) {
   for (uint8_t i = 0; i < 20; i++) {
-    if (i != pin) {
-      cp->values[i] = 0;
-    }
+    cp->values[i] = 0;
   }
+}
+
+void Charlieplex_toggle(Charlieplex *cp, uint8_t pin) {
+  Charlieplex_reset(cp);
+  cp->values[pin] = 1;
   return;
 }
