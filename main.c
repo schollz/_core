@@ -131,6 +131,7 @@ Envelope2 *envelope_pitch;
 EnvelopeGate *envelopegate;
 Noise *noise_wobble;
 uint vols[2];
+
 float vol3 = 0;
 float envelope_pitch_val;
 float envelope_wobble_val;
@@ -299,17 +300,17 @@ void core1_main() {
                      2400, 3200, 4800, 6400, 9600, 12800, 18000};
   uint adc0 = 0;
   while (1) {
-    sleep_ms(10);
     adc_select_input(0);
     sleep_ms(1);
     float adc_temp = adc_read() * 40 / 4096 + 90;
     if (adc_temp != adc0) {
       adc0 = adc_temp;
       float new_freq = powf(2.0f, (adc_temp - 69.0f) / 12.0f) * 440.0f;
-      // printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
+// printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
+#ifdef INCLUDE_FILTER
       myFilter0 = IIR_new(new_freq, 3.0f, 1.0f, 44100.0f);
+#endif
     }
-    sleep_ms(1);
     adc_select_input(2);
     sleep_ms(1);
     uint8_t new_vol = adc_read() * 100 / 4096;
@@ -323,6 +324,30 @@ void core1_main() {
         printf("%d ", bm->on[i]);
       }
       printf("\n");
+      if (bm->changed_on) {
+        if (bm->num_pressed == 1) {
+          beat_current = bm->on[0] * 2;
+
+          phase_new = (file_list->size[fil_current_id]) * bm->on[0] / 16;
+          phase_new = (phase_new / 4) * 4;
+          phase_change = true;
+          debounce_quantize = 2;
+        } else if (bm->num_pressed == 2) {
+          debounce_quantize = 0;
+          retrig_first = true;
+          retrig_beat_num = random_integer_in_range(8, 24);
+          retrig_timer_reset = 96 * random_integer_in_range(1, 4) /
+                               random_integer_in_range(2, 12);
+          float total_time =
+              (float)(retrig_beat_num * retrig_timer_reset * 60) /
+              (float)(96 * sf->bpm_tempo);
+          retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+          printf(
+              "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
+              retrig_beat_num, retrig_timer_reset, total_time);
+          retrig_ready = true;
+        }
+      }
     }
   }
 }
@@ -387,29 +412,39 @@ int main() {
 
   sleep_ms(1000);
   sdcard_startup();
+
+#ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
   myFilter1 = IIR_new(7200.0f, 0.707f, 1.0f, 44100.0f);
-
+#endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);
-  for (uint8_t i = 0; i < 255; i++) {
-    WS2812_fill(ws2812, i, 0, 0);
-    WS2812_show(ws2812);
-    sleep_ms(4);
-  }
-  for (uint8_t i = 0; i < 255; i++) {
-    WS2812_fill(ws2812, 0, i, 0);
-    WS2812_show(ws2812);
-    sleep_ms(4);
-  }
-  for (uint8_t i = 0; i < 255; i++) {
-    WS2812_fill(ws2812, 0, 0, i);
-    WS2812_show(ws2812);
-    sleep_ms(4);
-  }
-  WS2812_fill(ws2812, 20, 20, 0);
+  sleep_ms(1);
+  WS2812_fill(ws2812, 0, 0, 0);
+  sleep_ms(1);
   WS2812_show(ws2812);
+  // for (uint8_t i = 0; i < 255; i++) {
+  //   WS2812_fill(ws2812, i, 0, 0);
+  //   WS2812_show(ws2812);
+  //   sleep_ms(4);
+  // }
+  // for (uint8_t i = 0; i < 255; i++) {
+  //   WS2812_fill(ws2812, 0, i, 0);
+  //   WS2812_show(ws2812);
+  //   sleep_ms(4);
+  // }
+  // for (uint8_t i = 0; i < 255; i++) {
+  //   WS2812_fill(ws2812, 0, 0, i);
+  //   WS2812_show(ws2812);
+  //   sleep_ms(4);
+  // }
+  // WS2812_fill(ws2812, 20, 20, 0);
+  // WS2812_show(ws2812);
 #endif
+
+  // debug stuff
+  fil_current_id_next = 1;
+  fil_current_change = true;
 
   while (true) {
     int c = getchar_timeout_us(0);
@@ -791,7 +826,9 @@ void i2s_callback_func() {
 
         newArray[i] = transfer_fn(newArray[i]);
         int32_t value0 = (vol * newArray[i]) << 8u;
+#ifdef INCLUDE_FILTER
         IIR_filter(myFilter0, &value0);
+#endif
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
@@ -832,10 +869,14 @@ void i2s_callback_func() {
 
         newArrayL[i] = transfer_fn(newArrayL[i]);
         int32_t value0 = (vol * newArrayL[i]) << 8u;
+#ifdef INCLUDE_FILTER
         IIR_filter(myFilter0, &value0);
+#endif
         newArrayR[i] = transfer_fn(newArrayR[i]);
         int32_t value1 = (vol * newArrayR[i]) << 8u;
+#ifdef INCLUDE_FILTER
         IIR_filter(myFilter1, &value1);
+#endif
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
         samples[i * 2 + 1] =
