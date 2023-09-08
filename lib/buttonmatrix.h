@@ -149,6 +149,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
           j++;
         }
       }
+      free(indexes);
     }
     if (value > bm->last_value) {
       bm->changed_on = true;
