@@ -1,4 +1,5 @@
 #include "buttonmatrix.pio.h"
+#include "sort.h"
 
 #define BUTTONMATRIX_BUTTONS_MAX 16
 
@@ -6,7 +7,7 @@ typedef struct ButtonMatrix {
   PIO pio;
   uint sm;
   uint8_t mapping[BUTTONMATRIX_BUTTONS_MAX];
-  int16_t on[BUTTONMATRIX_BUTTONS_MAX];
+  int16_t on_buttons[BUTTONMATRIX_BUTTONS_MAX];
   int16_t num_presses;
   bool changed;
   uint8_t num_pressed;
@@ -38,14 +39,14 @@ void ButtonMatrix_dec_to_binary(ButtonMatrix *bm, uint32_t num) {
 void ButtonMatrix_reset(ButtonMatrix *bm) {
   bm->num_presses = 0;
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-    bm->on[i] = -1;
+    bm->on_buttons[i] = -1;
   }
   return;
 }
 
 void ButtonMatrix_print_buttons(ButtonMatrix *bm) {
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-    printf("%d) %d\n", i, bm->on[i]);
+    printf("%d) %d\n", i, bm->on_buttons[i]);
   }
   printf("\n");
   return;
@@ -83,7 +84,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   bm->mapping[15] = 12;
 
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-    bm->on[i] = -1;  // -1 == off
+    bm->on_buttons[i] = -1;  // -1 == off
   }
 
   uint offset = pio_add_program(bm->pio, &button_matrix_program);
@@ -122,12 +123,12 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
       uint8_t j = bm->mapping[i];
       if ((value >> i) & 1) {
         // button turned off to on
-        if (bm->on[j] == -1) {
-          bm->on[j] = bm->num_presses;
+        if (bm->on_buttons[j] == -1) {
+          bm->on_buttons[j] = bm->num_presses;
         }
-      } else if (bm->on[j] > -1) {
+      } else if (bm->on_buttons[j] > -1) {
         // button turned on to off
-        bm->on[j] = -1;
+        bm->on_buttons[j] = -1;
       }
     }
   }
