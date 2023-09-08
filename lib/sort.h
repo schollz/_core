@@ -1,3 +1,5 @@
+#ifndef SORT_LIB
+#define SORT_LIB
 
 uint16_t *sort_int16_t(int16_t array[], int n) {
   // Create an auxiliary array to store the indexes.
@@ -20,3 +22,5 @@ uint16_t *sort_int16_t(int16_t array[], int n) {
 
   return indexes;
 }
+
+#endif
