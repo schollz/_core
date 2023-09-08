@@ -1,4 +1,5 @@
 #include "buttonmatrix.pio.h"
+#include "sort.h"
 
 #define BUTTONMATRIX_BUTTONS_MAX 16
 
