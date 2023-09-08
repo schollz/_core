@@ -62,6 +62,7 @@
 #include "lib/WS2812.h"
 #endif
 #include "lib/biquad.h"
+#include "lib/buttonmatrix.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
 #include "lib/envelopegate.h"
@@ -146,6 +147,7 @@ float retrig_vol = 1.0;
 float retrig_vol_step = 0;
 
 SaveFile *sf;
+ButtonMatrix *bm;
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
@@ -372,6 +374,9 @@ int main() {
 
   // initialize random library
   pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
+
+  // initialize button matrix
+  bm = ButtonMatrix_create(5, 9);
 
   sleep_ms(1000);
   sdcard_startup();
