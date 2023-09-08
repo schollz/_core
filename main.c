@@ -63,6 +63,7 @@
 #endif
 #include "lib/biquad.h"
 #include "lib/buttonmatrix.h"
+#include "lib/charlieplex.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
 #include "lib/envelopegate.h"
@@ -86,6 +87,7 @@
 #define WAV_CHANNELS 1
 #endif
 
+#define MAX_VOLUME 100
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
 static int PHASE_DIVISOR = WAV_CHANNELS * 2;
 
@@ -149,6 +151,8 @@ float retrig_vol_step = 0;
 
 SaveFile *sf;
 ButtonMatrix *bm;
+Charlieplex *cp;
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
@@ -162,8 +166,10 @@ int random_integer_in_range(int min, int max) {
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (bpm_last != sf->bpm_tempo) {
+    printf("updating bpm timer: %d-> %d\n", bpm_last, sf->bpm_tempo);
     bpm_last = sf->bpm_tempo;
-    printf("updaing bpm timer: %d\n", cancel_repeating_timer(&timer));
+
+    cancel_repeating_timer(&timer);
     add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                            repeating_timer_callback, NULL, &timer);
   }
@@ -227,6 +233,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
     }
   }
+  Charlieplex_toggle(cp, beat_current % 16);
   // printf("Repeat at %lld\n", time_us_64());
   return true;
 }
@@ -299,25 +306,32 @@ void core1_main() {
   float freqs[14] = {200,  300,  400,  600,  800,  1200,  1600,
                      2400, 3200, 4800, 6400, 9600, 12800, 18000};
   uint adc0 = 0;
+  uint pressed2 = 0;
   while (1) {
     adc_select_input(0);
     sleep_ms(1);
+
+    sf->bpm_tempo = adc_read() * 50 / 4096 * 5 + 50;
+#ifdef INCLUDE_FILTER
     float adc_temp = adc_read() * 40 / 4096 + 90;
     if (adc_temp != adc0) {
       adc0 = adc_temp;
       float new_freq = powf(2.0f, (adc_temp - 69.0f) / 12.0f) * 440.0f;
-// printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
-#ifdef INCLUDE_FILTER
+      // printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
       myFilter0 = IIR_new(new_freq, 3.0f, 1.0f, 44100.0f);
-#endif
     }
+#endif
+    // adc_select_input(1);
+    // sleep_ms(1);
+    // printf("adc1: %d\n", adc_read());
     adc_select_input(2);
     sleep_ms(1);
-    uint8_t new_vol = adc_read() * 100 / 4096;
+    uint8_t new_vol = adc_read() * MAX_VOLUME / 4096;
     if (new_vol != sf->vol) {
       sf->vol = new_vol;
       // printf("sf-vol: %d\n", sf->vol);
     }
+    Charlieplex_update(cp);
     ButtonMatrix_read(bm);
     if (bm->changed) {
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
@@ -325,14 +339,22 @@ void core1_main() {
       }
       printf("\n");
       if (bm->changed_on) {
-        if (bm->num_pressed == 1) {
-          beat_current = bm->on[0] * 2;
+        pressed2 = 0;
+        if (bm->num_pressed == 1 || bm->num_pressed == 2) {
+          beat_current = (beat_current / 16) * 16 + bm->on[bm->num_pressed - 1];
 
-          phase_new = (file_list->size[fil_current_id]) * bm->on[0] / 16;
+          phase_new = (file_list->size[fil_current_id]) *
+                      bm->on[bm->num_pressed - 1] / 16;
           phase_new = (phase_new / 4) * 4;
           phase_change = true;
           debounce_quantize = 2;
-        } else if (bm->num_pressed == 2) {
+        }
+      }
+    } else {
+      if (bm->num_pressed == 2 && pressed2 < 100) {
+        pressed2++;
+        if (pressed2 == 100) {
+          printf("debounce 2press\n");
           debounce_quantize = 0;
           retrig_first = true;
           retrig_beat_num = random_integer_in_range(8, 24);
@@ -341,6 +363,17 @@ void core1_main() {
           float total_time =
               (float)(retrig_beat_num * retrig_timer_reset * 60) /
               (float)(96 * sf->bpm_tempo);
+          if (total_time > 2.0f) {
+            total_time = total_time / 2;
+            retrig_timer_reset = retrig_timer_reset / 2;
+          }
+          if (total_time > 2.0f) {
+            total_time = total_time / 2;
+            retrig_beat_num = retrig_beat_num / 2;
+            if (retrig_beat_num == 0) {
+              retrig_beat_num = 1;
+            }
+          }
           retrig_vol_step = 1.0 / ((float)retrig_beat_num);
           printf(
               "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
@@ -409,6 +442,8 @@ int main() {
 
   // initialize button matrix
   bm = ButtonMatrix_create(5, 9);
+
+  cp = Charlieplex_create();
 
   sleep_ms(1000);
   sdcard_startup();
