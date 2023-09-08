@@ -36,15 +36,16 @@ void printBinaryRepresentation(unsigned int num) {
 }
 
 int main() {
-  unsigned int num;
+  unsigned int num1;
+  unsigned int num2;
 
-  printf("Enter a 32-bit unsigned integer: ");
-  scanf("%u", &num);
+  num1 = 12;
+  num2 = 8;
 
-  printf("Binary representation: ");
-  printBinaryRepresentation(num);
-  printf("%d\n", num << 8u);
-  printf("%d\n", (num << 8u) + ((num << 8u) >> 16u));
+  printBinaryRepresentation(num1);
+  printBinaryRepresentation(num2);
+  // printf("%d\n", num << 8u);
+  // printf("%d\n", (num << 8u) + ((num << 8u) >> 16u));
 
   return 0;
 }
