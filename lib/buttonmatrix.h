@@ -1,5 +1,4 @@
 #include "buttonmatrix.pio.h"
-#include "sort.h"
 
 #define BUTTONMATRIX_BUTTONS_MAX 16
 
@@ -8,13 +7,14 @@ typedef struct ButtonMatrix {
   uint sm;
   uint8_t mapping[BUTTONMATRIX_BUTTONS_MAX];
   int16_t on_buttons[BUTTONMATRIX_BUTTONS_MAX];
-  int16_t on[BUTTONMATRIX_BUTTONS_MAX];  // list which buttons are on
-  int16_t num_presses;
+  uint16_t on[BUTTONMATRIX_BUTTONS_MAX];  // list which buttons are on
+  uint16_t num_presses;
   bool changed;
   uint8_t num_pressed;
+  uint32_t last_value;
 } ButtonMatrix;
 
-uint8_t count_ones(uint32_t n) {
+inline uint8_t count_ones(uint32_t n) {
   int count = 0;
   while (n) {
     n &= (n - 1);
@@ -41,6 +41,7 @@ void ButtonMatrix_reset(ButtonMatrix *bm) {
   bm->num_presses = 0;
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     bm->on_buttons[i] = -1;
+    bm->on[i] = -1;
   }
   return;
 }
@@ -59,6 +60,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   bm->sm = 1;
   bm->changed = false;
   bm->num_pressed = 0;
+  bm->last_value = 0;
 
   for (int i = 0; i < 4; i++) {
     pio_gpio_init(bm->pio, base_output + i);
@@ -112,26 +114,37 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   }
 
   value = pio_sm_get(bm->pio, bm->sm);
-  if (value == 0) {
-    ButtonMatrix_reset(bm);
+  if (value != bm->last_value) {
     bm->changed = true;
-    bm->num_pressed = 0;
-  } else if (value > 0) {
-    bm->changed = true;
-    bm->num_presses++;
-    bm->num_pressed = count_ones(value);
-    for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-      uint8_t j = bm->mapping[i];
-      if ((value >> i) & 1) {
-        // button turned off to on
-        if (bm->on_buttons[j] == -1) {
-          bm->on_buttons[j] = bm->num_presses;
+    if (value == 0) {
+      ButtonMatrix_reset(bm);
+      bm->num_pressed = 0;
+    } else if (value > 0 && value != bm->last_value) {
+      bm->num_presses++;
+      bm->num_pressed = count_ones(value);
+      for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+        uint8_t j = bm->mapping[i];
+        if ((value >> i) & 1) {
+          // button turned off to on
+          if (bm->on_buttons[j] == -1) {
+            bm->on_buttons[j] = bm->num_presses;
+          }
+        } else if (bm->on_buttons[j] > -1) {
+          // button turned on to off
+          bm->on_buttons[j] = -1;
         }
-      } else if (bm->on_buttons[j] > -1) {
-        // button turned on to off
-        bm->on_buttons[j] = -1;
+      }
+      uint8_t j = 0;
+      uint16_t *indexes =
+          sort_int16_t(bm->on_buttons, BUTTONMATRIX_BUTTONS_MAX);
+      for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+        if (bm->on_buttons[indexes[i]] > -1) {
+          bm->on[j] = indexes[i];
+          j++;
+        }
       }
     }
+    bm->last_value = value;
   }
 }
 
