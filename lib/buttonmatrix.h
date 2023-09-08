@@ -11,6 +11,8 @@ typedef struct ButtonMatrix {
   uint16_t on[BUTTONMATRIX_BUTTONS_MAX];  // list which buttons are on
   uint16_t num_presses;
   bool changed;
+  bool changed_on;
+  bool changed_off;
   uint8_t num_pressed;
   uint32_t last_value;
 } ButtonMatrix;
@@ -105,6 +107,8 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
 
 void ButtonMatrix_read(ButtonMatrix *bm) {
   bm->changed = false;
+  bm->changed_off = false;
+  bm->changed_on = false;
   uint32_t value = 0;
 
   pio_sm_clear_fifos(bm->pio, bm->sm);
@@ -120,6 +124,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
     if (value == 0) {
       ButtonMatrix_reset(bm);
       bm->num_pressed = 0;
+      bm->changed_off = true;
     } else if (value > 0 && value != bm->last_value) {
       bm->num_presses++;
       bm->num_pressed = count_ones(value);
@@ -144,6 +149,11 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
           j++;
         }
       }
+    }
+    if (value > bm->last_value) {
+      bm->changed_on = true;
+    } else if (value < bm->last_value) {
+      bm->changed_off = true;
     }
     bm->last_value = value;
   }
