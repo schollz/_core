@@ -317,6 +317,13 @@ void core1_main() {
       sf->vol = new_vol;
       // printf("sf-vol: %d\n", sf->vol);
     }
+    ButtonMatrix_read(bm);
+    if (bm->changed) {
+      for (uint8_t i = 0; i < bm->num_pressed; i++) {
+        printf("%d ", bm->on[i]);
+      }
+      printf("\n");
+    }
   }
 }
 
