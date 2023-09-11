@@ -1,5 +1,5 @@
 dobuild: pico-extras lib/biquad.h build
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j4
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
