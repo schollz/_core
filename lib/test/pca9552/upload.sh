@@ -5,7 +5,7 @@ do
 if mount | grep RPI-RP2 > /dev/null; then
 	sleep 0.5
 	echo "uploading!"
-	time pv -batep build/charlieplex.uf2 > /media/zns/RPI-RP2/charlieplex.uf2
+	time pv -batep build/pca9552.uf2 > /media/zns/RPI-RP2/pca9552.uf2
 	exit
 fi
 sleep 0.1
