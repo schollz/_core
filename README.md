@@ -1,18 +1,3 @@
-## pinout
+# zeptcore
 
-### pcm5102
-
-```
-GPIO13 -> DIN
-GPIO14 -> BCK
-GPIO15 -> LCK
-```
-
-## todo
-
-- [x] reverse audio (needs doing)
-- [x] re-reverse audio 
-- [x] get number of beats
-- [ ] reverse audio -> problem when phase drops to 0
-- [ ] low-pass filter (needs troubleshooting)
-- [ ] re-reverse audio fx
+![zeptocore](https://github.com/schollz/zeptocore/assets/6550035/948a46cf-f1ac-4335-a1c3-3dfb051a52a5)
