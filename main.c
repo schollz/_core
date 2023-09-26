@@ -224,7 +224,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                    sf->pattern_length[sf->pattern_current]];
         }
         printf("beat_current: %d\n", beat_current);
-        PCA9552_unsetLast(pca);
+        PCA9552_clear(pca);
         PCA9552_ledSet(pca, beat_current % 16, 2);
         envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         phase_new = (file_list->size[fil_current_id]) *
@@ -337,13 +337,19 @@ void core1_main() {
       if (bm->changed_on) {
         pressed2 = 0;
         if (bm->num_pressed == 1 || bm->num_pressed == 2) {
-          beat_current = (beat_current / 16) * 16 + bm->on[bm->num_pressed - 1];
+          uint8_t key = bm->on[bm->num_pressed - 1];
+          if (key >= 4) {
+            beat_current = (beat_current / 16) * 16 + (key - 4);
+            PCA9552_clear(pca);
+            PCA9552_ledSet(pca, beat_current % 16, 2);
 
-          phase_new = (file_list->size[fil_current_id]) *
-                      bm->on[bm->num_pressed - 1] / 16;
-          phase_new = (phase_new / 4) * 4;
-          phase_change = true;
-          debounce_quantize = 2;
+            PCA9552_render(pca);
+            phase_new = (file_list->size[fil_current_id]) *
+                        bm->on[bm->num_pressed - 1] / 16;
+            phase_new = (phase_new / 4) * 4;
+            phase_change = true;
+            debounce_quantize = 2;
+          }
         }
       }
     } else {
@@ -377,6 +383,7 @@ void core1_main() {
         }
       }
     }
+    PCA9552_render(pca);
     sleep_ms(1);
   }
 }
