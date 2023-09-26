@@ -309,7 +309,7 @@ WS2812 *ws2812;
 #endif
 
 void core1_main() {
-  sleep_ms(1000);
+  sleep_ms(100);
   printf("core1 running!\n");
 
   ButtonMatrix *bm;
@@ -438,7 +438,7 @@ int main() {
   // Reinit uart now that clk_peri has changed
   stdio_init_all();
 
-  sleep_ms(2000);
+  sleep_ms(100);
 
   // run multi core
   multicore_launch_core1(core1_main);
@@ -494,7 +494,7 @@ int main() {
 
   cp = Charlieplex_create();
 
-  sleep_ms(1000);
+  sleep_ms(100);
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER
