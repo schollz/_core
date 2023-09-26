@@ -1,7 +1,7 @@
 #include "buttonmatrix2.pio.h"
 #include "sort.h"
 
-#define BUTTONMATRIX_BUTTONS_MAX 16
+#define BUTTONMATRIX_BUTTONS_MAX 20
 #define BUTTONMATRIX_ROWS 5
 #define BUTTONMATRIX_COLS 4
 
@@ -81,18 +81,22 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   bm->mapping[1] = 7;
   bm->mapping[2] = 11;
   bm->mapping[3] = 15;
-  bm->mapping[4] = 2;
-  bm->mapping[5] = 6;
-  bm->mapping[6] = 10;
-  bm->mapping[7] = 14;
-  bm->mapping[8] = 1;
-  bm->mapping[9] = 5;
-  bm->mapping[10] = 9;
-  bm->mapping[11] = 13;
-  bm->mapping[12] = 0;
-  bm->mapping[13] = 4;
-  bm->mapping[14] = 8;
-  bm->mapping[15] = 12;
+  bm->mapping[4] = 19;
+  bm->mapping[5] = 2;
+  bm->mapping[6] = 6;
+  bm->mapping[7] = 10;
+  bm->mapping[8] = 14;
+  bm->mapping[9] = 18;
+  bm->mapping[10] = 1;
+  bm->mapping[11] = 5;
+  bm->mapping[12] = 9;
+  bm->mapping[13] = 13;
+  bm->mapping[14] = 17;
+  bm->mapping[15] = 0;
+  bm->mapping[16] = 4;
+  bm->mapping[17] = 8;
+  bm->mapping[18] = 12;
+  bm->mapping[19] = 16;
 
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     bm->on_buttons[i] = -1;  // -1 == off
@@ -121,6 +125,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   sleep_ms(1);
 
   if (pio_sm_is_rx_fifo_empty(bm->pio, bm->sm)) {
+    printf("fifo empty\n");
     return;
   }
 

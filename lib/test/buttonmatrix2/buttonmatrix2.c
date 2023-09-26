@@ -11,7 +11,7 @@ int main(void) {
   stdio_init_all();
 
   ButtonMatrix *bm;
-  bm = ButtonMatrix_create(5, 10);
+  bm = ButtonMatrix_create(1, 6);
   while (1) {
     ButtonMatrix_read(bm);
     if (bm->changed) {
