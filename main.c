@@ -62,7 +62,7 @@
 #include "lib/WS2812.h"
 #endif
 #include "lib/biquad.h"
-#include "lib/buttonmatrix.h"
+#include "lib/buttonmatrix2.h"
 #include "lib/charlieplex.h"
 #include "lib/crossfade.h"
 #include "lib/envelope2.h"
@@ -150,7 +150,6 @@ float retrig_vol = 1.0;
 float retrig_vol_step = 0;
 
 SaveFile *sf;
-ButtonMatrix *bm;
 Charlieplex *cp;
 
 #ifdef INCLUDE_BASS
@@ -303,35 +302,25 @@ WS2812 *ws2812;
 #endif
 
 void core1_main() {
-  float freqs[14] = {200,  300,  400,  600,  800,  1200,  1600,
-                     2400, 3200, 4800, 6400, 9600, 12800, 18000};
-  uint adc0 = 0;
-  uint pressed2 = 0;
-  while (1) {
-    adc_select_input(0);
-    sleep_ms(1);
+  sleep_ms(1000);
+  printf("core1 running!\n");
+  ButtonMatrix *bm;
 
-    sf->bpm_tempo = adc_read() * 50 / 4096 * 5 + 50;
-#ifdef INCLUDE_FILTER
-    float adc_temp = adc_read() * 40 / 4096 + 90;
-    if (adc_temp != adc0) {
-      adc0 = adc_temp;
-      float new_freq = powf(2.0f, (adc_temp - 69.0f) / 12.0f) * 440.0f;
-      // printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
-      myFilter0 = IIR_new(new_freq, 3.0f, 1.0f, 44100.0f);
+  // initialize button matrix
+  bm = ButtonMatrix_create(1, 6);
+
+  ButtonMatrix_read(bm);
+  if (bm->changed) {
+    for (uint8_t i = 0; i < bm->num_pressed; i++) {
+      printf("%d ", bm->on[i]);
     }
-#endif
-    // adc_select_input(1);
-    // sleep_ms(1);
-    // printf("adc1: %d\n", adc_read());
-    adc_select_input(2);
-    sleep_ms(1);
-    uint8_t new_vol = adc_read() * MAX_VOLUME / 4096;
-    if (new_vol != sf->vol) {
-      sf->vol = new_vol;
-      // printf("sf-vol: %d\n", sf->vol);
-    }
-    Charlieplex_update(cp);
+    printf("\n");
+  }
+
+  printf("entering while loop\n");
+  uint pressed2 = 0;
+
+  while (1) {
     ButtonMatrix_read(bm);
     if (bm->changed) {
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
@@ -375,15 +364,48 @@ void core1_main() {
             }
           }
           retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-          printf(
-              "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3f s\n",
-              retrig_beat_num, retrig_timer_reset, total_time);
+          printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+                 retrig_beat_num, retrig_timer_reset, total_time);
           retrig_ready = true;
         }
       }
     }
+    sleep_ms(1);
   }
 }
+
+// void core1_main_old() {
+//   float freqs[14] = {200,  300,  400,  600,  800,  1200,  1600,
+//                      2400, 3200, 4800, 6400, 9600, 12800, 18000};
+//   uint adc0 = 0;
+//   uint pressed2 = 0;
+//   while (1) {
+//     adc_select_input(0);
+//     sleep_ms(1);
+
+//     // sf->bpm_tempo = adc_read() * 50 / 4096 * 5 + 50;
+// #ifdef INCLUDE_FILTER
+//     float adc_temp = adc_read() * 40 / 4096 + 90;
+//     if (adc_temp != adc0) {
+//       adc0 = adc_temp;
+//       float new_freq = powf(2.0f, (adc_temp - 69.0f) / 12.0f) * 440.0f;
+//       // printf("adc 0: %2.1f -> %2.0f\n", adc_temp, new_freq);
+//       myFilter0 = IIR_new(new_freq, 3.0f, 1.0f, 44100.0f);
+//     }
+// #endif
+//     // adc_select_input(1);
+//     // sleep_ms(1);
+//     // printf("adc1: %d\n", adc_read());
+//     adc_select_input(2);
+//     sleep_ms(1);
+//     // uint8_t new_vol = adc_read() * MAX_VOLUME / 4096;
+//     // if (new_vol != sf->vol) {
+//     //   sf->vol = new_vol;
+//     //   // printf("sf-vol: %d\n", sf->vol);
+//     // }
+//     Charlieplex_update(cp);
+//     ButtonMatrix_read(bm);
+// }
 
 int main() {
   // // Initialize chosen serial port
@@ -401,6 +423,11 @@ int main() {
                   96 * MHZ, 96 * MHZ);
   // Reinit uart now that clk_peri has changed
   stdio_init_all();
+
+  sleep_ms(2000);
+
+  // run multi core
+  multicore_launch_core1(core1_main);
 
   // DCDC PSM control
   // 0: PFM mode (best efficiency)
@@ -424,7 +451,6 @@ int main() {
   adc_gpio_init(26);
   adc_gpio_init(27);
   adc_gpio_init(28);
-  multicore_launch_core1(core1_main);
 
   // init timers
   // Negative delay so means we will call repeating_timer_callback, and call it
@@ -439,9 +465,6 @@ int main() {
 
   // initialize random library
   pcg32_srandom_r(&rng, time_us_64() ^ (intptr_t)&printf, 54u);
-
-  // initialize button matrix
-  bm = ButtonMatrix_create(5, 9);
 
   cp = Charlieplex_create();
 

@@ -31,7 +31,7 @@ add_subdirectory(lib/sdio build)
 
 # generate pio
 pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/WS2812.pio)
-pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/buttonmatrix.pio)
+pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/buttonmatrix2.pio)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${PROJECT_NAME})
@@ -65,12 +65,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     USE_AUDIO_I2S=1
     SDCARD_USE_CD=false
     SDCARD_CD_GPIO=21 # not used...
-    SDCARD_CMD_GPIO=18
-    SDCARD_D0_GPIO=19 # CLK=17,D1=20,D2=21,D3=22
-    AUDIO_CLK_GPIO=14 # LCK=15
-    AUDIO_DIN_GPIO=13
+    SDCARD_CMD_GPIO=11
+    SDCARD_D0_GPIO=12 # CLK=17,D1=20,D2=21,D3=22
+    AUDIO_CLK_GPIO=16 # LCK=17
+    AUDIO_DIN_GPIO=18
     # includes for different versions
-    INCLUDE_RGBLED=1
+    # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1
     # INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
