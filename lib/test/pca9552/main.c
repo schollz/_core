@@ -15,7 +15,7 @@ int main(void) {
   stdio_init_all();
   sleep_ms(1000);
 
-  i2c_init(i2c_default, 400 * 1000);
+  i2c_init(i2c_default, 40 * 1000);
   gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
   gpio_pull_up(I2C_SDA_PIN);
@@ -27,26 +27,27 @@ int main(void) {
     printf("PCA9552_ERROR: %02x\n", pca->error);
   }
 
+  PCA9553_ledSet(pca, 0, 0);
+  PCA9553_ledSet(pca, 1, 1);
+  PCA9553_ledSet(pca, 2, 2);
+  PCA9553_ledSet(pca, 3, 3);
   while (1) {
-    for (uint8_t i = 0; i < 16; i++) {
-      PCA9553_ledSet(pca, i, 0);
-      sleep_ms(500);
-      PCA9553_ledSet(pca, i, 1);
-      sleep_ms(500);
+    for (uint8_t i = 4; i < 16; i++) {
+      // on (bright)
       PCA9553_ledSet(pca, i, 2);
-      sleep_ms(500);
+      sleep_ms(150);
+      // off
       PCA9553_ledSet(pca, i, 0);
+      sleep_ms(50);
     }
-    // sleep_ms(1000);
-    // PCA9552_writeReg(pca, 0x06, 0x00);
-    // PCA9552_writeReg(pca, 0x07, 0x55);
-    // PCA9552_writeReg(pca, 0x08, 0x00);
-    // PCA9552_writeReg(pca, 0x09, 0x6C);
-    // sleep_ms(1000);
-    // PCA9552_writeReg(pca, 0x06, 0x55);
-    // PCA9552_writeReg(pca, 0x07, 0x00);
-    // PCA9552_writeReg(pca, 0x08, 0x6C);
-    // PCA9552_writeReg(pca, 0x09, 0x00);
+    for (uint8_t i = 4; i < 16; i++) {
+      // on (dim)
+      PCA9553_ledSet(pca, i, 1);
+      sleep_ms(150);
+      // off
+      PCA9553_ledSet(pca, i, 0);
+      sleep_ms(50);
+    }
   }
   free(pca);
   return 0;
