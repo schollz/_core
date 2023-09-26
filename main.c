@@ -153,6 +153,7 @@ float retrig_vol_step = 0;
 
 SaveFile *sf;
 Charlieplex *cp;
+PCA9552 *pca;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
@@ -222,6 +223,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                   [beat_total %
                                    sf->pattern_length[sf->pattern_current]];
         }
+        printf("beat_current: %d\n", beat_current);
+        PCA9552_unsetLast(pca);
+        PCA9552_ledSet(pca, beat_current % 16, 2);
         envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         phase_new = (file_list->size[fil_current_id]) *
                     ((beat_current % (2 * file_list->beats[fil_current_id])) +
@@ -299,6 +303,7 @@ int16_t transfer_fn(int16_t v) {
 
 IIR *myFilter0;
 IIR *myFilter1;
+
 #ifdef INCLUDE_RGBLED
 WS2812 *ws2812;
 #endif
@@ -306,23 +311,6 @@ WS2812 *ws2812;
 void core1_main() {
   sleep_ms(1000);
   printf("core1 running!\n");
-
-  i2c_init(i2c_default, 40 * 1000);
-  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
-  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
-  gpio_pull_up(I2C_SDA_PIN);
-  gpio_pull_up(I2C_SCL_PIN);
-
-  PCA9552 *pca;
-  pca = PCA9552_create(0x60, i2c_default);
-  if (pca->error != PCA9552_OK) {
-    printf("PCA9552_ERROR: %02x\n", pca->error);
-  }
-
-  PCA9553_ledSet(pca, 0, 0);
-  PCA9553_ledSet(pca, 1, 1);
-  PCA9553_ledSet(pca, 2, 2);
-  PCA9553_ledSet(pca, 3, 3);
 
   ButtonMatrix *bm;
   // initialize button matrix
@@ -339,13 +327,7 @@ void core1_main() {
   printf("entering while loop\n");
   uint pressed2 = 0;
 
-  uint light = 0;
   while (1) {
-    light++;
-    if (light % 100 == 0) {
-      PCA9553_ledSet(pca, ((light / 100) - 1) % 16, 0);
-      PCA9553_ledSet(pca, (light / 100) % 16, 2);
-    }
     ButtonMatrix_read(bm);
     if (bm->changed) {
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
@@ -460,6 +442,18 @@ int main() {
   gpio_init(PIN_DCDC_PSM_CTRL);
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
+
+  // setup leds
+  i2c_init(i2c_default, 40 * 1000);
+  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
+  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
+  gpio_pull_up(I2C_SDA_PIN);
+  gpio_pull_up(I2C_SCL_PIN);
+  pca = PCA9552_create(0x60, i2c_default);
+  if (pca->error != PCA9552_OK) {
+    printf("PCA9552_ERROR: %02x\n", pca->error);
+  }
+  PCA9552_clear(pca);
 
   ap = init_audio();
 
