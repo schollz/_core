@@ -16,8 +16,8 @@
 #define PCA9552_LS3 0x09
 
 //  MUX OUTPUT MODES
-#define PCA9552_MODE_LOW 0
-#define PCA9552_MODE_HIGH 1
+#define PCA9552_MODE_HIGH 0
+#define PCA9552_MODE_LOW 1
 #define PCA9552_MODE_PWM0 2
 #define PCA9552_MODE_PWM1 3
 
@@ -39,7 +39,7 @@ typedef struct PCA9552 {
 uint8_t PCA9552_writeReg(PCA9552 *pca, uint8_t reg, uint8_t value) {
   uint8_t txdata[2] = {reg, value};
   pca->error = i2c_write_blocking(pca->i2c, PCA9552_ADDRESS, txdata, 2, false);
-  if (pca->error == 0)
+  if (pca->error == 2)
     pca->error = PCA9552_OK;
   else
     pca->error = PCA9552_ERROR;
@@ -113,14 +113,13 @@ void PCA9552_digitalWrite(PCA9552 *pca, uint8_t pin, uint8_t val) {
 }
 
 uint8_t PCA9552_reset(PCA9552 *pca) {
-  //  not most efficient
+  for (uint8_t i = 0; i < 4; i++) {
+    PCA9552_writeReg(pca, PCA9552_LS0, 0x55);
+  }
   PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
   PCA9552_setPrescaler(pca, 1, 0);  //  44 Hz
-  PCA9552_setPWM(pca, 0, 128);      //  50%
-  PCA9552_setPWM(pca, 1, 128);      //  50%
-  for (int pin = 0; pin < PCA9552_OUTPUTCOUNT; pin++) {
-    PCA9552_setOutputMode(pca, pin, 0);  //  LOW
-  }
+  PCA9552_setPWM(pca, 0, 247);      // dim
+  PCA9552_setPWM(pca, 1, 247);
   return PCA9552_OK;
 }
 
