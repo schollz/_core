@@ -33,6 +33,7 @@
 typedef struct PCA9552 {
   uint8_t address;
   uint8_t error;
+  uint8_t leds[4][4];
   struct i2c_inst *i2c;
 } PCA9552;
 
@@ -112,15 +113,28 @@ void PCA9552_digitalWrite(PCA9552 *pca, uint8_t pin, uint8_t val) {
     PCA9552_setOutputMode(pca, pin, PCA9552_MODE_HIGH);
 }
 
-uint8_t PCA9552_reset(PCA9552 *pca) {
+uint8_t PCA9553_ledByte(uint8_t ls[4]) {
+  uint8_t byte = 0x00;
   for (uint8_t i = 0; i < 4; i++) {
-    PCA9552_writeReg(pca, PCA9552_LS0, 0x55);
+    if (ls[i] == 0) {
+      // led off
+      byte |= 0b11 << (6 - 2 * i);
+    } else if (ls[i] == 1) {
+      // led dim
+      byte |= 0b10 << (6 - 2 * i);
+    } else if (ls[i] == 2) {
+      // led bright
+      // do nothing (leave zeros)
+    }
   }
-  PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
-  PCA9552_setPrescaler(pca, 1, 0);  //  44 Hz
-  PCA9552_setPWM(pca, 0, 247);      // dim
-  PCA9552_setPWM(pca, 1, 247);
-  return PCA9552_OK;
+  return byte;
+}
+
+void PCA9553_ledSet(PCA9552 *pca, uint8_t led, uint8_t state) {
+  uint8_t i = led / 4;
+  uint8_t j = led % 4;
+  pca->leds[i][j] = state;
+  PCA9552_writeReg(pca, PCA9552_LS0 + i, PCA9553_ledByte(pca->leds[i]));
 }
 
 PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
@@ -128,6 +142,17 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
   pca->address = deviceAddress;
   pca->i2c = i2c_use;
   pca->error = 0;
-  PCA9552_reset(pca);
+  for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t j = 0; j < 4; j++) {
+      pca->leds[i][j] = 0;
+    }
+  }
+  for (uint8_t i = 0; i < 4; i++) {
+    PCA9552_writeReg(pca, PCA9552_LS0, 0x55);
+  }
+  PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
+  PCA9552_setPrescaler(pca, 1, 0);  //  44 Hz
+  PCA9552_setPWM(pca, 0, 247);      // dim
+  PCA9552_setPWM(pca, 1, 247);
   return pca;
 }
