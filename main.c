@@ -32,6 +32,7 @@
 
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "hardware/i2c.h"
 #include "hardware/pio.h"
 #include "hardware/pll.h"
 #include "hardware/rtc.h"
@@ -70,6 +71,7 @@
 #include "lib/file_list.h"
 #include "lib/iir.h"
 #include "lib/noise.h"
+#include "lib/pca9552.h"
 #include "lib/savefile.h"
 #include "lib/sdcard.h"
 #include "lib/selectx.h"
@@ -304,8 +306,25 @@ WS2812 *ws2812;
 void core1_main() {
   sleep_ms(1000);
   printf("core1 running!\n");
-  ButtonMatrix *bm;
 
+  i2c_init(i2c_default, 40 * 1000);
+  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
+  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
+  gpio_pull_up(I2C_SDA_PIN);
+  gpio_pull_up(I2C_SCL_PIN);
+
+  PCA9552 *pca;
+  pca = PCA9552_create(0x60, i2c_default);
+  if (pca->error != PCA9552_OK) {
+    printf("PCA9552_ERROR: %02x\n", pca->error);
+  }
+
+  PCA9553_ledSet(pca, 0, 0);
+  PCA9553_ledSet(pca, 1, 1);
+  PCA9553_ledSet(pca, 2, 2);
+  PCA9553_ledSet(pca, 3, 3);
+
+  ButtonMatrix *bm;
   // initialize button matrix
   bm = ButtonMatrix_create(1, 6);
 
@@ -320,7 +339,13 @@ void core1_main() {
   printf("entering while loop\n");
   uint pressed2 = 0;
 
+  uint light = 0;
   while (1) {
+    light++;
+    if (light % 100 == 0) {
+      PCA9553_ledSet(pca, ((light / 100) - 1) % 16, 0);
+      PCA9553_ledSet(pca, (light / 100) % 16, 2);
+    }
     ButtonMatrix_read(bm);
     if (bm->changed) {
       for (uint8_t i = 0; i < bm->num_pressed; i++) {

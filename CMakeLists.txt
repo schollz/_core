@@ -45,6 +45,7 @@ target_link_libraries(${PROJECT_NAME}
     hardware_clocks
     hardware_adc
     hardware_pio
+    hardware_i2c
 )
 
 # target_compile_options(command_line PUBLIC -Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
@@ -69,6 +70,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_D0_GPIO=12 # CLK=17,D1=20,D2=21,D3=22
     AUDIO_CLK_GPIO=16 # LCK=17
     AUDIO_DIN_GPIO=18
+    I2C_SDA_PIN=20
+    I2C_SCL_PIN=21
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1
