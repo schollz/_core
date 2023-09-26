@@ -61,6 +61,7 @@ typedef struct PCA9552 {
   uint8_t error;
   uint8_t leds[4][4];
   uint8_t lastSet[3];
+  bool changed[4];
   struct i2c_inst *i2c;
 } PCA9552;
 
@@ -166,29 +167,31 @@ uint8_t PCA9552_ledByte(uint8_t ls[4]) {
 
 void PCA9552_clear(PCA9552 *pca) {
   for (uint8_t i = 0; i < 4; i++) {
-    PCA9552_writeReg(pca, PCA9552_LS0 + i, 0b01010101);
+    for (uint8_t j = 0; j < 4; j++) {
+      if (pca->leds[i][j] != 0) {
+        pca->leds[i][j] = 0;
+        pca->changed[i] = true;
+      }
+    }
   }
 }
 
 void PCA9552_ledSet(PCA9552 *pca, uint8_t led, uint8_t state) {
   uint8_t i = led / 4;
   uint8_t j = 3 - (led % 4);
-  pca->lastSet[0] = i;
-  pca->lastSet[1] = j;
-  pca->lastSet[2] = pca->leds[i][j];
-  pca->leds[i][j] = state;
-  int ret =
-      PCA9552_writeReg(pca, PCA9552_LS0 + i, PCA9552_ledByte(pca->leds[i]));
-  if (ret != PCA9552_OK) {
-    printf("error setting led %d to %d: %02x\n", led, state, ret);
+  if (pca->leds[i][j] != state) {
+    pca->leds[i][j] = state;
+    pca->changed[i] = true;
   }
 }
 
-void PCA9552_unsetLast(PCA9552 *pca) {
-  uint8_t i = pca->lastSet[0];
-  uint8_t j = pca->lastSet[1];
-  uint8_t state = pca->lastSet[2];
-  pca->leds[i][j] = state;
+void PCA9552_render(PCA9552 *pca) {
+  for (uint8_t i = 0; i < 4; i++) {
+    if (pca->changed[i]) {
+      pca->changed[i] = false;
+      PCA9552_writeReg(pca, PCA9552_LS0 + i, PCA9552_ledByte(pca->leds[i]));
+    }
+  }
 }
 
 PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
@@ -201,10 +204,6 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
       pca->leds[i][j] = 0;
     }
   }
-
-  pca->lastSet[0] = 0;
-  pca->lastSet[1] = 0;
-  pca->lastSet[2] = 0;
 
   // PWM 0 is dim
   PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
