@@ -128,6 +128,7 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
   PCA9552 *pca = (PCA9552 *)malloc(sizeof(PCA9552));
   pca->address = deviceAddress;
   pca->i2c = i2c_use;
+  pca->error = 0;
   PCA9552_reset(pca);
   return pca;
 }
