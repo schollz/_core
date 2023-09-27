@@ -328,6 +328,19 @@ void core1_main() {
   uint pressed2 = 0;
 
   while (1) {
+    adc_select_input(0);
+    sleep_ms(1);
+
+    sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
+
+    adc_select_input(2);
+    sleep_ms(1);
+    uint8_t new_vol = (adc_read() * (MAX_VOLUME / 5) / 4096) * 5;
+    if (new_vol != sf->vol) {
+      sf->vol = new_vol;
+      printf("sf-vol: %d\n", sf->vol);
+    }
+
     ButtonMatrix_read(bm);
     if (bm->changed) {
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
@@ -338,7 +351,15 @@ void core1_main() {
         pressed2 = 0;
         if (bm->num_pressed == 1 || bm->num_pressed == 2) {
           uint8_t key = bm->on[bm->num_pressed - 1];
-          if (key >= 4) {
+          if (key == 0) {
+            envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.25, 1.0, 1);
+            debounce_quantize = 2;
+          } else if (key == 1) {
+            debounce_quantize = 2;
+            envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
+          } else if (key == 2) {
+            phase_forward = !phase_forward;
+          } else if (key >= 4) {
             beat_current = (beat_current / 16) * 16 + (key - 4);
             PCA9552_clear(pca);
             PCA9552_ledSet(pca, beat_current % 16, 2);
@@ -353,9 +374,9 @@ void core1_main() {
         }
       }
     } else {
-      if (bm->num_pressed == 2 && pressed2 < 100) {
+      if (bm->num_pressed == 2 && pressed2 < 10) {
         pressed2++;
-        if (pressed2 == 100) {
+        if (pressed2 == 10) {
           printf("debounce 2press\n");
           debounce_quantize = 0;
           retrig_first = true;
