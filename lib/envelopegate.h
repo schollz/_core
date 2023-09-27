@@ -36,9 +36,9 @@ typedef struct EnvelopeGate {
   uint32_t duration_samples2;
 } EnvelopeGate;
 
-EnvelopeGate *EnvelopeGate_create(uint32_t mSampleRate, float start, float stop,
-                                  float duration_time1, float duration_time2) {
-  EnvelopeGate *envelope = (EnvelopeGate *)malloc(sizeof(EnvelopeGate));
+void EnvelopeGate_reset(EnvelopeGate *envelope, uint32_t mSampleRate,
+                        float start, float stop, float duration_time1,
+                        float duration_time2) {
   envelope->mSampleRate = mSampleRate;
   envelope->start = (start);
   envelope->stop = (stop);
@@ -49,6 +49,13 @@ EnvelopeGate *EnvelopeGate_create(uint32_t mSampleRate, float start, float stop,
   envelope->acc =
       (envelope->stop - envelope->start) / envelope->duration_samples2;
   envelope->t = 0;
+}
+
+EnvelopeGate *EnvelopeGate_create(uint32_t mSampleRate, float start, float stop,
+                                  float duration_time1, float duration_time2) {
+  EnvelopeGate *envelope = (EnvelopeGate *)malloc(sizeof(EnvelopeGate));
+  EnvelopeGate_reset(envelope, mSampleRate, start, stop, duration_time1,
+                     duration_time2);
   return envelope;
 }
 
