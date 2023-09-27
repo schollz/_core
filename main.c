@@ -42,6 +42,14 @@
 #include "pico/stdlib.h"
 #include "pico/types.h"
 
+// #define malloc(X) my_malloc(X, __FILE__, __LINE__, __FUNCTION__)
+
+// void *my_malloc(size_t size, const char *file, int line, const char *func) {
+//   void *p = malloc(size);
+//   printf("Allocated = %s, %i, %s, %p[%li]\n", file, line, func, p, size);
+//   return p;
+// }
+
 //
 #include "ff.h" /* Obtains integer types */
 //
@@ -194,9 +202,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           }
         }
         if (fil_is_open && debounce_quantize == 0) {
-          envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0,
-                                             30 / (float)sf->bpm_tempo,
-                                             30 / (float)sf->bpm_tempo);
+          EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0,
+                             30 / (float)sf->bpm_tempo,
+                             30 / (float)sf->bpm_tempo);
           phase_new = (file_list->size[fil_current_id]) *
                       ((beat_current % (2 * file_list->beats[fil_current_id])) +
                        (1 - phase_forward)) /
@@ -226,7 +234,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         printf("beat_current: %d\n", beat_current);
         PCA9552_clear(pca);
         PCA9552_ledSet(pca, beat_current % 16, 2);
-        envelopegate = EnvelopeGate_create(BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
+        EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         phase_new = (file_list->size[fil_current_id]) *
                     ((beat_current % (2 * file_list->beats[fil_current_id])) +
                      (1 - phase_forward)) /
@@ -352,11 +360,11 @@ void core1_main() {
         if (bm->num_pressed == 1 || bm->num_pressed == 2) {
           uint8_t key = bm->on[bm->num_pressed - 1];
           if (key == 0) {
-            envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.25, 1.0, 1);
+            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 0.25, 1.0, 1);
             debounce_quantize = 2;
           } else if (key == 1) {
             debounce_quantize = 2;
-            envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
+            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 1.0, 0.5, 1);
           } else if (key == 2) {
             phase_forward = !phase_forward;
           } else if (key >= 4) {
@@ -738,16 +746,16 @@ int main() {
         fil_current_change = true;
       }
       if (c == 'a') {
-        envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 1.5);
+        Envelope2_reset(envelope3, BLOCKS_PER_SECOND, 0, 1.0, 1.5);
         // debounce_quantize = 2;
       }
       if (c == 'q') {
-        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.25, 1.0, 1);
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 0.25, 1.0, 1);
         debounce_quantize = 2;
       }
       if (c == 'z') {
         debounce_quantize = 2;
-        envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0.5, 1);
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 1.0, 0.5, 1);
       }
       if (c == 'x') {
         sdcard_startup();
@@ -761,6 +769,25 @@ int main() {
 }
 
 // audio callback
+void i2s_callback_func2() {
+  Envelope2_reset(envelope1, BLOCKS_PER_SECOND, 0, 1.0, 0.04);
+  audio_buffer_t *buffer = take_audio_buffer(ap, false);
+  if (buffer == NULL) {
+    return;
+  }
+  int32_t *samples = (int32_t *)buffer->buffer->bytes;
+  for (uint i = 0; i < buffer->max_sample_count; i++) {
+    int32_t value0 = 0;
+    int32_t value1 = 0;
+    // use 32bit full scale
+    samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+    samples[i * 2 + 1] = value1 + (value1 >> 16u);  // R
+  }
+  buffer->sample_count = buffer->max_sample_count;
+  give_audio_buffer(ap, buffer);
+  return;
+}
+
 void i2s_callback_func() {
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
@@ -811,9 +838,9 @@ void i2s_callback_func() {
       phase_change = false;
       // initiate transition envelopes
       // jump point envelope grows
-      envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1.0, 0.04);
+      Envelope2_reset(envelope1, BLOCKS_PER_SECOND, 0, 1.0, 0.04);
       // previous point degrades
-      envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1.0, 0, 0.04);
+      Envelope2_reset(envelope2, BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
