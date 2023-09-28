@@ -360,11 +360,13 @@ void core1_main() {
         if (bm->num_pressed == 1 || bm->num_pressed == 2) {
           uint8_t key = bm->on[bm->num_pressed - 1];
           if (key == 0) {
-            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 0.25, 1.0, 1);
+            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                            Envelope2_update(envelope_pitch), 1.0, 1);
             debounce_quantize = 2;
           } else if (key == 1) {
             debounce_quantize = 2;
-            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 1.0, 0.5, 1);
+            Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                            Envelope2_update(envelope_pitch), 0.5, 1);
           } else if (key == 2) {
             phase_forward = !phase_forward;
           } else if (key >= 4) {
@@ -750,12 +752,14 @@ int main() {
         // debounce_quantize = 2;
       }
       if (c == 'q') {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 0.25, 1.0, 1);
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1);
         debounce_quantize = 2;
       }
       if (c == 'z') {
         debounce_quantize = 2;
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND, 1.0, 0.5, 1);
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 0.5, 1);
       }
       if (c == 'x') {
         sdcard_startup();
