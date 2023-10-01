@@ -98,6 +98,7 @@ unsigned int extract_beats(const char *input) {
 #define FileList_max 255
 typedef struct FileList {
   char **name;
+  char *dir;
   uint32_t *size;
   unsigned int *bpm;
   unsigned int *beats;
@@ -106,6 +107,8 @@ typedef struct FileList {
 
 FileList *list_files(const char *dir, int num_channels) {
   FileList *filelist = malloc(sizeof(FileList));
+  filelist->dir = malloc(strlen(dir) + 1);
+  strcpy(filelist->dir, dir);
   filelist->name = malloc(sizeof(char *) * FileList_max);
   filelist->size = malloc(sizeof(FSIZE_t) * FileList_max);
   filelist->bpm = malloc(sizeof(unsigned int) * FileList_max);
