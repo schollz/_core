@@ -304,7 +304,6 @@ void sdcard_startup() {
              file_list[i]->bpm[j], file_list[i]->beats[j],
              file_list[i]->size[j]);
     }
-    break;
   }
   fil_current_id = 0;
   f_open(&fil_current, file_list[fil_current_bank]->name[fil_current_id],
@@ -365,7 +364,7 @@ void core1_main() {
     sleep_ms(1);
 
     sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
-    printf(" adc_read(): %d\n", adc_read());
+    // printf(" adc_read(): %d\n", adc_read());
 
     adc_select_input(2);
     sleep_ms(1);
@@ -375,92 +374,91 @@ void core1_main() {
       printf("sf-vol: %d\n", sf->vol);
     }
 
-    // ButtonMatrix_read(bm);
-    // if (bm->changed) {
-    //   for (uint8_t i = 0; i < bm->num_pressed; i++) {
-    //     printf("%d ", bm->on[i]);
-    //   }
-    //   printf("\n");
-    //   if (bm->changed_on) {
-    //     if (bm->num_pressed == 2 && bm->on[0] == KEY_A && bm->on[1] >= 4) {
-    //       // switch sample to the one in the current bank
-    //       fil_current_bank_next = fil_current_bank_sel;
-    //       fil_current_id_next =
-    //           (bm->on[1] - 4) % file_list[fil_current_bank_next]->num;
-    //       printf("fil_current_bank_next = %d\n", fil_current_bank_next);
-    //       printf("fil_current_id_next = %d\n", fil_current_id_next);
-    //       fil_current_change = true;
-    //     } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
-    //                bm->on[1] >= 4) {
-    //       // switch bank if the bank has more than one zero files
-    //       if (file_list[bm->on[1]]->num > 0) {
-    //         fil_current_bank_sel = bm->on[1] - 4;
-    //       }
-    //     } else {
-    //       pressed2 = 0;
-    //       if (bm->num_pressed == 1 || bm->num_pressed == 2) {
-    //         uint8_t key = bm->on[bm->num_pressed - 1];
-    //         // if (key == KEY_SHIFT) {
-    //         //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-    //         //                   Envelope2_update(envelope_pitch), 1.0, 1);
-    //         //   debounce_quantize = 2;
-    //         // } else if (key == 1) {
-    //         //   debounce_quantize = 2;
-    //         //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-    //         //                   Envelope2_update(envelope_pitch), 0.5, 1);
-    //         // } else if (key == 2) {
-    //         //   phase_forward = !phase_forward;
-    //         // }
-    //         if (key >= 4) {
-    //           beat_current = (beat_current / 16) * 16 + (key - 4);
-    //           PCA9552_clear(pca);
-    //           PCA9552_ledSet(pca, beat_current % 16, 2);
+    ButtonMatrix_read(bm);
+    if (bm->changed) {
+      for (uint8_t i = 0; i < bm->num_pressed; i++) {
+        printf("%d ", bm->on[i]);
+      }
+      printf("\n");
+      if (bm->changed_on) {
+        if (bm->num_pressed == 2 && bm->on[0] == KEY_A && bm->on[1] >= 4) {
+          // switch sample to the one in the current bank
+          fil_current_bank_next = fil_current_bank_sel;
+          fil_current_id_next =
+              (bm->on[1] - 4) % file_list[fil_current_bank_next]->num;
+          printf("fil_current_bank_next = %d\n", fil_current_bank_next);
+          printf("fil_current_id_next = %d\n", fil_current_id_next);
+          fil_current_change = true;
+        } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
+                   bm->on[1] >= 4) {
+          // switch bank if the bank has more than one zero files
+          if (file_list[bm->on[1]]->num > 0) {
+            fil_current_bank_sel = bm->on[1] - 4;
+          }
+        } else {
+          pressed2 = 0;
+          if (bm->num_pressed == 1 || bm->num_pressed == 2) {
+            uint8_t key = bm->on[bm->num_pressed - 1];
+            // if (key == KEY_SHIFT) {
+            //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+            //                   Envelope2_update(envelope_pitch), 1.0, 1);
+            //   debounce_quantize = 2;
+            // } else if (key == 1) {
+            //   debounce_quantize = 2;
+            //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+            //                   Envelope2_update(envelope_pitch), 0.5, 1);
+            // } else if (key == 2) {
+            //   phase_forward = !phase_forward;
+            // }
+            if (key >= 4) {
+              beat_current = (beat_current / 16) * 16 + (key - 4);
+              PCA9552_clear(pca);
+              PCA9552_ledSet(pca, beat_current % 16, 2);
 
-    //           PCA9552_render(pca);
-    //           phase_new = (file_list[fil_current_bank]->size[fil_current_id])
-    //           *
-    //                       bm->on[bm->num_pressed - 1] / 16;
-    //           phase_new = (phase_new / 4) * 4;
-    //           phase_change = true;
-    //           debounce_quantize = 2;
-    //         }
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   if (bm->num_pressed == 2 && pressed2 < 10) {
-    //     if (bm->on[0] > 3 && bm->on[1] > 3) {
-    //       pressed2++;
-    //       if (pressed2 == 10) {
-    //         printf("debounce 2press\n");
-    //         debounce_quantize = 0;
-    //         retrig_first = true;
-    //         retrig_beat_num = random_integer_in_range(8, 24);
-    //         retrig_timer_reset = 96 * random_integer_in_range(1, 4) /
-    //                              random_integer_in_range(2, 12);
-    //         float total_time =
-    //             (float)(retrig_beat_num * retrig_timer_reset * 60) /
-    //             (float)(96 * sf->bpm_tempo);
-    //         if (total_time > 2.0f) {
-    //           total_time = total_time / 2;
-    //           retrig_timer_reset = retrig_timer_reset / 2;
-    //         }
-    //         if (total_time > 2.0f) {
-    //           total_time = total_time / 2;
-    //           retrig_beat_num = retrig_beat_num / 2;
-    //           if (retrig_beat_num == 0) {
-    //             retrig_beat_num = 1;
-    //           }
-    //         }
-    //         retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-    //         printf(
-    //             "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-    //             retrig_beat_num, retrig_timer_reset, total_time);
-    //         retrig_ready = true;
-    //       }
-    //     }
-    //   }
-    // }
+              PCA9552_render(pca);
+              phase_new = (file_list[fil_current_bank]->size[fil_current_id]) *
+                          bm->on[bm->num_pressed - 1] / 16;
+              phase_new = (phase_new / 4) * 4;
+              phase_change = true;
+              debounce_quantize = 2;
+            }
+          }
+        }
+      }
+    } else {
+      if (bm->num_pressed == 2 && pressed2 < 10) {
+        if (bm->on[0] > 3 && bm->on[1] > 3) {
+          pressed2++;
+          if (pressed2 == 10) {
+            printf("debounce 2press\n");
+            debounce_quantize = 0;
+            retrig_first = true;
+            retrig_beat_num = random_integer_in_range(8, 24);
+            retrig_timer_reset = 96 * random_integer_in_range(1, 4) /
+                                 random_integer_in_range(2, 12);
+            float total_time =
+                (float)(retrig_beat_num * retrig_timer_reset * 60) /
+                (float)(96 * sf->bpm_tempo);
+            if (total_time > 2.0f) {
+              total_time = total_time / 2;
+              retrig_timer_reset = retrig_timer_reset / 2;
+            }
+            if (total_time > 2.0f) {
+              total_time = total_time / 2;
+              retrig_beat_num = retrig_beat_num / 2;
+              if (retrig_beat_num == 0) {
+                retrig_beat_num = 1;
+              }
+            }
+            retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+            printf(
+                "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+                retrig_beat_num, retrig_timer_reset, total_time);
+            retrig_ready = true;
+          }
+        }
+      }
+    }
     PCA9552_render(pca);
     sleep_ms(1);
   }
