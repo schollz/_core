@@ -300,54 +300,35 @@ void sdcard_startup() {
 
 #define FILELIST "filelist6"
 
-  {
-    FIL fil; /* File object */
-    printf("[SaveFile] reading\n");
-    if (f_open(&fil, FILELIST, FA_READ)) {
-      printf("[SaveFile] no save file, skipping ");
-      for (uint8_t i = 0; i < 16; i++) {
-        char dirname[10];
-        sprintf(dirname, "bank%d\0", i);
-        file_list[i] = list_files(dirname, WAV_CHANNELS);
-        printf("bank %d, ", i);
-        printf("found %d files\n", file_list[i].num);
-      }
-      printf("[SaveFile] writing\n");
-      FRESULT fr;
-      FIL file; /* File object */
-      printf("[SaveFile] opening savefile for writing\n");
-      fr = f_open(&file, FILELIST, FA_WRITE | FA_CREATE_ALWAYS);
-      if (FR_OK != fr) {
-        printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-      } else {
-        unsigned int bw;
-        if (f_write(&file, file_list, sizeof(FileList) * 16, &bw)) {
-          printf("[SaveFile] problem writing save\n");
-        }
-        printf("[SaveFile] wrote %d bytes\n", bw);
-        f_close(&file);
-      }
-    } else {
-      unsigned int bytes_read;
-      if (f_read(&fil, file_list, sizeof(FileList) * 16, &bytes_read)) {
-        printf("[SaveFile] problem reading save file");
-      }
-      printf("bytes read: %d\n", bytes_read);
-      f_close(&fil);
-    }
-    // sleep_ms(1000);
-    // for (uint8_t i = 0; i < 16; i++) {
-    //   for (uint8_t j = 0; j < file_list[i]->num; j++) {
-    //     printf("%s [%d], %d beats, %d bytes\n", file_list[i]->name[j],
-    //            file_list[i]->bpm[j], file_list[i]->beats[j],
-    //            file_list[i]->size[j]);
-    //   }
+  for (uint8_t i = 0; i < 16; i++) {
+    char dirname[10];
+    sprintf(dirname, "bank%d\0", i);
+    file_list[i] = list_files(dirname, WAV_CHANNELS);
+    printf("bank %d, ", i);
+    printf("found %d files\n", file_list[i].num);
+    // printf("file_list[i].name[0]: %s\n", file_list[i].name[0]);
+    // printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[0]);
+    // printf("file_list[i].beats[0]: %d\n", file_list[i].beats[0]);
+    // printf("file_list[i].size[0]: %d\n", file_list[i].size[0]);
+    // if (i == 0) {
+    //   printf("file_list[i].name[0]: %s\n", file_list[i].name[1]);
+    //   printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[1]);
+    //   printf("file_list[i].beats[0]: %d\n", file_list[i].beats[1]);
+    //   printf("file_list[i].size[0]: %d\n", file_list[i].size[1]);
     // }
   }
 
+  fil_current_bank = 0;
+  fil_current_bank_next = 0;
   fil_current_id = 0;
-  f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
-         FA_READ);
+  fil_current_id_next = 0;
+  FRESULT fr;
+  fr = f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
+              FA_READ);
+  if (fr != FR_OK) {
+    debugf("could not open: %s",
+           file_list[fil_current_bank].name[fil_current_id]);
+  }
   fil_is_open = true;
   phase_new = 0;
   phase_change = true;
@@ -603,7 +584,7 @@ int main() {
   cp = Charlieplex_create();
 
   sleep_ms(100);
-  // sdcard_startup();
+  sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
@@ -905,11 +886,24 @@ void i2s_callback_func() {
       fil_current_change = false;
       if (fil_current_bank != fil_current_bank_next ||
           fil_current_id != fil_current_id_next) {
-        printf("phases[0]: %d\n", phases[0]);
+        // printf("phases[0]: %d\n", phases[0]);
+        // printf("fil_current_bank_next: %d\n", fil_current_bank_next);
+        // printf("fil_current_id_next: %d\n", fil_current_id_next);
+        // printf(
+        //     "file_list[fil_current_bank_next].size[fil_current_id_next]:
+        //     %d\n",
+        //     file_list[fil_current_bank_next].size[fil_current_id_next]);
+        // printf("file_list[fil_current_bank].size[fil_current_id]: %d\n",
+        //        file_list[fil_current_bank].size[fil_current_id]);
+        // printf(
+        //     "file_list[fil_current_bank_next].size[fil_current_id_next] / "
+        //     "file_list[fil_current_bank].size[fil_current_id]: %d\n",
+        //     file_list[fil_current_bank_next].size[fil_current_id_next] /
+        //         file_list[fil_current_bank].size[fil_current_id]);
         phases[0] = phases[0] *
                     file_list[fil_current_bank_next].size[fil_current_id_next] /
                     file_list[fil_current_bank].size[fil_current_id];
-        printf("phases[0]: %d\n", phases[0]);
+        // printf("phases[0]: %d\n", phases[0]);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
         printf("f_close = %d\n", fr);
