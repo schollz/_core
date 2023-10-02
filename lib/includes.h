@@ -57,9 +57,9 @@
 #include "transfer_distortion.h"
 #include "transfer_saturate.h"
 //
-#include "transfer.h"
-//
 #include "globals.h"
+//
+#include "transfer.h"
 //
 #include "sdcard_startup.h"
 //
