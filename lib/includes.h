@@ -64,3 +64,5 @@
 #include "sdcard_startup.h"
 //
 #include "keyboard.h"
+//
+#include "audio_callback.h"
