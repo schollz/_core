@@ -48,12 +48,14 @@ WavHeader *WavFile_Load(char *fname) {
   unsigned int bytes_read;
   FRESULT fr = f_read(&fil, wh, headerSize, &bytes_read);
   if (fr != FR_OK || bytes_read != headerSize) {
-    printf("fr = %d, not OK!\n", fr);
+    debugf("fname: %s", fname);
+    debugf("bytes_read: %d", bytes_read);
+    debugf("fr: %d", fr);
     return NULL;
   }
-  printf("file: %s\n", fname);
-  printf("NumOfChan: %d\n", wh->NumOfChan);
-  printf("SamplesPerSec: %d\n", wh->SamplesPerSec);
+  // printf("file: %s\n", fname);
+  // printf("NumOfChan: %d\n", wh->NumOfChan);
+  // printf("SamplesPerSec: %d\n", wh->SamplesPerSec);
   // printf("RIFF: %d\n", wh->RIFF);
   // printf("ChunkSize: %d\n", wh->ChunkSize);
   // printf("WAVE: %d\n", wh->WAVE);
