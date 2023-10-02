@@ -105,6 +105,15 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   return true;
 }
 
+uint16_t freqs_available[72] = {
+    262,   277,   294,   311,   330,   349,  370,  392,  415,  440,   466,
+    494,   523,   554,   587,   622,   659,  698,  740,  784,  831,   880,
+    932,   988,   1047,  1109,  1175,  1245, 1319, 1397, 1480, 1568,  1661,
+    1760,  1865,  1976,  2093,  2217,  2349, 2489, 2637, 2794, 2960,  3136,
+    3322,  3520,  3729,  3951,  4186,  4435, 4699, 4978, 5274, 5588,  5920,
+    6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956, 10548, 11175,
+    11840, 12544, 13290, 14080, 14917, 15804};
+
 void core1_main() {
   sleep_ms(100);
   printf("core1 running!\n");
@@ -124,12 +133,30 @@ void core1_main() {
   printf("entering while loop\n");
   uint pressed2 = 0;
   uint8_t new_vol;
+  uint8_t filter_midi = 10;
+  //   (
+  // a=Array.fill(72,{ arg i;
+  //   (i+60).midicps.round.asInteger
+  // });
+  // a.postln;
+  // )
   while (1) {
     adc_select_input(0);
     sleep_ms(1);
 
     sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
     // printf(" adc_read(): %d\n", adc_read());
+
+    adc_select_input(1);
+    sleep_ms(100);
+    printf(" adc_read(): %d\n", adc_read() * 71 / 4096);
+    uint8_t filter_midi_new = adc_read() * 71 / 4096;
+    if (filter_midi != filter_midi_new) {
+      filter_midi = filter_midi_new;
+      printf("freqs_available[%d]: %d", filter_midi,
+             freqs_available[filter_midi]);
+      IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+    }
 
     adc_select_input(2);
     sleep_ms(1);
@@ -304,7 +331,7 @@ int main() {
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER
-  myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
+  myFilter0 = IIR_new(7000.0f, 5.0f, 1.0f, 44100.0f);
   myFilter1 = IIR_new(7200.0f, 0.707f, 1.0f, 44100.0f);
 #endif
 #ifdef INCLUDE_RGBLED
