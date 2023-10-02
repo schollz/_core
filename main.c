@@ -304,6 +304,9 @@ void sdcard_startup() {
              file_list[i]->bpm[j], file_list[i]->beats[j],
              file_list[i]->size[j]);
     }
+    if (i == 1) {
+      break;
+    }
   }
   fil_current_id = 0;
   f_open(&fil_current, file_list[fil_current_bank]->name[fil_current_id],
@@ -392,7 +395,7 @@ void core1_main() {
         } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
                    bm->on[1] >= 4) {
           // switch bank if the bank has more than one zero files
-          if (file_list[bm->on[1]]->num > 0) {
+          if (file_list[bm->on[1] - 4]->num > 0) {
             fil_current_bank_sel = bm->on[1] - 4;
           }
         } else {
@@ -571,7 +574,7 @@ int main() {
   cp = Charlieplex_create();
 
   sleep_ms(100);
-  sdcard_startup();
+  // sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
@@ -887,7 +890,6 @@ void i2s_callback_func() {
             phases[0] *
             file_list[fil_current_bank_next]->size[fil_current_id_next] /
             file_list[fil_current_bank]->size[fil_current_id];
-        phases[0] = (phases[0] / PHASE_DIVISOR) * PHASE_DIVISOR;
         printf("phases[0]: %d\n", phases[0]);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
