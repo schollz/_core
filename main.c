@@ -137,7 +137,7 @@ uint8_t fil_current_bank = 0;
 uint8_t fil_current_bank_next = 0;
 uint8_t fil_current_bank_sel = 0;
 bool fil_current_change = false;
-FileList *file_list[16];
+FileList file_list[16];
 FRESULT fil_result;
 struct repeating_timer timer;
 bool phase_forward = 1;
@@ -180,6 +180,13 @@ Bass *bass;
 #endif
 
 pcg32_random_t rng;
+IIR *myFilter0;
+IIR *myFilter1;
+bool sdcard_startup_is_starting = false;
+
+#ifdef INCLUDE_RGBLED
+WS2812 *ws2812;
+#endif
 
 int random_integer_in_range(int min, int max) {
   return (int)pcg32_boundedrand_r(&rng, max - min) + min;
@@ -218,11 +225,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                              30 / (float)sf->bpm_tempo,
                              30 / (float)sf->bpm_tempo);
           phase_new =
-              (file_list[fil_current_bank]->size[fil_current_id]) *
+              (file_list[fil_current_bank].size[fil_current_id]) *
               ((beat_current %
-                (2 * file_list[fil_current_bank]->beats[fil_current_id])) +
+                (2 * file_list[fil_current_bank].beats[fil_current_id])) +
                (1 - phase_forward)) /
-              (2 * file_list[fil_current_bank]->beats[fil_current_id]);
+              (2 * file_list[fil_current_bank].beats[fil_current_id]);
           phase_change = true;
           // mem_use = true;
         }
@@ -235,7 +242,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (beat_current == 0 && !phase_forward) {
-          beat_current = file_list[fil_current_bank]->beats[fil_current_id];
+          beat_current = file_list[fil_current_bank].beats[fil_current_id];
         }
         beat_current += (phase_forward * 2 - 1);
         beat_total++;
@@ -249,12 +256,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         PCA9552_clear(pca);
         PCA9552_ledSet(pca, beat_current % 16, 2);
         EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) *
-            ((beat_current %
-              (2 * file_list[fil_current_bank]->beats[fil_current_id])) +
-             (1 - phase_forward)) /
-            (2 * file_list[fil_current_bank]->beats[fil_current_id]);
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
+                    ((beat_current %
+                      (2 * file_list[fil_current_bank].beats[fil_current_id])) +
+                     (1 - phase_forward)) /
+                    (2 * file_list[fil_current_bank].beats[fil_current_id]);
         phase_change = true;
       }
       if (debounce_quantize > 0) {
@@ -266,8 +272,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // printf("Repeat at %lld\n", time_us_64());
   return true;
 }
-
-bool sdcard_startup_is_starting = false;
 
 void sdcard_startup() {
   if (sdcard_startup_is_starting) {
@@ -293,20 +297,56 @@ void sdcard_startup() {
 #endif
 
   printf("\nz!!\n");
-  for (uint8_t i = 0; i < 16; i++) {
-    char dirname[10];
-    sprintf(dirname, "bank%d\0", i);
-    file_list[i] = list_files(dirname, WAV_CHANNELS);
-    printf("bank %d, ", i);
-    printf("found %d files\n", file_list[i]->num);
-    for (uint8_t j = 0; j < file_list[i]->num; j++) {
-      printf("%s [%d], %d beats, %d bytes\n", file_list[i]->name[j],
-             file_list[i]->bpm[j], file_list[i]->beats[j],
-             file_list[i]->size[j]);
+
+#define FILELIST "filelist6"
+
+  {
+    FIL fil; /* File object */
+    printf("[SaveFile] reading\n");
+    if (f_open(&fil, FILELIST, FA_READ)) {
+      printf("[SaveFile] no save file, skipping ");
+      for (uint8_t i = 0; i < 16; i++) {
+        char dirname[10];
+        sprintf(dirname, "bank%d\0", i);
+        file_list[i] = list_files(dirname, WAV_CHANNELS);
+        printf("bank %d, ", i);
+        printf("found %d files\n", file_list[i].num);
+      }
+      printf("[SaveFile] writing\n");
+      FRESULT fr;
+      FIL file; /* File object */
+      printf("[SaveFile] opening savefile for writing\n");
+      fr = f_open(&file, FILELIST, FA_WRITE | FA_CREATE_ALWAYS);
+      if (FR_OK != fr) {
+        printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+      } else {
+        unsigned int bw;
+        if (f_write(&file, file_list, sizeof(FileList) * 16, &bw)) {
+          printf("[SaveFile] problem writing save\n");
+        }
+        printf("[SaveFile] wrote %d bytes\n", bw);
+        f_close(&file);
+      }
+    } else {
+      unsigned int bytes_read;
+      if (f_read(&fil, file_list, sizeof(FileList) * 16, &bytes_read)) {
+        printf("[SaveFile] problem reading save file");
+      }
+      printf("bytes read: %d\n", bytes_read);
+      f_close(&fil);
     }
+    // sleep_ms(1000);
+    // for (uint8_t i = 0; i < 16; i++) {
+    //   for (uint8_t j = 0; j < file_list[i]->num; j++) {
+    //     printf("%s [%d], %d beats, %d bytes\n", file_list[i]->name[j],
+    //            file_list[i]->bpm[j], file_list[i]->beats[j],
+    //            file_list[i]->size[j]);
+    //   }
+    // }
   }
+
   fil_current_id = 0;
-  f_open(&fil_current, file_list[fil_current_bank]->name[fil_current_id],
+  f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
          FA_READ);
   fil_is_open = true;
   phase_new = 0;
@@ -331,13 +371,6 @@ int16_t transfer_fn(int16_t v) {
   return v;
 #endif
 }
-
-IIR *myFilter0;
-IIR *myFilter1;
-
-#ifdef INCLUDE_RGBLED
-WS2812 *ws2812;
-#endif
 
 void core1_main() {
   sleep_ms(100);
@@ -384,14 +417,14 @@ void core1_main() {
           // switch sample to the one in the current bank
           fil_current_bank_next = fil_current_bank_sel;
           fil_current_id_next =
-              (bm->on[1] - 4) % file_list[fil_current_bank_next]->num;
+              (bm->on[1] - 4) % file_list[fil_current_bank_next].num;
           printf("fil_current_bank_next = %d\n", fil_current_bank_next);
           printf("fil_current_id_next = %d\n", fil_current_id_next);
           fil_current_change = true;
         } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
                    bm->on[1] >= 4) {
           // switch bank if the bank has more than one zero files
-          if (file_list[bm->on[1] - 4]->num > 0) {
+          if (file_list[bm->on[1] - 4].num > 0) {
             fil_current_bank_sel = bm->on[1] - 4;
           }
         } else {
@@ -415,7 +448,7 @@ void core1_main() {
               PCA9552_ledSet(pca, beat_current % 16, 2);
 
               PCA9552_render(pca);
-              phase_new = (file_list[fil_current_bank]->size[fil_current_id]) *
+              phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
                           bm->on[bm->num_pressed - 1] / 16;
               phase_new = (phase_new / 4) * 4;
               phase_change = true;
@@ -570,7 +603,7 @@ int main() {
   cp = Charlieplex_create();
 
   sleep_ms(100);
-  sdcard_startup();
+  // sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);
@@ -638,21 +671,19 @@ int main() {
         phase_forward = !phase_forward;
       }
       if (c == 'w') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 0 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 0 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'e') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 1 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 1 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'r') {
-        // phase_new = (file_list[fil_current_bank]->size[fil_current_id]) * 2
+        // phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 2
         // / 16; phase_new = (phase_new / 4) * 4; phase_change = true;
         // debounce_quantize = 2;
         retrig_first = true;
@@ -667,50 +698,43 @@ int main() {
         retrig_ready = true;
       }
       if (c == 't') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 3 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 3 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'y') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 4 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 4 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'u') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 5 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 5 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'i') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 6 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 6 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'i') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 7 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 7 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 's') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 8 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 8 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
       }
       if (c == 'd') {
-        phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 9 / 16;
+        phase_new = (file_list[fil_current_bank].size[fil_current_id]) * 9 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
         debounce_quantize = 2;
@@ -719,7 +743,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 10;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 10 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 10 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -727,7 +751,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 11;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 11 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 11 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -735,7 +759,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 12;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 12 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 12 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -743,7 +767,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 13;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 13 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 13 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -751,7 +775,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 14;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 14 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 14 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -759,7 +783,7 @@ int main() {
         debounce_quantize = 2;
         beat_current = 15;
         phase_new =
-            (file_list[fil_current_bank]->size[fil_current_id]) * 15 / 16;
+            (file_list[fil_current_bank].size[fil_current_id]) * 15 / 16;
         phase_new = (phase_new / 4) * 4;
         phase_change = true;
       }
@@ -882,16 +906,15 @@ void i2s_callback_func() {
       if (fil_current_bank != fil_current_bank_next ||
           fil_current_id != fil_current_id_next) {
         printf("phases[0]: %d\n", phases[0]);
-        phases[0] =
-            phases[0] *
-            file_list[fil_current_bank_next]->size[fil_current_id_next] /
-            file_list[fil_current_bank]->size[fil_current_id];
+        phases[0] = phases[0] *
+                    file_list[fil_current_bank_next].size[fil_current_id_next] /
+                    file_list[fil_current_bank].size[fil_current_id];
         printf("phases[0]: %d\n", phases[0]);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
         printf("f_close = %d\n", fr);
         fr = f_open(&fil_current,
-                    file_list[fil_current_bank_next]->name[fil_current_id_next],
+                    file_list[fil_current_bank_next].name[fil_current_id_next],
                     FA_READ);
         printf("f_open = %d\n", fr);
         fr = f_lseek(
@@ -926,7 +949,7 @@ void i2s_callback_func() {
 
     uint32_t samples_to_read = buffer->max_sample_count *
                                round(sf->bpm_tempo * envelope_pitch_val) /
-                               file_list[fil_current_bank]->bpm[fil_current_id];
+                               file_list[fil_current_bank].bpm[fil_current_id];
     uint32_t values_len = samples_to_read * WAV_CHANNELS;
     uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
     int16_t values[values_len];
@@ -958,8 +981,8 @@ void i2s_callback_func() {
         if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
-          f_open(&fil_current,
-                 file_list[fil_current_bank]->name[fil_current_id], FA_READ);
+          f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
+                 FA_READ);
           f_lseek(
               &fil_current,
               WAV_HEADER_SIZE + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
@@ -976,7 +999,7 @@ void i2s_callback_func() {
             printf("ERROR READING!\n");
             f_close(&fil_current);  // close and re-open trick
             f_open(&fil_current,
-                   file_list[fil_current_bank]->name[fil_current_id], FA_READ);
+                   file_list[fil_current_bank].name[fil_current_id], FA_READ);
             f_lseek(&fil_current,
                     WAV_HEADER_SIZE +
                         (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
@@ -1109,10 +1132,10 @@ void i2s_callback_func() {
 
   if (fil_is_open) {
     for (uint8_t head = 0; head < 2; head++) {
-      if (phases[head] >= file_list[fil_current_bank]->size[fil_current_id]) {
-        phases[head] -= file_list[fil_current_bank]->size[fil_current_id];
+      if (phases[head] >= file_list[fil_current_bank].size[fil_current_id]) {
+        phases[head] -= file_list[fil_current_bank].size[fil_current_id];
       } else if (phases[head] < 0) {
-        phases[head] += file_list[fil_current_bank]->size[fil_current_id];
+        phases[head] += file_list[fil_current_bank].size[fil_current_id];
       }
     }
   }
