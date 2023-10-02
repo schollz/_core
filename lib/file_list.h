@@ -159,17 +159,27 @@ FileList *list_files(const char *dir, int num_channels) {
     if (strstr(fno.fname, ".wav") && strstr(fno.fname, "bpm") &&
         strstr(fno.fname, "beats")) {
       WavHeader *wh;
-      wh = WavFile_Load(fno.fname);
+      char full_fname[255];
+      strcpy(full_fname, p_dir);
+      strcat(full_fname, "/");
+      strcat(full_fname, fno.fname);
+      wh = WavFile_Load(full_fname);
       if (wh->NumOfChan == num_channels) {
         // Allocate memory for the name field and copy the filename into it
-        filelist->name[filelist->num] = malloc(strlen(fno.fname) + 1);
-        strcpy(filelist->name[filelist->num], fno.fname);
+        filelist->name[filelist->num] = malloc(strlen(full_fname) + 1);
+        strcpy(filelist->name[filelist->num], full_fname);
         filelist->size[filelist->num] = (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
         filelist->bpm[filelist->num] = extract_bpm(fno.fname);
         filelist->beats[filelist->num] = extract_beats(fno.fname);
-        filelist->num++;
+        if (filelist->beats[filelist->num] > 0) {
+          filelist->num++;
+        }
       }
       free(wh);
+    }
+    // limit to 16 files!
+    if (filelist->num == 16) {
+      break;
     }
 
     fr = f_findnext(&dj, &fno); /* Search for next item */
