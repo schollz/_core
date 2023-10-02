@@ -298,14 +298,11 @@ void sdcard_startup() {
     sprintf(dirname, "bank%d\0", i);
     file_list[i] = list_files(dirname, WAV_CHANNELS);
     printf("bank %d, ", i);
-    printf("found %d files\n", file_list[fil_current_bank]->num);
-    for (uint8_t j = 0; j < file_list[fil_current_bank]->num; j++) {
+    printf("found %d files\n", file_list[i]->num);
+    for (uint8_t j = 0; j < file_list[i]->num; j++) {
       printf("%s [%d], %d beats, %d bytes\n", file_list[i]->name[j],
              file_list[i]->bpm[j], file_list[i]->beats[j],
              file_list[i]->size[j]);
-    }
-    if (i == 1) {
-      break;
     }
   }
   fil_current_id = 0;
@@ -362,7 +359,6 @@ void core1_main() {
   uint pressed2 = 0;
   uint8_t new_vol;
   while (1) {
-    sleep_ms(100);
     adc_select_input(0);
     sleep_ms(1);
 
@@ -574,7 +570,7 @@ int main() {
   cp = Charlieplex_create();
 
   sleep_ms(100);
-  // sdcard_startup();
+  sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 0.707f, 1.0f, 44100.0f);

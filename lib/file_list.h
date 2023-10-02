@@ -157,6 +157,8 @@ FileList *list_files(const char *dir, int num_channels) {
         strstr(fno.fname, "beats")) {
       filelist->bpm[filelist->num] = extract_bpm(fno.fname);
       filelist->beats[filelist->num] = extract_beats(fno.fname);
+      printf("%s, beats=%d, bpm=%d\n", fno.fname,
+             filelist->beats[filelist->num], filelist->bpm[filelist->num]);
       if (filelist->bpm[filelist->num] > 10 &&
           filelist->beats[filelist->num] > 1) {
         WavHeader *wh;
