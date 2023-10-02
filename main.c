@@ -304,6 +304,7 @@ void sdcard_startup() {
              file_list[i]->bpm[j], file_list[i]->beats[j],
              file_list[i]->size[j]);
     }
+    break;
   }
   fil_current_id = 0;
   f_open(&fil_current, file_list[fil_current_bank]->name[fil_current_id],
