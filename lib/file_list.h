@@ -97,20 +97,21 @@ unsigned int extract_beats(const char *input) {
 #define WAV_HEADER_SIZE 44
 #define FileList_max 16
 typedef struct FileList {
-  char **name;
-  uint32_t *size;
-  unsigned int *bpm;
-  unsigned int *beats;
+  char name[FileList_max][100];
+  uint32_t size[FileList_max];
+  unsigned int bpm[FileList_max];
+  unsigned int beats[FileList_max];
   unsigned int num;
 } FileList;
 
-FileList *list_files(const char *dir, int num_channels) {
-  FileList *filelist = malloc(sizeof(FileList));
-  filelist->name = malloc(sizeof(char *) * FileList_max);
-  filelist->size = malloc(sizeof(FSIZE_t) * FileList_max);
-  filelist->bpm = malloc(sizeof(unsigned int) * FileList_max);
-  filelist->beats = malloc(sizeof(unsigned int) * FileList_max);
-  filelist->num = 0;
+FileList list_files(const char *dir, int num_channels) {
+  FileList filelist;
+  for (uint8_t i = 0; i < FileList_max; i++) {
+    filelist.size[i] = 0;
+    filelist.bpm[i] = 0;
+    filelist.beats[i] = 0;
+  }
+  filelist.num = 0;
 
   char cwdbuf[FF_LFN_BUF] = {0};
   FRESULT fr; /* Return value */
@@ -155,12 +156,11 @@ FileList *list_files(const char *dir, int num_channels) {
     // Check if the filename ends with ".wav"
     if (strstr(fno.fname, ".wav") && strstr(fno.fname, "bpm") &&
         strstr(fno.fname, "beats")) {
-      filelist->bpm[filelist->num] = extract_bpm(fno.fname);
-      filelist->beats[filelist->num] = extract_beats(fno.fname);
-      printf("%s, beats=%d, bpm=%d\n", fno.fname,
-             filelist->beats[filelist->num], filelist->bpm[filelist->num]);
-      if (filelist->bpm[filelist->num] > 10 &&
-          filelist->beats[filelist->num] > 1) {
+      filelist.bpm[filelist.num] = extract_bpm(fno.fname);
+      filelist.beats[filelist.num] = extract_beats(fno.fname);
+      printf("%s, beats=%d, bpm=%d\n", fno.fname, filelist.beats[filelist.num],
+             filelist.bpm[filelist.num]);
+      if (filelist.bpm[filelist.num] > 10 && filelist.beats[filelist.num] > 1) {
         WavHeader *wh;
         char full_fname[255];
         strcpy(full_fname, p_dir);
@@ -169,17 +169,15 @@ FileList *list_files(const char *dir, int num_channels) {
         wh = WavFile_Load(full_fname);
         if (wh->NumOfChan == num_channels) {
           // Allocate memory for the name field and copy the filename into it
-          filelist->name[filelist->num] = malloc(strlen(full_fname) + 1);
-          strcpy(filelist->name[filelist->num], full_fname);
-          filelist->size[filelist->num] =
-              (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
-          filelist->num++;
+          strcpy(filelist.name[filelist.num], full_fname);
+          filelist.size[filelist.num] = (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
+          filelist.num++;
         }
         free(wh);
       }
     }
     // limit to 16 files!
-    if (filelist->num == 16) {
+    if (filelist.num == 16) {
       break;
     }
 
