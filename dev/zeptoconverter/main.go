@@ -64,11 +64,14 @@ func main() {
 		}
 		os.MkdirAll(path.Join(flagFolderOut, pathRelative), os.ModePerm)
 		beats, bpm, _ := sox.GetBPM(f)
+		// filenameEncoded := base64.StdEncoding.EncodeToString([]byte(filename))
+		// filenameEncoded = strings.Replace(filenameEncoded, "=", "", -1)
 		f2 := path.Join(flagFolderOut, pathRelative, filename)
 		ext := path.Ext(f2)
-		f2 = f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(beats), int(bpm))
+		f2 = f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(bpm), int(beats))
 		bar.Add(1)
-		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", f2)
+		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
+		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", f2)
 	}
 }
 
