@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/schollz/logger v1.2.0
 	github.com/schollz/progressbar/v3 v3.13.1
-	github.com/schollz/sox v0.0.0-20230812061608-bab1f632ab08
+	github.com/schollz/sox v0.0.0-20231003145150-6ceb4181fcba
 )
 
 require (

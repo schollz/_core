@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -34,7 +35,6 @@ func main() {
 	log.SetLevel("info")
 
 	flagFolderIn, _ = filepath.Abs(flagFolderIn)
-	fmt.Println(flagFolderIn)
 	folderCount := 0
 	fileCount := 0
 	fileList := []string{}
@@ -50,7 +50,6 @@ func main() {
 		}
 		return nil
 	})
-	fmt.Println(fileList[0])
 
 	bar := progressbar.Default(int64(len(fileList)))
 	for _, f := range fileList {
@@ -63,15 +62,19 @@ func main() {
 			}
 		}
 		os.MkdirAll(path.Join(flagFolderOut, pathRelative), os.ModePerm)
+		f0 := path.Join("/tmp/", strings.Replace(filename, " ", "_", -1))
+		f0 = strings.Replace(f0, "(", "_", -1)
+		f0 = strings.Replace(f0, ")", "_", -1)
+		CopyFile(f, f0)
+		f = f0
 		beats, bpm, _ := sox.GetBPM(f)
-		// filenameEncoded := base64.StdEncoding.EncodeToString([]byte(filename))
-		// filenameEncoded = strings.Replace(filenameEncoded, "=", "", -1)
 		f2 := path.Join(flagFolderOut, pathRelative, filename)
 		ext := path.Ext(f2)
 		f2 = f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(bpm), int(beats))
 		bar.Add(1)
 		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
 		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", f2)
+		os.Remove(f)
 	}
 }
 
@@ -90,4 +93,64 @@ func run(args ...string) (string, string, error) {
 		log.Error(errb.String())
 	}
 	return outb.String(), errb.String(), err
+}
+
+// CopyFile copies a file from src to dst. If src and dst files exist, and are
+// the same, then return success. Otherise, attempt to create a hard link
+// between the two files. If that fail, copy the file contents from src to dst.
+func CopyFile(src, dst string) (err error) {
+	sfi, err := os.Stat(src)
+	if err != nil {
+		return
+	}
+	if !sfi.Mode().IsRegular() {
+		// cannot copy non-regular files (e.g., directories,
+		// symlinks, devices, etc.)
+		return fmt.Errorf("CopyFile: non-regular source file %s (%q)", sfi.Name(), sfi.Mode().String())
+	}
+	dfi, err := os.Stat(dst)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return
+		}
+	} else {
+		if !(dfi.Mode().IsRegular()) {
+			return fmt.Errorf("CopyFile: non-regular destination file %s (%q)", dfi.Name(), dfi.Mode().String())
+		}
+		if os.SameFile(sfi, dfi) {
+			return
+		}
+	}
+	if err = os.Link(src, dst); err == nil {
+		return
+	}
+	err = copyFileContents(src, dst)
+	return
+}
+
+// copyFileContents copies the contents of the file named src to the file named
+// by dst. The file will be created if it does not already exist. If the
+// destination file exists, all it's contents will be replaced by the contents
+// of the source file.
+func copyFileContents(src, dst string) (err error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+	defer func() {
+		cerr := out.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return
+	}
+	err = out.Sync()
+	return
 }
