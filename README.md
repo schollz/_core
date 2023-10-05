@@ -2,7 +2,8 @@
 
 audio mangler for 16-bit stereo samples straight from an SD card.
 
-![zeptocore](https://github.com/schollz/zeptocore/assets/6550035/948a46cf-f1ac-4335-a1c3-3dfb051a52a5)
+![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
+
 
 ## spec
 
