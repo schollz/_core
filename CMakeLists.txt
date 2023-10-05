@@ -72,6 +72,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_DIN_GPIO=18
     I2C_SDA_PIN=20
     I2C_SCL_PIN=21
+    LED_1_GPIO=6
+    LED_2_GPIO=19
+    LED_3_GPIO=22
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1

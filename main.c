@@ -85,8 +85,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                    sf->pattern_length[sf->pattern_current]];
         }
         // printf("beat_current: %d\n", beat_current);
-        PCA9552_clear(pca);
-        PCA9552_ledSet(pca, beat_current % 16, 2);
+        LEDS_clearAll(leds, LED_STEP_FACE);
+        LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
         EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
                     ((beat_current %
@@ -171,8 +171,10 @@ void core1_main() {
 
     ButtonMatrix_read(bm);
     if (bm->changed) {
+      LEDS_clearAll(leds, LED_PRESS_FACE);
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
         printf("%d ", bm->on[i]);
+        LEDS_set(leds, LED_PRESS_FACE, bm->on[i], 2);
       }
       printf("\n");
       if (bm->changed_on) {
@@ -207,10 +209,9 @@ void core1_main() {
             // }
             if (key >= 4) {
               beat_current = (beat_current / 16) * 16 + (key - 4);
-              PCA9552_clear(pca);
-              PCA9552_ledSet(pca, beat_current % 16, 2);
+              LEDS_clearAll(leds, LED_STEP_FACE);
+              LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
 
-              PCA9552_render(pca);
               phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
                           bm->on[bm->num_pressed - 1] / 16;
               phase_new = (phase_new / 4) * 4;
@@ -254,7 +255,7 @@ void core1_main() {
         }
       }
     }
-    PCA9552_render(pca);
+    LEDS_render(leds);
     sleep_ms(1);
   }
 }
@@ -285,18 +286,6 @@ int main() {
   gpio_init(PIN_DCDC_PSM_CTRL);
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
-
-  // setup leds
-  i2c_init(i2c_default, 40 * 1000);
-  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
-  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
-  gpio_pull_up(I2C_SDA_PIN);
-  gpio_pull_up(I2C_SCL_PIN);
-  pca = PCA9552_create(0x60, i2c_default);
-  if (pca->error != PCA9552_OK) {
-    printf("PCA9552_ERROR: %02x\n", pca->error);
-  }
-  PCA9552_clear(pca);
 
   ap = init_audio();
 
@@ -329,6 +318,8 @@ int main() {
   random_initialize();
 
   cp = Charlieplex_create();
+
+  leds = LEDS_create();
 
   sleep_ms(100);
   sdcard_startup();
