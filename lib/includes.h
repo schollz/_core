@@ -46,6 +46,7 @@
 #include "envelopegate.h"
 #include "file_list.h"
 #include "iir.h"
+#include "leds.h"
 #include "noise.h"
 #include "pca9552.h"
 #include "random.h"

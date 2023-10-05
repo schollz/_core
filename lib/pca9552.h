@@ -22,6 +22,8 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef PCA9552_LIB
+#define PCA9552_LIB 1
 //  REGISTERS
 #define PCA9552_INPUT0 0x00
 #define PCA9552_INPUT1 0x01
@@ -60,6 +62,7 @@ typedef struct PCA9552 {
   uint8_t address;
   uint8_t error;
   uint8_t leds[4][4];
+  uint8_t leds_last[4][4];
   uint8_t lastSet[3];
   bool changed[4];
   struct i2c_inst *i2c;
@@ -170,25 +173,25 @@ void PCA9552_clear(PCA9552 *pca) {
     for (uint8_t j = 0; j < 4; j++) {
       if (pca->leds[i][j] != 0) {
         pca->leds[i][j] = 0;
-        pca->changed[i] = true;
       }
     }
   }
 }
 
 void PCA9552_ledSet(PCA9552 *pca, uint8_t led, uint8_t state) {
-  uint8_t i = led / 4;
-  uint8_t j = 3 - (led % 4);
-  if (pca->leds[i][j] != state) {
-    pca->leds[i][j] = state;
-    pca->changed[i] = true;
-  }
+  pca->leds[led / 4][3 - (led % 4)] = state;
 }
 
 void PCA9552_render(PCA9552 *pca) {
   for (uint8_t i = 0; i < 4; i++) {
-    if (pca->changed[i]) {
-      pca->changed[i] = false;
+    bool changed = false;
+    for (uint8_t j = 0; j < 4; j++) {
+      if (pca->leds[i][j] != pca->leds_last[i][j]) {
+        changed = true;
+        pca->leds_last[i][j] = pca->leds[i][j];
+      }
+    }
+    if (changed) {
       PCA9552_writeReg(pca, PCA9552_LS0 + i, PCA9552_ledByte(pca->leds[i]));
     }
   }
@@ -202,6 +205,7 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
   for (uint8_t i = 0; i < 4; i++) {
     for (uint8_t j = 0; j < 4; j++) {
       pca->leds[i][j] = 0;
+      pca->leds_last[i][j] = 0;
     }
   }
 
@@ -216,3 +220,4 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
   }
   return pca;
 }
+#endif

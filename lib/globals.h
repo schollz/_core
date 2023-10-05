@@ -60,7 +60,7 @@ float retrig_vol_step = 0;
 
 SaveFile *sf;
 Charlieplex *cp;
-PCA9552 *pca;
+LEDS *leds;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
@@ -73,3 +73,6 @@ bool sdcard_startup_is_starting = false;
 #ifdef INCLUDE_RGBLED
 WS2812 *ws2812;
 #endif
+
+#define LED_PRESS_FACE 2
+#define LED_STEP_FACE 1
