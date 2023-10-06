@@ -322,7 +322,7 @@ int main() {
   leds = LEDS_create();
 
   sleep_ms(100);
-  sdcard_startup();
+  //  sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 5.0f, 1.0f, 44100.0f);
