@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	log "github.com/schollz/logger"
@@ -50,9 +51,10 @@ func main() {
 		}
 		return nil
 	})
+	sort.Strings(fileList)
 
 	bar := progressbar.Default(int64(len(fileList)))
-	for _, f := range fileList {
+	for fi, f := range fileList {
 		fpath, filename := filepath.Split(f)
 		fpath, _ = filepath.Abs(fpath)
 		pathRelative := strings.TrimPrefix(fpath, flagFolderIn)
@@ -68,14 +70,16 @@ func main() {
 		CopyFile(f, f0)
 		f = f0
 		beats, bpm, _ := sox.GetBPM(f)
-		f2 := path.Join(flagFolderOut, pathRelative, filename)
+		filenameEncoded := fmt.Sprintf("%03d", fi)
+		f2 := path.Join(flagFolderOut, pathRelative, filenameEncoded)
 		ext := path.Ext(f2)
-		final1 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(bpm), int(beats))
+		final1 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d_nostretchin.wav", int(bpm), int(beats))
 		final2 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d_timestretch.wav", int(bpm), int(beats*4))
 		bar.Add(1)
 		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
 		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final1)
-		run("rubberband", "-2", "-t4", f, "/tmp/1.wav")
+		// run("ru bb erband", "-2, "-t4", f, "/tmp/1.wav")
+		run("sox", f, "/tmp/1.wav", "tempo", "0.25")
 		run("sox", "/tmp/1.wav", "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
 		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final2)
 		os.Remove(f)
