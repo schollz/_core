@@ -70,10 +70,14 @@ func main() {
 		beats, bpm, _ := sox.GetBPM(f)
 		f2 := path.Join(flagFolderOut, pathRelative, filename)
 		ext := path.Ext(f2)
-		f2 = f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(bpm), int(beats))
+		final1 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d.wav", int(bpm), int(beats))
+		final2 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d_timestretch.wav", int(bpm), int(beats*4))
 		bar.Add(1)
 		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
-		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", f2)
+		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final1)
+		run("rubberband", "-2", "-t4", f, "/tmp/1.wav")
+		run("sox", "/tmp/1.wav", "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
+		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final2)
 		os.Remove(f)
 	}
 }
