@@ -22,6 +22,11 @@ bass.raw
 bass.wav 
 convert
 lib/bass_raw.h
+dev/zeptoconverter/1.wav
+dev/zeptoconverter/2/*
+dev/zeptoconverter/banks2/*
+dev/zeptoconverter/index.html
+dev/zeptoconverter/zeptocore/*
 
 
 # Object files
