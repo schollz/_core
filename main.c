@@ -26,6 +26,9 @@
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
+  if (!fil_is_open) {
+    return true;
+  }
   if (bpm_last != sf->bpm_tempo) {
     printf("updating bpm timer: %d-> %d\n", bpm_last, sf->bpm_tempo);
     bpm_last = sf->bpm_tempo;
@@ -117,6 +120,11 @@ uint16_t freqs_available[72] = {
 void core1_main() {
   sleep_ms(100);
   printf("core1 running!\n");
+  while (!fil_is_open) {
+    printf("waiting to start\n");
+    sleep_ms(10);
+    continue;
+  }
 
   ButtonMatrix *bm;
   // initialize button matrix
@@ -322,7 +330,7 @@ int main() {
   leds = LEDS_create();
 
   sleep_ms(100);
-  //  sdcard_startup();
+  sdcard_startup();
 
 #ifdef INCLUDE_FILTER
   myFilter0 = IIR_new(7000.0f, 5.0f, 1.0f, 44100.0f);

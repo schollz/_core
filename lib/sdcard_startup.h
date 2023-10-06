@@ -30,16 +30,14 @@ void sdcard_startup() {
     file_list[i] = list_files(dirname, WAV_CHANNELS);
     printf("bank %d, ", i);
     printf("found %d files\n", file_list[i].num);
-    // printf("file_list[i].name[0]: %s\n", file_list[i].name[0]);
-    // printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[0]);
-    // printf("file_list[i].beats[0]: %d\n", file_list[i].beats[0]);
-    // printf("file_list[i].size[0]: %d\n", file_list[i].size[0]);
-    // if (i == 0) {
-    //   printf("file_list[i].name[0]: %s\n", file_list[i].name[1]);
-    //   printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[1]);
-    //   printf("file_list[i].beats[0]: %d\n", file_list[i].beats[1]);
-    //   printf("file_list[i].size[0]: %d\n", file_list[i].size[1]);
-    // }
+    printf("file_list[i].name[0]: %s\n", file_list[i].name[0]);
+    printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[0]);
+    printf("file_list[i].beats[0]: %d\n", file_list[i].beats[0]);
+    printf("file_list[i].size[0]: %d\n", file_list[i].size[0]);
+    printf("file_list[i].name[0]: %s\n", file_list[i].name[1]);
+    printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[1]);
+    printf("file_list[i].beats[0]: %d\n", file_list[i].beats[1]);
+    printf("file_list[i].size[0]: %d\n", file_list[i].size[1]);
   }
 
   fil_current_bank = 0;
@@ -53,9 +51,9 @@ void sdcard_startup() {
     printf("could not open: %s\n",
            file_list[fil_current_bank].name[fil_current_id]);
   }
-  fil_is_open = true;
   phase_new = 0;
   phase_change = true;
   sync_using_sdcard = false;
   sdcard_startup_is_starting = false;
+  fil_is_open = true;
 }

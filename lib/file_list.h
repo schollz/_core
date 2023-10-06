@@ -129,11 +129,11 @@ FileList list_files(const char *dir, int num_channels) {
 
   char filelist_name[100];
   strcpy(filelist_name, p_dir);
-  strcat(filelist_name, "/filelist9");
+  strcat(filelist_name, "/filelist15");
 
   FIL fil; /* File object */
   if (f_open(&fil, filelist_name, FA_READ)) {
-    printf("[file_list] file list '%s' does not exist", filelist_name);
+    printf("[file_list] file list '%s' does not exist\n", filelist_name);
     // creating new file list
     DIR dj;      /* Directory object */
     FILINFO fno; /* File information */
@@ -211,8 +211,7 @@ FileList list_files(const char *dir, int num_channels) {
       printf("[file_list] wrote %d bytes", bw);
       f_close(&file);
     }
-  }
-  {
+  } else {
     unsigned int bytes_read;
     if (f_read(&fil, &filelist, sizeof(FileList), &bytes_read)) {
       printf("[file_list] problem reading save file");
