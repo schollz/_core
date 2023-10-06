@@ -129,7 +129,7 @@ FileList list_files(const char *dir, int num_channels) {
 
   char filelist_name[100];
   strcpy(filelist_name, p_dir);
-  strcat(filelist_name, "/filelist4");
+  strcat(filelist_name, "/filelist6");
 
   FIL fil; /* File object */
   if (f_open(&fil, filelist_name, FA_READ)) {

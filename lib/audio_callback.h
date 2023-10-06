@@ -50,35 +50,30 @@ void i2s_callback_func() {
       fil_current_change = false;
       if (fil_current_bank != fil_current_bank_next ||
           fil_current_id != fil_current_id_next) {
-        // printf("phases[0]: %d\n", phases[0]);
-        // printf("fil_current_bank_next: %d\n", fil_current_bank_next);
-        // printf("fil_current_id_next: %d\n", fil_current_id_next);
-        // printf(
-        //     "file_list[fil_current_bank_next].size[fil_current_id_next]:
-        //     %d\n",
-        //     file_list[fil_current_bank_next].size[fil_current_id_next]);
-        // printf("file_list[fil_current_bank].size[fil_current_id]: %d\n",
-        //        file_list[fil_current_bank].size[fil_current_id]);
-        // printf(
-        //     "file_list[fil_current_bank_next].size[fil_current_id_next] / "
-        //     "file_list[fil_current_bank].size[fil_current_id]: %d\n",
-        //     file_list[fil_current_bank_next].size[fil_current_id_next] /
-        //         file_list[fil_current_bank].size[fil_current_id]);
-        phases[0] = phases[0] *
-                    file_list[fil_current_bank_next].size[fil_current_id_next] /
-                    file_list[fil_current_bank].size[fil_current_id];
-        // printf("phases[0]: %d\n", phases[0]);
+        int32_t phases0 = phases[0];
+        phase_change = true;
+        phase_new =
+            phases[0] *
+            file_list[fil_current_bank_next].beats[fil_current_id_next] /
+            file_list[fil_current_bank].beats[fil_current_id];
+        beat_current = round(
+            (float)beat_current *
+            (float)file_list[fil_current_bank_next].beats[fil_current_id_next] /
+            (float)file_list[fil_current_bank].beats[fil_current_id]);
+        printf("[current: %d/%d, next: %d/%d]\n", phases0,
+               file_list[fil_current_bank].size[fil_current_id], phase_new,
+               file_list[fil_current_bank_next].size[fil_current_id_next]);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
-        printf("f_close = %d\n", fr);
+        if (fr != FR_OK) {
+          debugf("error: %d\n", fr);
+        }
         fr = f_open(&fil_current,
                     file_list[fil_current_bank_next].name[fil_current_id_next],
                     FA_READ);
-        printf("f_open = %d\n", fr);
-        fr = f_lseek(
-            &fil_current,
-            WAV_HEADER_SIZE + (phases[0] / PHASE_DIVISOR) * PHASE_DIVISOR);
-        printf("f_lseek = %d\n", fr);
+        if (fr != FR_OK) {
+          debugf("error: %d\n", fr);
+        }
         fil_current_id = fil_current_id_next;
         fil_current_bank = fil_current_bank_next;
       }
