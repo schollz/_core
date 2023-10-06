@@ -129,11 +129,11 @@ FileList list_files(const char *dir, int num_channels) {
 
   char filelist_name[100];
   strcpy(filelist_name, p_dir);
-  strcat(filelist_name, "/filelist6");
+  strcat(filelist_name, "/filelist9");
 
   FIL fil; /* File object */
   if (f_open(&fil, filelist_name, FA_READ)) {
-    debugf("file list '%s' does not exist", filelist_name);
+    printf("[file_list] file list '%s' does not exist", filelist_name);
     // creating new file list
     DIR dj;      /* Directory object */
     FILINFO fno; /* File information */
@@ -141,7 +141,7 @@ FileList list_files(const char *dir, int num_channels) {
     memset(&fno, 0, sizeof fno);
     fr = f_findfirst(&dj, &fno, p_dir, "*");
     if (FR_OK != fr) {
-      debugf("f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
+      printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
       return filelist;
     }
     while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
@@ -197,26 +197,27 @@ FileList list_files(const char *dir, int num_channels) {
     }
     f_closedir(&dj);
 
-    debugf("writing %s", filelist_name);
+    printf("[file_list] writing %s", filelist_name);
     FRESULT fr;
     FIL file; /* File object */
     fr = f_open(&file, filelist_name, FA_WRITE | FA_CREATE_ALWAYS);
     if (FR_OK != fr) {
-      debugf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+      printf("[file_list] f_open error: %s (%d)\n", FRESULT_str(fr), fr);
     } else {
       unsigned int bw;
       if (f_write(&file, &filelist, sizeof(FileList), &bw)) {
-        debugf("problem writing save: %s", filelist_name);
+        printf("[file_list] problem writing save: %s", filelist_name);
       }
-      debugf("wrote %d bytes", bw);
+      printf("[file_list] wrote %d bytes", bw);
       f_close(&file);
     }
-  } else {
+  }
+  {
     unsigned int bytes_read;
     if (f_read(&fil, &filelist, sizeof(FileList), &bytes_read)) {
-      printf("[SaveFile] problem reading save file");
+      printf("[file_list] problem reading save file");
     }
-    printf("bytes read: %d\n", bytes_read);
+    printf("[file_list] bytes read: %d\n", bytes_read);
     f_close(&fil);
   }
 

@@ -24,7 +24,7 @@ void sdcard_startup() {
 
   printf("\nz!!\n");
 
-  for (uint8_t i = 0; i < 16; i++) {
+  for (uint8_t i = 0; i < 1; i++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", i);
     file_list[i] = list_files(dirname, WAV_CHANNELS);
@@ -50,7 +50,7 @@ void sdcard_startup() {
   fr = f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
               FA_READ);
   if (fr != FR_OK) {
-    debugf("could not open: %s",
+    printf("could not open: %s\n",
            file_list[fil_current_bank].name[fil_current_id]);
   }
   fil_is_open = true;
