@@ -19,8 +19,8 @@ pico_sdk_init()
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
     main.c
-    hw_config.c
-    lib/pcg_basic.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/hw_config.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/pcg_basic.c
 )
 
 
