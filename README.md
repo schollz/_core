@@ -15,3 +15,7 @@ S is nominally "shift"
 
 ### knob functions
 
+
+## known bugs
+
+- when uploading new files, the audio plays but buttons do not work. when resetting, everything works.
