@@ -32,6 +32,51 @@ void key_do_jump(uint8_t beat) {
   }
 }
 
+void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
+  debounce_quantize = 0;
+  retrig_first = true;
+  retrig_beat_num = key2 + 4;
+  retrig_timer_reset = 96 / key3;
+  float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
+                     (float)(96 * sf->bpm_tempo);
+  retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+  printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+         retrig_beat_num, retrig_timer_reset, total_time);
+  retrig_ready = true;
+}
+
+void go_retrigger_2key(uint8_t key1, uint8_t key2) {
+  debounce_quantize = 0;
+  retrig_first = true;
+  retrig_beat_num = random_integer_in_range(8, 24);
+  retrig_timer_reset =
+      96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
+  float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
+                     (float)(96 * sf->bpm_tempo);
+  if (total_time > 2.0f) {
+    total_time = total_time / 2;
+    retrig_timer_reset = retrig_timer_reset / 2;
+  }
+  if (total_time > 2.0f) {
+    total_time = total_time / 2;
+    retrig_beat_num = retrig_beat_num / 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  if (total_time < 0.25f) {
+    total_time = total_time * 2;
+    retrig_beat_num = retrig_beat_num * 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+  printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+         retrig_beat_num, retrig_timer_reset, total_time);
+  retrig_ready = true;
+}
+
 void go_update_top() {
   bool all_off = true;
   for (uint8_t i = 0; i < 4; i++) {
@@ -131,37 +176,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     // H+H
     if (mode_jump_mash == MODE_JUMP) {
       // retrigger
-
-      debounce_quantize = 0;
-      retrig_first = true;
-      retrig_beat_num = random_integer_in_range(8, 24);
-      retrig_timer_reset =
-          96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
-      float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
-                         (float)(96 * sf->bpm_tempo);
-      if (total_time > 2.0f) {
-        total_time = total_time / 2;
-        retrig_timer_reset = retrig_timer_reset / 2;
-      }
-      if (total_time > 2.0f) {
-        total_time = total_time / 2;
-        retrig_beat_num = retrig_beat_num / 2;
-        if (retrig_beat_num == 0) {
-          retrig_beat_num = 1;
-        }
-      }
-      if (total_time < 0.25f) {
-        total_time = total_time * 2;
-        retrig_beat_num = retrig_beat_num * 2;
-        if (retrig_beat_num == 0) {
-          retrig_beat_num = 1;
-        }
-      }
-
-      retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-      printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-             retrig_beat_num, retrig_timer_reset, total_time);
-      retrig_ready = true;
+      go_retrigger_2key(key1, key2);
     }
   } else if (key1 == KEY_A) {
     // A
@@ -257,15 +272,36 @@ void button_handler(ButtonMatrix *bm) {
     } else {
       button_key_on_double(key_held_num, bm->on[i]);
     }
+    // keep track of combos
     key_pressed[key_pressed_num] = bm->on[i];
     key_pressed_num++;
     key_timer = 0;
 
-    // keep track
+    // keep track of all
     key_num_presses++;
     key_on_buttons[bm->on[i]] = key_num_presses;
     if (bm->on[i] < 4) {
       do_update_top = true;
+    } else {
+      // if 3 are pressed, do retrig
+      if (key_total_pressed == 3) {
+        uint16_t *indexes =
+            sort_int16_t(key_on_buttons, BUTTONMATRIX_BUTTONS_MAX);
+        uint8_t keys[3];
+        bool all_h = true;
+        for (uint8_t i = 0; i < 3; i++) {
+          keys[i] = indexes[BUTTONMATRIX_BUTTONS_MAX - 3 + i];
+          printf("keys[%d]: %d\n", i, keys[i]);
+          if (keys[i] < 4) {
+            all_h = false;
+          }
+        }
+        free(indexes);
+        if (all_h) {
+          // do retrigger!
+          go_retrigger_3key(keys[0], keys[1], keys[2]);
+        }
+      }
     }
   }
 
