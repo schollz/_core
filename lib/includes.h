@@ -39,7 +39,7 @@
 #include "WS2812.h"
 #endif
 #include "biquad.h"
-#include "buttonmatrix2.h"
+#include "buttonmatrix3.h"
 #include "charlieplex.h"
 #include "crossfade.h"
 #include "envelope2.h"
@@ -67,3 +67,5 @@
 #include "keyboard.h"
 //
 #include "audio_callback.h"
+//
+#include "button_handler.h"

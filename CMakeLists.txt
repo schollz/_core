@@ -31,7 +31,7 @@ add_subdirectory(lib/sdio build)
 
 # generate pio
 pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/WS2812.pio)
-pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/buttonmatrix2.pio)
+pico_generate_pio_header(zeptocore ${CMAKE_CURRENT_LIST_DIR}/lib/buttonmatrix3.pio)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${PROJECT_NAME})
