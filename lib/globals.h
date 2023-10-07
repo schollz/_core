@@ -76,3 +76,12 @@ WS2812 *ws2812;
 
 #define LED_PRESS_FACE 2
 #define LED_STEP_FACE 1
+
+void do_update_phase_from_beat_current() {
+  phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
+              ((beat_current %
+                (2 * file_list[fil_current_bank].beats[fil_current_id])) +
+               (1 - phase_forward)) /
+              (2 * file_list[fil_current_bank].beats[fil_current_id]);
+  phase_change = true;
+}

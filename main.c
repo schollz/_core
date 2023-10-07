@@ -59,13 +59,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0,
                              30 / (float)sf->bpm_tempo,
                              30 / (float)sf->bpm_tempo);
-          phase_new =
-              (file_list[fil_current_bank].size[fil_current_id]) *
-              ((beat_current %
-                (2 * file_list[fil_current_bank].beats[fil_current_id])) +
-               (1 - phase_forward)) /
-              (2 * file_list[fil_current_bank].beats[fil_current_id]);
-          phase_change = true;
+          do_update_phase_from_beat_current();
           // mem_use = true;
         }
         retrig_first = false;
@@ -91,12 +85,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         LEDS_clearAll(leds, LED_STEP_FACE);
         LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
         EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
-        phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
-                    ((beat_current %
-                      (2 * file_list[fil_current_bank].beats[fil_current_id])) +
-                     (1 - phase_forward)) /
-                    (2 * file_list[fil_current_bank].beats[fil_current_id]);
-        phase_change = true;
+        do_update_phase_from_beat_current();
       }
       if (debounce_quantize > 0) {
         debounce_quantize--;
