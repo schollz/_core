@@ -3,6 +3,10 @@
 #define KEY_A 1
 #define KEY_B 2
 #define KEY_C 3
+#define MODE_JUMP 0
+#define MODE_MASH 1
+#define MODE_SAMP 0
+#define MODE_BANK 1
 
 uint8_t key_held_num = 0;
 bool key_held_on = false;
@@ -22,13 +26,12 @@ bool mode_samp_bank = 0;
 bool fx_toggle[16];  // 16 possible
 #define FX_REVERSE 0
 
+// uptate all the fx based on the fx_toggle
 void do_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
   switch (fx_num) {
     case FX_REVERSE:
-      if (on) {
-      } else {
-      }
+      phase_forward = !on;
       break;
     default:
       break;
@@ -37,7 +40,7 @@ void do_update_fx(uint8_t fx_num) {
 
 void button_key_off_held(uint8_t key) {
   printf("off held %d\n", key);
-  if (key == 1) {
+  if (key == KEY_A) {
     // bank/sample toggler
     for (uint8_t i = 0; i < 4; i++) {
       LEDS_set(leds, 2, i, 0);
@@ -45,12 +48,12 @@ void button_key_off_held(uint8_t key) {
   }
 }
 
+// triggers on ANY key off, used for 1-16 off's
 void button_key_off_any(uint8_t key) {
   printf("off any %d\n", key);
-
   if (key > 3) {
     // 1-16 off
-    if (mode_jump_mash == 1) {
+    if (mode_jump_mash == MODE_MASH) {
       // 1-16 off (mash mode)
       // remove momentary fx
       fx_toggle[key - 4] = false;
@@ -64,7 +67,7 @@ void button_key_on_single(uint8_t key) {
   if (key < 4) {
     // TODO:
     // highlight toggle mode
-    if (key == 1) {
+    if (key == KEY_A) {
       if (mode_samp_bank) {
         // TODO: check this....
         LEDS_set(leds, 2, 2, 1);
@@ -73,14 +76,14 @@ void button_key_on_single(uint8_t key) {
     }
   } else {
     // 1-16
-    if (mode_jump_mash == 0) {
+    if (mode_jump_mash == MODE_JUMP) {
       // 1-16 (jump mode)
       // do jump
       beat_current = (beat_current / 16) * 16 + (key - 4);
       do_update_phase_from_beat_current();
       LEDS_clearAll(leds, LED_STEP_FACE);
       LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
-    } else {
+    } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
       fx_toggle[key - 4] = true;
@@ -93,19 +96,19 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on %d+%d\n", key1, key2);
   if (key1 == KEY_SHIFT && key2 > 3) {
     // S+H
-    if (mode_jump_mash == 0) {
+    if (mode_jump_mash == MODE_JUMP) {
       // S+H (jump mode)
       // toggles fx
       fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
       bool on = fx_toggle[key2 - 4];
       do_update_fx(key2 - 4);
-    } else {
+    } else if (mode_jump_mash == MODE_MASH) {
       // S+H (mash mode)
       // does jump
     }
   } else if (key1 > 3 && key2 > 3) {
     // H+H
-    if (mode_jump_mash == 0) {
+    if (mode_jump_mash == MODE_JUMP) {
       // retrigger
 
       debounce_quantize = 0;
@@ -139,12 +142,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
              retrig_beat_num, retrig_timer_reset, total_time);
       retrig_ready = true;
     }
-  } else if (key1 == 1) {
+  } else if (key1 == KEY_A) {
     // A
-    if (key2 == 2) {
+    if (key2 == KEY_B) {
       // A+B
       mode_samp_bank = 0;
-    } else if (key2 == 3) {
+    } else if (key2 == KEY_C) {
       // A+C
       mode_samp_bank = 1;
     } else if (key2 > 3) {
