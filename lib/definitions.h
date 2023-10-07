@@ -15,10 +15,4 @@
 #define BLOCKS_PER_SECOND SAMPLE_RATE / SAMPLES_PER_BUFFER
 static int PHASE_DIVISOR = WAV_CHANNELS * 2;
 
-// keys
-#define KEY_SHIFT 0
-#define KEY_A 1
-#define KEY_B 2
-#define KEY_C 3
-
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
