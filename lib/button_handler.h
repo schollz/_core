@@ -1,4 +1,8 @@
-
+// keys
+#define KEY_SHIFT 0
+#define KEY_A 1
+#define KEY_B 2
+#define KEY_C 3
 
 uint8_t key_held_num = 0;
 bool key_held_on = false;
@@ -9,10 +13,27 @@ uint8_t key_total_pressed = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 
-// mode switches
+// mode toggles
 //   mode  ==0  ==1
 bool mode_jump_mash = 0;
 bool mode_samp_bank = 0;
+
+// fx toggles
+bool fx_toggle[16];  // 16 possible
+#define FX_REVERSE 0
+
+void do_update_fx(uint8_t fx_num) {
+  bool on = fx_toggle[fx_num];
+  switch (fx_num) {
+    case FX_REVERSE:
+      if (on) {
+      } else {
+      }
+      break;
+    default:
+      break;
+  }
+}
 
 void button_key_off_held(uint8_t key) {
   printf("off held %d\n", key);
@@ -20,6 +41,20 @@ void button_key_off_held(uint8_t key) {
     // bank/sample toggler
     for (uint8_t i = 0; i < 4; i++) {
       LEDS_set(leds, 2, i, 0);
+    }
+  }
+}
+
+void button_key_off_any(uint8_t key) {
+  printf("off any %d\n", key);
+
+  if (key > 3) {
+    // 1-16 off
+    if (mode_jump_mash == 1) {
+      // 1-16 off (mash mode)
+      // remove momentary fx
+      fx_toggle[key - 4] = false;
+      do_update_fx(key - 4);
     }
   }
 }
@@ -33,25 +68,42 @@ void button_key_on_single(uint8_t key) {
       if (mode_samp_bank) {
         // TODO: check this....
         LEDS_set(leds, 2, 2, 1);
-        LEDS_set(leds, 2, 3, 0)
+        LEDS_set(leds, 2, 3, 0);
       };
     }
   } else {
     // 1-16
     if (mode_jump_mash == 0) {
-      // H
+      // 1-16 (jump mode)
+      // do jump
       beat_current = (beat_current / 16) * 16 + (key - 4);
       do_update_phase_from_beat_current();
       LEDS_clearAll(leds, LED_STEP_FACE);
       LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
-    } else if (mode_jump_mash == 1) {
+    } else {
+      // 1-16 (mash mode)
+      // do momentary fx
+      fx_toggle[key - 4] = true;
+      do_update_fx(key - 4);
     }
   }
 }
 
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on %d+%d\n", key1, key2);
-  if (key1 > 3 && key2 > 3) {
+  if (key1 == KEY_SHIFT && key2 > 3) {
+    // S+H
+    if (mode_jump_mash == 0) {
+      // S+H (jump mode)
+      // toggles fx
+      fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
+      bool on = fx_toggle[key2 - 4];
+      do_update_fx(key2 - 4);
+    } else {
+      // S+H (mash mode)
+      // does jump
+    }
+  } else if (key1 > 3 && key2 > 3) {
     // H+H
     if (mode_jump_mash == 0) {
       // retrigger
@@ -136,6 +188,7 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_set(leds, LED_PRESS_FACE, bm->off[i], 0);
     key_total_pressed--;
     key_on_buttons[bm->off[i]] = 0;
+    button_key_off_any(bm->off[i]);
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
       printf("off held %d\n", bm->off[i]);
@@ -205,9 +258,9 @@ void button_handler(ButtonMatrix *bm) {
 //
 // ### combo buttons
 //
-// - [ ]  *H* → JUMP: do jump, MASH: do fx
+// - [ ]  *H* → JUMP: do jump, MASH: do fx (momentary)
 // - [ ]  *H* + *H* → JUMP: retrig depending on location
-// - [ ]  *S* + *H* → JUMP: do fx, MASH: do jump
+// - [ ]  *S* + *H* → JUMP: do fx (toggle), MASH: do jump
 // - [ ]  *S* → n/a
 // - [ ]  *S* + *A* → toggle punch-in/jump mode
 // - [ ]  *S* + *B* → toggle mute
