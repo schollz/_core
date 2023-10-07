@@ -191,7 +191,7 @@ void core1_main() {
       uint8_t keys_shifted_num = 0;
       bool keys_shift_found = false;
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
-        printf("%d ", bm->on[i]);
+        // printf("%d ", bm->on[i]);
         LEDS_set(leds, LED_PRESS_FACE, bm->on[i], 2);
         if (keys_shift_found) {
           keys_shifted[keys_shifted_num] = bm->on[i];

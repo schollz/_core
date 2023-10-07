@@ -117,7 +117,6 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
 
 void ButtonMatrix_read(ButtonMatrix *bm) {
   bm->changed = false;
-  bm->changed_off = false;
   bm->changed_on = false;
   uint32_t value = 0;
 
@@ -132,11 +131,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   value = pio_sm_get(bm->pio, bm->sm);
   if (value != bm->last_value) {
     bm->changed = true;
-    if (value == 0) {
-      ButtonMatrix_reset(bm);
-      bm->num_pressed = 0;
-      bm->changed_off = true;
-    } else if (value > 0 && value != bm->last_value) {
+    if (value != bm->last_value) {
       bm->num_presses++;
       bm->num_pressed = count_ones(value);
       for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
@@ -144,12 +139,17 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
         if ((value >> i) & 1) {
           // button turned off to on
           if (bm->on_buttons[j] == -1) {
+            printf("on: %d\n", j);
             bm->on_buttons[j] = bm->num_presses;
           }
         } else if (bm->on_buttons[j] > -1) {
           // button turned on to off
+          printf("off: %d\n", j);
           bm->on_buttons[j] = -1;
         }
+      }
+      if (value == 0) {
+        bm->num_pressed = 0;
       }
       uint8_t j = 0;
       uint16_t *indexes =
