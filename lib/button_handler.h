@@ -9,12 +9,33 @@ uint8_t key_total_pressed = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 
+// mode switches
+//   mode  ==0  ==1
 bool mode_jump_mash = 0;
 bool mode_samp_bank = 0;
+
+void button_key_off_held(uint8_t key) {
+  printf("off held %d\n", key);
+  if (key == 1) {
+    // bank/sample toggler
+    for (uint8_t i = 0; i < 4; i++) {
+      LEDS_set(leds, 2, i, 0);
+    }
+  }
+}
 
 void button_key_on_single(uint8_t key) {
   printf("on %d\n", key);
   if (key < 4) {
+    // TODO:
+    // highlight toggle mode
+    if (key == 1) {
+      if (mode_samp_bank) {
+        // TODO: check this....
+        LEDS_set(leds, 2, 2, 1);
+        LEDS_set(leds, 2, 3, 0)
+      };
+    }
   } else {
     // 1-16
     if (mode_jump_mash == 0) {
@@ -76,11 +97,18 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       mode_samp_bank = 1;
     } else if (key2 > 3) {
       if (mode_samp_bank == 0) {
-        // TODO:
+        // A+H (sample  mode)
         // select sample
+        fil_current_bank_next = fil_current_bank_sel;
+        fil_current_id_next =
+            ((key2 - 4) % (file_list[fil_current_bank_next].num / 2)) * 2;
+        fil_current_change = true;
       } else {
-        // TODO:
+        // A+H (bank mode)
         // select bank
+        if (file_list[key2 - 4].num > 0) {
+          fil_current_bank_sel = key2 - 4;
+        }
       }
     }
   }
@@ -111,6 +139,7 @@ void button_handler(ButtonMatrix *bm) {
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
       printf("off held %d\n", bm->off[i]);
+      button_key_off_held(bm->off[i]);
 
       key_held_on = false;
       // TODO:
