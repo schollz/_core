@@ -36,6 +36,8 @@ static FATFS *sd_get_fs_by_name(const char *name) {
   return NULL;
 }
 
+void sd_unmount() { f_unmount(sd_get_by_num(0)->pcName); }
+
 bool run_mount() {
   const char *arg1 = strtok(NULL, " ");
   arg1 = sd_get_by_num(0)->pcName;

@@ -118,13 +118,14 @@ uint16_t freqs_available[72] = {
     11840, 12544, 13290, 14080, 14917, 15804};
 
 void core1_main() {
-  sleep_ms(100);
   printf("core1 running!\n");
+  // flash bad signs
   while (!fil_is_open) {
     printf("waiting to start\n");
     sleep_ms(10);
-    continue;
   }
+  LEDS_clearAll(leds, 2);
+  LEDS_render(leds);
 
   ButtonMatrix *bm;
   // initialize button matrix
@@ -139,6 +140,7 @@ void core1_main() {
   }
 
   printf("entering while loop\n");
+
   uint pressed2 = 0;
   uint8_t new_vol;
   uint8_t filter_midi = 10;
@@ -328,8 +330,17 @@ int main() {
   cp = Charlieplex_create();
 
   leds = LEDS_create();
+  // show X in case the files aren't loaded
+  LEDS_set(leds, 2, 4, 3);
+  LEDS_set(leds, 2, 7, 3);
+  LEDS_set(leds, 2, 9, 3);
+  LEDS_set(leds, 2, 10, 3);
+  LEDS_set(leds, 2, 13, 3);
+  LEDS_set(leds, 2, 14, 3);
+  LEDS_set(leds, 2, 16, 3);
+  LEDS_set(leds, 2, 19, 3);
+  LEDS_render(leds);
 
-  sleep_ms(100);
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER

@@ -23,7 +23,7 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "wav.h"
 
-#define FILELISTNAME "filelist100"
+#define FILELISTNAME "filelist120"
 
 unsigned int extract_bpm(const char *input) {
   int len = strlen(input);
@@ -136,83 +136,92 @@ FileList list_files(const char *dir, int num_channels) {
 
   FIL fil; /* File object */
   if (f_open(&fil, filelist_name, FA_READ)) {
-    printf("[file_list] file list '%s' does not exist\n", filelist_name);
-    // creating new file list
-    DIR dj;      /* Directory object */
-    FILINFO fno; /* File information */
-    memset(&dj, 0, sizeof dj);
-    memset(&fno, 0, sizeof fno);
-    fr = f_findfirst(&dj, &fno, p_dir, "*");
-    if (FR_OK != fr) {
-      printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
-      return filelist;
-    }
-    while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-      /* Create a string that includes the file name, the file size and the
-       attributes string. */
-      const char *pcWritableFile = "writable file",
-                 *pcReadOnlyFile = "read only file", *pcDirectory = "directory";
-      const char *pcAttrib;
-      /* Point pcAttrib to a string that describes the file. */
-      if (fno.fattrib & AM_DIR) {
-        pcAttrib = pcDirectory;
-      } else if (fno.fattrib & AM_RDO) {
-        pcAttrib = pcReadOnlyFile;
-      } else {
-        pcAttrib = pcWritableFile;
+    {
+      printf("[file_list] file list '%s' does not exist\n", filelist_name);
+      // creating new file list
+      DIR dj;      /* Directory object */
+      FILINFO fno; /* File information */
+      memset(&dj, 0, sizeof dj);
+      memset(&fno, 0, sizeof fno);
+      fr = f_findfirst(&dj, &fno, p_dir, "*");
+      if (FR_OK != fr) {
+        printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
+        return filelist;
       }
-      /* Create a string that includes the file name, the file size and the
-       attributes string. */
-      // printf("%s [%s] [size=%llu]\n", fno.fname, pcAttrib, fno.fsize);
+      while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+        /* Create a string that includes the file name, the file size and the
+         attributes string. */
+        const char *pcWritableFile = "writable file",
+                   *pcReadOnlyFile = "read only file",
+                   *pcDirectory = "directory";
+        const char *pcAttrib;
+        /* Point pcAttrib to a string that describes the file. */
+        if (fno.fattrib & AM_DIR) {
+          pcAttrib = pcDirectory;
+        } else if (fno.fattrib & AM_RDO) {
+          pcAttrib = pcReadOnlyFile;
+        } else {
+          pcAttrib = pcWritableFile;
+        }
+        /* Create a string that includes the file name, the file size and the
+         attributes string. */
+        // printf("%s [%s] [size=%llu]\n", fno.fname, pcAttrib, fno.fsize);
 
-      // Check if the filename ends with ".wav"
-      if (strstr(fno.fname, ".wav") && strstr(fno.fname, "bpm") &&
-          strstr(fno.fname, "beats")) {
-        filelist.bpm[filelist.num] = extract_bpm(fno.fname);
-        filelist.beats[filelist.num] = extract_beats(fno.fname);
-        printf("%s, beats=%d, bpm=%d\n", fno.fname,
-               filelist.beats[filelist.num], filelist.bpm[filelist.num]);
-        if (filelist.bpm[filelist.num] > 10 &&
-            filelist.beats[filelist.num] > 1) {
-          WavHeader *wh;
-          char full_fname[100];
-          strcpy(full_fname, p_dir);
-          strcat(full_fname, "/");
-          strcat(full_fname, fno.fname);
-          wh = WavFile_Load(full_fname);
-          if (wh->NumOfChan == num_channels) {
-            // Allocate memory for the name field and copy the filename into it
-            strcpy(filelist.name[filelist.num], full_fname);
-            sprintf(filelist.name[filelist.num], "%s", full_fname);
-            filelist.size[filelist.num] =
-                (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
-            filelist.num++;
+        // Check if the filename ends with ".wav"
+        if (strstr(fno.fname, ".wav") && strstr(fno.fname, "bpm") &&
+            strstr(fno.fname, "beats")) {
+          filelist.bpm[filelist.num] = extract_bpm(fno.fname);
+          filelist.beats[filelist.num] = extract_beats(fno.fname);
+          printf("%s, beats=%d, bpm=%d\n", fno.fname,
+                 filelist.beats[filelist.num], filelist.bpm[filelist.num]);
+          if (filelist.bpm[filelist.num] > 10 &&
+              filelist.beats[filelist.num] > 1) {
+            WavHeader *wh;
+            char full_fname[100];
+            strcpy(full_fname, p_dir);
+            strcat(full_fname, "/");
+            strcat(full_fname, fno.fname);
+            wh = WavFile_Load(full_fname);
+            if (wh->NumOfChan == num_channels) {
+              // Allocate memory for the name field and copy the filename into
+              // it
+              strcpy(filelist.name[filelist.num], full_fname);
+              sprintf(filelist.name[filelist.num], "%s", full_fname);
+              filelist.size[filelist.num] =
+                  (uint32_t)(fno.fsize - WAV_HEADER_SIZE);
+              filelist.num++;
+            }
+            free(wh);
           }
-          free(wh);
+        }
+        // limit to 16 files!
+        if (filelist.num == 16) {
+          break;
+        }
+
+        fr = f_findnext(&dj, &fno); /* Search for next item */
+      }
+      f_closedir(&dj);
+    }
+    {
+      printf("[file_list] writing %s\n", filelist_name);
+      FRESULT fr;
+      FIL file; /* File object */
+      fr = f_open(&file, filelist_name, FA_WRITE | FA_CREATE_ALWAYS);
+      if (FR_OK != fr) {
+        printf("[file_list] f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+      } else {
+        unsigned int bw;
+        fr = f_write(&file, &filelist, sizeof(FileList), &bw);
+        if (fr != FR_OK) {
+          printf("[file_list] problem writing save: %s\n", FRESULT_str(fr));
+        }
+        printf("[file_list] wrote %d bytes\n", bw);
+        fr = f_close(&file);
+        if (fr != FR_OK) {
+          printf("[file_list] problem closing file: %s\n", FRESULT_str(fr));
         }
       }
-      // limit to 16 files!
-      if (filelist.num == 16) {
-        break;
-      }
-
-      fr = f_findnext(&dj, &fno); /* Search for next item */
-    }
-    f_closedir(&dj);
-
-    printf("[file_list] writing %s", filelist_name);
-    FRESULT fr;
-    FIL file; /* File object */
-    fr = f_open(&file, filelist_name, FA_WRITE | FA_CREATE_ALWAYS);
-    if (FR_OK != fr) {
-      printf("[file_list] f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-    } else {
-      unsigned int bw;
-      if (f_write(&file, &filelist, sizeof(FileList), &bw)) {
-        printf("[file_list] problem writing save: %s", filelist_name);
-      }
-      printf("[file_list] wrote %d bytes", bw);
-      f_close(&file);
     }
   } else {
     unsigned int bytes_read;
