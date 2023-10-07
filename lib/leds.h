@@ -125,3 +125,43 @@ void LEDS_render(LEDS *leds) {
     }
   }
 }
+
+void LEDS_show_blinking_z(LEDS *leds, uint8_t face) {
+  LEDS_set(leds, face, 4, 3);
+  LEDS_set(leds, face, 5, 3);
+  LEDS_set(leds, face, 6, 3);
+  LEDS_set(leds, face, 7, 3);
+  LEDS_set(leds, face, 8, 0);
+  LEDS_set(leds, face, 9, 0);
+  LEDS_set(leds, face, 10, 3);
+  LEDS_set(leds, face, 11, 0);
+  LEDS_set(leds, face, 12, 0);
+  LEDS_set(leds, face, 13, 3);
+  LEDS_set(leds, face, 14, 0);
+  LEDS_set(leds, face, 15, 0);
+  LEDS_set(leds, face, 16, 3);
+  LEDS_set(leds, face, 17, 3);
+  LEDS_set(leds, face, 18, 3);
+  LEDS_set(leds, face, 19, 3);
+  LEDS_render(leds);
+}
+
+void LEDS_show_blinking_x(LEDS *leds, uint8_t face) {
+  LEDS_set(leds, face, 4, 3);
+  LEDS_set(leds, face, 5, 0);
+  LEDS_set(leds, face, 6, 0);
+  LEDS_set(leds, face, 7, 3);
+  LEDS_set(leds, face, 8, 0);
+  LEDS_set(leds, face, 9, 3);
+  LEDS_set(leds, face, 10, 3);
+  LEDS_set(leds, face, 11, 0);
+  LEDS_set(leds, face, 12, 0);
+  LEDS_set(leds, face, 13, 3);
+  LEDS_set(leds, face, 14, 3);
+  LEDS_set(leds, face, 15, 0);
+  LEDS_set(leds, face, 16, 3);
+  LEDS_set(leds, face, 17, 0);
+  LEDS_set(leds, face, 18, 0);
+  LEDS_set(leds, face, 19, 3);
+  LEDS_render(leds);
+}
