@@ -20,6 +20,8 @@ S is nominally "shift"
 - [.] **none** → top shows punch/mash, mute, playback states 
 - [.] **H** → JUMP: do jump, MASH: do fx (momentary)
 - [ ] **H** + **H** → JUMP: retrig depending on location
+- OR
+- [ ] **H** + **H** + **H** → JUMP: retrig depending on location
 - [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
 - [ ] **S** → n/a
 - [ ] **S** + **A** → toggle jump/mash mode
