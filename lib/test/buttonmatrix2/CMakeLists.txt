@@ -9,7 +9,7 @@ include(pico_extras_import.cmake)
 
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
-project(buttonmatrix2 C CXX ASM)
+project(buttonmatrix3 C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
