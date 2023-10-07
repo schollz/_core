@@ -343,15 +343,7 @@ int main() {
 
   leds = LEDS_create();
   // show X in case the files aren't loaded
-  LEDS_set(leds, 2, 4, 3);
-  LEDS_set(leds, 2, 7, 3);
-  LEDS_set(leds, 2, 9, 3);
-  LEDS_set(leds, 2, 10, 3);
-  LEDS_set(leds, 2, 13, 3);
-  LEDS_set(leds, 2, 14, 3);
-  LEDS_set(leds, 2, 16, 3);
-  LEDS_set(leds, 2, 19, 3);
-  LEDS_render(leds);
+  LEDS_show_blinking_z(leds, 2);
 
   sdcard_startup();
 
