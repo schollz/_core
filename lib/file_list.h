@@ -23,6 +23,8 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "wav.h"
 
+#define FILELISTNAME "filelist100"
+
 unsigned int extract_bpm(const char *input) {
   int len = strlen(input);
   int i = 0;
@@ -129,7 +131,8 @@ FileList list_files(const char *dir, int num_channels) {
 
   char filelist_name[100];
   strcpy(filelist_name, p_dir);
-  strcat(filelist_name, "/filelist15");
+  strcat(filelist_name, "/");
+  strcat(filelist_name, FILELISTNAME);
 
   FIL fil; /* File object */
   if (f_open(&fil, filelist_name, FA_READ)) {
