@@ -1,3 +1,5 @@
+#ifndef GLOBALS_LIB
+#define GLOBALS_LIB 1
 // audio_pool.h
 audio_buffer_pool_t *ap;
 
@@ -58,6 +60,14 @@ bool retrig_ready = false;
 float retrig_vol = 1.0;
 float retrig_vol_step = 0;
 
+// buttons
+// mode toggles
+//   mode  ==0  ==1
+bool mode_jump_mash = 0;
+bool mode_samp_bank = 0;
+bool mode_mute = 0;
+bool mode_play = 0;
+
 SaveFile *sf;
 Charlieplex *cp;
 LEDS *leds;
@@ -85,3 +95,4 @@ void do_update_phase_from_beat_current() {
               (2 * file_list[fil_current_bank].beats[fil_current_id]);
   phase_change = true;
 }
+#endif

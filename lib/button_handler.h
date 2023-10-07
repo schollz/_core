@@ -1,3 +1,5 @@
+#include "globals.h"
+
 // keys
 #define KEY_SHIFT 0
 #define KEY_A 1
@@ -17,11 +19,6 @@ uint8_t key_total_pressed = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 
-// mode toggles
-//   mode  ==0  ==1
-bool mode_jump_mash = 0;
-bool mode_samp_bank = 0;
-
 // fx toggles
 bool fx_toggle[16];  // 16 possible
 #define FX_REVERSE 0
@@ -35,8 +32,25 @@ void key_do_jump(uint8_t beat) {
   }
 }
 
+void go_update_top() {
+  bool all_off = true;
+  for (uint8_t i = 0; i < 4; i++) {
+    if (key_on_buttons[i] > 0) {
+      all_off = false;
+    }
+  }
+
+  if (all_off) {
+    // top row is not held
+    // show jump/mash, mute, play
+    LEDS_set(leds, KEY_A, 0, 2 * (1 - mode_jump_mash));
+    LEDS_set(leds, KEY_B, 0, 2 * mode_mute);
+    LEDS_set(leds, KEY_C, 0, 2 * mode_play);
+  }
+}
+
 // uptate all the fx based on the fx_toggle
-void do_update_fx(uint8_t fx_num) {
+void go_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
   switch (fx_num) {
     case FX_REVERSE:
@@ -66,7 +80,7 @@ void button_key_off_any(uint8_t key) {
       // 1-16 off (mash mode)
       // remove momentary fx
       fx_toggle[key - 4] = false;
-      do_update_fx(key - 4);
+      go_update_fx(key - 4);
     }
   }
 }
@@ -93,7 +107,7 @@ void button_key_on_single(uint8_t key) {
       // 1-16 (mash mode)
       // do momentary fx
       fx_toggle[key - 4] = true;
-      do_update_fx(key - 4);
+      go_update_fx(key - 4);
     }
   }
 }
@@ -107,7 +121,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // toggles fx
       fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
       bool on = fx_toggle[key2 - 4];
-      do_update_fx(key2 - 4);
+      go_update_fx(key2 - 4);
     } else if (mode_jump_mash == MODE_MASH) {
       // S+H (mash mode)
       // does jump
@@ -194,6 +208,7 @@ void button_handler(ButtonMatrix *bm) {
   ButtonMatrix_read(bm);
 
   // check queue for buttons that turned off
+  bool do_update_top = false;
   for (uint8_t i = 0; i < bm->off_num; i++) {
     LEDS_set(leds, LED_PRESS_FACE, bm->off[i], 0);
     key_total_pressed--;
@@ -224,6 +239,10 @@ void button_handler(ButtonMatrix *bm) {
     } else {
       printf("off %d\n", bm->off[i]);
     }
+
+    if (bm->off[i] < 4) {
+      do_update_top = true;
+    }
   }
 
   // check queue for buttons that turned on
@@ -245,5 +264,12 @@ void button_handler(ButtonMatrix *bm) {
     // keep track
     key_num_presses++;
     key_on_buttons[bm->on[i]] = key_num_presses;
+    if (bm->on[i] < 4) {
+      do_update_top = true;
+    }
+  }
+
+  if (do_update_top) {
+    go_update_top();
   }
 }
