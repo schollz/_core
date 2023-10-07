@@ -8,7 +8,8 @@ typedef struct ButtonMatrix {
   uint sm;
   uint8_t mapping[BUTTONMATRIX_BUTTONS_MAX];
   int16_t on_buttons[BUTTONMATRIX_BUTTONS_MAX];
-  uint16_t on[BUTTONMATRIX_BUTTONS_MAX];  // list which buttons are on
+  uint16_t on[BUTTONMATRIX_BUTTONS_MAX];   // list which buttons are on
+  uint16_t off[BUTTONMATRIX_BUTTONS_MAX];  // list which buttons which
   uint16_t num_presses;
   bool changed;
   bool changed_on;

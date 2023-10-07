@@ -37,10 +37,6 @@ void sdcard_startup() {
     printf("file_list[i].size[0]: %d\n", file_list[i].size[1]);
   }
 
-  fil_current_bank = 0;
-  fil_current_bank_next = 0;
-  fil_current_id = 0;
-  fil_current_id_next = 0;
   FRESULT fr;
   fr = f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
               FA_READ);
