@@ -4,8 +4,9 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
-
 ## spec
+
+top buttons are **S**, **A**, **B**, and **C**.
 
 buttons: S, A, B, C, H (H = 1-16)
 
@@ -16,8 +17,8 @@ S is nominally "shift"
 
 ### combo buttons
 
-- [ ] **none** → top shows punch/mash, mute, playback states 
-- [ ] **H** → JUMP: do jump, MASH: do fx (momentary)
+- [.] **none** → top shows punch/mash, mute, playback states 
+- [.] **H** → JUMP: do jump, MASH: do fx (momentary)
 - [ ] **H** + **H** → JUMP: retrig depending on location
 - [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
 - [ ] **S** → n/a
