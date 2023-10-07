@@ -180,19 +180,49 @@ void core1_main() {
     }
 
     ButtonMatrix_read(bm);
+    // keep track of button states
+    bool button_state[20];
+    for (uint8_t i = 0; i < 20; i++) {
+      button_state[i] = false;
+    }
     if (bm->changed) {
       LEDS_clearAll(leds, LED_PRESS_FACE);
+      uint8_t keys_shifted[bm->num_pressed];
+      uint8_t keys_shifted_num = 0;
+      bool keys_shift_found = false;
       for (uint8_t i = 0; i < bm->num_pressed; i++) {
         printf("%d ", bm->on[i]);
         LEDS_set(leds, LED_PRESS_FACE, bm->on[i], 2);
+        if (keys_shift_found) {
+          keys_shifted[keys_shifted_num] = bm->on[i];
+          keys_shifted_num++;
+        }
+        if (bm->on[i] == KEY_SHIFT) {
+          keys_shift_found = true;
+        }
       }
+      if (keys_shifted_num > 0) {
+        printf("found shift!\n");
+        for (uint8_t i = 0; i < keys_shifted_num; i++) {
+          printf("shifted: %d\n", keys_shifted[i]);
+        }
+        printf("\nok\n");
+      } else {
+        // TODO: cancel all properties that need shift
+      }
+
       printf("\n");
-      if (bm->changed_on) {
+      if (bm->num_pressed > 1 && bm->on[bm->num_pressed - 2] == KEY_SHIFT &&
+          bm->on[bm->num_pressed - 1] == 19) {
+        printf("STRETCH!!!\n");
+
+      } else if (bm->changed_on) {
         if (bm->num_pressed == 2 && bm->on[0] == KEY_A && bm->on[1] >= 4) {
           // switch sample to the one in the current bank
           fil_current_bank_next = fil_current_bank_sel;
           fil_current_id_next =
-              (bm->on[1] - 4) % file_list[fil_current_bank_next].num;
+              ((bm->on[1] - 4) % (file_list[fil_current_bank_next].num / 2)) *
+              2;
           printf("fil_current_bank_next = %d\n", fil_current_bank_next);
           printf("fil_current_id_next = %d\n", fil_current_id_next);
           fil_current_change = true;

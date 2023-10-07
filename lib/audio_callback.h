@@ -63,6 +63,8 @@ void i2s_callback_func() {
         printf("[current: %d/%d, next: %d/%d]\n", phases0,
                file_list[fil_current_bank].size[fil_current_id], phase_new,
                file_list[fil_current_bank_next].size[fil_current_id_next]);
+        printf("next file: %s\n",
+               file_list[fil_current_bank_next].name[fil_current_id_next]);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
         if (fr != FR_OK) {
