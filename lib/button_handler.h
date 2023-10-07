@@ -26,6 +26,15 @@ bool mode_samp_bank = 0;
 bool fx_toggle[16];  // 16 possible
 #define FX_REVERSE 0
 
+void key_do_jump(uint8_t beat) {
+  if (beat >= 0 && beat < 16) {
+    beat_current = (beat_current / 16) * 16 + beat;
+    do_update_phase_from_beat_current();
+    LEDS_clearAll(leds, LED_STEP_FACE);
+    LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
+  }
+}
+
 // uptate all the fx based on the fx_toggle
 void do_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
@@ -79,10 +88,7 @@ void button_key_on_single(uint8_t key) {
     if (mode_jump_mash == MODE_JUMP) {
       // 1-16 (jump mode)
       // do jump
-      beat_current = (beat_current / 16) * 16 + (key - 4);
-      do_update_phase_from_beat_current();
-      LEDS_clearAll(leds, LED_STEP_FACE);
-      LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
+      key_do_jump(key - 4);
     } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
@@ -105,6 +111,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     } else if (mode_jump_mash == MODE_MASH) {
       // S+H (mash mode)
       // does jump
+      key_do_jump(key2 - 4);
     }
   } else if (key1 > 3 && key2 > 3) {
     // H+H
