@@ -21,52 +21,48 @@ void printBinaryRepresentation(uint8_t num) {
 int main() {
   stdio_init_all();
 
-  const uint PIN_CAPTURE = 22;  // Replace with your desired GPIO pin
+  const uint PIN_CAPTURE = 18;  // Replace with your desired GPIO pin
 
   gpio_init(PIN_CAPTURE);
   gpio_set_dir(PIN_CAPTURE, GPIO_IN);
+  gpio_pull_up(PIN_CAPTURE);
 
   sleep_ms(1500);  // Wait for the circuit to settle
 
   printf("waiting for midi data\n");
+  uint8_t received_byte[3];
+  uint8_t received_i = 0;
+  uint8_t received_c = 0;
   while (true) {
-    // // Wait for the input pin to go LOW
-    while (!gpio_get(PIN_CAPTURE)) {
+    // wait for input pin to go low
+    while (gpio_get(PIN_CAPTURE)) {
       tight_loop_contents();
     }
+    // sleep for 16 microseconds
     sleep_us(16);
 
-    // Read 8 bits at 31,250 baud
-    uint8_t received_byte1 = 0;
+    // read in 8 bits into a byte
+    uint8_t rb = 0;
     for (int i = 0; i < 8; i++) {
-      sleep_us(32);  // Wait for 1 bit time at 31,250 baud
-      received_byte1 |= (!gpio_get(PIN_CAPTURE) << i);  // Read the bit
+      // for each bit, wait 32 microseconds
+      sleep_us(32);
+      // read in bit
+      rb |= (gpio_get(PIN_CAPTURE) << i);  // Read the bit
     }
-    sleep_us(32);  // Wait for 1 bit time at 31,250 baud
-    while (!gpio_get(PIN_CAPTURE)) {
-      tight_loop_contents();
-    }
-    sleep_us(16);
-
-    uint8_t received_byte2 = 0;
-    for (int i = 0; i < 8; i++) {
-      sleep_us(32);  // Wait for 1 bit time at 31,250 baud
-      received_byte2 |= (!gpio_get(PIN_CAPTURE) << i);  // Read the bit
-    }
+    // sleep 32 microseconds
     sleep_us(32);
-    while (!gpio_get(PIN_CAPTURE)) {
-      tight_loop_contents();
-    }
-    sleep_us(16);
 
-    uint8_t received_byte3 = 0;
-    for (int i = 0; i < 8; i++) {
-      sleep_us(32);  // Wait for 1 bit time at 31,250 baud
-      received_byte3 |= (!gpio_get(PIN_CAPTURE) << i);  // Read the bit
+    received_byte[received_i] = rb;
+    received_i++;
+    if (received_i == 1) {
+      if (received_byte[0] < 0x80 || received_byte[0] > 0x9F) {
+        received_i = 0;
+      }
     }
-    if (received_byte1 > 0 || received_byte2 > 0 || received_byte3 > 0) {
-      printf("\n\n%02X %02X %02X\n", received_byte1, received_byte2,
-             received_byte3);
+    if (received_i == 3) {
+      printf("\n\n%02X %02X %02X\n", received_byte[0], received_byte[1],
+             received_byte[2]);
+      received_i = 0;
     }
   }
 
