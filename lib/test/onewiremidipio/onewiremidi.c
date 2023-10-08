@@ -51,10 +51,12 @@ int main() {
   uint8_t rbs[3];
   uint8_t rbi = 0;
   while (true) {
-    sleep_ms(1);
     if (!pio_sm_is_rx_fifo_empty(pio, sm)) {
       uint8_t value = reverse_uint8_t(pio_sm_get(pio, sm));
       rbs[rbi] = value;
+      if (value == 0xF8 || value == 0xFE) {
+        continue;
+      }
       rbi++;
       if (rbi == 1 && rbs[0] == 0 && (value < 0x80 || value > 0x99)) {
         rbi = 0;
