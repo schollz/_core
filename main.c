@@ -118,7 +118,7 @@ void core1_main() {
 
   ButtonMatrix *bm;
   // initialize button matrix
-  bm = ButtonMatrix_create(1, 6);
+  bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 
   printf("entering while loop\n");
 
