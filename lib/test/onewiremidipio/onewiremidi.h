@@ -75,25 +75,18 @@ void Onewiremidi_receive(Onewiremidi *om) {
   }
   uint8_t value = Onewiremidi_reverse_uint8_t(pio_sm_get(om->pio, om->sm));
   om->rbs[om->rbi] = value;
-  if (value == 0xF8 || value == 0xFE) {
-    return;
-  }
+
   if (value == MIDI_START && om->midi_start != NULL) {
     om->midi_start();
-    return;
   } else if (value == MIDI_CONTINUE && om->midi_continue != NULL) {
     om->midi_continue();
-    return;
   } else if (value == MIDI_STOP && om->midi_stop != NULL) {
     om->midi_stop();
-    return;
-  }
-
-  om->rbi++;
-  if (om->rbi == 1 && om->rbs[0] == 0 &&
-      (value < MIDI_NOTE_OFF_MIN || value > MIDI_NOTE_ON_MAX)) {
+  } else if (om->rbi == 1 && om->rbs[0] == 0 &&
+             (value < MIDI_NOTE_OFF_MIN || value > MIDI_NOTE_ON_MAX)) {
     om->rbi = 0;
   } else if (om->rbi == 3) {
+    om->rbi = 0;
     printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
     if (om->rbs[0] >= MIDI_NOTE_ON_MIN && om->rbs[0] <= MIDI_NOTE_ON_MAX) {
       if (om->midi_note_on != NULL) {
@@ -105,7 +98,8 @@ void Onewiremidi_receive(Onewiremidi *om) {
         om->midi_note_off(om->rbs[1]);
       }
     }
-    om->rbi = 0;
+  } else {
+    om->rbi++;
   }
   return;
 }
