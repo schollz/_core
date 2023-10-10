@@ -11,7 +11,7 @@
 #include "hardware/pio.h"
 #include "pico/stdlib.h"
 //
-#include "onewiremidi.h"
+#include "../../onewiremidi.h"
 
 void printBinaryRepresentation(uint8_t num) {
   // Iterate through each bit position (from 31 to 0)
