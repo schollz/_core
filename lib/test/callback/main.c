@@ -23,6 +23,7 @@ void call_callback(callback_fn_int fn, callback_fn_int_int fn2, int arg,
 
 typedef struct Test {
   callback_fn_int fn;
+  callback_fn_int fn2;
 } Test;
 
 // Main function.
@@ -32,7 +33,13 @@ int main() {
 
   Test *t = (Test *)malloc(sizeof(Test));
   t->fn = callback_fn;
+  t->fn2 = NULL;
+  if (t->fn2 != NULL) {
+    t->fn2(3);
+  }
+  if (t->fn != NULL) {
+    t->fn(32);
+  }
 
-  t->fn(32);
   return 0;
 }

@@ -21,7 +21,7 @@ pico_sdk_init()
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME})
 
-pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}.pio)
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/../../${PROJECT_NAME}.pio)
 
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}.c)
 
