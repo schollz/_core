@@ -36,6 +36,12 @@ void midi_note_on(uint8_t note, uint8_t vel) {
 
 void midi_note_off(uint8_t note) { printf("note off\t%d", note); }
 
+void midi_start() { printf("midi start\n"); }
+
+void midi_continue() { printf("midi continue\n"); }
+
+void midi_stop() { printf("midi stop\n"); }
+
 int main() {
   stdio_init_all();
 
@@ -43,8 +49,8 @@ int main() {
   printf("clock freq: %2.3f\n", (float)clock_get_hz(clk_sys));
 
   Onewiremidi *om;
-  om = Onewiremidi_new(pio0, 0, 18, midi_note_on, midi_note_off, NULL, NULL,
-                       NULL, NULL);
+  om = Onewiremidi_new(pio0, 0, 18, midi_note_on, midi_note_off, midi_start,
+                       midi_continue, midi_stop, NULL);
 
   while (true) {
     Onewiremidi_receive(om);
