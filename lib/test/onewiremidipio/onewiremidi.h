@@ -82,9 +82,10 @@ void Onewiremidi_receive(Onewiremidi *om) {
     om->midi_continue();
   } else if (value == MIDI_STOP && om->midi_stop != NULL) {
     om->midi_stop();
-  } else if (om->rbi == 1 && om->rbs[0] == 0 &&
-             (value < MIDI_NOTE_OFF_MIN || value > MIDI_NOTE_ON_MAX)) {
-    om->rbi = 0;
+  } else if (om->rbi < 3 && (om->rbs[0] >= MIDI_NOTE_OFF_MIN ||
+                             om->rbs[0] <= MIDI_NOTE_ON_MAX)) {
+    // iterater for not on/off
+    om->rbi++;
   } else if (om->rbi == 3) {
     om->rbi = 0;
     printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
@@ -98,8 +99,6 @@ void Onewiremidi_receive(Onewiremidi *om) {
         om->midi_note_off(om->rbs[1]);
       }
     }
-  } else {
-    om->rbi++;
   }
   return;
 }
