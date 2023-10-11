@@ -35,6 +35,13 @@ void printBinaryRepresentation(unsigned int num) {
   printf("\n");
 }
 
+void test2(uint8_t s) {
+  uint8_t a[s];
+  for (uint8_t i = 0; i < s; i++) {
+    printf("%d %d\n", i, a[s]);
+  }
+}
+
 int main() {
   unsigned int num1;
   unsigned int num2;
@@ -47,5 +54,7 @@ int main() {
   // printf("%d\n", num << 8u);
   // printf("%d\n", (num << 8u) + ((num << 8u) >> 16u));
 
+  test2(2);
+  test2(5);
   return 0;
 }
