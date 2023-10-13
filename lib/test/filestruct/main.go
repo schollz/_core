@@ -16,7 +16,7 @@ func main() {
 		int8(-12),     // d
 	}
 	data = append(data, int8(7))
-	data = append(data, []int8{32, 33, 34, 35, 36, 37, 38})
+	data = append(data, []uint32{32, 33, 34, 35, 36, 37, 38})
 	for _, v := range data {
 		err := binary.Write(buf, binary.LittleEndian, v)
 		if err != nil {
