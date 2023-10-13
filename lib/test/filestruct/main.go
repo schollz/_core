@@ -7,13 +7,27 @@ import (
 	"os"
 )
 
+type MyStruct struct {
+	Size  uint32
+	A     uint32
+	B     uint32
+	C     uint8
+	D     int8
+	ESize int8
+	E     []uint32
+	FSize int16
+	F     string
+}
+
 func main() {
 	buf := new(bytes.Buffer)
+	var m MyStruct
+	m.A = 6123
 	var data = []any{
-		uint32(61374), // a
-		uint32(54),    // b
-		uint8(254),    // c
-		int8(-12),     // d
+		m.A,        // a
+		uint32(54), // b
+		uint8(254), // c
+		int8(-12),  // d
 	}
 	data = append(data, int8(7))
 	data = append(data, []uint32{32, 33, 34, 35, 36, 37, 38})
