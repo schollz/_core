@@ -17,6 +17,9 @@ func main() {
 	}
 	data = append(data, int8(7))
 	data = append(data, []uint32{32, 33, 34, 35, 36, 37, 38})
+	s := []byte("hello, world!")
+	data = append(data, int16(len(s)))
+	data = append(data, s)
 	for _, v := range data {
 		err := binary.Write(buf, binary.LittleEndian, v)
 		if err != nil {
