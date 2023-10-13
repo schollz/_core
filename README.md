@@ -4,6 +4,12 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
+## todos
+
+- [ ] use Go to generate wav file informations containing bpm, number of slices, array of slice positions, binary flag whether it is bpm-transposable
+- [ ] read wav file informations in zeptocore
+- [ ] use slice positions / number read from wav information
+
 ## spec
 
 top buttons are **S**, **A**, **B**, and **C**.
