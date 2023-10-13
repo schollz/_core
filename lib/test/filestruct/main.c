@@ -10,7 +10,9 @@ typedef struct MyStruct {
   uint8_t c;
   int8_t d;
   int8_t e_size;
-  int8_t* e;
+  uint32_t* e;
+  int16_t f_size;
+  char* f;
 } MyStruct;
 
 int main() {
@@ -43,11 +45,16 @@ int main() {
   fread(&myData->d, sizeof(int8_t), 1, file);
   fread(&myData->e_size, sizeof(int8_t), 1, file);
   printf("myData->e_size: %d\n", myData->e_size);
-
   myData->e = (uint32_t*)malloc(myData->e_size * sizeof(uint32_t));
   for (uint8_t i = 0; i < myData->e_size; i++) {
-    myData->e[i] = 0;
     fread(&myData->e[i], sizeof(uint32_t), 1, file);
+  }
+
+  fread(&myData->f_size, sizeof(int16_t), 1, file);
+  printf("myData->f_size: %d\n", myData->f_size);
+  myData->f = (char*)malloc(myData->f_size * sizeof(char));
+  for (uint8_t i = 0; i < myData->f_size; i++) {
+    fread(&myData->f[i], sizeof(char), 1, file);
   }
 
   // Close the file
@@ -60,7 +67,10 @@ int main() {
   for (uint8_t i = 0; i < myData->e_size; i++) {
     printf("myData->e[%d]: %d\n", i, myData->e[i]);
   }
+  printf("myData->f: %s\n", myData->f);
+
   free(myData->e);
+  free(myData->f);
   free(myData);
 
   return 0;
