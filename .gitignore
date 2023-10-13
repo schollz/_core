@@ -81,3 +81,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+lib/test/filestruct/test
