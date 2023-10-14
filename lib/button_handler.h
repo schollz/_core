@@ -205,15 +205,14 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       if (mode_samp_bank == 0) {
         // A+H (sample  mode)
         // select sample
-        fil_current_bank_next = fil_current_bank_sel;
-        fil_current_id_next =
-            ((key2 - 4) % (file_list[fil_current_bank_next].num / 2)) * 2;
+        sel_bank_next = sel_bank_select;
+        sel_sample_next = ((key2 - 4) % (file_list[sel_bank_next].num / 2)) * 2;
         fil_current_change = true;
       } else {
         // A+H (bank mode)
         // select bank
         if (file_list[key2 - 4].num > 0) {
-          fil_current_bank_sel = key2 - 4;
+          sel_bank_select = key2 - 4;
         }
       }
     }

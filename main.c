@@ -71,7 +71,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (beat_current == 0 && !phase_forward) {
-          beat_current = file_list[fil_current_bank].beats[fil_current_id];
+          beat_current =
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
         }
         beat_current += (phase_forward * 2 - 1);
         beat_total++;
@@ -200,18 +201,18 @@ void core1_main() {
     //   } else if (bm->changed_on) {
     //     if (bm->num_pressed == 2 && bm->on[0] == KEY_A && bm->on[1] >= 4) {
     //       // switch sample to the one in the current bank
-    //       fil_current_bank_next = fil_current_bank_sel;
-    //       fil_current_id_next =
-    //           ((bm->on[1] - 4) % (file_list[fil_current_bank_next].num / 2))
+    //       sel_bank_next = sel_bank_select;
+    //       sel_sample_next =
+    //           ((bm->on[1] - 4) % (file_list[sel_bank_next].num / 2))
     //           * 2;
-    //       printf("fil_current_bank_next = %d\n", fil_current_bank_next);
-    //       printf("fil_current_id_next = %d\n", fil_current_id_next);
+    //       printf("sel_bank_next = %d\n", sel_bank_next);
+    //       printf("sel_sample_next = %d\n", sel_sample_next);
     //       fil_current_change = true;
     //     } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
     //                bm->on[1] >= 4) {
     //       // switch bank if the bank has more than one zero files
     //       if (file_list[bm->on[1] - 4].num > 0) {
-    //         fil_current_bank_sel = bm->on[1] - 4;
+    //         sel_bank_select = bm->on[1] - 4;
     //       }
     //     } else {
     //       pressed2 = 0;
@@ -233,7 +234,7 @@ void core1_main() {
     //           LEDS_clearAll(leds, LED_STEP_FACE);
     //           LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
 
-    //           phase_new = (file_list[fil_current_bank].size[fil_current_id])
+    //           phase_new = (file_list[sel_bank_cur].size[sel_sample_cur])
     //           *
     //                       bm->on[bm->num_pressed - 1] / 16;
     //           phase_new = (phase_new / 4) * 4;
