@@ -51,25 +51,33 @@ void i2s_callback_func() {
       if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
         int32_t phases0 = phases[0];
         phase_change = true;
-        phase_new = phases[0] *
-                    file_list[sel_bank_next].beats[sel_sample_next] /
-                    file_list[sel_bank_cur].beats[sel_sample_cur];
-        beat_current =
-            round((float)beat_current *
-                  (float)file_list[sel_bank_next].beats[sel_sample_next] /
-                  (float)file_list[sel_bank_cur].beats[sel_sample_cur]);
+        phase_new =
+            phases[0] *
+            banks[sel_bank_next]->sample[sel_sample_next].snd[0]->slice_num /
+            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+        beat_current = round((float)beat_current *
+                             (float)banks[sel_bank_next]
+                                 ->sample[sel_sample_next]
+                                 .snd[0]
+                                 ->slice_num /
+                             (float)banks[sel_bank_cur]
+                                 ->sample[sel_sample_cur]
+                                 .snd[0]
+                                 ->slice_num);
         printf("[current: %d/%d, next: %d/%d]\n", phases0,
-               file_list[sel_bank_cur].size[sel_sample_cur], phase_new,
-               file_list[sel_bank_next].size[sel_sample_next]);
+               banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size,
+               phase_new,
+               banks[sel_bank_next]->sample[sel_sample_next].snd[0]->size);
         printf("next file: %s\n",
-               file_list[sel_bank_next].name[sel_sample_next]);
+               banks[sel_bank_next]->sample[sel_sample_next].snd[0]->name);
         FRESULT fr;
         fr = f_close(&fil_current);  // close and re-open trick
         if (fr != FR_OK) {
           debugf("error: %d\n", fr);
         }
         fr = f_open(&fil_current,
-                    file_list[sel_bank_next].name[sel_sample_next], FA_READ);
+                    banks[sel_bank_next]->sample[sel_sample_next].snd[0]->name,
+                    FA_READ);
         if (fr != FR_OK) {
           debugf("error: %d\n", fr);
         }
@@ -99,9 +107,9 @@ void i2s_callback_func() {
     // envelope_pitch_val =
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
 
-    uint32_t samples_to_read = buffer->max_sample_count *
-                               round(sf->bpm_tempo * envelope_pitch_val) /
-                               file_list[sel_bank_cur].bpm[sel_sample_cur];
+    uint32_t samples_to_read =
+        buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->bpm;
     uint32_t values_len = samples_to_read * WAV_CHANNELS;
     uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
     int16_t values[values_len];
@@ -133,7 +141,8 @@ void i2s_callback_func() {
         if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
-          f_open(&fil_current, file_list[sel_bank_cur].name[sel_sample_cur],
+          f_open(&fil_current,
+                 banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
                  FA_READ);
           f_lseek(
               &fil_current,
@@ -150,7 +159,8 @@ void i2s_callback_func() {
                      &fil_bytes_read2)) {
             printf("ERROR READING!\n");
             f_close(&fil_current);  // close and re-open trick
-            f_open(&fil_current, file_list[sel_bank_cur].name[sel_sample_cur],
+            f_open(&fil_current,
+                   banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
                    FA_READ);
             f_lseek(&fil_current,
                     WAV_HEADER_SIZE +
@@ -284,10 +294,13 @@ void i2s_callback_func() {
 
   if (fil_is_open) {
     for (uint8_t head = 0; head < 2; head++) {
-      if (phases[head] >= file_list[sel_bank_cur].size[sel_sample_cur]) {
-        phases[head] -= file_list[sel_bank_cur].size[sel_sample_cur];
+      if (phases[head] >=
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size) {
+        phases[head] -=
+            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size;
       } else if (phases[head] < 0) {
-        phases[head] += file_list[sel_bank_cur].size[sel_sample_cur];
+        phases[head] +=
+            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size;
       }
     }
   }
