@@ -1,6 +1,6 @@
 #include "pca9552.h"
 
-#define LEDS_FACES 4
+#define LEDS_FACES 5
 #define LEDS_ROWS 5
 #define LEDS_COLS 4
 #ifndef LED_1_GPIO
@@ -12,6 +12,11 @@
 #ifndef LED_3_GPIO
 #define LED_3_GPIO 22
 #endif
+
+#define LED_BASE_FACE 0
+#define LED_STEP_FACE 1
+#define LED_PRESS_FACE 2
+#define LED_STEAL_FACE 3
 
 typedef struct LEDS {
   // state, 0=off, 1=dim, 2=bright, 3=blink
@@ -85,13 +90,32 @@ void LEDS_clearAll(LEDS *leds, uint8_t m) {
 }
 
 void LEDS_render(LEDS *leds) {
+  bool do_steal = false;
   for (uint8_t i = 0; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
       leds->state[LEDS_FACES - 1][i][j] = 0;
       for (uint8_t m = 0; m < LEDS_FACES - 1; m++) {
         if (leds->state[m][i][j] > 0) {
           leds->state[LEDS_FACES - 1][i][j] = leds->state[m][i][j];
+          if (m == LED_STEAL_FACE) {
+            do_steal = true;
+            break;
+          }
         }
+      }
+      if (do_steal) {
+        break;
+      }
+    }
+    if (do_steal) {
+      break;
+    }
+  }
+
+  if (do_steal) {
+    for (uint8_t i = 0; i < LEDS_ROWS; i++) {
+      for (uint8_t j = 0; j < LEDS_COLS; j++) {
+        leds->state[LEDS_FACES - 1][i][j] = leds->state[LED_STEAL_FACE][i][j];
       }
     }
   }

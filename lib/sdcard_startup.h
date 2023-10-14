@@ -22,7 +22,7 @@ void sdcard_startup() {
   bass = Bass_create();
 #endif
 
-  for (uint8_t bi = 0; bi < 3; bi++) {
+  for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname, 1);

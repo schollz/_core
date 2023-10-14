@@ -84,9 +84,6 @@ bool sdcard_startup_is_starting = false;
 WS2812 *ws2812;
 #endif
 
-#define LED_PRESS_FACE 2
-#define LED_STEP_FACE 1
-
 void do_update_phase_from_beat_current() {
   uint16_t slice =
       beat_current %
