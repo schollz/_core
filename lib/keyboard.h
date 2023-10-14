@@ -31,20 +31,22 @@ void run_keyboard() {
       phase_forward = !phase_forward;
     }
     if (c == 'w') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 0 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 0 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'e') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 1 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 1 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'r') {
-      // phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 2
-      // / 16; phase_new = (phase_new / 4) * 4; phase_change = true;
+      // phase_new = banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size *
+      // 2 / 16; phase_new = (phase_new / 4) * 4; phase_change = true;
       // debounce_quantize = 2;
       retrig_first = true;
       retrig_beat_num = random_integer_in_range(8, 24);
@@ -58,43 +60,50 @@ void run_keyboard() {
       retrig_ready = true;
     }
     if (c == 't') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 3 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 3 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'y') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 4 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 4 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'u') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 5 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 5 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'i') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 6 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 6 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'i') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 7 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 7 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 's') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 8 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 8 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
     }
     if (c == 'd') {
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 9 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 9 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
       debounce_quantize = 2;
@@ -102,42 +111,48 @@ void run_keyboard() {
     if (c == 'f') {
       debounce_quantize = 2;
       beat_current = 10;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 10 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 10 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }
     if (c == 'g') {
       debounce_quantize = 2;
       beat_current = 11;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 11 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 11 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }
     if (c == 'h') {
       debounce_quantize = 2;
       beat_current = 12;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 12 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 12 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }
     if (c == 'j') {
       debounce_quantize = 2;
       beat_current = 13;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 13 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 13 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }
     if (c == 'k') {
       debounce_quantize = 2;
       beat_current = 14;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 14 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 14 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }
     if (c == 'l') {
       debounce_quantize = 2;
       beat_current = 15;
-      phase_new = (file_list[sel_bank_cur].size[sel_sample_cur]) * 15 / 16;
+      phase_new =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size * 15 / 16;
       phase_new = (phase_new / 4) * 4;
       phase_change = true;
     }

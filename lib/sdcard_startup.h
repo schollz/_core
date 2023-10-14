@@ -55,11 +55,13 @@ void sdcard_startup() {
   }  // bank loop
 
   FRESULT fr;
-  fr = f_open(&fil_current, file_list[sel_bank_cur].name[sel_sample_cur],
-              FA_READ);
+  fr =
+      f_open(&fil_current,
+             banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name, FA_READ);
   if (fr != FR_OK) {
-    printf("could not open: %s\n",
-           file_list[sel_bank_cur].name[sel_sample_cur]);
+    printf("could not open %s: %s\n",
+           banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+           FRESULT_str(fr));
   }
   phase_new = 0;
   phase_change = true;
