@@ -17,6 +17,7 @@ uint8_t key_pressed[100];
 uint8_t key_pressed_num = 0;
 uint8_t key_total_pressed = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
+int16_t key_on_buttons_last[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 
 // fx toggles
@@ -91,9 +92,9 @@ void go_update_top() {
   if (all_off) {
     // top row is not held
     // show jump/mash, mute, play
-    LEDS_set(leds, KEY_A, 0, 2 * (1 - mode_jump_mash));
-    LEDS_set(leds, KEY_B, 0, 2 * mode_mute);
-    LEDS_set(leds, KEY_C, 0, 2 * mode_play);
+    // LEDS_set(leds, LED_BASE_FACE, KEY_A, 2 * (1 - mode_jump_mash));
+    // LEDS_set(leds, LED_BASE_FACE, KEY_B, 2 * mode_mute);
+    // LEDS_set(leds, LED_BASE_FACE, KEY_C, 2 * mode_play);
   }
 }
 
@@ -121,15 +122,7 @@ void go_update_fx(uint8_t fx_num) {
   }
 }
 
-void button_key_off_held(uint8_t key) {
-  printf("off held %d\n", key);
-  if (key == KEY_A) {
-    // bank/sample toggler
-    for (uint8_t i = 0; i < 4; i++) {
-      LEDS_set(leds, 2, i, 0);
-    }
-  }
-}
+void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 
 // triggers on ANY key off, used for 1-16 off's
 void button_key_off_any(uint8_t key) {
@@ -146,17 +139,8 @@ void button_key_off_any(uint8_t key) {
 }
 
 void button_key_on_single(uint8_t key) {
-  printf("on %d\n", key);
+  printf("on single %d\n", key);
   if (key < 4) {
-    // TODO:
-    // highlight toggle mode
-    if (key == KEY_A) {
-      if (mode_samp_bank) {
-        // TODO: check this....
-        LEDS_set(leds, 2, 2, 1);
-        LEDS_set(leds, 2, 3, 0);
-      };
-    }
   } else {
     // 1-16
     if (mode_jump_mash == MODE_JUMP) {
@@ -242,6 +226,7 @@ void button_handler(ButtonMatrix *bm) {
   for (uint8_t i = 0; i < bm->off_num; i++) {
     LEDS_set(leds, LED_PRESS_FACE, bm->off[i], 0);
     key_total_pressed--;
+    key_on_buttons_last[bm->off[i]] = key_on_buttons[bm->off[i]];
     key_on_buttons[bm->off[i]] = 0;
     button_key_off_any(bm->off[i]);
     // printf("turned off %d\n", bm->off[i]);
@@ -294,6 +279,7 @@ void button_handler(ButtonMatrix *bm) {
 
     // keep track of all
     key_num_presses++;
+    key_on_buttons_last[bm->on[i]] = key_on_buttons[bm->on[i]];
     key_on_buttons[bm->on[i]] = key_num_presses;
     if (bm->on[i] < 4) {
       do_update_top = true;
@@ -319,6 +305,35 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
   }
+
+  if (key_on_buttons[KEY_A]) {
+    LEDS_clearAll(leds, LED_STEAL_FACE);
+    if (mode_samp_bank == 0) {
+      // sample select mode
+      for (uint8_t i = 0; i < banks[sel_bank_select]->num_samples; i++) {
+        LEDS_set(leds, LED_STEAL_FACE, 4 + i, 1);
+      }
+      LEDS_set(leds, LED_STEAL_FACE, KEY_B, 2);
+      LEDS_set(leds, LED_STEAL_FACE, 4 + sel_sample_cur, 3);
+    } else {
+      // bank select mode
+      for (uint8_t i = 0; i < 16; i++) {
+        if (banks[i]->num_samples > 0) {
+          LEDS_set(leds, LED_STEAL_FACE, 4 + i, 1);
+        }
+      }
+      LEDS_set(leds, LED_STEAL_FACE, KEY_C, 2);
+      LEDS_set(leds, LED_STEAL_FACE, 4 + sel_bank_select, 3);
+    }
+  } else if (key_on_buttons_last[KEY_A] != key_on_buttons[KEY_A]) {
+    LEDS_clearAll(leds, LED_STEAL_FACE);
+    LEDS_render(leds);
+  }
+  // if (mode_samp_bank) {
+  //   LEDS_set(leds, LED_PRESS_FACE, sel_sample_cur + 4, 0);
+  // } else {
+  //   LEDS_set(leds, LED_PRESS_FACE, sel_bank_cur + 4, 0);
+  // }
 
   if (do_update_top) {
     go_update_top();
