@@ -137,11 +137,11 @@ void core1_main() {
     // sf->distortion_level = 3;
     // sf->distortion_wet = adc_read() * 100 / 4096;
 
-    // sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
+    sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
     // printf(" adc_read(): %d\n", adc_read());
 
     adc_select_input(1);
-    // sf->saturate_wet = adc_read() * 100 / 4096;
+    sf->saturate_wet = adc_read() * 100 / 4096;
     // sleep_ms(100);
     // printf(" adc_read(): %d\n", adc_read() * 71 / 4096);
     // uint8_t filter_midi_new = adc_read() * 71 / 4096;
