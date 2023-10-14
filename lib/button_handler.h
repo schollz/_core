@@ -206,12 +206,13 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         // A+H (sample  mode)
         // select sample
         sel_bank_next = sel_bank_select;
-        sel_sample_next = ((key2 - 4) % (file_list[sel_bank_next].num / 2)) * 2;
+        sel_sample_next =
+            ((key2 - 4) % (banks[sel_bank_next]->num_samples / 2)) * 2;
         fil_current_change = true;
       } else {
         // A+H (bank mode)
         // select bank
-        if (file_list[key2 - 4].num > 0) {
+        if (banks[key2 - 4]->num_samples > 0) {
           sel_bank_select = key2 - 4;
         }
       }
