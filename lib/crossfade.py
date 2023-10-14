@@ -4,7 +4,7 @@ import math
 # [(1-Sin(4*pi*(x/4)+pi/2+pi))/2 ,(1-Sin(4*pi*(x/4)+pi/2))/2] from 0 to 1
 
 samples_per_block = 32
-blocks = 30
+blocks = 15
 
 print("#ifndef CROSSFADE_LIB")
 print(f"static uint crossfade_raw[101][{blocks}] = {{")

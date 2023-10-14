@@ -22,6 +22,9 @@ uint16_t key_num_presses;
 // fx toggles
 bool fx_toggle[16];  // 16 possible
 #define FX_REVERSE 0
+#define FX_SLOWDOWN 1
+#define FX_NORMSPEED 2
+#define FX_SPEEDUP 3
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
@@ -100,6 +103,18 @@ void go_update_fx(uint8_t fx_num) {
   switch (fx_num) {
     case FX_REVERSE:
       phase_forward = !on;
+      break;
+    case FX_SLOWDOWN:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 0.5, 1);
+      break;
+    case FX_NORMSPEED:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 1.0, 1);
+      break;
+    case FX_SPEEDUP:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 2.0, 1);
       break;
     default:
       break;
