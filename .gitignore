@@ -30,7 +30,8 @@ dev/zeptoconverter/zeptocore/*
 dev/zeptoconverter/2.wav
 dev/zeptoconverter/3/*
 dev/zeptoconverter/zepoconverter
-
+dev/zeptoconverter/banks/
+dev/zeptoconverter/banks_processed/
 
 # Object files
 *.o
