@@ -202,12 +202,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // A+C
       mode_samp_bank = 1;
     } else if (key2 > 3) {
+      printf("[button_handler] mode_samp_bank: %d\n", mode_samp_bank);
       if (mode_samp_bank == 0) {
         // A+H (sample  mode)
         // select sample
         sel_bank_next = sel_bank_select;
-        sel_sample_next =
-            ((key2 - 4) % (banks[sel_bank_next]->num_samples / 2)) * 2;
+        sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
         fil_current_change = true;
       } else {
         // A+H (bank mode)
