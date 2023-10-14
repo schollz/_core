@@ -6,8 +6,8 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 
 ## todos
 
-- [ ] use Go to generate wav file informations containing bpm, number of slices, array of slice positions, binary flag whether it is bpm-transposable, flag about stop conditions
-- [ ] read wav file informations in zeptocore
+- [ ] use Go to generate wav file information containing bpm, number of slices, array of slice positions, binary flag whether it is bpm-transposable, initialized flag about stop conditions
+- [ ] read wav file information in zeptocore
 - [ ] use slice positions / number read from wav information
 - [ ] obey different stop conditions (continuing playing, stop after end of slice, stop after lifting finger)
 
