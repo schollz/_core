@@ -20,13 +20,13 @@ unsigned int fil_bytes_read;
 unsigned int fil_bytes_read2;
 // uint16_t sf->bpm_tempo = 185;
 uint16_t bpm_last = 185;
-uint8_t fil_current_id = 0;
-uint8_t fil_current_id_next = 0;
-uint8_t fil_current_bank = 0;
-uint8_t fil_current_bank_next = 0;
-uint8_t fil_current_bank_sel = 0;
+uint8_t sel_sample_cur = 0;
+uint8_t sel_sample_next = 0;
+uint8_t sel_bank_cur = 0;
+uint8_t sel_bank_next = 0;
+uint8_t sel_bank_select = 0;
 bool fil_current_change = false;
-FileList file_list[16];
+SampleList *banks[16];
 FRESULT fil_result;
 struct repeating_timer timer;
 bool phase_forward = 1;
@@ -88,11 +88,16 @@ WS2812 *ws2812;
 #define LED_STEP_FACE 1
 
 void do_update_phase_from_beat_current() {
-  phase_new = (file_list[fil_current_bank].size[fil_current_id]) *
-              ((beat_current %
-                (2 * file_list[fil_current_bank].beats[fil_current_id])) +
-               (1 - phase_forward)) /
-              (2 * file_list[fil_current_bank].beats[fil_current_id]);
+  uint16_t slice =
+      beat_current %
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+  if (phase_forward) {
+    phase_new =
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_start[slice];
+  } else {
+    phase_new =
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_stop[slice];
+  }
   phase_change = true;
 }
 #endif

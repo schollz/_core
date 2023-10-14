@@ -81,7 +81,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1
     # INCLUDE_STEREO=1
-    INCLUDE_TRANSFER=1 
+    # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )
 
