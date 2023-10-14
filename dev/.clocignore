@@ -1,0 +1,5 @@
+lib/bass_raw.h
+lib/transfer_doublesine.h
+lib/transfer_tanh.h
+lib/transfer_distortion.h
+lib/transfer_saturate.h
