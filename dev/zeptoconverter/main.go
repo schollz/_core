@@ -9,9 +9,11 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"path"
@@ -26,6 +28,32 @@ import (
 
 var flagFolderIn, flagFolderOut string
 
+// file_list.h:
+// typedef struct WavFile {
+// 	char *name;
+// 	uint32_t size;
+// 	uint16_t bpm;
+// 	uint16_t beats;
+// 	uint8_t slice_num;
+// 	uint32_t *slice_start;
+// 	uint32_t *slice_end;
+// 	uint8_t bpm_transposable;
+// 	uint8_t stop_condition;
+// } WavFile;
+
+type WavFile struct {
+	NameLen         uint16
+	Name            []byte   `c:"name"`
+	Size            uint32   `c:"size"`
+	BPM             uint16   `c:"bpm"`
+	Beats           uint16   `c:"beats"`
+	SliceNum        uint16   `c:"slice_num"`
+	SliceStart      []uint32 `c:"slice_val"`
+	SliceStop       []uint32
+	BPMTransposable uint8 `c:"bpm_transposable"`
+	StopCondition   uint8 `c:"stop_condition"`
+}
+
 func init() {
 	flag.StringVar(&flagFolderIn, "in", "", "folder for input")
 	flag.StringVar(&flagFolderOut, "out", "", "folder for output")
@@ -33,7 +61,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	log.SetLevel("info")
+	log.SetLevel("debug")
 
 	flagFolderIn, _ = filepath.Abs(flagFolderIn)
 	folderCount := 0
@@ -54,36 +82,133 @@ func main() {
 	sort.Strings(fileList)
 
 	bar := progressbar.Default(int64(len(fileList)))
-	for fi, f := range fileList {
+	for _, f := range fileList {
 		fpath, filename := filepath.Split(f)
 		fpath, _ = filepath.Abs(fpath)
-		pathRelative := strings.TrimPrefix(fpath, flagFolderIn)
-		if len(pathRelative) > 0 {
-			if string(pathRelative[0]) == "/" || string(pathRelative[1]) == "\\" {
-				pathRelative = pathRelative[1:]
+		fpathRelative := strings.TrimPrefix(fpath, flagFolderIn)
+		if len(fpathRelative) > 0 {
+			if string(fpathRelative[0]) == "/" || string(fpathRelative[1]) == "\\" {
+				fpathRelative = fpathRelative[1:]
 			}
 		}
-		os.MkdirAll(path.Join(flagFolderOut, pathRelative), os.ModePerm)
-		f0 := path.Join("/tmp/", strings.Replace(filename, " ", "_", -1))
-		f0 = strings.Replace(f0, "(", "_", -1)
-		f0 = strings.Replace(f0, ")", "_", -1)
-		CopyFile(f, f0)
-		f = f0
-		beats, bpm, _ := sox.GetBPM(f)
-		filenameEncoded := fmt.Sprintf("%03d", fi)
-		f2 := path.Join(flagFolderOut, pathRelative, filenameEncoded)
-		ext := path.Ext(f2)
-		final1 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d_nostretchin.wav", int(bpm), int(beats))
-		final2 := f2[0:len(f2)-len(ext)] + fmt.Sprintf("_bpm%d_beats%d_timestretch.wav", int(bpm), int(beats*4))
+		log.Debugf("fpath: %s", fpath)
+		log.Debugf("filename: %s", filename)
+		log.Debugf("fpathRelative: %s", fpathRelative)
+
+		os.MkdirAll(path.Join(flagFolderOut, fpathRelative), os.ModePerm)
+
+		channels := 1
+
+		filenameExt := filepath.Ext(filename)
+		newExt := ".mono.wav"
+		if channels == 2 {
+			newExt = ".stereo.wav"
+		}
+		filename = filename[:len(filename)-len(filenameExt)] + newExt
+		filenameSD := path.Join(fpathRelative, filename)
+
+		beats, bpm, err := processSound0(f, path.Join(flagFolderOut, filenameSD), channels)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		err = processInfo0(filenameSD, beats, bpm, channels)
+		if err != nil {
+			log.Error(err)
+			return
+		}
 		bar.Add(1)
-		run("sox", f, "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
-		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final1)
-		// run("ru bb erband", "-2, "-t4", f, "/tmp/1.wav")
-		run("sox", f, "/tmp/1.wav", "tempo", "0.25")
-		run("sox", "/tmp/1.wav", "-c", "1", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
-		run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", final2)
-		os.Remove(f)
 	}
+}
+
+func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (err error) {
+	finfo, err := os.Stat(path.Join(flagFolderOut, filenameSD))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	fsize := float64(finfo.Size())
+	slices := []uint32{}
+	slicesEnd := []uint32{}
+	sliceNum := uint16(beats * 2)
+	for i := 0.0; i < beats*2; i++ {
+		slices = append(slices, uint32(math.Round(fsize*i/float64(sliceNum)))/4*4)
+		slicesEnd = append(slicesEnd, uint32(math.Round(fsize*(i+1)/float64(sliceNum)))/4*4)
+	}
+	wav1 := WavFile{
+		NameLen:         uint16(len([]byte(filenameSD))),
+		Name:            []byte(filenameSD),
+		Size:            uint32(fsize),
+		BPM:             uint16(bpm),
+		Beats:           uint16(beats),
+		SliceNum:        sliceNum,
+		SliceStart:      slices,
+		SliceStop:       slicesEnd,
+		BPMTransposable: 0,
+		StopCondition:   0,
+	}
+	err = writeWav(filenameSD, wav1)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	return
+}
+
+func processSound0(fnameIn string, fnameOut string, channels int) (beats float64, bpm float64, err error) {
+	beats, bpm, err = sox.GetBPM(fnameIn)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	_, _, err = run("sox", fnameIn, "-c", fmt.Sprint(channels), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	_, _, err = run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	return
+}
+
+func writeWav(filenameSD string, wav1 WavFile) (err error) {
+	log.Debugf("wav: %+v", wav1)
+	buf := new(bytes.Buffer)
+	var data = []any{
+		wav1.NameLen,
+		wav1.Name,
+		wav1.Size,
+		wav1.BPM,
+		wav1.Beats,
+		wav1.SliceNum,
+		wav1.SliceStart,
+		wav1.SliceStop,
+		wav1.BPMTransposable,
+		wav1.StopCondition,
+	}
+	for _, v := range data {
+		err := binary.Write(buf, binary.LittleEndian, v)
+		if err != nil {
+			log.Errorf("binary.Write failed: %s", err.Error())
+		}
+	}
+	// prepend with the total size
+	data = append([]any{uint16(buf.Len())}, data...)
+	buf2 := new(bytes.Buffer)
+	for _, v := range data {
+		err := binary.Write(buf2, binary.LittleEndian, v)
+		if err != nil {
+			log.Errorf("binary.Write failed: %s", err.Error())
+		}
+	}
+	fInfoWrite, _ := os.Create(path.Join(flagFolderOut, filenameSD+".info"))
+	fInfoWrite.Write(buf2.Bytes())
+	fInfoWrite.Close()
+
+	return
 }
 
 func run(args ...string) (string, string, error) {

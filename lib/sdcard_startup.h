@@ -22,27 +22,46 @@ void sdcard_startup() {
   bass = Bass_create();
 #endif
 
-  for (uint8_t i = 0; i < 1; i++) {
+  for (uint8_t bi = 0; bi < 3; bi++) {
     char dirname[10];
-    sprintf(dirname, "bank%d\0", i);
-    file_list[i] = list_files(dirname, WAV_CHANNELS);
-    printf("found %d files\n", file_list[i].num);
-    printf("file_list[i].name[0]: %s\n", file_list[i].name[0]);
-    printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[0]);
-    printf("file_list[i].beats[0]: %d\n", file_list[i].beats[0]);
-    printf("file_list[i].size[0]: %d\n", file_list[i].size[0]);
-    printf("file_list[i].name[0]: %s\n", file_list[i].name[1]);
-    printf("file_list[i].bpm[0]: %d\n", file_list[i].bpm[1]);
-    printf("file_list[i].beats[0]: %d\n", file_list[i].beats[1]);
-    printf("file_list[i].size[0]: %d\n", file_list[i].size[1]);
-  }
+    sprintf(dirname, "bank%d\0", bi);
+    banks[bi] = list_files(dirname, 1);
+    if (banks[bi]->num_samples == 0) {
+      printf("[keyboard] banks[%d]: no samples\n", bi);
+    } else {
+      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
+        if (bi == 0 && si == 0) {
+          printf("[keyboard] banks[%d]->sample[%d].snd[0]->name: %s\n", bi, si,
+                 banks[bi]->sample[si].snd[0]->name);
+          printf("[keyboard] banks[%d]->sample[%d].snd[0]->size: %d\n", bi, si,
+                 banks[bi]->sample[si].snd[0]->size);
+          printf("[keyboard] banks[%d]->sample[%d].snd[0]->bpm: %d\n", bi, si,
+                 banks[bi]->sample[si].snd[0]->bpm);
+          printf("[keyboard] banks[%d]->sample[%d].snd[0]->beats: %d\n", bi, si,
+                 banks[bi]->sample[si].snd[0]->beats);
+          printf("[keyboard] banks[%d]->sample[%d].snd[0]->slice_num: % d\n ",
+                 bi, si, banks[bi]->sample[si].snd[0]->slice_num);
+          printf("slices: \n");
+          for (uint8_t i = 0; i < banks[bi]->sample[si].snd[0]->slice_num;
+               i++) {
+            printf("%d) %d-%d\n", i,
+                   banks[bi]->sample[si].snd[0]->slice_start[i],
+                   banks[bi]->sample[si].snd[0]->slice_stop[i]);
+          }
+          printf("\n");
+        }
+      }
+    }
+  }  // bank loop
 
   FRESULT fr;
-  fr = f_open(&fil_current, file_list[fil_current_bank].name[fil_current_id],
-              FA_READ);
+  fr =
+      f_open(&fil_current,
+             banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name, FA_READ);
   if (fr != FR_OK) {
-    printf("could not open: %s\n",
-           file_list[fil_current_bank].name[fil_current_id]);
+    printf("could not open %s: %s\n",
+           banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+           FRESULT_str(fr));
   }
   phase_new = 0;
   phase_change = true;
