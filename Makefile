@@ -49,3 +49,6 @@ clean:
 
 debug:
 	sudo minicom -b 115200 -o -D /dev/ttyACM
+
+cloc:
+	cloc --by-file lib/*.h --exclude-list-file=dev/.clocignore
