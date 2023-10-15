@@ -41,7 +41,7 @@
 #include "biquad.h"
 #include "buttonmatrix3.h"
 #include "charlieplex.h"
-#include "crossfade.h"
+#include "crossfade3.h"
 #include "envelope2.h"
 #include "envelopegate.h"
 #include "file_list.h"
