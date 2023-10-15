@@ -20,6 +20,7 @@ void i2s_callback_func2() {
 }
 
 void i2s_callback_func() {
+  uint8_t sd_calls = 0;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
   if (buffer == NULL) {
@@ -138,6 +139,7 @@ void i2s_callback_func() {
           return;
         }
 
+        ++sd_calls;
         if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
           printf("ERROR READING!\n");
           f_close(&fil_current);  // close and re-open trick
@@ -155,6 +157,7 @@ void i2s_callback_func() {
             printf("problem seeking to 0\n");
           }
           int16_t values2[values_to_read - fil_bytes_read];  // max limit
+          ++sd_calls;
           if (f_read(&fil_current, values2, values_to_read - fil_bytes_read,
                      &fil_bytes_read2)) {
             printf("ERROR READING!\n");
@@ -308,5 +311,8 @@ void i2s_callback_func() {
 
   clock_t endTime = time_us_64();
   cpu_utilization = 100 * (endTime - startTime) / (US_PER_BLOCK);
+  if (sd_calls > 2) {
+    printf("%d calls: cpu utilization: %d\n", sd_calls, cpu_utilization);
+  }
   return;
 }
