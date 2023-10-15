@@ -4,8 +4,8 @@
 
 #define CLAMP(x, a, b) (x > a ? a : (x < b ? b : x))
 
-#define q (31)
-#define scaleQ (powf(2.0, q))
+#define qFactor (31)
+#define scaleQ (powf(2.0, qFactor))
 
 #define ACC_MAX ((int64_t)0x7FFFFFFFFF)
 #define ACC_MIN ((int64_t)-0x8000000000)
@@ -44,7 +44,7 @@ void IIR_filter(IIR *filter, int32_t *s) {
   accumulator += (int64_t)(filter->a[1]) * (int64_t)(filter->y[1]);
 
   filter->state_error = accumulator & ACC_REM;
-  int32_t out = (int32_t)(accumulator >> (int64_t)(q));
+  int32_t out = (int32_t)(accumulator >> (int64_t)(qFactor));
 
   filter->x[1] = filter->x[0];
   filter->y[1] = filter->y[0];

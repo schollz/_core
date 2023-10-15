@@ -98,14 +98,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   return true;
 }
 
-uint16_t freqs_available[72] = {
-    262,   277,   294,   311,   330,   349,  370,  392,  415,  440,   466,
-    494,   523,   554,   587,   622,   659,  698,  740,  784,  831,   880,
-    932,   988,   1047,  1109,  1175,  1245, 1319, 1397, 1480, 1568,  1661,
-    1760,  1865,  1976,  2093,  2217,  2349, 2489, 2637, 2794, 2960,  3136,
-    3322,  3520,  3729,  3951,  4186,  4435, 4699, 4978, 5274, 5588,  5920,
-    6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956, 10548, 11175,
-    11840, 12544, 13290, 14080, 14917, 15804};
+uint16_t freqs_available[74] = {
+    150,   200,   262,   277,   294,   311,   330,   349,  370,  392,  415,
+    440,   466,   494,   523,   554,   587,   622,   659,  698,  740,  784,
+    831,   880,   932,   988,   1047,  1109,  1175,  1245, 1319, 1397, 1480,
+    1568,  1661,  1760,  1865,  1976,  2093,  2217,  2349, 2489, 2637, 2794,
+    2960,  3136,  3322,  3520,  3729,  3951,  4186,  4435, 4699, 4978, 5274,
+    5588,  5920,  6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956,
+    10548, 11175, 11840, 12544, 13290, 14080, 14917, 15804};
 
 void core1_main() {
   printf("core1 running!\n");
@@ -144,16 +144,18 @@ void core1_main() {
     button_handler(bm);
     adc_select_input(1);
     if (key_on_buttons[KEY_SHIFT]) {
+    } else {
       uint8_t filter_midi_new =
-          FilterExp_update(adcs[1], adc_read()) * 71 / 4096;
+          FilterExp_update(adcs[1], adc_read()) * 73 / 4096;
       if (filter_midi != filter_midi_new) {
         filter_midi = filter_midi_new;
         printf("freqs_available[%d]: %d", filter_midi,
                freqs_available[filter_midi]);
-        IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+        // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+        ResonantFilter_reset(resonantfilter, freqs_available[filter_midi],
+                             44100, 1 * 0.707, 0, FILTER_LOWPASS);
       }
-    } else {
-      sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
+      // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
       // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
     }
 
@@ -233,6 +235,9 @@ int main() {
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER
+  resonantfilter =
+      ResonantFilter_create(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
+
   myFilter0 = IIR_new(7000.0f, 3 * 0.707f, 1.0f, 44100.0f);
   myFilter1 = IIR_new(7200.0f, 2.5 * 0.707f, 1.0f, 44100.0f);
 #endif
