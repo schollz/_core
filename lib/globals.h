@@ -77,7 +77,7 @@ Bass *bass;
 
 IIR *myFilter0;
 IIR *myFilter1;
-ResonantFilter *resonantfilter;
+ResonantFilter *resonantfilter[2];
 uint8_t filter_midi = 72;
 
 bool sdcard_startup_is_starting = false;
@@ -86,6 +86,7 @@ bool sdcard_startup_is_starting = false;
 WS2812 *ws2812;
 #endif
 
+uint8_t key_jump_debounce = 0;
 void do_update_phase_from_beat_current() {
   uint16_t slice =
       beat_current %

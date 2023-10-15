@@ -56,6 +56,18 @@ typedef struct ResonantFilter {
   int32_t y2_f;
 } ResonantFilter;
 
+void ResonantFilter_copy(ResonantFilter* rf1, ResonantFilter* rf2) {
+  rf2->b0 = rf1->b0;
+  rf2->b1 = rf1->b1;
+  rf2->b2 = rf1->b2;
+  rf2->a1 = rf1->a1;
+  rf2->a2 = rf1->a2;
+  rf2->x1_f = rf1->x1_f;
+  rf2->x2_f = rf1->x2_f;
+  rf2->y1_f = rf1->y1_f;
+  rf2->y2_f = rf1->y2_f;
+}
+
 void ResonantFilter_reset(ResonantFilter* rf, float fc, float fs, float q,
                           float db, uint8_t filter_type) {
   float w0 = 2 * PI_FLOAT * (fc / fs);

@@ -29,11 +29,28 @@ bool fx_toggle[16];  // 16 possible
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
+    printf("key_do_jump %d\n", beat);
+    key_jump_debounce = 1;
     beat_current = (beat_current / 16) * 16 + beat;
     do_update_phase_from_beat_current();
     LEDS_clearAll(leds, LED_STEP_FACE);
     LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
   }
+}
+
+int8_t single_step_pressed() {
+  uint8_t pressed = 0;
+  int8_t val = -1;
+  for (uint8_t i = 4; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+    if (key_on_buttons[i]) {
+      pressed++;
+      val = i - 4;
+    }
+  }
+  if (pressed == 1) {
+    return val;
+  }
+  return -1;
 }
 
 void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
@@ -129,6 +146,10 @@ void button_key_off_any(uint8_t key) {
   printf("off any %d\n", key);
   if (key > 3) {
     // 1-16 off
+    // TODO: make this an option?
+    // if (key_total_pressed == 0) {
+    //   key_do_jump(key - 4);
+    // }
     if (mode_jump_mash == MODE_MASH) {
       // 1-16 off (mash mode)
       // remove momentary fx

@@ -91,6 +91,7 @@ void i2s_callback_func() {
     if (phase_change) {
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
+      ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
     }
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
@@ -111,10 +112,6 @@ void i2s_callback_func() {
     // new sd file can be opened on head 0
     for (uint8_t head = 0; head < 2; head++) {
       if (head == 1 && !phase_change) {
-        continue;
-      }
-      // TODO undo this
-      if (head == 1) {
         continue;
       }
 
@@ -165,25 +162,22 @@ void i2s_callback_func() {
 #ifdef INCLUDE_FILTER
         if (filter_midi < 70) {
           // IIR_filter(myFilter0, &value0);
-          newArray[i] = ResonantFilter_update(resonantfilter, newArray[i]);
-          // TODO: head1 should be able to copy newArray and use it to calculate
-          // its filter
+          newArray[i] =
+              ResonantFilter_update(resonantfilter[head], newArray[i]);
         }
 #endif
-      }
-      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (head == 0) {
           samples[i * 2 + 0] = 0;
         }
 
         uint vol = vol_main;
-        // if (phase_change) {
-        //   if (head == 0) {
-        //     vol = (vol * (128 - crossfade2_raw[i]) / 128);
-        //   } else {
-        //     vol = (vol * crossfade2_raw[i] / 128);
-        //   }
-        // }
+        if (phase_change) {
+          if (head == 0) {
+            vol = (vol * (128 - crossfade2_raw[i]) / 128);
+          } else {
+            vol = (vol * crossfade2_raw[i] / 128);
+          }
+        }
         int32_t value0 = (vol * newArray[i]) << 8u;
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L

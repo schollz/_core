@@ -82,11 +82,21 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                   [beat_total %
                                    sf->pattern_length[sf->pattern_current]];
         }
+        int8_t step_pressed = single_step_pressed();
+        if (step_pressed > -1) {
+          beat_current =
+              step_pressed %
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+        }
         // printf("beat_current: %d\n", beat_current);
         LEDS_clearAll(leds, LED_STEP_FACE);
         LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
         EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
-        do_update_phase_from_beat_current();
+        if (key_jump_debounce == 0) {
+          do_update_phase_from_beat_current();
+        } else {
+          key_jump_debounce--;
+        }
       }
       if (debounce_quantize > 0) {
         debounce_quantize--;
@@ -152,7 +162,7 @@ void core1_main() {
         printf("freqs_available[%d]: %d", filter_midi,
                freqs_available[filter_midi]);
         // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-        ResonantFilter_reset(resonantfilter, freqs_available[filter_midi],
+        ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
                              44100, 1 * 0.707, 0, FILTER_LOWPASS);
       }
       // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
@@ -235,7 +245,9 @@ int main() {
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER
-  resonantfilter =
+  resonantfilter[0] =
+      ResonantFilter_create(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
+  resonantfilter[1] =
       ResonantFilter_create(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
 
   myFilter0 = IIR_new(7000.0f, 3 * 0.707f, 1.0f, 44100.0f);
