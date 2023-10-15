@@ -127,7 +127,7 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 		log.Error(err)
 		return
 	}
-	fsize := float64(finfo.Size())
+	fsize := float64(finfo.Size()) - (44100 * 2) // the file size has 44,100 extra 16-bit samples (44100*2 bytes)
 	slices := []uint32{}
 	slicesEnd := []uint32{}
 	sliceNum := uint16(beats * 2)
@@ -161,7 +161,29 @@ func processSound0(fnameIn string, fnameOut string, channels int) (beats float64
 		log.Error(err)
 		return
 	}
-	_, _, err = run("sox", fnameIn, "-c", fmt.Sprint(channels), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
+	pieceFront, err := sox.Trim(fnameIn, 0, 0.5)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	seconds, err := sox.Length(fnameIn)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	pieceEnd, err := sox.Trim(fnameIn, seconds-0.5)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	pieceJoin, err := sox.Join(pieceEnd, fnameIn, pieceFront)
+	defer func() {
+		os.Remove(pieceFront)
+		os.Remove(pieceEnd)
+		os.Remove(pieceJoin)
+	}()
+
+	_, _, err = run("sox", pieceJoin, "-c", fmt.Sprint(channels), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
 	if err != nil {
 		log.Error(err)
 		return

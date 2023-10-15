@@ -65,10 +65,6 @@ void i2s_callback_func() {
                                  ->sample[sel_sample_cur]
                                  .snd[0]
                                  ->slice_num);
-        printf("[current: %d/%d, next: %d/%d]\n", phases0,
-               banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size,
-               phase_new,
-               banks[sel_bank_next]->sample[sel_sample_next].snd[0]->size);
         printf("next file: %s\n",
                banks[sel_bank_next]->sample[sel_sample_next].snd[0]->name);
         FRESULT fr;
@@ -122,84 +118,44 @@ void i2s_callback_func() {
         continue;
       }
 
-      if (!mem_use) {
-        if (f_lseek(&fil_current,
-                    WAV_HEADER_SIZE +
-                        (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
-          printf("problem seeking to phase (%d)\n", phases[head]);
-          for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-            int32_t value0 = 0;
-            samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-            samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
-          }
-          buffer->sample_count = buffer->max_sample_count;
-          give_audio_buffer(ap, buffer);
-          sync_using_sdcard = false;
-          sdcard_startup();
-          return;
+      if (f_lseek(&fil_current, WAV_HEADER + (phases[head] / PHASE_DIVISOR) *
+                                                 PHASE_DIVISOR)) {
+        printf("problem seeking to phase (%d)\n", phases[head]);
+        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+          int32_t value0 = 0;
+          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+          samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
         }
-
-        ++sd_calls;
-        if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
-          printf("ERROR READING!\n");
-          f_close(&fil_current);  // close and re-open trick
-          f_open(&fil_current,
-                 banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
-                 FA_READ);
-          f_lseek(
-              &fil_current,
-              WAV_HEADER_SIZE + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
-        }
-        if (fil_bytes_read < values_to_read) {
-          // printf("asked for %d bytes, read %d bytes\n", values_to_read,
-          //        fil_bytes_read);
-          if (f_lseek(&fil_current, WAV_HEADER_SIZE)) {
-            printf("problem seeking to 0\n");
-          }
-          int16_t values2[values_to_read - fil_bytes_read];  // max limit
-          ++sd_calls;
-          if (f_read(&fil_current, values2, values_to_read - fil_bytes_read,
-                     &fil_bytes_read2)) {
-            printf("ERROR READING!\n");
-            f_close(&fil_current);  // close and re-open trick
-            f_open(&fil_current,
-                   banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
-                   FA_READ);
-            f_lseek(&fil_current,
-                    WAV_HEADER_SIZE +
-                        (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
-          }
-          // printf("asked for %d bytes, read %d bytes\n",
-          //        values_to_read - fil_bytes_read, fil_bytes_read2);
-          for (uint16_t i = 0; i < fil_bytes_read2 / 2; i++) {
-            values[i + fil_bytes_read / 2] = values2[i];
-          }
-        }
-
-        if (!phase_forward) {
-          // reverse audio
-          for (int i = 0; i < values_len / 2; i++) {
-            int16_t temp = values[i];
-            values[i] = values[values_len - i - 1];
-            values[values_len - i - 1] = temp;
-          }
-        }
+        buffer->sample_count = buffer->max_sample_count;
+        give_audio_buffer(ap, buffer);
+        sync_using_sdcard = false;
+        sdcard_startup();
+        return;
       }
 
-      // // save to memory
-      // if (mem_use) {
-      //   for (int i = 0; i < values_len; i++) {
-      //     values[i] = mem_samples[head][mem_index[head]];
-      //     mem_index[head]++;
-      //   }
-      // } else {
-      //   for (int i = 0; i < values_len; i++) {
-      //     if (mem_index[head] < 44100) {
-      //       mem_samples[head][mem_index[head]] = values[i];
-      //       mem_index[head]++;
-      //     }
-      //   }
-      // }
+      ++sd_calls;
+      if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
+        printf("ERROR READING!\n");
+        f_close(&fil_current);  // close and re-open trick
+        f_open(&fil_current,
+               banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+               FA_READ);
+        f_lseek(&fil_current,
+                WAV_HEADER + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
+      }
+      if (fil_bytes_read < values_to_read) {
+        printf("asked for %d bytes, read %d bytes\n", values_to_read,
+               fil_bytes_read);
+      }
+
+      if (!phase_forward) {
+        // reverse audio
+        for (int i = 0; i < values_len / 2; i++) {
+          int16_t temp = values[i];
+          values[i] = values[values_len - i - 1];
+          values[values_len - i - 1] = temp;
+        }
+      }
 
 #ifndef INCLUDE_STEREO
       int16_t *newArray = array_resample_linear(values, samples_to_read,
