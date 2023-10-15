@@ -10,6 +10,7 @@ libs:
 	cd lib && python3 selectx.py > selectx.h
 	cd lib && python3 biquad.py > biquad.h
 	cd lib && python3 crossfade.py > crossfade.h
+	cd lib && python3 crossfade2.py > crossfade2.h
 
 
 pico-extras:

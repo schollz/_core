@@ -22,6 +22,7 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#include "crossfade2.h"
 #define WAV_HEADER 44144  // 22,050 16-bit samples + 44 bytes from header
 #define SAMPLE_RATE 44100
 #define SAMPLES_PER_BUFFER 441  // Samples / channel

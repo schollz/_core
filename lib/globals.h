@@ -9,7 +9,6 @@ bool fil_is_open;
 uint8_t cpu_utilization;
 uint8_t fil_buf[SAMPLES_PER_BUFFER * 4];
 int32_t phases[2];
-uint16_t phases_since_last[2];
 int32_t phases_old[2];
 int32_t phase_new;
 int16_t mem_samples[2][44100];
