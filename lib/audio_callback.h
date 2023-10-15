@@ -19,6 +19,9 @@ void i2s_callback_func2() {
   return;
 }
 
+uint8_t cpu_utilizations[64];
+uint8_t cpu_utilizations_i = 0;
+
 void i2s_callback_func() {
   uint8_t sd_calls = 0;
   clock_t startTime = time_us_64();
@@ -86,17 +89,8 @@ void i2s_callback_func() {
 
     // flag for new phase
     if (phase_change) {
-      phases_since_last[0] = 0;
-      phases_since_last[1] = 0;
-
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
-      phase_change = false;
-      // initiate transition envelopes
-      // jump point envelope grows
-      Envelope2_reset(envelope1, BLOCKS_PER_SECOND, 0, 1.0, 0.04);
-      // previous point degrades
-      Envelope2_reset(envelope2, BLOCKS_PER_SECOND, 1.0, 0, 0.04);
     }
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
@@ -113,8 +107,10 @@ void i2s_callback_func() {
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
+    // TODO go from head 1 to head 0, in case there is a sd card change, so a
+    // new sd file can be opened on head 0
     for (uint8_t head = 0; head < 2; head++) {
-      if (head == 1 && phases_since_last[0] >= CROSSFADE_MAX) {
+      if (head == 1 && !phase_change) {
         continue;
       }
 
@@ -166,19 +162,15 @@ void i2s_callback_func() {
         }
 
         uint vol = vol_main;
-        if (phases_since_last[head] < CROSSFADE_MAX) {
-          if (head == 0) {
-            vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
-          } else {
-            vol = crossfade_vol(vol_main, phases_since_last[head]);
-            // if (phases_since_last[head] % CROSSFADE_UPDATE_SAMPLES == 0) {
-            //   printf("head1 vol: %d\n", vol);
-            // }
-          }
-          phases_since_last[head]++;
-        }
 
         newArray[i] = transfer_fn(newArray[i]);
+        if (phase_change) {
+          if (head == 0) {
+            newArray[i] = (newArray[i] * (128 - crossfade2_raw[i]) / 128);
+          } else {
+            newArray[i] = (newArray[i] * crossfade2_raw[i] / 128);
+          }
+        }
         int32_t value0 = (vol * newArray[i]) << 8u;
 #ifdef INCLUDE_FILTER
         IIR_filter(myFilter0, &value0);
@@ -212,21 +204,27 @@ void i2s_callback_func() {
         }
 
         uint vol = vol_main;
-        if (phases_since_last[head] < CROSSFADE_MAX) {
-          if (head == 0) {
-            vol = vol_main - crossfade_vol(vol_main, phases_since_last[head]);
-          } else {
-            vol = crossfade_vol(vol_main, phases_since_last[head]);
-          }
-          phases_since_last[head]++;
-        }
 
         newArrayL[i] = transfer_fn(newArrayL[i]);
+        if (phase_change) {
+          if (head == 0) {
+            newArrayL[i] = (newArrayL[i] * (128 - crossfade2_raw[i]) / 128);
+          } else {
+            newArrayL[i] = (newArrayL[i] * crossfade2_raw[i] / 128);
+          }
+        }
         int32_t value0 = (vol * newArrayL[i]) << 8u;
 #ifdef INCLUDE_FILTER
         IIR_filter(myFilter0, &value0);
 #endif
         newArrayR[i] = transfer_fn(newArrayR[i]);
+        if (phase_change) {
+          if (head == 0) {
+            newArrayR[i] = (newArrayR[i] * (128 - crossfade2_raw[i]) / 128);
+          } else {
+            newArrayR[i] = (newArrayR[i] * crossfade2_raw[i] / 128);
+          }
+        }
         int32_t value1 = (vol * newArrayR[i]) << 8u;
 #ifdef INCLUDE_FILTER
         IIR_filter(myFilter1, &value1);
@@ -264,11 +262,21 @@ void i2s_callback_func() {
     }
   }
   sync_using_sdcard = false;
+  phase_change = false;
 
   clock_t endTime = time_us_64();
-  cpu_utilization = 100 * (endTime - startTime) / (US_PER_BLOCK);
-  if (sd_calls > 2) {
-    printf("%d calls: cpu utilization: %d\n", sd_calls, cpu_utilization);
+  cpu_utilizations[cpu_utilizations_i] =
+      100 * (endTime - startTime) / (US_PER_BLOCK);
+  cpu_utilizations_i++;
+  if (cpu_utilizations_i == 64) {
+    uint16_t cpu_utilization = 0;
+    for (uint8_t i = 0; i < 64; i++) {
+      cpu_utilization = cpu_utilization + cpu_utilizations[i];
+    }
+    printf("average cpu utilization: %2.1f\n", sd_calls,
+           ((float)cpu_utilization) / 64.0);
+    cpu_utilizations_i = 0;
   }
+
   return;
 }
