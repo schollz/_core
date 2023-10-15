@@ -36,6 +36,7 @@ typedef struct SaveFile {
   uint8_t distortion_level;
   uint8_t distortion_wet;
   uint8_t saturate_wet;
+  uint8_t wavefold;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -49,6 +50,7 @@ SaveFile *SaveFile_New() {
   sf->distortion_level = 0;
   sf->distortion_wet = 0;
   sf->saturate_wet = 0;
+  sf->wavefold = 0;
   for (uint8_t i = 0; i < 128; i++) {
     sf->chain_sequence[i] = 0;
   }
