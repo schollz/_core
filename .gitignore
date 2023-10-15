@@ -20,6 +20,7 @@ lib/transfer_saturate.h
 crossfade.h
 bass.raw 
 bass.wav 
+lib/crossfade2.h
 convert
 lib/bass_raw.h
 dev/zeptoconverter/1.wav
