@@ -110,6 +110,7 @@ void i2s_callback_func() {
 
     // TODO go from head 1 to head 0, in case there is a sd card change, so a
     // new sd file can be opened on head 0
+    // phase_change = false;
     for (uint8_t head = 0; head < 2; head++) {
       if (head == 1 && !phase_change) {
         continue;
@@ -173,9 +174,9 @@ void i2s_callback_func() {
         uint vol = vol_main;
         if (phase_change) {
           if (head == 0) {
-            vol = (vol * (128 - crossfade2_raw[i]) / 128);
+            newArray[i] = crossfade3_in(newArray[i], i);
           } else {
-            vol = (vol * crossfade2_raw[i] / 128);
+            newArray[i] = crossfade3_out(newArray[i], i);
           }
         }
         int32_t value0 = (vol * newArray[i]) << 8u;
