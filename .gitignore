@@ -84,3 +84,6 @@ Module.symvers
 Mkfile.old
 dkms.conf
 lib/test/filestruct/test
+lib/test/filter/amen_0efedaab_beats8_bpm165.mono.wav
+lib/test/filter/out.wav
+lib/test/filter/resonant.cpp
