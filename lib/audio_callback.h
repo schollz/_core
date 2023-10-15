@@ -173,7 +173,9 @@ void i2s_callback_func() {
         }
         int32_t value0 = (vol * newArray[i]) << 8u;
 #ifdef INCLUDE_FILTER
-        IIR_filter(myFilter0, &value0);
+        if (filter_midi < 70) {
+          IIR_filter(myFilter0, &value0);
+        }
 #endif
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
@@ -215,7 +217,9 @@ void i2s_callback_func() {
         }
         int32_t value0 = (vol * newArrayL[i]) << 8u;
 #ifdef INCLUDE_FILTER
-        IIR_filter(myFilter0, &value0);
+        if (filter_midi < 70) {
+          IIR_filter(myFilter0, &value0);
+        }
 #endif
         newArrayR[i] = transfer_fn(newArrayR[i]);
         if (phase_change) {
@@ -227,7 +231,9 @@ void i2s_callback_func() {
         }
         int32_t value1 = (vol * newArrayR[i]) << 8u;
 #ifdef INCLUDE_FILTER
-        IIR_filter(myFilter1, &value1);
+        if (filter_midi < 70) {
+          IIR_filter(myFilter1, &value1);
+        }
 #endif
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L

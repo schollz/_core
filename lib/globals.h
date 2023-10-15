@@ -77,6 +77,8 @@ Bass *bass;
 
 IIR *myFilter0;
 IIR *myFilter1;
+uint8_t filter_midi = 72;
+
 bool sdcard_startup_is_starting = false;
 
 #ifdef INCLUDE_RGBLED

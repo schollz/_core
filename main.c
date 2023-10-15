@@ -125,7 +125,6 @@ void core1_main() {
 
   uint pressed2 = 0;
   uint8_t new_vol;
-  uint8_t filter_midi = 10;
   //   (
   // a=Array.fill(72,{ arg i;
   //   (i+60).midicps.round.asInteger
@@ -144,18 +143,19 @@ void core1_main() {
     // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
-    sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
+    if (key_on_buttons[KEY_SHIFT]) {
+      uint8_t filter_midi_new =
+          FilterExp_update(adcs[1], adc_read()) * 71 / 4096;
+      if (filter_midi != filter_midi_new) {
+        filter_midi = filter_midi_new;
+        printf("freqs_available[%d]: %d", filter_midi,
+               freqs_available[filter_midi]);
+        IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+      }
+    } else {
+      sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
+    }
 
-    // printf(" adc_read(): %d\n", adc_read() * 71 / 4096);
-    // uint8_t filter_midi_new = adc_read() * 71 / 4096;
-    // if (filter_midi != filter_midi_new) {
-    //   filter_midi = filter_midi_new;
-    //   printf("freqs_available[%d]: %d", filter_midi,
-    //          freqs_available[filter_midi]);
-    //   IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-    // }
-
-    // TODO add smoothing
     adc_select_input(2);
     LEDS_render(leds);
     new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
@@ -232,8 +232,8 @@ int main() {
   sdcard_startup();
 
 #ifdef INCLUDE_FILTER
-  myFilter0 = IIR_new(7000.0f, 5.0f, 1.0f, 44100.0f);
-  myFilter1 = IIR_new(7200.0f, 0.707f, 1.0f, 44100.0f);
+  myFilter0 = IIR_new(7000.0f, 3 * 0.707f, 1.0f, 44100.0f);
+  myFilter1 = IIR_new(7200.0f, 2.5 * 0.707f, 1.0f, 44100.0f);
 #endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);
