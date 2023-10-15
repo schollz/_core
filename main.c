@@ -107,6 +107,16 @@ uint16_t freqs_available[72] = {
     6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956, 10548, 11175,
     11840, 12544, 13290, 14080, 14917, 15804};
 
+#define ALPHA 15
+// Smoothed value
+int smoothed_x = 0;
+// Exponential smoothing function
+int exponential_smoothing_int(int x) {
+  smoothed_x = ALPHA * x + (128 - ALPHA) * smoothed_x;
+  smoothed_x = smoothed_x / 128;  // divide by 128
+  return smoothed_x;
+}
+
 void core1_main() {
   printf("core1 running!\n");
   // flash bad signs
@@ -132,18 +142,17 @@ void core1_main() {
   // });
   // a.postln;
   // )
+
+  int adc0 = 0;
+
   while (1) {
     adc_select_input(0);
-    sleep_ms(1);
-    // sf->distortion_level = 3;
-    // sf->distortion_wet = adc_read() * 100 / 4096;
-
-    sf->bpm_tempo = adc_read() * 10 / 4096 * 25 + 50;
-    // printf(" adc_read(): %d\n", adc_read());
-
+    adc0 = exponential_smoothing_int(adc_read());
+    sf->bpm_tempo = adc0 * 50 / 4096 * 5 + 50;
+    button_handler(bm);
     adc_select_input(1);
     sf->saturate_wet = adc_read() * 100 / 4096;
-    // sleep_ms(100);
+
     // printf(" adc_read(): %d\n", adc_read() * 71 / 4096);
     // uint8_t filter_midi_new = adc_read() * 71 / 4096;
     // if (filter_midi != filter_midi_new) {
@@ -153,133 +162,14 @@ void core1_main() {
     //   IIR_set_fc(myFilter0, freqs_available[filter_midi]);
     // }
 
+    // TODO add smoothing
     adc_select_input(2);
-    sleep_ms(1);
+    LEDS_render(leds);
     new_vol = (adc_read() * (MAX_VOLUME / 5) / 4096) * 5;
     if (new_vol != sf->vol) {
       sf->vol = new_vol;
       printf("sf-vol: %d\n", sf->vol);
     }
-
-    button_handler(bm);
-    // // keep track of button states
-    // bool button_state[20];
-    // for (uint8_t i = 0; i < 20; i++) {
-    //   button_state[i] = false;
-    // }
-    // if (bm->changed) {
-    //   LEDS_clearAll(leds, LED_PRESS_FACE);
-    //   uint8_t keys_shifted[bm->num_pressed];
-    //   uint8_t keys_shifted_num = 0;
-    //   bool keys_shift_found = false;
-    //   for (uint8_t i = 0; i < bm->num_pressed; i++) {
-    //     // printf("%d ", bm->on[i]);
-    //     LEDS_set(leds, LED_PRESS_FACE, bm->on[i], 2);
-    //     if (keys_shift_found) {
-    //       keys_shifted[keys_shifted_num] = bm->on[i];
-    //       keys_shifted_num++;
-    //     }
-    //     if (bm->on[i] == KEY_SHIFT) {
-    //       keys_shift_found = true;
-    //     }
-    //   }
-    //   if (keys_shifted_num > 0) {
-    //     printf("found shift!\n");
-    //     for (uint8_t i = 0; i < keys_shifted_num; i++) {
-    //       printf("shifted: %d\n", keys_shifted[i]);
-    //     }
-    //     printf("\nok\n");
-    //   } else {
-    //     // TODO: cancel all properties that need shift
-    //   }
-
-    //   printf("\n");
-    //   if (bm->num_pressed > 1 && bm->on[bm->num_pressed - 2] == KEY_SHIFT &&
-    //       bm->on[bm->num_pressed - 1] == 19) {
-    //     printf("STRETCH!!!\n");
-
-    //   } else if (bm->changed_on) {
-    //     if (bm->num_pressed == 2 && bm->on[0] == KEY_A && bm->on[1] >= 4) {
-    //       // switch sample to the one in the current bank
-    //       sel_bank_next = sel_bank_select;
-    //       sel_sample_next =
-    //           ((bm->on[1] - 4) % (file_list[sel_bank_next].num / 2))
-    //           * 2;
-    //       printf("sel_bank_next = %d\n", sel_bank_next);
-    //       printf("sel_sample_next = %d\n", sel_sample_next);
-    //       fil_current_change = true;
-    //     } else if (bm->num_pressed == 2 && bm->on[0] == KEY_B &&
-    //                bm->on[1] >= 4) {
-    //       // switch bank if the bank has more than one zero files
-    //       if (file_list[bm->on[1] - 4].num > 0) {
-    //         sel_bank_select = bm->on[1] - 4;
-    //       }
-    //     } else {
-    //       pressed2 = 0;
-    //       if (bm->num_pressed == 1 || bm->num_pressed == 2) {
-    //         uint8_t key = bm->on[bm->num_pressed - 1];
-    //         // if (key == KEY_SHIFT) {
-    //         //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-    //         //                   Envelope2_update(envelope_pitch), 1.0, 1);
-    //         //   debounce_quantize = 2;
-    //         // } else if (key == 1) {
-    //         //   debounce_quantize = 2;
-    //         //   Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-    //         //                   Envelope2_update(envelope_pitch), 0.5, 1);
-    //         // } else if (key == 2) {
-    //         //   phase_forward = !phase_forward;
-    //         // }
-    //         if (key >= 4) {
-    //           beat_current = (beat_current / 16) * 16 + (key - 4);
-    //           LEDS_clearAll(leds, LED_STEP_FACE);
-    //           LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
-
-    //           phase_new = (file_list[sel_bank_cur].size[sel_sample_cur])
-    //           *
-    //                       bm->on[bm->num_pressed - 1] / 16;
-    //           phase_new = (phase_new / 4) * 4;
-    //           phase_change = true;
-    //           debounce_quantize = 2;
-    //         }
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   if (bm->num_pressed == 2 && pressed2 < 10) {
-    //     if (bm->on[0] > 3 && bm->on[1] > 3) {
-    //       pressed2++;
-    //       if (pressed2 == 10) {
-    //         printf("debounce 2press\n");
-    //         debounce_quantize = 0;
-    //         retrig_first = true;
-    //         retrig_beat_num = random_integer_in_range(8, 24);
-    //         retrig_timer_reset = 96 * random_integer_in_range(1, 4) /
-    //                              random_integer_in_range(2, 12);
-    //         float total_time =
-    //             (float)(retrig_beat_num * retrig_timer_reset * 60) /
-    //             (float)(96 * sf->bpm_tempo);
-    //         if (total_time > 2.0f) {
-    //           total_time = total_time / 2;
-    //           retrig_timer_reset = retrig_timer_reset / 2;
-    //         }
-    //         if (total_time > 2.0f) {
-    //           total_time = total_time / 2;
-    //           retrig_beat_num = retrig_beat_num / 2;
-    //           if (retrig_beat_num == 0) {
-    //             retrig_beat_num = 1;
-    //           }
-    //         }
-    //         retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-    //         printf(
-    //             "retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-    //             retrig_beat_num, retrig_timer_reset, total_time);
-    //         retrig_ready = true;
-    //       }
-    //     }
-    //   }
-    // }
-    LEDS_render(leds);
-    sleep_ms(1);
   }
 }
 
