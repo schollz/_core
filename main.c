@@ -154,6 +154,7 @@ void core1_main() {
       }
     } else {
       sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
+      // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
     }
 
     adc_select_input(2);
