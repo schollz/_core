@@ -45,6 +45,7 @@
 #include "envelope2.h"
 #include "envelopegate.h"
 #include "file_list.h"
+#include "filterexp.h"
 #include "iir.h"
 #include "leds.h"
 #include "noise.h"

@@ -107,16 +107,6 @@ uint16_t freqs_available[72] = {
     6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956, 10548, 11175,
     11840, 12544, 13290, 14080, 14917, 15804};
 
-#define ALPHA 15
-// Smoothed value
-int smoothed_x = 0;
-// Exponential smoothing function
-int exponential_smoothing_int(int x) {
-  smoothed_x = ALPHA * x + (128 - ALPHA) * smoothed_x;
-  smoothed_x = smoothed_x / 128;  // divide by 128
-  return smoothed_x;
-}
-
 void core1_main() {
   printf("core1 running!\n");
   // flash bad signs
@@ -143,15 +133,18 @@ void core1_main() {
   // a.postln;
   // )
 
-  int adc0 = 0;
+  FilterExp *adcs[3];
+  for (uint8_t i = 0; i < 3; i++) {
+    adcs[i] = FilterExp_create(10);
+  }
 
   while (1) {
     adc_select_input(0);
-    adc0 = exponential_smoothing_int(adc_read());
-    sf->bpm_tempo = adc0 * 50 / 4096 * 5 + 50;
+    sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 + 50;
+    // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
-    sf->saturate_wet = adc_read() * 100 / 4096;
+    sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
 
     // printf(" adc_read(): %d\n", adc_read() * 71 / 4096);
     // uint8_t filter_midi_new = adc_read() * 71 / 4096;
@@ -165,7 +158,7 @@ void core1_main() {
     // TODO add smoothing
     adc_select_input(2);
     LEDS_render(leds);
-    new_vol = (adc_read() * (MAX_VOLUME / 5) / 4096) * 5;
+    new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
     if (new_vol != sf->vol) {
       sf->vol = new_vol;
       printf("sf-vol: %d\n", sf->vol);
