@@ -22,8 +22,6 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-#define WAV_HEADER_SIZE 44
-
 typedef struct SampleInfo {
   char *name;
   uint32_t size;
