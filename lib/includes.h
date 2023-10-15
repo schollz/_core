@@ -51,6 +51,7 @@
 #include "noise.h"
 #include "pca9552.h"
 #include "random.h"
+#include "resonantfilter.h"
 #include "savefile.h"
 #include "sdcard.h"
 #include "selectx.h"
