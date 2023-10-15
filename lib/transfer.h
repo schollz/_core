@@ -10,7 +10,14 @@ int16_t transfer_fn(int16_t v) {
     v = selectx(sf->distortion_wet, v,
                 transfer_distortion(v * sf->distortion_level));
   }
-  // transfer_distortion(v * (1 << sf->distortion_level)));
+  if (sf->wavefold > 0 && v != 0) {
+    int32_t x2 = v * (sf->wavefold + 100) / 100;
+    if (x2 > 32767) {
+      v = 32767 - (x2 - 32767);
+    } else if (x2 < -32767) {
+      v = -32767 - (x2 + 32767);
+    }
+  }
   return v;
 #endif
 }
