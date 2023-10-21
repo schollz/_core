@@ -109,7 +109,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 }
 
 uint16_t freqs_available[74] = {
-    150,   200,   262,   277,   294,   311,   330,   349,  370,  392,  415,
+    200,   250,   262,   277,   294,   311,   330,   349,  370,  392,  415,
     440,   466,   494,   523,   554,   587,   622,   659,  698,  740,  784,
     831,   880,   932,   988,   1047,  1109,  1175,  1245, 1319, 1397, 1480,
     1568,  1661,  1760,  1865,  1976,  2093,  2217,  2349, 2489, 2637, 2794,
@@ -155,15 +155,29 @@ void core1_main() {
     adc_select_input(1);
     if (key_on_buttons[KEY_SHIFT]) {
     } else {
-      uint8_t filter_midi_new =
-          FilterExp_update(adcs[1], adc_read()) * 73 / 4096;
-      if (filter_midi != filter_midi_new) {
-        filter_midi = filter_midi_new;
-        printf("freqs_available[%d]: %d", filter_midi,
-               freqs_available[filter_midi]);
-        // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-        ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
-                             44100, 1 * 0.707, 0, FILTER_LOWPASS);
+      uint16_t val = FilterExp_update(adcs[1], adc_read());
+      if (val < 1800) {
+        uint8_t filter_midi_new = val * 73 / 1800;
+        if (filter_midi != filter_midi_new) {
+          filter_midi = filter_midi_new;
+          printf("freqs_available[%d]: %d", filter_midi,
+                 freqs_available[filter_midi]);
+          // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+          ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
+                               44100, 0.5 * 0.707, 0, FILTER_LOWPASS);
+        }
+      } else if (val > 2296) {
+        uint8_t filter_midi_new = ((val - 2296) * 73 / 1800);
+        if (filter_midi != filter_midi_new) {
+          filter_midi = filter_midi_new;
+          printf("freqs_available[%d]: %d", filter_midi,
+                 freqs_available[filter_midi]);
+          // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+          ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
+                               44100, 0.5 * 0.707, 0, FILTER_HIGHPASS);
+        }
+      } else {
+        filter_midi = 73;
       }
       // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
       // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
