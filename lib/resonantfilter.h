@@ -76,12 +76,25 @@ void ResonantFilter_reset(ResonantFilter* rf, float fc, float fs, float q,
   float A = pow(10, db / 40);
   float alpha = sinW / (2 * q);
   float beta = pow(A, 0.5) / q;
-  float b1 = 1 - cosW;
-  float b0 = b1 / 2;
-  float b2 = b0;
-  float a0 = 1 + alpha;
-  float a1 = -2 * cosW;
-  float a2 = 1 - alpha;
+  float b0, b1, b2, a0, a1, a2;
+
+  if (filter_type == FILTER_HIGHPASS) {
+    b0 = (1 + cosW) / 2;
+    b1 = -(1 + cosW);
+    b2 = b0;
+    a0 = 1 + alpha;
+    a1 = -2 * cosW;
+    a2 = 1 - alpha;
+  } else {
+    // Low pass
+    b1 = 1 - cosW;
+    b0 = b1 / 2;
+    b2 = b0;
+    a0 = 1 + alpha;
+    a1 = -2 * cosW;
+    a2 = 1 - alpha;
+  }
+
   b0 = b0 / a0;
   b1 = b1 / a0;
   b2 = b2 / a0;
