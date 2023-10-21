@@ -48,23 +48,23 @@ void i2s_callback_func() {
   // mutex
   sync_using_sdcard = true;
 
-  bool do_open_file = false;
   if (fil_is_open) {
+    bool do_open_file = false;
     // check if the file is the right one
     if (fil_current_change) {
       fil_current_change = false;
       if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
         int32_t phases0 = phases[0];
         phase_change = true;
-        phase_new =
-            phases[0] *
-            banks[sel_bank_next]->sample[sel_sample_next].snd[0]->slice_num /
-            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
-        // phase_new = (uint32)round(
-        //     (float)phases[0] /
-        //     (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size *
-        //     (float)banks[sel_bank_next]->sample[sel_sample_next].snd[0]->size);
-        // phase_new = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
+        // phase_new =
+        //     phases[0] *
+        //     banks[sel_bank_next]->sample[sel_sample_next].snd[0]->slice_num /
+        //     banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+        phase_new = round(
+            (float)phases[0] /
+            (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size *
+            (float)banks[sel_bank_next]->sample[sel_sample_next].snd[0]->size);
+        phase_new = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
         beat_current = round((float)beat_current *
                              (float)banks[sel_bank_next]
                                  ->sample[sel_sample_next]
@@ -106,14 +106,14 @@ void i2s_callback_func() {
     // TODO go from head 1 to head 0, in case there is a sd card change, so a
     // new sd file can be opened on head 0
     // phase_change = false;
-    for (uint8_t head = 1; head >= 0; head--) {
+    for (int8_t head = 1; head >= 0; head--) {
       if (head == 1 && !phase_change) {
         continue;
       }
       if (head == 0 && do_open_file) {
         do_open_file = false;
         FRESULT fr;
-        fr = f_close(&fil_current);  // close and re-open trick
+        fr = f_close(&fil_current);
         if (fr != FR_OK) {
           debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
         }
