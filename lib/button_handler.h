@@ -147,9 +147,10 @@ void button_key_off_any(uint8_t key) {
   if (key > 3) {
     // 1-16 off
     // TODO: make this an option?
-    // if (key_total_pressed == 0) {
-    //   key_do_jump(key - 4);
-    // }
+    if (key_total_pressed == 0) {
+      dub_step_break = -1;
+      //      key_do_jump(key - 4);
+    }
     if (mode_jump_mash == MODE_MASH) {
       // 1-16 off (mash mode)
       // remove momentary fx
@@ -168,6 +169,9 @@ void button_key_on_single(uint8_t key) {
       // 1-16 (jump mode)
       // do jump
       key_do_jump(key - 4);
+      dub_step_break = 0;
+      dub_step_divider = 0;
+      dub_step_beat = beat_current;
     } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx

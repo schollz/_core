@@ -24,6 +24,8 @@
 
 #include "lib/includes.h"
 
+static uint8_t dub_step_divides[] = {1, 2, 4, 6, 8, 12, 16};
+static uint8_t dub_step_steps[] = {4, 8, 16, 8, 16};
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -65,6 +67,22 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         retrig_first = false;
       }
     }
+  } else if (dub_step_break > -1) {
+    if (bpm_timer_counter % (192 / dub_step_divides[dub_step_divider]) == 0) {
+      dub_step_break++;
+      if (dub_step_break == dub_step_steps[dub_step_divider]) {
+        dub_step_divider++;
+        dub_step_break = 0;
+        if (dub_step_divider == 5) {
+          dub_step_break = -1;
+        }
+      }
+      beat_current = dub_step_beat;
+      // debounce a little bit before going into the mode
+      if (dub_step_divider > 0 || dub_step_break > 1) {
+        do_update_phase_from_beat_current();
+      }
+    }
   } else {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
@@ -103,7 +121,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
     }
   }
-  Charlieplex_toggle(cp, beat_current % 16);
+  // Charlieplex_toggle(cp, beat_current % 16);
   // printf("Repeat at %lld\n", time_us_64());
   return true;
 }
@@ -153,35 +171,38 @@ void core1_main() {
     // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
-    if (key_on_buttons[KEY_SHIFT]) {
-    } else {
-      uint16_t val = FilterExp_update(adcs[1], adc_read());
-      if (val < 1800) {
-        uint8_t filter_midi_new = val * 73 / 1800;
-        if (filter_midi != filter_midi_new) {
-          filter_midi = filter_midi_new;
-          printf("freqs_available[%d]: %d", filter_midi,
-                 freqs_available[filter_midi]);
-          // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-          ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
-                               44100, 0.5 * 0.707, 0, FILTER_LOWPASS);
-        }
-      } else if (val > 2296) {
-        uint8_t filter_midi_new = ((val - 2296) * 73 / 1800);
-        if (filter_midi != filter_midi_new) {
-          filter_midi = filter_midi_new;
-          printf("freqs_available[%d]: %d", filter_midi,
-                 freqs_available[filter_midi]);
-          // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-          ResonantFilter_reset(resonantfilter[0], freqs_available[filter_midi],
-                               44100, 0.5 * 0.707, 0, FILTER_HIGHPASS);
-        }
-      } else {
-        filter_midi = 73;
-      }
-      // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 / 4096;
-      // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
-    }
+    // if (key_on_buttons[KEY_SHIFT]) {
+    // } else {
+    //   uint16_t val = FilterExp_update(adcs[1], adc_read());
+    //   if (val < 1800) {
+    //     uint8_t filter_midi_new = val * 73 / 1800;
+    //     if (filter_midi != filter_midi_new) {
+    //       filter_midi = filter_midi_new;
+    //       printf("freqs_available[%d]: %d", filter_midi,
+    //              freqs_available[filter_midi]);
+    //       // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+    //       ResonantFilter_reset(resonantfilter[0],
+    //       freqs_available[filter_midi],
+    //                            44100, 0.5 * 0.707, 0, FILTER_LOWPASS);
+    //     }
+    //   } else if (val > 2296) {
+    //     uint8_t filter_midi_new = ((val - 2296) * 73 / 1800);
+    //     if (filter_midi != filter_midi_new) {
+    //       filter_midi = filter_midi_new;
+    //       printf("freqs_available[%d]: %d", filter_midi,
+    //              freqs_available[filter_midi]);
+    //       // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
+    //       ResonantFilter_reset(resonantfilter[0],
+    //       freqs_available[filter_midi],
+    //                            44100, 0.5 * 0.707, 0, FILTER_HIGHPASS);
+    //     }
+    //   } else {
+    //     filter_midi = 73;
+    //   }
+    //   // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 /
+    //   4096;
+    //   // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
+    // }
 
     adc_select_input(2);
     LEDS_render(leds);
@@ -249,8 +270,6 @@ int main() {
 
   // initialize random library
   random_initialize();
-
-  cp = Charlieplex_create();
 
   leds = LEDS_create();
   // show X in case the files aren't loaded

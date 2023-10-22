@@ -71,6 +71,10 @@ SaveFile *sf;
 Charlieplex *cp;
 LEDS *leds;
 
+int16_t dub_step_break = -1;
+uint16_t dub_step_divider = 0;
+uint8_t dub_step_beat = 0;
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
