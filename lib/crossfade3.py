@@ -124,17 +124,17 @@ int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
 """)
 
     # Plot the sine wave
-    # plt.plot(x, y, label='Sine')
-    # plt.plot(x, y2, label='Exp')
-    # plt.plot(x, y3, label='Log')
-    # plt.plot(x, 1-y, label='Sine')
-    # plt.plot(x, 1-y2, label='Exp')
-    # plt.plot(x, 1-y3, label='Log')
-    # plt.legend()
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-    # plt.title('Curves')
-    # plt.show()
+    plt.plot(x, y, label='Sine')
+    plt.plot(x, y2, label='Exp')
+    plt.plot(x, y3, label='Log')
+    plt.plot(x, 1-y, label='Sine')
+    plt.plot(x, 1-y2, label='Exp')
+    plt.plot(x, 1-y3, label='Log')
+    plt.legend()
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Curves')
+    plt.show()
 
 
 
