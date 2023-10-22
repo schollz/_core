@@ -41,11 +41,11 @@
 #include "biquad.h"
 #include "buttonmatrix3.h"
 #include "charlieplex.h"
-#include "crossfade3.h"
 #include "envelope2.h"
 #include "envelopegate.h"
 #include "file_list.h"
 #include "filterexp.h"
+#include "fixedpoint.h"
 #include "iir.h"
 #include "leds.h"
 #include "noise.h"
@@ -57,6 +57,7 @@
 #include "selectx.h"
 #include "wav.h"
 //
+#include "crossfade3.h"
 #include "transfer_distortion.h"
 #include "transfer_saturate.h"
 //

@@ -183,9 +183,9 @@ void i2s_callback_func() {
         uint vol = vol_main;
         if (phase_change) {
           if (head == 0) {
-            newArray[i] = crossfade3_in(newArray[i], i);
+            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
           } else {
-            newArray[i] = crossfade3_out(newArray[i], i);
+            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
           }
         }
         int32_t value0 = (vol * newArray[i]) << 8u;
