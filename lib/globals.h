@@ -75,6 +75,11 @@ int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
 
+bool gate_active = true;
+bool gate_is_applied = false;
+uint32_t gate_counter = 0;
+uint32_t gate_threshold = 10;
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
@@ -102,6 +107,7 @@ void do_update_phase_from_beat_current() {
     phase_new =
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_stop[slice];
   }
+  gate_counter = 0;
   phase_change = true;
 }
 #endif

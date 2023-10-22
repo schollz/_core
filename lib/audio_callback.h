@@ -31,7 +31,8 @@ void i2s_callback_func() {
   }
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
-  if (sync_using_sdcard || !fil_is_open) {
+  if (sync_using_sdcard || !fil_is_open ||
+      (gate_active && gate_counter >= gate_threshold)) {
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
       samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -39,7 +40,7 @@ void i2s_callback_func() {
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
-    if (fil_is_open) {
+    if (!gate_active && fil_is_open) {
       printf("[i2s_callback_func] sync_using_sdcard being used\n");
     }
     return;
@@ -49,6 +50,19 @@ void i2s_callback_func() {
   sync_using_sdcard = true;
 
   if (fil_is_open) {
+    // gating
+    bool do_gate_up = false;
+    bool do_gate_down = false;
+    if (gate_is_applied && gate_counter == 0) {
+      gate_is_applied = false;
+      do_gate_up = true;  // allow the sound to come through
+    } else if (gate_active) {
+      gate_counter++;
+      if (!gate_is_applied && gate_counter >= gate_threshold) {
+        do_gate_down = true;  // mute the sound
+      }
+    }
+
     bool do_open_file = false;
     // check if the file is the right one
     if (fil_current_change) {
@@ -188,6 +202,15 @@ void i2s_callback_func() {
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
           }
         }
+
+        if (do_gate_down) {
+          // mute the audio
+          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_LOG);
+        } else if (do_gate_up) {
+          // bring back the audio
+          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
+        }
+
         int32_t value0 = (vol * newArray[i]) << 8u;
         samples[i * 2 + 0] =
             samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L

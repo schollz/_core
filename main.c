@@ -25,7 +25,7 @@
 #include "lib/includes.h"
 
 static uint8_t dub_step_divides[] = {1, 2, 4, 6, 8, 12, 16};
-static uint8_t dub_step_steps[] = {4, 8, 16, 8, 16};
+static uint8_t dub_step_steps[] = {2, 8, 12, 16, 16};
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -79,9 +79,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
       beat_current = dub_step_beat;
       // debounce a little bit before going into the mode
-      if (dub_step_divider > 0 || dub_step_break > 1) {
-        do_update_phase_from_beat_current();
-      }
+      do_update_phase_from_beat_current();
+      // if (dub_step_divider > 0 || dub_step_break > 1) {
+      //   do_update_phase_from_beat_current();
+      // }
     }
   } else {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
@@ -171,6 +172,9 @@ void core1_main() {
     // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
+    uint16_t val = FilterExp_update(adcs[1], adc_read());
+    gate_threshold =
+        val * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 4096 * 2;
     // if (key_on_buttons[KEY_SHIFT]) {
     // } else {
     //   uint16_t val = FilterExp_update(adcs[1], adc_read());
@@ -201,7 +205,8 @@ void core1_main() {
     //   }
     //   // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 /
     //   4096;
-    //   // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 / 4096;
+    //   // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 /
+    //   4096;
     // }
 
     adc_select_input(2);
