@@ -4,7 +4,13 @@ dobuild: pico-extras lib/biquad.h build
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
 
-libs:
+
+crossfade3:
+	# set block size to 441
+	cd lib && python3 crossfade3.py 441 > crossfade3.h
+	clang-format -i --style=google lib/crossfade3.h 
+ 
+libs: crossfade3
 	cd lib && python3 transfer_saturate.py > transfer_saturate.h
 	cd lib && python3 transfer_distortion.py > transfer_distortion.h
 	cd lib && python3 selectx.py > selectx.h
