@@ -79,9 +79,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     BTN_COL_START=6
     # includes for different versions
     # INCLUDE_RGBLED=1
-    INCLUDE_FILTER=1
-    # INCLUDE_STEREO=1
-    INCLUDE_TRANSFER=1 
+    # INCLUDE_FILTER=1
+    INCLUDE_STEREO=1
+    # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )
 
