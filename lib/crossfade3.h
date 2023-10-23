@@ -1,3 +1,5 @@
+#include "fixedpoint.h"
+
 #ifndef CROSSFADE3_LIB
 #define CROSSFADE3_SINE 0
 #define CROSSFADE3_EXP 1
