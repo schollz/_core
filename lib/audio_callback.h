@@ -222,16 +222,16 @@ void i2s_callback_func() {
         }
 
         if (first_loop) {
-          samples[i * 2 + 0] = vol * newArray[i];
-          samples[i * 2 + 0] = samples[i * 2 + 0] << 8u;
-          samples[i * 2 + 0] = samples[i * 2 + 0] + (samples[i * 2 + 0] >> 16u);
+          samples[i * 2 + 0] = newArray[i];
           if (head == 0) {
+            samples[i * 2 + 0] = (vol * samples[i * 2 + 0]) << 8u;
+            samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
             samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
           }
         } else {
-          int32_t value0 = (vol * newArray[i]) << 8u;
-          value0 = value0 + (value0 >> 16u);
-          samples[i * 2 + 0] += value0;
+          samples[i * 2 + 0] += newArray[i];
+          samples[i * 2 + 0] = (vol * samples[i * 2 + 0]) << 8u;
+          samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
           samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
         }
         // int32_t value0 = (vol * newArray[i]) << 8u;
@@ -327,6 +327,7 @@ void i2s_callback_func() {
            ((float)cpu_utilization) / 64.0);
     cpu_utilizations_i = 0;
     printf("buffer->max_sample_count: %d\n", buffer->max_sample_count);
+    printf("buffer->buffer->bytes: %d\n", buffer->buffer->bytes);
   }
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
     printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
