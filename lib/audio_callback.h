@@ -326,6 +326,7 @@ void i2s_callback_func() {
     printf("average cpu utilization: %2.1f\n", sd_calls,
            ((float)cpu_utilization) / 64.0);
     cpu_utilizations_i = 0;
+    printf("buffer->max_sample_count: %d\n", buffer->max_sample_count);
   }
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
     printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
