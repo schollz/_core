@@ -2,6 +2,23 @@ uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
 
+bool detect_dropout(int32_t *samples) {
+  uint8_t running_count = 0;
+  for (uint8_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
+    if (samples[i] == 0) {
+      running_count++;
+      if (running_count == 10) {
+        printf("[detect_dropout] found dropout starting at sample %d\n",
+               i - 10);
+        return true;
+      }
+    } else {
+      running_count = 0;
+    }
+  }
+  return false;
+}
+
 void i2s_callback_func() {
   uint8_t sd_calls = 0;
   clock_t startTime = time_us_64();
@@ -297,6 +314,7 @@ void i2s_callback_func() {
   }
 
   buffer->sample_count = buffer->max_sample_count;
+  detect_dropout(samples);
   give_audio_buffer(ap, buffer);
 
   if (fil_is_open) {
