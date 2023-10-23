@@ -124,6 +124,7 @@ void i2s_callback_func() {
       if (head == 1 && !phase_change) {
         continue;
       }
+
       if (head == 0 && do_open_file) {
         do_open_file = false;
         FRESULT fr;
@@ -165,8 +166,8 @@ void i2s_callback_func() {
                 WAV_HEADER + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
       if (fil_bytes_read < values_to_read) {
-        printf("asked for %d bytes, read %d bytes\n", values_to_read,
-               fil_bytes_read);
+        printf("%d: asked for %d bytes, read %d bytes\n", phases[head],
+               values_to_read, fil_bytes_read);
       }
 
       if (!phase_forward) {
@@ -179,8 +180,8 @@ void i2s_callback_func() {
       }
 
 #ifndef INCLUDE_STEREO
-      int16_t *newArray = array_resample_linear(values, samples_to_read,
-                                                buffer->max_sample_count);
+      int16_t *newArray = array_resample_quadratic_fp(values, samples_to_read,
+                                                      buffer->max_sample_count);
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         newArray[i] = transfer_fn(newArray[i]);
 #ifdef INCLUDE_FILTER
@@ -227,9 +228,10 @@ void i2s_callback_func() {
             valuesC[i / 2] = values[i];
           }
         }
-        int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
-                                                  buffer->max_sample_count);
-        // int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
+        int16_t *newArray = array_resample_quadratic_fp(
+            valuesC, samples_to_read, buffer->max_sample_count);
+        // int16_t *newArrayR = array_resample_quadratic_fp(valuesR,
+        // samples_to_read,
         //                                            buffer->max_sample_count);
 
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -293,13 +295,16 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
   if (cpu_utilizations_i == 64) {
-    uint16_t cpu_utilization = 0;
-    for (uint8_t i = 0; i < 64; i++) {
-      cpu_utilization = cpu_utilization + cpu_utilizations[i];
-    }
-    printf("average cpu utilization: %2.1f\n", sd_calls,
-           ((float)cpu_utilization) / 64.0);
+    // uint16_t cpu_utilization = 0;
+    // for (uint8_t i = 0; i < 64; i++) {
+    //   cpu_utilization = cpu_utilization + cpu_utilizations[i];
+    // }
+    // printf("average cpu utilization: %2.1f\n", sd_calls,
+    //        ((float)cpu_utilization) / 64.0);
     cpu_utilizations_i = 0;
+  }
+  if (cpu_utilizations[cpu_utilizations_i] > 70) {
+    printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
   }
 
   return;

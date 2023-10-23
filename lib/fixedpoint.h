@@ -22,8 +22,14 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef FIXEDPOINT_LIB
+#define FIXEDPOINT_LIB 1
 /* Defines the number of bits used in the Q16.16 fixed-point format. */
 #define Q16_16_Q_BITS 16
+
+// some commons
+#define Q16_16_2 131072
+#define Q16_16_0_5 32768
 
 /* Defines the number of fractional bits used in the Q16.16 fixed-point format.
  */
@@ -63,3 +69,5 @@ int32_t q16_16_multiply(int32_t a, int32_t b) {
      number of Q-bits to obtain the product. */
   return (int32_t)(((int64_t)a * b) >> Q16_16_Q_BITS);
 }
+
+#endif
