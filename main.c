@@ -24,8 +24,9 @@
 
 #include "lib/includes.h"
 
-static uint8_t dub_step_divides[] = {1, 2, 4, 6, 8, 12, 16};
-static uint8_t dub_step_steps[] = {2, 8, 12, 16, 16};
+static uint8_t dub_step_numerator[] = {1, 2, 1, 1, 1, 1, 1, 1};
+static uint8_t dub_step_denominator[] = {1, 3, 2, 4, 6, 8, 12, 16};
+static uint8_t dub_step_steps[] = {2, 6, 8, 12, 16, 16};
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -68,7 +69,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
     }
   } else if (dub_step_break > -1) {
-    if (bpm_timer_counter % (192 / dub_step_divides[dub_step_divider]) == 0) {
+    if (bpm_timer_counter % (192 * dub_step_numerator[dub_step_divider] /
+                             dub_step_denominator[dub_step_divider]) ==
+        0) {
       dub_step_break++;
       if (dub_step_break == dub_step_steps[dub_step_divider]) {
         dub_step_divider++;
