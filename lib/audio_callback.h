@@ -190,7 +190,7 @@ void i2s_callback_func() {
               ResonantFilter_update(resonantfilter[head], newArray[i]);
         }
 #endif
-        if (head == 0) {
+        if (head == 1 || (head == 0 && !phase_change)) {
           samples[i * 2 + 0] = 0;
         }
 
@@ -220,63 +220,46 @@ void i2s_callback_func() {
 #endif
 #ifdef INCLUDE_STEREO
       // stereo
-      int16_t valuesL[samples_to_read];  // max limit
-      int16_t valuesR[samples_to_read];  // max limit
-      for (uint16_t i = 0; i < samples_to_read * WAV_CHANNELS; i++) {
-        if (i % 2 == 0) {
-          valuesL[i / 2] = values[i];
-        } else {
-          valuesR[i / 2] = values[i];
-        }
-      }
-      int16_t *newArrayL = array_resample_linear(valuesL, samples_to_read,
-                                                 buffer->max_sample_count);
-      int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
-                                                 buffer->max_sample_count);
-
-      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-        if (head == 0) {
-          samples[i * 2 + 0] = 0;
-          samples[i * 2 + 1] = 0;
-        }
-
-        uint vol = vol_main;
-
-        newArrayL[i] = transfer_fn(newArrayL[i]);
-        if (phase_change) {
-          if (head == 0) {
-            newArrayL[i] = (newArrayL[i] * (128 - crossfade2_raw[i]) / 128);
-          } else {
-            newArrayL[i] = (newArrayL[i] * crossfade2_raw[i] / 128);
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        int16_t valuesC[samples_to_read];  // max limit
+        for (uint16_t i = 0; i < values_len; i++) {
+          if (i % 2 == channel) {
+            valuesC[i / 2] = values[i];
           }
         }
-        int32_t value0 = (vol * newArrayL[i]) << 8u;
-#ifdef INCLUDE_FILTER
-        if (filter_midi < 70) {
-          IIR_filter(myFilter0, &value0);
-        }
-#endif
-        newArrayR[i] = transfer_fn(newArrayR[i]);
-        if (phase_change) {
-          if (head == 0) {
-            newArrayR[i] = (newArrayR[i] * (128 - crossfade2_raw[i]) / 128);
-          } else {
-            newArrayR[i] = (newArrayR[i] * crossfade2_raw[i] / 128);
+        int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
+                                                  buffer->max_sample_count);
+        // int16_t *newArrayR = array_resample_linear(valuesR, samples_to_read,
+        //                                            buffer->max_sample_count);
+
+        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+          if (head == 1 || (head == 0 && !phase_change)) {
+            samples[i * 2 + channel] = 0;
           }
+
+          uint vol = vol_main;
+          if (phase_change) {
+            if (head == 0) {
+              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
+            } else {
+              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
+            }
+          }
+
+          if (do_gate_down) {
+            // mute the audio
+            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_LOG);
+          } else if (do_gate_up) {
+            // bring back the audio
+            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
+          }
+
+          int32_t value0 = (vol * newArray[i]) << 8u;
+          samples[i * 2 + channel] =
+              samples[i * 2 + channel] + value0 + (value0 >> 16u);  // L
         }
-        int32_t value1 = (vol * newArrayR[i]) << 8u;
-#ifdef INCLUDE_FILTER
-        if (filter_midi < 70) {
-          IIR_filter(myFilter1, &value1);
-        }
-#endif
-        samples[i * 2 + 0] =
-            samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-        samples[i * 2 + 1] =
-            samples[i * 2 + 1] + value1 + (value1 >> 16u);  // L
+        free(newArray);
       }
-      free(newArrayL);
-      free(newArrayR);
 #endif
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];

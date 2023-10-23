@@ -158,15 +158,16 @@ uint8_t count_files(const char *dir, int num_channels) {
     return filelist_count;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (num_channels == 1) {
-      if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
-        filelist_count++;
-      }
-    } else {
-      if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
-        filelist_count++;
-      }
+#ifndef INCLUDE_STEREO
+    if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
+      filelist_count++;
     }
+#endif
+#ifdef INCLUDE_STEREO
+    if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
+      filelist_count++;
+    }
+#endif
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
@@ -182,6 +183,7 @@ SampleList *list_files(const char *dir, int num_channels) {
   SampleList *samplelist = malloc(sizeof(SampleList));
   samplelist->num_samples = total_files;
   if (total_files == 0) {
+    printf("%s: %d\n", dir, total_files);
     samplelist->sample == NULL;
     return samplelist;
   }
@@ -196,19 +198,20 @@ SampleList *list_files(const char *dir, int num_channels) {
   }
   uint8_t filelist_count = 0;
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (num_channels == 1) {
-      if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
-        samplelist->sample[filelist_count].snd[0] =
-            SampleInfo_load(dir, fno.fname);
-        filelist_count++;
-      }
-    } else if (num_channels == 2) {
-      if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
-        samplelist->sample[filelist_count].snd[0] =
-            SampleInfo_load(dir, fno.fname);
-        filelist_count++;
-      }
+#ifndef INCLUDE_STEREO
+    if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
+      samplelist->sample[filelist_count].snd[0] =
+          SampleInfo_load(dir, fno.fname);
+      filelist_count++;
     }
+#endif
+#ifdef INCLUDE_STEREO
+    if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
+      samplelist->sample[filelist_count].snd[0] =
+          SampleInfo_load(dir, fno.fname);
+      filelist_count++;
+    }
+#endif
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
