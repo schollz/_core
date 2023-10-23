@@ -1,24 +1,3 @@
-
-// audio callback
-void i2s_callback_func2() {
-  Envelope2_reset(envelope1, BLOCKS_PER_SECOND, 0, 1.0, 0.04);
-  audio_buffer_t *buffer = take_audio_buffer(ap, false);
-  if (buffer == NULL) {
-    return;
-  }
-  int32_t *samples = (int32_t *)buffer->buffer->bytes;
-  for (uint i = 0; i < buffer->max_sample_count; i++) {
-    int32_t value0 = 0;
-    int32_t value1 = 0;
-    // use 32bit full scale
-    samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-    samples[i * 2 + 1] = value1 + (value1 >> 16u);  // R
-  }
-  buffer->sample_count = buffer->max_sample_count;
-  give_audio_buffer(ap, buffer);
-  return;
-}
-
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
@@ -101,7 +80,9 @@ void i2s_callback_func() {
     if (phase_change) {
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
+#ifdef INCLUDE_FILTER
       ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
+#endif
     }
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
@@ -111,13 +92,19 @@ void i2s_callback_func() {
 
     uint32_t samples_to_read =
         buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->bpm;
-    uint32_t values_len = samples_to_read * WAV_CHANNELS;
-    uint32_t values_to_read = samples_to_read * WAV_CHANNELS * 2;
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->bpm *
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->oversampling;
+    uint32_t values_len =
+        samples_to_read *
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->num_channels;
+    uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
+    // TODO: why doesn't it work with phase_change????
+    // phase_change = false;
+    bool first_loop = true;
     for (int8_t head = 1; head >= 0; head--) {
       if (head == 1 && !phase_change) {
         continue;
@@ -142,7 +129,17 @@ void i2s_callback_func() {
       // phases[head]
       phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
       if (phases[head] != last_seeked) {
-        if (f_lseek(&fil_current, WAV_HEADER + phases[head])) {
+        if (f_lseek(&fil_current, WAV_HEADER +
+                                      (banks[sel_bank_cur]
+                                           ->sample[sel_sample_cur]
+                                           .snd[0]
+                                           ->num_channels *
+                                       banks[sel_bank_cur]
+                                           ->sample[sel_sample_cur]
+                                           .snd[0]
+                                           ->oversampling *
+                                       44100) +
+                                      phases[head])) {
           printf("problem seeking to phase (%d)\n", phases[head]);
           for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
             int32_t value0 = 0;
@@ -166,8 +163,20 @@ void i2s_callback_func() {
                banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
                FA_READ);
         f_lseek(&fil_current,
-                WAV_HEADER + (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
+                WAV_HEADER +
+                    (banks[sel_bank_cur]
+                         ->sample[sel_sample_cur]
+                         .snd[0]
+                         ->num_channels *
+                     banks[sel_bank_cur]
+                         ->sample[sel_sample_cur]
+                         .snd[0]
+                         ->oversampling *
+                     44100) +
+                    (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
+      last_seeked = phases[head] + fil_bytes_read;
+
       if (fil_bytes_read < values_to_read) {
         printf("%d: asked for %d bytes, read %d bytes\n", phases[head],
                values_to_read, fil_bytes_read);
@@ -183,8 +192,8 @@ void i2s_callback_func() {
       }
 
 #ifndef INCLUDE_STEREO
-      int16_t *newArray = array_resample_quadratic_fp(values, samples_to_read,
-                                                      buffer->max_sample_count);
+      int16_t *newArray = array_resample_linear(values, samples_to_read,
+                                                buffer->max_sample_count);
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         newArray[i] = transfer_fn(newArray[i]);
 #ifdef INCLUDE_FILTER
@@ -194,9 +203,6 @@ void i2s_callback_func() {
               ResonantFilter_update(resonantfilter[head], newArray[i]);
         }
 #endif
-        if (head == 1 || (head == 0 && !phase_change)) {
-          samples[i * 2 + 0] = 0;
-        }
 
         uint vol = vol_main;
         if (phase_change) {
@@ -215,10 +221,25 @@ void i2s_callback_func() {
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
         }
 
-        int32_t value0 = (vol * newArray[i]) << 8u;
-        samples[i * 2 + 0] =
-            samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-        samples[i * 2 + 1] = samples[i * 2 + 0];            // R = L
+        if (first_loop) {
+          samples[i * 2 + 0] = vol * newArray[i];
+          samples[i * 2 + 0] = samples[i * 2 + 0] << 8u;
+          samples[i * 2 + 0] = samples[i * 2 + 0] + (samples[i * 2 + 0] >> 16u);
+          if (head == 0) {
+            samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+          }
+        } else {
+          int32_t value0 = (vol * newArray[i]) << 8u;
+          value0 = value0 + (value0 >> 16u);
+          samples[i * 2 + 0] += value0;
+          samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+        }
+        // int32_t value0 = (vol * newArray[i]) << 8u;
+        // samples[i * 2 + 0] =
+        //     samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
+      }
+      if (first_loop) {
+        first_loop = false;
       }
       free(newArray);
 #endif
@@ -231,9 +252,9 @@ void i2s_callback_func() {
             valuesC[i / 2] = values[i];
           }
         }
-        int16_t *newArray = array_resample_quadratic_fp(
-            valuesC, samples_to_read, buffer->max_sample_count);
-        // int16_t *newArrayR = array_resample_quadratic_fp(valuesR,
+        int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
+                                                  buffer->max_sample_count);
+        // int16_t *newArrayR = array_resample_linear(valuesR,
         // samples_to_read,
         //                                            buffer->max_sample_count);
 
@@ -266,7 +287,6 @@ void i2s_callback_func() {
         free(newArray);
       }
 #endif
-      last_seeked = phases[head] + values_to_read;
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];
     }
