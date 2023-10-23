@@ -21,6 +21,7 @@ void i2s_callback_func2() {
 
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
+uint32_t last_seeked = 1;
 
 void i2s_callback_func() {
   uint8_t sd_calls = 0;
@@ -117,9 +118,6 @@ void i2s_callback_func() {
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
-    // TODO go from head 1 to head 0, in case there is a sd card change, so a
-    // new sd file can be opened on head 0
-    // phase_change = false;
     for (int8_t head = 1; head >= 0; head--) {
       if (head == 1 && !phase_change) {
         continue;
@@ -140,22 +138,27 @@ void i2s_callback_func() {
         }
       }
 
-      if (f_lseek(&fil_current, WAV_HEADER + (phases[head] / PHASE_DIVISOR) *
-                                                 PHASE_DIVISOR)) {
-        printf("problem seeking to phase (%d)\n", phases[head]);
-        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          int32_t value0 = 0;
-          samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-          samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+      // optimization here, only seek if the current position is not at the
+      // phases[head]
+      phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
+      if (phases[head] != last_seeked) {
+        if (f_lseek(&fil_current, WAV_HEADER + phases[head])) {
+          printf("problem seeking to phase (%d)\n", phases[head]);
+          for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+            int32_t value0 = 0;
+            samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+            samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+          }
+          buffer->sample_count = buffer->max_sample_count;
+          give_audio_buffer(ap, buffer);
+          sync_using_sdcard = false;
+          sdcard_startup();
+          return;
         }
-        buffer->sample_count = buffer->max_sample_count;
-        give_audio_buffer(ap, buffer);
-        sync_using_sdcard = false;
-        sdcard_startup();
-        return;
       }
 
       ++sd_calls;
+
       if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
@@ -263,6 +266,7 @@ void i2s_callback_func() {
         free(newArray);
       }
 #endif
+      last_seeked = phases[head] + values_to_read;
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];
     }
@@ -295,12 +299,12 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
   if (cpu_utilizations_i == 64) {
-    // uint16_t cpu_utilization = 0;
-    // for (uint8_t i = 0; i < 64; i++) {
-    //   cpu_utilization = cpu_utilization + cpu_utilizations[i];
-    // }
-    // printf("average cpu utilization: %2.1f\n", sd_calls,
-    //        ((float)cpu_utilization) / 64.0);
+    uint16_t cpu_utilization = 0;
+    for (uint8_t i = 0; i < 64; i++) {
+      cpu_utilization = cpu_utilization + cpu_utilizations[i];
+    }
+    printf("average cpu utilization: %2.1f\n", sd_calls,
+           ((float)cpu_utilization) / 64.0);
     cpu_utilizations_i = 0;
   }
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
