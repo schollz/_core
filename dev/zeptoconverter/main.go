@@ -26,6 +26,7 @@ import (
 	"github.com/schollz/sox"
 )
 
+var flagOversampling int
 var flagFolderIn, flagFolderOut string
 var flagStereo bool
 
@@ -40,6 +41,8 @@ var flagStereo bool
 // 	uint32_t *slice_end;
 // 	uint8_t bpm_transposable;
 // 	uint8_t stop_condition;
+//  uint8_t oversampling;
+//  uint8_t num_channels;
 // } WavFile;
 
 type WavFile struct {
@@ -53,12 +56,15 @@ type WavFile struct {
 	SliceStop       []uint32
 	BPMTransposable uint8 `c:"bpm_transposable"`
 	StopCondition   uint8 `c:"stop_condition"`
+	Oversampling    uint8
+	NumChannels     uint8
 }
 
 func init() {
 	flag.StringVar(&flagFolderIn, "in", "", "folder for input")
 	flag.StringVar(&flagFolderOut, "out", "", "folder for output")
 	flag.BoolVar(&flagStereo, "stereo", false, "stereo")
+	flag.IntVar(&flagOversampling, "oversampling", 1, "number of times (1, 2 or 4)")
 }
 
 func main() {
@@ -133,8 +139,8 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 		return
 	}
 	totalSamples := float64(finfo.Size()-44) / float64(channels) / 2
-	totalSamples = totalSamples - 22050*2         // total samples excluding padding = each side is padded with extra samples
-	fsize := totalSamples * float64(channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
+	totalSamples = totalSamples - 22050*2*float64(flagOversampling) // total samples excluding padding = each side is padded with extra samples
+	fsize := totalSamples * float64(channels) * 2                   // total size excluding padding = totalSamples channels x 2 bytes
 	slices := []uint32{}
 	slicesEnd := []uint32{}
 	sliceNum := uint16(beats * 2)
@@ -153,6 +159,8 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 		SliceStop:       slicesEnd,
 		BPMTransposable: 0,
 		StopCondition:   0,
+		Oversampling:    uint8(flagOversampling),
+		NumChannels:     uint8(channels),
 	}
 	err = writeWav(filenameSD, wav1)
 	if err != nil {
@@ -190,12 +198,12 @@ func processSound0(fnameIn string, fnameOut string, channels int) (beats float64
 		os.Remove(pieceJoin)
 	}()
 
-	_, _, err = run("sox", pieceJoin, "-c", fmt.Sprint(channels), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw")
+	_, _, err = run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*flagOversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-6")
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	_, _, err = run("sox", "-t", "raw", "-c", fmt.Sprint(channels), "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
+	_, _, err = run("sox", "-t", "raw", "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*flagOversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
 	if err != nil {
 		log.Error(err)
 		return
@@ -217,6 +225,8 @@ func writeWav(filenameSD string, wav1 WavFile) (err error) {
 		wav1.SliceStop,
 		wav1.BPMTransposable,
 		wav1.StopCondition,
+		wav1.Oversampling,
+		wav1.NumChannels,
 	}
 	for _, v := range data {
 		err := binary.Write(buf, binary.LittleEndian, v)

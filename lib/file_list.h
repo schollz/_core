@@ -32,6 +32,8 @@ typedef struct SampleInfo {
   uint32_t *slice_stop;
   uint8_t bpm_transposable;
   uint8_t stop_condition;
+  uint8_t oversampling;
+  uint8_t num_channels;
 } SampleInfo;
 
 typedef struct Sample {
@@ -136,6 +138,18 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
 
   // StopCondition
   fr = f_read(&fil, &si->stop_condition, sizeof(uint8_t), &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
+
+  // Oversampling
+  fr = f_read(&fil, &si->oversampling, sizeof(uint8_t), &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
+
+  // NumChannels
+  fr = f_read(&fil, &si->num_channels, sizeof(uint8_t), &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }

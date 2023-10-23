@@ -2,6 +2,7 @@
 #define CROSSFADE3_SINE 0
 #define CROSSFADE3_EXP 1
 #define CROSSFADE3_LOG 2
+#define CROSSFADE3_LINE 3
 
 static int32_t crossfade3_sine[441] = {
     65536, 65535, 65532, 65528, 65522, 65515, 65505, 65495, 65482, 65468, 65452,
@@ -133,7 +134,7 @@ static int32_t crossfade3_log[441] = {
     442,
 };
 
-int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
+int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
   if (crossfade_type == CROSSFADE3_SINE) {
     return q16_16_fp_to_int16(
         q16_16_multiply(q16_16_int16_to_fp(val), crossfade3_sine[i]));
@@ -145,7 +146,7 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
         q16_16_multiply(q16_16_int16_to_fp(val), crossfade3_log[i]));
   }
 }
-int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
+int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
   if (crossfade_type == CROSSFADE3_SINE) {
     return q16_16_fp_to_int16(
         q16_16_multiply(q16_16_int16_to_fp(val), 65536 - crossfade3_sine[i]));
