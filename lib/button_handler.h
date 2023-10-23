@@ -71,21 +71,28 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   retrig_first = true;
   retrig_beat_num = random_integer_in_range(8, 24);
   retrig_timer_reset =
-      96 * random_integer_in_range(1, 4) / random_integer_in_range(2, 12);
+      96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
   float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                      (float)(96 * sf->bpm_tempo);
-  if (total_time > 2.0f) {
+  if (total_time > 5.0f) {
     total_time = total_time / 2;
     retrig_timer_reset = retrig_timer_reset / 2;
   }
-  if (total_time > 2.0f) {
+  if (total_time > 5.0f) {
     total_time = total_time / 2;
     retrig_beat_num = retrig_beat_num / 2;
     if (retrig_beat_num == 0) {
       retrig_beat_num = 1;
     }
   }
-  if (total_time < 0.25f) {
+  if (total_time < 0.5f) {
+    total_time = total_time * 2;
+    retrig_beat_num = retrig_beat_num * 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  if (total_time < 0.5f) {
     total_time = total_time * 2;
     retrig_beat_num = retrig_beat_num * 2;
     if (retrig_beat_num == 0) {
@@ -168,6 +175,7 @@ void button_key_on_single(uint8_t key) {
     if (mode_jump_mash == MODE_JUMP) {
       // 1-16 (jump mode)
       // do jump
+      debounce_quantize = 2;
       key_do_jump(key - 4);
       dub_step_break = 0;
       dub_step_divider = 0;

@@ -27,6 +27,7 @@ import (
 )
 
 var flagFolderIn, flagFolderOut string
+var flagStereo bool
 
 // file_list.h:
 // typedef struct WavFile {
@@ -57,6 +58,7 @@ type WavFile struct {
 func init() {
 	flag.StringVar(&flagFolderIn, "in", "", "folder for input")
 	flag.StringVar(&flagFolderOut, "out", "", "folder for output")
+	flag.BoolVar(&flagStereo, "stereo", false, "stereo")
 }
 
 func main() {
@@ -98,6 +100,9 @@ func main() {
 		os.MkdirAll(path.Join(flagFolderOut, fpathRelative), os.ModePerm)
 
 		channels := 1
+		if flagStereo {
+			channels = 2
+		}
 
 		filenameExt := filepath.Ext(filename)
 		newExt := ".mono.wav"
@@ -127,7 +132,9 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 		log.Error(err)
 		return
 	}
-	fsize := float64(finfo.Size()) - (44100 * 2) // the file size has 44,100 extra 16-bit samples (44100*2 bytes)
+	totalSamples := float64(finfo.Size()-44) / float64(channels) / 2
+	totalSamples = totalSamples - 22050*2         // total samples excluding padding = each side is padded with extra samples
+	fsize := totalSamples * float64(channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
 	slices := []uint32{}
 	slicesEnd := []uint32{}
 	sliceNum := uint16(beats * 2)
@@ -188,7 +195,7 @@ func processSound0(fnameIn string, fnameOut string, channels int) (beats float64
 		log.Error(err)
 		return
 	}
-	_, _, err = run("sox", "-t", "raw", "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
+	_, _, err = run("sox", "-t", "raw", "-c", fmt.Sprint(channels), "-r", "44100", "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
 	if err != nil {
 		log.Error(err)
 		return

@@ -79,10 +79,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
       beat_current = dub_step_beat;
       // debounce a little bit before going into the mode
-      do_update_phase_from_beat_current();
-      // if (dub_step_divider > 0 || dub_step_break > 1) {
-      //   do_update_phase_from_beat_current();
-      // }
+      if (dub_step_divider > 0 || dub_step_break > 1) {
+        do_update_phase_from_beat_current();
+      }
     }
   } else {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
