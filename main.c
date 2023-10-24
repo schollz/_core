@@ -170,8 +170,9 @@ void core1_main() {
 
   while (1) {
     adc_select_input(0);
-    sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 + 50;
-    // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
+    sf->bpm_tempo = 170;
+    // sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 +
+    // 50; printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
     uint16_t val = FilterExp_update(adcs[1], adc_read());
@@ -213,7 +214,8 @@ void core1_main() {
 
     adc_select_input(2);
     LEDS_render(leds);
-    new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
+    // new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
+    new_vol = 100;
     if (new_vol != sf->vol) {
       sf->vol = new_vol;
       printf("sf-vol: %d\n", sf->vol);
