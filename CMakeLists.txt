@@ -66,8 +66,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     USE_AUDIO_I2S=1
     SDCARD_USE_CD=false
     SDCARD_CD_GPIO=21 # not used...
-    SDCARD_CMD_GPIO=11
-    SDCARD_D0_GPIO=12 # CLK=17,D1=20,D2=21,D3=22
+    SDCARD_CMD_GPIO=2
+    SDCARD_D0_GPIO=3 # CLK=17,D1=20,D2=21,D3=22
     AUDIO_CLK_GPIO=16 # LCK=17
     AUDIO_DIN_GPIO=18
     I2C_SDA_PIN=20
@@ -75,8 +75,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     LED_1_GPIO=0
     LED_2_GPIO=19
     LED_3_GPIO=22
-    BTN_ROW_START=1
-    BTN_COL_START=6
+    BTN_ROW_START=7
+    BTN_COL_START=12
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1
