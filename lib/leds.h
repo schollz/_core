@@ -4,7 +4,7 @@
 #define LEDS_ROWS 5
 #define LEDS_COLS 4
 #ifndef LED_1_GPIO
-#define LED_1_GPIO 6
+#define LED_1_GPIO 0
 #endif
 #ifndef LED_2_GPIO
 #define LED_2_GPIO 19
