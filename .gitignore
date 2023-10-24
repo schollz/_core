@@ -87,3 +87,8 @@ lib/test/filestruct/test
 lib/test/filter/amen_0efedaab_beats8_bpm165.mono.wav
 lib/test/filter/out.wav
 lib/test/filter/resonant.cpp
+dev/zeptoconverter/1/
+dev/zeptoconverter/zz/
+lib/out
+lib/out.c
+lib/test/xfade/
