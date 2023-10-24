@@ -176,10 +176,11 @@ void button_key_on_single(uint8_t key) {
       // 1-16 (jump mode)
       // do jump
       debounce_quantize = 2;
-      key_do_jump(key - 4);
+      bpm_timer_counter = 0;
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
+      key_do_jump(key - 4);
     } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx

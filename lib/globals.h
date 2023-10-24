@@ -96,7 +96,7 @@ WS2812 *ws2812;
 #endif
 
 uint8_t key_jump_debounce = 0;
-void do_update_phase_from_beat_current() {
+inline void do_update_phase_from_beat_current() {
   uint16_t slice =
       beat_current %
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
@@ -109,5 +109,6 @@ void do_update_phase_from_beat_current() {
   }
   gate_counter = 0;
   phase_change = true;
+  // printf("do_update_phase_from_beat_current: %d\n", phase_new);
 }
 #endif

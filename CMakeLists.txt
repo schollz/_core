@@ -62,7 +62,7 @@ pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    #define for our example code
+    # hardware specific
     USE_AUDIO_I2S=1
     SDCARD_USE_CD=false
     SDCARD_CD_GPIO=21 # not used...
@@ -77,7 +77,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     LED_3_GPIO=22
     BTN_ROW_START=7
     BTN_COL_START=12
-    CORE1_PROCESS_I2S_CALLBACK=1 # utilize core1 for audio
+    # utilize core1 for audio to avoid dropouts
+    CORE1_PROCESS_I2S_CALLBACK=1 
+
+    # debug printing
+    # PRINT_AUDIO_CPU_USAGE=1
+
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1

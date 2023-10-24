@@ -21,7 +21,9 @@ bool detect_dropout(int32_t *samples) {
 
 void i2s_callback_func() {
   uint8_t sd_calls = 0;
+#ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
+#endif
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
   if (buffer == NULL) {
     return;
@@ -332,6 +334,7 @@ void i2s_callback_func() {
   sync_using_sdcard = false;
   phase_change = false;
 
+#ifdef PRINT_AUDIO_CPU_USAGE
   clock_t endTime = time_us_64();
   cpu_utilizations[cpu_utilizations_i] =
       100 * (endTime - startTime) / (US_PER_BLOCK);
@@ -350,6 +353,7 @@ void i2s_callback_func() {
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
     printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
   }
+#endif
 
   return;
 }
