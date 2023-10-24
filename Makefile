@@ -59,3 +59,7 @@ debug:
 
 cloc:
 	cloc --by-file lib/*.h --exclude-list-file=dev/.clocignore
+
+ignore:
+	git status --porcelain | grep '^??' | cut -c4- >> .gitignore
+	git commit -am "update gitignore"
