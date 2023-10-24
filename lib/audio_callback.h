@@ -314,7 +314,7 @@ void i2s_callback_func() {
   }
 
   buffer->sample_count = buffer->max_sample_count;
-  detect_dropout(samples);
+  // detect_dropout(samples);
   give_audio_buffer(ap, buffer);
 
   if (fil_is_open) {
