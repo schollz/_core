@@ -83,6 +83,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       beat_current = dub_step_beat;
       // debounce a little bit before going into the mode
       if (dub_step_divider > 0 || dub_step_break > 1) {
+        // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
+        //        bpm_timer_counter);
         do_update_phase_from_beat_current();
       }
     }
