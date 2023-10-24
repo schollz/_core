@@ -77,6 +77,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     LED_3_GPIO=22
     BTN_ROW_START=7
     BTN_COL_START=12
+    CORE1_PROCESS_I2S_CALLBACK=1 # utilize core1 for audio
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1

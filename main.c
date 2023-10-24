@@ -138,7 +138,7 @@ uint16_t freqs_available[74] = {
     5588,  5920,  6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956,
     10548, 11175, 11840, 12544, 13290, 14080, 14917, 15804};
 
-void core1_main() {
+void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
   while (!fil_is_open) {
@@ -241,7 +241,7 @@ int main() {
   sleep_ms(100);
 
   // run multi core
-  multicore_launch_core1(core1_main);
+  // multicore_launch_core1(core1_main);
 
   // DCDC PSM control
   // 0: PFM mode (best efficiency)
@@ -320,8 +320,13 @@ int main() {
   // WS2812_show(ws2812);
 #endif
 
+  // TODO: remove this debugging
+  sel_sample_next = 1;
+  fil_current_change = true;
+
   // blocking
-  while (true) {
-    run_keyboard();
-  }
+  input_handling();
+  // while (true) {
+  //   run_keyboard();
+  // }
 }
