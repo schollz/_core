@@ -96,12 +96,19 @@ void i2s_callback_func() {
     }
 
     // flag for new phase
+    bool do_crossfade = false;
+    bool printed_error = false;
+    bool phase_change_at_start = phase_change;
+    uint32_t t0 = time_us_32();
+    uint32_t t1;
     if (phase_change) {
+      do_crossfade = true;
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
 #ifdef INCLUDE_FILTER
       ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
 #endif
+      phase_change = false;
     }
 
     envelope_pitch_val = Envelope2_update(envelope_pitch);
@@ -125,7 +132,7 @@ void i2s_callback_func() {
     // phase_change = false;
     bool first_loop = true;
     for (int8_t head = 1; head >= 0; head--) {
-      if (head == 1 && !phase_change) {
+      if (head == 1 && !do_crossfade) {
         continue;
       }
 
@@ -195,6 +202,7 @@ void i2s_callback_func() {
                     (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
       last_seeked = phases[head] + fil_bytes_read;
+      t1 = time_us_32();
 
       if (fil_bytes_read < values_to_read) {
         printf("%d: asked for %d bytes, read %d bytes\n", phases[head],
@@ -224,7 +232,7 @@ void i2s_callback_func() {
 #endif
 
         uint vol = vol_main;
-        if (phase_change) {
+        if (do_crossfade) {
           if (head == 0) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
           } else {
@@ -239,7 +247,12 @@ void i2s_callback_func() {
           // bring back the audio
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
         }
-
+        if (!do_crossfade && phase_change && !printed_error &&
+            !phase_change_at_start) {
+          printf("phase changed at %d, %ld, %ld\n", i, time_us_32() - t0,
+                 time_us_32() - t1);
+          printed_error = true;
+        }
         if (first_loop) {
           samples[i * 2 + 0] = newArray[i];
           if (head == 0) {
@@ -278,12 +291,12 @@ void i2s_callback_func() {
         //                                            buffer->max_sample_count);
 
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          if (head == 1 || (head == 0 && !phase_change)) {
+          if (head == 1 || (head == 0 && !do_crossfade)) {
             samples[i * 2 + channel] = 0;
           }
 
           uint vol = vol_main;
-          if (phase_change) {
+          if (do_crossfade) {
             if (head == 0) {
               newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
             } else {
@@ -332,7 +345,6 @@ void i2s_callback_func() {
     }
   }
   sync_using_sdcard = false;
-  phase_change = false;
 
 #ifdef PRINT_AUDIO_CPU_USAGE
   clock_t endTime = time_us_64();
