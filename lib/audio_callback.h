@@ -97,10 +97,6 @@ void i2s_callback_func() {
 
     // flag for new phase
     bool do_crossfade = false;
-    bool printed_error = false;
-    bool phase_change_at_start = phase_change;
-    uint32_t t0 = time_us_32();
-    uint32_t t1;
     if (phase_change) {
       do_crossfade = true;
       phases[1] = phases[0];  // old phase
@@ -202,7 +198,6 @@ void i2s_callback_func() {
                     (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
       last_seeked = phases[head] + fil_bytes_read;
-      t1 = time_us_32();
 
       if (fil_bytes_read < values_to_read) {
         printf("%d: asked for %d bytes, read %d bytes\n", phases[head],
@@ -247,12 +242,7 @@ void i2s_callback_func() {
           // bring back the audio
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
         }
-        if (!do_crossfade && phase_change && !printed_error &&
-            !phase_change_at_start) {
-          printf("phase changed at %d, %ld, %ld\n", i, time_us_32() - t0,
-                 time_us_32() - t1);
-          printed_error = true;
-        }
+
         if (first_loop) {
           samples[i * 2 + 0] = newArray[i];
           if (head == 0) {
