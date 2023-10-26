@@ -24,9 +24,9 @@
 
 #include "lib/includes.h"
 
-static uint8_t dub_step_numerator[] = {1, 2, 1, 1, 1, 1, 1, 1};
-static uint8_t dub_step_denominator[] = {8, 3, 2, 4, 6, 8, 12, 16};
-static uint8_t dub_step_steps[] = {32, 6, 8, 12, 16, 16};
+static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
+static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
+static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -73,7 +73,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                              dub_step_denominator[dub_step_divider]) ==
         0) {
       dub_step_break++;
-      printf("%ld\n", time_us_32());
       if (dub_step_break == dub_step_steps[dub_step_divider]) {
         dub_step_divider++;
         dub_step_break = 0;
@@ -87,6 +86,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
         //        bpm_timer_counter);
         do_update_phase_from_beat_current();
+        printf("%d %ld\n", phase_new, time_us_32());
       }
     }
   } else {
