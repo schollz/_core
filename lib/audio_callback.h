@@ -20,6 +20,7 @@ bool detect_dropout(int32_t *samples) {
 }
 
 void i2s_callback_func() {
+  uint32_t t0, t1;
   uint8_t sd_calls = 0;
 #ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
@@ -177,6 +178,7 @@ void i2s_callback_func() {
       }
 
       ++sd_calls;
+      t0 = time_us_32();
 
       if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
@@ -197,6 +199,7 @@ void i2s_callback_func() {
                      44100) +
                     (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
+      t1 = time_us_32();
       last_seeked = phases[head] + fil_bytes_read;
 
       if (fil_bytes_read < values_to_read) {
@@ -349,8 +352,7 @@ void i2s_callback_func() {
     printf("average cpu utilization: %2.1f\n", sd_calls,
            ((float)cpu_utilization) / 64.0);
     cpu_utilizations_i = 0;
-    printf("buffer->max_sample_count: %d\n", buffer->max_sample_count);
-    printf("buffer->buffer->bytes: %d\n", buffer->buffer->bytes);
+    printf("read for %d samples: %ld\n", SAMPLES_PER_BUFFER, t1 - t0);
   }
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
     printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
