@@ -20,6 +20,7 @@ typedef struct Onewiremidi {
   uint8_t rbs[3];
   uint8_t rbi;
   bool ready;
+  uint32_t last_time;
   callback_int_int midi_note_on;
   callback_int midi_note_off;
   callback_void midi_start;
@@ -73,20 +74,29 @@ void Onewiremidi_receive(Onewiremidi *om) {
   if (pio_sm_is_rx_fifo_empty(om->pio, om->sm)) {
     return;
   }
+  uint32_t t = time_us_32();
+  if (t - om->last_time > 1000) {
+    om->rbi = 0;
+  }
+  om->last_time = t;
   uint8_t value = Onewiremidi_reverse_uint8_t(pio_sm_get(om->pio, om->sm));
+  printf("%d: %x\n", om->rbi, value);
   om->rbs[om->rbi] = value;
 
   if (value == MIDI_START && om->midi_start != NULL) {
     om->midi_start();
+    om->rbi = 0;
   } else if (value == MIDI_CONTINUE && om->midi_continue != NULL) {
     om->midi_continue();
+    om->rbi = 0;
   } else if (value == MIDI_STOP && om->midi_stop != NULL) {
     om->midi_stop();
-  } else if (om->rbi < 3 && (om->rbs[0] >= MIDI_NOTE_OFF_MIN ||
+    om->rbi = 0;
+  } else if (om->rbi < 2 && (om->rbs[0] >= MIDI_NOTE_OFF_MIN ||
                              om->rbs[0] <= MIDI_NOTE_ON_MAX)) {
     // iterater for not on/off
     om->rbi++;
-  } else if (om->rbi == 3) {
+  } else if (om->rbi == 2) {
     om->rbi = 0;
     printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
     if (om->rbs[0] >= MIDI_NOTE_ON_MIN && om->rbs[0] <= MIDI_NOTE_ON_MAX) {
@@ -99,6 +109,8 @@ void Onewiremidi_receive(Onewiremidi *om) {
         om->midi_note_off(om->rbs[1]);
       }
     }
+  } else {
+    om->rbi = 0;
   }
   return;
 }
