@@ -31,10 +31,10 @@ uint8_t reverse_uint8_t(uint8_t b) {
 }
 
 void midi_note_on(uint8_t note, uint8_t vel) {
-  printf("note on\t%d\t%d", note, vel);
+  printf("note on\t%d\t%d\n", note, vel);
 }
 
-void midi_note_off(uint8_t note) { printf("note off\t%d", note); }
+void midi_note_off(uint8_t note) { printf("note off\t%d\n", note); }
 
 void midi_start() { printf("midi start\n"); }
 
