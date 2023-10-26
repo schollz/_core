@@ -24,7 +24,11 @@
 
 #define WAV_HEADER 44
 #define SAMPLE_RATE 44100
+
+// 441 samples is a compromise on latency and sd-card reading
+// sd-card reading of 441 samples (~10 ms) takes ~3 ms
 #define SAMPLES_PER_BUFFER 441  // Samples / channel
+
 #define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / SAMPLE_RATE
 
 audio_buffer_pool_t *init_audio() {
