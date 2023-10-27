@@ -19,6 +19,8 @@ bool detect_dropout(int32_t *samples) {
   return false;
 }
 
+bool audio_was_muted = false;
+
 void i2s_callback_func() {
   uint32_t t0, t1;
   uint8_t sd_calls = 0;
@@ -32,7 +34,7 @@ void i2s_callback_func() {
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
   if (sync_using_sdcard || !fil_is_open ||
-      (gate_active && gate_counter >= gate_threshold)) {
+      (gate_active && gate_counter >= gate_threshold) || audio_mute) {
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
       samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -40,8 +42,11 @@ void i2s_callback_func() {
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
-    if (!gate_active && fil_is_open) {
+    if (!gate_active && fil_is_open && !audio_mute) {
       printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    }
+    if (audio_mute) {
+      audio_was_muted = true;
     }
     return;
   }
@@ -96,23 +101,11 @@ void i2s_callback_func() {
       }
     }
 
-    // flag for new phase
-    bool do_crossfade = false;
-    if (phase_change) {
-      do_crossfade = true;
-      phases[1] = phases[0];  // old phase
-      phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
-#ifdef INCLUDE_FILTER
-      ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
-#endif
-      phase_change = false;
-    }
-
+    // determine the samples to read
     envelope_pitch_val = Envelope2_update(envelope_pitch);
     // TODO: switch for if wobble is enabled
     // envelope_pitch_val =
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
-
     uint32_t samples_to_read =
         buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->bpm *
@@ -124,6 +117,49 @@ void i2s_callback_func() {
     int16_t values[values_len];
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
+
+    // flag for new phase
+    bool do_crossfade = false;
+    bool do_fade_out = false;
+    bool do_fade_in = false;
+    if (phase_change) {
+      do_crossfade = true;
+      phases[1] = phases[0];  // old phase
+      phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
+#ifdef INCLUDE_FILTER
+      ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
+#endif
+      phase_change = false;
+    }
+    // TODO change stop condition to variable
+    if (banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition ==
+        0) {
+      uint32_t next_phase =
+          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      if ((phase_forward > 0 &&
+           next_phase > banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[0]
+                            ->slice_stop[banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[0]
+                                             ->slice_current]) ||
+          (phase_forward == 0 &&
+           next_phase < banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[0]
+                            ->slice_start[banks[sel_bank_cur]
+                                              ->sample[sel_sample_cur]
+                                              .snd[0]
+                                              ->slice_current])) {
+        do_fade_out = true;
+        audio_mute = true;
+      }
+    }
+    if (audio_was_muted) {
+      audio_was_muted = false;
+      do_fade_in = true;
+    }
 
     // TODO: why doesn't it work with phase_change????
     // phase_change = false;
@@ -231,11 +267,15 @@ void i2s_callback_func() {
 
         uint vol = vol_main;
         if (do_crossfade) {
-          if (head == 0) {
+          if (head == 0 && !do_fade_out) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
-          } else {
+          } else if (!do_fade_in) {
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
           }
+        } else if (do_fade_out) {
+          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
+        } else if (do_fade_in) {
+          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
         }
 
         if (do_gate_down) {
