@@ -14,6 +14,8 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 - [ ] read wav file information in zeptocore
 - [ ] use slice positions / number read from wav information
 - [ ] obey different stop conditions (continuing playing, stop after end of slice, stop after lifting finger)
+- [ ] add timestretching
+- [ ] choose better boundaries
 
 ## spec
 
