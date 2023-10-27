@@ -30,8 +30,8 @@ S is nominally "shift"
 
 ### combo buttons
 
-- [.] **none** → top shows punch/mash, mute, playback states 
-- [.] **H** → JUMP: do jump, MASH: do fx (momentary)
+- [ ] **none** → top shows punch/mash, mute, playback states 
+- [ ] **H** → JUMP: do jump, MASH: do fx (momentary)
 - [ ] **H** + **H** → JUMP: retrig depending on location
 - OR
 - [ ] **H** + **H** + **H** → JUMP: retrig depending on location
