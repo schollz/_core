@@ -4,6 +4,10 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
+## ideas
+
+- [ ] every punch in effect can be modulated by the X knob (for example pitch can be dialed in, stutter amount can be dialed in
+
 ## todos
 
 - [ ] use Go to generate wav file information containing bpm, number of slices, array of slice positions, binary flag whether it is bpm-transposable, initialized flag about stop conditions
