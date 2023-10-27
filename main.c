@@ -89,7 +89,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         printf("%d %ld\n", phase_new, time_us_32());
       }
     }
-  } else {
+  } else if (banks[sel_bank_cur]
+                 ->sample[sel_sample_cur]
+                 .snd[0]
+                 ->stop_condition != 0) {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
       // keep to the beat

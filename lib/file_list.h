@@ -34,6 +34,9 @@ typedef struct SampleInfo {
   uint8_t stop_condition;
   uint8_t oversampling;
   uint8_t num_channels;
+
+  // internal variables
+  uint16_t slice_current;
 } SampleInfo;
 
 typedef struct Sample {
@@ -155,6 +158,10 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
   }
 
   f_close(&fil);
+
+  // internal
+  si->slice_current = 0;
+
   return si;
 }
 
