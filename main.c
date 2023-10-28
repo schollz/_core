@@ -286,6 +286,9 @@ int main() {
   // initialize random library
   random_initialize();
 
+  // initialize sequencers
+  chain = Chain_create();
+
   leds = LEDS_create();
   // show X in case the files aren't loaded
   LEDS_show_blinking_z(leds, 2);

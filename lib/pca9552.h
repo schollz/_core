@@ -62,6 +62,8 @@ typedef struct PCA9552 {
   uint8_t address;
   uint8_t error;
   uint8_t leds[4][4];
+  uint8_t row[16];
+  uint8_t col[16];
   uint8_t leds_last[4][4];
   uint8_t lastSet[3];
   bool changed[4];
@@ -179,7 +181,7 @@ void PCA9552_clear(PCA9552 *pca) {
 }
 
 void PCA9552_ledSet(PCA9552 *pca, uint8_t led, uint8_t state) {
-  pca->leds[led / 4][3 - (led % 4)] = state;
+  pca->leds[pca->row[led]][pca->col[led]] = state;
 }
 
 void PCA9552_render(PCA9552 *pca) {
@@ -207,6 +209,47 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
       pca->leds[i][j] = 0;
       pca->leds_last[i][j] = 0;
     }
+  }
+
+  // uint8_t row_map[] = {// row 1
+  //                      0, 0, 0, 0,
+  //                      // row 2
+  //                      1, 1, 1, 1,
+  //                      // row 3
+  //                      2, 2, 2, 2,
+  //                      // row 4
+  //                      3, 3, 3, 3};
+
+  // uint8_t col_map[] = {//
+  //                      0, 1, 2, 3,
+  //                      //
+  //                      0, 1, 2, 3,
+  //                      //
+  //                      0, 1, 2, 3,
+  //                      //
+  //                      0, 1, 2, 3};
+
+  uint8_t row_map[] = {// row 1
+                       0, 0, 2, 3,
+                       // row 2
+                       1, 0, 3, 3,
+                       // row 3
+                       0, 1, 3, 2,
+                       // row 4
+                       1, 1, 2, 2};
+
+  uint8_t col_map[] = {//
+                       3, 2, 3, 0,
+                       //
+                       3, 0, 3, 2,
+                       //
+                       1, 0, 1, 0,
+                       //
+                       1, 2, 1, 2};
+
+  for (uint8_t i = 0; i < 16; i++) {
+    pca->row[i] = row_map[i];
+    pca->col[i] = col_map[i];
   }
 
   // PWM 0 is dim

@@ -59,8 +59,10 @@ void Chain_link(Chain *c, uint8_t *seq, uint16_t len) {
   if (len > CHAIN_MAX_LINKS) {
     len = CHAIN_MAX_LINKS;
   }
+  printf("creating link of size %d:\n", len);
   for (uint8_t i = 0; i < len; i++) {
     c->rec_seq[i] = seq[i];
+    printf("%d: %d\n", i, seq[i]);
   }
   c->rec_len = len;
 }

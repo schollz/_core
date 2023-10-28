@@ -123,7 +123,9 @@ void LEDS_render(LEDS *leds) {
   // light up the PCA9552
   for (uint8_t i = 1; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
-      leds->pca->leds[i - 1][3 - j] = leds->state[LEDS_FACES - 1][i][j];
+      PCA9552_ledSet(leds->pca, (i - 1) * 4 + j,
+                     leds->state[LEDS_FACES - 1][i][j]);
+      // leds->pca->leds[i - 1][3 - j] = leds->state[LEDS_FACES - 1][i][j];
     }
   }
   PCA9552_render(leds->pca);
