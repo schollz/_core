@@ -1,4 +1,4 @@
-module github.com/schollz/zeptocore/dev/renoise
+module github.com/schollz/zeptocore/lib/renoise
 
 go 1.21.3
 
