@@ -65,7 +65,7 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_steps[i] = 0;
   }
   seq->play_finished = true;
-  seq->quantization = 1;
+  seq->quantization = 48;
 }
 
 Sequencer *Sequencer_create() {
@@ -77,7 +77,7 @@ Sequencer *Sequencer_create() {
 // Sequencer_add adds a key and step to the sequencer.
 // The start of the sequence is always 0 and the last item of the sequence
 // is not played.
-void Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
+uint16_t Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
   if (seq->rec_len < SEQUENCER_MAX_STEPS) {
     if (seq->rec_step_offset == 0) {
       seq->rec_step_offset = step;
@@ -87,7 +87,9 @@ void Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
     seq->rec_key[seq->rec_len] = key;
     seq->rec_steps[seq->rec_len] = step - seq->rec_step_offset;
     ++seq->rec_len;
+    return seq->rec_steps[seq->rec_len - 1];
   }
+  return 0;
 }
 
 void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
@@ -106,7 +108,7 @@ int8_t Sequencer_emit(Sequencer *seq, uint32_t step) {
   if (seq->play_step_offset == 0) {
     seq->play_step_offset = step;
   }
-  if (step - seq->play_step_offset ==
+  if (step - seq->play_step_offset >=
       round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
     int8_t key = seq->rec_key[seq->play_pos];
     ++seq->play_pos;
