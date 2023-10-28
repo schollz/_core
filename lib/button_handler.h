@@ -152,6 +152,7 @@ void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 void button_key_off_any(uint8_t key) {
   printf("off any %d\n", key);
   if (key > 3) {
+    LEDS_set(leds, LED_STEP_FACE, key, 0);
     // 1-16 off
     // TODO: make this an option?
     if (key_total_pressed == 0) {
@@ -191,6 +192,10 @@ void button_key_on_single(uint8_t key) {
 
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on %d+%d\n", key1, key2);
+  if (key2 >= 4) {
+    LEDS_clearAll(leds, LED_STEP_FACE);
+    LEDS_set(leds, LED_STEP_FACE, key2, 2);
+  }
   if (key1 == KEY_SHIFT && key2 > 3) {
     // S+H
     if (mode_jump_mash == MODE_JUMP) {
