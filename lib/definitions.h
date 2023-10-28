@@ -16,3 +16,6 @@
 static int PHASE_DIVISOR = WAV_CHANNELS * 2;
 
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
+
+#define PLAY_MODE_CLASSIC 0
+#define PLAY_MODE_ONESHOT 1
