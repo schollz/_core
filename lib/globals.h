@@ -68,8 +68,8 @@ bool mode_mute = 0;
 bool mode_play = 0;
 
 SaveFile *sf;
-Charlieplex *cp;
 LEDS *leds;
+Chain *chain;
 
 int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;

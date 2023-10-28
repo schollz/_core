@@ -40,6 +40,7 @@
 #endif
 #include "biquad.h"
 #include "buttonmatrix3.h"
+#include "chain.h"
 #include "charlieplex.h"
 #include "envelope2.h"
 #include "envelopegate.h"
