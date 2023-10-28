@@ -69,7 +69,10 @@ bool mode_play = 0;
 
 SaveFile *sf;
 LEDS *leds;
+
 Chain *chain;
+bool toggle_chain_play = false;
+bool toggle_chain_rec = false;
 
 int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
