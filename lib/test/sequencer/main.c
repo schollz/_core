@@ -33,16 +33,18 @@
 int main() {
   Chain *chain = Chain_create();
   Chain_add(chain, 0, 0, 96);
-  Chain_add(chain, 0, 1, 96 + 12);
-  Chain_add(chain, 0, 2, 96 + 17);
-  // this one will not be played, its meant to hold the end
-  Chain_add(chain, 0, 3, 96 + 27);
+  Chain_add(chain, 0, 1, 96 + 4);
+  Chain_add(chain, 0, 2, 96 + 8);
+  // this one will not be played, it will be the beginning of the next
+  Chain_add(chain, 0, 3, 96 + 12);
+  Chain_quantize(chain, 0, 4);
 
-  Chain_add(chain, 1, 5, 1);
-  Chain_add(chain, 1, 6, 3);
-  Chain_add(chain, 1, 7, 5);
-  // this one will not be played, its meant to hold the end
-  Chain_add(chain, 1, 8, 10);
+  Chain_add(chain, 1, 5, 2);
+  Chain_add(chain, 1, 6, 2 + 7);
+  Chain_add(chain, 1, 7, 2 + 13);
+  // this one will not be played, it will be the beginning of the next
+  Chain_add(chain, 1, 8, 2 + 21);
+  // Chain_quantize(chain, 1, 4);
 
   uint8_t links[] = {0, 1, 1};
   Chain_link(chain, links, 3);
