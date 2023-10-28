@@ -177,7 +177,6 @@ void button_key_on_single(uint8_t key) {
       // do jump
       debounce_quantize = 2;
       key_do_jump(key - 4);
-      bpm_timer_counter = 0;
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
