@@ -33,25 +33,24 @@ S is nominally "shift"
 - [ ] **none** → top shows punch/mash, mute, playback states 
 - [ ] **H** → JUMP: do jump, MASH: do fx (momentary)
 - [ ] **H** + **H** → JUMP: retrig depending on location
-- OR
-- [ ] **H** + **H** + **H** → JUMP: retrig depending on location
-- [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
 - [ ] **S** → n/a
-- [ ] **S** + **A** → toggle jump/mash mode
+- [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
+- [ ] **S** + **A** → toggle playback
 - [ ] **S** + **B** → toggle mute
-- [ ] **S** + **C** → toggle playback
+- [ ] **S** + **C** → toggle jump/mash mode
 - [ ] **A** → show current bank (dim) + sample (bright)
-- [ ] **A** + **B** → select bank mode
-- [ ] **A** + **C** → select sample mode
-- [ ] **A** + **H** → select bank/sample (depending on mode)
+- [ ] **A** + **H** + **H** → select bank (1st) + sample (2nd)
+- [ ] **A** + **B** → ?
+- [ ] **A** + **C** → ?
 - [ ] **B** → n/a
+- [ ] **B** + **H** + **H**... → create chain of sequences
 - [ ] **B** + **A** → toggle play sequence
 - [ ] **B** + **C** → toggle record sequence
 - [ ] **B** + **H** → select sequence
 - [ ] **C** → n/a
-- [ ] **C** + **A →** load from save slot
-- [ ] **C** + **B** → save into save slot
 - [ ] **C** + **H** → select save slot
+- [ ] **C** + **A** load from save slot
+- [ ] **C** + **B** → save into save slot
 
 ### combo knobs
 
