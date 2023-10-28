@@ -11,7 +11,7 @@ import (
 
 var DebugMode = false
 
-func GetSliceMarkers(fname string) (filename string, markers []int, err error) {
+func GetSliceMarkers(fname string) (filename string, start []int, end []int, err error) {
 	files, err := unzipFile(fname)
 	if err != nil {
 		return
@@ -21,8 +21,20 @@ func GetSliceMarkers(fname string) (filename string, markers []int, err error) {
 	if err != nil {
 		return
 	}
+	markers := []int{}
 	for _, d := range data.Samples.Sample[0].SliceMarkers.SliceMarker {
 		markers = append(markers, d.SamplePosition)
+	}
+	if len(markers) < 2 {
+		err = fmt.Errorf("not enough markers")
+		return
+	}
+	for i, _ := range markers {
+		if i == 0 {
+			continue
+		}
+		start = append(start, markers[i-1])
+		end = append(end, markers[i])
 	}
 
 	if !DebugMode {
