@@ -171,7 +171,7 @@ void button_key_off_any(uint8_t key) {
 void button_key_on_single(uint8_t key) {
   printf("on single %d\n", key);
   if (key < 4) {
-  } else {
+  } else if (key >= 4) {
     // 1-16
     if (mode_jump_mash == MODE_JUMP) {
       // 1-16 (jump mode)
@@ -181,6 +181,9 @@ void button_key_on_single(uint8_t key) {
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
+      if (toggle_chain_rec) {
+        Chain_add_current(chain, key - 4, beat_current);
+      }
     } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
@@ -237,6 +240,25 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         if (banks[key2 - 4]->num_samples > 0) {
           sel_bank_select = key2 - 4;
         }
+      }
+    }
+  } else if (key1 == KEY_B) {
+    // B
+    if (key2 == KEY_A) {
+      // B + A
+      // toggle play sequence
+      toggle_chain_play = !toggle_chain_play;
+      toggle_chain_rec = false;
+    } else if (key2 == KEY_C) {
+      // B + C
+      // toggle record sequence
+      toggle_chain_rec = !toggle_chain_rec;
+      toggle_chain_play = false;
+      if (toggle_chain_rec) {
+        Chain_clear_seq_current(chain);
+        printf("sequence recording on\n");
+      } else {
+        printf("sequence recording off\n");
       }
     }
   }
