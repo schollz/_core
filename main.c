@@ -101,7 +101,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[0]
-                 ->stop_condition != 0) {
+                 ->stop_condition == PLAY_MODE_CLASSIC) {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
       // keep to the beat
@@ -229,8 +229,8 @@ void input_handling() {
 
     adc_select_input(2);
     LEDS_render(leds);
-    // new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
-    new_vol = 100;
+    new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
+    // new_vol = 100;
     if (new_vol != sf->vol) {
       sf->vol = new_vol;
       printf("sf-vol: %d\n", sf->vol);
