@@ -199,7 +199,8 @@ void PCA9552_render(PCA9552 *pca) {
   }
 }
 
-PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
+PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use,
+                        uint8_t row_map[16], uint8_t col_map[16]) {
   PCA9552 *pca = (PCA9552 *)malloc(sizeof(PCA9552));
   pca->address = deviceAddress;
   pca->i2c = i2c_use;
@@ -228,24 +229,6 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use) {
   //                      0, 1, 2, 3,
   //                      //
   //                      0, 1, 2, 3};
-
-  uint8_t row_map[] = {// row 1
-                       0, 0, 2, 3,
-                       // row 2
-                       1, 0, 3, 3,
-                       // row 3
-                       0, 1, 3, 2,
-                       // row 4
-                       1, 1, 2, 2};
-
-  uint8_t col_map[] = {//
-                       3, 2, 3, 0,
-                       //
-                       3, 0, 3, 2,
-                       //
-                       1, 0, 1, 0,
-                       //
-                       1, 2, 1, 2};
 
   for (uint8_t i = 0; i < 16; i++) {
     pca->row[i] = row_map[i];

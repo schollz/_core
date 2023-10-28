@@ -58,7 +58,26 @@ LEDS *LEDS_create() {
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
   gpio_pull_up(I2C_SDA_PIN);
   gpio_pull_up(I2C_SCL_PIN);
-  leds->pca = PCA9552_create(0x60, i2c_default);
+
+  // my unique PCA9552 wiring requires a unique mapping
+  uint8_t row_map[] = {// row 1
+                       0, 0, 2, 3,
+                       // row 2
+                       1, 0, 3, 3,
+                       // row 3
+                       0, 1, 3, 2,
+                       // row 4
+                       1, 1, 2, 2};
+  uint8_t col_map[] = {//
+                       3, 2, 3, 0,
+                       //
+                       3, 0, 3, 2,
+                       //
+                       1, 0, 1, 0,
+                       //
+                       1, 2, 1, 2};
+
+  leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }
