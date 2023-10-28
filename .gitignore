@@ -99,3 +99,7 @@ dev/renoise/Instrument.xml
 dev/renoise/*.wav
 dev/renoise/*.flac
 dev/renoise/*.xrni
+lib/op1/*.aif
+lib/renoise/*.xml
+lib/renoise/*.xrni
+lib/renoise/*.flac
