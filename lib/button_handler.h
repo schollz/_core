@@ -248,6 +248,23 @@ void button_handler(ButtonMatrix *bm) {
       printf("%d ", key_pressed[i]);
     }
     printf("\n");
+
+    // B + H + H...
+    // chain: select sequences to chain together
+    if (key_pressed[0] == KEY_B) {
+      uint8_t *links = malloc(sizeof(uint8_t) * (key_pressed_num - 1));
+      uint16_t count = 0;
+      for (uint8_t i = 0; i < key_pressed_num; i++) {
+        if (key_pressed[i] - 4 >= 0) {
+          links[count] = key_pressed[i] - 4;
+          count++;
+        }
+      }
+      if (count > 0) {
+        Chain_link(chain, links, count);
+      }
+      free(links);
+    }
     key_timer = 0;
     key_pressed_num = 0;
   }
