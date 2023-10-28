@@ -40,7 +40,7 @@ S is nominally "shift"
 - [ ] **S** + **C** → toggle jump/mash mode
 - [ ] **A** → show current bank (dim) + sample (bright)
 - [ ] **A** + **H** + **H** → select bank (1st) + sample (2nd)
-- [ ] **A** + **B** → ?
+- [ ] **A** + **B** → toggle one-shot vs classic
 - [ ] **A** + **C** → ?
 - [ ] **B** → n/a
 - [ ] **B** + **H** + **H**... → create chain of sequences
