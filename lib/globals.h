@@ -1,5 +1,6 @@
 #ifndef GLOBALS_LIB
 #define GLOBALS_LIB 1
+
 // audio_pool.h
 audio_buffer_pool_t *ap;
 
