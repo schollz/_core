@@ -304,6 +304,10 @@ int main() {
 
   sdcard_startup();
 
+  // TODO
+  // load chain from SD card
+  //   Chain_load(chain, &sync_using_sdcard);
+
 #ifdef INCLUDE_FILTER
   resonantfilter[0] =
       ResonantFilter_create(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
