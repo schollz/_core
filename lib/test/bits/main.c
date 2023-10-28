@@ -42,6 +42,11 @@ void test2(uint8_t s) {
   }
 }
 
+// Round to nearest 5:
+uint16_t round_uint16_to(uint16_t num, uint16_t multiple) {
+  return (((2 * num) + multiple) / (2 * multiple)) * multiple;
+}
+
 int main() {
   unsigned int num1;
   unsigned int num2;
@@ -56,5 +61,10 @@ int main() {
 
   test2(2);
   test2(5);
+
+  printf("%d\n", round_uint16_to(35, 24));
+  printf("%d\n", round_uint16_to(0, 1));
+  printf("%d\n", round_uint16_to(1, 1));
+
   return 0;
 }
