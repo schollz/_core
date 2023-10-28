@@ -248,6 +248,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // B + A
       // toggle play sequence
       toggle_chain_play = !toggle_chain_play;
+      if (toggle_chain_rec) {
+        Chain_save(chain, &sync_using_sdcard);
+      }
+      if (toggle_chain_play) {
+        Chain_load(chain, &sync_using_sdcard);
+      }
       toggle_chain_rec = false;
       Chain_restart(chain);
       if (toggle_chain_play) {
@@ -258,6 +264,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     } else if (key2 == KEY_C) {
       // B + C
       // toggle record sequence
+      if (toggle_chain_rec) {
+        Chain_save(chain, &sync_using_sdcard);
+      }
       toggle_chain_rec = !toggle_chain_rec;
       toggle_chain_play = false;
       if (toggle_chain_rec) {
