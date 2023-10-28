@@ -27,6 +27,17 @@
 
 #define SEQUENCER_MAX_STEPS 255
 
+uint16_t round_uint16_to(uint16_t num, uint16_t multiple) {
+  if (multiple <= 1) {
+    return num;
+  }
+  num = (((2 * num) + multiple) / (2 * multiple)) * multiple;
+  if (num > 0) {
+    return num - 1;
+  }
+  return 0;
+}
+
 typedef struct Sequencer {
   // stored data
   uint8_t rec_pos;
@@ -34,6 +45,10 @@ typedef struct Sequencer {
   uint8_t rec_key[SEQUENCER_MAX_STEPS];
   uint16_t rec_steps[SEQUENCER_MAX_STEPS];
   uint32_t rec_step_offset;
+
+  // quantization
+  // TODO: implement quantization
+  uint8_t quantization;  // 1, 6, 12, 24, 48, 96, 192
 
   // playing data
   uint8_t play_pos;
@@ -50,6 +65,7 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_steps[i] = 0;
   }
   seq->play_finished = true;
+  seq->quantization = 1;
 }
 
 Sequencer *Sequencer_create() {
@@ -74,6 +90,10 @@ void Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
   }
 }
 
+void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
+  seq->quantization = quantization;
+}
+
 int8_t Sequencer_emit(Sequencer *seq, uint32_t step) {
   if (seq->rec_len == 0) {
     return -1;
@@ -86,7 +106,8 @@ int8_t Sequencer_emit(Sequencer *seq, uint32_t step) {
   if (seq->play_step_offset == 0) {
     seq->play_step_offset = step;
   }
-  if (step - seq->play_step_offset == seq->rec_steps[seq->play_pos]) {
+  if (step - seq->play_step_offset ==
+      round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
     int8_t key = seq->rec_key[seq->play_pos];
     ++seq->play_pos;
     if (seq->play_pos >= seq->rec_len) {

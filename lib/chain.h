@@ -70,6 +70,10 @@ void Chain_add(Chain *c, uint8_t seq, uint8_t key, uint32_t step) {
   Sequencer_add(c->seq[seq], key, step);
 }
 
+void Chain_quantize(Chain *c, uint8_t seq, uint16_t quantization) {
+  Sequencer_quantize(c->seq[seq], quantization);
+}
+
 void Chain_add_current(Chain *c, uint8_t key, uint32_t step) {
   printf("[chain] add key %d at step %d to sequence %d\n", key, step,
          c->rec_seq[c->rec_last]);
@@ -89,6 +93,7 @@ int8_t Chain_emit(Chain *c, uint32_t step) {
         c->rec_cur = 0;
       }
     }
+    beat = Sequencer_emit(c->seq[c->rec_seq[c->rec_cur]], step);
   }
   return beat;
 }
