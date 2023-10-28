@@ -182,7 +182,7 @@ void button_key_on_single(uint8_t key) {
       dub_step_divider = 0;
       dub_step_beat = beat_current;
       if (toggle_chain_rec) {
-        Chain_add_current(chain, key - 4, beat_current);
+        Chain_add_current(chain, key - 4, bpm_timer_counter);
       }
     } else if (mode_jump_mash == MODE_MASH) {
       // 1-16 (mash mode)
@@ -249,6 +249,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // toggle play sequence
       toggle_chain_play = !toggle_chain_play;
       toggle_chain_rec = false;
+      Chain_restart(chain);
+      if (toggle_chain_play) {
+        printf("[button_handler] sequence playback on\n");
+      } else {
+        printf("[button_handler] sequence playback off\n");
+      }
     } else if (key2 == KEY_C) {
       // B + C
       // toggle record sequence
@@ -256,9 +262,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       toggle_chain_play = false;
       if (toggle_chain_rec) {
         Chain_clear_seq_current(chain);
-        printf("sequence recording on\n");
+        printf("[button_handler] sequence recording on\n");
       } else {
-        printf("sequence recording off\n");
+        printf("[button_handler] sequence recording off\n");
       }
     }
   }
@@ -287,6 +293,7 @@ void button_handler(ButtonMatrix *bm) {
         }
       }
       if (count > 0) {
+        toggle_chain_rec = false;
         Chain_link(chain, links, count);
       }
       free(links);

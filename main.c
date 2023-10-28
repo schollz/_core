@@ -89,6 +89,15 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         printf("%d %ld\n", phase_new, time_us_32());
       }
     }
+  } else if (toggle_chain_play) {
+    int8_t beat = Chain_emit(chain, bpm_timer_counter);
+    if (beat > -1) {
+      printf("beat: %d\n", beat);
+      beat_current = beat;
+      LEDS_clearAll(leds, LED_STEP_FACE);
+      LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
+      do_update_phase_from_beat_current();
+    }
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[0]
