@@ -40,30 +40,31 @@ int main() {
   // this one will not be played, it will be the beginning of the next
   Chain_add(chain, 0, 4, 91 + 13);
   Sequencer_print(&chain->seq[0]);
-  // Chain_quantize(chain, 0, 6);
+  Chain_quantize(chain, 0, 6);
+  Sequencer_print(&chain->seq[0]);
 
-  // Chain_add(chain, 1, 5, 2);
-  // Chain_add(chain, 1, 6, 2 + 7);
-  // Chain_add(chain, 1, 7, 2 + 13);
-  // // this one will not be played, it will be the beginning of the next
-  // Chain_add(chain, 1, 8, 2 + 21);
-  // // Chain_quantize(chain, 1, 4);
+  Chain_add(chain, 1, 5, 2);
+  Chain_add(chain, 1, 6, 2 + 7);
+  Chain_add(chain, 1, 7, 2 + 13);
+  // this one will not be played, it will be the beginning of the next
+  Chain_add(chain, 1, 8, 2 + 21);
+  // Chain_quantize(chain, 1, 10);
 
-  // uint8_t links[] = {0, 1, 1};
-  // Chain_link(chain, links, 3);
+  uint8_t links[] = {0, 1, 1};
+  Chain_link(chain, links, 3);
 
-  // printf("%d\n", round_uint16_to(0, 4));
-  // printf("%d\n", round_uint16_to(1, 4));
-  // printf("%d\n", round_uint16_to(7, 4));
-  // printf("%d\n", round_uint16_to(13, 4));
+  printf("%d\n", round_uint16_to(0, 4));
+  printf("%d\n", round_uint16_to(1, 4));
+  printf("%d\n", round_uint16_to(7, 4));
+  printf("%d\n", round_uint16_to(13, 4));
   // // BEAT MUST START ON 1!
-  // for (uint16_t i = 1; i < 60; i++) {
-  //   int8_t beat = Chain_emit(chain, i);
-  //   if (beat != -1) {
-  //     printf("chain %d -> beat %d -> key %d\n", Chain_get_current(chain), i,
-  //            beat);
-  //   }
-  // }
+  for (uint16_t i = 1; i < 90; i++) {
+    int8_t beat = Chain_emit(chain, i);
+    if (beat != -1) {
+      printf("beat %02d) chain %d -> key %d\n", i, Chain_get_current(chain),
+             beat);
+    }
+  }
 
   return 0;
 }
