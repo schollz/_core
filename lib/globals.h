@@ -67,7 +67,6 @@ float retrig_vol_step = 0;
 // mode toggles
 //   mode  ==0  ==1
 bool mode_jump_mash = 0;
-bool mode_samp_bank = 0;
 bool mode_mute = 0;
 bool mode_play = 0;
 

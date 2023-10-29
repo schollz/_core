@@ -417,28 +417,6 @@ void button_handler(ButtonMatrix *bm) {
     }
   }
 
-  // if (key_on_buttons_last[KEY_A] != key_on_buttons[KEY_A]) {
-  //   LEDS_clearAll(leds, LED_STEAL_FACE);
-  //   LEDS_render(leds);
-  // } else if (key_on_buttons[KEY_A]) {
-  //   LEDS_clearAll(leds, LED_STEAL_FACE);
-  //   if (mode_samp_bank == 0) {
-  //     // sample select mode
-  //     for (uint8_t i = 0; i < banks[sel_bank_select]->num_samples; i++) {
-  //       LEDS_set(leds, LED_STEAL_FACE, 4 + i, 1);
-  //     }
-  //     LEDS_set(leds, LED_STEAL_FACE, KEY_B, 2);
-  //     LEDS_set(leds, LED_STEAL_FACE, 4 + sel_sample_cur, 3);
-  //   } else {
-  //     // bank select mode
-  //     for (uint8_t i = 0; i < 16; i++) {
-  //       if (banks[i]->num_samples > 0) {
-  //         LEDS_set(leds, LED_STEAL_FACE, 4 + i, 1);
-  //       }
-  //     }
-  //     LEDS_set(leds, LED_STEAL_FACE, KEY_C, 2);
-  //     LEDS_set(leds, LED_STEAL_FACE, 4 + sel_bank_select, 3);
-  //   }
   if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
     LEDS_clearAll(leds, LED_STEAL_FACE);
     if (key_total_pressed > 0) {
@@ -448,9 +426,7 @@ void button_handler(ButtonMatrix *bm) {
       key_b_sample_select = false;
     }
     LEDS_render(leds);
-  }
-
-  if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
+  } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
     LEDS_clearAll(leds, LED_STEAL_FACE);
     if (key_total_pressed == 1) {
       for (uint8_t i = 0; i < 16; i++) {
@@ -462,11 +438,6 @@ void button_handler(ButtonMatrix *bm) {
     }
     LEDS_render(leds);
   }
-  // if (mode_samp_bank) {
-  //   LEDS_set(leds, LED_PRESS_FACE, sel_sample_cur + 4, 0);
-  // } else {
-  //   LEDS_set(leds, LED_PRESS_FACE, sel_bank_cur + 4, 0);
-  // }
 
   if (do_update_top) {
     go_update_top();
