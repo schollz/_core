@@ -7,7 +7,6 @@
 #define KEY_C 3
 #define MODE_JUMP 0
 #define MODE_MASH 1
-#define MODE_SAMP 0
 #define MODE_BANK 1
 
 uint8_t key_held_num = 0;
@@ -237,21 +236,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         key_b_sample_select = false;
         printf("sel_sample_next: %d\n", sel_sample_next);
       }
-      // printf("[button_handler] mode_samp_bank: %d\n", mode_samp_bank);
-
-      // if (mode_samp_bank == 0) {
-      //   // A+H (sample  mode)
-      //   // select sample
-      //   sel_bank_next = sel_bank_select;
-      //   sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
-      //   fil_current_change = true;
-      // } else {
-      //   // A+H (bank mode)
-      //   // select bank
-      //   if (banks[key2 - 4]->num_samples > 0) {
-      //     sel_bank_select = key2 - 4;
-      //   }
-      // }
     }
   } else if (key1 == KEY_B) {
     // B
