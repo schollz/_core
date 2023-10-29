@@ -32,7 +32,9 @@ uint16_t round_uint16_to(uint16_t num, uint16_t multiple) {
     return num;
   }
   num = (((2 * num) + multiple) / (2 * multiple)) * multiple;
-  if (num > 0) {
+  if (num < multiple) {
+    return multiple;
+  } else if (num > 0) {
     return num - 1;
   }
   return 0;
