@@ -75,6 +75,8 @@ Sequencer *Sequencer_create() {
   return seq;
 }
 
+bool Sequencer_has_data(Sequencer *seq) { return seq->rec_len > 0; }
+
 // Sequencer_add adds a key and step to the sequencer.
 // The start of the sequence is always 0 and the last item of the sequence
 // is not played.

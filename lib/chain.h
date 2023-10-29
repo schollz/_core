@@ -64,6 +64,7 @@ void Chain_link(Chain *c, uint8_t *seq, uint16_t len) {
     printf("%d: %d\n", i, seq[i]);
   }
   c->rec_last = len - 1;
+  c->rec_cur = c->rec_last;
 }
 
 void Chain_add(Chain *c, uint8_t seq, uint8_t key, uint32_t step) {
@@ -72,6 +73,10 @@ void Chain_add(Chain *c, uint8_t seq, uint8_t key, uint32_t step) {
 
 void Chain_quantize(Chain *c, uint8_t seq, uint16_t quantization) {
   Sequencer_quantize(&c->seq[seq], quantization);
+}
+
+void Chain_quantize_current(Chain *c, uint16_t quantization) {
+  Sequencer_quantize(&c->seq[c->rec_seq[c->rec_last]], quantization);
 }
 
 void Chain_add_current(Chain *c, uint8_t key, uint32_t step) {
@@ -99,6 +104,16 @@ int8_t Chain_emit(Chain *c, uint32_t step) {
     beat = Sequencer_emit(&c->seq[c->rec_seq[c->rec_cur]], step);
   }
   return beat;
+}
+
+bool Chain_has_data(Chain *c, uint8_t seq) {
+  return Sequencer_has_data(&c->seq[seq]);
+}
+
+void Chain_set_current(Chain *c, uint8_t cur) {
+  c->rec_seq[0] = cur;
+  c->rec_cur = 0;
+  c->rec_last = 0;
 }
 
 uint8_t Chain_get_current(Chain *c) { return c->rec_seq[c->rec_cur]; }
