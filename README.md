@@ -54,21 +54,35 @@ S is nominally "shift"
 
 ### combo knobs
 
-- [ ] **X** → all probabilities (chaos)
-- [ ] **Y** → filter
-- [ ] **Z** → volume
+- [ ] **X** → n/a
+- [ ] **Y** → n/a
+- [ ] **Z** → n/a
 - [ ] **S** + **X** → tempo
-- [ ] **S** + **Y** → pitch
-- [ ] **S** + **Z** → gate
-- [ ] **A** + **X** → distortion level
-- [ ] **A** + **Y** → distortion wet
-- [ ] **A** + **Z** → saturation wet
-- [ ] **B** + **X** → probability jump away
-- [ ] **B** + **Y** → probability reverse
-- [ ] **B** + **Z** → probability probability retrig
-- [ ] **C** + **X** → probability tunnel
-- [ ] **C** + **Y** → probability pitch down
-- [ ] **C** + **Z** → probability jump stay
+- [ ] **S** + **Y** → filter
+- [ ] **S** + **Z** → volume
+- [ ] **A** + **X** → 
+- [ ] **A** + **Y** → 
+- [ ] **A** + **Z** → 
+- [ ] **B** + **X** → 
+- [ ] **B** + **Y** → quantize
+- [ ] **B** + **Z** → 
+- [ ] **C** + **X** → 
+- [ ] **C** + **Y** → 
+- [ ] **C** + **Z** → 
+
+#### needs
+
+- pitch
+- gate
+- all probabilities
+- distortion level
+- distortion wet
+- saturation wet
+- probability jump
+- probability reverse
+- probability retrig
+- probability tunnel
+- probability repitch
 
 ### visualization
 
