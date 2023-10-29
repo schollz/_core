@@ -1,8 +1,43 @@
 # zeptocore
 
-audio mangler for 16-bit stereo samples straight from an SD card.
+audio mangler for 16-bit samples straight from an SD card.
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
+
+## what the spec
+
+- mono or stereo playback of 16-bit audio @ 44.1 kHz sampling rate
+- sd-card storage for audio + data
+- recall up to 256 audio files (16 banks of 16 tracks)
+- digital low-pass and high-pass filter
+- realtime sequencer with optional quantization
+- two modes for realtime manipulation:
+	- jump mode for instant splice cuts (crossfaded)
+	- mash mode for instant fx additions
+- responsive, latency is between 5-10 ms
+- powered by USB or AAA batteries (consumes ~100 mA, should last ~12 hours on batteries)
+- can load in pre-spliced files from Renoise (`.xnri`) or OP-1 files (`.aif`)
+
+## what the heck
+
+
+
+- (goal) open-source firmare code + electronic schematics
+- (goal) simple tactile input with visual input unessecary
+- (goal) sample-based manipulation
+- (goal) longevity 
+- (non-goal) synthesis
+- (non-goal) plastic enclosures
+
+
+
+there exist a lot of musical instruments. musical instruments exist to provide a bridge between musical ideas and expression. the quintessential instrument, to me, is the piano which amazingly can double as a rhythmic instrument and a melodic instrument. even more amazingly, it can be utilized without visual input - requiring only tactile input.
+
+currently, for me personally, I feel like there is an immense amount of sonic space to explore in generating sounds from pre-recorded samples. there are methods of granulating, soft-cutting, re-recording. there are technical subtlites of interpolation, resampling, filtering. 
+
+I wanted a tool to explore samples in a tactile way, without needing visual input. 
+
+tactile input that lack nessecary visual input.
 
 ## ideas
 
@@ -10,12 +45,7 @@ audio mangler for 16-bit stereo samples straight from an SD card.
 
 ## todos
 
-- [ ] use Go to generate wav file information containing bpm, number of slices, array of slice positions, binary flag whether it is bpm-transposable, initialized flag about stop conditions
-- [ ] read wav file information in zeptocore
-- [ ] use slice positions / number read from wav information
-- [ ] obey different stop conditions (continuing playing, stop after end of slice, stop after lifting finger)
-- [ ] add timestretching
-- [ ] choose better boundaries
+- [ ] add timestretching, alt sounds (pre-generated)
 
 ## spec
 
@@ -25,7 +55,6 @@ buttons: S, A, B, C, H (H = 1-16)
 
 knobs: X, Y, Z
 
-S is nominally "shift"
 
 
 ### combo buttons
@@ -51,6 +80,10 @@ S is nominally "shift"
 - [ ] **C** + **H** → select save slot
 - [ ] **C** + **A** load from save slot
 - [ ] **C** + **B** → save into save slot
+
+#### needs
+
+- toggle sync mode (no sync, in sync, out sync, in + out sync)
 
 ### combo knobs
 
@@ -84,16 +117,3 @@ S is nominally "shift"
 - probability tunnel
 - probability repitch
 
-### visualization
-
-- [ ] A light: bright on playback
-- [ ] B light: blink on sequence recording, bright on sequence playing
-- [ ] C light:
-
-
-### knob functions
-
-
-## known bugs
-
-- when uploading new files, the audio plays but buttons do not work. when resetting, everything works. (blinking z)
