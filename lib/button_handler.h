@@ -17,6 +17,7 @@ uint8_t key_pressed_num = 0;
 uint8_t key_total_pressed = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 int16_t key_on_buttons_last[BUTTONMATRIX_BUTTONS_MAX];
+bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 bool key_b_sample_select = false;
 
@@ -222,9 +223,15 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     // A
     if (key2 == KEY_B) {
       // A+B
+      // toggle one-shot vs classic
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition =
+          (banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition +
+           1) %
+          3;
     } else if (key2 == KEY_C) {
       // A+C
     } else if (key2 > 3) {
+      // A+H
       if (!key_b_sample_select) {
         sel_bank_next = banks_with_samples[(key2 - 4) % banks_with_samples_num];
         key_b_sample_select = true;
@@ -315,8 +322,9 @@ void button_handler(ButtonMatrix *bm) {
 
   // check queue for buttons that turned off
   bool do_update_top = false;
-  bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
-
+  for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+    key_did_go_off[i] = false;
+  }
   for (uint8_t i = 0; i < bm->off_num; i++) {
     LEDS_set(leds, LED_PRESS_FACE, bm->off[i], 0);
     key_total_pressed--;
@@ -421,9 +429,5 @@ void button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, LED_STEAL_FACE, Chain_get_current(chain) + 4, 3);
     }
     LEDS_render(leds);
-  }
-
-  if (do_update_top) {
-    go_update_top();
   }
 }

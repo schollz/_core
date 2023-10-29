@@ -101,7 +101,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[0]
-                 ->stop_condition == PLAY_MODE_CLASSIC) {
+                 ->stop_condition < PLAY_MODE_ONESHOT_STOP) {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
       // keep to the beat

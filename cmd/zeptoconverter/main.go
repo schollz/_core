@@ -228,7 +228,7 @@ func processSound0(fnameIn string, fnameOut string, channels int) (beats float64
 		os.Remove(pieceJoin)
 	}()
 
-	_, _, err = run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*flagOversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-6")
+	_, _, err = run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*flagOversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-1")
 	if err != nil {
 		log.Error(err)
 		return
