@@ -226,17 +226,16 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     } else if (key2 == KEY_C) {
       // A+C
     } else if (key2 > 3) {
-      printf("key_b_sample_select: %d\n", key_b_sample_select);
       if (!key_b_sample_select) {
-        if (banks[key2 - 4]->num_samples > 0) {
-          sel_bank_select = key2 - 4;
-          key_b_sample_select = true;
-        }
+        sel_bank_next = banks_with_samples[(key2 - 4) % banks_with_samples_num];
+        key_b_sample_select = true;
+        printf("sel_bank_next: %d\n", sel_bank_next);
       } else {
         sel_bank_next = sel_bank_select;
         sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
         fil_current_change = true;
         key_b_sample_select = false;
+        printf("sel_sample_next: %d\n", sel_sample_next);
       }
       // printf("[button_handler] mode_samp_bank: %d\n", mode_samp_bank);
 
@@ -442,7 +441,7 @@ void button_handler(ButtonMatrix *bm) {
   //   }
   if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
     LEDS_clearAll(leds, LED_STEAL_FACE);
-    if (key_total_pressed < 0) {
+    if (key_total_pressed > 0) {
       LEDS_set(leds, LED_STEAL_FACE, sel_bank_next + 4, 2);
       LEDS_set(leds, LED_STEAL_FACE, sel_sample_next + 4, 3);
     } else {

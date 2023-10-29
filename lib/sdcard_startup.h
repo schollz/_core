@@ -29,6 +29,8 @@ void sdcard_startup() {
     if (banks[bi]->num_samples == 0) {
       printf("[keyboard] banks[%d]: no samples\n", bi);
     } else {
+      banks_with_samples[banks_with_samples_num] = bi;
+      banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
         if (bi == 0 && si == 0) {
           printf("[keyboard] banks[%d]->sample[%d].snd[0]->name: %s\n", bi, si,
