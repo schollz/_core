@@ -33,6 +33,20 @@ dev/zeptoconverter/3/*
 dev/zeptoconverter/zepoconverter
 dev/zeptoconverter/banks/
 dev/zeptoconverter/banks_processed/
+cmd/zeptoconverter/1.wav
+cmd/zeptoconverter/1/
+cmd/zeptoconverter/*.wav
+cmd/zeptoconverter/*flac
+cmd/zeptoconverter/banks/
+cmd/zeptoconverter/test/
+cmd/zeptoconverter/test2/
+cmd/zeptoconverter/zeptoconverter
+cmd/zeptoconverter/zeptocore/
+cmd/zeptoconverter/zz/
+lib/op1/lofi.wav
+lib/sox/.gitignore
+lib/sox/LICENSE
+lib/sox/README*
 
 # Object files
 *.o

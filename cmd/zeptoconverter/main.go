@@ -23,7 +23,9 @@ import (
 
 	log "github.com/schollz/logger"
 	"github.com/schollz/progressbar/v3"
-	"github.com/schollz/sox"
+	"github.com/schollz/zeptoconverter/lib/op1"
+	"github.com/schollz/zeptoconverter/lib/renoise"
+	"github.com/schollz/zeptoconverter/lib/sox"
 )
 
 var flagOversampling int
@@ -68,6 +70,7 @@ func init() {
 }
 
 func main() {
+	var err error
 	flag.Parse()
 	log.SetLevel("debug")
 
@@ -99,6 +102,24 @@ func main() {
 				fpathRelative = fpathRelative[1:]
 			}
 		}
+
+		var slicesStart []int
+		var slicesEnd []int
+		if filepath.Ext(f) == ".xrni" {
+			f, slicesStart, slicesEnd, err = renoise.GetSliceMarkers(f)
+			_, filename = filepath.Split(f)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+		} else if filepath.Ext(f) == ".aif" {
+			slicesStart, slicesEnd, err = op1.GetSliceMarkers(f)
+			if err != nil {
+				slicesStart = []int{}
+				slicesEnd = []int{}
+			}
+		}
+
 		log.Debugf("fpath: %s", fpath)
 		log.Debugf("filename: %s", filename)
 		log.Debugf("fpathRelative: %s", fpathRelative)
@@ -123,7 +144,7 @@ func main() {
 			log.Error(err)
 			return
 		}
-		err = processInfo0(filenameSD, beats, bpm, channels)
+		err = processInfo0(filenameSD, beats, bpm, channels, slicesStart, slicesEnd)
 		if err != nil {
 			log.Error(err)
 			return
@@ -132,7 +153,7 @@ func main() {
 	}
 }
 
-func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (err error) {
+func processInfo0(filenameSD string, beats float64, bpm float64, channels int, slicesStartFile []int, slicesEndFile []int) (err error) {
 	finfo, err := os.Stat(path.Join(flagFolderOut, filenameSD))
 	if err != nil {
 		log.Error(err)
@@ -141,12 +162,21 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 	totalSamples := float64(finfo.Size()-44) / float64(channels) / 2
 	totalSamples = totalSamples - 22050*2*float64(flagOversampling) // total samples excluding padding = each side is padded with extra samples
 	fsize := totalSamples * float64(channels) * 2                   // total size excluding padding = totalSamples channels x 2 bytes
-	slices := []uint32{}
-	slicesEnd := []uint32{}
 	sliceNum := uint16(beats * 2)
+	slicesStart := []uint32{}
+	slicesEnd := []uint32{}
 	for i := 0.0; i < beats*2; i++ {
-		slices = append(slices, uint32(math.Round(fsize*i/float64(sliceNum)))/4*4)
+		slicesStart = append(slicesStart, uint32(math.Round(fsize*i/float64(sliceNum)))/4*4)
 		slicesEnd = append(slicesEnd, uint32(math.Round(fsize*(i+1)/float64(sliceNum)))/4*4)
+	}
+	if len(slicesStartFile) > 0 {
+		sliceNum = uint16(len(slicesStartFile))
+		slicesStart = []uint32{}
+		slicesEnd = []uint32{}
+		for i, _ := range slicesStartFile {
+			slicesStart = append(slicesStart, uint32(math.Round(float64(slicesStartFile[i])*float64(channels)*2/4*4)))
+			slicesEnd = append(slicesEnd, uint32(math.Round(float64(slicesEndFile[i])*float64(channels)*2/4*4)))
+		}
 	}
 	wav1 := WavFile{
 		NameLen:         uint16(len([]byte(filenameSD))),
@@ -155,7 +185,7 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int) (
 		BPM:             uint16(bpm),
 		Beats:           uint16(beats),
 		SliceNum:        sliceNum,
-		SliceStart:      slices,
+		SliceStart:      slicesStart,
 		SliceStop:       slicesEnd,
 		BPMTransposable: 0,
 		StopCondition:   0,
