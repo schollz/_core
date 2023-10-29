@@ -26,6 +26,7 @@
 #define SEQUENCER_LIB 1
 
 #define SEQUENCER_MAX_STEPS 255
+#define SEQUENCER_FINISHED -2
 
 uint16_t round_uint16_to(uint16_t num, uint16_t multiple) {
   if (multiple <= 1 || num == 0) {
@@ -52,7 +53,7 @@ typedef struct Sequencer {
 
   // playing data
   uint8_t play_pos;
-  uint32_t play_step_offset;
+  uint16_t play_step;
   bool play_finished;
 } Sequencer;
 
@@ -65,7 +66,7 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_steps[i] = 0;
   }
   seq->play_finished = true;
-  seq->quantization = 0;
+  seq->quantization = 1;
 }
 
 Sequencer *Sequencer_create() {
@@ -95,8 +96,10 @@ uint16_t Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
 void Sequencer_print(Sequencer *seq) {
   uint32_t step = 0;
   for (uint16_t i = 0; i < seq->rec_len; i++) {
-    printf("%d) %d -> key %d\n", i, step + seq->rec_steps[i], seq->rec_key[i]);
-    step += seq->rec_steps[i];
+    printf("%d) %d -> key %d\n", i,
+           step + round_uint16_to(seq->rec_steps[i], seq->quantization),
+           seq->rec_key[i]);
+    step += round_uint16_to(seq->rec_steps[i], seq->quantization);
   }
 }
 void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
@@ -104,31 +107,32 @@ void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
 }
 
 int8_t Sequencer_emit(Sequencer *seq, uint32_t step) {
+  int8_t key = -1;
   if (seq->rec_len == 0) {
-    return -1;
-  }
-  if (seq->play_finished) {
-    seq->play_finished = false;
-    seq->play_pos = 0;
-    seq->play_step_offset = 0;
-  }
-  if (seq->play_step_offset == 0) {
-    seq->play_step_offset = step;
-  }
-  printf("step %d, step-offset %d, next %d\n", step,
-         step - seq->play_step_offset,
-         round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization));
-  if (step - seq->play_step_offset >=
-      round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
-    int8_t key = seq->rec_key[seq->play_pos];
-    ++seq->play_pos;
-    if (seq->play_pos >= seq->rec_len) {
-      seq->play_finished = true;
-      return -1;
-    }
     return key;
   }
-  return -1;
+  if (seq->play_finished) {
+    if (step % seq->quantization == 0) {
+      seq->play_finished = false;
+      seq->play_step = 0;
+    } else {
+      return key;
+    }
+  }
+  if (seq->play_step >=
+      round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
+    key = seq->rec_key[seq->play_pos];
+    ++seq->play_pos;
+    seq->play_step = 0;
+    if (seq->play_pos >= seq->rec_len) {
+      seq->play_finished = true;
+      seq->play_pos = 0;
+      seq->play_step = 0;
+      key = -2;
+    }
+  }
+  seq->play_step++;
+  return key;
 }
 
 bool Sequencer_is_finished(Sequencer *seq) { return seq->play_finished; }

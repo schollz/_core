@@ -89,7 +89,7 @@ void Chain_restart(Chain *c) { c->rec_cur = 0; }
 
 int8_t Chain_emit(Chain *c, uint32_t step) {
   int8_t beat = Sequencer_emit(&c->seq[c->rec_seq[c->rec_cur]], step);
-  if (beat == -1 && Sequencer_is_finished(&c->seq[c->rec_seq[c->rec_cur]])) {
+  if (beat == SEQUENCER_FINISHED) {
     if (c->rec_last > 0) {
       c->rec_cur++;
       if (c->rec_cur > c->rec_last) {
