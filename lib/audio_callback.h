@@ -133,7 +133,9 @@ void i2s_callback_func() {
     }
     // TODO change stop condition to variable
     if (banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition ==
-        PLAY_MODE_ONESHOT) {
+            PLAY_MODE_ONESHOT_GO ||
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition ==
+            PLAY_MODE_ONESHOT_STOP) {
       uint32_t next_phase =
           phases[0] + values_to_read * (phase_forward * 2 - 1);
       if ((phase_forward > 0 &&
