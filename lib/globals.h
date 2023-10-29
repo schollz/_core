@@ -116,6 +116,6 @@ inline void do_update_phase_from_beat_current() {
   gate_counter = 0;
   phase_change = true;
   audio_mute = false;
-  printf("do_update_phase_from_beat_current: %d\n", phase_new);
+  // printf("do_update_phase_from_beat_current: %d\n", phase_new);
 }
 #endif
