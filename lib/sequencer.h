@@ -48,7 +48,6 @@ typedef struct Sequencer {
   uint32_t rec_step_offset;
 
   // quantization
-  // TODO: implement quantization
   uint8_t quantization;  // 1, 6, 12, 24, 48, 96, 192
 
   // playing data
