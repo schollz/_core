@@ -22,6 +22,10 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef INCLUDE_STEREO
+#define INCLUDE_STEREO 0
+#endif
+
 typedef struct SampleInfo {
   char *name;
   uint32_t size;
@@ -179,16 +183,13 @@ uint8_t count_files(const char *dir, int num_channels) {
     return filelist_count;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-#ifndef INCLUDE_STEREO
-    if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
+    if (filelist_count >= 16) {
+      break;
+    }
+    if ((strstr(fno.fname, ".mono.wav.info") && INCLUDE_STEREO == 0) ||
+        (strstr(fno.fname, ".stereo.wav.info") && INCLUDE_STEREO == 1)) {
       filelist_count++;
     }
-#endif
-#ifdef INCLUDE_STEREO
-    if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
-      filelist_count++;
-    }
-#endif
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
@@ -219,20 +220,16 @@ SampleList *list_files(const char *dir, int num_channels) {
   }
   uint8_t filelist_count = 0;
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-#ifndef INCLUDE_STEREO
-    if (strstr(fno.fname, ".mono.wav.info") && filelist_count < 16) {
+    if (filelist_count >= 16) {
+      break;
+    }
+
+    if ((strstr(fno.fname, ".mono.wav.info") && INCLUDE_STEREO == 0) ||
+        (strstr(fno.fname, ".stereo.wav.info") && INCLUDE_STEREO == 1)) {
       samplelist->sample[filelist_count].snd[0] =
           SampleInfo_load(dir, fno.fname);
       filelist_count++;
     }
-#endif
-#ifdef INCLUDE_STEREO
-    if (strstr(fno.fname, ".stereo.wav.info") && filelist_count < 16) {
-      samplelist->sample[filelist_count].snd[0] =
-          SampleInfo_load(dir, fno.fname);
-      filelist_count++;
-    }
-#endif
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
