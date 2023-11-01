@@ -144,7 +144,7 @@ func main() {
 			log.Error(err)
 			return
 		}
-		err = processInfo(filenameSD, beats, bpm, channels, slicesStart, slicesEnd)
+		err = processInfo(filenameSD, fmt.Sprintf("%s.info", filenameSD), beats, bpm, channels, slicesStart, slicesEnd)
 		if err != nil {
 			log.Error(err)
 			return
@@ -187,7 +187,7 @@ func createTimeStretched(fnameIn string, filenameSD string, beats float64, bpm f
 				slicesEndFile[j] = int(math.Round(float64(v) / ratio))
 			}
 		}
-		err = processInfo(fname, beats, bpm, channels, slicesStartFile, slicesEndFile)
+		err = processInfo(fname, fmt.Sprintf("%s.info.%d", filenameSD, i), beats, bpm, channels, slicesStartFile, slicesEndFile)
 		if err != nil {
 			log.Error(err)
 			return
@@ -196,7 +196,7 @@ func createTimeStretched(fnameIn string, filenameSD string, beats float64, bpm f
 	return
 }
 
-func processInfo(filenameSD string, beats float64, bpm float64, channels int, slicesStartFile []int, slicesEndFile []int) (err error) {
+func processInfo(filenameSD string, filenameInfo string, beats float64, bpm float64, channels int, slicesStartFile []int, slicesEndFile []int) (err error) {
 	finfo, err := os.Stat(path.Join(flagFolderOut, filenameSD))
 	if err != nil {
 		log.Error(err)
@@ -235,7 +235,7 @@ func processInfo(filenameSD string, beats float64, bpm float64, channels int, sl
 		Oversampling:    uint8(flagOversampling),
 		NumChannels:     uint8(channels),
 	}
-	err = writeWav(filenameSD, wav1)
+	err = writeWav(filenameSD, filenameInfo, wav1)
 	if err != nil {
 		log.Error(err)
 		return
@@ -284,7 +284,7 @@ func processSound(fnameIn string, fnameOut string, channels int) (beats float64,
 	return
 }
 
-func writeWav(filenameSD string, wav1 WavFile) (err error) {
+func writeWav(filenameSD string, filenameInfo string, wav1 WavFile) (err error) {
 	log.Debugf("wav: %+v", wav1)
 	buf := new(bytes.Buffer)
 	var data = []any{
@@ -316,7 +316,7 @@ func writeWav(filenameSD string, wav1 WavFile) (err error) {
 			log.Errorf("binary.Write failed: %s", err.Error())
 		}
 	}
-	fInfoWrite, _ := os.Create(path.Join(flagFolderOut, fmt.Sprintf("%s.info", filenameSD)))
+	fInfoWrite, _ := os.Create(path.Join(flagFolderOut, filenameInfo))
 	fInfoWrite.Write(buf2.Bytes())
 	fInfoWrite.Close()
 
