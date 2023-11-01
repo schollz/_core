@@ -139,21 +139,64 @@ func main() {
 		filename = filename[:len(filename)-len(filenameExt)] + newExt
 		filenameSD := path.Join(fpathRelative, filename)
 
-		beats, bpm, err := processSound0(f, path.Join(flagFolderOut, filenameSD), channels)
+		beats, bpm, err := processSound(f, path.Join(flagFolderOut, filenameSD), channels)
 		if err != nil {
 			log.Error(err)
 			return
 		}
-		err = processInfo0(filenameSD, beats, bpm, channels, slicesStart, slicesEnd)
+		err = processInfo(filenameSD, beats, bpm, channels, slicesStart, slicesEnd)
 		if err != nil {
 			log.Error(err)
 			return
 		}
+
+		err = createTimeStretched(f, filenameSD, beats, bpm, channels, slicesStart, slicesEnd, 4)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
 		bar.Add(1)
 	}
 }
 
-func processInfo0(filenameSD string, beats float64, bpm float64, channels int, slicesStartFile []int, slicesEndFile []int) (err error) {
+func createTimeStretched(fnameIn string, filenameSD string, beats float64, bpm float64, channels int, slicesStart []int, slicesEnd []int, count int) (err error) {
+	ratios := []float64{0.89089871814075, 0.79370052598483, 0.74915353843921, 0.6674199270861, 0.5946035575026, 0.52973154718099, 0.5, 0.44, .37, 0.25, 0.1}
+	for i, ratio := range ratios {
+		_, _, err = run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		fname := fmt.Sprintf("%s.%d.wav", filenameSD, i)
+		log.Debugf("creating timestretched %s", fname)
+		_, _, err = processSound("1.wav", path.Join(flagFolderOut, fname), channels)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		log.Debugf("created timestretched file: '%s'", fname)
+		// redo the slices according to the ratio
+		slicesStartFile := make([]int, len(slicesStart))
+		slicesEndFile := make([]int, len(slicesEnd))
+		if len(slicesStart) > 0 {
+			for j, v := range slicesStart {
+				slicesStartFile[j] = int(math.Round(float64(v) / ratio))
+			}
+			for j, v := range slicesEnd {
+				slicesEndFile[j] = int(math.Round(float64(v) / ratio))
+			}
+		}
+		err = processInfo(fname, beats, bpm, channels, slicesStartFile, slicesEndFile)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+func processInfo(filenameSD string, beats float64, bpm float64, channels int, slicesStartFile []int, slicesEndFile []int) (err error) {
 	finfo, err := os.Stat(path.Join(flagFolderOut, filenameSD))
 	if err != nil {
 		log.Error(err)
@@ -200,7 +243,7 @@ func processInfo0(filenameSD string, beats float64, bpm float64, channels int, s
 	return
 }
 
-func processSound0(fnameIn string, fnameOut string, channels int) (beats float64, bpm float64, err error) {
+func processSound(fnameIn string, fnameOut string, channels int) (beats float64, bpm float64, err error) {
 	beats, bpm, err = sox.GetBPM(fnameIn)
 	if err != nil {
 		log.Error(err)
@@ -273,7 +316,7 @@ func writeWav(filenameSD string, wav1 WavFile) (err error) {
 			log.Errorf("binary.Write failed: %s", err.Error())
 		}
 	}
-	fInfoWrite, _ := os.Create(path.Join(flagFolderOut, filenameSD+".info"))
+	fInfoWrite, _ := os.Create(path.Join(flagFolderOut, fmt.Sprintf("%s.info", filenameSD)))
 	fInfoWrite.Write(buf2.Bytes())
 	fInfoWrite.Close()
 
