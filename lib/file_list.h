@@ -186,8 +186,8 @@ uint8_t count_files(const char *dir, int num_channels) {
     if (filelist_count >= 16) {
       break;
     }
-    if ((strstr(fno.fname, ".mono.wav.info") && INCLUDE_STEREO == 0) ||
-        (strstr(fno.fname, ".stereo.wav.info") && INCLUDE_STEREO == 1)) {
+    if ((strstr(fno.fname, ".mono.wav.info0") && INCLUDE_STEREO == 0) ||
+        (strstr(fno.fname, ".stereo.wav.info0") && INCLUDE_STEREO == 1)) {
       filelist_count++;
     }
     fr = f_findnext(&dj, &fno); /* Search for next item */
@@ -223,9 +223,8 @@ SampleList *list_files(const char *dir, int num_channels) {
     if (filelist_count >= 16) {
       break;
     }
-
-    if ((strstr(fno.fname, ".mono.wav.info") && INCLUDE_STEREO == 0) ||
-        (strstr(fno.fname, ".stereo.wav.info") && INCLUDE_STEREO == 1)) {
+    if ((strstr(fno.fname, ".mono.wav.info0") && INCLUDE_STEREO == 0) ||
+        (strstr(fno.fname, ".stereo.wav.info0") && INCLUDE_STEREO == 1)) {
       samplelist->sample[filelist_count].snd[0] =
           SampleInfo_load(dir, fno.fname);
       filelist_count++;
