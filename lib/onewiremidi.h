@@ -80,8 +80,8 @@ void Onewiremidi_receive(Onewiremidi *om) {
   }
   om->last_time = t;
   uint8_t value = Onewiremidi_reverse_uint8_t(pio_sm_get(om->pio, om->sm));
-  printf("%d: %x\n", om->rbi, value);
-  om->rbs[om->rbi] = value;
+  // printf("%d: %x\n", om->rbi, value);
+  om->rbs[om->rbi] = ~value;
 
   if (value == MIDI_START && om->midi_start != NULL) {
     om->midi_start();

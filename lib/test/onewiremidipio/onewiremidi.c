@@ -49,7 +49,7 @@ int main() {
   printf("clock freq: %2.3f\n", (float)clock_get_hz(clk_sys));
 
   Onewiremidi *om;
-  om = Onewiremidi_new(pio0, 0, 18, midi_note_on, midi_note_off, midi_start,
+  om = Onewiremidi_new(pio0, 0, 22, midi_note_on, midi_note_off, midi_start,
                        midi_continue, midi_stop, NULL);
 
   while (true) {
