@@ -43,8 +43,8 @@ def run():
     # Calculate the sine of the x-values
     y_out = np.cos(np.pi / 2 * x)
     y_in = np.cos((1 - x) * np.pi / 2)
-    y2_in = np.sqrt(x)
-    y2_out = np.sqrt(1 - x)
+    y2_in = np.sqrt(np.sqrt(x))
+    y2_out = np.sqrt(np.sqrt(1 - x))
     y3 = 1 - np.log(1.7 * x + 1)
     y4 = 1 - x
 
@@ -90,6 +90,13 @@ def run():
     print(s)
     print("};")
 
+    print(f"static int32_t crossfade3_line[{block_size}]={{")
+    s = ""
+    for _, v in enumerate(y3):
+        s += f"{q16_16_float_to_fp(v)},"
+    print(s)
+    print("};")
+
     print(
         """
           
@@ -106,6 +113,13 @@ int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
           q16_16_multiply(
           q16_16_int16_to_fp(val),
           crossfade3_sqrt_out[i]
+          )
+            );
+          } else if (crossfade_type==CROSSFADE3_LINE) {
+            return q16_16_fp_to_int16(
+          q16_16_multiply(
+          q16_16_int16_to_fp(val),
+          crossfade3_line[i]
           )
             );
           } else {
@@ -130,6 +144,13 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
           q16_16_multiply(
           q16_16_int16_to_fp(val),
           crossfade3_sqrt_in[i]
+          )
+            );
+          } else if (crossfade_type==CROSSFADE3_LINE) {
+            return q16_16_fp_to_int16(
+          q16_16_multiply(
+          q16_16_int16_to_fp(val),
+          65536 - crossfade3_line[i]
           )
             );
           } else {
