@@ -41,29 +41,44 @@ def run():
     x = np.linspace(0, 1, block_size)
 
     # Calculate the sine of the x-values
-    y = (1 - np.sin(4 * np.pi * (x / 4) + np.pi / 2 + np.pi)) / 2
-    y2 = np.exp(-5.4 * x)
+    y_out = np.cos(np.pi / 2 * x)
+    y_in = np.cos((1 - x) * np.pi / 2)
+    y2_in = np.sqrt(x)
+    y2_out = np.sqrt(1 - x)
     y3 = 1 - np.log(1.7 * x + 1)
     y4 = 1 - x
 
     print(
         """#ifndef CROSSFADE3_LIB
-#define CROSSFADE3_SINE 0      
-#define CROSSFADE3_EXP 1      
+#define CROSSFADE3_COS 0      
+#define CROSSFADE3_SQRT 1      
 #define CROSSFADE3_LOG 2      
 #define CROSSFADE3_LINE 3
 """
     )
-    print(f"static int32_t crossfade3_sine[{block_size}]={{")
+    print(f"static int32_t crossfade3_cos_out[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y):
+    for _, v in enumerate(y_out):
+        s += f"{q16_16_float_to_fp(v)},"
+    print(s)
+    print("};")
+    print(f"static int32_t crossfade3_cos_in[{block_size}]={{")
+    s = ""
+    for _, v in enumerate(y_in):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
 
-    print(f"static int32_t crossfade3_exp[{block_size}]={{")
+    print(f"static int32_t crossfade3_sqrt_out[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y2):
+    for _, v in enumerate(y2_out):
+        s += f"{q16_16_float_to_fp(v)},"
+    print(s)
+    print("};")
+
+    print(f"static int32_t crossfade3_sqrt_in[{block_size}]={{")
+    s = ""
+    for _, v in enumerate(y2_in):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
@@ -79,18 +94,18 @@ def run():
         """
           
 int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
-          if (crossfade_type==CROSSFADE3_SINE) {
+          if (crossfade_type==CROSSFADE3_COS) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          crossfade3_sine[i]
+          crossfade3_cos_out[i]
           )
             );
-          } else if (crossfade_type==CROSSFADE3_EXP) {
+          } else if (crossfade_type==CROSSFADE3_SQRT) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          crossfade3_exp[i]
+          crossfade3_sqrt_out[i]
           )
             );
           } else {
@@ -103,18 +118,18 @@ int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
           }
 }          
 int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
-          if (crossfade_type==CROSSFADE3_SINE) {
+          if (crossfade_type==CROSSFADE3_COS) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          65536-crossfade3_sine[i]
+          crossfade3_cos_in[i]
           )
             );
-          } else if (crossfade_type==CROSSFADE3_EXP) {
+          } else if (crossfade_type==CROSSFADE3_SQRT) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          65536-crossfade3_exp[i]
+          crossfade3_sqrt_in[i]
           )
             );
           } else {
@@ -132,13 +147,15 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
     )
 
     # Plot the sine wave
-    plt.plot(x, y, label="Sine")
-    plt.plot(x, y2, label="Exp")
-    plt.plot(x, y3, label="Log")
-    plt.plot(x, y4, label="Line")
-    plt.plot(x, 1 - y, label="Sine")
-    plt.plot(x, 1 - y2, label="Exp")
-    plt.plot(x, 1 - y3, label="Log")
+    plt.plot(x, y_out, label="Cos")
+    plt.plot(x, y2_out, label="Sqrt")
+    # plt.plot(x, y2, label="Exp")
+    # plt.plot(x, y3, label="Log")
+    # plt.plot(x, y4, label="Line")
+    plt.plot(x, y_in, label="Cos")
+    plt.plot(x, y2_in, label="Sqrt")
+    # plt.plot(x, 1 - y2, label="Exp")
+    # plt.plot(x, 1 - y3, label="Log")
     plt.legend()
     plt.xlabel("X")
     plt.ylabel("Y")

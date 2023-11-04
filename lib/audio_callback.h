@@ -270,22 +270,22 @@ void i2s_callback_func() {
         uint vol = vol_main;
         if (do_crossfade) {
           if (head == 0 && !do_fade_out) {
-            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
+            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SQRT);
           } else if (!do_fade_in) {
-            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
+            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SQRT);
           }
         } else if (do_fade_out) {
-          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
+          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SQRT);
         } else if (do_fade_in) {
-          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
+          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SQRT);
         }
 
         if (do_gate_down) {
           // mute the audio
-          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_LOG);
+          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SQRT);
         } else if (do_gate_up) {
           // bring back the audio
-          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
+          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SQRT);
         }
 
         if (first_loop) {
