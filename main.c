@@ -343,7 +343,7 @@ int main() {
 #endif
 
   // TODO: remove this debugging
-  sel_sample_next = 1;
+  sel_sample_next = 0;
   fil_current_change = true;
 
   // blocking
