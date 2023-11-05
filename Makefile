@@ -1,5 +1,9 @@
-dobuild: pico-extras lib/biquad.h build
+dobuild: envs lib/biquad.h build
 	cd build && make -j32
+
+envs:
+	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
+	export PICO_SDK_PATH=/home/zns/pico/pico-sdk 
 
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
@@ -20,8 +24,8 @@ libs: crossfade3
 
 
 pico-extras:
-	git clone https://github.com/raspberrypi/pico-extras.git
-	cd pico-extras && git submodule update -i 
+	git clone https://github.com/raspberrypi/pico-extras.git ../pico-extras
+	cd ../pico-extras && git submodule update -i 
 
 upload: dobuild
 	./dev/upload.sh 
@@ -31,11 +35,11 @@ bootreset: dobuild
 
 autoload: dobuild bootreset upload
 
-build:
+build: envs
 	rm -rf build
 	mkdir build
-	cd build && PICO_EXTRAS_PATH=../pico-extras cmake ..
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	cd build && cmake ..
+	cd build && make -j32
 	echo "build success"
 
 audio:
