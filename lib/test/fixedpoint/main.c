@@ -23,15 +23,15 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #include "../../fixedpoint.h"
 
 int main() {
-  int16_t result = -500;
-  int16_t attempt = q16_16_fp_to_int16(
-      q16_16_multiply(q16_16_int16_to_fp(-1000), q16_16_float_to_fp(0.5)));
-  printf("wanted: %d, got: %d\n", result, attempt);
+  for (float i = -3.14159 * 20; i < 32; i += 0.001) {
+    printf("%2.3f\n", q16_16_fp_to_float(q16_16_cos(q16_16_float_to_fp(i))));
+  }
   return 0;
 }

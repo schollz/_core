@@ -28,8 +28,19 @@
 #define Q16_16_Q_BITS 16
 
 // some commons
-#define Q16_16_2 131072
+#define Q16_16_0 0
 #define Q16_16_0_5 32768
+#define Q16_16_1 65536
+#define Q16_16_MINUS_1 -65536
+#define Q16_16_2 131072
+#define Q16_16_PI 205887
+#define Q16_16_2PI 411774
+#define Q16_16_PI_OVER_2 102943
+#define Q16_16_2_OVER_PI 41721  // 2 / pi
+// https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
+#define Q16_16_SIN_A5 102873  // 4 * (3/pi - 9/16)
+#define Q16_16_SIN_B5 41906   // 2 * a5 - 5 / 2
+#define Q16_16_SIN_C5 4569    // a5 - 3/2
 
 /* Defines the number of fractional bits used in the Q16.16 fixed-point format.
  */
@@ -68,6 +79,43 @@ int32_t q16_16_multiply(int32_t a, int32_t b) {
   /* Multiply the two fixed-point values and shift the result right by the
      number of Q-bits to obtain the product. */
   return (int32_t)(((int64_t)a * b) >> Q16_16_Q_BITS);
+}
+
+int32_t q16_16_divide(int32_t a, int32_t b) {
+  /* Divide the two fixed-point values */
+  return (int32_t)(((int64_t)a << Q16_16_Q_BITS) / b);
+}
+
+int32_t q16_16_sin(int32_t fixedValue) {
+  uint8_t negative = 0;
+  while (fixedValue < Q16_16_0) {
+    fixedValue += Q16_16_PI;
+    negative = 1 - negative;
+  }
+  while (fixedValue > Q16_16_PI) {
+    fixedValue -= Q16_16_PI;
+    negative = 1 - negative;
+  }
+  if (fixedValue > Q16_16_PI_OVER_2) {
+    fixedValue = Q16_16_PI_OVER_2 - (fixedValue - Q16_16_PI_OVER_2);
+  }
+  int32_t z = q16_16_multiply(Q16_16_2_OVER_PI, fixedValue);
+  int32_t sin5 = q16_16_multiply(Q16_16_SIN_A5, z);
+  sin5 -=
+      q16_16_multiply(Q16_16_SIN_B5, q16_16_multiply(z, q16_16_multiply(z, z)));
+  sin5 += q16_16_multiply(
+      Q16_16_SIN_C5,
+      q16_16_multiply(
+          z, q16_16_multiply(z, q16_16_multiply(z, q16_16_multiply(z, z)))));
+  if (negative) {
+    return -sin5;
+  }
+  return sin5;
+}
+
+int32_t q16_16_cos(int32_t fixedValue) {
+  return q16_16_multiply(Q16_16_MINUS_1,
+                         q16_16_sin(fixedValue - Q16_16_PI_OVER_2));
 }
 
 #endif
