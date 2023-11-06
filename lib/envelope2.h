@@ -37,10 +37,8 @@ typedef struct Envelope2 {
 void Envelope2_reset(Envelope2 *envelope2, uint32_t mSampleRate, float start,
                      float stop, float duration_time) {
   envelope2->mSampleRate = mSampleRate;
-  envelope2->start = (start);
-  envelope2->stop = (stop);
-  //   envelope2->start = log(start);
-  //   envelope2->stop = log(stop);
+  envelope2->start = start;
+  envelope2->stop = stop;
   envelope2->curr = envelope2->start;
   envelope2->duration_samples = (uint32_t)round(mSampleRate * duration_time);
   envelope2->acc =

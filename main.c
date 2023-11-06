@@ -265,6 +265,21 @@ int main() {
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
 
+  // test stuff
+  sleep_ms(3000);
+  printf("hello\n");
+  uint32_t t0, t1;
+  t0 = time_us_32();
+  envelope_pitch = Envelope2_create(44100, 0.5, 1.0, 1.5);
+  int16_t v = 1000;
+  uint32_t iterations = 44100;
+  for (uint32_t i = 0; i < iterations; i++) {
+    v = (float)v * Envelope2_update(envelope_pitch);
+  }
+  t1 = time_us_32();
+  printf("it/s: %2.3f\n", (float)iterations / (float)(t1 - t0) * 1000000.0);
+  sleep_ms(300000000);
+
   ap = init_audio();
 
   // load new save file
