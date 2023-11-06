@@ -81,7 +81,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     CORE1_PROCESS_I2S_CALLBACK=1 
 
     # debug printing
-    # PRINT_AUDIO_CPU_USAGE=1
+    PRINT_AUDIO_CPU_USAGE=1
 
     # includes for different versions
     # INCLUDE_RGBLED=1
