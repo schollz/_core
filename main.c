@@ -59,9 +59,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           }
         }
         if (fil_is_open && debounce_quantize == 0) {
-          EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0,
-                             30 / (float)sf->bpm_tempo,
-                             30 / (float)sf->bpm_tempo);
           do_update_phase_from_beat_current();
           // mem_use = true;
         }
@@ -127,7 +124,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         // printf("beat_current: %d\n", beat_current);
         LEDS_clearAll(leds, LED_STEP_FACE);
         LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
-        EnvelopeGate_reset(envelopegate, BLOCKS_PER_SECOND, 1, 0, 0.05, 0.1);
         if (key_jump_debounce == 0) {
           do_update_phase_from_beat_current();
         } else {

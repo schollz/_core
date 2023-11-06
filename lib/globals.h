@@ -44,7 +44,6 @@ Envelope2 *envelope1;
 Envelope2 *envelope2;
 Envelope2 *envelope3;
 Envelope2 *envelope_pitch;
-EnvelopeGate *envelopegate;
 Noise *noise_wobble;
 uint vols[2];
 

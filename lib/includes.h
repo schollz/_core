@@ -43,7 +43,6 @@
 #include "chain.h"
 #include "charlieplex.h"
 #include "envelope2_fp.h"
-#include "envelopegate.h"
 #include "file_list.h"
 #include "filterexp.h"
 #include "fixedpoint.h"
