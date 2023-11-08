@@ -122,3 +122,4 @@ lib/renoise/*.xml
 lib/renoise/*.xrni
 lib/renoise/*.flac
 numbers
+file.txt
