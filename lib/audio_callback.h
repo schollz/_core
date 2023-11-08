@@ -381,20 +381,25 @@ void i2s_callback_func() {
   }
   sync_using_sdcard = false;
 
-#ifdef PRINT_AUDIO_CPU_USAGE
+#ifdef PRINT_AUDIO_USAGE
   clock_t endTime = time_us_64();
+#ifdef PRINT_AUDIO_CPU_USAGE
   cpu_utilizations[cpu_utilizations_i] =
       100 * (endTime - startTime) / (US_PER_BLOCK);
+#endif
   cpu_utilizations_i++;
+
   if (cpu_utilizations_i == 64) {
     uint16_t cpu_utilization = 0;
     for (uint8_t i = 0; i < 64; i++) {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
+#ifdef PRINT_AUDIO_CPU_USAGE
     printf("average cpu utilization: %2.1f\n", sd_calls,
            ((float)cpu_utilization) / 64.0);
+#endif
     cpu_utilizations_i = 0;
-    printf("read for %d samples: %ld\n", SAMPLES_PER_BUFFER, t1 - t0);
+    printf("%ld\n", t1 - t0);
   }
   if (cpu_utilizations[cpu_utilizations_i] > 70) {
     printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
