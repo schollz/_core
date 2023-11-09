@@ -123,3 +123,4 @@ lib/renoise/*.xrni
 lib/renoise/*.flac
 numbers
 file.txt
+cmd/zeptoconverter/test3/
