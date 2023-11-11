@@ -267,7 +267,6 @@ void i2s_callback_func() {
         }
 #endif
 
-        uint vol = vol_main;
         if (do_crossfade) {
           if (head == 0 && !do_fade_out) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
@@ -291,13 +290,13 @@ void i2s_callback_func() {
         if (first_loop) {
           samples[i * 2 + 0] = newArray[i];
           if (head == 0) {
-            samples[i * 2 + 0] = (vol * samples[i * 2 + 0]) << 8u;
+            samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
             samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
             samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
           }
         } else {
           samples[i * 2 + 0] += newArray[i];
-          samples[i * 2 + 0] = (vol * samples[i * 2 + 0]) << 8u;
+          samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
           samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
           samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
         }
@@ -323,11 +322,10 @@ void i2s_callback_func() {
                                                   buffer->max_sample_count);
 
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          if (head == 1 || (head == 0 && !do_crossfade)) {
+          if (first_loop) {
             samples[i * 2 + channel] = 0;
           }
 
-          uint vol = vol_main;
           if (do_crossfade) {
             if (head == 0 && !do_fade_out) {
               newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
@@ -348,12 +346,12 @@ void i2s_callback_func() {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
 
-          int32_t value0 = (vol * newArray[i]) << 8u;
-          samples[i * 2 + channel] =
-              samples[i * 2 + channel] + value0 + (value0 >> 16u);  // L
+          int32_t value0 = (vol_main * newArray[i]) << 8u;
+          samples[i * 2 + channel] += value0 + (value0 >> 16u);
         }
         free(newArray);
       }
+      first_loop = false;
 #endif
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];

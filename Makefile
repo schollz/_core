@@ -1,4 +1,4 @@
-dobuild: envs lib/biquad.h build
+dobuild: lib/biquad.h build
 	cd build && make -j32
 
 envs:
