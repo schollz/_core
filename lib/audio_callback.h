@@ -1,6 +1,8 @@
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
+// TODO: if CPU > 100%, then set a flag so that the next callback doesn't do any
+// reads ( to play catchup)
 
 bool detect_dropout(int32_t *samples) {
   uint8_t running_count = 0;
