@@ -126,3 +126,4 @@ file.txt
 cmd/zeptoconverter/test3/
 cmd/zeptoconverter/out/
 cmd/zeptoserver/zeptoserver
+cmd/zeptoserver/uploads/
