@@ -161,7 +161,8 @@ func main() {
 }
 
 func createTimeStretched(fnameIn string, filenameSD string, beats float64, bpm float64, channels int, slicesStart []int, slicesEnd []int, count int) (err error) {
-	ratios := []float64{0.89089871814075, 0.79370052598483, 0.74915353843921, 0.6674199270861, 0.5946035575026, 0.52973154718099, 0.5, 0.44, .37, 0.25, 0.1}
+	// ratios := []float64{0.89089871814075, 0.79370052598483, 0.74915353843921, 0.6674199270861, 0.5946035575026, 0.52973154718099, 0.5, 0.44, .37, 0.25, 0.1}
+	ratios := []float64{0.5, 0.25, 0.1}
 	for i, ratio := range ratios {
 		_, _, err = run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
 		if err != nil {

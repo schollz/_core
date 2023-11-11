@@ -1,0 +1,4 @@
+github.com/schollz/logger v1.2.0 h1:5WXfINRs3lEUTCZ7YXhj0uN+qukjizvITLm3Ca2m0Ho=
+github.com/schollz/logger v1.2.0/go.mod h1:P6F4/dGMGcx8wh+kG1zrNEd4vnNpEBY/mwEMd/vn6AM=
+github.com/schollz/websocket v1.8.0 h1:lnR5amausawFn36E1pmkoh5O4Qzm06U8o70QGpsuswY=
+github.com/schollz/websocket v1.8.0/go.mod h1:OxnXpVPGbE7YOCosmBsLSjKar281NkYUNd4CVDJejJY=
