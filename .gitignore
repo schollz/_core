@@ -124,3 +124,5 @@ lib/renoise/*.flac
 numbers
 file.txt
 cmd/zeptoconverter/test3/
+cmd/zeptoconverter/out/
+cmd/zeptoserver/zeptoserver
