@@ -84,6 +84,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PRINT_AUDIO_USAGE=1
     PRINT_AUDIO_CPU_USAGE=1
 
+    # file variations
+    FILE_VARIATIONS=3
+
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1

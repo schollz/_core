@@ -47,7 +47,7 @@ typedef struct SampleInfo {
 } SampleInfo;
 
 typedef struct Sample {
-  SampleInfo *snd[12];
+  SampleInfo *snd[FILE_VARIATIONS];
 } Sample;
 
 typedef struct SampleList {
@@ -234,10 +234,10 @@ SampleList *list_files(const char *dir, int num_channels) {
          !strstr(fno.fname, ".stereo.wav.info.") && NUM_AUDIO_CHANNELS == 2)) {
       samplelist->sample[filelist_count].snd[0] =
           SampleInfo_load(dir, fno.fname);
-      for (uint8_t k = 0; k < 11; k++) {
+      for (uint8_t k = 1; k < FILE_VARIATIONS; k++) {
         char fname2[100];
         sprintf(fname2, "%s.%d", fno.fname, k);
-        samplelist->sample[filelist_count].snd[k + 1] =
+        samplelist->sample[filelist_count].snd[k] =
             SampleInfo_load(dir, fname2);
       }
       filelist_count++;
