@@ -321,9 +321,6 @@ void i2s_callback_func() {
         }
         int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
                                                   buffer->max_sample_count);
-        // int16_t *newArrayR = array_resample_linear(valuesR,
-        // samples_to_read,
-        //                                            buffer->max_sample_count);
 
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           if (head == 1 || (head == 0 && !do_crossfade)) {
@@ -332,19 +329,23 @@ void i2s_callback_func() {
 
           uint vol = vol_main;
           if (do_crossfade) {
-            if (head == 0) {
-              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_SINE);
-            } else {
-              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_SINE);
+            if (head == 0 && !do_fade_out) {
+              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+            } else if (!do_fade_in) {
+              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
             }
+          } else if (do_fade_out) {
+            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+          } else if (do_fade_in) {
+            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
 
           if (do_gate_down) {
             // mute the audio
-            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_LOG);
+            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
           } else if (do_gate_up) {
             // bring back the audio
-            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_EXP);
+            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
 
           int32_t value0 = (vol * newArray[i]) << 8u;
