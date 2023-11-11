@@ -156,7 +156,7 @@ func (c Converter) createTimeStretched(fnameIn string, filenameSD string, beats 
 			log.Error(err)
 			return
 		}
-		fname := fmt.Sprintf("%s.%d.wav", filenameSD, i)
+		fname := fmt.Sprintf("%s.%d.wav", filenameSD, i+1)
 		log.Debugf("creating timestretched %s", fname)
 		_, _, err = c.processSound("1.wav", path.Join(c.FolderOut, fname), channels)
 		if err != nil {
@@ -175,7 +175,7 @@ func (c Converter) createTimeStretched(fnameIn string, filenameSD string, beats 
 				slicesEndFile[j] = int(math.Round(float64(v) / ratio))
 			}
 		}
-		err = c.processInfo(fname, fmt.Sprintf("%s.info.%d", filenameSD, i), beats, bpm, channels, slicesStartFile, slicesEndFile)
+		err = c.processInfo(fname, fmt.Sprintf("%s.info.%d", filenameSD, i+1), beats, bpm, channels, slicesStartFile, slicesEndFile)
 		if err != nil {
 			log.Error(err)
 			return
