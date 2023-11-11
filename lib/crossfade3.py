@@ -41,58 +41,66 @@ def run():
     x = np.linspace(0, 1, block_size)
 
     # Calculate the sine of the x-values
-    y_out = np.cos(np.pi / 2 * x)
-    y_in = np.cos((1 - x) * np.pi / 2)
-    y2_in = np.sqrt(np.sqrt(x))
-    y2_out = np.sqrt(np.sqrt(1 - x))
-    y3 = 1 - np.log(1.7 * x + 1)
-    y4 = 1 - x
+    cos_out = np.cos(np.pi / 2 * x)
+    cos_in = np.cos((1 - x) * np.pi / 2)
+    sqrt_in = np.sqrt(np.sqrt(x))
+    sqrt_out = np.sqrt(np.sqrt(1 - x))
+    exp_out = np.exp(-x * np.exp(1.5))
+    exp_in = np.exp(x * np.exp(1.5)) / np.exp(np.exp(1.5))
+    line_out = 1 - x
 
     print(
         """#ifndef CROSSFADE3_LIB
 #define CROSSFADE3_COS 0      
 #define CROSSFADE3_SQRT 1      
-#define CROSSFADE3_LOG 2      
+#define CROSSFADE3_EXP 2      
 #define CROSSFADE3_LINE 3
 """
     )
     print(f"static int32_t crossfade3_cos_out[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y_out):
+    for _, v in enumerate(cos_out):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
     print(f"static int32_t crossfade3_cos_in[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y_in):
+    for _, v in enumerate(cos_in):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
 
     print(f"static int32_t crossfade3_sqrt_out[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y2_out):
+    for _, v in enumerate(sqrt_out):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
 
     print(f"static int32_t crossfade3_sqrt_in[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y2_in):
+    for _, v in enumerate(sqrt_in):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
 
-    print(f"static int32_t crossfade3_log[{block_size}]={{")
+    print(f"static int32_t crossfade3_exp_out[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y3):
+    for _, v in enumerate(exp_out):
+        s += f"{q16_16_float_to_fp(v)},"
+    print(s)
+    print("};")
+
+    print(f"static int32_t crossfade3_exp_in[{block_size}]={{")
+    s = ""
+    for _, v in enumerate(exp_in):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
 
     print(f"static int32_t crossfade3_line[{block_size}]={{")
     s = ""
-    for _, v in enumerate(y3):
+    for _, v in enumerate(line_out):
         s += f"{q16_16_float_to_fp(v)},"
     print(s)
     print("};")
@@ -115,18 +123,18 @@ int16_t crossfade3_out(int16_t val, uint16_t i, uint8_t crossfade_type) {
           crossfade3_sqrt_out[i]
           )
             );
-          } else if (crossfade_type==CROSSFADE3_LINE) {
+          } else if (crossfade_type==CROSSFADE3_EXP) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          crossfade3_line[i]
+          crossfade3_exp_out[i]
           )
             );
           } else {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          crossfade3_log[i]
+          crossfade3_line[i]
           )
             );          
           }
@@ -146,18 +154,18 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
           crossfade3_sqrt_in[i]
           )
             );
-          } else if (crossfade_type==CROSSFADE3_LINE) {
+          } else if (crossfade_type==CROSSFADE3_EXP) {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          65536 - crossfade3_line[i]
+          crossfade3_exp_in[i]
           )
             );
           } else {
             return q16_16_fp_to_int16(
           q16_16_multiply(
           q16_16_int16_to_fp(val),
-          65536-crossfade3_log[i]
+          65536-crossfade3_line[i]
           )
             );          
           }
@@ -168,15 +176,14 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
     )
 
     # Plot the sine wave
-    plt.plot(x, y_out, label="Cos")
-    plt.plot(x, y2_out, label="Sqrt")
-    # plt.plot(x, y2, label="Exp")
-    # plt.plot(x, y3, label="Log")
-    # plt.plot(x, y4, label="Line")
-    plt.plot(x, y_in, label="Cos")
-    plt.plot(x, y2_in, label="Sqrt")
-    # plt.plot(x, 1 - y2, label="Exp")
-    # plt.plot(x, 1 - y3, label="Log")
+    plt.plot(x, cos_out, label="Cos", color="r")
+    plt.plot(x, sqrt_out, label="Sqrt", color="b")
+    plt.plot(x, line_out, label="Line", color="g")
+    plt.plot(x, exp_out, label="Exp", color="y")
+    plt.plot(x, cos_in, color="r")
+    plt.plot(x, sqrt_in, color="b")
+    plt.plot(x, 1 - line_out, color="g")
+    plt.plot(x, exp_in, color="y")
     plt.legend()
     plt.xlabel("X")
     plt.ylabel("Y")
