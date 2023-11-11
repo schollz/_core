@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	log "github.com/schollz/logger"
@@ -24,6 +25,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	t := time.Now().UTC()
 	err := handle(w, r)
 	if err != nil {
+		w.Write([]byte(err.Error()))
 		log.Error(err)
 	}
 	log.Infof("%v %v %v %s\n", r.RemoteAddr, r.Method, r.URL.Path, time.Since(t))
@@ -37,8 +39,15 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	// very special paths
 	if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
+	} else if strings.HasPrefix(r.URL.Path, "/static/") {
+		var b []byte
+		b, err = os.ReadFile(r.URL.Path[1:])
+		if err != nil {
+			return
+		}
+		w.Write(b)
 	} else {
-		b, _ := ioutil.ReadFile("index.html")
+		b, _ := os.ReadFile("index.html")
 		w.Write(b)
 	}
 
