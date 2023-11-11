@@ -85,6 +85,9 @@ bool gate_is_applied = false;
 uint32_t gate_counter = 0;
 uint32_t gate_threshold = 10;
 
+// TODO
+// add variable to keep track of variation
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
