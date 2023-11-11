@@ -45,7 +45,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
       if (retrig_ready) {
         if (retrig_first) {
-          retrig_vol = 0;
+          int r = random_integer_in_range(1, 6);
+          if (r < 2) {
+            retrig_vol = 1;
+          } else if (r == 3) {
+            retrig_vol = 0.5;
+          } else {
+            retrig_vol = 0;
+          }
         }
         retrig_beat_num--;
         if (retrig_beat_num == 0) {
@@ -181,9 +188,9 @@ void input_handling() {
 
   while (1) {
     adc_select_input(0);
-    sf->bpm_tempo = 170;
-    // sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 +
-    // 50; printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
+    // sf->bpm_tempo = 170;
+    sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 + 50;
+    // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
     button_handler(bm);
     adc_select_input(1);
     uint16_t val = FilterExp_update(adcs[1], adc_read());

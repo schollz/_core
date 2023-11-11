@@ -82,12 +82,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     # debug printing
     PRINT_AUDIO_USAGE=1
-    # PRINT_AUDIO_CPU_USAGE=1
+    PRINT_AUDIO_CPU_USAGE=1
 
     # includes for different versions
     # INCLUDE_RGBLED=1
     # INCLUDE_FILTER=1
-    # INCLUDE_STEREO=1
+    INCLUDE_STEREO=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )
