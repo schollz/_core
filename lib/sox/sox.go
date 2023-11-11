@@ -331,7 +331,6 @@ func Pitch(fname string, notes int) (fname2 string, err error) {
 func Join(fnames ...string) (fname2 string, err error) {
 	fname2 = Tmpfile()
 	fnames = append(fnames, fname2)
-	fmt.Println(fnames)
 	_, _, err = run(append([]string{"sox"}, fnames...)...)
 	return
 }
