@@ -1,6 +1,9 @@
 <html>
 
 <head>
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="/static/dropzone.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
@@ -16,50 +19,56 @@
             </li>
         </ul>
     </div>
+    <div id="filesBox" class="dropzone">
+        <div class="dz-message" data-dz-message><span>Drop or click here to share a file.<br>
+                <p><small>Max file size: 100 MB</small></p>
+            </span></div>
+    </div>
+    <script src="/static/dropzone.js"></script>
+    <script src="/static/upload.js"></script>
     <script src="/static/vue.js"></script>
     <script>
-        // websocket in javascript
-        var socket;
-        const socketMessageListener = (e) => {
-            console.log(e.data);
-        };
-        const socketOpenListener = (e) => {
-            console.log('Connected');
-            socket.send(JSON.stringify({ message: "hello, server" }))
-        };
-        const socketErrorListener = (e) => {
-            console.error(e);
-        }
-        const socketCloseListener = (e) => {
-            if (socket) {
-                console.log('Disconnected.');
-            }
-            var url = window.origin.replace("http", "ws") + '/ws';
-            socket = new WebSocket(url);
-            socket.onopen = socketOpenListener;
-            socket.onmessage = socketMessageListener;
-            socket.onclose = socketCloseListener;
-            socket.onerror = socketErrorListener;
-        };
-        window.addEventListener('load', (event) => {
-            socketCloseListener();
-        });
+    // // websocket in javascript
+    // var socket;
+    // const socketMessageListener = (e) => {
+    //     console.log(e.data);
+    // };
+    // const socketOpenListener = (e) => {
+    //     console.log('Connected');
+    //     socket.send(JSON.stringify({ message: "hello, server" }))
+    // };
+    // const socketErrorListener = (e) => {
+    //     console.error(e);
+    // }
+    // const socketCloseListener = (e) => {
+    //     if (socket) {
+    //         console.log('Disconnected.');
+    //     }
+    //     var url = window.origin.replace("http", "ws") + '/ws';
+    //     socket = new WebSocket(url);
+    //     socket.onopen = socketOpenListener;
+    //     socket.onmessage = socketMessageListener;
+    //     socket.onclose = socketCloseListener;
+    //     socket.onerror = socketErrorListener;
+    // };
+    // window.addEventListener('load', (event) => {
+    //     socketCloseListener();
+    // });
 
 
-        var app = new Vue({
-            el: '#app',
-            data: {
-                message: 'Hello Vue!',
-                banks: [
-                    {
-                        bank: ['question 1.1', 'question 1.2']
-                    },
-                    {
-                        bank: [{ name: "file2.wav" }, 'question 2.2']
-                    }
-                ],
-            },
-        })
+    // var app = new Vue({
+    //     el: '#app',
+    //     data: {
+    //         message: 'Hello Vue!',
+    //         banks: [{
+    //                 bank: ['question 1.1', 'question 1.2']
+    //             },
+    //             {
+    //                 bank: [{ name: "file2.wav" }, 'question 2.2']
+    //             }
+    //         ],
+    //     },
+    // })
     </script>
 </body>
 

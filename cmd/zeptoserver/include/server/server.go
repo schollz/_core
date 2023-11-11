@@ -11,6 +11,7 @@ import (
 	log "github.com/schollz/logger"
 	"github.com/schollz/websocket"
 	"github.com/schollz/websocket/wsjson"
+	"github.com/schollz/zeptoconverter/cmd/zeptoserver/include/share"
 )
 
 func Serve() {
@@ -36,7 +37,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
 	// very special paths
-	if r.URL.Path == "/ws" {
+	if r.Method == "POST" {
+		// POST file
+		// this is called from browser upload
+		return share.HandlePost(w, r)
+	} else if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
 	} else if strings.HasPrefix(r.URL.Path, "/static/") {
 		var b []byte
