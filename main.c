@@ -104,15 +104,17 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     }
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
-                 .snd[0]
+                 .snd[sel_variation]
                  ->stop_condition < PLAY_MODE_ONESHOT_STOP) {
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (beat_current == 0 && !phase_forward) {
-          beat_current =
-              banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+          beat_current = banks[sel_bank_cur]
+                             ->sample[sel_sample_cur]
+                             .snd[sel_variation]
+                             ->slice_num;
         }
         beat_current += (phase_forward * 2 - 1);
         beat_total++;
@@ -124,9 +126,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         }
         int8_t step_pressed = single_step_pressed();
         if (step_pressed > -1) {
-          beat_current =
-              step_pressed %
-              banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
+          beat_current = step_pressed % banks[sel_bank_cur]
+                                            ->sample[sel_sample_cur]
+                                            .snd[sel_variation]
+                                            ->slice_num;
         }
         // printf("beat_current: %d\n", beat_current);
         LEDS_clearAll(leds, LED_STEP_FACE);

@@ -109,14 +109,21 @@ uint8_t key_jump_debounce = 0;
 inline void do_update_phase_from_beat_current() {
   uint16_t slice =
       beat_current %
-      banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
-  banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_current = slice;
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
+  banks[sel_bank_cur]
+      ->sample[sel_sample_cur]
+      .snd[sel_variation]
+      ->slice_current = slice;
   if (phase_forward) {
-    phase_new =
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_start[slice];
+    phase_new = banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_start[slice];
   } else {
-    phase_new =
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_stop[slice];
+    phase_new = banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_stop[slice];
   }
   gate_counter = 0;
   phase_change = true;

@@ -32,22 +32,29 @@ void sdcard_startup() {
       banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
         if (bi == 0 && si == 0) {
-          printf("[keyboard] banks[%d]->sample[%d].snd[0]->name: %s\n", bi, si,
-                 banks[bi]->sample[si].snd[0]->name);
-          printf("[keyboard] banks[%d]->sample[%d].snd[0]->size: %d\n", bi, si,
-                 banks[bi]->sample[si].snd[0]->size);
-          printf("[keyboard] banks[%d]->sample[%d].snd[0]->bpm: %d\n", bi, si,
-                 banks[bi]->sample[si].snd[0]->bpm);
-          printf("[keyboard] banks[%d]->sample[%d].snd[0]->beats: %d\n", bi, si,
-                 banks[bi]->sample[si].snd[0]->beats);
-          printf("[keyboard] banks[%d]->sample[%d].snd[0]->slice_num: % d\n ",
-                 bi, si, banks[bi]->sample[si].snd[0]->slice_num);
+          printf(
+              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->name: %s\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->name);
+          printf(
+              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->size: %d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->size);
+          printf(
+              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->bpm: %d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->bpm);
+          printf(
+              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->beats: "
+              "%d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->beats);
+          printf(
+              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->slice_num: "
+              "% d\n ",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->slice_num);
           printf("slices: \n");
-          for (uint8_t i = 0; i < banks[bi]->sample[si].snd[0]->slice_num;
-               i++) {
+          for (uint8_t i = 0;
+               i < banks[bi]->sample[si].snd[sel_variation]->slice_num; i++) {
             printf("%d) %d-%d\n", i,
-                   banks[bi]->sample[si].snd[0]->slice_start[i],
-                   banks[bi]->sample[si].snd[0]->slice_stop[i]);
+                   banks[bi]->sample[si].snd[sel_variation]->slice_start[i],
+                   banks[bi]->sample[si].snd[sel_variation]->slice_stop[i]);
           }
           printf("\n");
         }
@@ -56,12 +63,13 @@ void sdcard_startup() {
   }  // bank loop
 
   FRESULT fr;
-  fr =
-      f_open(&fil_current,
-             banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name, FA_READ);
+  fr = f_open(
+      &fil_current,
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
+      FA_READ);
   if (fr != FR_OK) {
     printf("could not open %s: %s\n",
-           banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
            FRESULT_str(fr));
   }
   phase_new = 0;
