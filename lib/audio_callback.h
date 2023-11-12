@@ -79,24 +79,32 @@ void i2s_callback_func() {
         phase_change = true;
         // phase_new =
         //     phases[0] *
-        //     banks[sel_bank_next]->sample[sel_sample_next].snd[0]->slice_num /
-        //     banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->slice_num;
-        phase_new = round(
-            (float)phases[0] /
-            (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size *
-            (float)banks[sel_bank_next]->sample[sel_sample_next].snd[0]->size);
+        //     banks[sel_bank_next]->sample[sel_sample_next].snd[sel_variation]->slice_num
+        //     /
+        //     banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
+        phase_new = round((float)phases[0] /
+                          (float)banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[sel_variation]
+                              ->size *
+                          (float)banks[sel_bank_next]
+                              ->sample[sel_sample_next]
+                              .snd[sel_variation]
+                              ->size);
         phase_new = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
         beat_current = round((float)beat_current *
                              (float)banks[sel_bank_next]
                                  ->sample[sel_sample_next]
-                                 .snd[0]
+                                 .snd[sel_variation]
                                  ->slice_num /
                              (float)banks[sel_bank_cur]
                                  ->sample[sel_sample_cur]
-                                 .snd[0]
+                                 .snd[sel_variation]
                                  ->slice_num);
-        printf("next file: %s\n",
-               banks[sel_bank_next]->sample[sel_sample_next].snd[0]->name);
+        printf("next file: %s\n", banks[sel_bank_next]
+                                      ->sample[sel_sample_next]
+                                      .snd[sel_variation]
+                                      ->name);
         do_open_file = true;
         sel_sample_cur = sel_sample_next;
         sel_bank_cur = sel_bank_next;
@@ -110,11 +118,15 @@ void i2s_callback_func() {
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
     uint32_t samples_to_read =
         buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->bpm *
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->oversampling;
-    uint32_t values_len =
-        samples_to_read *
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->num_channels;
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm *
+        banks[sel_bank_cur]
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->oversampling;
+    uint32_t values_len = samples_to_read * banks[sel_bank_cur]
+                                                ->sample[sel_sample_cur]
+                                                .snd[sel_variation]
+                                                ->num_channels;
     uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
     uint vol_main =
@@ -134,27 +146,31 @@ void i2s_callback_func() {
       phase_change = false;
     }
 
-    if (banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition ==
-            PLAY_MODE_ONESHOT_GO ||
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition ==
-            PLAY_MODE_ONESHOT_STOP) {
+    if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->stop_condition == PLAY_MODE_ONESHOT_GO ||
+        banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->stop_condition == PLAY_MODE_ONESHOT_STOP) {
       uint32_t next_phase =
           phases[0] + values_to_read * (phase_forward * 2 - 1);
       if ((phase_forward > 0 &&
            next_phase > banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
-                            .snd[0]
+                            .snd[sel_variation]
                             ->slice_stop[banks[sel_bank_cur]
                                              ->sample[sel_sample_cur]
-                                             .snd[0]
+                                             .snd[sel_variation]
                                              ->slice_current]) ||
           (phase_forward == 0 &&
            next_phase < banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
-                            .snd[0]
+                            .snd[sel_variation]
                             ->slice_start[banks[sel_bank_cur]
                                               ->sample[sel_sample_cur]
-                                              .snd[0]
+                                              .snd[sel_variation]
                                               ->slice_current])) {
         do_fade_out = true;
         audio_mute = true;
@@ -181,7 +197,10 @@ void i2s_callback_func() {
           debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
         }
         fr = f_open(&fil_current,
-                    banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+                    banks[sel_bank_cur]
+                        ->sample[sel_sample_cur]
+                        .snd[sel_variation]
+                        ->name,
                     FA_READ);
         if (fr != FR_OK) {
           debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
@@ -195,11 +214,11 @@ void i2s_callback_func() {
         if (f_lseek(&fil_current, WAV_HEADER +
                                       (banks[sel_bank_cur]
                                            ->sample[sel_sample_cur]
-                                           .snd[0]
+                                           .snd[sel_variation]
                                            ->num_channels *
                                        banks[sel_bank_cur]
                                            ->sample[sel_sample_cur]
-                                           .snd[0]
+                                           .snd[sel_variation]
                                            ->oversampling *
                                        44100) +
                                       phases[head])) {
@@ -224,17 +243,20 @@ void i2s_callback_func() {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
         f_open(&fil_current,
-               banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->name,
+               banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->name,
                FA_READ);
         f_lseek(&fil_current,
                 WAV_HEADER +
                     (banks[sel_bank_cur]
                          ->sample[sel_sample_cur]
-                         .snd[0]
+                         .snd[sel_variation]
                          ->num_channels *
                      banks[sel_bank_cur]
                          ->sample[sel_sample_cur]
-                         .snd[0]
+                         .snd[sel_variation]
                          ->oversampling *
                      44100) +
                     (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
@@ -370,13 +392,19 @@ void i2s_callback_func() {
 
   if (fil_is_open) {
     for (uint8_t head = 0; head < 2; head++) {
-      if (phases[head] >=
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size) {
-        phases[head] -=
-            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size;
+      if (phases[head] >= banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[sel_variation]
+                              ->size) {
+        phases[head] -= banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->size;
       } else if (phases[head] < 0) {
-        phases[head] +=
-            banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->size;
+        phases[head] += banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->size;
       }
     }
   }

@@ -224,10 +224,15 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_B) {
       // A+B
       // toggle one-shot vs classic
-      banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition =
-          (banks[sel_bank_cur]->sample[sel_sample_cur].snd[0]->stop_condition +
-           1) %
-          3;
+      banks[sel_bank_cur]
+          ->sample[sel_sample_cur]
+          .snd[sel_variation]
+          ->stop_condition = (banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[sel_variation]
+                                  ->stop_condition +
+                              1) %
+                             3;
     } else if (key2 == KEY_C) {
       // A+C
     } else if (key2 > 3) {
