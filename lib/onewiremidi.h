@@ -6,6 +6,7 @@
 #define MIDI_NOTE_OFF_MIN 0x80
 #define MIDI_NOTE_OFF_MAX 0x8F
 #define MIDI_TIMING_CLOCK 0xF8
+#define MIDI_ACTIVE_SENSE 0xFE
 #define MIDI_START 0xFA
 #define MIDI_CONTINUE 0xFB
 #define MIDI_STOP 0xFC
@@ -80,17 +81,22 @@ void Onewiremidi_receive(Onewiremidi *om) {
   }
   om->last_time = t;
   uint8_t value = Onewiremidi_reverse_uint8_t(pio_sm_get(om->pio, om->sm));
-  // printf("%d: %x\n", om->rbi, value);
   om->rbs[om->rbi] = ~value;
+  // printf("%d: %x\n", om->rbi, om->rbs[om->rbi]);
 
-  if (value == MIDI_START && om->midi_start != NULL) {
-    om->midi_start();
+  if (om->rbs[om->rbi] == MIDI_START) {
+    if (om->midi_start != NULL) om->midi_start();
     om->rbi = 0;
-  } else if (value == MIDI_CONTINUE && om->midi_continue != NULL) {
-    om->midi_continue();
+  } else if (om->rbs[om->rbi] == MIDI_CONTINUE) {
+    if (om->midi_continue != NULL) om->midi_continue();
     om->rbi = 0;
-  } else if (value == MIDI_STOP && om->midi_stop != NULL) {
-    om->midi_stop();
+  } else if (om->rbs[om->rbi] == MIDI_STOP) {
+    if (om->midi_stop != NULL) om->midi_stop();
+    om->rbi = 0;
+  } else if (om->rbs[om->rbi] == MIDI_ACTIVE_SENSE) {
+    om->rbi = 0;
+  } else if (om->rbs[om->rbi] == MIDI_TIMING_CLOCK) {
+    if (om->midi_timing != NULL) om->midi_timing();
     om->rbi = 0;
   } else if (om->rbi < 2 && (om->rbs[0] >= MIDI_NOTE_OFF_MIN ||
                              om->rbs[0] <= MIDI_NOTE_ON_MAX)) {
@@ -98,7 +104,7 @@ void Onewiremidi_receive(Onewiremidi *om) {
     om->rbi++;
   } else if (om->rbi == 2) {
     om->rbi = 0;
-    printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
+    // printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
     if (om->rbs[0] >= MIDI_NOTE_ON_MIN && om->rbs[0] <= MIDI_NOTE_ON_MAX) {
       if (om->midi_note_on != NULL) {
         om->midi_note_on(om->rbs[1], om->rbs[2]);
@@ -108,8 +114,11 @@ void Onewiremidi_receive(Onewiremidi *om) {
       if (om->midi_note_off != NULL) {
         om->midi_note_off(om->rbs[1]);
       }
+    } else {
+      printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
     }
   } else {
+    printf("??? %d: %x\n", om->rbi, om->rbs[om->rbi]);
     om->rbi = 0;
   }
   return;
