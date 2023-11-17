@@ -1,4 +1,3 @@
-
 #define ALPHA_MAX 512
 
 typedef struct FilterExp {
