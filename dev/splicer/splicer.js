@@ -23,13 +23,16 @@ const randomColor = () =>
 ws.on('decode', () => {
     // Regions
     for (var i = 0; i < 32; i++) {
+        i = 29;
         wsRegions.addRegion({
             start: 0.1765 * i,
             end: 0.1765 * (i + 1),
             color: `rgba(200,200,200,0.5)`,
             drag: true,
             resize: true,
+            loop: false,
         });
+        break;
     }
 })
 
@@ -49,25 +52,27 @@ document.querySelector('input[type="checkbox"]').onclick =
     }
 
 {
+    var playing = false;
     let activeRegion = null
-    wsRegions.on('region-in', (region) => { activeRegion = region })
+    wsRegions.on('region-in', (region) => {
+        console.log('in', region.id);
+    })
     wsRegions.on('region-out', (region) => {
-        if (activeRegion === region) {
-            if (loop) {
-                ws.pause()
-            } else {
-                activeRegion = null
-            }
+        console.log('out', region.id);
+        if (activeRegion.id === region.id) {
+            ws.pause();
+            playing = false;
         }
     })
-    var playing = false;
     wsRegions.on('region-clicked', (region, e) => {
         e.stopPropagation() // prevent triggering a click on the waveform
         activeRegion = region;
+        console.log(region);
         if (playing) {
             console.log('pausing');
             ws.pause();
             playing = false;
+
         } else {
             region.play();
             playing = true;
