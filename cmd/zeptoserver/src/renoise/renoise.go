@@ -7,11 +7,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
 )
 
 var DebugMode = false
 
-func GetSliceMarkers(fname string) (filename string, start []int, end []int, err error) {
+func GetSliceMarkers(fname string) (filename string, start []float64, end []float64, err error) {
 	files, err := unzipFile(fname)
 	if err != nil {
 		return
@@ -29,25 +32,33 @@ func GetSliceMarkers(fname string) (filename string, start []int, end []int, err
 		err = fmt.Errorf("not enough markers")
 		return
 	}
+	for _, f := range files {
+		if f != "Instrument.xml" {
+			filename = f
+			break
+		}
+	}
+	if filename == "" {
+		err = fmt.Errorf("could not find sample data")
+		return
+	}
+	numSamples, err := sox.NumSamples(filename)
+	if err != nil {
+		return
+	}
+	log.Tracef("filename: %s, numSamples: %d", filename, numSamples)
 	for i, _ := range markers {
 		if i == 0 {
 			continue
 		}
-		start = append(start, markers[i-1])
-		end = append(end, markers[i])
+		start = append(start, float64(markers[i-1])/float64(numSamples))
+		end = append(end, float64(markers[i])/float64(numSamples))
 	}
 
 	if !DebugMode {
 		os.Remove("Instrument.xml")
 	}
 
-	for _, f := range files {
-		if f != "Instrument.xml" {
-			filename = f
-			return
-		}
-	}
-	err = fmt.Errorf("could not find sample data")
 	return
 }
 

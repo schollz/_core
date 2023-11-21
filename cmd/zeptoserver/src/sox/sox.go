@@ -134,6 +134,29 @@ func PCM16(fname string) (fname2 string, err error) {
 	return
 }
 
+// NumSamples returns the number of samples in the file
+func NumSamples(fname string) (numSamples int, err error) {
+	stdout, _, err := run("sox", "--i", fname)
+	if err != nil {
+		return
+	}
+
+	// Simplified regular expression pattern
+	re := regexp.MustCompile(`(\d+)\s+samples`)
+
+	// Find the matches in the input string
+	matches := re.FindStringSubmatch(stdout)
+
+	err = fmt.Errorf("could not find number of samples")
+	if len(matches) == 2 {
+		// Extract the number of samples from the regex match
+		samplesStr := matches[1]
+		numSamples, err = strconv.Atoi(samplesStr)
+		return
+	}
+	return
+}
+
 // Info returns the sample rate and number of channels for file
 func Info(fname string) (samplerate int, channels int, precision int, err error) {
 	stdout, stderr, err := run("sox", "--i", fname)
