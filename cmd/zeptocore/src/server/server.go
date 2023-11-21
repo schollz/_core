@@ -71,16 +71,15 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
-	Action   string         `json:"action"`
-	Message  string         `json:"message"`
-	Number   int64          `json:"number"`
-	Error    string         `json:"error"`
-	Success  bool           `json:"success"`
-	Filename string         `json:"filename"`
-	File     zeptocore.File `json:"file"`
-	SliceStart []float64 `json:"sliceStart"`
-	SliceStop []float64 `json:"sliceStop"`
-
+	Action     string         `json:"action"`
+	Message    string         `json:"message"`
+	Number     int64          `json:"number"`
+	Error      string         `json:"error"`
+	Success    bool           `json:"success"`
+	Filename   string         `json:"filename"`
+	File       zeptocore.File `json:"file"`
+	SliceStart []float64      `json:"sliceStart"`
+	SliceStop  []float64      `json:"sliceStop"`
 }
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
@@ -123,12 +122,12 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Success:  true,
 				})
 			}
-		} else if message.Action=="updateSlices" {
+		} else if message.Action == "updateSlices" {
 			f, err := zeptocore.Get(message.Filename)
 			if err != nil {
 				log.Error(err)
 			} else {
-				f.SetSlices(message.SliceStart,message.SliceStop)
+				f.SetSlices(message.SliceStart, message.SliceStop)
 			}
 		}
 	}
