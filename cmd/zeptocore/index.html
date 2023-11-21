@@ -290,6 +290,10 @@
                         sliceStart.push(regions[i].start / wsf.getDuration());
                         sliceStop.push(regions[i].end / wsf.getDuration());
                     }
+                    // update locally
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
+
                     // update remotely
                     socket.send(JSON.stringify({
                         action: "setslices",
