@@ -16,5 +16,6 @@ func init() {
 func main() {
 	flag.Parse()
 	log.SetLevel(flagLogLevel)
+	log.SetLevel("trace")
 	server.Serve()
 }

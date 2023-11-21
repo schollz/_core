@@ -122,7 +122,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Success:  true,
 				})
 			}
-		} else if message.Action == "updateSlices" {
+		} else if message.Action == "setslices" {
 			f, err := zeptocore.Get(message.Filename)
 			if err != nil {
 				log.Error(err)

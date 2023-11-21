@@ -191,7 +191,7 @@
                     this.selectedFile = fileIndex;
                     // wait 100 milliseconds
                     setTimeout(() => {
-                        showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile + ".mp3",
+                        showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
                             this.banks[this.selectedBank].files[this.selectedFile].Duration,
                             this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                             this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
@@ -238,7 +238,7 @@
                 hideScrollbar: false,
                 autoScroll: false,
                 autoCenter: true,
-                url: filename,
+                url: filename+".mp3",
             });
             // resize whenever a zoom
             wsf.on('zoom', () => {
@@ -290,6 +290,7 @@
                         sliceStart.push(regions[i].start / wsf.getDuration());
                         sliceStop.push(regions[i].end / wsf.getDuration());
                     }
+                    // update remotely
                     socket.send(JSON.stringify({
                         action: "setslices",
                         filename: filename,
