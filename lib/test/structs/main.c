@@ -33,7 +33,6 @@ typedef struct FileList {
   char *dir;
   uint32_t *size;
   unsigned int *bpm;
-  unsigned int *beats;
   unsigned int num;
 } FileList;
 
@@ -44,7 +43,6 @@ FileList *list_files(char *dir, int num_channels) {
   filelist->name = malloc(sizeof(char *) * FileList_max);
   filelist->size = malloc(sizeof(10) * FileList_max);
   filelist->bpm = malloc(sizeof(unsigned int) * FileList_max);
-  filelist->beats = malloc(sizeof(unsigned int) * FileList_max);
   filelist->num = 1;
   return filelist;
 }
