@@ -67,6 +67,9 @@
                                 speed)</span>
                             <span v-else>off</span></label>
                     </p>
+                    <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
+                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM">
+                    </p>
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p>
