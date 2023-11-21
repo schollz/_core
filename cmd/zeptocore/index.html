@@ -85,7 +85,22 @@
             </div>
         </main>
         <footer>
-            <p>© 2023 File Manager</p>
+            <form id="downloadForm" @submit.prevent="submitForm">
+                <label for="oversampling">Oversampling:</label>
+                <select id="oversampling" v-model="oversampling">
+                    <option value="1x">1x</option>
+                    <option value="2x">2x</option>
+                    <option value="4x">4x</option>
+                </select>
+
+                <label for="stereoMono">Stereo/Mono:</label>
+                <select id="stereoMono" v-model="stereoMono">
+                    <option value="stereo">Stereo</option>
+                    <option value="mono">Mono</option>
+                </select>
+
+                <button type="submit">Download</button>
+            </form>
         </footer>
     </div>
 
@@ -151,6 +166,8 @@
                 selectedBank: 0,
                 selectedFile: null,
                 progressBarWidth: '0%',
+                oversampling: '1x', // Default to '1x'
+                stereoMono: 'mono', // Default to 'mono'
             },
             methods: {
                 selectBank(index) {
@@ -233,6 +250,52 @@
                     const temp = this.banks[this.selectedBank].files[index1];
                     this.banks[this.selectedBank].files[index1] = this.banks[this.selectedBank].files[index2];
                     this.banks[this.selectedBank].files[index2] = temp;
+                },
+                submitForm() {
+                    // Include other options as needed
+                    const formData = {
+                        oversampling: this.oversampling,
+                        stereoMono: this.stereoMono,
+                        banks: [],
+                    };
+                    for (var i = 0; i < this.banks.length; i++) {
+                        const bankData = {
+                            files: [],
+                        };
+
+                        for (var j = 0; j < this.banks[i].files.length; j++) {
+                            // Assuming you want to push file names into the files array
+                            bankData.files.push(this.banks[i].files[j].Filename);
+                        }
+
+                        // Push the bank data into the formData
+                        formData.banks.push(bankData);
+                    }
+
+                    console.log(JSON.stringify(formData));
+                    // Use fetch to send a POST request to the server
+                    fetch('/download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData),
+                    })
+                        .then(response => response.blob())
+                        .then(blob => {
+                            // Create a temporary link to trigger the download
+                            const url = window.URL.createObjectURL(new Blob([blob]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'output.zip';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => {
+                            console.error('Error downloading files:', error);
+                        });
                 },
             },
         });

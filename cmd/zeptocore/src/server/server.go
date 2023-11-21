@@ -68,6 +68,14 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
+type DownloadZip struct {
+	Oversampling string `json:"oversampling"`
+	StereoMono   string `json:"stereoMono"`
+	Banks        []struct {
+		Files []string `json:"files"`
+	} `json:"banks"`
+}
+
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
