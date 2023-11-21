@@ -142,6 +142,52 @@
             background-color: #ddd;
             color: #111;
         }
+
+
+
+        @media screen and (max-width: 768px) {
+            /* Adjustments for mobile devices */
+
+            header {
+                box-sizing: border-box;
+                /* Adjust the maximum height as needed */
+                overflow: hidden;
+            }
+
+            .banks-selector {
+                overflow-x: auto;
+                padding-bottom: 0;
+                /* Adjust the maximum height as needed */
+            }
+
+            .banks-selector ul {
+                display: flex;
+            }
+
+            .banks-selector li {
+                margin-right: 0.5rem;
+                white-space: nowrap;
+            }
+
+            main {
+                flex-direction: column;
+                overflow-y: auto;
+                /* Adjust the margin to match the header's max-height */
+            }
+
+            .content-area {
+                overflow-y: auto;
+                flex: 1;
+            }
+
+            .banks-selector li .desktop-bank-label {
+                display: none;
+            }
+
+            .banks-selector li .mobile-bank-label {
+                display: inline-block;
+            }
+        }
     </style>
 </head>
 
@@ -156,7 +202,8 @@
                 <ul>
                     <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
                         :class="{ 'selected': index === selectedBank }">
-                        Bank {{ index + 1 }}
+                        <span class="mobile-bank-label" v-if="isMobile"> {{ index + 1 }} </span>
+                        <span class="desktop-bank-label" v-else> Bank {{ index + 1 }} </span>
                     </li>
                 </ul>
             </div>
@@ -307,6 +354,7 @@
                 progressBarWidth: '0%',
                 oversampling: '1x', // Default to '1x'
                 stereoMono: 'mono', // Default to 'mono'
+                isMobile: false, // Define isMobile variable
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
@@ -625,6 +673,14 @@
 
             // Initialize WebSocket and other event listeners
             socketCloseListener();
+
+            // Check if the window width is less than 768 pixels to set isMobile
+            app.isMobile = window.innerWidth < 768;
+
+            // Listen for window resize events to update isMobile
+            window.addEventListener('resize', () => {
+                app.isMobile = window.innerWidth < 768;
+            });
         });
     </script>
 </body>
