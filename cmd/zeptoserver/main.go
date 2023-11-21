@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/server"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/server"
 )
 
 var flagLogLevel string

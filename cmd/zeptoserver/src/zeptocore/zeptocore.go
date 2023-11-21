@@ -13,10 +13,10 @@ import (
 
 	"github.com/bep/debounce"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/op1"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/renoise"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/utils"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/op1"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/renoise"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/utils"
 )
 
 type File struct {

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 )
 
 var DebugMode = false

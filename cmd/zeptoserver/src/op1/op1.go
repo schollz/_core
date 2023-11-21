@@ -6,7 +6,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 )
 
 func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, err error) {
