@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/utils"
 )
 
 type File struct {
@@ -108,6 +110,45 @@ func (f *File) SetTransposable(transposable bool) {
 	go func() {
 		f.Save()
 	}()
+}
+
+// processSound takes a sound file and processes it to be ready for the zeptocore
+// by padding the beginning with the end and the end with the beginning
+// as well as converting it to the right format and bit rate
+func processSound(fnameIn string, fnameOut string, channels int, oversampling int) (err error) {
+	pieceFront, err := sox.Trim(fnameIn, 0, 0.5)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	seconds, err := sox.Length(fnameIn)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	pieceEnd, err := sox.Trim(fnameIn, seconds-0.5)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	pieceJoin, err := sox.Join(pieceEnd, fnameIn, pieceFront)
+	defer func() {
+		os.Remove(pieceFront)
+		os.Remove(pieceEnd)
+		os.Remove(pieceJoin)
+	}()
+
+	_, _, err = utils.Run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-1")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	_, _, err = utils.Run("sox", "-t", "raw", "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	return
 }
 
 func (f File) updateFile(index int) (err error) {
