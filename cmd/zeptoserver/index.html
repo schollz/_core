@@ -1,75 +1,85 @@
-<html>
+<!--
+
+I'd like you to create a website using HTML, CSS, and Javascript.
+
+Use the Vue2 framework to create a single page application.
+
+The website should have a header, a footer, and a main content area.
+
+The main content area should have a header also, with a box to drag and drop a file or files.
+
+When a file is dropped, it is added to a bank.
+
+There are 16 banks. The banks are selectable from the left side of the page. When selecting a bank, it will list the files in it on the right.
+
+When clicking on a file, it will display the file name and bytes in the file, below the header that contains the box for uploading files.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="/static/dropzone.css">
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div id="app">
-        {{ message }}
-        <ul>
-            <li v-for="b in banks">
+        <header>
+            <h1>File Manager</h1>
+        </header>
+        <main>
+            <div class="banks-selector">
                 <ul>
-                    <li v-for="bank in b.bank">
-                        {{ bank }}
+                    <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
+                        :class="{ 'selected': index === selectedBank }">
+                        Bank {{ index + 1 }}
                     </li>
                 </ul>
-            </li>
-        </ul>
-    </div>
-    <div id="filesBox" class="dropzone">
-        <div class="dz-message" data-dz-message><span>Drop or click here to share a file.<br>
-                <p><small>Max file size: 100 MB</small></p>
-            </span></div>
-    </div>
-    <script src="/static/dropzone.js"></script>
-    <script src="/static/upload.js"></script>
-    <script src="/static/vue.js"></script>
-    <script>
-    // // websocket in javascript
-    // var socket;
-    // const socketMessageListener = (e) => {
-    //     console.log(e.data);
-    // };
-    // const socketOpenListener = (e) => {
-    //     console.log('Connected');
-    //     socket.send(JSON.stringify({ message: "hello, server" }))
-    // };
-    // const socketErrorListener = (e) => {
-    //     console.error(e);
-    // }
-    // const socketCloseListener = (e) => {
-    //     if (socket) {
-    //         console.log('Disconnected.');
-    //     }
-    //     var url = window.origin.replace("http", "ws") + '/ws';
-    //     socket = new WebSocket(url);
-    //     socket.onopen = socketOpenListener;
-    //     socket.onmessage = socketMessageListener;
-    //     socket.onclose = socketCloseListener;
-    //     socket.onerror = socketErrorListener;
-    // };
-    // window.addEventListener('load', (event) => {
-    //     socketCloseListener();
-    // });
+            </div>
+
+            <div class="content-area">
+                <div class="file-uploader">
+                    <h2>Upload Files</h2>
+                    <div class="drop-area" @drop="handleDrop" @dragover.prevent>
+                        Drop your files here
+                    </div>
+                </div>
+
+                <div class="file-list">
+                    <h2>Files in Bank {{ selectedBank + 1 }}</h2>
+                    <ul>
+                        <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
+                            @click="showFileDetails(fileIndex)" :class="{ 'selected': fileIndex === selectedFile }"
+                            :data-file-number="fileIndex + 1">
+                            {{ file.name }}
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="file-details" v-if="selectedFile!=null">
+                    <h2>File Details</h2>
+                    <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].name }}</p>
+                    <p><strong>Size:</strong> {{ banks[selectedBank].files[selectedFile].size }} bytes</p>
+                    <button @click="removeSelectedFile">Remove File</button>
+                    <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
+                    <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
+                        Down</button>
+
+                </div>
 
 
-    // var app = new Vue({
-    //     el: '#app',
-    //     data: {
-    //         message: 'Hello Vue!',
-    //         banks: [{
-    //                 bank: ['question 1.1', 'question 1.2']
-    //             },
-    //             {
-    //                 bank: [{ name: "file2.wav" }, 'question 2.2']
-    //             }
-    //         ],
-    //     },
-    // })
-    </script>
+            </div>
+        </main>
+        <footer>
+            <p>© 2023 File Manager</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,101 @@
+body {
+    font-family: 'Roboto Mono', monospace;
+    margin: 0;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header,
+footer {
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+main {
+    display: flex;
+    flex: 1;
+}
+
+.banks-selector {
+    background-color: #eee;
+    padding: 1rem;
+}
+
+.banks-selector ul {
+    list-style: none;
+    padding: 0;
+}
+
+.banks-selector li {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ddd;
+}
+
+.banks-selector li.selected {
+    background-color: #111;
+    /* Highlight color for selected bank */
+    color: white;
+}
+
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-uploader,
+.file-list,
+.file-details {
+    padding: 1rem;
+}
+
+.drop-area {
+    border: 2px dashed #ddd;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.file-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.file-list li {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ddd;
+    position: relative;
+}
+
+.file-list li::before {
+    content: attr(data-file-number);
+    position: absolute;
+    left: -1rem;
+    z-index: 1;
+}
+
+.file-list li.selected::before {
+    color: #333;
+}
+
+.file-list li.selected {
+    background-color: #111;
+    /* Highlight color for selected file */
+    color: white;
+}
+
+
+
+.file-list li:hover {
+    background-color: #ccc;
+}
