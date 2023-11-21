@@ -13,8 +13,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/utils"
-	"github.com/schollz/zeptocore/cmd/zeptoserver/src/zeptocore"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/utils"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
 var Port = 8098
