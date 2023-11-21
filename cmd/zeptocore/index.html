@@ -34,7 +34,9 @@
 
                 <div class="file-list">
                     <h2>Files in Bank {{ selectedBank + 1 }}</h2>
+                    <button @click="clearCurrentBank">Clear</button>
                     <ul>
+
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
                             @click="showFileDetails(fileIndex)" :class="{ 'selected': fileIndex === selectedFile }"
                             :data-file-number="fileIndex + 1">
@@ -169,7 +171,23 @@
                 oversampling: '1x', // Default to '1x'
                 stereoMono: 'mono', // Default to 'mono'
             },
+            watch: {
+                // Watch for changes in app properties and save state to cookies
+                banks: {
+                    handler: 'saveState',
+                    deep: true,
+                },
+                oversampling: 'saveState',
+                stereoMono: 'saveState',
+            },
             methods: {
+                saveState() {
+                    saveStateToCookies();
+                },
+                clearCurrentBank() {
+                    this.banks[this.selectedBank].files = [];
+                    this.selectedFile = null;
+                },
                 selectBank(index) {
                     this.selectedBank = index;
                     this.selectedFile = null; // Clear selected file when changing banks
@@ -300,6 +318,45 @@
             },
         });
 
+        function loadStateFromCookies() {
+            const savedState = document.cookie.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=');
+                acc[key] = JSON.parse(decodeURIComponent(value));
+                return acc;
+            }, {});
+
+            if (savedState.banks) {
+                app.banks = savedState.banks;
+            }
+            if (savedState.oversampling) {
+                app.oversampling = savedState.oversampling;
+            }
+            if (savedState.stereoMono) {
+                app.stereoMono = savedState.stereoMono;
+            }
+            if (savedState.selectedBank !== undefined) {
+                app.selectedBank = savedState.selectedBank;
+            }
+            if (savedState.selectedFile !== undefined) {
+                app.selectedFile = savedState.selectedFile;
+            }
+        }
+
+        // Save state to cookies
+        function saveStateToCookies() {
+            const stateToSave = {
+                banks: app.banks,
+                oversampling: app.oversampling,
+                stereoMono: app.stereoMono,
+                selectedBank: app.selectedBank,
+                selectedFile: app.selectedFile,
+            };
+
+            document.cookie = Object.entries(stateToSave).map(([key, value]) => {
+                return `${key}=${encodeURIComponent(JSON.stringify(value))}`;
+            }).join(';');
+        }
+
 
         function showWaveform(filename, duration, sliceStart, sliceEnd) {
             if (wsf != null) {
@@ -424,6 +481,14 @@
                 };
             });
         }
+
+        window.addEventListener('load', (event) => {
+            // Load state from cookies on page load
+            loadStateFromCookies();
+
+            // Initialize WebSocket and other event listeners
+            socketCloseListener();
+        });
     </script>
 </body>
 
