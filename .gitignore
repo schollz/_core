@@ -128,3 +128,4 @@ cmd/zeptoconverter/out/
 cmd/zeptoserver/zeptoserver
 cmd/zeptoserver/uploads/
 cmd/zeptoserver/src/zeptocore/lofi.aif.json
+cmd/zeptoserver/src/renoise/Instrument.xml
