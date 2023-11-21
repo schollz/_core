@@ -87,6 +87,20 @@ func Get(pathToOriginal string) (f File, err error) {
 			f.SliceStop[i] = float64(i+1) / slices
 		}
 	}
+
+	// get the folder of the original flie
+	folder, filename := filepath.Split(f.PathToFile)
+	// remove extension from file name
+	filenameWithouExt := filename[:len(filename)-len(filepath.Ext(filename))]
+
+	// create the 0 file (original)
+	fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
+
+	// check if fname0 exists
+	if _, err := os.Stat(fname0); err != nil {
+		f.Save()
+		f.Regenerate()
+	}
 	return
 }
 
