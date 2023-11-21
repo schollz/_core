@@ -50,13 +50,23 @@
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                         Down</button>
+                    <p>
+                        <label>
+                            <input type="radio" v-model="banks[selectedBank].files[selectedFile].oneshot" value=0>
+                            Continuous
+                        </label>
+                        <label>
+                            <input type="radio" v-model="banks[selectedBank].files[selectedFile].oneshot" value=1>
+                            One shot
+                        </label>
+                    </p>
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p>
-                            <label>
-                                <label style="margin-left: 2em">
-                                    Zoom: <input type="range" min="10" max="1000" value="10" />
-                                </label>
+                            <button @click="deleteRegion">Delete region</button>
+                            <label style="margin-left: 2em">
+                                Zoom: <input type="range" min="10" max="1000" value="10" />
+                            </label>
                         </p>
                     </div>
                 </div>
@@ -78,6 +88,8 @@
     </script>
     <script>
         var wsf = null;
+
+        var activeRegion = null;
         var app;
         var socket;
         var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -137,7 +149,6 @@
 
                 {
                     var playing = false;
-                    let activeRegion = null
                     wsRegions.on('region-in', (region) => {
                         console.log('in', region.id);
                     })
@@ -215,9 +226,18 @@
                     // Trigger file input click when the drop area is clicked
                     document.getElementById('fileInput').click();
                 },
+                deleteRegion() {
+                    if (activeRegion != null) {
+                        activeRegion.remove();
+                        activeRegion = null;
+                    }
+                },
                 handleDrop(event) {
                     event.preventDefault();
                     const files = event.target.files || event.dataTransfer.files;
+                    for (var i = 0; i < files.length; i++) {
+                        files[i].oneshot = "0";
+                    }
                     this.banks[this.selectedBank].files = [...this.banks[this.selectedBank].files, ...Array.from(files)];
 
 
@@ -270,7 +290,7 @@
         });
 
 
-        app.banks[0].files.push({ name: 'amen.wav', size: 1234 });
+        app.banks[0].files.push({ name: 'amen.wav', size: 1234, oneshot: "0" });
     </script>
 </body>
 

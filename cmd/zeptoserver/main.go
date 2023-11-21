@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -17,8 +18,10 @@ import (
 
 var flagLogLevel string
 var connections map[string]*websocket.Conn
+var storageFolder = "storage"
 
 func init() {
+	os.MkdirAll(storageFolder, 0777)
 	connections = make(map[string]*websocket.Conn)
 	flag.StringVar(&flagLogLevel, "log", "debug", "log level (trace, debug, info)")
 }
@@ -170,10 +173,18 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		// Process the file content as needed
 		fmt.Printf("File name: %s, Size: %d bytes\n", file.Filename, len(fileContent))
 		// save file locally
-		err = os.WriteFile(file.Filename, fileContent, 0666)
+		err = os.MkdirAll(path.Join(storageFolder, file.Filename), 0777)
 		if err != nil {
 			return
 		}
+		err = os.WriteFile(path.Join(storageFolder, file.Filename, file.Filename), fileContent, 0666)
+		if err != nil {
+			return
+		}
+		go func() {
+			log.Debugf("prcessing file: %s", file.Filename)
+			// do process the file
+		}()
 	}
 
 	// Send a response
