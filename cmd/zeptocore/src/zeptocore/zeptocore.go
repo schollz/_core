@@ -26,7 +26,7 @@ type File struct {
 	BPM          int
 	SliceStart   []float64 // fractional (0-1)
 	SliceStop    []float64 // fractional (0-1)
-	Transposable bool
+	TempoMatch   bool
 	OneShot      bool
 	Channels     int // 1 if mono, 2 if stereo
 	Oversampling int // 1, 2, or 4
@@ -58,7 +58,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		debounceSave:  debounce.New(1 * time.Second),
 		debounceRegen: debounce.New(1 * time.Second),
 		OneShot:       false,
-		Transposable:  true,
+		TempoMatch:    true,
 		Channels:      1,
 		Oversampling:  1,
 	}
@@ -198,8 +198,8 @@ func (f *File) SetOneshot(oneshot bool) {
 	}()
 }
 
-func (f *File) SetTransposable(transposable bool) {
-	f.Transposable = transposable
+func (f *File) SetTempoMatch(TempoMatch bool) {
+	f.TempoMatch = TempoMatch
 	go func() {
 		f.Save()
 	}()
@@ -287,14 +287,14 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	buf := new(bytes.Buffer)
 
-	BPMTransposable := uint8(0)
-	if f.Transposable {
-		BPMTransposable = 1
+	BPMTempoMatch := uint8(0)
+	if f.TempoMatch {
+		BPMTempoMatch = 1
 	}
 
 	StopCondition := uint8(0)
 	if f.OneShot {
-		StopCondition = 1
+		StopCondition = 2
 	}
 
 	// file_list.h:
@@ -305,7 +305,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// 	uint8_t slice_num;
 	// 	uint32_t *slice_start;
 	// 	uint32_t *slice_end;
-	// 	uint8_t bpm_transposable;
+	// 	uint8_t bpm_TempoMatch;
 	// 	uint8_t stop_condition;
 	//  uint8_t oversampling;
 	//  uint8_t num_channels;
@@ -318,7 +318,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		uint8(sliceNum),
 		slicesStart,
 		slicesEnd,
-		uint8(BPMTransposable),
+		uint8(BPMTempoMatch),
 		uint8(StopCondition),
 		uint8(f.Oversampling),
 		uint8(f.Channels),
