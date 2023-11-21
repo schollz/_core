@@ -99,3 +99,15 @@ main {
 .file-list li:hover {
     background-color: #ccc;
 }
+
+.progress-bar {
+    height: 5px;
+    background: #333;
+    position: relative;
+    bottom: -1.5rem;
+    left: -1rem;
+    height: 0.5rem;
+    width: 0;
+    transition: width 0.5s ease;
+    /* Add a smooth transition effect */
+}

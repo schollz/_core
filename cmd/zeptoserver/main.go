@@ -83,6 +83,7 @@ var upgrader = websocket.Upgrader{} // use default options
 type Message struct {
 	Action  string   `json:"action"`
 	Message string   `json:"message"`
+	Number  int64    `json:"number"`
 	Error   string   `json:"error"`
 	Success bool     `json:"success"`
 	File    FileData `json:"file"`
@@ -134,6 +135,19 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
+type ByteCounter struct {
+	Callback     func(int64)
+	TotalBytes   int64
+	TargetWriter io.Writer
+}
+
+func (bc *ByteCounter) Write(p []byte) (n int, err error) {
+	n, err = bc.TargetWriter.Write(p)
+	bc.TotalBytes += int64(n)
+	bc.Callback(bc.TotalBytes)
+	return n, err
+}
+
 func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 	// get the url query parameters from the request r
 	query := r.URL.Query()
@@ -141,7 +155,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		err = fmt.Errorf("no id")
 		return
 	}
-	fmt.Println(query["id"][0])
+	id := query["id"][0]
 
 	// Parse the multipart form data
 	err = r.ParseMultipartForm(10 << 20) // 10 MB limit
@@ -164,23 +178,34 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		defer uploadedFile.Close()
 
 		// Read the file content
-		var fileContent []byte
-		fileContent, err = io.ReadAll(uploadedFile)
-		if err != nil {
-			return
-		}
-
-		// Process the file content as needed
-		fmt.Printf("File name: %s, Size: %d bytes\n", file.Filename, len(fileContent))
 		// save file locally
 		err = os.MkdirAll(path.Join(storageFolder, file.Filename), 0777)
 		if err != nil {
 			return
 		}
-		err = os.WriteFile(path.Join(storageFolder, file.Filename, file.Filename), fileContent, 0666)
+		var destination *os.File
+		destination, err = os.Create(path.Join(storageFolder, file.Filename, file.Filename))
 		if err != nil {
 			return
 		}
+		byteCounter := &ByteCounter{
+			TargetWriter: destination,
+			Callback: func(n int64) {
+				log.Debugf("n: %d", n)
+				if _, ok := connections[id]; ok {
+					connections[id].WriteJSON(Message{
+						Action: "progress",
+						Number: n,
+					})
+				}
+			},
+		}
+
+		_, err = io.Copy(byteCounter, uploadedFile)
+		if err != nil {
+			return
+		}
+
 		go func() {
 			log.Debugf("prcessing file: %s", file.Filename)
 			// do process the file

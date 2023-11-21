@@ -12,6 +12,7 @@
     <div id="app">
         <header>
             <h1>*core dump</h1>
+            <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
             <div class="banks-selector">
@@ -88,7 +89,8 @@
     </script>
     <script>
         var wsf = null;
-
+        var totalBytesUploaded = 0;
+        var totalBytesRequested = 0;
         var activeRegion = null;
         var app;
         var socket;
@@ -186,6 +188,11 @@
                     };
                 });
 
+            } else if (data.action == "progress") {
+                totalBytesUploaded += data.number;
+                app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 104)}%`;
+            } else {
+                console.log(data);
             }
         };
         const socketOpenListener = (e) => {
@@ -216,6 +223,7 @@
                 banks: Array.from({ length: 16 }, () => ({ files: [] })),
                 selectedBank: 0,
                 selectedFile: null,
+                progressBarWidth: '0%',
             },
             methods: {
                 selectBank(index) {
@@ -235,12 +243,14 @@
                 handleDrop(event) {
                     event.preventDefault();
                     const files = event.target.files || event.dataTransfer.files;
+                    this.progressBarWidth = '0%';
+                    totalBytesUploaded = 0;
+                    totalBytesRequested = 0;
                     for (var i = 0; i < files.length; i++) {
                         files[i].oneshot = "0";
+                        totalBytesRequested += files[i].size;
                     }
                     this.banks[this.selectedBank].files = [...this.banks[this.selectedBank].files, ...Array.from(files)];
-
-
                     const formData = new FormData();
                     for (const file of files) {
                         formData.append('files', file);
