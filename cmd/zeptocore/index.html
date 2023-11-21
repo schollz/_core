@@ -91,7 +91,7 @@
         .file-list li::before {
             content: attr(data-file-number);
             position: absolute;
-            left: -1rem;
+            left: -0.75rem;
             z-index: 1;
         }
 
@@ -603,8 +603,9 @@
             document.getElementById('waveform-parent').style = newWidth;
             wsf = window.WaveSurf.create({
                 container: '#waveform',
-                waveColor: '#888',
-                progressColor: '#888',
+                waveColor: '#6a0572',
+                progressColor: '#6a0572',
+                cursorColor: '#6a0572',
                 hideScrollbar: false,
                 autoScroll: false,
                 autoCenter: true,
@@ -625,7 +626,7 @@
                     wsRegions.addRegion({
                         start: sliceStart[i] * wsf.getDuration(),
                         end: sliceEnd[i] * wsf.getDuration(),
-                        color: `rgba(240,240,240,0.5)`,
+                        color: `rgba(240,240,240,0.1)`,
                         drag: true,
                         resize: true,
                         loop: false,
@@ -646,7 +647,7 @@
             });
 
             wsRegions.enableDragSelection({
-                color: 'rgba(240,240,240,0.5)',
+                color: 'rgba(240,240,240,0.1)',
             })
 
             wsRegions.on(
