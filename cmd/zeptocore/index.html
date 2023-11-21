@@ -53,12 +53,15 @@
                         Down</button>
                     <p>
                         <label>
-                            <input type="radio" v-model="banks[selectedBank].files[selectedFile].oneshot" value=0>
+                            <input type="radio" @click="updateOneshot"
+                                v-model="banks[selectedBank].files[selectedFile].OneShot" value=false>
                             Continuous
                         </label>
                         <label>
-                            <input type="radio" v-model="banks[selectedBank].files[selectedFile].oneshot" value=1>
-                            One shot
+                            <input type="radio" @click="updateOneshot"
+                                v-model="banks[selectedBank].files[selectedFile].OneShot" value=true>
+
+                            One-shot
                         </label>
                     </p>
                     <div id="waveform-parent">
@@ -158,6 +161,11 @@
                         activeRegion = null;
                     }
                 },
+                updateOneshot() {
+                    setTimeout(() => {
+                        console.log(this.banks[this.selectedBank].files[this.selectedFile].OneShot);
+                    }, 100);
+                },
                 handleDrop(event) {
                     event.preventDefault();
                     const files = event.target.files || event.dataTransfer.files;
@@ -165,7 +173,6 @@
                     totalBytesUploaded = 0;
                     totalBytesRequested = 0;
                     for (var i = 0; i < files.length; i++) {
-                        files[i].oneshot = "0";
                         totalBytesRequested += files[i].size;
                     }
 
@@ -209,6 +216,7 @@
                         this.selectedFile--;
                     }
                 },
+
                 moveFileDown() {
                     if (this.selectedFile < this.banks[this.selectedBank].files.length - 1) {
                         this.swapFiles(this.selectedFile, this.selectedFile + 1);
