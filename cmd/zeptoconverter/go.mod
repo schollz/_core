@@ -5,9 +5,6 @@ go 1.21.3
 require (
 	github.com/schollz/logger v1.2.0
 	github.com/schollz/progressbar/v3 v3.14.1
-	github.com/schollz/zeptoconverter/lib/op1 v0.0.0-00010101000000-000000000000
-	github.com/schollz/zeptoconverter/lib/renoise v0.0.0-00010101000000-000000000000
-	github.com/schollz/zeptoconverter/lib/sox v0.0.0-20231003145150-6ceb4181fcba
 )
 
 require (
@@ -18,8 +15,10 @@ require (
 	golang.org/x/term v0.14.0 // indirect
 )
 
-replace github.com/schollz/zeptoconverter/lib/renoise => ../../lib/renoise
+replace github.com/schollz/zeptocore/cmd/zeptoserver/src/server => src/server
 
-replace github.com/schollz/zeptoconverter/lib/op1 => ../../lib/op1
+replace github.com/schollz/zeptocore/cmd/zeptoserver/src/renoise => src/renoise
 
-replace github.com/schollz/zeptoconverter/lib/sox => ../../lib/sox
+replace github.com/schollz/zeptocore/cmd/zeptoserver/src/op1 => src/renoise
+
+replace github.com/schollz/zeptocore/cmd/zeptoserver/src/sox => src/sox
