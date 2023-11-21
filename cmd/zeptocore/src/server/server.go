@@ -17,7 +17,7 @@ import (
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
-var Port = 8098
+var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
 
@@ -78,6 +78,9 @@ type Message struct {
 	Success  bool           `json:"success"`
 	Filename string         `json:"filename"`
 	File     zeptocore.File `json:"file"`
+	SliceStart []float64 `json:"sliceStart"`
+	SliceStop []float64 `json:"sliceStop"`
+
 }
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
