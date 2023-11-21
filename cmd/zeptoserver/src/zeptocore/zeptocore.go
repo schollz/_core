@@ -16,7 +16,6 @@ import (
 type File struct {
 	PathToFile   string
 	BPM          int
-	Beats        int
 	SliceStart   []float64 // fractional (0-1)
 	SliceStop    []float64 // fractional (0-1)
 	Transposable bool
@@ -70,13 +69,6 @@ func (f *File) Load() (err error) {
 
 func (f *File) SetBPM(bpm int) {
 	f.BPM = bpm
-	go func() {
-		f.Save()
-	}()
-}
-
-func (f *File) SetBeats(beats int) {
-	f.Beats = beats
 	go func() {
 		f.Save()
 	}()
@@ -165,7 +157,6 @@ func (f File) updateFile(index int) (err error) {
 	// 	uint32_t size;
 	// 	char *name;
 	// 	uint16_t bpm;
-	// 	uint16_t beats;
 	// 	uint8_t slice_num;
 	// 	uint32_t *slice_start;
 	// 	uint32_t *slice_end;
@@ -179,7 +170,6 @@ func (f File) updateFile(index int) (err error) {
 		[]byte(PathToFile),
 		uint32(fsize),
 		uint16(f.BPM),
-		uint16(f.Beats),
 		sliceNum,
 		slicesStart,
 		slicesEnd,
