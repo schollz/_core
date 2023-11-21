@@ -280,24 +280,24 @@
             })
 
             wsRegions.on(
-                'region-updated', (region) => { 
+                'region-updated', (region) => {
                     console.log('Updated region', region);
                     let regions = wsf.plugins[0].regions;
                     regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
                     let sliceStart = [];
                     let sliceStop = [];
-                    for (var i=0;i<regions.length;i++) {
-                        sliceStart.push(regions[i].start/wsf.getDuration());
-                        sliceStop.push(regions[i].end/wsf.getDuration());                        
+                    for (var i = 0; i < regions.length; i++) {
+                        sliceStart.push(regions[i].start / wsf.getDuration());
+                        sliceStop.push(regions[i].end / wsf.getDuration());
                     }
-                    socket.send(JSON.stringify({ 
-                        action: "updateSlices",
+                    socket.send(JSON.stringify({
+                        action: "setslices",
                         filename: filename,
-                        slicestart: sliceStart,
+                        sliceStart: sliceStart,
                         sliceStop: sliceStop,
                     }));
 
-            });
+                });
 
 
             {
