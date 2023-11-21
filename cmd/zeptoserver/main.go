@@ -78,10 +78,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
-	Action  string `json:"action"`
-	Message string `json:"message"`
-	Error   string `json:"error"`
-	Success bool   `json:"success"`
+	Action  string   `json:"action"`
+	Message string   `json:"message"`
+	Error   string   `json:"error"`
+	Success bool     `json:"success"`
+	File    FileData `json:"file"`
 }
 
 type FileData struct {
@@ -115,9 +116,16 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			break
 		}
 		log.Debugf("message: %+v", message)
-		err = c.WriteJSON(Message{Message: "hello", Success: true})
-		if err != nil {
-			break
+		if message.Action == "waveform" {
+			c.WriteJSON(Message{
+				Action: "waveform",
+				File: FileData{
+					OriginalFilename: "amen.wav",
+					Filename:         "amen.wav",
+					Size:             0,
+				},
+				Success: true,
+			})
 		}
 	}
 	return

@@ -1,34 +1,17 @@
-<!--
-
-I'd like you to create a website using HTML, CSS, and Javascript.
-
-Use the Vue2 framework to create a single page application.
-
-The website should have a header, a footer, and a main content area.
-
-The main content area should have a header also, with a box to drag and drop a file or files.
-
-When a file is dropped, it is added to a bank.
-
-There are 16 banks. The banks are selectable from the left side of the page. When selecting a bank, it will list the files in it on the right.
-
-When clicking on a file, it will display the file name and bytes in the file, below the header that contains the box for uploading files.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Manager</title>
+    <title>*core dump</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div id="app">
         <header>
-            <h1>File Manager</h1>
+            <h1>*core dump</h1>
         </header>
         <main>
             <div class="banks-selector">
@@ -67,7 +50,15 @@ When clicking on a file, it will display the file name and bytes in the file, be
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                         Down</button>
-
+                    <div id="waveform-parent">
+                        <div id="waveform"></div>
+                        <p>
+                            <label>
+                                <label style="margin-left: 2em">
+                                    Zoom: <input type="range" min="10" max="1000" value="10" />
+                                </label>
+                        </p>
+                    </div>
                 </div>
 
 
@@ -78,8 +69,209 @@ When clicking on a file, it will display the file name and bytes in the file, be
         </footer>
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-    <script src="app.js"></script>
+    <script type="module">
+        import { WaveSurferG, RegionsPluginG } from "/waves.js";
+        window.WaveSurf = WaveSurferG;
+        window.RegionsPlugin = RegionsPluginG;
+    </script>
+    <script>
+        var wsf = null;
+        var app;
+        var socket;
+        var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+        const socketMessageListener = (e) => {
+            console.log(e.data);
+            data = JSON.parse(e.data);
+            if (data.action == "waveform") {
+                console.log("got waveform");
+                if (wsf != null) {
+                    wsf.destroy();
+                }
+                var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
+                var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
+                document.getElementById('waveform-parent').style = newWidth;
+                wsf = window.WaveSurf.create({
+                    container: '#waveform',
+                    waveColor: '#888',
+                    progressColor: '#888',
+                    hideScrollbar: false,
+                    autoScroll: false,
+                    autoCenter: true,
+                    url: '/amen.wav',
+                });
+                // resize whenever a zoom
+                wsf.on('zoom', () => {
+                    console.log('zoom');
+                });
+                // set the width of a WaveSurfer to 100 px
+
+
+                const wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
+
+                wsf.on('decode', () => {
+                    // Regions
+                    for (var i = 0; i < 32; i++) {
+                        i = 29;
+                        wsRegions.addRegion({
+                            start: 0.1765 * i,
+                            end: 0.1765 * (i + 1),
+                            color: `rgba(240,240,240,0.5)`,
+                            drag: true,
+                            resize: true,
+                            loop: false,
+                        });
+                        break;
+                    }
+                });
+
+                wsRegions.enableDragSelection({
+                    color: 'rgba(240,240,240,0.5)',
+                })
+
+                wsRegions.on(
+                    'region-updated', (region) => { console.log('Updated region', region) })
+
+
+                {
+                    var playing = false;
+                    let activeRegion = null
+                    wsRegions.on('region-in', (region) => {
+                        console.log('in', region.id);
+                    })
+                    wsRegions.on('region-out', (region) => {
+                        console.log('out', region.id);
+                        if (activeRegion.id === region.id) {
+                            wsf.pause();
+                            playing = false;
+                        }
+                    })
+                    wsRegions.on('region-clicked', (region, e) => {
+                        e.stopPropagation() // prevent triggering a click on the waveform
+                        activeRegion = region;
+                        console.log(region);
+                        if (playing) {
+                            console.log('pausing');
+                            wsf.pause();
+                            playing = false;
+
+                        } else {
+                            region.play();
+                            playing = true;
+                        }
+                        // region.setOptions({ color: randomColor() })
+                    })
+                    // Reset the active region when the user clicks anywhere in the waveform
+                    wsf.on('interaction', () => { activeRegion = null })
+                }
+
+                // Update the zoom level on slider change
+                wsf.once('decode', () => {
+                    document.querySelector('input[type="range"]').oninput = (e) => {
+                        const minPxPerSec = Number(e.target.value)
+                        wsf.zoom(minPxPerSec)
+                    };
+                });
+
+            }
+        };
+        const socketOpenListener = (e) => {
+            console.log('Connected');
+            socket.send(JSON.stringify({ message: "hello, server" }))
+        };
+        const socketErrorListener = (e) => {
+            console.error(e);
+        }
+        const socketCloseListener = (e) => {
+            if (socket) {
+                console.log('Disconnected.');
+            }
+            var url = window.origin.replace("http", "ws") + '/ws?id=' + randomID;
+            socket = new WebSocket(url);
+            socket.onopen = socketOpenListener;
+            socket.onmessage = socketMessageListener;
+            socket.onclose = socketCloseListener;
+            socket.onerror = socketErrorListener;
+        };
+        window.addEventListener('load', (event) => {
+            socketCloseListener();
+        });
+
+        app = new Vue({
+            el: '#app',
+            data: {
+                banks: Array.from({ length: 16 }, () => ({ files: [] })),
+                selectedBank: 0,
+                selectedFile: null,
+            },
+            methods: {
+                selectBank(index) {
+                    this.selectedBank = index;
+                    this.selectedFile = null; // Clear selected file when changing banks
+                },
+                openFileInput() {
+                    // Trigger file input click when the drop area is clicked
+                    document.getElementById('fileInput').click();
+                },
+                handleDrop(event) {
+                    event.preventDefault();
+                    const files = event.target.files || event.dataTransfer.files;
+                    this.banks[this.selectedBank].files = [...this.banks[this.selectedBank].files, ...Array.from(files)];
+
+
+                    const formData = new FormData();
+                    for (const file of files) {
+                        formData.append('files', file);
+                    }
+                    // Use fetch to send a POST request to the server
+                    fetch('/upload?id=' + randomID, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data.message);
+                            // Optionally, you can handle the server response
+                        })
+                        .catch(error => {
+                            console.error('Error uploading files:', error);
+                        });
+                },
+                showFileDetails(fileIndex) {
+                    this.selectedFile = fileIndex;
+                    socket.send(JSON.stringify({ action: "waveform" }));
+                },
+                removeSelectedFile() {
+                    if (this.selectedFile !== null) {
+                        this.banks[this.selectedBank].files.splice(this.selectedFile, 1);
+                        this.selectedFile = null;
+                    }
+                },
+                moveFileUp() {
+                    if (this.selectedFile > 0) {
+                        this.swapFiles(this.selectedFile, this.selectedFile - 1);
+                        this.selectedFile--;
+                    }
+                },
+                moveFileDown() {
+                    if (this.selectedFile < this.banks[this.selectedBank].files.length - 1) {
+                        this.swapFiles(this.selectedFile, this.selectedFile + 1);
+                        this.selectedFile++;
+                    }
+                },
+                swapFiles(index1, index2) {
+                    const temp = this.banks[this.selectedBank].files[index1];
+                    this.banks[this.selectedBank].files[index1] = this.banks[this.selectedBank].files[index2];
+                    this.banks[this.selectedBank].files[index2] = temp;
+                },
+            },
+        });
+
+
+        app.banks[0].files.push({ name: 'amen.wav', size: 1234 });
+    </script>
 </body>
 
 </html>
