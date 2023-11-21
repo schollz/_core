@@ -9,7 +9,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 
+	"github.com/bep/debounce"
 	log "github.com/schollz/logger"
 	"github.com/schollz/zeptocore/cmd/zeptoserver/src/op1"
 	"github.com/schollz/zeptocore/cmd/zeptoserver/src/renoise"
@@ -24,8 +26,11 @@ type File struct {
 	SliceStop    []float64 // fractional (0-1)
 	Transposable bool
 	OneShot      bool
-	Stereo       bool // true if stereo
-	Oversampling int  // 1, 2, or 4
+	Channels     int // 1 if mono, 2 if stereo
+	Oversampling int // 1, 2, or 4
+
+	debounceSave  func(f func())
+	debounceRegen func(f func())
 }
 
 func Get(pathToOriginal string) (f File, err error) {
@@ -33,45 +38,100 @@ func Get(pathToOriginal string) (f File, err error) {
 		PathToFile: pathToOriginal,
 	}
 	if f.Load() == nil {
+		f.debounceSave = debounce.New(1 * time.Second)
+		f.debounceRegen = debounce.New(1 * time.Second)
 		return
 	}
 	// create new file
 	f = File{
-		PathToFile: pathToOriginal,
+		PathToFile:    pathToOriginal,
+		debounceSave:  debounce.New(1 * time.Second),
+		debounceRegen: debounce.New(1 * time.Second),
+		OneShot:       false,
+		Transposable:  true,
+		Channels:      1,
+		Oversampling:  1,
 	}
-	if filepath.Ext(pathToOriginal) == ".xrni" {
+	if filepath.Ext(f.PathToFile) == ".xrni" {
 		var newPath string
-		newPath, f.SliceStart, f.SliceStop, err = renoise.GetSliceMarkers(pathToOriginal)
+		newPath, f.SliceStart, f.SliceStop, err = renoise.GetSliceMarkers(f.PathToFile)
 		if err == nil {
 			f.PathToFile = newPath
 		}
-	} else if filepath.Ext(pathToOriginal) == ".aif" {
-		slicesStart, slicesEnd, err = op1.GetSliceMarkers(pathToOriginal)
+	} else if filepath.Ext(f.PathToFile) == ".aif" {
+		log.Tracef("attempting op1 %s", f.PathToFile)
+		f.SliceStart, f.SliceStop, err = op1.GetSliceMarkers(f.PathToFile)
 		if err != nil {
-			slicesStart = []int{}
-			slicesEnd = []int{}
+			log.Error(err)
 		}
 	}
-
-	// TODO: load defaults
-
-	// f.BPM, f.Beats, f.SliceStart, f.SliceStop, err = GetSliceMarkers(f.PathToFile)
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return
-	// }
-	// f.SliceNum = uint16(len(f.SliceStart))
+	var beats float64
+	var bpm float64
+	beats, bpm, err = sox.GetBPM(f.PathToFile)
+	f.BPM = int(math.Round(bpm))
+	if len(f.SliceStart) == 0 {
+		// determine programmatically
+		slices := beats * 2
+		f.SliceStart = make([]float64, int(slices))
+		f.SliceStop = make([]float64, int(slices))
+		for i := 0; i < int(slices); i++ {
+			f.SliceStart[i] = float64(i) / slices
+			f.SliceStop[i] = float64(i+1) / slices
+		}
+	}
 	return
 }
 
 func (f File) Save() (err error) {
-	fi, err := os.Create(fmt.Sprintf("%s.json", f.PathToFile))
-	if err != nil {
-		return
+	fu := func() {
+		log.Tracef("writing %s.json", f.PathToFile)
+		fi, err := os.Create(fmt.Sprintf("%s.json", f.PathToFile))
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		defer fi.Close()
+
+		err = json.NewEncoder(fi).Encode(f)
+		if err != nil {
+			log.Error(err)
+		}
 	}
-	defer fi.Close()
-	err = json.NewEncoder(fi).Encode(f)
+	f.debounceSave(fu)
 	return
+}
+
+func (f File) Regenerate() {
+	fu := func() {
+		log.Tracef("regenerating %s", f.PathToFile)
+		// get the folder of the original flie
+		folder, filename := filepath.Split(f.PathToFile)
+		// remove extension from file name
+		filenameWithouExt := filename[:len(filename)-len(filepath.Ext(filename))]
+
+		// create the 0 file (original)
+		fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
+		err := processSound(f.PathToFile, fname0, f.Channels, f.Oversampling)
+		if err != nil {
+			log.Error(err)
+		}
+		err = f.updateInfo(fname0)
+		if err != nil {
+			log.Error(err)
+		}
+
+		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
+		err = createTimeStretched(f.PathToFile, fname1, 0.5, f.Channels, f.Oversampling)
+		if err != nil {
+			log.Error(err)
+		}
+		err = f.updateInfo(fname1)
+		if err != nil {
+			log.Error(err)
+		}
+
+	}
+	f.debounceRegen(fu)
 }
 
 func (f *File) Load() (err error) {
@@ -104,12 +164,18 @@ func (f *File) SetOversampling(oversampling int) {
 	go func() {
 		f.Save()
 	}()
+	go func() {
+		f.Regenerate()
+	}()
 }
 
-func (f *File) SetStereo(stereo bool) {
-	f.Stereo = stereo
+func (f *File) SetChannels(channels int) {
+	f.Channels = channels
 	go func() {
 		f.Save()
+	}()
+	go func() {
+		f.Regenerate()
 	}()
 }
 
@@ -131,7 +197,7 @@ func (f *File) SetTransposable(transposable bool) {
 // and process it to format it for zeptocore
 func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channels int, oversampling int) (err error) {
 	log.Tracef("creating timestretched %s", fnameOut)
-	_, _, err = run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
+	_, _, err = utils.Run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
 	if err != nil {
 		log.Error(err)
 		return
@@ -183,24 +249,18 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 	return
 }
 
-func (f File) updateFile(index int) (err error) {
-	folder, PathToFile := filepath.Split(f.PathToFile)
-
-	// set the number of channels
-	channels := 1
-	if f.Stereo {
-		channels = 2
-	}
+func (f File) updateInfo(fnameIn string) (err error) {
+	_, filename := filepath.Split(fnameIn)
 
 	// determine the size
-	finfo, err := os.Stat(f.PathToFile)
+	finfo, err := os.Stat(fnameIn)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	totalSamples := float64(finfo.Size()-44) / float64(channels) / 2
+	totalSamples := float64(finfo.Size()-44) / float64(f.Channels) / 2
 	totalSamples = totalSamples - 22050*2*float64(f.Oversampling)
-	fsize := totalSamples * float64(channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
+	fsize := totalSamples * float64(f.Channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
 	sliceNum := len(f.SliceStart)
 	if sliceNum == 0 {
 		err = fmt.Errorf("no slices")
@@ -239,17 +299,17 @@ func (f File) updateFile(index int) (err error) {
 	//  uint8_t num_channels;
 	// } WavFile;
 	var data = []any{
-		uint16(len([]byte(PathToFile))),
-		[]byte(PathToFile),
+		uint16(len([]byte(filename))),
+		[]byte(filename),
 		uint32(fsize),
 		uint16(f.BPM),
-		sliceNum,
+		uint8(sliceNum),
 		slicesStart,
 		slicesEnd,
-		BPMTransposable,
-		StopCondition,
+		uint8(BPMTransposable),
+		uint8(StopCondition),
 		uint8(f.Oversampling),
-		uint8(channels),
+		uint8(f.Channels),
 	}
 
 	for _, v := range data {
@@ -267,7 +327,7 @@ func (f File) updateFile(index int) (err error) {
 			log.Errorf("binary.Write failed: %s", err.Error())
 		}
 	}
-	fInfoWrite, _ := os.Create(path.Join(folder, fmt.Sprintf("%s.info.%d", PathToFile, index)))
+	fInfoWrite, _ := os.Create(fnameIn + ".info")
 	fInfoWrite.Write(buf2.Bytes())
 	fInfoWrite.Close()
 	return
