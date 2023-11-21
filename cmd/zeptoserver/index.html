@@ -38,15 +38,15 @@
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
                             @click="showFileDetails(fileIndex)" :class="{ 'selected': fileIndex === selectedFile }"
                             :data-file-number="fileIndex + 1">
-                            {{ file.name }}
+                            {{ file.Filename }}
                         </li>
                     </ul>
                 </div>
 
                 <div class="file-details" v-if="selectedFile!=null">
                     <h2>File Details</h2>
-                    <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].name }}</p>
-                    <p><strong>Size:</strong> {{ banks[selectedBank].files[selectedFile].size }} bytes</p>
+                    <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
+                    <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p>
                     <button @click="removeSelectedFile">Remove File</button>
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
@@ -99,94 +99,12 @@
         const socketMessageListener = (e) => {
             console.log(e.data);
             data = JSON.parse(e.data);
-            if (data.action == "waveform") {
-                console.log("got waveform");
-                if (wsf != null) {
-                    wsf.destroy();
-                }
-                var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
-                var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
-                document.getElementById('waveform-parent').style = newWidth;
-                wsf = window.WaveSurf.create({
-                    container: '#waveform',
-                    waveColor: '#888',
-                    progressColor: '#888',
-                    hideScrollbar: false,
-                    autoScroll: false,
-                    autoCenter: true,
-                    url: '/amen.wav',
-                });
-                // resize whenever a zoom
-                wsf.on('zoom', () => {
-                    console.log('zoom');
-                });
-                // set the width of a WaveSurfer to 100 px
+            if (data.action == "processed") {
+                console.log("processed");
+                console.log(data);
+                // append data.file to bank
+                app.banks[app.selectedBank].files.push(data.file);
 
-
-                const wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
-
-                wsf.on('decode', () => {
-                    // Regions
-                    for (var i = 0; i < 32; i++) {
-                        i = 29;
-                        wsRegions.addRegion({
-                            start: 0.1765 * i,
-                            end: 0.1765 * (i + 1),
-                            color: `rgba(240,240,240,0.5)`,
-                            drag: true,
-                            resize: true,
-                            loop: false,
-                        });
-                        break;
-                    }
-                });
-
-                wsRegions.enableDragSelection({
-                    color: 'rgba(240,240,240,0.5)',
-                })
-
-                wsRegions.on(
-                    'region-updated', (region) => { console.log('Updated region', region) })
-
-
-                {
-                    var playing = false;
-                    wsRegions.on('region-in', (region) => {
-                        console.log('in', region.id);
-                    })
-                    wsRegions.on('region-out', (region) => {
-                        console.log('out', region.id);
-                        if (activeRegion.id === region.id) {
-                            wsf.pause();
-                            playing = false;
-                        }
-                    })
-                    wsRegions.on('region-clicked', (region, e) => {
-                        e.stopPropagation() // prevent triggering a click on the waveform
-                        activeRegion = region;
-                        console.log(region);
-                        if (playing) {
-                            console.log('pausing');
-                            wsf.pause();
-                            playing = false;
-
-                        } else {
-                            region.play();
-                            playing = true;
-                        }
-                        // region.setOptions({ color: randomColor() })
-                    })
-                    // Reset the active region when the user clicks anywhere in the waveform
-                    wsf.on('interaction', () => { activeRegion = null })
-                }
-
-                // Update the zoom level on slider change
-                wsf.once('decode', () => {
-                    document.querySelector('input[type="range"]').oninput = (e) => {
-                        const minPxPerSec = Number(e.target.value)
-                        wsf.zoom(minPxPerSec)
-                    };
-                });
 
             } else if (data.action == "progress") {
                 totalBytesUploaded += data.number;
@@ -250,7 +168,7 @@
                         files[i].oneshot = "0";
                         totalBytesRequested += files[i].size;
                     }
-                    this.banks[this.selectedBank].files = [...this.banks[this.selectedBank].files, ...Array.from(files)];
+
                     const formData = new FormData();
                     for (const file of files) {
                         formData.append('files', file);
@@ -271,7 +189,13 @@
                 },
                 showFileDetails(fileIndex) {
                     this.selectedFile = fileIndex;
-                    socket.send(JSON.stringify({ action: "waveform" }));
+                    // wait 100 milliseconds
+                    setTimeout(() => {
+                        showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile + ".mp3",
+                            this.banks[this.selectedBank].files[this.selectedFile].Duration,
+                            this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
+                            this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
+                    }, 100);
                 },
                 removeSelectedFile() {
                     if (this.selectedFile !== null) {
@@ -300,7 +224,107 @@
         });
 
 
-        app.banks[0].files.push({ name: 'amen.wav', size: 1234, oneshot: "0" });
+        function showWaveform(filename, duration, sliceStart, sliceEnd) {
+            if (wsf != null) {
+                wsf.destroy();
+            }
+            var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
+            var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
+            document.getElementById('waveform-parent').style = newWidth;
+            wsf = window.WaveSurf.create({
+                container: '#waveform',
+                waveColor: '#888',
+                progressColor: '#888',
+                hideScrollbar: false,
+                autoScroll: false,
+                autoCenter: true,
+                url: filename,
+            });
+            // resize whenever a zoom
+            wsf.on('zoom', () => {
+                console.log('zoom');
+            });
+            // set the width of a WaveSurfer to 100 px
+
+
+            const wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
+
+            wsf.on('decode', () => {
+                // Regions
+                for (var i = 0; i < sliceStart.length; i++) {
+                    wsRegions.addRegion({
+                        start: sliceStart[i] * duration,
+                        end: sliceEnd[i] * duration,
+                        color: `rgba(240,240,240,0.5)`,
+                        drag: true,
+                        resize: true,
+                        loop: false,
+                    });
+                }
+                // for (var i = 0; i < 32; i++) {
+                //     i = 29;
+                //     wsRegions.addRegion({
+                //         start: 0.1765 * i,
+                //         end: 0.1765 * (i + 1),
+                //         color: `rgba(240,240,240,0.5)`,
+                //         drag: true,
+                //         resize: true,
+                //         loop: false,
+                //     });
+                //     break;
+                // }
+            });
+
+            wsRegions.enableDragSelection({
+                color: 'rgba(240,240,240,0.5)',
+            })
+
+            wsRegions.on(
+                'region-updated', (region) => { console.log('Updated region', region) })
+
+
+            {
+                var playing = false;
+                wsRegions.on('region-in', (region) => {
+                    console.log('in', region.id);
+                })
+                wsRegions.on('region-out', (region) => {
+                    console.log('out', region.id);
+                    if (activeRegion.id === region.id) {
+                        wsf.pause();
+                        playing = false;
+                    }
+                })
+                wsRegions.on('region-clicked', (region, e) => {
+                    e.stopPropagation() // prevent triggering a click on the waveform
+                    activeRegion = region;
+                    console.log(region);
+                    if (playing) {
+                        console.log('pausing');
+                        wsf.pause();
+                        playing = false;
+                    } else {
+                        region.play();
+                        playing = true;
+                        setTimeout(() => {
+                            wsf.pause();
+                            playing = false;
+                        }, (region.end - region.start) * 960);
+                    }
+                    // region.setOptions({ color: randomColor() })
+                })
+                // Reset the active region when the user clicks anywhere in the waveform
+                wsf.on('interaction', () => { activeRegion = null })
+            }
+
+            // Update the zoom level on slider change
+            wsf.once('decode', () => {
+                document.querySelector('input[type="range"]').oninput = (e) => {
+                    const minPxPerSec = Number(e.target.value)
+                    wsf.zoom(minPxPerSec)
+                };
+            });
+        }
     </script>
 </body>
 

@@ -13,6 +13,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/utils"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/zeptocore"
 )
 
 var Port = 8098
@@ -69,18 +71,13 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
-	Action  string   `json:"action"`
-	Message string   `json:"message"`
-	Number  int64    `json:"number"`
-	Error   string   `json:"error"`
-	Success bool     `json:"success"`
-	File    FileData `json:"file"`
-}
-
-type FileData struct {
-	OriginalFilename string `json:"originalFilename"`
-	Filename         string `json:"filename"`
-	Size             int64  `json:"size"`
+	Action   string         `json:"action"`
+	Message  string         `json:"message"`
+	Number   int64          `json:"number"`
+	Error    string         `json:"error"`
+	Success  bool           `json:"success"`
+	Filename string         `json:"filename"`
+	File     zeptocore.File `json:"file"`
 }
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
@@ -108,16 +105,21 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			break
 		}
 		log.Debugf("message: %+v", message)
-		if message.Action == "waveform" {
-			c.WriteJSON(Message{
-				Action: "waveform",
-				File: FileData{
-					OriginalFilename: "amen.wav",
-					Filename:         "amen.wav",
-					Size:             0,
-				},
-				Success: true,
-			})
+		if message.Action == "getinfo" {
+			f, err := zeptocore.Get(message.Filename)
+			if err != nil {
+				c.WriteJSON(Message{
+					Action: "error",
+					Error:  err.Error(),
+				})
+			} else {
+				c.WriteJSON(Message{
+					Action:   "setinfo",
+					Filename: message.Filename,
+					File:     f,
+					Success:  true,
+				})
+			}
 		}
 	}
 	return
@@ -167,12 +169,13 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 
 		// Read the file content
 		// save file locally
+		localFile := path.Join(StorageFolder, file.Filename, file.Filename)
 		err = os.MkdirAll(path.Join(StorageFolder, file.Filename), 0777)
 		if err != nil {
 			return
 		}
 		var destination *os.File
-		destination, err = os.Create(path.Join(StorageFolder, file.Filename, file.Filename))
+		destination, err = os.Create(localFile)
 		if err != nil {
 			return
 		}
@@ -194,10 +197,37 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			return
 		}
 
-		go func() {
-			log.Debugf("prcessing file: %s", file.Filename)
-			// do process the file
-		}()
+		go func(uploadedFile string, localFile string) {
+			log.Debugf("prcessing file %s from upload %s", localFile, uploadedFile)
+			// convert to mp3
+			_, _, err = utils.Run("sox", localFile, localFile+".mp3")
+			if err != nil {
+				log.Error(err)
+				if _, ok := connections[id]; ok {
+					connections[id].WriteJSON(Message{
+						Error: err.Error(),
+					})
+				}
+				return
+			}
+			f, err := zeptocore.Get(localFile)
+			if err != nil {
+				log.Error(err)
+				if _, ok := connections[id]; ok {
+					connections[id].WriteJSON(Message{
+						Error: err.Error(),
+					})
+				}
+			} else {
+				if _, ok := connections[id]; ok {
+					connections[id].WriteJSON(Message{
+						Action:   "processed",
+						Filename: uploadedFile,
+						File:     f,
+					})
+				}
+			}
+		}(file.Filename, localFile)
 	}
 
 	// Send a response

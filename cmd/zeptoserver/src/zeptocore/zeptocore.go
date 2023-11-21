@@ -20,6 +20,8 @@ import (
 )
 
 type File struct {
+	Filename     string
+	Duration     float64
 	PathToFile   string
 	BPM          int
 	SliceStart   []float64 // fractional (0-1)
@@ -34,8 +36,12 @@ type File struct {
 }
 
 func Get(pathToOriginal string) (f File, err error) {
+	_, filename := filepath.Split(pathToOriginal)
+	duration, err := sox.Length(pathToOriginal)
 	f = File{
+		Filename:   filename,
 		PathToFile: pathToOriginal,
+		Duration:   duration,
 	}
 	if f.Load() == nil {
 		f.debounceSave = debounce.New(1 * time.Second)
@@ -44,6 +50,8 @@ func Get(pathToOriginal string) (f File, err error) {
 	}
 	// create new file
 	f = File{
+		Filename:      filename,
+		Duration:      duration,
 		PathToFile:    pathToOriginal,
 		debounceSave:  debounce.New(1 * time.Second),
 		debounceRegen: debounce.New(1 * time.Second),
@@ -52,24 +60,22 @@ func Get(pathToOriginal string) (f File, err error) {
 		Channels:      1,
 		Oversampling:  1,
 	}
+	var errSliceDetect error
 	if filepath.Ext(f.PathToFile) == ".xrni" {
 		var newPath string
-		newPath, f.SliceStart, f.SliceStop, err = renoise.GetSliceMarkers(f.PathToFile)
-		if err == nil {
+		newPath, f.SliceStart, f.SliceStop, errSliceDetect = renoise.GetSliceMarkers(f.PathToFile)
+		if errSliceDetect == nil {
 			f.PathToFile = newPath
 		}
 	} else if filepath.Ext(f.PathToFile) == ".aif" {
 		log.Tracef("attempting op1 %s", f.PathToFile)
-		f.SliceStart, f.SliceStop, err = op1.GetSliceMarkers(f.PathToFile)
-		if err != nil {
-			log.Error(err)
-		}
+		f.SliceStart, f.SliceStop, errSliceDetect = op1.GetSliceMarkers(f.PathToFile)
 	}
 	var beats float64
 	var bpm float64
 	beats, bpm, err = sox.GetBPM(f.PathToFile)
 	f.BPM = int(math.Round(bpm))
-	if len(f.SliceStart) == 0 {
+	if len(f.SliceStart) == 0 || errSliceDetect != nil {
 		// determine programmatically
 		slices := beats * 2
 		f.SliceStart = make([]float64, int(slices))
