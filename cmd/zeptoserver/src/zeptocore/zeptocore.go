@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/op1"
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/renoise"
 	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
 	"github.com/schollz/zeptocore/cmd/zeptoserver/src/utils"
 )
@@ -36,6 +38,19 @@ func Get(pathToOriginal string) (f File, err error) {
 	// create new file
 	f = File{
 		PathToFile: pathToOriginal,
+	}
+	if filepath.Ext(pathToOriginal) == ".xrni" {
+		var newPath string
+		newPath, f.SliceStart, f.SliceStop, err = renoise.GetSliceMarkers(pathToOriginal)
+		if err == nil {
+			f.PathToFile = newPath
+		}
+	} else if filepath.Ext(pathToOriginal) == ".aif" {
+		slicesStart, slicesEnd, err = op1.GetSliceMarkers(pathToOriginal)
+		if err != nil {
+			slicesStart = []int{}
+			slicesEnd = []int{}
+		}
 	}
 
 	// TODO: load defaults
@@ -110,6 +125,23 @@ func (f *File) SetTransposable(transposable bool) {
 	go func() {
 		f.Save()
 	}()
+}
+
+// createTimeStretched will create timestretched file from input
+// and process it to format it for zeptocore
+func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channels int, oversampling int) (err error) {
+	log.Tracef("creating timestretched %s", fnameOut)
+	_, _, err = run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	err = processSound("1.wav", fnameOut, channels, oversampling)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	return
 }
 
 // processSound takes a sound file and processes it to be ready for the zeptocore
