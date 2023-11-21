@@ -42,10 +42,6 @@ void sdcard_startup() {
               "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->bpm: %d\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->bpm);
           printf(
-              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->beats: "
-              "%d\n",
-              bi, si, banks[bi]->sample[si].snd[sel_variation]->beats);
-          printf(
               "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->slice_num: "
               "% d\n ",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->slice_num);

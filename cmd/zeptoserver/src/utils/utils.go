@@ -1,10 +1,32 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"strings"
+
+	log "github.com/schollz/logger"
 )
+
+func Run(args ...string) (string, string, error) {
+	log.Trace(strings.Join(args, " "))
+	baseCmd := args[0]
+	cmdArgs := args[1:]
+	cmd := exec.Command(baseCmd, cmdArgs...)
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
+	if err != nil {
+		log.Errorf("%s -> '%s'", strings.Join(args, " "), err.Error())
+		log.Error(outb.String())
+		log.Error(errb.String())
+	}
+	return outb.String(), errb.String(), err
+}
 
 // CopyFile copies a file from src to dst. If src and dst files exist, and are
 // the same, then return success. Otherise, attempt to create a hard link

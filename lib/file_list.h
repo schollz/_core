@@ -106,12 +106,6 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
 
-  // Beats
-  fr = f_read(&fil, &si->beats, sizeof(uint16_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
   // SliceNum
   fr = f_read(&fil, &si->slice_num, sizeof(uint16_t), &bytes_read);
   if (fr != FR_OK) {
