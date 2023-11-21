@@ -156,17 +156,26 @@
 
             .banks-selector {
                 overflow-x: auto;
-                padding-bottom: 0;
+                padding: 0;
+                margin: 0;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
                 /* Adjust the maximum height as needed */
             }
 
             .banks-selector ul {
                 display: flex;
+                margin-right: 2.125vw;
             }
 
             .banks-selector li {
                 margin-right: 0.5rem;
                 white-space: nowrap;
+                padding: 0;
+                height: 5.5vw;
+                width: 4.125vw;
+                margin: 0;
+                margin-left: 2.125vw;
             }
 
             main {
@@ -202,7 +211,7 @@
                 <ul>
                     <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
                         :class="{ 'selected': index === selectedBank }">
-                        <span class="mobile-bank-label" v-if="isMobile"> {{ index + 1 }} </span>
+                        <span class="mobile-bank-label" v-if="isMobile"></span>
                         <span class="desktop-bank-label" v-else> Bank {{ index + 1 }} </span>
                     </li>
                 </ul>
@@ -210,11 +219,13 @@
 
             <div class="content-area">
                 <div class="file-uploader">
-                    <h2>Upload Files</h2>
-                    <div class="drop-area" @drop="handleDrop" @dragover.prevent>
-                        Drop your files here
+                    <!-- Add file input for selecting files -->
+                    <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
+                    <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
+                        Drop your files here or click to select
                     </div>
                 </div>
+
 
                 <div class="file-list" v-if="banks[selectedBank].files.length>0">
                     <h2>Bank {{ selectedBank + 1 }}</h2>
@@ -366,6 +377,42 @@
                 stereoMono: 'saveState',
             },
             methods: {
+                openFileInput() {
+                    // Trigger file input click when the drop area is clicked
+                    document.getElementById('fileInput').click();
+                },
+                handleFileInputChange(event) {
+                    // Handle selected files when the file input changes
+                    const files = event.target.files;
+                    this.progressBarWidth = '0%';
+                    totalBytesUploaded = 0;
+                    totalBytesRequested = 0;
+                    for (var i = 0; i < files.length; i++) {
+                        totalBytesRequested += files[i].size;
+                    }
+
+                    const formData = new FormData();
+                    for (const file of files) {
+                        formData.append('files', file);
+                    }
+
+                    // Use fetch to send a POST request to the server
+                    fetch('/upload?id=' + randomID, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data.message);
+                            // Optionally, you can handle the server response
+                        })
+                        .catch(error => {
+                            console.error('Error uploading files:', error);
+                        });
+
+                    // Clear the file input value to allow selecting the same file again
+                    event.target.value = null;
+                },
                 saveState() {
                     saveStateToCookies();
                 },
