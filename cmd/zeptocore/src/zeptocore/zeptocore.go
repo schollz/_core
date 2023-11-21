@@ -44,10 +44,12 @@ func Get(pathToOriginal string) (f File, err error) {
 		Duration:   duration,
 	}
 	if f.Load() == nil {
+		log.Debugf("loaded %s from disk", pathToOriginal)
 		f.debounceSave = debounce.New(1 * time.Second)
 		f.debounceRegen = debounce.New(1 * time.Second)
 		return
 	}
+	log.Debugf("creating new %s, could not find cache", pathToOriginal)
 	// create new file
 	f = File{
 		Filename:      filename,
@@ -143,10 +145,14 @@ func (f File) Regenerate() {
 func (f *File) Load() (err error) {
 	fi, err := os.Open(fmt.Sprintf("%s.json", f.PathToFile))
 	if err != nil {
+		log.Error(err)
 		return
 	}
 	defer fi.Close()
 	err = json.NewDecoder(fi).Decode(&f)
+	if err != nil {
+		log.Error(err)
+	}
 	return
 }
 
