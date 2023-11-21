@@ -44,25 +44,28 @@
                 </div>
 
                 <div class="file-details" v-if="selectedFile!=null">
-                    <h2>File Details</h2>
-                    <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
-                    <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p>
+                    <h2>{{ banks[selectedBank].files[selectedFile].Filename }}</h2>
+                    <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
+                    <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
+
                     <button @click="removeSelectedFile">Remove File</button>
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                         Down</button>
                     <p>
-                        <label>
-                            <input type="radio" @click="updateOneshot"
-                                v-model="banks[selectedBank].files[selectedFile].OneShot" value=false>
-                            Continuous
-                        </label>
-                        <label>
-                            <input type="radio" @click="updateOneshot"
-                                v-model="banks[selectedBank].files[selectedFile].OneShot" value=true>
-
-                            One-shot
-                        </label>
+                        <input type="checkbox" id="oneshot" @click="updateOneshot"
+                            v-model="banks[selectedBank].files[selectedFile].OneShot">
+                        <label for="oneshot">One-shot: <span
+                                v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
+                            <span v-else>off</span></label>
+                    </p>
+                    <p>
+                        <input type="checkbox" id="tempomatch"
+                            v-model="banks[selectedBank].files[selectedFile].TempoMatch">
+                        <label for="tempomatch">Tempo matching: <span
+                                v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm changes
+                                speed)</span>
+                            <span v-else>off</span></label>
                     </p>
                     <div id="waveform-parent">
                         <div id="waveform"></div>
