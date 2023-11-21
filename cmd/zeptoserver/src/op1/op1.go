@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"math"
 	"os"
+
+	"github.com/schollz/zeptocore/cmd/zeptoserver/src/sox"
 )
 
-func GetSliceMarkers(fname string) (spliceStart []int, spliceEnd []int, err error) {
+func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, err error) {
 	b, err := os.ReadFile(fname)
 	if err != nil {
 		return
@@ -21,6 +23,10 @@ func GetSliceMarkers(fname string) (spliceStart []int, spliceEnd []int, err erro
 		return
 	}
 
+	numSamples, err := sox.NumSamples(fname)
+	if err != nil {
+		return
+	}
 	lastStart := -1
 	for i, _ := range op1.Start {
 		start := int(math.Round(float64(op1.Start[i]) / 4058))
@@ -30,8 +36,8 @@ func GetSliceMarkers(fname string) (spliceStart []int, spliceEnd []int, err erro
 		lastStart = start
 		end := int(math.Round(float64(op1.End[i])/4058)) - 40
 		if end > start {
-			spliceStart = append(spliceStart, start)
-			spliceEnd = append(spliceEnd, end)
+			spliceStart = append(spliceStart, float64(start)/float64(numSamples))
+			spliceEnd = append(spliceEnd, float64(end)/float64(numSamples))
 		}
 	}
 	return
