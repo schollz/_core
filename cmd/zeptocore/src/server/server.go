@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -20,6 +21,7 @@ import (
 var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
+var mutex sync.Mutex
 
 func Serve() {
 	os.MkdirAll(StorageFolder, 0777)
@@ -104,9 +106,15 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 	defer func() {
 		c.Close()
-		delete(connections, query["id"][0])
+		mutex.Lock()
+		if _, ok := connections[query["id"][0]]; ok {
+			delete(connections, query["id"][0])
+		}
+		mutex.Unlock()
 	}()
+	mutex.Lock()
 	connections[query["id"][0]] = c
+	mutex.Unlock()
 
 	for {
 		var message Message
@@ -200,12 +208,14 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			TargetWriter: destination,
 			Callback: func(n int64) {
 				log.Debugf("n: %d", n)
+				mutex.Lock()
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Action: "progress",
 						Number: n,
 					})
 				}
+				mutex.Unlock()
 			},
 		}
 
@@ -220,22 +230,27 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			_, _, err = utils.Run("sox", localFile, localFile+".mp3")
 			if err != nil {
 				log.Error(err)
+				mutex.Lock()
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Error: err.Error(),
 					})
 				}
+				mutex.Unlock()
 				return
 			}
 			f, err := zeptocore.Get(localFile)
 			if err != nil {
 				log.Error(err)
+				mutex.Lock()
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Error: err.Error(),
 					})
 				}
+				mutex.Unlock()
 			} else {
+				mutex.Lock()
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Action:   "processed",
@@ -243,6 +258,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 						File:     f,
 					})
 				}
+				mutex.Unlock()
 			}
 		}(file.Filename, localFile)
 	}

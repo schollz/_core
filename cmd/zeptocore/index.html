@@ -442,7 +442,7 @@
         app = new Vue({
             el: '#app',
             data: {
-                banks: Array.from({ length: 16 }, () => ({ files: [] })),
+                banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
                 selectedBank: 0,
                 selectedFile: null,
                 progressBarWidth: '0%',
@@ -501,11 +501,26 @@
                 },
                 clearCurrentBank() {
                     this.banks[this.selectedBank].files = [];
+                    this.banks[index].lastSelectedFile = null;
                     this.selectedFile = null;
                 },
                 selectBank(index) {
+                    // Save the currently selected file index in the current bank
+                    this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
+
+                    // Switch to the new bank
                     this.selectedBank = index;
-                    this.selectedFile = null; // Clear selected file when changing banks
+
+                    // Set the selectedFile to the last selected file in the new bank
+                    this.selectedFile = this.banks[index].lastSelectedFile;
+                    if (this.selectedFile != null) {
+                        setTimeout(() => {
+                            showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
+                                this.banks[this.selectedBank].files[this.selectedFile].Duration,
+                                this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
+                                this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
+                        }, 100);
+                    }
                 },
                 openFileInput() {
                     // Trigger file input click when the drop area is clicked
@@ -551,14 +566,19 @@
                         });
                 },
                 showFileDetails(fileIndex) {
-                    this.selectedFile = fileIndex;
-                    // wait 100 milliseconds
-                    setTimeout(() => {
-                        showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
-                            this.banks[this.selectedBank].files[this.selectedFile].Duration,
-                            this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
-                            this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
-                    }, 100);
+                    if (fileIndex === this.selectedFile) {
+                        this.selectedFile = null;
+                    } else {
+                        this.selectedFile = fileIndex;
+                        this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
+                        // wait 100 milliseconds
+                        setTimeout(() => {
+                            showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
+                                this.banks[this.selectedBank].files[this.selectedFile].Duration,
+                                this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
+                                this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
+                        }, 100);
+                    }
                 },
                 removeSelectedFile() {
                     if (this.selectedFile !== null) {
