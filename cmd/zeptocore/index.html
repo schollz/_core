@@ -371,7 +371,10 @@
                         </select>
                     </div>
                     <div class="footer-item">
-                        <button type="submit">Download</button>
+                        <div v-if="uploading">uploading</div>
+                        <div v-else-if="processing">processing</div>
+                        <div v-else-if="downloading">downloading</div>
+                        <button type="submit" v-else>Download</button>
                     </div>
                 </div>
             </form>
@@ -408,8 +411,14 @@
                 }
                 // append data.file to bank
                 app.banks[app.selectedBank].files.push(data.file);
-
-
+            } else if (data.action == "processingstart") {
+                app.uploading = false;
+                app.processing = true;
+                app.downloading = false;
+            } else if (data.action == "processingstop") {
+                app.uploading = false;
+                app.processing = false;
+                app.downloading = true;
             } else if (data.action == "progress") {
                 totalBytesUploaded += data.number;
                 app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 103.3)}%`;
@@ -451,6 +460,9 @@
                 oversampling: '1x', // Default to '1x'
                 stereoMono: 'mono', // Default to 'mono'
                 isMobile: false, // Define isMobile variable
+                downloading: false,
+                processing: false,
+                uploading: false,
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
@@ -607,6 +619,10 @@
                     this.banks[this.selectedBank].files[index2] = temp;
                 },
                 submitForm() {
+                    app.uploading = true;
+                    app.processing = false;
+                    app.downloading = false;
+
                     // Include other options as needed
                     const formData = {
                         oversampling: this.oversampling,
@@ -629,24 +645,40 @@
 
                     console.log(JSON.stringify(formData));
                     // Use fetch to send a POST request to the server
-                    fetch('/download', {
+                    fetch('/download?id=' + randomID, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(formData),
                     })
-                        .then(response => response.blob())
-                        .then(blob => {
-                            // Create a temporary link to trigger the download
-                            const url = window.URL.createObjectURL(new Blob([blob]));
+                        .then(response => {
+                            const contentDisposition = response.headers.get('Content-Disposition');
+                            if (contentDisposition) {
+                                const filenameMatch = /attachment; filename=(.*)/.exec(contentDisposition);
+                                if (filenameMatch && filenameMatch[1]) {
+                                    return { filename: filenameMatch[1], blob: response.blob() };
+                                }
+                            }
+                            return { filename: 'output.zip', blob: response.blob() };
+                        })
+                        .then(({ filename, blob }) => {
+                            return blob.then(actualBlob => ({ filename, actualBlob }));
+                        })
+                        .then(({ filename, actualBlob }) => {
+                            const url = window.URL.createObjectURL(new Blob([actualBlob]));
                             const link = document.createElement('a');
                             link.href = url;
-                            link.download = 'output.zip';
+                            link.download = filename; // Set the filename dynamically
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
                             window.URL.revokeObjectURL(url);
+                            console.log("downloaded");
+                            app.uploading = false;
+                            app.processing = false;
+                            app.downloading = false;
+
                         })
                         .catch(error => {
                             console.error('Error downloading files:', error);
