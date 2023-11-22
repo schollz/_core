@@ -132,3 +132,5 @@ cmd/zeptoserver/src/renoise/Instrument.xml
 cmd/zeptoserver/src/zeptocore/lofi.0.wav.info
 cmd/zeptoserver/src/zeptocore/lofi.1.wav.info
 cmd/zeptoserver/storage/
+cmd/zeptocore/storage/
+cmd/zeptocore/zeptocore
