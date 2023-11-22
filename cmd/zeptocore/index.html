@@ -200,6 +200,23 @@
             .banks-selector li .mobile-bank-label {
                 display: inline-block;
             }
+
+            .footer form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer form label {
+                margin-bottom: 0.5rem;
+                /* Add margin between form labels */
+            }
+
+            .footer select,
+            .footer button {
+                width: 100%;
+                /* Make the select and button full-width */
+            }
         }
     </style>
 </head>
@@ -553,6 +570,7 @@
                 },
             },
         });
+
 
         function loadStateFromCookies() {
             const savedState = document.cookie.split(';').reduce((acc, cookie) => {
