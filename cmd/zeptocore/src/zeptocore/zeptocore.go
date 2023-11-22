@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/bep/debounce"
@@ -35,6 +36,11 @@ type File struct {
 	debounceSave  func(f func())
 	debounceRegen func(f func())
 }
+
+var (
+	mu      sync.Mutex
+	working int
+)
 
 func Get(pathToOriginal string) (f File, err error) {
 	_, filename := filepath.Split(pathToOriginal)
@@ -139,8 +145,20 @@ func (f File) Save() (err error) {
 	return
 }
 
+func IsBusy() bool {
+	return working > 0
+}
+
 func (f File) Regenerate() {
 	fu := func() {
+		mu.Lock()
+		working++
+		mu.Unlock()
+		defer func() {
+			mu.Lock()
+			working--
+			mu.Unlock()
+		}()
 		log.Tracef("regenerating %s", f.PathToFile)
 		// get the folder of the original flie
 		folder, filename := filepath.Split(f.PathToFile)
@@ -202,23 +220,29 @@ func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
 }
 
 func (f *File) SetOversampling(oversampling int) {
+	different := f.Oversampling != oversampling
 	f.Oversampling = oversampling
 	go func() {
 		f.Save()
 	}()
-	go func() {
-		f.Regenerate()
-	}()
+	if different {
+		go func() {
+			f.Regenerate()
+		}()
+	}
 }
 
 func (f *File) SetChannels(channels int) {
+	different := f.Channels != channels
 	f.Channels = channels
 	go func() {
 		f.Save()
 	}()
-	go func() {
-		f.Regenerate()
-	}()
+	if different {
+		go func() {
+			f.Regenerate()
+		}()
+	}
 }
 
 func (f *File) SetOneshot(oneshot bool) {
