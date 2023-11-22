@@ -6,10 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>*core load</title>
     <style>
+        :root {
+            --background-color: #f4f0ff;
+            --header-footer-background: #6a0572;
+            --banks-background: #dcd6f7;
+            --highlight-color: #c3b8e6;
+            --hover-color: #d2cde9;
+        }
+
+
         body {
             font-family: 'Roboto Mono', monospace;
             margin: 0;
-            background-color: #f4f0ff;
+            background-color: var(--background-color);
+            ;
             /* Light purple background color */
         }
 
@@ -21,7 +31,7 @@
 
         header,
         footer {
-            background-color: #6a0572;
+            background-color: var(--header-footer-background);
             /* Dark purple header and footer background color */
             color: white;
             padding: 1rem;
@@ -34,7 +44,7 @@
         }
 
         .banks-selector {
-            background-color: #dcd6f7;
+            background-color: var(--banks-background);
             padding: 1rem;
         }
 
@@ -51,7 +61,7 @@
         }
 
         .banks-selector li.selected {
-            background-color: #6a0572;
+            background-color: var(--header-footer-background);
             /* Highlight color for selected bank */
             color: white;
         }
@@ -84,7 +94,7 @@
             cursor: pointer;
             margin-bottom: 0.5rem;
             padding: 0.5rem;
-            background-color: #c3b8e6;
+            background-color: var(--highlight-color);
             position: relative;
         }
 
@@ -100,18 +110,18 @@
         }
 
         .file-list li.selected {
-            background-color: #6a0572;
+            background-color: var(--header-footer-background);
             /* Highlight color for selected file */
             color: white;
         }
 
         .file-list li:hover {
-            background-color: #d2cde9;
+            background-color: var(--hover-color);
         }
 
         .progress-bar {
             height: 5px;
-            background: #6a0572;
+            background: var(--header-footer-background);
             position: relative;
             bottom: -1.5rem;
             left: -1rem;
@@ -130,9 +140,9 @@
 
         button {
             font-family: 'Roboto Mono', monospace;
-            background-color: #dcd6f7;
+            background-color: var(--banks-background);
             /* Light purple background color for buttons */
-            color: #6a0572;
+            color: var(--header-footer-background);
             /* Dark purple text color for buttons */
             padding: 0.5rem 1rem;
             border: none;
@@ -142,9 +152,9 @@
         }
 
         button:hover {
-            background-color: #c3b8e6;
+            background-color: var(--highlight-color);
             /* Slightly darker purple on button hover */
-            color: #6a0572;
+            color: var(--header-footer-background);
         }
 
 
@@ -654,9 +664,9 @@
             document.getElementById('waveform-parent').style = newWidth;
             wsf = window.WaveSurf.create({
                 container: '#waveform',
-                waveColor: '#6a0572',
-                progressColor: '#6a0572',
-                cursorColor: '#6a0572',
+                waveColor: 'var(--header-footer-background)',
+                progressColor: 'var(--header-footer-background)',
+                cursorColor: 'var(--header-footer-background)',
                 hideScrollbar: false,
                 autoScroll: false,
                 autoCenter: true,
