@@ -81,7 +81,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 			f.SetChannels(channels)
 		}
 	}
-	time.Sleep(2 * time.Second)
+	time.Sleep(200 * time.Millisecond)
 
 	// wait until all the files are processed
 	for i := 0; i < 300; i++ {
@@ -140,6 +140,12 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	// remove the directory
+	os.RemoveAll(zipFilename)
+
 	os.Chdir(cwd)
+
+	zipFilename = path.Join(Storage, zipFilename+".zip")
 	return
 }

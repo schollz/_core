@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/pack"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
@@ -48,8 +49,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	// very special paths
 	if r.Method == "POST" {
 		// POST file
-		// this is called from browser upload
-		return handleUpload(w, r)
+		if r.URL.Path == "/download" {
+			return handleDownload(w, r)
+		} else {
+			return handleUpload(w, r)
+		}
 	} else if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
 	} else {
@@ -67,14 +71,6 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 
 	return
-}
-
-type DownloadZip struct {
-	Oversampling string `json:"oversampling"`
-	StereoMono   string `json:"stereoMono"`
-	Banks        []struct {
-		Files []string `json:"files"`
-	} `json:"banks"`
 }
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -160,6 +156,60 @@ func (bc *ByteCounter) Write(p []byte) (n int, err error) {
 	bc.TotalBytes += int64(n)
 	bc.Callback(bc.TotalBytes)
 	return n, err
+}
+
+func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
+	// get the url query parameters from the request r
+	query := r.URL.Query()
+	if _, ok := query["id"]; !ok {
+		err = fmt.Errorf("no id")
+		return
+	}
+	id := query["id"][0]
+
+	mutex.Lock()
+	if _, ok := connections[id]; ok {
+		connections[id].WriteJSON(Message{
+			Action: "processingstart",
+		})
+	}
+	mutex.Unlock()
+
+	defer func() {
+		mutex.Lock()
+		if _, ok := connections[id]; ok {
+			connections[id].WriteJSON(Message{
+				Action: "processingstop",
+			})
+		}
+		mutex.Unlock()
+
+	}()
+
+	// Read the JSON data from the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	zipFile, err := pack.Zip(StorageFolder, body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	log.Tracef("zipFile: %s", zipFile)
+
+	_, fname := filepath.Split(zipFile)
+
+	// Set the Content-Disposition header to trigger download
+	w.Header().Set("Content-Disposition", "attachment; filename="+fname)
+	w.Header().Set("Content-Type", "application/zip")
+
+	// Serve the ZIP file
+	http.ServeFile(w, r, zipFile)
+	return
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
