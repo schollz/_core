@@ -350,8 +350,6 @@
                         </p>
                     </div>
                 </div>
-
-
             </div>
         </main>
         <footer>
@@ -404,6 +402,10 @@
             if (data.action == "processed") {
                 console.log("processed");
                 console.log(data);
+                for (var i = 0; i < data.file.SliceStart.length; i++) {
+                    data.file.SliceStart[i] = parseFloat(data.file.SliceStart[i].toFixed(3));
+                    data.file.SliceStop[i] = parseFloat(data.file.SliceStop[i].toFixed(3));
+                }
                 // append data.file to bank
                 app.banks[app.selectedBank].files.push(data.file);
 
@@ -501,7 +503,7 @@
                 },
                 clearCurrentBank() {
                     this.banks[this.selectedBank].files = [];
-                    this.banks[index].lastSelectedFile = null;
+                    this.banks[this.selectedBank].lastSelectedFile = null;
                     this.selectedFile = null;
                 },
                 selectBank(index) {
@@ -680,6 +682,7 @@
 
         // Save state to cookies
         function saveStateToCookies() {
+
             const stateToSave = {
                 banks: app.banks,
                 oversampling: app.oversampling,
@@ -700,12 +703,14 @@
             }
             var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
             var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
+            var ccolor = 'rgba(138, 180, 215, 0.4)';
+            var wavecolor = 'rgba(0, 92, 153,0.95)';
             document.getElementById('waveform-parent').style = newWidth;
             wsf = window.WaveSurf.create({
                 container: '#waveform',
-                waveColor: 'var(--header-footer-background)',
-                progressColor: 'var(--header-footer-background)',
-                cursorColor: 'var(--header-footer-background)',
+                waveColor: wavecolor,
+                progressColor: wavecolor,
+                cursorColor: wavecolor,
                 hideScrollbar: false,
                 autoScroll: false,
                 autoCenter: true,
@@ -726,28 +731,16 @@
                     wsRegions.addRegion({
                         start: sliceStart[i] * wsf.getDuration(),
                         end: sliceEnd[i] * wsf.getDuration(),
-                        color: `rgba(240,240,240,0.1)`,
+                        color: ccolor,
                         drag: true,
                         resize: true,
                         loop: false,
                     });
                 }
-                // for (var i = 0; i < 32; i++) {
-                //     i = 29;
-                //     wsRegions.addRegion({
-                //         start: 0.1765 * i,
-                //         end: 0.1765 * (i + 1),
-                //         color: `rgba(240,240,240,0.5)`,
-                //         drag: true,
-                //         resize: true,
-                //         loop: false,
-                //     });
-                //     break;
-                // }
             });
 
             wsRegions.enableDragSelection({
-                color: 'rgba(240,240,240,0.1)',
+                color: ccolor,
             })
 
             wsRegions.on(
