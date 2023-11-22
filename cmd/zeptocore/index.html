@@ -6,14 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>*core load</title>
     <style>
-        :root {
+        /* :root {
             --background-color: #f4f0ff;
             --header-footer-background: #6a0572;
             --banks-background: #dcd6f7;
             --highlight-color: #c3b8e6;
             --hover-color: #d2cde9;
+        }*/
+        :root {
+            --background-color: #f0f4ff;
+            /* Cobalt blueish background color */
+            --header-footer-background: #005c99;
+            /* Cobalt blueish header and footer background color */
+            --banks-background: #cde0f7;
+            /* Light blue background color for banks */
+            --highlight-color: #8ab4d7;
+            /* Lighter blue highlight color */
+            --hover-color: #a1c3e6;
+            /* Slightly darker blue on hover */
         }
-
 
         body {
             font-family: 'Roboto Mono', monospace;
@@ -57,7 +68,7 @@
             cursor: pointer;
             margin-bottom: 0.5rem;
             padding: 0.5rem;
-            background-color: #c3b8e6;
+            background-color: var(--highlight-color);
         }
 
         .banks-selector li.selected {
@@ -409,7 +420,6 @@
         };
         const socketOpenListener = (e) => {
             console.log('Connected');
-            socket.send(JSON.stringify({ message: "hello, server" }))
         };
         const socketErrorListener = (e) => {
             console.error(e);
@@ -789,9 +799,25 @@
             });
         }
 
+        function clearAllCookies() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                const eqPos = cookie.indexOf('=');
+                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            }
+        }
+
         window.addEventListener('load', (event) => {
-            // Load state from cookies on page load
-            loadStateFromCookies();
+            try {
+                // Attempt to parse cookies
+                loadStateFromCookies();
+            } catch (error) {
+                // If there's an error parsing cookies, clear them
+                console.error('Error parsing cookies:', error);
+                clearAllCookies();
+            }
 
             // Initialize WebSocket and other event listeners
             socketCloseListener();
