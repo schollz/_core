@@ -23,6 +23,7 @@ type File struct {
 	Filename     string
 	Duration     float64
 	PathToFile   string
+	PathToAudio  string
 	BPM          int
 	SliceStart   []float64 // fractional (0-1)
 	SliceStop    []float64 // fractional (0-1)
@@ -37,11 +38,9 @@ type File struct {
 
 func Get(pathToOriginal string) (f File, err error) {
 	_, filename := filepath.Split(pathToOriginal)
-	duration, err := sox.Length(pathToOriginal)
 	f = File{
 		Filename:   filename,
 		PathToFile: pathToOriginal,
-		Duration:   duration,
 	}
 	if f.Load() == nil {
 		log.Debugf("loaded %s from disk", pathToOriginal)
@@ -53,8 +52,8 @@ func Get(pathToOriginal string) (f File, err error) {
 	// create new file
 	f = File{
 		Filename:      filename,
-		Duration:      duration,
 		PathToFile:    pathToOriginal,
+		PathToAudio:   pathToOriginal,
 		debounceSave:  debounce.New(1 * time.Second),
 		debounceRegen: debounce.New(1 * time.Second),
 		OneShot:       false,
@@ -65,17 +64,25 @@ func Get(pathToOriginal string) (f File, err error) {
 	var errSliceDetect error
 	if filepath.Ext(f.PathToFile) == ".xrni" {
 		var newPath string
+		log.Tracef("opening renoise %s", f.PathToFile)
 		newPath, f.SliceStart, f.SliceStop, errSliceDetect = renoise.GetSliceMarkers(f.PathToFile)
 		if errSliceDetect == nil {
-			f.PathToFile = newPath
+			f.PathToAudio = newPath
 		}
 	} else if filepath.Ext(f.PathToFile) == ".aif" {
 		log.Tracef("attempting op1 %s", f.PathToFile)
 		f.SliceStart, f.SliceStop, errSliceDetect = op1.GetSliceMarkers(f.PathToFile)
 	}
+	// determine the duration
+	log.Tracef("determining the duration of %s", f.PathToAudio)
+	f.Duration, err = sox.Length(f.PathToAudio)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 	var beats float64
 	var bpm float64
-	beats, bpm, err = sox.GetBPM(f.PathToFile)
+	beats, bpm, err = sox.GetBPM(f.PathToAudio)
 	f.BPM = int(math.Round(bpm))
 	if len(f.SliceStart) == 0 || errSliceDetect != nil {
 		// determine programmatically
@@ -98,8 +105,17 @@ func Get(pathToOriginal string) (f File, err error) {
 
 	// check if fname0 exists
 	if _, err := os.Stat(fname0); err != nil {
+		// save the json
 		f.Save()
+
+		// regenerate the audio
 		f.Regenerate()
+
+		// create mp3
+		_, _, err = utils.Run("sox", f.PathToAudio, f.PathToFile+".mp3")
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	return
 }
@@ -133,7 +149,7 @@ func (f File) Regenerate() {
 
 		// create the 0 file (original)
 		fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
-		err := processSound(f.PathToFile, fname0, f.Channels, f.Oversampling)
+		err := processSound(f.PathToAudio, fname0, f.Channels, f.Oversampling)
 		if err != nil {
 			log.Error(err)
 		}
@@ -143,7 +159,7 @@ func (f File) Regenerate() {
 		}
 
 		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
-		err = createTimeStretched(f.PathToFile, fname1, 0.5, f.Channels, f.Oversampling)
+		err = createTimeStretched(f.PathToAudio, fname1, 0.5, f.Channels, f.Oversampling)
 		if err != nil {
 			log.Error(err)
 		}
@@ -159,7 +175,7 @@ func (f File) Regenerate() {
 func (f *File) Load() (err error) {
 	fi, err := os.Open(fmt.Sprintf("%s.json", f.PathToFile))
 	if err != nil {
-		log.Error(err)
+		log.Trace(err)
 		return
 	}
 	defer fi.Close()

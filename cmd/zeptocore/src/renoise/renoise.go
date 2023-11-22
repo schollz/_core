@@ -17,11 +17,13 @@ var DebugMode = false
 func GetSliceMarkers(fname string) (filename string, start []float64, end []float64, err error) {
 	files, err := unzipFile(fname)
 	if err != nil {
+		log.Error(err)
 		return
 	}
 
 	data, err := parseXML("Instrument.xml")
 	if err != nil {
+		log.Error(err)
 		return
 	}
 	markers := []int{}
@@ -30,6 +32,7 @@ func GetSliceMarkers(fname string) (filename string, start []float64, end []floa
 	}
 	if len(markers) < 2 {
 		err = fmt.Errorf("not enough markers")
+		log.Error(err)
 		return
 	}
 	for _, f := range files {
@@ -40,10 +43,12 @@ func GetSliceMarkers(fname string) (filename string, start []float64, end []floa
 	}
 	if filename == "" {
 		err = fmt.Errorf("could not find sample data")
+		log.Error(err)
 		return
 	}
 	numSamples, err := sox.NumSamples(filename)
 	if err != nil {
+		log.Error(err)
 		return
 	}
 	log.Tracef("filename: %s, numSamples: %d", filename, numSamples)
