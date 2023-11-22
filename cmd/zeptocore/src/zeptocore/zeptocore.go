@@ -282,17 +282,17 @@ func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channel
 func processSound(fnameIn string, fnameOut string, channels int, oversampling int) (err error) {
 	pieceFront, err := sox.Trim(fnameIn, 0, 0.5)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("could not trim %s: %s", fnameIn, err.Error())
 		return
 	}
 	seconds, err := sox.Length(fnameIn)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("could not get length of %s: %s", fnameIn, err.Error())
 		return
 	}
 	pieceEnd, err := sox.Trim(fnameIn, seconds-0.5)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("could not trim %s: %s", fnameIn, err.Error())
 		return
 	}
 	pieceJoin, err := sox.Join(pieceEnd, fnameIn, pieceFront)
