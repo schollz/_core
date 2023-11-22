@@ -150,3 +150,7 @@ cmd/zeptocore/src/zeptocore/lofi.aif.mp3
 "cmd/zeptocore/Sample00 (Amen Brother (Version 1) 1).1.wav.info"
 "cmd/zeptocore/Sample00 (Amen Brother (Version 1) 1).flac.json"
 "cmd/zeptocore/Sample00 (Amen Brother (Version 1) 1).flac.mp3"
+cmd/zeptocore/1.mp3
+cmd/zeptocore/src/pack/storage/
+cmd/zeptocore/src/pack/zips/
+cmd/zeptocore/zips/
