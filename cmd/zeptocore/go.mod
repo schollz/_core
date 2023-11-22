@@ -13,6 +13,7 @@ replace github.com/schollz/zeptocore/cmd/zeptocore/src/utils => ./src/utils
 require (
 	github.com/bep/debounce v1.2.1
 	github.com/gorilla/websocket v1.5.1
+	github.com/lucasepe/codename v0.2.0
 	github.com/schollz/logger v1.2.0
 	github.com/stretchr/testify v1.8.4
 )
