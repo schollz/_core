@@ -26,7 +26,7 @@
         #app {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            /* min-height: 100vh; */
         }
 
         header,
@@ -268,13 +268,18 @@
                     <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
                         :class="{ 'selected': index === selectedBank }">
                         <span class="mobile-bank-label" v-if="isMobile"></span>
-                        <span class="desktop-bank-label" v-else> Bank {{ index + 1 }} </span>
+                        <span class="desktop-bank-label" v-else></span>
                     </li>
                 </ul>
             </div>
 
             <div class="content-area">
-                <div class="file-uploader">
+                <div>
+                    <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
+                    </h2>
+                </div>
+
+                <div class=" file-uploader">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
                     <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
@@ -282,10 +287,9 @@
                     </div>
                 </div>
 
-
                 <div class="file-list" v-if="banks[selectedBank].files.length>0">
-                    <h2>Bank {{ selectedBank + 1 }}</h2>
-                    <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length>0">Clear</button>
+                    <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length>0"
+                        style="margin-left:0;">Clear all</button>
                     <ul>
 
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
@@ -297,11 +301,13 @@
                 </div>
 
                 <div class="file-details" v-if="selectedFile!=null">
-                    <h2>{{ banks[selectedBank].files[selectedFile].Filename }}</h2>
+                    <p style="background: var(--banks-background);
+                    padding: 0.5rem;
+                    text-align: center;">{{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <button @click="removeSelectedFile">Remove File</button>
+                    <button @click="removeSelectedFile" style="margin-left:0;">Remove File</button>
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                         Down</button>
@@ -326,7 +332,7 @@
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p>
-                            <button @click="deleteRegion">Delete region</button>
+                            <button @click="deleteRegion" style="margin-left:0;">Delete region</button>
                             <label style="margin-left: 2em">
                                 Zoom: <input type="range" min="10" max="1000" value="10" />
                             </label>
@@ -394,6 +400,9 @@
             } else if (data.action == "progress") {
                 totalBytesUploaded += data.number;
                 app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 103.3)}%`;
+                if (totalBytesUploaded >= totalBytesRequested) {
+                    app.progressBarWidth = "104.2%";
+                }
             } else {
                 console.log(data);
             }
