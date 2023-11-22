@@ -226,8 +226,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 
 		go func(uploadedFile string, localFile string) {
 			log.Debugf("prcessing file %s from upload %s", localFile, uploadedFile)
-			// convert to mp3
-			_, _, err = utils.Run("sox", localFile, localFile+".mp3")
+			f, err := zeptocore.Get(localFile)
 			if err != nil {
 				log.Error(err)
 				mutex.Lock()
@@ -239,7 +238,9 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 				mutex.Unlock()
 				return
 			}
-			f, err := zeptocore.Get(localFile)
+
+			// convert to mp3
+			_, _, err = utils.Run("sox", f.PathToFile, f.PathToFile+".mp3")
 			if err != nil {
 				log.Error(err)
 				mutex.Lock()
@@ -249,17 +250,18 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 					})
 				}
 				mutex.Unlock()
-			} else {
-				mutex.Lock()
-				if _, ok := connections[id]; ok {
-					connections[id].WriteJSON(Message{
-						Action:   "processed",
-						Filename: uploadedFile,
-						File:     f,
-					})
-				}
-				mutex.Unlock()
+				return
 			}
+
+			mutex.Lock()
+			if _, ok := connections[id]; ok {
+				connections[id].WriteJSON(Message{
+					Action:   "processed",
+					Filename: uploadedFile,
+					File:     f.PathToFile,
+				})
+			}
+			mutex.Unlock()
 		}(file.Filename, localFile)
 	}
 
