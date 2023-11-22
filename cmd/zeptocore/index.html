@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>*core dump</title>
+    <title>*core load</title>
     <style>
         body {
             font-family: 'Roboto Mono', monospace;
@@ -148,6 +148,35 @@
         }
 
 
+        .footer {
+            justify-content: space-between;
+        }
+
+        .footer-item {
+            margin-bottom: 0.25rem;
+            margin-top: 0.25rem;
+        }
+
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* Center items vertically */
+        }
+
+
+        footer>form {
+            max-width: 500px;
+            margin: auto;
+        }
+
+        footer>form>select {
+            max-width: 2em;
+        }
+
+        body {
+            padding: 2em;
+        }
 
         @media screen and (max-width: 768px) {
             /* Adjustments for mobile devices */
@@ -201,21 +230,17 @@
                 display: inline-block;
             }
 
-            .footer form {
-                display: flex;
+            .footer-row {
                 flex-direction: column;
-                align-items: center;
             }
 
-            .footer form label {
-                margin-bottom: 0.5rem;
-                /* Add margin between form labels */
+            h2 {
+                font-size: 1rem;
+                /* Adjust the font size as needed for smaller screens */
             }
 
-            .footer select,
-            .footer button {
-                width: 100%;
-                /* Make the select and button full-width */
+            body {
+                padding: 0;
             }
         }
     </style>
@@ -224,7 +249,7 @@
 <body>
     <div id="app">
         <header>
-            <h1>*core dump</h1>
+            <h1 style="margin:0; padding:0;">*core load</h1>
             <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
@@ -304,22 +329,30 @@
         </main>
         <footer>
             <form id="downloadForm" @submit.prevent="submitForm">
-                <label for="oversampling">Oversampling:</label>
-                <select id="oversampling" v-model="oversampling">
-                    <option value="1x">1x</option>
-                    <option value="2x">2x</option>
-                    <option value="4x">4x</option>
-                </select>
-
-                <label for="stereoMono">Stereo/Mono:</label>
-                <select id="stereoMono" v-model="stereoMono">
-                    <option value="stereo">Stereo</option>
-                    <option value="mono">Mono</option>
-                </select>
-
-                <button type="submit">Download</button>
+                <div class="footer-row">
+                    <div class="footer-item">
+                        <label for="oversampling">Oversampling:</label>
+                        <select id="oversampling" v-model="oversampling">
+                            <option value="1x">1x</option>
+                            <option value="2x">2x</option>
+                            <option value="4x">4x</option>
+                        </select>
+                    </div>
+                    <div class="footer-item">
+                        <label for="stereoMono">Stereo/Mono:</label>
+                        <select id="stereoMono" v-model="stereoMono">
+                            <option value="stereo">Stereo</option>
+                            <option value="mono">Mono</option>
+                        </select>
+                    </div>
+                    <div class="footer-item">
+                        <button type="submit">Download</button>
+                    </div>
+                </div>
             </form>
         </footer>
+
+
     </div>
 
 
@@ -350,7 +383,7 @@
 
             } else if (data.action == "progress") {
                 totalBytesUploaded += data.number;
-                app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 104)}%`;
+                app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 103.3)}%`;
             } else {
                 console.log(data);
             }
