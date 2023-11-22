@@ -169,11 +169,13 @@ func (f File) Regenerate() {
 		fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
 		err := processSound(f.PathToAudio, fname0, f.Channels, f.Oversampling)
 		if err != nil {
-			log.Error(err)
+			log.Errorf("could not process sound: %s %s", f.PathToAudio, err.Error())
+			return
 		}
 		err = f.updateInfo(fname0)
 		if err != nil {
 			log.Error(err)
+			return
 		}
 
 		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
