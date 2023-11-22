@@ -14,7 +14,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/utils"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
@@ -239,26 +238,12 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 				return
 			}
 
-			// convert to mp3
-			_, _, err = utils.Run("sox", f.PathToFile, f.PathToFile+".mp3")
-			if err != nil {
-				log.Error(err)
-				mutex.Lock()
-				if _, ok := connections[id]; ok {
-					connections[id].WriteJSON(Message{
-						Error: err.Error(),
-					})
-				}
-				mutex.Unlock()
-				return
-			}
-
 			mutex.Lock()
 			if _, ok := connections[id]; ok {
 				connections[id].WriteJSON(Message{
 					Action:   "processed",
 					Filename: uploadedFile,
-					File:     f.PathToFile,
+					File:     f,
 				})
 			}
 			mutex.Unlock()
