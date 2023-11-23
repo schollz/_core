@@ -21,17 +21,28 @@ import (
 )
 
 type File struct {
-	Filename     string
-	Duration     float64
-	PathToFile   string
-	PathToAudio  string
-	BPM          int
-	SliceStart   []float64 // fractional (0-1)
-	SliceStop    []float64 // fractional (0-1)
-	TempoMatch   bool
-	OneShot      bool
-	Channels     int // 1 if mono, 2 if stereo
-	Oversampling int // 1, 2, or 4
+	Filename      string
+	Duration      float64
+	PathToFile    string
+	PathToAudio   string
+	BPM           int
+	SliceStart    []float64 // fractional (0-1)
+	SliceStop     []float64 // fractional (0-1)
+	TempoMatch    bool
+	OneShot       bool
+	Channels      int // 1 if mono, 2 if stereo
+	Oversampling  int // 1, 2, or 4
+	SpliceTrigger int // 0, 16, 32, 48, 64, 80, 96, 112, 128
+	// from audio_callaback.h:
+	// // starts at splice start and ends at splice stop
+	// #define PLAY_SPLICE_STOP 0
+	// // starts at splice start, and returns to start when reaching splice boundary
+	// #define PLAY_SPLICE_LOOP 1
+	// // starts at splice start and ends at sample boundary
+	// #define PLAY_SAMPLE_STOP 2
+	// // starts at splice start and returns to start when reaching sample boundary
+	// #define PLAY_SAMPLE_LOOP 3
+	SplicePlayback int
 
 	debounceSave  func(f func())
 	debounceRegen func(f func())
@@ -213,6 +224,13 @@ func (f *File) SetBPM(bpm int) {
 	}()
 }
 
+func (f *File) SetSplicePlayback(playback int) {
+	f.SplicePlayback = playback
+	go func() {
+		f.Save()
+	}()
+}
+
 func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
 	f.SliceStart = sliceStart
 	f.SliceStop = sliceEnd
@@ -348,9 +366,10 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		BPMTempoMatch = 1
 	}
 
-	StopCondition := uint8(0)
+	// TODO: make other splice triggers optional?
+	f.SpliceTrigger = 96
 	if f.OneShot {
-		StopCondition = 2
+		f.SpliceTrigger = 0
 	}
 
 	// file_list.h:
@@ -363,6 +382,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// 	uint32_t *slice_end;
 	// 	uint8_t bpm_TempoMatch;
 	// 	uint8_t play_mode;
+	//  uint16_t splice_trigger;
 	//  uint8_t oversampling;
 	//  uint8_t num_channels;
 	// } WavFile;
@@ -375,7 +395,8 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		slicesStart,
 		slicesEnd,
 		uint8(BPMTempoMatch),
-		uint8(StopCondition),
+		uint8(f.SplicePlayback),
+		uint16(f.SpliceTrigger),
 		uint8(f.Oversampling),
 		uint8(f.Channels),
 	}

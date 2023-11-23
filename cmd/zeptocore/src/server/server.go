@@ -77,6 +77,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 	} else if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
+	} else if r.URL.Path == "/favicon.ico" {
+		return handleFavicon(w, r)
 	} else {
 		if r.URL.Path == "/" || !strings.Contains(r.URL.Path, ".") {
 			r.URL.Path = "/index.html"
@@ -94,11 +96,23 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
+func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
+	w.Header().Set("Content-Type", "image/x-icon")
+	var b []byte
+	b, err = os.ReadFile("favicon.ico")
+	if err != nil {
+		return
+	}
+	w.Write(b)
+	return
+}
+
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
 	Action     string         `json:"action"`
 	Message    string         `json:"message"`
+	Boolean    bool           `json:"boolean"`
 	Number     int64          `json:"number"`
 	Error      string         `json:"error"`
 	Success    bool           `json:"success"`
@@ -112,10 +126,18 @@ type Message struct {
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	query := r.URL.Query()
+	log.Tracef("query: %+v", query)
 	if _, ok := query["id"]; !ok {
 		err = fmt.Errorf("no id")
+		log.Error(err)
 		return
 	}
+	if _, ok := query["place"]; !ok {
+		err = fmt.Errorf("no place")
+		log.Error(err)
+		return
+	}
+	place := query["place"][0]
 
 	// use gorilla to open websocket
 	c, err := upgrader.Upgrade(w, r, nil)
@@ -140,9 +162,12 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		if err != nil {
 			break
 		}
+		if message.Filename != "" {
+			_, message.Filename = filepath.Split(message.Filename)
+		}
 		log.Debugf("message: %s->%+v", query["id"][0], message.Action)
 		if message.Action == "getinfo" {
-			f, err := zeptocore.Get(message.Filename)
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				c.WriteJSON(Message{
 					Action: "error",
@@ -157,11 +182,25 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				})
 			}
 		} else if message.Action == "setslices" {
-			f, err := zeptocore.Get(message.Filename)
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetSlices(message.SliceStart, message.SliceStop)
+			}
+		} else if message.Action == "setspliceplayback" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetSplicePlayback(int(message.Number))
+			}
+		} else if message.Action == "setoneshot" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetOneshot(message.Boolean)
 			}
 		} else if message.Action == "updatestate" {
 			// save into the keystore the message.State for message.Place

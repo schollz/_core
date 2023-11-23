@@ -32,9 +32,9 @@ typedef struct SampleInfo {
   uint32_t *slice_stop;
   uint8_t tempo_match;
   uint8_t play_mode;
+  uint16_t splice_trigger;
   uint8_t oversampling;
   uint8_t num_channels;
-  uint16_t slice_iterate;
 
   // internal variables
   uint16_t slice_current;
@@ -146,8 +146,11 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
 
-  // slice iterate
-  si->slice_iterate = 96;
+  // Splice trigger
+  fr = f_read(&fil, &si->splice_trigger, sizeof(uint16_t), &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
 
   // Oversampling
   fr = f_read(&fil, &si->oversampling, sizeof(uint8_t), &bytes_read);
