@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,15 +17,35 @@ import (
 	log "github.com/schollz/logger"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/pack"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
+	bolt "go.etcd.io/bbolt"
 )
 
 var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
 var mutex sync.Mutex
+var keystore *bolt.DB
 
 func Serve() {
 	os.MkdirAll(StorageFolder, 0777)
+
+	var err error
+	keystore, err = bolt.Open(path.Join(StorageFolder, "states.db"), 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+	// create the bucket if it doesn't exist
+	err = keystore.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("states"))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	connections = make(map[string]*websocket.Conn)
 	log.Infof("listening on :%d", Port)
 	http.HandleFunc("/", handler)
@@ -57,7 +78,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	} else if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
 	} else {
-		if r.URL.Path == "/" {
+		if r.URL.Path == "/" || !strings.Contains(r.URL.Path, ".") {
 			r.URL.Path = "/index.html"
 		}
 		mime := mime.TypeByExtension(filepath.Ext(r.URL.Path))
@@ -85,6 +106,8 @@ type Message struct {
 	File       zeptocore.File `json:"file"`
 	SliceStart []float64      `json:"sliceStart"`
 	SliceStop  []float64      `json:"sliceStop"`
+	State      string         `json:"state"`
+	Place      string         `json:"place"`
 }
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
@@ -117,7 +140,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		if err != nil {
 			break
 		}
-		log.Debugf("message: %+v", message)
+		log.Debugf("message: %s->%+v", query["id"][0], message.Action)
 		if message.Action == "getinfo" {
 			f, err := zeptocore.Get(message.Filename)
 			if err != nil {
@@ -139,6 +162,31 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				log.Error(err)
 			} else {
 				f.SetSlices(message.SliceStart, message.SliceStop)
+			}
+		} else if message.Action == "updatestate" {
+			// save into the keystore the message.State for message.Place
+			err = keystore.Update(func(tx *bolt.Tx) error {
+				b := tx.Bucket([]byte("states"))
+				return b.Put([]byte(message.Place), []byte(message.State))
+			})
+			if err != nil {
+				log.Error(err)
+			}
+		} else if message.Action == "getstate" {
+			// return message.State based for message.Place
+			err = keystore.View(func(tx *bolt.Tx) error {
+				b := tx.Bucket([]byte("states"))
+				v := b.Get([]byte(message.Place))
+				if v == nil {
+					return fmt.Errorf("no state for %s", message.Place)
+				}
+				message.State = string(v)
+				return nil
+			})
+			if err != nil {
+				log.Error(err)
+			} else {
+				c.WriteJSON(message)
 			}
 		}
 	}
@@ -166,6 +214,8 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	}
 	id := query["id"][0]
+	place := query["place"][0]
+	_, place = filepath.Split(place)
 
 	mutex.Lock()
 	if _, ok := connections[id]; ok {
@@ -193,7 +243,7 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	}
 
-	zipFile, err := pack.Zip(StorageFolder, body)
+	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body)
 	if err != nil {
 		log.Error(err)
 		return
@@ -219,7 +269,13 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		err = fmt.Errorf("no id")
 		return
 	}
+	if _, ok := query["place"]; !ok {
+		err = fmt.Errorf("no place")
+		return
+	}
 	id := query["id"][0]
+	place := query["place"][0]
+	_, place = filepath.Split(place)
 
 	// Parse the multipart form data
 	err = r.ParseMultipartForm(10 << 20) // 10 MB limit
@@ -243,8 +299,8 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 
 		// Read the file content
 		// save file locally
-		localFile := path.Join(StorageFolder, file.Filename, file.Filename)
-		err = os.MkdirAll(path.Join(StorageFolder, file.Filename), 0777)
+		localFile := path.Join(StorageFolder, place, file.Filename, file.Filename)
+		err = os.MkdirAll(path.Join(StorageFolder, place, file.Filename), 0777)
 		if err != nil {
 			return
 		}
