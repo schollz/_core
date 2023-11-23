@@ -344,6 +344,8 @@
                         <div id="waveform"></div>
                         <p>
                             <button @click="deleteRegion" style="margin-left:0;">Delete region</button>
+                            <button @click="deleteAllRegions" style="margin-left:0;">Delete All Regions</button>
+
                             <label style="margin-left: 2em">
                                 Zoom: <input type="range" min="10" max="1000" value="10" />
                             </label>
@@ -475,6 +477,18 @@
                 stereoMono: 'saveState',
             },
             methods: {
+                deleteAllRegions() {
+                    if (wsf != null) {
+                        wsf.plugins[0].regions.forEach(region => {
+                            region.remove();
+                        });
+
+                        // Clear the sliceStart and sliceStop arrays in the selected file
+                        app.banks[app.selectedBank].files[app.selectedFile].SliceStart = [];
+                        app.banks[app.selectedBank].files[app.selectedFile].SliceStop = [];
+
+                    }
+                },
                 openFileInput() {
                     // Trigger file input click when the drop area is clicked
                     document.getElementById('fileInput').click();
@@ -689,12 +703,14 @@
         });
 
 
+        // TODO: save state on the server
         function loadStateFromCookies() {
             const savedState = document.cookie.split(';').reduce((acc, cookie) => {
                 const [key, value] = cookie.trim().split('=');
                 acc[key] = JSON.parse(decodeURIComponent(value));
                 return acc;
             }, {});
+            console.log(savedState);
 
             if (savedState.banks) {
                 app.banks = savedState.banks;
@@ -724,9 +740,13 @@
                 selectedFile: app.selectedFile,
             };
 
-            document.cookie = Object.entries(stateToSave).map(([key, value]) => {
-                return `${key}=${encodeURIComponent(JSON.stringify(value))}`;
-            }).join(';');
+
+            Object.entries(stateToSave).forEach(([key, value]) => {
+                document.cookie = `${key}=${encodeURIComponent(JSON.stringify(value))}; SameSite=None; Secure`;
+            });
+            // document.cookie = Object.entries(stateToSave).map(([key, value]) => {
+            //     return `${key}=${encodeURIComponent(JSON.stringify(value))}`;
+            // }).join(';');
         }
 
 
@@ -784,9 +804,11 @@
                     let sliceStart = [];
                     let sliceStop = [];
                     for (var i = 0; i < regions.length; i++) {
-                        sliceStart.push(regions[i].start / wsf.getDuration());
-                        sliceStop.push(regions[i].end / wsf.getDuration());
+                        sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
+                        sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
                     }
+                    console.log(sliceStart);
+
                     // update locally
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
