@@ -306,15 +306,18 @@
                     </h2>
                 </div>
 
-                <div class=" file-uploader">
+                <div class=" file-uploader" v-if="!disconnected">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
                     <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
                         Drop your files here or click to select
                     </div>
                 </div>
+                <div v-if="disconnected" style="text-align: center;">
+                    <img src=" loading.gif">
+                </div>
 
-                <div class="file-list" v-if="banks[selectedBank].files.length>0">
+                <div class="file-list" v-if="banks[selectedBank].files.length>0 && !disconnected">
                     <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length>0"
                         style="margin-left:0;">Clear all</button>
                     <ul>
@@ -327,7 +330,7 @@
                     </ul>
                 </div>
 
-                <div class="file-details" v-if="selectedFile!=null">
+                <div class="file-details" v-if="selectedFile!=null && !disconnected">
                     <p style="margin-top:0;
                     padding: 0.5rem;
                     text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
@@ -486,6 +489,7 @@
         };
         const socketOpenListener = (e) => {
             console.log('Connected');
+            app.disconnected = false;
             setTimeout(() => {
                 if (socket != null) {
                     socket.send(JSON.stringify({
@@ -501,6 +505,7 @@
         const socketCloseListener = (e) => {
             if (socket) {
                 console.log('Disconnected.');
+                app.disconnected = true;
             }
             var url = window.origin.replace("http", "ws") + '/ws?id=' + randomID + "&place=" + window.location.pathname;
             socket = new WebSocket(url);
@@ -527,6 +532,7 @@
                 processing: false,
                 uploading: false,
                 title: window.location.pathname,
+                disconnected: true,
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
@@ -841,32 +847,36 @@
                 color: ccolor,
             })
 
-            wsRegions.on(
-                'region-updated', (region) => {
-                    console.log('Updated region', region);
-                    let regions = wsf.plugins[0].regions;
-                    regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
-                    let sliceStart = [];
-                    let sliceStop = [];
-                    for (var i = 0; i < regions.length; i++) {
-                        sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
-                        sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
-                    }
-                    console.log(sliceStart);
+            var regionTriggers = ['region-updated', 'region-created']
+            for (regionTrigger of regionTriggers) {
+                wsRegions.on(
+                    regionTrigger, (region) => {
+                        console.log('Updated region', region);
+                        let regions = wsf.plugins[0].regions;
+                        regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
+                        let sliceStart = [];
+                        let sliceStop = [];
+                        for (var i = 0; i < regions.length; i++) {
+                            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
+                            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
+                        }
+                        console.log(sliceStart);
 
-                    // update locally
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
+                        // update locally
+                        app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
+                        app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
 
-                    // update remotely
-                    socket.send(JSON.stringify({
-                        action: "setslices",
-                        filename: filename,
-                        sliceStart: sliceStart,
-                        sliceStop: sliceStop,
-                    }));
+                        // update remotely
+                        socket.send(JSON.stringify({
+                            action: "setslices",
+                            filename: filename,
+                            sliceStart: sliceStart,
+                            sliceStop: sliceStop,
+                        }));
 
-                });
+                    });
+            }
+
 
 
             {

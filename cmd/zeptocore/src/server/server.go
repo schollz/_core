@@ -86,7 +86,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		mime := mime.TypeByExtension(filepath.Ext(r.URL.Path))
 		w.Header().Set("Content-Type", mime)
 		var b []byte
-		b, err = os.ReadFile(r.URL.Path[1:])
+		_, filename := filepath.Split(r.URL.Path[1:]
+		b, err = os.ReadFile(filename)
 		if err != nil {
 			return
 		}
