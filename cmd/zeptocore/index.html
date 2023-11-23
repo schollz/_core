@@ -138,7 +138,7 @@
             left: -1rem;
             height: 0.5rem;
             width: 0;
-            transition: width 0.5s ease;
+            transition: width 0.2s ease;
             /* Add a smooth transition effect */
         }
 
@@ -421,9 +421,10 @@
                 app.downloading = true;
             } else if (data.action == "progress") {
                 totalBytesUploaded += data.number;
-                app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * 103.3)}%`;
+                var maxWidth = document.getElementsByClassName("progress-bar")[0].parentElement.offsetWidth;
+                app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
                 if (totalBytesUploaded >= totalBytesRequested) {
-                    app.progressBarWidth = "104.2%";
+                    app.progressBarWidth = `${maxWidth}px`;
                 }
             } else {
                 console.log(data);
@@ -456,7 +457,7 @@
                 banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
                 selectedBank: 0,
                 selectedFile: null,
-                progressBarWidth: '0%',
+                progressBarWidth: '0px',
                 oversampling: '1x', // Default to '1x'
                 stereoMono: 'mono', // Default to 'mono'
                 isMobile: false, // Define isMobile variable
@@ -481,7 +482,7 @@
                 handleFileInputChange(event) {
                     // Handle selected files when the file input changes
                     const files = event.target.files;
-                    this.progressBarWidth = '0%';
+                    this.progressBarWidth = '0px';
                     totalBytesUploaded = 0;
                     totalBytesRequested = 0;
                     for (var i = 0; i < files.length; i++) {
