@@ -48,9 +48,9 @@ void sdcard_startup() {
               bi, si, banks[bi]->sample[si].snd[sel_variation]->num_channels);
           printf(
               "[sdcard_startup] "
-              "banks[%d]->sample[%d].snd[sel_variation]->stop_condition: "
+              "banks[%d]->sample[%d].snd[sel_variation]->play_mode: "
               "% d\n ",
-              bi, si, banks[bi]->sample[si].snd[sel_variation]->stop_condition);
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->play_mode);
           printf(
               "[sdcard_startup] banks[%d]->sample[%d].snd[sel_variation]->bpm: "
               "%d\n",

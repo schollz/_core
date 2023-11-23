@@ -2,27 +2,17 @@ uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
-// TODO: if CPU > 100%, then set a flag so that the next callback doesn't do any
-// reads ( to play catchup)
-
-bool detect_dropout(int32_t *samples) {
-  uint8_t running_count = 0;
-  for (uint8_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
-    if (samples[i] == 0) {
-      running_count++;
-      if (running_count == 10) {
-        printf("[detect_dropout] found dropout starting at sample %d\n",
-               i - 10);
-        return true;
-      }
-    } else {
-      running_count = 0;
-    }
-  }
-  return false;
-}
 
 bool audio_was_muted = false;
+
+// starts at splice start and ends at splice stop
+#define PLAY_SPLICE_STOP 0
+// starts at splice start, and returns to start when reaching splice boundary
+#define PLAY_SPLICE_LOOP 1
+// starts at splice start and ends at sample boundary
+#define PLAY_SAMPLE_STOP 2
+// starts at splice start and returns to start when reaching sample boundary
+#define PLAY_SAMPLE_LOOP 3
 
 void i2s_callback_func() {
   uint32_t t0, t1;
@@ -152,13 +142,10 @@ void i2s_callback_func() {
     }
 
     if (banks[sel_bank_cur]
-                ->sample[sel_sample_cur]
-                .snd[sel_variation]
-                ->stop_condition == PLAY_MODE_ONESHOT_GO ||
-        banks[sel_bank_cur]
-                ->sample[sel_sample_cur]
-                .snd[sel_variation]
-                ->stop_condition == PLAY_MODE_ONESHOT_STOP) {
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->play_mode == PLAY_SPLICE_STOP) {
+      // do a mute once the sample extends past the start or end of the splice
       uint32_t next_phase =
           phases[0] + values_to_read * (phase_forward * 2 - 1);
       if ((phase_forward > 0 &&
@@ -180,14 +167,35 @@ void i2s_callback_func() {
         do_fade_out = true;
         audio_mute = true;
       }
+    } else if (banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->play_mode == PLAY_SAMPLE_STOP) {
+      // do a mute once the sample extends past the start or end of the sample
+      uint32_t next_phase =
+          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      if ((phase_forward > 0 &&
+           next_phase > banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->slice_stop[banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[sel_variation]
+                                             ->slice_num -
+                                         1]) ||
+          (phase_forward == 0 && next_phase < banks[sel_bank_cur]
+                                                  ->sample[sel_sample_cur]
+                                                  .snd[sel_variation]
+                                                  ->slice_start[0])) {
+        do_fade_out = true;
+        audio_mute = true;
+      }
     }
     if (audio_was_muted) {
       audio_was_muted = false;
       do_fade_in = true;
     }
 
-    // TODO: why doesn't it work with phase_change????
-    // phase_change = false;
     bool first_loop = true;
     for (int8_t head = 1; head >= 0; head--) {
       if (head == 1 && !do_crossfade) {
@@ -386,7 +394,6 @@ void i2s_callback_func() {
   }
 
   buffer->sample_count = buffer->max_sample_count;
-  // detect_dropout(samples);
   give_audio_buffer(ap, buffer);
 
   if (fil_is_open) {

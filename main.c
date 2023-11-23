@@ -105,10 +105,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[sel_variation]
-                 ->stop_condition < PLAY_MODE_ONESHOT_STOP) {
+                 ->slice_iterate > 0) {
     retrig_vol = 1.0;
 
-    if (bpm_timer_counter % bpm_timer_reset == 0) {
+    if (bpm_timer_counter % banks[sel_bank_cur]
+                                ->sample[sel_sample_cur]
+                                .snd[sel_variation]
+                                ->slice_iterate ==
+        0) {
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
@@ -368,7 +372,6 @@ int main() {
   // WS2812_show(ws2812);
 #endif
 
-  // TODO: remove this debugging
   sel_sample_next = 0;
   sel_bank_cur = 0;
   sel_sample_cur = 0;

@@ -15,7 +15,7 @@ function humanFileSize(bytes, si) {
 var Name = '';
 var filesize = 0;
 
-(function(Dropzone) {
+(function (Dropzone) {
     Dropzone.autoDiscover = false;
 
     let drop = new Dropzone('div#filesBox', {
@@ -31,8 +31,8 @@ var filesize = 0;
         chunkSize: 2000000,
     });
 
-    drop.on('uploadprogress', function(file, progress, bytesSent) {
-        console.log(progress,bytesSent);
+    drop.on('uploadprogress', function (file, progress, bytesSent) {
+        console.log(progress, bytesSent);
         try {
             var width = document.getElementById('preview').offsetWidth - 70;
             var repeatTimes = Math.round(width / 14 * progress / 100);
@@ -40,10 +40,10 @@ var filesize = 0;
                 `${Name} (${humanFileSize(filesize)})
 <p>${'#'.repeat(repeatTimes)} ${Math.round(progress)}%</p>`;
 
-        } catch (err) {}
+        } catch (err) { }
     });
 
-    drop.on('success', function(file, response) {
+    drop.on('success', function (file, response) {
         console.log('success');
         console.log(response);
         response = JSON.parse(file.xhr.response);
@@ -53,15 +53,14 @@ var filesize = 0;
         // }
     });
 
-    drop.on('error', function(file, response) {
+    drop.on('error', function (file, response) {
         console.log('error');
         console.log(response);
         document.getElementById('errormessage').innerText = response.message;
-        // TODO: display this error
         drop.removeAllFiles();
     });
 
-    drop.on('addedfile', function(file) {
+    drop.on('addedfile', function (file) {
         console.log(file);
         Name = file.name;
         filesize = file.size;
@@ -70,7 +69,7 @@ var filesize = 0;
 `;
     })
 
-    drop.on('removedfile', function(file) {
+    drop.on('removedfile', function (file) {
         console.log(file);
     });
 })(Dropzone);

@@ -362,7 +362,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// 	uint32_t *slice_start;
 	// 	uint32_t *slice_end;
 	// 	uint8_t bpm_TempoMatch;
-	// 	uint8_t stop_condition;
+	// 	uint8_t play_mode;
 	//  uint8_t oversampling;
 	//  uint8_t num_channels;
 	// } WavFile;
