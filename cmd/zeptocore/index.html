@@ -270,7 +270,7 @@
 <body>
     <div id="app">
         <header>
-            <h1 style="margin:0; padding:0;">*core load</h1>
+            <h1 style="margin:0; padding:0;">*core{{title}}</h1>
             <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
@@ -402,17 +402,31 @@
         var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
         const socketMessageListener = (e) => {
-            console.log(e.data);
             data = JSON.parse(e.data);
             if (data.action == "processed") {
-                console.log("processed");
-                console.log(data);
                 for (var i = 0; i < data.file.SliceStart.length; i++) {
                     data.file.SliceStart[i] = parseFloat(data.file.SliceStart[i].toFixed(3));
                     data.file.SliceStop[i] = parseFloat(data.file.SliceStop[i].toFixed(3));
                 }
                 // append data.file to bank
                 app.banks[app.selectedBank].files.push(data.file);
+            } else if (data.action == "getstate") {
+                var savedState = JSON.parse(data.state);
+                if (savedState.banks) {
+                    app.banks = savedState.banks;
+                }
+                if (savedState.oversampling) {
+                    app.oversampling = savedState.oversampling;
+                }
+                if (savedState.stereoMono) {
+                    app.stereoMono = savedState.stereoMono;
+                }
+                if (savedState.selectedBank !== undefined) {
+                    app.selectedBank = savedState.selectedBank;
+                }
+                if (savedState.selectedFile !== undefined) {
+                    app.selectedFile = savedState.selectedFile;
+                }
             } else if (data.action == "processingstart") {
                 app.uploading = false;
                 app.processing = true;
@@ -434,6 +448,14 @@
         };
         const socketOpenListener = (e) => {
             console.log('Connected');
+            setTimeout(() => {
+                if (socket != null) {
+                    socket.send(JSON.stringify({
+                        action: "getstate",
+                        place: window.location.pathname,
+                    }));
+                }
+            }, 50);
         };
         const socketErrorListener = (e) => {
             console.error(e);
@@ -466,6 +488,7 @@
                 downloading: false,
                 processing: false,
                 uploading: false,
+                title: window.location.pathname,
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
@@ -509,7 +532,7 @@
                     }
 
                     // Use fetch to send a POST request to the server
-                    fetch('/upload?id=' + randomID, {
+                    fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
                         method: 'POST',
                         body: formData,
                     })
@@ -526,7 +549,20 @@
                     event.target.value = null;
                 },
                 saveState() {
-                    saveStateToCookies();
+                    const savedState = {
+                        banks: app.banks,
+                        oversampling: app.oversampling,
+                        stereoMono: app.stereoMono,
+                        selectedBank: app.selectedBank,
+                        selectedFile: app.selectedFile,
+                    };
+                    if (socket != null) {
+                        socket.send(JSON.stringify({
+                            action: "updatestate",
+                            place: window.location.pathname,
+                            state: JSON.stringify(savedState),
+                        }));
+                    }
                 },
                 clearCurrentBank() {
                     this.banks[this.selectedBank].files = [];
@@ -581,7 +617,7 @@
                         formData.append('files', file);
                     }
                     // Use fetch to send a POST request to the server
-                    fetch('/upload?id=' + randomID, {
+                    fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
                         method: 'POST',
                         body: formData,
                     })
@@ -658,9 +694,8 @@
                         formData.banks.push(bankData);
                     }
 
-                    console.log(JSON.stringify(formData));
                     // Use fetch to send a POST request to the server
-                    fetch('/download?id=' + randomID, {
+                    fetch('/download?id=' + randomID + "&place=" + window.location.pathname, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -701,53 +736,6 @@
                 },
             },
         });
-
-
-        // TODO: save state on the server
-        function loadStateFromCookies() {
-            const savedState = document.cookie.split(';').reduce((acc, cookie) => {
-                const [key, value] = cookie.trim().split('=');
-                acc[key] = JSON.parse(decodeURIComponent(value));
-                return acc;
-            }, {});
-            console.log(savedState);
-
-            if (savedState.banks) {
-                app.banks = savedState.banks;
-            }
-            if (savedState.oversampling) {
-                app.oversampling = savedState.oversampling;
-            }
-            if (savedState.stereoMono) {
-                app.stereoMono = savedState.stereoMono;
-            }
-            if (savedState.selectedBank !== undefined) {
-                app.selectedBank = savedState.selectedBank;
-            }
-            if (savedState.selectedFile !== undefined) {
-                app.selectedFile = savedState.selectedFile;
-            }
-        }
-
-        // Save state to cookies
-        function saveStateToCookies() {
-
-            const stateToSave = {
-                banks: app.banks,
-                oversampling: app.oversampling,
-                stereoMono: app.stereoMono,
-                selectedBank: app.selectedBank,
-                selectedFile: app.selectedFile,
-            };
-
-
-            Object.entries(stateToSave).forEach(([key, value]) => {
-                document.cookie = `${key}=${encodeURIComponent(JSON.stringify(value))}; SameSite=None; Secure`;
-            });
-            // document.cookie = Object.entries(stateToSave).map(([key, value]) => {
-            //     return `${key}=${encodeURIComponent(JSON.stringify(value))}`;
-            // }).join(';');
-        }
 
 
         function showWaveform(filename, duration, sliceStart, sliceEnd) {
@@ -867,26 +855,7 @@
             });
         }
 
-        function clearAllCookies() {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i];
-                const eqPos = cookie.indexOf('=');
-                const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-                document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            }
-        }
-
         window.addEventListener('load', (event) => {
-            try {
-                // Attempt to parse cookies
-                loadStateFromCookies();
-            } catch (error) {
-                // If there's an error parsing cookies, clear them
-                console.error('Error parsing cookies:', error);
-                clearAllCookies();
-            }
-
             // Initialize WebSocket and other event listeners
             socketCloseListener();
 

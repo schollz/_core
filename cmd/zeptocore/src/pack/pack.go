@@ -25,6 +25,9 @@ type Data struct {
 }
 
 func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
+	zipStorage := path.Join(pathToStorage, "zips")
+	os.MkdirAll(zipStorage, 0777)
+
 	// get all the files
 	// each file is a folder inside pathToStorage
 	var data Data
@@ -56,7 +59,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	zipFilename = codename.Generate(rng, 0)
 
 	// create a temporary folder to store the files
-	err = os.MkdirAll(path.Join(Storage, zipFilename), 0777)
+	err = os.MkdirAll(path.Join(zipStorage, zipFilename), 0777)
 	if err != nil {
 		return
 	}
@@ -102,7 +105,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		if len(bank.Files) == 0 {
 			continue
 		}
-		bankFolder := path.Join(Storage, zipFilename, fmt.Sprintf("bank%d", i))
+		bankFolder := path.Join(zipStorage, zipFilename, fmt.Sprintf("bank%d", i))
 		err = os.MkdirAll(bankFolder, 0777)
 		if err != nil {
 			return
@@ -135,7 +138,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 
 	// zip the folder
 	cwd, _ := os.Getwd()
-	os.Chdir(Storage)
+	os.Chdir(zipStorage)
 	_, _, err = utils.Run("zip", "-r", zipFilename+".zip", zipFilename)
 	if err != nil {
 		log.Error(err)
@@ -146,6 +149,6 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 
 	os.Chdir(cwd)
 
-	zipFilename = path.Join(Storage, zipFilename+".zip")
+	zipFilename = path.Join(zipStorage, zipFilename+".zip")
 	return
 }
