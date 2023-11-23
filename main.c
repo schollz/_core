@@ -106,6 +106,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                  ->sample[sel_sample_cur]
                  .snd[sel_variation]
                  ->stop_condition < PLAY_MODE_ONESHOT_STOP) {
+    retrig_vol = 1.0;
+
     if (bpm_timer_counter % bpm_timer_reset == 0) {
       mem_use = false;
       // keep to the beat
