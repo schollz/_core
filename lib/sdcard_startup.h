@@ -28,6 +28,8 @@ void sdcard_startup() {
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname, 1);
     if (banks[bi]->num_samples > 0) {
+      printf("[sdcard_startup] bank %d has %d samples\n", bi,
+             banks[bi]->num_samples);
       banks_with_samples[banks_with_samples_num] = bi;
       banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
@@ -71,15 +73,13 @@ void sdcard_startup() {
     }
   }  // bank loop
 
-  sleep_ms(10000);
-
   FRESULT fr;
   fr = f_open(
       &fil_current,
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
       FA_READ);
   if (fr != FR_OK) {
-    printf("could not open %s: %s\n",
+    printf("[sdcard_startup] could not open %s: %s\n",
            banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
            FRESULT_str(fr));
   }
