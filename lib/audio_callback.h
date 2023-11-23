@@ -36,7 +36,7 @@ void i2s_callback_func() {
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
   if (sync_using_sdcard || !fil_is_open ||
-      (gate_active && gate_counter >= gate_threshold) || audio_mute) {
+      (gate_active && gate_counter >= gate_threshold) || audio_mute || true) {
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
       samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -44,9 +44,9 @@ void i2s_callback_func() {
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
-    if (!gate_active && fil_is_open && !audio_mute) {
-      printf("[i2s_callback_func] sync_using_sdcard being used\n");
-    }
+    // if (!gate_active && fil_is_open && !audio_mute) {
+    //   printf("[i2s_callback_func] sync_using_sdcard being used\n");
+    // }
     if (audio_mute) {
       audio_was_muted = true;
     }
@@ -278,77 +278,22 @@ void i2s_callback_func() {
         }
       }
 
-#ifndef INCLUDE_STEREO
-      int16_t *newArray = array_resample_linear(values, samples_to_read,
-                                                buffer->max_sample_count);
-      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-        newArray[i] = transfer_fn(newArray[i]);
-#ifdef INCLUDE_FILTER
-        if (filter_midi < 70) {
-          // IIR_filter(myFilter0, &value0);
-          newArray[i] =
-              ResonantFilter_update(resonantfilter[head], newArray[i]);
-        }
-#endif
-
-        if (do_crossfade) {
-          if (head == 0 && !do_fade_out) {
-            newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-          } else if (!do_fade_in) {
-            newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-          }
-        } else if (do_fade_out) {
-          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-        } else if (do_fade_in) {
-          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-        }
-
-        if (do_gate_down) {
-          // mute the audio
-          newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-        } else if (do_gate_up) {
-          // bring back the audio
-          newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-        }
-
-        if (first_loop) {
-          samples[i * 2 + 0] = newArray[i];
-          if (head == 0) {
-            samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
-            samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
-            samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
-          }
-        } else {
-          samples[i * 2 + 0] += newArray[i];
-          samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
-          samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
-          samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
-        }
-        // int32_t value0 = (vol * newArray[i]) << 8u;
-        // samples[i * 2 + 0] =
-        //     samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
-      }
-      if (first_loop) {
-        first_loop = false;
-      }
-      free(newArray);
-#endif
-#ifdef INCLUDE_STEREO
-      // stereo
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        int16_t valuesC[samples_to_read];  // max limit
-        for (uint16_t i = 0; i < values_len; i++) {
-          if (i % 2 == channel) {
-            valuesC[i / 2] = values[i];
-          }
-        }
-        int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
+      if (banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->num_channels == 1) {
+        // mono
+        int16_t *newArray = array_resample_linear(values, samples_to_read,
                                                   buffer->max_sample_count);
-
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          if (first_loop) {
-            samples[i * 2 + channel] = 0;
+          newArray[i] = transfer_fn(newArray[i]);
+#ifdef INCLUDE_FILTER
+          if (filter_midi < 70) {
+            // IIR_filter(myFilter0, &value0);
+            newArray[i] =
+                ResonantFilter_update(resonantfilter[head], newArray[i]);
           }
+#endif
 
           if (do_crossfade) {
             if (head == 0 && !do_fade_out) {
@@ -370,20 +315,78 @@ void i2s_callback_func() {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
 
-          int32_t value0 = (vol_main * newArray[i]) << 8u;
-          samples[i * 2 + channel] += value0 + (value0 >> 16u);
+          if (first_loop) {
+            samples[i * 2 + 0] = newArray[i];
+            if (head == 0) {
+              samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
+              samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
+              samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+            }
+          } else {
+            samples[i * 2 + 0] += newArray[i];
+            samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
+            samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
+            samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+          }
+          // int32_t value0 = (vol * newArray[i]) << 8u;
+          // samples[i * 2 + 0] =
+          //     samples[i * 2 + 0] + value0 + (value0 >> 16u);  // L
+        }
+        if (first_loop) {
+          first_loop = false;
         }
         free(newArray);
+      } else if (banks[sel_bank_cur]
+                     ->sample[sel_sample_cur]
+                     .snd[sel_variation]
+                     ->num_channels == 2) {
+        // stereo
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          int16_t valuesC[samples_to_read];  // max limit
+          for (uint16_t i = 0; i < values_len; i++) {
+            if (i % 2 == channel) {
+              valuesC[i / 2] = values[i];
+            }
+          }
+          int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
+                                                    buffer->max_sample_count);
+
+          for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+            if (first_loop) {
+              samples[i * 2 + channel] = 0;
+            }
+
+            if (do_crossfade) {
+              if (head == 0 && !do_fade_out) {
+                newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+              } else if (!do_fade_in) {
+                newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+              }
+            } else if (do_fade_out) {
+              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+            } else if (do_fade_in) {
+              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+            }
+
+            if (do_gate_down) {
+              // mute the audio
+              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+            } else if (do_gate_up) {
+              // bring back the audio
+              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+            }
+
+            int32_t value0 = (vol_main * newArray[i]) << 8u;
+            samples[i * 2 + channel] += value0 + (value0 >> 16u);
+          }
+          free(newArray);
+        }
+        first_loop = false;
       }
-      first_loop = false;
-#endif
+
       phases[head] += values_to_read * (phase_forward * 2 - 1);
       phases_old[head] = phases[head];
     }
-#ifdef INCLUDE_BASS
-    // add bass
-    Bass_callback(bass, samples, buffer->max_sample_count);
-#endif
   }
 
   buffer->sample_count = buffer->max_sample_count;

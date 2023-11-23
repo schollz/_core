@@ -324,6 +324,8 @@ int main() {
   // show X in case the files aren't loaded
   LEDS_show_blinking_z(leds, 2);
 
+  sleep_ms(3000);
+  printf("startup!\n");
   sdcard_startup();
 
   // TODO
