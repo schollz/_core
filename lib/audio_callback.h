@@ -1,6 +1,7 @@
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
+uint32_t debug_tries = 0;
 // TODO: if CPU > 100%, then set a flag so that the next callback doesn't do any
 // reads ( to play catchup)
 
@@ -36,7 +37,7 @@ void i2s_callback_func() {
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
   if (sync_using_sdcard || !fil_is_open ||
-      (gate_active && gate_counter >= gate_threshold) || audio_mute || true) {
+      (gate_active && gate_counter >= gate_threshold) || audio_mute) {
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
       samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -286,15 +287,6 @@ void i2s_callback_func() {
         int16_t *newArray = array_resample_linear(values, samples_to_read,
                                                   buffer->max_sample_count);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-          newArray[i] = transfer_fn(newArray[i]);
-#ifdef INCLUDE_FILTER
-          if (filter_midi < 70) {
-            // IIR_filter(myFilter0, &value0);
-            newArray[i] =
-                ResonantFilter_update(resonantfilter[head], newArray[i]);
-          }
-#endif
-
           if (do_crossfade) {
             if (head == 0 && !do_fade_out) {
               newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
@@ -340,48 +332,48 @@ void i2s_callback_func() {
                      ->sample[sel_sample_cur]
                      .snd[sel_variation]
                      ->num_channels == 2) {
-        // stereo
-        for (uint8_t channel = 0; channel < 2; channel++) {
-          int16_t valuesC[samples_to_read];  // max limit
-          for (uint16_t i = 0; i < values_len; i++) {
-            if (i % 2 == channel) {
-              valuesC[i / 2] = values[i];
-            }
-          }
-          int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
-                                                    buffer->max_sample_count);
+        // // stereo
+        // for (uint8_t channel = 0; channel < 2; channel++) {
+        //   int16_t valuesC[samples_to_read];  // max limit
+        //   for (uint16_t i = 0; i < values_len; i++) {
+        //     if (i % 2 == channel) {
+        //       valuesC[i / 2] = values[i];
+        //     }
+        //   }
+        //   int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
+        //                                             buffer->max_sample_count);
 
-          for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-            if (first_loop) {
-              samples[i * 2 + channel] = 0;
-            }
+        //   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        //     if (first_loop) {
+        //       samples[i * 2 + channel] = 0;
+        //     }
 
-            if (do_crossfade) {
-              if (head == 0 && !do_fade_out) {
-                newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-              } else if (!do_fade_in) {
-                newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-              }
-            } else if (do_fade_out) {
-              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-            } else if (do_fade_in) {
-              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-            }
+        //     if (do_crossfade) {
+        //       if (head == 0 && !do_fade_out) {
+        //         newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+        //       } else if (!do_fade_in) {
+        //         newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+        //       }
+        //     } else if (do_fade_out) {
+        //       newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+        //     } else if (do_fade_in) {
+        //       newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+        //     }
 
-            if (do_gate_down) {
-              // mute the audio
-              newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
-            } else if (do_gate_up) {
-              // bring back the audio
-              newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-            }
+        //     if (do_gate_down) {
+        //       // mute the audio
+        //       newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
+        //     } else if (do_gate_up) {
+        //       // bring back the audio
+        //       newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
+        //     }
 
-            int32_t value0 = (vol_main * newArray[i]) << 8u;
-            samples[i * 2 + channel] += value0 + (value0 >> 16u);
-          }
-          free(newArray);
-        }
-        first_loop = false;
+        //     int32_t value0 = (vol_main * newArray[i]) << 8u;
+        //     samples[i * 2 + channel] += value0 + (value0 >> 16u);
+        //   }
+        //   free(newArray);
+        // }
+        // first_loop = false;
       }
 
       phases[head] += values_to_read * (phase_forward * 2 - 1);
@@ -438,5 +430,6 @@ void i2s_callback_func() {
   }
 #endif
 
+  debug_tries = 1;
   return;
 }

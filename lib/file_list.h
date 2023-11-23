@@ -78,7 +78,7 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
   }
 
   // Name
-  si->name = (char *)malloc((NameLen + 1) * sizeof(char));
+  si->name = (char *)malloc((NameLen + 8) * sizeof(char));
   for (uint8_t i = 0; i < NameLen; i++) {
     fr = f_read(&fil, &si->name[i], sizeof(char), &bytes_read);
     if (fr != FR_OK) {
@@ -86,6 +86,12 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     }
   }
   si->name[NameLen] = '\0';
+  // prepend s->name with dir
+  char name[100];
+  strcpy(name, dir);
+  strcat(name, "/");
+  strcat(name, si->name);
+  strcpy(si->name, name);
 
   // Size
   fr = f_read(&fil, &si->size, sizeof(uint32_t), &bytes_read);

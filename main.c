@@ -324,7 +324,7 @@ int main() {
   // show X in case the files aren't loaded
   LEDS_show_blinking_z(leds, 2);
 
-  sleep_ms(3000);
+  sleep_ms(1000);
   printf("startup!\n");
   sdcard_startup();
 
@@ -368,6 +368,9 @@ int main() {
 
   // TODO: remove this debugging
   sel_sample_next = 0;
+  sel_bank_cur = 0;
+  sel_sample_cur = 0;
+  sel_variation = 0;
   fil_current_change = true;
 
   // blocking
