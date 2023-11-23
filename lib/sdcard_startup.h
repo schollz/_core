@@ -21,28 +21,41 @@ void sdcard_startup() {
   bass = Bass_create();
 #endif
 
+  sleep_ms(1000);
+
   for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname, 1);
-    if (banks[bi]->num_samples == 0) {
-      printf("[keyboard] banks[%d]: no samples\n", bi);
-    } else {
+    if (banks[bi]->num_samples > 0) {
       banks_with_samples[banks_with_samples_num] = bi;
       banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
         if (bi == 0 && si == 0) {
           printf(
-              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->name: %s\n",
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->name: %s\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->name);
           printf(
-              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->size: %d\n",
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->size: %d\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->size);
           printf(
-              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->bpm: %d\n",
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->num_channels: %d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->num_channels);
+          printf(
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->stop_condition: "
+              "% d\n ",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->stop_condition);
+          printf(
+              "[sdcard_startup] banks[%d]->sample[%d].snd[sel_variation]->bpm: "
+              "%d\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->bpm);
           printf(
-              "[keyboard] banks[%d]->sample[%d].snd[sel_variation]->slice_num: "
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->slice_num: "
               "% d\n ",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->slice_num);
           printf("slices: \n");
@@ -57,6 +70,8 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  sleep_ms(10000);
 
   FRESULT fr;
   fr = f_open(

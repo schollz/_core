@@ -371,7 +371,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		[]byte(filename),
 		uint32(fsize),
 		uint16(f.BPM),
-		uint8(sliceNum),
+		uint16(sliceNum),
 		slicesStart,
 		slicesEnd,
 		uint8(BPMTempoMatch),
@@ -379,6 +379,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		uint8(f.Oversampling),
 		uint8(f.Channels),
 	}
+	log.Tracef("data: %+v", data)
 
 	for _, v := range data {
 		err := binary.Write(buf, binary.LittleEndian, v)

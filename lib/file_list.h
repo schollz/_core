@@ -22,13 +22,6 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-#ifndef INCLUDE_STEREO
-#define NUM_AUDIO_CHANNELS 1
-#endif
-#ifdef INCLUDE_STEREO
-#define NUM_AUDIO_CHANNELS 2
-#endif
-
 typedef struct SampleInfo {
   char *name;
   uint32_t size;
@@ -176,17 +169,14 @@ uint8_t count_files(const char *dir, int num_channels) {
   memset(&fno, 0, sizeof fno);
   fr = f_findfirst(&dj, &fno, dir, "*");
   if (FR_OK != fr) {
-    printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
+    // printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
     return filelist_count;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
     if (filelist_count >= 16) {
       break;
     }
-    if ((strstr(fno.fname, ".mono.wav.info") &&
-         !strstr(fno.fname, ".mono.wav.info.") && NUM_AUDIO_CHANNELS == 1) ||
-        (strstr(fno.fname, ".stereo.wav.info") &&
-         !strstr(fno.fname, ".stereo.wav.info.") && NUM_AUDIO_CHANNELS == 2)) {
+    if (strstr(fno.fname, ".0.wav.info")) {
       filelist_count++;
     }
     fr = f_findnext(&dj, &fno); /* Search for next item */
@@ -222,15 +212,18 @@ SampleList *list_files(const char *dir, int num_channels) {
     if (filelist_count >= 16) {
       break;
     }
-    if ((strstr(fno.fname, ".mono.wav.info") &&
-         !strstr(fno.fname, ".mono.wav.info.") && NUM_AUDIO_CHANNELS == 1) ||
-        (strstr(fno.fname, ".stereo.wav.info") &&
-         !strstr(fno.fname, ".stereo.wav.info.") && NUM_AUDIO_CHANNELS == 2)) {
+    if (strstr(fno.fname, ".0.wav.info")) {
+      printf("[file_list] loading %s\n", fno.fname);
       samplelist->sample[filelist_count].snd[0] =
           SampleInfo_load(dir, fno.fname);
+
       for (uint8_t k = 1; k < FILE_VARIATIONS; k++) {
+        // replace fno.fname "0.wav" with ".%d.wav
         char fname2[100];
-        sprintf(fname2, "%s.%d", fno.fname, k);
+        strcpy(fname2, fno.fname);
+        fname2[strlen(fname2) - 10] = '\0';
+        sprintf(fname2, "%s%d.wav.info", fname2, k);
+        printf("[file_list] loading %s\n", fname2);
         samplelist->sample[filelist_count].snd[k] =
             SampleInfo_load(dir, fname2);
       }

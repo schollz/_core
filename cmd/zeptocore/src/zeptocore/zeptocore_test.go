@@ -31,9 +31,8 @@ func TestRenoise(t *testing.T) {
 	f, err := Get("amen.xrni")
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", f)
-	f.SetBPM(120)
 	time.Sleep(500 * time.Millisecond)
-	f.SetOneshot(true)
-	f.SetChannels(2)
+	f.SetOneshot(false)
+	f.SetChannels(1)
 	time.Sleep(5 * time.Second)
 }
