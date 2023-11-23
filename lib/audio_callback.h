@@ -5,14 +5,16 @@ uint32_t reduce_cpu_usage = 0;
 
 bool audio_was_muted = false;
 
+// ignore boundaries
+#define PLAY_NORMAL 0
 // starts at splice start and ends at splice stop
-#define PLAY_SPLICE_STOP 0
+#define PLAY_SPLICE_STOP 1
 // starts at splice start, and returns to start when reaching splice boundary
-#define PLAY_SPLICE_LOOP 1
+#define PLAY_SPLICE_LOOP 2
 // starts at splice start and ends at sample boundary
-#define PLAY_SAMPLE_STOP 2
+#define PLAY_SAMPLE_STOP 3
 // starts at splice start and returns to start when reaching sample boundary
-#define PLAY_SAMPLE_LOOP 3
+#define PLAY_SAMPLE_LOOP 4
 
 void i2s_callback_func() {
   uint32_t t0, t1;

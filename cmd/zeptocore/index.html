@@ -89,6 +89,13 @@
             padding: 1rem;
         }
 
+        .file-details {
+            background-color: #e1ecfa;
+            border-radius: 20px;
+            padding: 1em;
+            margin: 1em;
+        }
+
         .drop-area {
             border: 2px dashed #ddd;
             padding: 1rem;
@@ -148,6 +155,10 @@
             display: inline-block;
         }
 
+
+        select {
+            font-family: 'Roboto Mono', monospace;
+        }
 
         button {
             font-family: 'Roboto Mono', monospace;
@@ -264,13 +275,18 @@
                 padding: 0;
             }
         }
+
+        a {
+            color: white;
+            text-decoration: none;
+        }
     </style>
 </head>
 
 <body>
     <div id="app">
         <header>
-            <h1 style="margin:0; padding:0;">*core{{title}}</h1>
+            <h1 style="margin:0; padding:0;"><a :href="'/' + title + '/'">*core{{title}}</a></h1>
             <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
@@ -312,9 +328,10 @@
                 </div>
 
                 <div class="file-details" v-if="selectedFile!=null">
-                    <p style="background: var(--banks-background);
+                    <p style="margin-top:0;
                     padding: 0.5rem;
-                    text-align: center;">{{ banks[selectedBank].files[selectedFile].Filename }}</p>
+                    text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
+                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices)</p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
@@ -329,6 +346,18 @@
                                 v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
                             <span v-else>off</span></label>
                     </p>
+                    <p v-if="banks[selectedBank].files[selectedFile].OneShot">
+                        <label for="spliceplayback">One-shot mode:</label>
+                        <select id="spliceplayback" @click="updateSplicePlayback"
+                            v-model="banks[selectedBank].files[selectedFile].SplicePlayback">
+                            <option value=0>normal</option>
+                            <option value=1>stop at end of splice</option>
+                            <option value=2>loop back at end of splice</option>
+                            <option value=3>stop at end of sample</option>
+                            <option value=4>loop back at end of sample</option>
+                        </select>
+                    </p>
+
                     <p>
                         <input type="checkbox" id="tempomatch"
                             v-model="banks[selectedBank].files[selectedFile].TempoMatch">
@@ -358,7 +387,7 @@
             <form id="downloadForm" @submit.prevent="submitForm">
                 <div class="footer-row">
                     <div class="footer-item">
-                        <label for="oversampling">Oversampling:</label>
+                        <label for=" oversampling">Oversampling:</label>
                         <select id="oversampling" v-model="oversampling">
                             <option value="1x">1x</option>
                             <option value="2x">2x</option>
@@ -366,7 +395,7 @@
                         </select>
                     </div>
                     <div class="footer-item">
-                        <label for="stereoMono">Stereo/Mono:</label>
+                        <label for="stereoMono">&nbsp;Stereo/Mono:</label>
                         <select id="stereoMono" v-model="stereoMono">
                             <option value="stereo">Stereo</option>
                             <option value="mono">Mono</option>
@@ -427,6 +456,15 @@
                 if (savedState.selectedFile !== undefined) {
                     app.selectedFile = savedState.selectedFile;
                 }
+                if (app.selectedFile != null) {
+                    setTimeout(() => {
+                        showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
+                            app.banks[app.selectedBank].files[app.selectedFile].Duration,
+                            app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
+                            app.banks[app.selectedBank].files[app.selectedFile].SliceStop);
+                    }, 100);
+                }
+
             } else if (data.action == "processingstart") {
                 app.uploading = false;
                 app.processing = true;
@@ -464,7 +502,7 @@
             if (socket) {
                 console.log('Disconnected.');
             }
-            var url = window.origin.replace("http", "ws") + '/ws?id=' + randomID;
+            var url = window.origin.replace("http", "ws") + '/ws?id=' + randomID + "&place=" + window.location.pathname;
             socket = new WebSocket(url);
             socket.onopen = socketOpenListener;
             socket.onmessage = socketMessageListener;
@@ -498,6 +536,8 @@
                 },
                 oversampling: 'saveState',
                 stereoMono: 'saveState',
+                selectedFile: 'saveState',
+                selectedBank: 'saveState',
             },
             methods: {
                 deleteAllRegions() {
@@ -597,9 +637,26 @@
                         activeRegion = null;
                     }
                 },
+                updateSplicePlayback() {
+                    setTimeout(() => {
+                        // convert to number 
+                        this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback = parseInt(this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback);
+                        // update the server file
+                        socket.send(JSON.stringify({
+                            action: "setspliceplayback",
+                            filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                            number: this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback,
+                        }));
+                    }, 100);
+                },
                 updateOneshot() {
                     setTimeout(() => {
-                        console.log(this.banks[this.selectedBank].files[this.selectedFile].OneShot);
+                        // update the server file
+                        socket.send(JSON.stringify({
+                            action: "setoneshot",
+                            filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                            boolean: this.banks[this.selectedBank].files[this.selectedFile].OneShot,
+                        }));
                     }, 100);
                 },
                 handleDrop(event) {

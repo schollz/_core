@@ -54,7 +54,6 @@ uint beat_current = 0;
 uint beat_total = 0;
 uint debounce_quantize = 0;
 uint32_t bpm_timer_counter = 0;
-uint16_t bpm_timer_reset = 96;
 uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
 bool retrig_first = false;

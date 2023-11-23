@@ -105,13 +105,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[sel_variation]
-                 ->slice_iterate > 0) {
+                 ->splice_trigger > 0) {
     retrig_vol = 1.0;
 
     if (bpm_timer_counter % banks[sel_bank_cur]
                                 ->sample[sel_sample_cur]
                                 .snd[sel_variation]
-                                ->slice_iterate ==
+                                ->splice_trigger ==
         0) {
       mem_use = false;
       // keep to the beat
