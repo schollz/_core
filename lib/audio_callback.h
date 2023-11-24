@@ -71,14 +71,9 @@ void i2s_callback_func() {
     // check if the file is the right one
     if (fil_current_change) {
       fil_current_change = false;
-      if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
-        int32_t phases0 = phases[0];
+      if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next ||
+          sel_variation != sel_variation_next) {
         phase_change = true;
-        // phase_new =
-        //     phases[0] *
-        //     banks[sel_bank_next]->sample[sel_sample_next].snd[sel_variation]->slice_num
-        //     /
-        //     banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
         phase_new = round((float)phases[0] /
                           (float)banks[sel_bank_cur]
                               ->sample[sel_sample_cur]
@@ -86,25 +81,23 @@ void i2s_callback_func() {
                               ->size *
                           (float)banks[sel_bank_next]
                               ->sample[sel_sample_next]
-                              .snd[sel_variation]
+                              .snd[sel_variation_next]
                               ->size);
         phase_new = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
-        beat_current = round((float)beat_current *
-                             (float)banks[sel_bank_next]
-                                 ->sample[sel_sample_next]
-                                 .snd[sel_variation]
-                                 ->slice_num /
+        beat_current = round((float)beat_current /
                              (float)banks[sel_bank_cur]
                                  ->sample[sel_sample_cur]
                                  .snd[sel_variation]
+                                 ->slice_num *
+                             (float)banks[sel_bank_next]
+                                 ->sample[sel_sample_next]
+                                 .snd[sel_variation_next]
                                  ->slice_num);
         printf("next file: %s\n", banks[sel_bank_next]
                                       ->sample[sel_sample_next]
-                                      .snd[sel_variation]
+                                      .snd[sel_variation_next]
                                       ->name);
         do_open_file = true;
-        sel_sample_cur = sel_sample_next;
-        sel_bank_cur = sel_bank_next;
       }
     }
 
@@ -206,6 +199,11 @@ void i2s_callback_func() {
 
       if (head == 0 && do_open_file) {
         do_open_file = false;
+        // setup the next
+        sel_sample_cur = sel_sample_next;
+        sel_bank_cur = sel_bank_next;
+        sel_variation = sel_variation_next;
+
         FRESULT fr;
         fr = f_close(&fil_current);
         if (fr != FR_OK) {

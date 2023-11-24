@@ -199,6 +199,16 @@ func (f File) Regenerate() {
 			log.Error(err)
 		}
 
+		fname2 := path.Join(folder, fmt.Sprintf("%s.2.wav", filenameWithouExt))
+		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels, f.Oversampling)
+		if err != nil {
+			log.Error(err)
+		}
+		err = f.updateInfo(fname2)
+		if err != nil {
+			log.Error(err)
+		}
+
 	}
 	f.debounceRegen(fu)
 }

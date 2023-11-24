@@ -27,6 +27,7 @@ bool fx_toggle[16];  // 16 possible
 #define FX_SLOWDOWN 1
 #define FX_NORMSPEED 2
 #define FX_SPEEDUP 3
+#define FX_TIMESTRETCH 4
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
@@ -141,6 +142,14 @@ void go_update_fx(uint8_t fx_num) {
     case FX_SPEEDUP:
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                       Envelope2_update(envelope_pitch), 2.0, 1);
+      break;
+    case FX_TIMESTRETCH:
+      if (sel_variation == 2) {
+        sel_variation_next = 0;
+      } else {
+        sel_variation_next = sel_variation + 1;
+      }
+      fil_current_change = true;
       break;
     default:
       break;

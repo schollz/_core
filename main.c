@@ -121,8 +121,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                              ->sample[sel_sample_cur]
                              .snd[sel_variation]
                              ->slice_num;
+        } else {
+          beat_current += (phase_forward * 2 - 1);
         }
-        beat_current += (phase_forward * 2 - 1);
         beat_total++;
         if (sf->pattern_on && sf->pattern_length[sf->pattern_current] > 0) {
           beat_current =
@@ -373,6 +374,7 @@ int main() {
 #endif
 
   sel_sample_next = 0;
+  sel_variation_next = 0;
   sel_bank_cur = 0;
   sel_sample_cur = 0;
   sel_variation = 0;

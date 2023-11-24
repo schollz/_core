@@ -86,7 +86,7 @@ uint32_t gate_threshold = 10;
 
 // add variable to keep track of variation
 uint8_t sel_variation = 0;
-uint8_t sel_variation_next = 0;
+int8_t sel_variation_next = 0;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
