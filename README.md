@@ -45,9 +45,6 @@ tactile input that lack nessecary visual input.
 
 - [ ] every punch in effect can be modulated by the X knob (for example pitch can be dialed in, stutter amount can be dialed in
 
-## todos
-
-- [ ] add timestretching, alt sounds (pre-generated)
 
 ## spec
 
@@ -72,7 +69,7 @@ knobs: X, Y, Z
 - [ ] **A** → show current bank (dim) + sample (bright)
 - [ ] **A** + **H** + **H** → select bank (1st) + sample (2nd)
 - [ ] **A** + **B** → toggle one-shot vs classic
-- [ ] **A** + **C** → ?
+- [ ] **A** + **C** → toggle sync mode (none, clock-in, clock-out, clock-in+out)
 - [ ] **B** → n/a
 - [ ] **B** + **H** + **H**... → create chain of sequences
 - [ ] **B** + **A** → toggle play sequence
@@ -85,7 +82,7 @@ knobs: X, Y, Z
 
 #### needs
 
-- toggle sync mode (no sync, in sync, out sync, in + out sync)
+- toggle sync mode (no sync, clock-in sync, out sync, in + out sync)
 
 ### combo knobs
 
@@ -120,6 +117,11 @@ knobs: X, Y, Z
 - probability repitch
 
 
+### names
+
+- combocore
+- combonator
+- zeptocore
 
 TODO: use zeptocore/static/download.sh to download offline versions of libraries
 TODO: create favicon.ico
