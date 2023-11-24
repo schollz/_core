@@ -81,6 +81,15 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return handleFavicon(w, r)
 	} else {
 		// TODO: add caching
+		// add caching
+		w.Header().Set("Cache-Control", "max-age=86400")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Cache-Control", "must-revalidate")
+		w.Header().Set("Cache-Control", "proxy-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+
 		filename := r.URL.Path[1:]
 		if filename == "" || !strings.Contains(filename, ".") {
 			filename = "static/index.html"
