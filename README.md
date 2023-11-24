@@ -1,12 +1,14 @@
 # zeptocore
 
-audio mangler for 16-bit samples straight from an SD card.
+a tiny open-source sample wrangler.
+
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
 ## what the spec
 
-- mono or stereo playback of 16-bit audio @ 44.1 kHz sampling rate
+- mono or stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
+- internal 32-bit
 - sd-card storage for audio + data
 - recall up to 256 audio files (16 banks of 16 tracks)
 - digital low-pass and high-pass filter
