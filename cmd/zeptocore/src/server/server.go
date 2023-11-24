@@ -102,7 +102,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
 	w.Header().Set("Content-Type", "image/x-icon")
 	var b []byte
-	b, err = os.ReadFile("favicon.ico")
+	b, err = os.ReadFile("static/favicon.ico")
 	if err != nil {
 		return
 	}

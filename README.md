@@ -119,3 +119,7 @@ knobs: X, Y, Z
 - probability tunnel
 - probability repitch
 
+
+
+TODO: use zeptocore/static/download.sh to download offline versions of libraries
+TODO: create favicon.ico
