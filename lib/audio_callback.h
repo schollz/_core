@@ -388,7 +388,7 @@ void i2s_callback_func() {
         first_loop = false;
       }
 
-      phases[head] += values_to_read * (phase_forward * 2 - 1);
+      phases[head] += (values_to_read * (phase_forward * 2 - 1));
       phases_old[head] = phases[head];
     }
   }
