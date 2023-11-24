@@ -2,10 +2,9 @@
 
 a tiny open-source sample wrangler.
 
-
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
-## what the spec
+## the spec
 
 - mono or stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
 - internal 32-bit
@@ -20,26 +19,29 @@ a tiny open-source sample wrangler.
 - powered by USB or AAA batteries (consumes ~100 mA, should last ~12 hours on batteries)
 - can load in pre-spliced files from Renoise (`.xnri`) or OP-1 files (`.aif`)
 
-## what the heck
+## goals and non-goals
 
+### goals
 
+firstly, my goal for this project is to be self-sustaining. I am making this project completely open-source (hardware and firmware). 
+from my experience, an open-source hardware project will reduce sales and still place a burden on tech-support. 
+this is risky, because I already spent a lot of money (>$2k) developing the project. to me, the risk is worth the benefit of making it open-source and empowering/inspirating new projects from this project.
+so I ask that, while this is project is open-source and available for remixing, please consider consider this project by buying it or supporting me through [my github sponsorship](TODO).
 
-- (goal) open-source firmare code + electronic schematics
-- (goal) simple tactile input with visual input unessecary
-- (goal) sample-based manipulation
-- (goal) longevity 
-- (non-goal) synthesis
-- (non-goal) plastic enclosures
+secondly, my goals for this project is to create a simple tactile input for skipping through a sample with interesting sample-based effects and minimal visuals.
 
+thirdly, my goal for this project is to have it survive into the future. hopefully the rp2040 chip doesn't disappear anytime soon.
 
+fourthly, my goal for this project is to make it possible to mash buttons to achieve fun results without skill or knowledge.
 
-there exist a lot of musical instruments. musical instruments exist to provide a bridge between musical ideas and expression. the quintessential instrument, to me, is the piano which amazingly can double as a rhythmic instrument and a melodic instrument. even more amazingly, it can be utilized without visual input - requiring only tactile input.
+### non-goals
 
-currently, for me personally, I feel like there is an immense amount of sonic space to explore in generating sounds from pre-recorded samples. there are methods of granulating, soft-cutting, re-recording. there are technical subtlites of interpolation, resampling, filtering. 
+a non-goal for this project is to be emulate a specific musical device. there are few devices that are fun to randomly button mash, with exception of [joydrums](TODO) which I consider an inspiration to this project.
 
-I wanted a tool to explore samples in a tactile way, without needing visual input. 
+a non-goal for this project is synthesis. though I may change my mind about this.
 
-tactile input that lack nessecary visual input.
+a non-goal for this project is an enclsoure. I encourage custom enclosures, but I like the aesthetic of the circuit board.
+
 
 ## ideas
 
@@ -125,3 +127,5 @@ knobs: X, Y, Z
 
 TODO: use zeptocore/static/download.sh to download offline versions of libraries
 TODO: create favicon.ico
+TODO: t-shirts
+TODO: add sine wave????
