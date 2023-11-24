@@ -63,9 +63,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handle(w http.ResponseWriter, r *http.Request) (err error) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+	// w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	// w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
 	// very special paths
 	if r.Method == "POST" {
@@ -80,6 +80,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
 	} else {
+		// TODO: add caching
 		filename := r.URL.Path[1:]
 		if filename == "" || !strings.Contains(filename, ".") {
 			filename = "static/index.html"
