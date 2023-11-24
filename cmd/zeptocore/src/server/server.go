@@ -80,17 +80,17 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
 	} else {
-		if r.URL.Path == "/" || !strings.Contains(r.URL.Path, ".") {
-			r.URL.Path = "/index.html"
-		}
-		mime := mime.TypeByExtension(filepath.Ext(r.URL.Path))
-		w.Header().Set("Content-Type", mime)
-		var b []byte
 		filename := r.URL.Path[1:]
-		// sanitize filename
-		filename = strings.ReplaceAll(filename, "..", "")
+		if filename == "" || !strings.Contains(filename, ".") {
+			filename = "index.html"
+		}
+		mimeType := mime.TypeByExtension(filepath.Ext(filename))
+		w.Header().Set("Content-Type", mimeType)
+		log.Tracef("serving %s with mime %s", filename, mimeType)
+		var b []byte
 		b, err = os.ReadFile(filename)
 		if err != nil {
+			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
 		}
 		w.Write(b)

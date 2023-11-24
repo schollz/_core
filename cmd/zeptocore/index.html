@@ -805,6 +805,7 @@
             if (wsf != null) {
                 wsf.destroy();
             }
+            console.log('showWaveform', filename);
             var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
             var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
             var ccolor = 'rgba(138, 180, 215, 0.4)';
