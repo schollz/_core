@@ -402,11 +402,13 @@ void i2s_callback_func() {
                               ->sample[sel_sample_cur]
                               .snd[sel_variation]
                               ->size) {
+        // TODO: check playback type
         phases[head] -= banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
                             .snd[sel_variation]
                             ->size;
       } else if (phases[head] < 0) {
+        // TODO: check playback type
         phases[head] += banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
                             .snd[sel_variation]
