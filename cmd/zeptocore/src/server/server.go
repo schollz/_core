@@ -82,7 +82,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	} else {
 		filename := r.URL.Path[1:]
 		if filename == "" || !strings.Contains(filename, ".") {
-			filename = "index.html"
+			filename = "static/index.html"
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
 		w.Header().Set("Content-Type", mimeType)

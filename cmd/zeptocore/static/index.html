@@ -306,7 +306,7 @@
                     </h2>
                 </div>
 
-                <div class=" file-uploader" v-if="!disconnected">
+                <div class=" file-uploader" v-if="!disconnected && !isMain">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
                     <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
@@ -314,7 +314,7 @@
                     </div>
                 </div>
                 <div v-if="disconnected" style="text-align: center;">
-                    <img src=" loading.gif">
+                    <img src="/static/loading.gif">
                 </div>
 
                 <div class="file-list" v-if="banks[selectedBank].files.length>0 && !disconnected">
@@ -420,7 +420,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script type="module">
-        import { WaveSurferG, RegionsPluginG } from "/waves.js";
+        import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
         window.WaveSurf = WaveSurferG;
         window.RegionsPlugin = RegionsPluginG;
     </script>
@@ -533,6 +533,7 @@
                 uploading: false,
                 title: window.location.pathname,
                 disconnected: true,
+                isMain: window.location.pathname == '/',
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
