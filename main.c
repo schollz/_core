@@ -85,6 +85,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         }
       }
       beat_current = dub_step_beat;
+      printf("[dub_step_break] beat_current: %d\n", beat_current);
       // debounce a little bit before going into the mode
       if (dub_step_divider > 0 || dub_step_break > 1) {
         // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
@@ -96,7 +97,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (toggle_chain_play) {
     int8_t beat = Chain_emit(chain, bpm_timer_counter);
     if (beat > -1) {
-      printf("beat: %d\n", beat);
+      printf("[toggle_chain_play] beat: %d\n", beat);
       beat_current = beat;
       LEDS_clearAll(leds, LED_STEP_FACE);
       LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
@@ -131,13 +132,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                   [beat_total %
                                    sf->pattern_length[sf->pattern_current]];
         }
-        int8_t step_pressed = single_step_pressed();
-        if (step_pressed > -1) {
-          beat_current = step_pressed % banks[sel_bank_cur]
-                                            ->sample[sel_sample_cur]
-                                            .snd[sel_variation]
-                                            ->slice_num;
-        }
+        // int8_t step_pressed = single_step_pressed();
+        // if (step_pressed > -1) {
+        //   beat_current = step_pressed % banks[sel_bank_cur]
+        //                                     ->sample[sel_sample_cur]
+        //                                     .snd[sel_variation]
+        //                                     ->slice_num;
+        //   printf("[step_pressed] beat_current: %d\n", beat_current);
+        // }
         // printf("beat_current: %d\n", beat_current);
         LEDS_clearAll(leds, LED_STEP_FACE);
         LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
