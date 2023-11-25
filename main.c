@@ -365,12 +365,8 @@ int main() {
   //   Chain_load(chain, &sync_using_sdcard);
 
 #ifdef INCLUDE_FILTER
-  resonantfilter[0] = F(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
-  resonantfilter[1] =
-      ResonantFilter_create(400, 44100, 1 * 0.707, 0, FILTER_LOWPASS);
-
-  myFilter0 = IIR_new(7000.0f, 3 * 0.707f, 1.0f, 44100.0f);
-  myFilter1 = IIR_new(7200.0f, 2.5 * 0.707f, 1.0f, 44100.0f);
+  lowpassFilter[0] = ResonantFilter_create(0);
+  lowpassFilter[1] = ResonantFilter_create(0);
 #endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);

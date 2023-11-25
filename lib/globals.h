@@ -116,9 +116,7 @@ int8_t sel_variation_next = 0;
 Bass *bass;
 #endif
 
-IIR *myFilter0;
-IIR *myFilter1;
-ResonantFilter *resonantfilter[2];
+ResonantFilter *lowpassFilter[2];
 uint8_t filter_midi = 72;
 
 bool sdcard_startup_is_starting = false;

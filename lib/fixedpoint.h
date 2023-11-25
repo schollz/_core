@@ -53,6 +53,9 @@ int16_t q16_16_fp_to_int16(int32_t fixedValue) {
   return (int16_t)(fixedValue >> Q16_16_Q_BITS);
 }
 
+/* Converts a Q16.16 fixed-point value to an int32. */
+int32_t q16_16_fp_to_int32(int32_t fixedValue) { return fixedValue; }
+
 /* Converts a Q16.16 fixed-point value to a float. */
 float q16_16_fp_to_float(int32_t value) {
   /* Divide the fixed-point value by the number of fractional bits to obtain
@@ -72,6 +75,13 @@ int32_t q16_16_int16_to_fp(int16_t value) {
   /* Shift the int16 value left by the number of Q-bits to obtain the
      fixed-point value. */
   return (int32_t)value << Q16_16_Q_BITS;
+}
+
+/* Converts an int32 to a Q16.16 fixed-point value. */
+int32_t q16_16_int32_to_fp(int32_t value) {
+  /* Shift the int32 value left by the number of Q-bits to obtain the
+     fixed-point value. */
+  return value;
 }
 
 /* Multiplies two Q16.16 fixed-point values. */

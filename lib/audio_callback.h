@@ -164,9 +164,6 @@ void i2s_callback_func() {
       do_crossfade = true;
       phases[1] = phases[0];  // old phase
       phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
-#ifdef INCLUDE_FILTER
-      ResonantFilter_copy(resonantfilter[0], resonantfilter[1]);
-#endif
       phase_change = false;
     }
 
@@ -436,6 +433,13 @@ void i2s_callback_func() {
       phases[head] += (values_to_read * (phase_forward * 2 - 1));
       phases_old[head] = phases[head];
     }
+  }
+
+  // apply filter
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    int32_t value0 = 0;
+    samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
+    samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
   }
 
   buffer->sample_count = buffer->max_sample_count;
