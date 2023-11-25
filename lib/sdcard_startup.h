@@ -21,8 +21,6 @@ void sdcard_startup() {
   bass = Bass_create();
 #endif
 
-  sleep_ms(1000);
-
   for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
@@ -33,7 +31,7 @@ void sdcard_startup() {
       banks_with_samples[banks_with_samples_num] = bi;
       banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
-        if (bi == 0 && si == 0) {
+        if (bi == 0) {
           printf(
               "[sdcard_startup] "
               "banks[%d]->sample[%d].snd[sel_variation]->name: %s\n",

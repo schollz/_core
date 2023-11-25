@@ -49,8 +49,9 @@ type File struct {
 }
 
 var (
-	mu      sync.Mutex
-	working int
+	mu        sync.Mutex
+	regenLock sync.Mutex
+	working   int
 )
 
 func Get(pathToOriginal string) (f File, err error) {
@@ -165,11 +166,14 @@ func (f File) Regenerate() {
 		mu.Lock()
 		working++
 		mu.Unlock()
+		regenLock.Lock()
 		defer func() {
+			regenLock.Unlock()
 			mu.Lock()
 			working--
 			mu.Unlock()
 		}()
+
 		log.Tracef("regenerating %s", f.PathToFile)
 		// get the folder of the original flie
 		folder, filename := filepath.Split(f.PathToFile)
@@ -189,25 +193,29 @@ func (f File) Regenerate() {
 			return
 		}
 
+		log.Tracef("slices: %+v", f.SliceStart)
 		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
-		err = createTimeStretched(f.PathToAudio, fname1, 0.5, f.Channels, f.Oversampling)
+		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels, f.Oversampling)
 		if err != nil {
 			log.Error(err)
 		}
+		log.Trace("-------------------------")
+		log.Tracef("slices: %+v", f.SliceStart)
+		log.Trace("-------------------------")
 		err = f.updateInfo(fname1)
 		if err != nil {
 			log.Error(err)
 		}
 
-		fname2 := path.Join(folder, fmt.Sprintf("%s.2.wav", filenameWithouExt))
-		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels, f.Oversampling)
-		if err != nil {
-			log.Error(err)
-		}
-		err = f.updateInfo(fname2)
-		if err != nil {
-			log.Error(err)
-		}
+		// fname2 := path.Join(folder, fmt.Sprintf("%s.2.wav", filenameWithouExt))
+		// err = createTimeStretched(f.PathToAudio, fname2, 0.125, f.Channels, f.Oversampling)
+		// if err != nil {
+		// 	log.Error(err)
+		// }
+		// err = f.updateInfo(fname2)
+		// if err != nil {
+		// 	log.Error(err)
+		// }
 
 	}
 	f.debounceRegen(fu)
@@ -332,7 +340,7 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 		os.Remove(pieceJoin)
 	}()
 
-	_, _, err = utils.Run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-1")
+	_, _, err = utils.Run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-6")
 	if err != nil {
 		log.Error(err)
 		return
