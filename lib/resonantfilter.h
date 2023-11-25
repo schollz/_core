@@ -22,6 +22,8 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#include "resonantfilter_data.h"
+
 #define FILTER_LOWPASS 0
 #define FILTER_BANDPASS 1
 #define FILTER_HIGHPASS 2
@@ -69,6 +71,7 @@ int32_t divideFixedPoint(int32_t numerator, int32_t denominator) {
 }
 
 typedef struct ResonantFilter {
+  bool passthrough;
   int32_t b0;
   int32_t b1;
   int32_t b2;
@@ -92,8 +95,28 @@ void ResonantFilter_copy(ResonantFilter* rf1, ResonantFilter* rf2) {
   rf2->y2_f = rf1->y2_f;
 }
 
-void ResonantFilter_reset(ResonantFilter* rf, float fc, float fs, float q,
-                          float db, uint8_t filter_type) {
+void ResonantFilter_reset(ResonantFilter* rf, uint8_t filter_type, uint8_t fc,
+                          uint8_t q) {
+  if (q >= resonantfilter_q_max) {
+    q = resonantfilter_q_max - 1;
+  }
+  if (fc >= resonantfilter_note_max) {
+    fc = resonantfilter_note_max - 1;
+    rf->passthrough = true;
+    return;
+  }
+  if (filter_type >= resonantfilter_filter_max) {
+    filter_type = resonantfilter_filter_max - 1;
+  }
+  rf->b0 = resonantfilter_data[filter_type][q][fc][0];
+  rf->b1 = resonantfilter_data[filter_type][q][fc][1];
+  rf->b2 = resonantfilter_data[filter_type][q][fc][2];
+  rf->a1 = resonantfilter_data[filter_type][q][fc][3];
+  rf->a2 = resonantfilter_data[filter_type][q][fc][4];
+}
+
+void ResonantFilter_reset2(ResonantFilter* rf, float fc, float fs, float q,
+                           float db, uint8_t filter_type) {
   float w0 = 2 * PI_FLOAT * (fc / fs);
   float cosW = cos(w0);
   float sinW = sin(w0);
@@ -136,11 +159,14 @@ ResonantFilter* ResonantFilter_create(float fc, float fs, float q, float db,
                                       uint8_t filter_type) {
   ResonantFilter* rf;
   rf = (ResonantFilter*)malloc(sizeof(ResonantFilter));
-  ResonantFilter_reset(rf, fc, fs, q, db, filter_type);
+  ResonantFilter_reset(rf, 0, 84, 0);
   return rf;
 }
 
 int16_t ResonantFilter_update(ResonantFilter* rf, int16_t in) {
+  if (rf->passthrough) {
+    return in;
+  }
   int32_t x = int16ToFixedPoint(in);
   int32_t y = multiplyFixedPoint(rf->b0, x) +
               multiplyFixedPoint(rf->b1, rf->x1_f) +
