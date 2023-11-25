@@ -202,15 +202,43 @@ void input_handling() {
 
   while (1) {
     adc_select_input(0);
-    // sf->bpm_tempo = 170;
-    sf->bpm_tempo = FilterExp_update(adcs[0], adc_read()) * 50 / 4096 * 5 + 50;
-    // printf("adcs[0]: %d\n", FilterExp_update(adcs[0], adc_read()));
+    int adc;
+
+    adc = FilterExp_update(adcs[0], adc_read());
+    if (button_is_pressed(KEY_SHIFT)) {
+      sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+    } else if (button_is_pressed(KEY_A)) {
+    } else if (button_is_pressed(KEY_B)) {
+    } else if (button_is_pressed(KEY_C)) {
+    }
+
     button_handler(bm);
+
     adc_select_input(1);
-    uint16_t val = FilterExp_update(adcs[1], adc_read());
-    gate_threshold =
-        val * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 4096 * 2;
-    // if (key_on_buttons[KEY_SHIFT]) {
+    adc = FilterExp_update(adcs[1], adc_read());
+    if (button_is_pressed(KEY_SHIFT)) {
+    } else if (button_is_pressed(KEY_A)) {
+      gate_threshold =
+          adc * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 4096 * 2;
+    } else if (button_is_pressed(KEY_B)) {
+    } else if (button_is_pressed(KEY_C)) {
+    }
+
+    adc_select_input(2);
+    adc = FilterExp_update(adcs[2], adc_read());
+    if (button_is_pressed(KEY_SHIFT)) {
+      new_vol = adc * MAX_VOLUME / 4096;
+      // new_vol = 100;
+      if (new_vol != sf->vol) {
+        sf->vol = new_vol;
+        printf("sf-vol: %d\n", sf->vol);
+      }
+    } else if (button_is_pressed(KEY_A)) {
+    } else if (button_is_pressed(KEY_B)) {
+    } else if (button_is_pressed(KEY_C)) {
+    }
+
+    // if (key_on_buttons(KEY_SHIFT)) {
     // } else {
     //   uint16_t val = FilterExp_update(adcs[1], adc_read());
     //   if (val < 1800) {
@@ -244,14 +272,7 @@ void input_handling() {
     //   4096;
     // }
 
-    adc_select_input(2);
     LEDS_render(leds);
-    new_vol = FilterExp_update(adcs[2], adc_read()) * MAX_VOLUME / 4096;
-    // new_vol = 100;
-    if (new_vol != sf->vol) {
-      sf->vol = new_vol;
-      printf("sf-vol: %d\n", sf->vol);
-    }
   }
 }
 
