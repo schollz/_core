@@ -168,11 +168,12 @@ void go_update_fx(uint8_t fx_num) {
                       Envelope2_update(envelope_pitch), 2.0, 1);
       break;
     case FX_TIMESTRETCH:
-      if (sel_variation == FILE_VARIATIONS - 1) {
-        sel_variation_next = 0;
-      } else {
-        sel_variation_next = sel_variation + 1;
-      }
+      sel_variation_next = 1 - sel_variation_next;
+      // if (sel_variation == FILE_VARIATIONS - 1) {
+      //   sel_variation_next = 0;
+      // } else {
+      //   sel_variation_next = sel_variation + 1;
+      // }
       fil_current_change = true;
       break;
     default:
@@ -215,6 +216,7 @@ void button_key_on_single(uint8_t key) {
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
+      printf("dub_step_beat: %d\n", dub_step_beat);
       if (toggle_chain_rec) {
         Chain_add_current(chain, key - 4, bpm_timer_counter);
       }

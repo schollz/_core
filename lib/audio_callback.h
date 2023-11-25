@@ -302,7 +302,18 @@ void i2s_callback_func() {
       last_seeked = phases[head] + fil_bytes_read;
 
       if (fil_bytes_read < values_to_read) {
-        printf("%d: asked for %d bytes, read %d bytes\n", phases[head],
+        printf("%d %d: asked for %d bytes, read %d bytes\n", phases[head],
+               WAV_HEADER +
+                   (banks[sel_bank_cur]
+                        ->sample[sel_sample_cur]
+                        .snd[sel_variation]
+                        ->num_channels *
+                    banks[sel_bank_cur]
+                        ->sample[sel_sample_cur]
+                        .snd[sel_variation]
+                        ->oversampling *
+                    44100) +
+                   phases[head],
                values_to_read, fil_bytes_read);
       }
 
@@ -427,16 +438,21 @@ void i2s_callback_func() {
                               .snd[sel_variation]
                               ->size) {
         // TODO: check playback type
-        phases[head] -= banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->size;
+        if (phase_forward) {
+          // going forward, restart from the beginning
+          phases[head] -= banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[sel_variation]
+                              ->size;
+        }
       } else if (phases[head] < 0) {
-        // TODO: check playback type
-        phases[head] += banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->size;
+        if (phase_forward == 0) {
+          // going backwards, restart from the end
+          phases[head] += banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[sel_variation]
+                              ->size;
+        }
       }
     }
   }
