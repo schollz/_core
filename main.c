@@ -104,11 +104,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       do_update_phase_from_beat_current();
     }
   } else if (banks[sel_bank_cur]
-                 ->sample[sel_sample_cur]
-                 .snd[sel_variation]
-                 ->splice_trigger > 0) {
+                     ->sample[sel_sample_cur]
+                     .snd[sel_variation]
+                     ->splice_trigger > 0
+             // do not iterate the beat if we are in a timestretched variation,
+             // let it roll
+             && sel_variation == 0) {
     retrig_vol = 1.0;
-
     if (bpm_timer_counter % banks[sel_bank_cur]
                                 ->sample[sel_sample_cur]
                                 .snd[sel_variation]

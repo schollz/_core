@@ -130,7 +130,8 @@ WS2812 *ws2812;
 
 uint8_t key_jump_debounce = 0;
 inline void do_update_phase_from_beat_current() {
-  printf("beat_current: %d\n", beat_current);
+  // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
+  // beat_current);
   uint16_t slice =
       beat_current %
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;

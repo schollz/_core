@@ -97,30 +97,40 @@ void i2s_callback_func() {
       fil_current_change = false;
       if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next ||
           sel_variation != sel_variation_next) {
-        phase_change = true;
-        phase_new = round((float)phases[0] /
-                          (float)banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[sel_variation]
-                              ->size *
-                          (float)banks[sel_bank_next]
-                              ->sample[sel_sample_next]
-                              .snd[sel_variation_next]
-                              ->size);
-        phase_new = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
-        beat_current = round((float)beat_current /
-                             (float)banks[sel_bank_cur]
-                                 ->sample[sel_sample_cur]
-                                 .snd[sel_variation]
-                                 ->slice_num *
-                             (float)banks[sel_bank_next]
-                                 ->sample[sel_sample_next]
-                                 .snd[sel_variation_next]
-                                 ->slice_num);
         printf("next file: %s\n", banks[sel_bank_next]
                                       ->sample[sel_sample_next]
                                       .snd[sel_variation_next]
                                       ->name);
+        phase_new = round(((float)phases[0] * (float)banks[sel_bank_cur]
+                                                  ->sample[sel_sample_cur]
+                                                  .snd[sel_variation]
+                                                  ->size) /
+                          (float)banks[sel_bank_next]
+                              ->sample[sel_sample_next]
+                              .snd[sel_variation_next]
+                              ->size);
+
+        printf("phase[0] -> phase_new: %d*%d/%d -> %d\n", phases[0],
+               banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->size,
+               banks[sel_bank_next]
+                   ->sample[sel_sample_next]
+                   .snd[sel_variation_next]
+                   ->size,
+               phase_new);
+        printf("beat_current -> new beat_current: %d", beat_current);
+        beat_current = round(((float)beat_current * (float)banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[sel_variation]
+                                                        ->slice_num)) /
+                       (float)banks[sel_bank_next]
+                           ->sample[sel_sample_next]
+                           .snd[sel_variation_next]
+                           ->slice_num;
+        printf(" -> %d\n", beat_current);
+        phase_change = true;
         do_open_file = true;
       }
     }
@@ -433,10 +443,17 @@ void i2s_callback_func() {
 
   if (fil_is_open) {
     for (uint8_t head = 0; head < 2; head++) {
-      if (phases[head] >= banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[sel_variation]
-                              ->size) {
+      if ((int64_t)phases[head] >= (int64_t)banks[sel_bank_cur]
+                                       ->sample[sel_sample_cur]
+                                       .snd[sel_variation]
+                                       ->size) {
+        printf("> phase_forward: %d\n", phase_forward);
+        printf("> phase[head]: %d\n", phases[head]);
+        printf("> size: %d\n", banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[sel_variation]
+                                   ->size);
+        printf("> size: %d\n", banks[0]->sample[0].snd[0]->size);
         // TODO: check playback type
         if (phase_forward) {
           // going forward, restart from the beginning
@@ -444,14 +461,19 @@ void i2s_callback_func() {
                               ->sample[sel_sample_cur]
                               .snd[sel_variation]
                               ->size;
+          phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
         }
       } else if (phases[head] < 0) {
+        printf("< phase_forward: %d\n", phase_forward);
+        printf("< phase[head]: %d\n", phases[head]);
         if (phase_forward == 0) {
           // going backwards, restart from the end
+          printf("restart from the end!!!!\n");
           phases[head] += banks[sel_bank_cur]
                               ->sample[sel_sample_cur]
                               .snd[sel_variation]
                               ->size;
+          phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
         }
       }
     }
