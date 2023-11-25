@@ -53,6 +53,8 @@ bool fx_toggle[16];  // 16 possible
 #define FX_SPEEDUP 3
 #define FX_TIMESTRETCH 4
 
+bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
+
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
     printf("key_do_jump %d\n", beat);

@@ -1,5 +1,5 @@
-dobuild: lib/biquad.h build
-	cd build && make -j32
+dobuild: pico-extras lib/biquad.h lib/crossfade.h build
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
 	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
@@ -9,23 +9,28 @@ lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
 
 
-crossfade3:
+lib/crossfade3.h:
 	# set block size to 441
 	cd lib && python3 crossfade3.py 441 > crossfade3.h
 	clang-format -i --style=google lib/crossfade3.h 
  
-libs: crossfade3
+lib/crossfade.h: lib/crossfade3.h
 	cd lib && python3 transfer_saturate.py > transfer_saturate.h
+	clang-format -i --style=google lib/transfer_saturate.h 
 	cd lib && python3 transfer_distortion.py > transfer_distortion.h
+	clang-format -i --style=google lib/transfer_distortion.h 
 	cd lib && python3 selectx.py > selectx.h
+	clang-format -i --style=google lib/selectx.h 
 	cd lib && python3 biquad.py > biquad.h
+	clang-format -i --style=google lib/biquad.h 
 	cd lib && python3 crossfade.py > crossfade.h
+	clang-format -i --style=google lib/crossfade.h
 	cd lib && python3 crossfade2.py > crossfade2.h
-
+	clang-format -i --style=google lib/crossfade2.h 
 
 pico-extras:
-	git clone https://github.com/raspberrypi/pico-extras.git ../pico-extras
-	cd ../pico-extras && git submodule update -i 
+	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
+	cd pico-extras && git submodule update -i 
 
 upload: dobuild
 	./dev/upload.sh 
@@ -35,11 +40,11 @@ bootreset: dobuild
 
 autoload: dobuild bootreset upload
 
-build: envs
+build: 
 	rm -rf build
 	mkdir build
-	cd build && cmake ..
-	cd build && make -j32
+	cd build && PICO_EXTRAS_PATH=../pico-extras cmake ..
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 	echo "build success"
 
 audio:
