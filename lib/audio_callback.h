@@ -437,9 +437,10 @@ void i2s_callback_func() {
 
   // apply filter
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-    int32_t value0 = 0;
-    samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-    samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      samples[i * 2 + channel] = ResonantFilter_update(
+          lowpassFilter[channel], samples[i * 2 + channel]);
+    }
   }
 
   buffer->sample_count = buffer->max_sample_count;

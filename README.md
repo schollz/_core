@@ -94,10 +94,10 @@ knobs: X, Y, Z
 - [ ] **S** + **X** → tempo
 - [ ] **S** + **Y** → filter
 - [ ] **S** + **Z** → volume
-- [ ] **A** + **X** → pitch
-- [ ] **A** + **Y** → gate
-- [ ] **A** + **Z** → 
-- [ ] **B** + **X** → 
+- [ ] **A** + **X** → gate
+- [ ] **A** + **Y** → filter fc (lowpass/highpass?)
+- [ ] **A** + **Z** → filter q
+- [ ] **B** + **X** → pitch
 - [ ] **B** + **Y** → quantize
 - [ ] **B** + **Z** → 
 - [ ] **C** + **X** → 
