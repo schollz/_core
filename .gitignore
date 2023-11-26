@@ -154,3 +154,7 @@ cmd/zeptocore/1.mp3
 cmd/zeptocore/src/pack/storage/
 cmd/zeptocore/src/pack/zips/
 cmd/zeptocore/zips/
+cmd/zeptocore/src/zeptocore/lofi.2.wav.info
+cmd/zeptocore/src/zeptocore/lofi.aif.json
+lib/crossfade3.h
+lib/resonantfilter_data.h
