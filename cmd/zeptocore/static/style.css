@@ -1,0 +1,274 @@
+/* :root {
+    --background-color: #f4f0ff;
+    --header-footer-background: #6a0572;
+    --banks-background: #dcd6f7;
+    --highlight-color: #c3b8e6;
+    --hover-color: #d2cde9;
+}*/
+:root {
+    --background-color: #f0f4ff;
+    /* Cobalt blueish background color */
+    --header-footer-background: #005c99;
+    /* Cobalt blueish header and footer background color */
+    --banks-background: #cde0f7;
+    /* Light blue background color for banks */
+    --highlight-color: #8ab4d7;
+    /* Lighter blue highlight color */
+    --hover-color: #a1c3e6;
+    /* Slightly darker blue on hover */
+}
+
+body {
+    font-family: 'Roboto Mono', monospace;
+    margin: 0;
+    background-color: var(--background-color);
+    ;
+    /* Light purple background color */
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    /* min-height: 100vh; */
+}
+
+header,
+footer {
+    background-color: var(--header-footer-background);
+    /* Dark purple header and footer background color */
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+main {
+    display: flex;
+    flex: 1;
+}
+
+.banks-selector {
+    background-color: var(--banks-background);
+    padding: 1rem;
+}
+
+.banks-selector ul {
+    list-style: none;
+    padding: 0;
+}
+
+.banks-selector li {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--highlight-color);
+}
+
+.banks-selector li.selected {
+    background-color: var(--header-footer-background);
+    /* Highlight color for selected bank */
+    color: white;
+}
+
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-uploader,
+.file-list,
+.file-details {
+    padding: 1rem;
+}
+
+.file-details {
+    background-color: #e1ecfa;
+    border-radius: 20px;
+    padding: 1em;
+    margin: 1em;
+}
+
+.drop-area {
+    border: 2px dashed #ddd;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.file-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.file-list li {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--highlight-color);
+    position: relative;
+}
+
+.file-list li::before {
+    content: attr(data-file-number);
+    position: absolute;
+    left: -0.75rem;
+    z-index: 1;
+}
+
+.file-list li.selected::before {
+    color: #333;
+}
+
+.file-list li.selected {
+    background-color: var(--header-footer-background);
+    /* Highlight color for selected file */
+    color: white;
+}
+
+.file-list li:hover {
+    background-color: var(--hover-color);
+}
+
+.progress-bar {
+    height: 5px;
+    background: var(--header-footer-background);
+    position: relative;
+    bottom: -1.5rem;
+    left: -1rem;
+    height: 0.5rem;
+    width: 0;
+    transition: width 0.2s ease;
+    /* Add a smooth transition effect */
+}
+
+/* Styling for the "Clear" button */
+.file-list h2 {
+    margin-bottom: 0;
+    display: inline-block;
+}
+
+
+select {
+    font-family: 'Roboto Mono', monospace;
+}
+
+button {
+    font-family: 'Roboto Mono', monospace;
+    background-color: var(--banks-background);
+    /* Light purple background color for buttons */
+    color: var(--header-footer-background);
+    /* Dark purple text color for buttons */
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 1rem;
+}
+
+button:hover {
+    background-color: var(--highlight-color);
+    /* Slightly darker purple on button hover */
+    color: var(--header-footer-background);
+}
+
+
+.footer {
+    justify-content: space-between;
+}
+
+.footer-item {
+    margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Center items vertically */
+}
+
+
+footer>form {
+    max-width: 500px;
+    margin: auto;
+}
+
+footer>form>select {
+    max-width: 2em;
+}
+
+body {
+    padding: 2em;
+}
+
+@media screen and (max-width: 768px) {
+    /* Adjustments for mobile devices */
+
+    header {
+        box-sizing: border-box;
+        /* Adjust the maximum height as needed */
+        overflow: hidden;
+    }
+
+    .banks-selector {
+        overflow-x: auto;
+        padding: 0;
+        margin: 0;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        /* Adjust the maximum height as needed */
+    }
+
+    .banks-selector ul {
+        display: flex;
+        margin-right: 2.125vw;
+    }
+
+    .banks-selector li {
+        margin-right: 0.5rem;
+        white-space: nowrap;
+        padding: 0;
+        height: 5.5vw;
+        width: 4.125vw;
+        margin: 0;
+        margin-left: 2.125vw;
+    }
+
+    main {
+        flex-direction: column;
+        overflow-y: auto;
+        /* Adjust the margin to match the header's max-height */
+    }
+
+    .content-area {
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .banks-selector li .desktop-bank-label {
+        display: none;
+    }
+
+    .banks-selector li .mobile-bank-label {
+        display: inline-block;
+    }
+
+    .footer-row {
+        flex-direction: column;
+    }
+
+    h2 {
+        font-size: 1rem;
+        /* Adjust the font size as needed for smaller screens */
+    }
+
+    body {
+        padding: 0;
+    }
+}
+
+a {
+    color: white;
+    text-decoration: none;
+}
