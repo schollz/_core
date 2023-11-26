@@ -197,7 +197,8 @@ void input_handling() {
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
-  const int adc_threshold = 50;
+  const int adc_threshold = 0;
+  // TODO add debounce for the adc detection
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
   }

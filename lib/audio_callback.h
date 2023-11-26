@@ -101,34 +101,35 @@ void i2s_callback_func() {
                                       ->sample[sel_sample_next]
                                       .snd[sel_variation_next]
                                       ->name);
-        phase_new = round(((float)phases[0] * (float)banks[sel_bank_cur]
-                                                  ->sample[sel_sample_cur]
-                                                  .snd[sel_variation]
+        phase_new = round(((float)phases[0] * (float)banks[sel_bank_next]
+                                                  ->sample[sel_sample_next]
+                                                  .snd[sel_variation_next]
                                                   ->size) /
-                          (float)banks[sel_bank_next]
-                              ->sample[sel_sample_next]
-                              .snd[sel_variation_next]
+                          (float)banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[sel_variation]
                               ->size);
 
         printf("phase[0] -> phase_new: %d*%d/%d -> %d\n", phases[0],
-               banks[sel_bank_cur]
-                   ->sample[sel_sample_cur]
-                   .snd[sel_variation]
-                   ->size,
                banks[sel_bank_next]
                    ->sample[sel_sample_next]
                    .snd[sel_variation_next]
                    ->size,
+               banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->size,
                phase_new);
         printf("beat_current -> new beat_current: %d", beat_current);
-        beat_current = round(((float)beat_current * (float)banks[sel_bank_cur]
-                                                        ->sample[sel_sample_cur]
-                                                        .snd[sel_variation]
-                                                        ->slice_num)) /
-                       (float)banks[sel_bank_next]
-                           ->sample[sel_sample_next]
-                           .snd[sel_variation_next]
-                           ->slice_num;
+        beat_current =
+            round(((float)beat_current * (float)banks[sel_bank_next]
+                                             ->sample[sel_sample_next]
+                                             .snd[sel_variation_next]
+                                             ->slice_num)) /
+            (float)banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->slice_num;
         printf(" -> %d\n", beat_current);
         phase_change = true;
         do_open_file = true;
@@ -453,10 +454,14 @@ void i2s_callback_func() {
 #endif
 
   // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-  //   samples[i * 2 + 0] = q16_16_sin(q16_16_multiply(
-  //       Q16_16_2PI, q16_16_divide(samples[i * 2 + 0], Q16_16_MAX)));
-  //   samples[i * 2 + 1] = q16_16_sin(q16_16_multiply(
-  //       Q16_16_2PI, q16_16_divide(samples[i * 2 + 1], Q16_16_MAX)));
+  //   samples[i * 2 + 0] =
+  //       q16_16_sin(q16_16_multiply(
+  //           Q16_16_2PI, q16_16_divide(samples[i * 2 + 0], Q16_16_MAX)))
+  //       << 15;
+  //   samples[i * 2 + 1] =
+  //       q16_16_sin(q16_16_multiply(
+  //           Q16_16_2PI, q16_16_divide(samples[i * 2 + 1], Q16_16_MAX)))
+  //       << 15;
   // }
 
   buffer->sample_count = buffer->max_sample_count;
