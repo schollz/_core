@@ -33,13 +33,38 @@
 
 #include "../../array_resample.h"
 
-void function_to_benchmark() {
-  int16_t arr[] = {11621, 11620, 10309, 6301, 2171, 650, 2136, 4150, 4507};
+void array_resample_quadratic_fp_benchmark() {
+  int16_t arr[] = {11621, 11620, 10309, 6301,  11621, 11620, 10309,
+                   6301,  11621, 11620, 10309, 6301,  11621, 11620,
+                   10309, 6301,  2171,  650,   2136,  4150,  4507};
   int16_t arr_size = sizeof(arr) / sizeof(arr[0]);
   int16_t arr_new_size = 80;
-  for (int i = 0; i < 10000000; i++) {
+  for (int i = 0; i < 1000000; i++) {
     int16_t *newArray =
         array_resample_quadratic_fp(arr, arr_size, arr_new_size);
+    free(newArray);
+  }
+}
+
+void array_resample_quadratic_benchmark() {
+  int16_t arr[] = {11621, 11620, 10309, 6301,  11621, 11620, 10309,
+                   6301,  11621, 11620, 10309, 6301,  11621, 11620,
+                   10309, 6301,  2171,  650,   2136,  4150,  4507};
+  int16_t arr_size = sizeof(arr) / sizeof(arr[0]);
+  int16_t arr_new_size = 80;
+  for (int i = 0; i < 1000000; i++) {
+    int16_t *newArray = array_resample_quadratic(arr, arr_size, arr_new_size);
+    free(newArray);
+  }
+}
+void array_resample_linear_benchmark() {
+  int16_t arr[] = {11621, 11620, 10309, 6301,  11621, 11620, 10309,
+                   6301,  11621, 11620, 10309, 6301,  11621, 11620,
+                   10309, 6301,  2171,  650,   2136,  4150,  4507};
+  int16_t arr_size = sizeof(arr) / sizeof(arr[0]);
+  int16_t arr_new_size = 80;
+  for (int i = 0; i < 1000000; i++) {
+    int16_t *newArray = array_resample_linear(arr, arr_size, arr_new_size);
     free(newArray);
   }
 }
@@ -90,7 +115,12 @@ int main() {
 
   free(newArray);
 
-  // benchmark_function(function_to_benchmark, "function_to_benchmark");
+  // benchmark_function(array_resample_quadratic_fp_benchmark,
+  //                    "array_resample_quadratic_fp_benchmark");
+  // benchmark_function(array_resample_quadratic_benchmark,
+  //                    "array_resample_quadratic_benchmark");
+  // benchmark_function(array_resample_linear_benchmark,
+  //                    "array_resample_linear_benchmark");
 
   return 0;
 }
