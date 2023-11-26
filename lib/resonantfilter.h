@@ -46,54 +46,47 @@ typedef struct ResonantFilter {
   int32_t y2_f;
 } ResonantFilter;
 
-void ResonantFilter_copy(ResonantFilter* rf1, ResonantFilter* rf2) {
-  rf2->b0 = rf1->b0;
-  rf2->b1 = rf1->b1;
-  rf2->b2 = rf1->b2;
-  rf2->a1 = rf1->a1;
-  rf2->a2 = rf1->a2;
-  rf2->x1_f = rf1->x1_f;
-  rf2->x2_f = rf1->x2_f;
-  rf2->y1_f = rf1->y1_f;
-  rf2->y2_f = rf1->y2_f;
+void ResonantFilter_reset(ResonantFilter* rf) {
+  if (!rf->passthrough) {
+    rf->b0 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][0];
+    rf->b1 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][1];
+    rf->b2 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][2];
+    rf->a1 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][3];
+    rf->a2 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][4];
+  }
 }
 
-void ResonantFilter_updateFc(ResonantFilter* rf, uint8_t fc) {
+void ResonantFilter_setFc(ResonantFilter* rf, uint8_t fc) {
+  if (fc >= resonantfilter_fc_max) {
+    fc = resonantfilter_fc_max - 1;
+    rf->passthrough = true;
+  } else {
+    rf->passthrough = false;
+  }
   if (rf->fc == fc) {
     return;
   }
-  ResonantFilter_reset(rf, rf->filter_type, fc, rf->q);
+  rf->fc = fc;
+  ResonantFilter_reset(rf);
 }
 
-void ResonantFilter_updateQ(ResonantFilter* rf, uint8_t q) {
-  if (rf->q == q) {
-    return;
-  }
-  ResonantFilter_reset(rf, rf->filter_type, rf->fc, q);
-}
-
-void ResonantFilter_reset(ResonantFilter* rf, uint8_t filter_type, uint8_t fc,
-                          uint8_t q) {
+void ResonantFilter_setQ(ResonantFilter* rf, uint8_t q) {
   if (q >= resonantfilter_q_max) {
     q = resonantfilter_q_max - 1;
   }
-  if (fc >= resonantfilter_note_max) {
-    fc = resonantfilter_note_max - 1;
-    rf->passthrough = true;
+  if (rf->q == q) {
+    return;
   }
-  if (filter_type >= resonantfilter_filter_max) {
-    filter_type = resonantfilter_filter_max - 1;
+  rf->q = q;
+  ResonantFilter_reset(rf);
+}
+
+void ResonantFilter_setFilterType(ResonantFilter* rf, uint8_t filter_type) {
+  if (rf->filter_type == filter_type) {
+    return;
   }
   rf->filter_type = filter_type;
-  rf->fc = fc;
-  rf->q = q;
-  if (!rf->passthrough) {
-    rf->b0 = resonantfilter_data[filter_type][q][fc][0];
-    rf->b1 = resonantfilter_data[filter_type][q][fc][1];
-    rf->b2 = resonantfilter_data[filter_type][q][fc][2];
-    rf->a1 = resonantfilter_data[filter_type][q][fc][3];
-    rf->a2 = resonantfilter_data[filter_type][q][fc][4];
-  }
+  ResonantFilter_reset(rf);
 }
 
 void ResonantFilter_reset2(ResonantFilter* rf, float fc, float fs, float q,
@@ -139,7 +132,11 @@ void ResonantFilter_reset2(ResonantFilter* rf, float fc, float fs, float q,
 ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   ResonantFilter* rf;
   rf = (ResonantFilter*)malloc(sizeof(ResonantFilter));
-  ResonantFilter_reset(rf, filter_type, resonantfilter_note_max, 0);
+  rf->filter_type = 0;
+  rf->q = 0;
+  rf->fc = resonantfilter_fc_max - 1;
+  rf->passthrough = true;
+  ResonantFilter_reset(rf);
   return rf;
 }
 

@@ -1,4 +1,4 @@
-dobuild: pico-extras lib/biquad.h lib/crossfade.h build
+dobuild: pico-extras lib/biquad.h lib/crossfade.h lib/resonantfilter_data.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
@@ -27,6 +27,10 @@ lib/crossfade.h: lib/crossfade3.h
 	clang-format -i --style=google lib/crossfade.h
 	cd lib && python3 crossfade2.py > crossfade2.h
 	clang-format -i --style=google lib/crossfade2.h 
+
+lib/resonantfilter_data.h:
+	cd lib && python3 resonantfilter.py > resonantfilter_data.h
+	clang-format -i --style=google lib/resonantfilter_data.h
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras

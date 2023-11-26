@@ -204,19 +204,10 @@ void input_handling() {
     adc_select_input(0);
     int adc;
 
+    // knob X
     adc = FilterExp_update(adcs[0], adc_read());
     if (button_is_pressed(KEY_SHIFT)) {
       sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
-    } else if (button_is_pressed(KEY_A)) {
-    } else if (button_is_pressed(KEY_B)) {
-    } else if (button_is_pressed(KEY_C)) {
-    }
-
-    button_handler(bm);
-
-    adc_select_input(1);
-    adc = FilterExp_update(adcs[1], adc_read());
-    if (button_is_pressed(KEY_SHIFT)) {
     } else if (button_is_pressed(KEY_A)) {
       gate_threshold =
           adc * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 4096 * 2;
@@ -224,6 +215,22 @@ void input_handling() {
     } else if (button_is_pressed(KEY_C)) {
     }
 
+    button_handler(bm);
+
+    // knob Y
+    adc_select_input(1);
+    adc = FilterExp_update(adcs[1], adc_read());
+    if (button_is_pressed(KEY_SHIFT)) {
+    } else if (button_is_pressed(KEY_A)) {
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        ResonantFilter_setFc(lowpassFilter[channel],
+                             adc * (resonantfilter_fc_max + 10) / 4096);
+      }
+    } else if (button_is_pressed(KEY_B)) {
+    } else if (button_is_pressed(KEY_C)) {
+    }
+
+    // knob Z
     adc_select_input(2);
     adc = FilterExp_update(adcs[2], adc_read());
     if (button_is_pressed(KEY_SHIFT)) {
@@ -234,6 +241,10 @@ void input_handling() {
         printf("sf-vol: %d\n", sf->vol);
       }
     } else if (button_is_pressed(KEY_A)) {
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        ResonantFilter_setQ(lowpassFilter[channel],
+                            adc * (resonantfilter_q_max) / 4096);
+      }
     } else if (button_is_pressed(KEY_B)) {
     } else if (button_is_pressed(KEY_C)) {
     }

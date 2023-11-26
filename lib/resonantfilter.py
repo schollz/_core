@@ -63,7 +63,7 @@ def design_filter(fc, fs, db, q, filter_type):
 qs = [0.707, 1.414]
 notes = list(range(44, 128))
 print(f"const uint8_t resonantfilter_q_max = {len(qs)};")
-print(f"const uint8_t resonantfilter_note_max = {len(notes)};")
+print(f"const uint8_t resonantfilter_fc_max = {len(notes)};")
 print(f"const uint8_t resonantfilter_filter_max = 2;")
 
 print(f"const int32_t resonantfilter_data[2][{len(qs)}][{len(notes)}][5] = {{")
