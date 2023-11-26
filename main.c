@@ -249,40 +249,6 @@ void input_handling() {
     } else if (button_is_pressed(KEY_C)) {
     }
 
-    // if (key_on_buttons(KEY_SHIFT)) {
-    // } else {
-    //   uint16_t val = FilterExp_update(adcs[1], adc_read());
-    //   if (val < 1800) {
-    //     uint8_t filter_midi_new = val * 73 / 1800;
-    //     if (filter_midi != filter_midi_new) {
-    //       filter_midi = filter_midi_new;
-    //       printf("freqs_available[%d]: %d", filter_midi,
-    //              freqs_available[filter_midi]);
-    //       // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-    //       ResonantFilter_reset(resonantfilter[0],
-    //       freqs_available[filter_midi],
-    //                            44100, 0.5 * 0.707, 0, FILTER_LOWPASS);
-    //     }
-    //   } else if (val > 2296) {
-    //     uint8_t filter_midi_new = ((val - 2296) * 73 / 1800);
-    //     if (filter_midi != filter_midi_new) {
-    //       filter_midi = filter_midi_new;
-    //       printf("freqs_available[%d]: %d", filter_midi,
-    //              freqs_available[filter_midi]);
-    //       // IIR_set_fc(myFilter0, freqs_available[filter_midi]);
-    //       ResonantFilter_reset(resonantfilter[0],
-    //       freqs_available[filter_midi],
-    //                            44100, 0.5 * 0.707, 0, FILTER_HIGHPASS);
-    //     }
-    //   } else {
-    //     filter_midi = 73;
-    //   }
-    //   // sf->saturate_wet = FilterExp_update(adcs[1], adc_read()) * 100 /
-    //   4096;
-    //   // sf->wavefold = FilterExp_update(adcs[1], adc_read()) * 200 /
-    //   4096;
-    // }
-
     LEDS_render(leds);
   }
 }

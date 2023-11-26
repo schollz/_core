@@ -92,7 +92,7 @@ knobs: X, Y, Z
 - [ ] **Y** → n/a
 - [ ] **Z** → n/a
 - [ ] **S** + **X** → tempo
-- [ ] **S** + **Y** → filter
+- [ ] **S** + **Y** → 
 - [ ] **S** + **Z** → volume
 - [ ] **A** + **X** → gate
 - [ ] **A** + **Y** → filter fc (lowpass/highpass?)
