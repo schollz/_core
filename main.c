@@ -196,6 +196,8 @@ void input_handling() {
   // )
 
   FilterExp *adcs[3];
+  int adc_last[3] = {0, 0, 0};
+  const int adc_threshold = 50;
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
   }
@@ -206,48 +208,69 @@ void input_handling() {
 
     // knob X
     adc = FilterExp_update(adcs[0], adc_read());
-    if (button_is_pressed(KEY_SHIFT)) {
-      sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
-    } else if (button_is_pressed(KEY_A)) {
-      gate_threshold =
-          adc * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 4096 * 2;
-    } else if (button_is_pressed(KEY_B)) {
-    } else if (button_is_pressed(KEY_C)) {
+    if (abs(adc_last[0] - adc) > adc_threshold) {
+      // TODO: keep track of old value and
+      if (button_is_pressed(KEY_SHIFT)) {
+        sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+      } else if (button_is_pressed(KEY_A)) {
+        gate_threshold = adc *
+                         (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
+                         4096 * 2;
+      } else if (button_is_pressed(KEY_B)) {
+      } else if (button_is_pressed(KEY_C)) {
+      }
     }
+    adc_last[0] = adc;
 
     button_handler(bm);
 
     // knob Y
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
-    if (button_is_pressed(KEY_SHIFT)) {
-    } else if (button_is_pressed(KEY_A)) {
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        ResonantFilter_setFc(lowpassFilter[channel],
-                             adc * (resonantfilter_fc_max + 10) / 4096);
+    if (abs(adc_last[1] - adc) > adc_threshold) {
+      if (button_is_pressed(KEY_SHIFT)) {
+      } else if (button_is_pressed(KEY_A)) {
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          if (adc < 2000) {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel],
+                                 adc * (resonantfilter_fc_max) / 2000);
+          } else if (adc > 2096) {
+            ResonantFilter_setFilterType(resFilter[channel], 1);
+            ResonantFilter_setFc(resFilter[channel],
+                                 (adc - 2096) * (resonantfilter_fc_max) / 2000);
+          } else {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
+          }
+        }
+      } else if (button_is_pressed(KEY_B)) {
+      } else if (button_is_pressed(KEY_C)) {
       }
-    } else if (button_is_pressed(KEY_B)) {
-    } else if (button_is_pressed(KEY_C)) {
     }
+    adc_last[1] = adc;
 
     // knob Z
     adc_select_input(2);
     adc = FilterExp_update(adcs[2], adc_read());
-    if (button_is_pressed(KEY_SHIFT)) {
-      new_vol = adc * MAX_VOLUME / 4096;
-      // new_vol = 100;
-      if (new_vol != sf->vol) {
-        sf->vol = new_vol;
-        printf("sf-vol: %d\n", sf->vol);
+    if (abs(adc_last[2] - adc) > adc_threshold) {
+      if (button_is_pressed(KEY_SHIFT)) {
+        new_vol = adc * MAX_VOLUME / 4096;
+        // new_vol = 100;
+        if (new_vol != sf->vol) {
+          sf->vol = new_vol;
+          printf("sf-vol: %d\n", sf->vol);
+        }
+      } else if (button_is_pressed(KEY_A)) {
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          ResonantFilter_setQ(resFilter[channel],
+                              adc * (resonantfilter_q_max) / 4096);
+        }
+      } else if (button_is_pressed(KEY_B)) {
+      } else if (button_is_pressed(KEY_C)) {
       }
-    } else if (button_is_pressed(KEY_A)) {
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        ResonantFilter_setQ(lowpassFilter[channel],
-                            adc * (resonantfilter_q_max) / 4096);
-      }
-    } else if (button_is_pressed(KEY_B)) {
-    } else if (button_is_pressed(KEY_C)) {
     }
+    adc_last[2] = adc;
 
     LEDS_render(leds);
   }
@@ -342,8 +365,8 @@ int main() {
   //   Chain_load(chain, &sync_using_sdcard);
 
 #ifdef INCLUDE_FILTER
-  lowpassFilter[0] = ResonantFilter_create(0);
-  lowpassFilter[1] = ResonantFilter_create(0);
+  resFilter[0] = ResonantFilter_create(0);
+  resFilter[1] = ResonantFilter_create(0);
 #endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);
