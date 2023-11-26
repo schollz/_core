@@ -1,4 +1,28 @@
 
+void check_setup_files() {
+  DIR dj;      /* Directory object */
+  FILINFO fno; /* File information */
+  FRESULT fr;  /* File result error */
+
+  memset(&dj, 0, sizeof dj);
+  memset(&fno, 0, sizeof fno);
+  fr = f_findfirst(&dj, &fno, "", "*");
+  if (FR_OK != fr) {
+    return;
+  }
+  while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+    if (strcmp(fno.fname, "resample_linear") == 0) {
+      quadratic_resampling = false;
+      printf("[sdcard_startup] linear resampling\n");
+    } else if (strcmp(fno.fname, "resample_quadratic") == 0) {
+      quadratic_resampling = true;
+      printf("[sdcard_startup] quadratic resampling\n");
+    }
+    fr = f_findnext(&dj, &fno); /* Search for next item */
+  }
+  f_closedir(&dj);
+}
+
 void sdcard_startup() {
   if (sdcard_startup_is_starting) {
     return;
@@ -20,6 +44,8 @@ void sdcard_startup() {
 #ifdef INCLUDE_BASS
   bass = Bass_create();
 #endif
+
+  check_setup_files();
 
   for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
@@ -50,7 +76,8 @@ void sdcard_startup() {
               "% d\n ",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->play_mode);
           printf(
-              "[sdcard_startup] banks[%d]->sample[%d].snd[sel_variation]->bpm: "
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->bpm: "
               "%d\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->bpm);
           printf(
