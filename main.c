@@ -291,6 +291,8 @@ void input_handling() {
   }
 }
 
+#include "lib/tinyfont.h"
+
 int main() {
   // Set PLL_USB 96MHz
   pll_init(pll_usb, 1, 1536 * MHZ, 4, 4);
@@ -369,7 +371,41 @@ int main() {
 
   leds = LEDS_create();
   // show X in case the files aren't loaded
-  LEDS_show_blinking_z(leds, 2);
+  // LEDS_show_blinking_z(leds, 2);
+
+  printf("-----------\n");
+  for (uint8_t i = 4; i < 20; i++) {
+    LEDS_set(leds, LED_BASE_FACE, i, 2);
+    LEDS_render(leds);
+    sleep_ms(10);
+    LEDS_set(leds, LED_BASE_FACE, i, 0);
+    LEDS_render(leds);
+    sleep_ms(10);
+  }
+
+  uint8_t char_glyph = 64;
+
+  for (uint8_t char_glyph = 64; char_glyph++; char_glyph < 128) {
+    uint8_t char_index = (char_glyph - 32) / 2 * 4;
+    uint8_t char_side = 1 - (char_glyph % 2);
+
+    for (uint8_t i = 0; i < 4; i++) {
+      uint8_t b = tinyfont_glyphs[char_index + i];
+      printf("0x%02X: ", b);
+      for (uint8_t j = 4 - (char_side * 4); j < 8 - char_side * 4; j++) {
+        uint8_t led_index = (j * 4 + i + 4 - (16 * (1 - char_side)));
+        // print out the jth bit of the byte b
+        printf("%d (%2d) ", (b >> j) & 1, led_index);
+        // read the jth bit of the byte b
+        LEDS_set(leds, LED_BASE_FACE, led_index, 2 * ((b >> j) & 1));
+      }
+      printf("\n");
+    }
+    LEDS_render(leds);
+    sleep_ms(200);
+  }
+
+  sleep_ms(100000);
 
   sleep_ms(1000);
   printf("startup!\n");
