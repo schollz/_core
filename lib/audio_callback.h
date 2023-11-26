@@ -439,8 +439,8 @@ void i2s_callback_func() {
 #ifdef INCLUDE_FILTER
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
     for (uint8_t channel = 0; channel < 2; channel++) {
-      samples[i * 2 + channel] = ResonantFilter_update(
-          lowpassFilter[channel], samples[i * 2 + channel]);
+      samples[i * 2 + channel] =
+          ResonantFilter_update(resFilter[channel], samples[i * 2 + channel]);
       if (banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
@@ -451,6 +451,13 @@ void i2s_callback_func() {
     }
   }
 #endif
+
+  // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+  //   samples[i * 2 + 0] = q16_16_sin(q16_16_multiply(
+  //       Q16_16_2PI, q16_16_divide(samples[i * 2 + 0], Q16_16_MAX)));
+  //   samples[i * 2 + 1] = q16_16_sin(q16_16_multiply(
+  //       Q16_16_2PI, q16_16_divide(samples[i * 2 + 1], Q16_16_MAX)));
+  // }
 
   buffer->sample_count = buffer->max_sample_count;
   give_audio_buffer(ap, buffer);

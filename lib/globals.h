@@ -116,7 +116,7 @@ int8_t sel_variation_next = 0;
 Bass *bass;
 #endif
 
-ResonantFilter *lowpassFilter[2];
+ResonantFilter *resFilter[2];
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
