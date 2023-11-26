@@ -47,6 +47,8 @@ void sdcard_startup() {
 
   check_setup_files();
 
+  sleep_ms(2000);
+
   for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
@@ -70,6 +72,10 @@ void sdcard_startup() {
               "[sdcard_startup] "
               "banks[%d]->sample[%d].snd[sel_variation]->num_channels: %d\n",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->num_channels);
+          printf(
+              "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->oversampling: %d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->oversampling);
           printf(
               "[sdcard_startup] "
               "banks[%d]->sample[%d].snd[sel_variation]->play_mode: "

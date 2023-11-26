@@ -39,7 +39,7 @@
                     </div>
                 </div>
                 <div v-if="disconnected" style="text-align: center;">
-                    <img src="/static/loading.gif">
+                    <span class="loader"></span>
                 </div>
 
                 <div class="file-list" v-if="banks[selectedBank].files.length>0 && !disconnected">
