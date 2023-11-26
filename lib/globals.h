@@ -117,7 +117,6 @@ Bass *bass;
 #endif
 
 ResonantFilter *lowpassFilter[2];
-uint8_t filter_midi = 72;
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
