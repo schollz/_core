@@ -112,6 +112,8 @@ uint32_t gate_threshold = 10;
 uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 
+bool quadratic_resampling = false;
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
