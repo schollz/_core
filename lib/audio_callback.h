@@ -441,6 +441,13 @@ void i2s_callback_func() {
     for (uint8_t channel = 0; channel < 2; channel++) {
       samples[i * 2 + channel] = ResonantFilter_update(
           lowpassFilter[channel], samples[i * 2 + channel]);
+      if (banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->num_channels == 1) {
+        samples[i * 2 + 1] = samples[i * 2 + 0];
+        break;
+      }
     }
   }
 #endif
