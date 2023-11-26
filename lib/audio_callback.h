@@ -26,6 +26,8 @@ uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
+uint8_t cpu_usage_flag = 0;
+bool audio_was_cpu_muted = false;
 
 bool audio_was_muted = false;
 
@@ -56,6 +58,7 @@ void i2s_callback_func() {
       (gate_active && gate_counter >= gate_threshold) || audio_mute ||
       reduce_cpu_usage > 0) {
     if (reduce_cpu_usage > 0) {
+      printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -218,9 +221,13 @@ void i2s_callback_func() {
         audio_mute = true;
       }
     }
-    if (audio_was_muted) {
+    if (audio_was_muted || audio_was_cpu_muted) {
       audio_was_muted = false;
       do_fade_in = true;
+    }
+    if (cpu_usage_flag == 2) {
+      audio_was_cpu_muted = true;
+      do_fade_out = true;
     }
 
     bool first_loop = true;
@@ -506,12 +513,9 @@ void i2s_callback_func() {
   }
   sync_using_sdcard = false;
 
-#ifdef PRINT_AUDIO_USAGE
   clock_t endTime = time_us_64();
-#ifdef PRINT_AUDIO_CPU_USAGE
   cpu_utilizations[cpu_utilizations_i] =
       100 * (endTime - startTime) / (US_PER_BLOCK);
-#endif
   cpu_utilizations_i++;
 
   if (cpu_utilizations_i == 64) {
@@ -524,13 +528,23 @@ void i2s_callback_func() {
            ((float)cpu_utilization) / 64.0);
 #endif
     cpu_utilizations_i = 0;
+#ifdef PRINT_SDCARD_TIMING
     printf("%ld\n", t1 - t0);
-  }
-  if (cpu_utilizations[cpu_utilizations_i] > 70) {
-    printf("cpu utilization: %d\n", cpu_utilizations[cpu_utilizations_i]);
-    reduce_cpu_usage = reduce_cpu_usage + 1;
-  }
 #endif
+  }
+  if (cpu_usage_flag == 2) {
+    cpu_usage_flag = 0;
+    reduce_cpu_usage = 5;
+  } else {
+    if (cpu_utilizations[cpu_utilizations_i] > 70) {
+      // reduce_cpu_usage = reduce_cpu_usage + 5;
+      cpu_usage_flag++;
+      printf("cpu utilization: %d, flag: %d\n",
+             cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
+    } else {
+      cpu_usage_flag = 0;
+    }
+  }
 
   return;
 }

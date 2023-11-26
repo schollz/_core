@@ -197,7 +197,9 @@ void input_handling() {
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
-  const int adc_threshold = 0;
+  int adc_debounce[3] = {0, 0, 0};
+  const int adc_threshold = 200;
+  const int adc_debounce_max = 250;
   // TODO add debounce for the adc detection
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
@@ -210,6 +212,11 @@ void input_handling() {
     // knob X
     adc = FilterExp_update(adcs[0], adc_read());
     if (abs(adc_last[0] - adc) > adc_threshold) {
+      adc_debounce[0] = adc_debounce_max;
+    }
+    if (adc_debounce[0] > 0) {
+      adc_last[0] = adc;
+      adc_debounce[0]--;
       // TODO: keep track of old value and
       if (button_is_pressed(KEY_SHIFT)) {
         sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
@@ -221,7 +228,6 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
-    adc_last[0] = adc;
 
     button_handler(bm);
 
