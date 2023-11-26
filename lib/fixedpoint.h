@@ -36,6 +36,7 @@
 #define Q16_16_PI 205887
 #define Q16_16_2PI 411774
 #define Q16_16_PI_OVER_2 102943
+#define Q16_16_MAX 2147418112
 #define Q16_16_2_OVER_PI 41721  // 2 / pi
 // https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
 #define Q16_16_SIN_A5 102873  // 4 * (3/pi - 9/16)
