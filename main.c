@@ -235,6 +235,11 @@ void input_handling() {
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
     if (abs(adc_last[1] - adc) > adc_threshold) {
+      adc_debounce[1] = adc_debounce_max;
+    }
+    if (adc_debounce[1] > 0) {
+      adc_last[1] = adc;
+      adc_debounce[1]--;
       if (button_is_pressed(KEY_SHIFT)) {
       } else if (button_is_pressed(KEY_A)) {
         for (uint8_t channel = 0; channel < 2; channel++) {
@@ -255,12 +260,16 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
-    adc_last[1] = adc;
 
     // knob Z
     adc_select_input(2);
     adc = FilterExp_update(adcs[2], adc_read());
     if (abs(adc_last[2] - adc) > adc_threshold) {
+      adc_debounce[2] = adc_debounce_max;
+    }
+    if (adc_debounce[2] > 0) {
+      adc_last[2] = adc;
+      adc_debounce[2]--;
       if (button_is_pressed(KEY_SHIFT)) {
         new_vol = adc * MAX_VOLUME / 4096;
         // new_vol = 100;
@@ -277,7 +286,6 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
-    adc_last[2] = adc;
 
     LEDS_render(leds);
   }

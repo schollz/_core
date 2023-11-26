@@ -28,6 +28,8 @@ uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
 uint8_t cpu_usage_flag = 0;
 bool audio_was_cpu_muted = false;
+const uint8_t cpu_usage_flag_limit = 2;
+const uint8_t cpu_usage_limit_threshold = 80;
 
 bool audio_was_muted = false;
 
@@ -58,7 +60,7 @@ void i2s_callback_func() {
       (gate_active && gate_counter >= gate_threshold) || audio_mute ||
       reduce_cpu_usage > 0) {
     if (reduce_cpu_usage > 0) {
-      printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
+      // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -223,9 +225,13 @@ void i2s_callback_func() {
     }
     if (audio_was_muted || audio_was_cpu_muted) {
       audio_was_muted = false;
+      audio_was_cpu_muted = false;
       do_fade_in = true;
     }
-    if (cpu_usage_flag == 2) {
+    // cpu_usage_flag is written when cpu usage is consistently high
+    // in which case it will fade out audio and keep it muted for a little
+    // bit to reduce cpu usage
+    if (cpu_usage_flag == cpu_usage_flag_limit) {
       audio_was_cpu_muted = true;
       do_fade_out = true;
     }
@@ -532,15 +538,15 @@ void i2s_callback_func() {
     printf("%ld\n", t1 - t0);
 #endif
   }
-  if (cpu_usage_flag == 2) {
+  if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
-    reduce_cpu_usage = 5;
+    reduce_cpu_usage = 10;
   } else {
-    if (cpu_utilizations[cpu_utilizations_i] > 70) {
+    if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
       // reduce_cpu_usage = reduce_cpu_usage + 5;
       cpu_usage_flag++;
-      printf("cpu utilization: %d, flag: %d\n",
-             cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
+      // printf("cpu utilization: %d, flag: %d\n",
+      //        cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
     } else {
       cpu_usage_flag = 0;
     }
