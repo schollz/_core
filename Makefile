@@ -14,6 +14,10 @@ lib/crossfade3.h:
 	cd lib && python3 crossfade3.py 441 > crossfade3.h
 	clang-format -i --style=google lib/crossfade3.h 
  
+lib/selectx2.h:
+	cd lib && python3 selectx2.py > selectx2.h
+	clang-format -i --style=google lib/selectx2.h
+	
 lib/crossfade.h: lib/crossfade3.h
 	cd lib && python3 transfer_saturate.py > transfer_saturate.h
 	clang-format -i --style=google lib/transfer_saturate.h 
