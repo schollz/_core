@@ -140,7 +140,7 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   return rf;
 }
 
-int16_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
+int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
   if (rf->passthrough) {
     return in;
   }
