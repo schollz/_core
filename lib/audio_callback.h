@@ -352,8 +352,8 @@ void i2s_callback_func() {
               .snd[sel_variation]
               ->num_channels == 1) {
         // mono
-        int16_t *newArray = array_resample_linear(values, samples_to_read,
-                                                  buffer->max_sample_count);
+        int16_t *newArray = array_resample_quadratic_fp(
+            values, samples_to_read, buffer->max_sample_count);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           if (do_crossfade) {
             if (head == 0 && !do_fade_out) {
@@ -408,8 +408,8 @@ void i2s_callback_func() {
               valuesC[i / 2] = values[i];
             }
           }
-          int16_t *newArray = array_resample_linear(valuesC, samples_to_read,
-                                                    buffer->max_sample_count);
+          int16_t *newArray = array_resample_quadratic_fp(
+              valuesC, samples_to_read, buffer->max_sample_count);
 
           for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
             if (first_loop) {

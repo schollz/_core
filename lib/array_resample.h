@@ -99,25 +99,14 @@ int16_t *array_resample_quadratic(int16_t *arr, int16_t arr_size,
 
 int16_t *array_resample_quadratic_fp(int16_t *arr, int16_t arr_size,
                                      int16_t newSize) {
-  if (arr_size <= 0 || newSize <= 0) {
-    return NULL;  // Invalid input
-  }
-
   int32_t *arrFP = (int32_t *)malloc(sizeof(int32_t) * arr_size);
-  if (arrFP == NULL) {
-    return NULL;  // Memory allocation error
-  }
+  int16_t *newArr = (int16_t *)malloc(sizeof(int16_t) * newSize);
   for (uint16_t i = 0; i < arr_size; i++) {
     arrFP[i] = q16_16_int16_to_fp(arr[i]);
   }
 
-  int16_t *newArr = (int16_t *)malloc(sizeof(int16_t) * newSize);
-  if (newArr == NULL) {
-    return NULL;  // Memory allocation error
-  }
-
   int32_t step = q16_16_float_to_fp((float)(arr_size - 1) / (newSize - 1));
-  int32_t index = q16_16_int16_to_fp(0);
+  int32_t index = Q16_16_0;
 
   for (int16_t i = 0; i < newSize; ++i) {
     int16_t baseIdx = q16_16_fp_to_int16((index >> 16) << 16);
