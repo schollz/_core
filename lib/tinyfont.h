@@ -30,6 +30,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // https://github.com/BotiKis/Arduboy-TinyFont
+
 #include <stdint.h>
 
 const uint8_t tinyfont_glyphs[192] = {

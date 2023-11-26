@@ -19,6 +19,7 @@ var Storage = "zips"
 type Data struct {
 	Oversampling string `json:"oversampling"`
 	StereoMono   string `json:"stereoMono"`
+	Resampling   string `json:"resampling"`
 	Banks        []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
@@ -97,6 +98,18 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		err = fmt.Errorf("could not process all files")
 		log.Error(err)
 		return
+	}
+
+	mainFolder := path.Join(zipStorage, zipFilename)
+	err = os.MkdirAll(mainFolder, 0777)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if data.Resampling == "linear" {
+		os.Create(path.Join(mainFolder, "resample_linear"))
+	} else {
+		os.Create(path.Join(mainFolder, "resample_quadratic"))
 	}
 
 	// copy files
