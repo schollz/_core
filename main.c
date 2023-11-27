@@ -312,6 +312,21 @@ void show_glyph(uint8_t char_glyph) {
   LEDS_render(leds);
 }
 
+void display_number(uint16_t number) {
+  // convert numer to a string
+  char number_string[5];
+  sprintf(number_string, "%d", number);
+  // display each character in the string
+  for (int i = 0; i < strlen(number_string); i++) {
+    // display the character
+    // get the ith character of text
+    printf("%d\n", number_string[i]);
+    show_glyph(number_string[i]);
+    // wait a bit
+    sleep_ms(500);
+  }
+}
+
 void display_text(char *text) {
   // display each character in the string
   for (int i = 0; i < strlen(text); i++) {
