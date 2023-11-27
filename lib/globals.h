@@ -94,6 +94,7 @@ bool mode_play = 0;
 
 SaveFile *sf;
 LEDS *leds;
+LEDText *ledtext;
 
 Chain *chain;
 bool toggle_chain_play = false;

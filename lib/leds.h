@@ -22,9 +22,12 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef LIB_LEDS
+#define LIB_LEDS 1
+
 #include "pca9552.h"
 
-#define LEDS_FACES 5
+#define LEDS_FACES 6
 #define LEDS_ROWS 5
 #define LEDS_COLS 4
 #ifndef LED_1_GPIO
@@ -44,6 +47,7 @@
 #define LED_STEP_FACE 1
 #define LED_PRESS_FACE 2
 #define LED_STEAL_FACE 3
+#define LED_TEXT_FACE 4
 
 typedef struct LEDS {
   // state, 0=off, 1=dim, 2=bright, 3=blink
@@ -138,6 +142,7 @@ void LEDS_clearAll(LEDS *leds, uint8_t m) {
 
 void LEDS_render(LEDS *leds) {
   bool do_steal = false;
+  bool do_text = false;
   for (uint8_t i = 0; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
       leds->state[LEDS_FACES - 1][i][j] = 0;
@@ -146,20 +151,28 @@ void LEDS_render(LEDS *leds) {
           leds->state[LEDS_FACES - 1][i][j] = leds->state[m][i][j];
           if (m == LED_STEAL_FACE) {
             do_steal = true;
-            break;
+          }
+          if (m == LED_TEXT_FACE) {
+            do_text = true;
           }
         }
       }
-      if (do_steal) {
+      if (do_text) {
         break;
       }
     }
-    if (do_steal) {
+    if (do_text) {
       break;
     }
   }
 
-  if (do_steal) {
+  if (do_text) {
+    for (uint8_t i = 0; i < LEDS_ROWS; i++) {
+      for (uint8_t j = 0; j < LEDS_COLS; j++) {
+        leds->state[LEDS_FACES - 1][i][j] = leds->state[LED_TEXT_FACE][i][j];
+      }
+    }
+  } else if (do_steal) {
     for (uint8_t i = 0; i < LEDS_ROWS; i++) {
       for (uint8_t j = 0; j < LEDS_COLS; j++) {
         leds->state[LEDS_FACES - 1][i][j] = leds->state[LED_STEAL_FACE][i][j];
@@ -172,7 +185,6 @@ void LEDS_render(LEDS *leds) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
       PCA9552_ledSet(leds->pca, (i - 1) * 4 + j,
                      leds->state[LEDS_FACES - 1][i][j]);
-      // leds->pca->leds[i - 1][3 - j] = leds->state[LEDS_FACES - 1][i][j];
     }
   }
   PCA9552_render(leds->pca);
@@ -238,3 +250,5 @@ void LEDS_show_blinking_x(LEDS *leds, uint8_t face) {
   LEDS_set(leds, face, 19, 3);
   LEDS_render(leds);
 }
+
+#endif
