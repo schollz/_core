@@ -73,6 +73,7 @@
 #include "fixedpoint.h"
 #include "iir.h"
 #include "leds.h"
+#include "ledtext.h"
 #include "noise.h"
 #include "pca9552.h"
 #include "random.h"

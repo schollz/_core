@@ -296,55 +296,10 @@ void input_handling() {
       }
     }
 
+    // update the text if any
+    LEDText_update(ledtext, leds);
+
     LEDS_render(leds);
-  }
-}
-
-#include "lib/tinyfont.h"
-
-void show_glyph(uint8_t char_glyph) {
-  uint8_t char_index = (char_glyph - 32) / 2 * 4;
-  uint8_t char_side = 1 - (char_glyph % 2);
-
-  for (uint8_t i = 0; i < 4; i++) {
-    uint8_t b = tinyfont_glyphs[char_index + i];
-    printf("0x%02X: ", b);
-    for (uint8_t j = 4 - (char_side * 4); j < 8 - char_side * 4; j++) {
-      uint8_t led_index = (j * 4 + i + 4 - (16 * (1 - char_side)));
-      // print out the jth bit of the byte b
-      printf("%d (%2d) ", (b >> j) & 1, led_index);
-      // read the jth bit of the byte b
-      LEDS_set(leds, LED_BASE_FACE, led_index, 2 * ((b >> j) & 1));
-    }
-    printf("\n");
-  }
-  LEDS_render(leds);
-}
-
-void display_number(uint16_t number) {
-  // convert numer to a string
-  char number_string[5];
-  sprintf(number_string, "%d", number);
-  // display each character in the string
-  for (int i = 0; i < strlen(number_string); i++) {
-    // display the character
-    // get the ith character of text
-    printf("%d\n", number_string[i]);
-    show_glyph(number_string[i]);
-    // wait a bit
-    sleep_ms(500);
-  }
-}
-
-void display_text(char *text) {
-  // display each character in the string
-  for (int i = 0; i < strlen(text); i++) {
-    // display the character
-    // get the ith character of text
-    printf("%d\n", text[i]);
-    show_glyph(text[i]);
-    // wait a bit
-    sleep_ms(500);
   }
 }
 
@@ -425,10 +380,12 @@ int main() {
   chain = Chain_create();
 
   leds = LEDS_create();
+  ledtext = LEDText_create();
+
+  LEDText_display(ledtext, "HELLO");
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
 
-  printf("-----------\n");
   for (uint8_t i = 4; i < 20; i++) {
     LEDS_set(leds, LED_BASE_FACE, i, 2);
     LEDS_render(leds);
@@ -437,32 +394,6 @@ int main() {
     LEDS_render(leds);
     sleep_ms(10);
   }
-
-  // sleep_ms(2000);
-  // while (true) {
-  //   display_text("HI LIBBY I LOVE YOU");
-  // }
-  // sleep_ms(100000);
-
-  // for (uint8_t char_glyph = 64; char_glyph++; char_glyph < 128) {
-  //   uint8_t char_index = (char_glyph - 32) / 2 * 4;
-  //   uint8_t char_side = 1 - (char_glyph % 2);
-
-  //   for (uint8_t i = 0; i < 4; i++) {
-  //     uint8_t b = tinyfont_glyphs[char_index + i];
-  //     printf("0x%02X: ", b);
-  //     for (uint8_t j = 4 - (char_side * 4); j < 8 - char_side * 4; j++) {
-  //       uint8_t led_index = (j * 4 + i + 4 - (16 * (1 - char_side)));
-  //       // print out the jth bit of the byte b
-  //       printf("%d (%2d) ", (b >> j) & 1, led_index);
-  //       // read the jth bit of the byte b
-  //       LEDS_set(leds, LED_BASE_FACE, led_index, 2 * ((b >> j) & 1));
-  //     }
-  //     printf("\n");
-  //   }
-  //   LEDS_render(leds);
-  //   sleep_ms(200);
-  // }
 
   printf("startup!\n");
   sdcard_startup();
