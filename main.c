@@ -170,6 +170,10 @@ uint16_t freqs_available[74] = {
     5588,  5920,  6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956,
     10548, 11175, 11840, 12544, 13290, 14080, 14917, 15804};
 
+void clock_handling(int time_diff) {
+  printf("[main] clock_handling: %d", time_diff);
+}
+
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
@@ -194,6 +198,7 @@ void input_handling() {
   // });
   // a.postln;
   // )
+  ClockInput *clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling);
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
@@ -229,6 +234,7 @@ void input_handling() {
       }
     }
 
+    // button handler
     button_handler(bm);
 
     // knob Y
@@ -260,6 +266,9 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
+
+    // clock input handler
+    ClockInput_update(clockinput);
 
     // knob Z
     adc_select_input(2);

@@ -33,11 +33,11 @@ typedef struct ClockInput {
   bool last_state;
   uint32_t last_time;
   int time_diff;
-  FilterExp filter;
-  callback_uint16 callback;
+  FilterExp *filter;
+  callback_int callback;
 } ClockInput;
 
-ClockInput *ClockInput_create(uint8_t gpio, callback_uint16 callback) {
+ClockInput *ClockInput_create(uint8_t gpio, callback_int callback) {
   ClockInput *ci = (ClockInput *)malloc(sizeof(ClockInput));
   ci->gpio = gpio;
   ci->last_state = 0;
@@ -48,7 +48,7 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_uint16 callback) {
   gpio_init(gpio);
   gpio_set_dir(gpio, GPIO_IN);
   gpio_pull_down(gpio);
-  return ClockInput;
+  return ci;
 }
 
 void ClockInput_update(ClockInput *ci) {
