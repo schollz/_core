@@ -23,6 +23,7 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #include "onewiremidi.pio.h"
+#include "utils.h"
 
 #define MIDI_NOTE_ON_MIN 0x90
 #define MIDI_NOTE_ON_MAX 0x9F
@@ -33,10 +34,6 @@
 #define MIDI_START 0xFA
 #define MIDI_CONTINUE 0xFB
 #define MIDI_STOP 0xFC
-
-typedef void (*callback_int_int)(uint8_t, uint8_t);
-typedef void (*callback_int)(uint8_t);
-typedef void (*callback_void)();
 
 typedef struct Onewiremidi {
   PIO pio;
