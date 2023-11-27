@@ -36,6 +36,9 @@
 #ifndef LED_3_GPIO
 #define LED_3_GPIO 22
 #endif
+#ifndef LED_3_GPIO
+#define LED_3_GPIO 29
+#endif
 
 #define LED_BASE_FACE 0
 #define LED_STEP_FACE 1
@@ -75,6 +78,7 @@ LEDS *LEDS_create() {
   leds->gpio_leds_pin[0] = LED_1_GPIO;
   leds->gpio_leds_pin[1] = LED_2_GPIO;
   leds->gpio_leds_pin[2] = LED_3_GPIO;
+  leds->gpio_leds_pin[3] = LED_4_GPIO;
 
   // setup PCA9552 leds
   i2c_init(i2c_default, 40 * 1000);

@@ -74,7 +74,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     I2C_SCL_PIN=21
     LED_1_GPIO=0
     LED_2_GPIO=19
-    LED_3_GPIO=22
+    LED_3_GPIO=29
+    LED_4_GPIO=24
+    CLOCK_INPUT_GPIO=22
     BTN_ROW_START=7
     BTN_COL_START=12
     # utilize core1 for audio to avoid dropouts
