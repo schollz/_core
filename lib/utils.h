@@ -26,8 +26,10 @@
 #define LIB_UTILS 1
 
 // callback definitions
-typedef void (*callback_int_int)(uint8_t, uint8_t);
-typedef void (*callback_int)(uint8_t);
+typedef void (*callback_int_int)(int, int);
+typedef void (*callback_int)(int);
+typedef void (*callback_uint8_uint8)(uint8_t, uint8_t);
+typedef void (*callback_uint8)(uint8_t);
 typedef void (*callback_uint16)(uint16_t);
 typedef void (*callback_void)();
 

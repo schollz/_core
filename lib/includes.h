@@ -66,6 +66,7 @@
 #include "buttonmatrix3.h"
 #include "chain.h"
 #include "charlieplex.h"
+#include "clock_input.h"
 #include "envelope2_fp.h"
 #include "file_list.h"
 #include "filterexp.h"
