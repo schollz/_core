@@ -22,45 +22,46 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-#ifndef FILTEREXP_LIB
-#define FILTEREXP_LIB 1
+#ifndef LIB_CLOCK_INPUT
+#define LIB_CLOCK_INPUT
 
-#define ALPHA_MAX 512
+#include "filterexp.h"
+#include "utils.h"
 
-typedef struct FilterExp {
-  int alpha;
-  int filtered;
-} FilterExp;
+typedef struct ClockInput {
+  uint8_t gpio;
+  bool last_state;
+  uint32_t last_time;
+  int time_diff;
+  FilterExp filter;
+  callback_uint16 callback;
+} ClockInput;
 
-FilterExp *FilterExp_create(int alpha) {
-  FilterExp *fe = (FilterExp *)malloc(sizeof(FilterExp));
-  fe->filtered = 0;
-  fe->alpha = alpha;
-  return fe;
+ClockInput *ClockInput_create(uint8_t gpio, callback_uint16 callback) {
+  ClockInput *ci = (ClockInput *)malloc(sizeof(ClockInput));
+  ci->gpio = gpio;
+  ci->last_state = 0;
+  ci->last_time = time_us_32();
+  ci->callback = callback;
+  ci->filter = FilterExp_create(10);
+
+  gpio_init(gpio);
+  gpio_set_dir(gpio, GPIO_IN);
+  gpio_pull_down(gpio);
+  return ClockInput;
 }
 
-int FilterExp_update(FilterExp *fe, int x) {
-  fe->filtered = fe->alpha * x + (ALPHA_MAX - fe->alpha) * fe->filtered;
-  fe->filtered = fe->filtered / ALPHA_MAX;
-  return fe->filtered;
-}
+void ClockInput_update(ClockInput *ci) {
+  uint8_t clock_pin = 1 - gpio_get(ci->gpio);
+  //   code to verify polarity
+  if (clock_pin == 1 && ci->last_state == 0) {
+    uint32_t now_time = time_us_32();
+    int time_diff = FilterExp_update(ci->filter, now_time - ci->last_time);
+    printf("[ClockInput] on after %d ms\n", time_diff / 1000);
+    ci->callback(time_diff);
+  }
 
-typedef struct FilterExpUint32 {
-  uint32_t alpha;
-  uint32_t filtered;
-} FilterExpUint32;
-
-FilterExpUint32 *FilterExpUint32_create(uint32_t alpha) {
-  FilterExpUint32 *fe = (FilterExpUint32 *)malloc(sizeof(FilterExpUint32));
-  fe->filtered = 0;
-  fe->alpha = alpha;
-  return fe;
-}
-
-uint32_t FilterExpUint32_update(FilterExpUint32 *fe, uint32_t x) {
-  fe->filtered = fe->alpha * x + (ALPHA_MAX - fe->alpha) * fe->filtered;
-  fe->filtered = fe->filtered / ALPHA_MAX;
-  return fe->filtered;
+  ci->last_state = clock_pin;
 }
 
 #endif

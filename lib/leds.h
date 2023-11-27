@@ -57,9 +57,9 @@ typedef struct LEDS {
   // state 3 = blink
   uint8_t state[LEDS_FACES][LEDS_ROWS][LEDS_COLS];
   PCA9552 *pca;
-  uint8_t gpio_leds_state[3];
-  uint8_t gpio_leds_count[3];
-  uint8_t gpio_leds_pin[3];
+  uint8_t gpio_leds_state[4];
+  uint8_t gpio_leds_count[4];
+  uint8_t gpio_leds_pin[4];
 } LEDS;
 
 LEDS *LEDS_create() {
@@ -71,7 +71,7 @@ LEDS *LEDS_create() {
       }
     }
   }
-  for (uint8_t i = 0; i < 3; i++) {
+  for (uint8_t i = 0; i < 4; i++) {
     leds->gpio_leds_count[i] = 0;
     leds->gpio_leds_state[i] = 0;
   }
@@ -178,9 +178,9 @@ void LEDS_render(LEDS *leds) {
   PCA9552_render(leds->pca);
 
   // light up the GPIO leds
-  for (uint8_t j = 0; j < 3; j++) {
-    if (leds->gpio_leds_state[j] != leds->state[LEDS_FACES - 1][0][j + 1]) {
-      leds->gpio_leds_state[j] = leds->state[LEDS_FACES - 1][0][j + 1];
+  for (uint8_t j = 0; j < 4; j++) {
+    if (leds->gpio_leds_state[j] != leds->state[LEDS_FACES - 1][0][j]) {
+      leds->gpio_leds_state[j] = leds->state[LEDS_FACES - 1][0][j];
       if (leds->gpio_leds_state[j] == 0) {
         gpio_put(leds->gpio_leds_pin[j], 0);
       } else if (leds->gpio_leds_state[j] == 2) {
