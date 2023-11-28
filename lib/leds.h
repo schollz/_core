@@ -189,6 +189,7 @@ void LEDS_render(LEDS *leds) {
   }
   PCA9552_render(leds->pca);
 
+#ifndef LEDS_NO_GPIO
   // light up the GPIO leds
   for (uint8_t j = 0; j < 4; j++) {
     if (leds->gpio_leds_state[j] != leds->state[LEDS_FACES - 1][0][j]) {
@@ -209,6 +210,7 @@ void LEDS_render(LEDS *leds) {
       }
     }
   }
+#endif
 }
 
 void LEDS_show_blinking_z(LEDS *leds, uint8_t face) {
