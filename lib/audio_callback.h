@@ -347,6 +347,11 @@ void i2s_callback_func() {
         }
       }
 
+      // saturate before resampling?
+      for (uint16_t i = 0; i < values_len; i++) {
+        values[i] = transfer_doublesine(values[i]);
+      }
+
       if (banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
