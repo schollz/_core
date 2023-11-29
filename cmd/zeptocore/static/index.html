@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" v-cloak>
         <header>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">*core{{title}}</a></h1>
@@ -121,12 +121,22 @@
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p>
-                            <button @click="deleteRegion" style="margin-left:0;">Delete region</button>
-                            <button @click="deleteAllRegions" style="margin-left:0;">Delete All Regions</button>
 
                             <label style="margin-left: 2em">
                                 Zoom: <input type="range" min="10" max="1000" value="10" />
                             </label>
+                        </p>
+                        <p>
+                            <button @click="deleteRegion" style="margin-left:0;">Delete selected region</button>
+                            <button @click="deleteAllRegions" style="margin-left:0;">Delete all regions</button>
+                        </p>
+                        <p>
+                            <label style="margin-left: 2em">
+                                Number of regions: <input type="input" min="1" max="128" value="16"
+                                    style="width:3em;" />
+                            </label>
+                            <button @click="createRegionsEvenly" style="margin-left:0;">Create evenly spaced
+                                regions</button>
                         </p>
                     </div>
                 </div>
@@ -179,13 +189,25 @@
     </script>
     <script>
         var wsf = null;
+        var wsRegions = null;
         var totalBytesUploaded = 0;
         var totalBytesRequested = 0;
         var activeRegion = null;
         var app;
         var socket;
         var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const ccolor = 'rgba(138, 180, 215, 0.4)';
+        const wavecolor = 'rgba(0, 92, 153,0.95)';
 
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback(...args);
+                }, wait);
+            };
+        }
 
         // Function to read cookies
         function readCookie(name) {
@@ -208,7 +230,9 @@
         }
 
         function saveCurrentPage() {
-            const currentAddress = window.location.pathname === '/' ? '' : window.location.pathname;
+            let currentAddress = window.location.pathname === '/' ? '' : window.location.pathname;
+            // remove preceding slash in current address
+            currentAddress = currentAddress.replace(/^\//, '');
             if (currentAddress) {
                 let previousPages = loadPreviousPages();
                 previousPages.push(currentAddress);
@@ -243,6 +267,7 @@
         const socketMessageListener = (e) => {
             data = JSON.parse(e.data);
             if (data.action == "processed") {
+                console.log("processed");
                 for (var i = 0; i < data.file.SliceStart.length; i++) {
                     data.file.SliceStart[i] = parseFloat(data.file.SliceStart[i].toFixed(3));
                     data.file.SliceStop[i] = parseFloat(data.file.SliceStop[i].toFixed(3));
@@ -254,6 +279,7 @@
                 if (savedState.banks) {
                     app.banks = savedState.banks;
                 }
+                console.log(app.banks[0].files[0].SliceStart);
                 if (savedState.oversampling) {
                     app.oversampling = savedState.oversampling;
                 }
@@ -377,6 +403,28 @@
                         app.banks[app.selectedBank].files[app.selectedFile].SliceStop = [];
 
                     }
+                },
+                createRegionsEvenly() {
+                    // create regions evenly
+                    this.deleteAllRegions();
+                    if (wsf != null) {
+                        const numRegions = parseInt(document.querySelector('input[type="input"]').value);
+                        const duration = wsf.getDuration();
+                        const regionDuration = duration / numRegions;
+                        console.log(numRegions, duration, regionDuration);
+                        for (var i = 0; i < numRegions; i++) {
+                            wsRegions.addRegion({
+                                start: i * regionDuration,
+                                end: (i + 1) * regionDuration,
+                                color: ccolor,
+                                drag: true,
+                                resize: true,
+                                loop: false,
+                            });
+
+                        }
+                    }
+
                 },
                 openFileInput() {
                     // Trigger file input click when the drop area is clicked
@@ -623,15 +671,15 @@
         });
 
 
-        function showWaveform(filename, duration, sliceStart, sliceEnd) {
+        const showWaveform = debounce(showWaveform_, 100);
+
+        function showWaveform_(filename, duration, sliceStart, sliceEnd) {
             if (wsf != null) {
                 wsf.destroy();
             }
             console.log('showWaveform', filename);
             var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
             var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
-            var ccolor = 'rgba(138, 180, 215, 0.4)';
-            var wavecolor = 'rgba(0, 92, 153,0.95)';
             document.getElementById('waveform-parent').style = newWidth;
             wsf = window.WaveSurf.create({
                 container: '#waveform',
@@ -650,9 +698,10 @@
             // set the width of a WaveSurfer to 100 px
 
 
-            const wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
+            wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
 
             wsf.on('decode', () => {
+                console.log("wsf.on('decode')");
                 // Regions
                 for (var i = 0; i < sliceStart.length; i++) {
                     wsRegions.addRegion({
@@ -664,43 +713,45 @@
                         loop: false,
                     });
                 }
+                setTimeout(() => {
+                }, 100);
+                // fix this debounce ot take argument of the region
+                const updateRegion = debounce(function (region) {
+                    let regions = wsf.plugins[0].regions;
+                    regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
+                    let sliceStart = [];
+                    let sliceStop = [];
+                    for (var i = 0; i < regions.length; i++) {
+                        if (i == 0 || regions[i].start > regions[i - 1].start) {
+                            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
+                            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
+                        }
+                    }
+
+                    // update locally
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
+
+                    // update remotely
+                    socket.send(JSON.stringify({
+                        action: "setslices",
+                        filename: filename,
+                        sliceStart: sliceStart,
+                        sliceStop: sliceStop,
+                    }));
+                }, 1000);
+                var regionTriggers = ['region-updated', 'region-created']
+                for (regionTrigger of regionTriggers) {
+                    wsRegions.on(
+                        regionTrigger, (region) => {
+                            updateRegion(region);
+                        });
+                }
             });
 
             wsRegions.enableDragSelection({
                 color: ccolor,
             })
-
-            var regionTriggers = ['region-updated', 'region-created']
-            for (regionTrigger of regionTriggers) {
-                wsRegions.on(
-                    regionTrigger, (region) => {
-                        console.log('Updated region', region);
-                        let regions = wsf.plugins[0].regions;
-                        regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
-                        let sliceStart = [];
-                        let sliceStop = [];
-                        for (var i = 0; i < regions.length; i++) {
-                            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
-                            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
-                        }
-                        console.log(sliceStart);
-
-                        // update locally
-                        app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
-                        app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
-
-                        // update remotely
-                        socket.send(JSON.stringify({
-                            action: "setslices",
-                            filename: filename,
-                            sliceStart: sliceStart,
-                            sliceStop: sliceStop,
-                        }));
-
-                    });
-            }
-
-
 
             {
                 var playing = false;
