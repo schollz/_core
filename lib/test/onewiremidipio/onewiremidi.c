@@ -74,7 +74,7 @@ int main() {
                        midi_continue, midi_stop, midi_timing);
   while (true) {
     Onewiremidi_receive(om);
-    sleep_ms(2);
+    // sleep_ms(2);
   }
 
   return 0;

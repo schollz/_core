@@ -42,8 +42,8 @@ typedef struct Onewiremidi {
   uint8_t rbi;
   bool ready;
   uint32_t last_time;
-  callback_int_int midi_note_on;
-  callback_int midi_note_off;
+  callback_uint8_uint8 midi_note_on;
+  callback_uint8 midi_note_off;
   callback_void midi_start;
   callback_void midi_continue;
   callback_void midi_stop;
@@ -51,8 +51,8 @@ typedef struct Onewiremidi {
 } Onewiremidi;
 
 Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
-                             callback_int_int midi_note_on,
-                             callback_int midi_note_off,
+                             callback_uint8_uint8 midi_note_on,
+                             callback_uint8 midi_note_off,
                              callback_void midi_start,
                              callback_void midi_continue,
                              callback_void midi_stop,
@@ -124,7 +124,7 @@ void Onewiremidi_receive(Onewiremidi *om) {
     om->rbi++;
   } else if (om->rbi == 2) {
     om->rbi = 0;
-    // printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
+    printf("%02X %02X %02X\n", om->rbs[0], om->rbs[1], om->rbs[2]);
     if (om->rbs[0] >= MIDI_NOTE_ON_MIN && om->rbs[0] <= MIDI_NOTE_ON_MAX) {
       if (om->midi_note_on != NULL) {
         om->midi_note_on(om->rbs[1], om->rbs[2]);
