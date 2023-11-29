@@ -11,7 +11,8 @@
 <body>
     <div id="app">
         <header>
-            <h1 style="margin:0; padding:0;"><a :href="'/' + title + '/'">*core{{title}}</a></h1>
+            <h1 style="margin:0; padding:0;"><a
+                    :href="window.location.protocol+'//'+window.location.host + title + '/'">*core{{title}}</a></h1>
             <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
@@ -25,10 +26,30 @@
                 </ul>
             </div>
 
+
             <div class="content-area">
-                <div>
+                <div v-if="!isMain">
                     <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
                     </h2>
+                </div>
+
+
+                <div v-if="isMain" class="help-banner">
+                    <h2>*core load</h2>
+                    <p>
+                        This tool lets you easily organize files for using on *core devices.
+                    </p>
+                    <p v-if="previousPages.length>0">
+                        Some previous pages:
+                        <span v-for="link in previousPages"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</span>
+                    </p>
+                    <p>
+                        Some new pages:
+                        <span v-for="link in randomPages"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</span>
+
+                    </p>
                 </div>
 
                 <div class=" file-uploader" v-if="!disconnected && !isMain">
@@ -38,7 +59,7 @@
                         Drop your files here or click to select
                     </div>
                 </div>
-                <div v-if="disconnected" style="text-align: center;">
+                <div v-if="disconnected && !isMain" style="text-align: center;">
                     <span class="loader"></span>
                 </div>
 
@@ -112,7 +133,7 @@
             </div>
         </main>
         <footer>
-            <form id="downloadForm" @submit.prevent="submitForm">
+            <form id="downloadForm" @submit.prevent="submitForm" v-if="!isMain">
                 <div class="footer-row">
                     <div class="footer-item">
                         <label for=" oversampling">Oversampling:</label>
@@ -164,6 +185,60 @@
         var app;
         var socket;
         var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+
+        // Function to read cookies
+        function readCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        }
+
+        // Function to write cookies
+        function writeCookie(name, value) {
+            document.cookie = `${name}=${value}; path=/`;
+        }
+
+        // Function to load previousPages from cookies
+        function loadPreviousPages() {
+            const previousPagesString = readCookie('previousPages');
+            let previousPages = previousPagesString ? JSON.parse(previousPagesString) : [];
+            console.log(previousPagesString);
+            console.log(previousPages);
+            return Array.from(new Set(previousPages));
+        }
+
+        function saveCurrentPage() {
+            const currentAddress = window.location.pathname === '/' ? '' : window.location.pathname;
+            if (currentAddress) {
+                let previousPages = loadPreviousPages();
+                previousPages.push(currentAddress);
+                previousPages = Array.from(new Set(previousPages));
+                writeCookie('previousPages', JSON.stringify(previousPages));
+            }
+        }
+
+        function generateRandomWord() {
+            const minLength = 5;
+            const maxLength = 10;
+            const vowels = 'aeiou';
+            const consonants = 'bcdfghjklmnpqrstvwxyz';
+
+            // Generate a random length between minLength and maxLength
+            const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+
+            let word = '';
+
+            for (let i = 0; i < length; i++) {
+                // Alternate between consonants and vowels
+                if (i % 2 === 0) {
+                    word += consonants[Math.floor(Math.random() * consonants.length)];
+                } else {
+                    word += vowels[Math.floor(Math.random() * vowels.length)];
+                }
+            }
+
+            return word;
+        }
 
         const socketMessageListener = (e) => {
             data = JSON.parse(e.data);
@@ -221,15 +296,18 @@
         };
         const socketOpenListener = (e) => {
             console.log('Connected');
-            app.disconnected = false;
-            setTimeout(() => {
-                if (socket != null) {
-                    socket.send(JSON.stringify({
-                        action: "getstate",
-                        place: window.location.pathname,
-                    }));
-                }
-            }, 50);
+            if (!app.isMain) {
+                app.disconnected = false;
+                setTimeout(() => {
+                    if (socket != null) {
+                        socket.send(JSON.stringify({
+                            action: "getstate",
+                            place: window.location.pathname,
+                        }));
+                    }
+                }, 50);
+
+            }
         };
         const socketErrorListener = (e) => {
             console.error(e);
@@ -247,6 +325,12 @@
             socket.onerror = socketErrorListener;
         };
         window.addEventListener('load', (event) => {
+            // Load previousPages from cookies into the app
+            app.previousPages = loadPreviousPages();
+
+            // Save the current page address into previousPages in cookies
+            saveCurrentPage();
+
             socketCloseListener();
         });
 
@@ -267,6 +351,8 @@
                 title: window.location.pathname,
                 disconnected: true,
                 isMain: window.location.pathname == '/',
+                previousPages: [],
+                randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()]
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
