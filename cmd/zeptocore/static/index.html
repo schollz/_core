@@ -132,11 +132,12 @@
                         </p>
                         <p>
                             <label style="margin-left: 2em">
-                                Number of regions: <input type="input" min="1" max="128" value="16"
+                                Number of regions: <input id="onsetSlices" type="number" min="1" max="128" value=16
                                     style="width:3em;" />
                             </label>
-                            <button @click="createRegionsEvenly" style="margin-left:0;">Create evenly spaced
-                                regions</button>
+                            <button @click="createRegionsEvenly" style="margin-left:0;">Create evenly</button>
+                            <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
+                                transients</button>
                         </p>
                     </div>
                 </div>
@@ -274,6 +275,29 @@
                 }
                 // append data.file to bank
                 app.banks[app.selectedBank].files.push(data.file);
+            } else if (data.action == "onsetdetect") {
+                if (wsf != null) {
+                    app.deleteAllRegions();
+                    const duration = wsf.getDuration();
+                    for (var i = 1; i < data.sliceStart.length; i++) {
+                        wsRegions.addRegion({
+                            start: data.sliceStart[i - 1],
+                            end: data.sliceStart[i],
+                            color: ccolor,
+                            drag: true,
+                            resize: true,
+                            loop: false,
+                        });
+                    }
+                    wsRegions.addRegion({
+                        start: data.sliceStart[data.sliceStart.length - 1],
+                        end: duration,
+                        color: ccolor,
+                        drag: true,
+                        resize: true,
+                        loop: false,
+                    });
+                }
             } else if (data.action == "getstate") {
                 var savedState = JSON.parse(data.state);
                 if (savedState.banks) {
@@ -317,7 +341,7 @@
                     app.progressBarWidth = `${maxWidth}px`;
                 }
             } else {
-                console.log(data);
+                console.log(`unknown action: ${data.action}`);
             }
         };
         const socketOpenListener = (e) => {
@@ -404,11 +428,18 @@
 
                     }
                 },
+                createRegionsAutomatically() {
+                    socket.send(JSON.stringify({
+                        action: "onsetdetect",
+                        filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                        number: parseInt(document.getElementById("onsetSlices").value),
+                    }));
+                },
                 createRegionsEvenly() {
                     // create regions evenly
                     this.deleteAllRegions();
                     if (wsf != null) {
-                        const numRegions = parseInt(document.querySelector('input[type="input"]').value);
+                        const numRegions = parseInt(document.getElementById("onsetSlices").value);
                         const duration = wsf.getDuration();
                         const regionDuration = duration / numRegions;
                         console.log(numRegions, duration, regionDuration);

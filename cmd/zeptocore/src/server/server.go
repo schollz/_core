@@ -15,6 +15,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/onsetdetect"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/pack"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 	bolt "go.etcd.io/bbolt"
@@ -198,6 +199,23 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					File:     f,
 					Success:  true,
 				})
+			}
+		} else if message.Action == "onsetdetect" {
+			log.Info(message)
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err == nil {
+				onsets, err := onsetdetect.OnsetDetect(f.PathToFile+".mp3", int(message.Number))
+				if err == nil {
+					log.Tracef("onsets: %+v", onsets)
+					c.WriteJSON(Message{
+						Action:     "onsetdetect",
+						SliceStart: onsets,
+					})
+				} else {
+					log.Error(err)
+				}
+			} else {
+				log.Error(err)
 			}
 		} else if message.Action == "setslices" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
