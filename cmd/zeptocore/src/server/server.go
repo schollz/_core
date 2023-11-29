@@ -54,6 +54,11 @@ func Serve() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	t := time.Now().UTC()
+	// Redirect URLs with trailing slashes (except for the root "/")
+	if r.URL.Path != "/" && strings.HasSuffix(r.URL.Path, "/") {
+		http.Redirect(w, r, strings.TrimRight(r.URL.Path, "/"), http.StatusPermanentRedirect)
+		return
+	}
 	err := handle(w, r)
 	if err != nil {
 		log.Error(err)

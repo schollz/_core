@@ -311,3 +311,24 @@ a {
         top: 0.5px
     }
 }
+
+.help-banner {
+    margin: 3em;
+    padding: 2em;
+    max-width: 600px;
+    border-color: var(--header-footer-background);
+    border-style: solid;
+    background: var(--banks-background);
+}
+
+.help-banner a {
+    color: white;
+    text-decoration: none;
+    background: var(--header-footer-background);
+    padding: 0.25em;
+
+}
+
+.help-banner a:hover {
+    background: var(--highlight-color);
+}
