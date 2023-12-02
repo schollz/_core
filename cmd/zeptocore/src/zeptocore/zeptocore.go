@@ -14,6 +14,7 @@ import (
 
 	"github.com/bep/debounce"
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/onsetdetect"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/op1"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/renoise"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
@@ -111,13 +112,20 @@ func Get(pathToOriginal string) (f File, err error) {
 	beats, bpm, err = sox.GetBPM(f.PathToAudio)
 	f.BPM = int(math.Round(bpm))
 	if len(f.SliceStart) == 0 || errSliceDetect != nil {
-		// determine programmatically
-		slices := beats * 2
-		f.SliceStart = make([]float64, int(slices))
-		f.SliceStop = make([]float64, int(slices))
-		for i := 0; i < int(slices); i++ {
-			f.SliceStart[i] = float64(i) / slices
-			f.SliceStop[i] = float64(i+1) / slices
+		if f.Duration > 2 {
+			// determine programmatically
+			slices := beats * 2
+			f.SliceStart = make([]float64, int(slices))
+			f.SliceStop = make([]float64, int(slices))
+			for i := 0; i < int(slices); i++ {
+				f.SliceStart[i] = float64(i) / slices
+				f.SliceStop[i] = float64(i+1) / slices
+			}
+
+		} else {
+			onsets, _ := onsetdetect.OnsetDetect(f.PathToAudio, 16)
+			f.SliceStart = []float64{onsets[0]}
+			f.SliceStop = []float64{1.0}
 		}
 	}
 

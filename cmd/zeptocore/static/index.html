@@ -85,7 +85,8 @@
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <button @click="removeSelectedFile" style="margin-left:0;">Remove File</button>
+                    <button @click="removeSelectedFile" style="margin-left:0;">Remove current</button>
+                    <button @click="removeSelectedFiles" v-if="selectedFiles.length > 0">Remove Selected</button>
                     <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                     <button @click="moveFileDown" :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                         Down</button>
@@ -418,13 +419,16 @@
                 selectedBank: 'saveState',
             },
             methods: {
-
                 isSelected(fileIndex) {
                     return this.selectedFiles.includes(fileIndex);
                 },
-
                 printSelectedFiles() {
                     console.log('Selected Files:', this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename));
+                    socket.send(JSON.stringify({
+                        action: "mergefiles",
+                        filenames: this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename),
+                    }));
+
                 },
                 deleteAllRegions() {
                     if (wsf != null) {
@@ -606,15 +610,14 @@
                 showFileDetails(fileIndex) {
                     const index = this.selectedFiles.indexOf(fileIndex);
                     if (index === -1) {
+                        this.selectedFile = fileIndex;
                         this.selectedFiles.push(fileIndex); // File is not selected, so add it to the selectedFiles array
                     } else {
+                        this.selectedFile = null;
                         this.selectedFiles.splice(index, 1); // File is selected, so remove it from the selectedFiles array
                     }
 
-                    if (fileIndex === this.selectedFile) {
-                        this.selectedFile = null;
-                    } else {
-                        this.selectedFile = fileIndex;
+                    if (this.selectedFile != null) {
                         this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
                         // wait 100 milliseconds
                         setTimeout(() => {
@@ -624,6 +627,19 @@
                                 this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
                         }, 100);
                     }
+                },
+                removeSelectedFiles() {
+                    // Remove selected files from the current bank
+                    const updatedFiles = this.banks[this.selectedBank].files.filter((file, index) => !this.selectedFiles.includes(index));
+
+                    // Update the files array in the current bank
+                    this.$set(this.banks[this.selectedBank], 'files', updatedFiles);
+
+                    // Clear the selected files array
+                    this.selectedFiles = [];
+
+                    // Deselect the currently selected file
+                    this.selectedFile = null;
                 },
                 removeSelectedFile() {
                     if (this.selectedFile !== null) {
@@ -637,7 +653,6 @@
                         this.selectedFile--;
                     }
                 },
-
                 moveFileDown() {
                     if (this.selectedFile < this.banks[this.selectedBank].files.length - 1) {
                         this.swapFiles(this.selectedFile, this.selectedFile + 1);
