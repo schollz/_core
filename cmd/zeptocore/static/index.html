@@ -63,13 +63,14 @@
                     <span class="loader"></span>
                 </div>
 
-                <div class="file-list" v-if="banks[selectedBank].files.length>0 && !disconnected">
-                    <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length>0"
-                        style="margin-left:0;">Clear all</button>
+                <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
+                    <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length > 0"
+                        style="margin-left: 0;">Clear all</button>
+                    <button @click="printSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Print
+                        Selected Files</button>
                     <ul>
-
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
-                            @click="showFileDetails(fileIndex)" :class="{ 'selected': fileIndex === selectedFile }"
+                            @click="showFileDetails(fileIndex)" :class="{ 'selected': isSelected(fileIndex) }"
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
                         </li>
@@ -402,7 +403,8 @@
                 disconnected: true,
                 isMain: window.location.pathname == '/',
                 previousPages: [],
-                randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()]
+                randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
+                selectedFiles: [], // New property to store selected files
             },
             watch: {
                 // Watch for changes in app properties and save state to cookies
@@ -416,6 +418,14 @@
                 selectedBank: 'saveState',
             },
             methods: {
+
+                isSelected(fileIndex) {
+                    return this.selectedFiles.includes(fileIndex);
+                },
+
+                printSelectedFiles() {
+                    console.log('Selected Files:', this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename));
+                },
                 deleteAllRegions() {
                     if (wsf != null) {
                         wsf.plugins[0].regions.forEach(region => {
@@ -594,6 +604,13 @@
                         });
                 },
                 showFileDetails(fileIndex) {
+                    const index = this.selectedFiles.indexOf(fileIndex);
+                    if (index === -1) {
+                        this.selectedFiles.push(fileIndex); // File is not selected, so add it to the selectedFiles array
+                    } else {
+                        this.selectedFiles.splice(index, 1); // File is selected, so remove it from the selectedFiles array
+                    }
+
                     if (fileIndex === this.selectedFile) {
                         this.selectedFile = null;
                     } else {
