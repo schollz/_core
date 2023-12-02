@@ -80,6 +80,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		Oversampling:  1,
 	}
 	var errSliceDetect error
+	errSliceDetect = fmt.Errorf("slice detection failed")
 	if filepath.Ext(f.PathToFile) == ".xrni" {
 		var newPath string
 		log.Tracef("opening renoise %s", f.PathToFile)
@@ -90,6 +91,13 @@ func Get(pathToOriginal string) (f File, err error) {
 	} else if filepath.Ext(f.PathToFile) == ".aif" {
 		log.Tracef("attempting op1 %s", f.PathToFile)
 		f.SliceStart, f.SliceStop, errSliceDetect = op1.GetSliceMarkers(f.PathToFile)
+	} else {
+		var metad File
+		metad, errSliceDetect = GetMetadata(f.PathToFile)
+		if errSliceDetect == nil {
+			f.SliceStart = metad.SliceStart
+			f.SliceStop = metad.SliceStop
+		}
 	}
 	// determine the duration
 	log.Tracef("determining the duration of %s", f.PathToAudio)
