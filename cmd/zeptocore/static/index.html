@@ -663,12 +663,16 @@
                     if (this.selectedFile > 0) {
                         this.swapFiles(this.selectedFile, this.selectedFile - 1);
                         this.selectedFile--;
+                        this.selectedFiles = [];
+                        this.selectedFiles.push(this.selectedFile);
                     }
                 },
                 moveFileDown() {
                     if (this.selectedFile < this.banks[this.selectedBank].files.length - 1) {
                         this.swapFiles(this.selectedFile, this.selectedFile + 1);
                         this.selectedFile++;
+                        this.selectedFiles = [];
+                        this.selectedFiles.push(this.selectedFile);
                     }
                 },
                 swapFiles(index1, index2) {
