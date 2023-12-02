@@ -136,6 +136,7 @@ type Message struct {
 	Error      string         `json:"error"`
 	Success    bool           `json:"success"`
 	Filename   string         `json:"filename"`
+	Filenames  []string       `json:"filenames"`
 	File       zeptocore.File `json:"file"`
 	SliceStart []float64      `json:"sliceStart"`
 	SliceStop  []float64      `json:"sliceStop"`
@@ -199,6 +200,23 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					File:     f,
 					Success:  true,
 				})
+			}
+		} else if message.Action == "mergefiles" {
+			log.Tracef("message.Filenames: %+v", message.Filenames)
+			fnames := make([]string, len(message.Filenames))
+			i := 0
+			for _, fname := range message.Filenames {
+				f, err := zeptocore.Get(path.Join(StorageFolder, place, fname, fname))
+				if err == nil {
+					fnames[i] = f.PathToFile
+					i++
+				} else {
+					log.Error(err)
+				}
+			}
+			if i > 0 {
+				fnames = fnames[:i]
+				log.Tracef("fnames: %+v", fnames)
 			}
 		} else if message.Action == "onsetdetect" {
 			log.Info(message)
