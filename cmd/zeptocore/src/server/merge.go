@@ -1,0 +1,70 @@
+package server
+
+import (
+	"os"
+
+	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
+)
+
+// Merges the files together and writes metadata
+// to preserve the slice start times as boundaries between each file
+func Merge(fnames []string, fnameout string) (err error) {
+	var metadata zeptocore.File
+
+	filesToMerge := make([]string, len(fnames))
+	totalTime := 0.0
+	for i, fname := range fnames {
+		var f zeptocore.File
+		f, err = zeptocore.Get(fname)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		for _, v := range f.SliceStart {
+			metadata.SliceStart = append(metadata.SliceStart, totalTime+v*f.Duration)
+		}
+		for _, v := range f.SliceStop {
+			metadata.SliceStop = append(metadata.SliceStop, totalTime+v*f.Duration)
+		}
+		filesToMerge[i] = f.PathToAudio
+		totalTime += f.Duration
+	}
+
+	for i, v := range metadata.SliceStart {
+		metadata.SliceStart[i] = v / totalTime
+	}
+	for i, v := range metadata.SliceStop {
+		metadata.SliceStop[i] = v / totalTime
+	}
+
+	fname2, err := sox.Join(filesToMerge...)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	log.Tracef("%s -> %s", fname2, fnameout)
+	err = os.Rename(fname2, fnameout)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Trace("check1")
+	log.Trace(sox.Length(fnameout))
+
+	log.Tracef("setting metadata for %s", fnameout)
+	log.Tracef("metadata: %+v", metadata.SliceStart)
+	log.Tracef("metadata: %+v", metadata.SliceStop)
+	err = zeptocore.SetMetadata(fnameout, zeptocore.Metadata{
+		SliceStart: metadata.SliceStart,
+		SliceStop:  metadata.SliceStop,
+	})
+	if err != nil {
+		log.Error(err)
+	}
+	log.Trace("check2")
+	log.Trace(sox.Length(fnameout))
+	return
+}

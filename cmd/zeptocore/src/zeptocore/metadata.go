@@ -3,75 +3,64 @@ package zeptocore
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
+	"path/filepath"
 
-	"github.com/go-audio/wav"
 	log "github.com/schollz/logger"
+	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 )
 
 // define error for no metadata present
 var ErrNoMetadata = fmt.Errorf("no metadata present")
 
-func SetMetadata(fname string, metadata File) (err error) {
-	in, err := os.Open(fname)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	d := wav.NewDecoder(in)
-	buf, err := d.FullPCMBuffer()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	in.Close()
+type Metadata struct {
+	SliceStart []float64 `json:"s"`
+	SliceStop  []float64 `json:"e"`
+}
 
-	out, err := os.Create(fname)
-	if err != nil {
+func SetMetadata(fname string, metadata Metadata) (err error) {
+	if filepath.Ext(fname) != ".aif" {
+		err = fmt.Errorf("only .aif files supported")
 		return
 	}
-	defer out.Close()
+	// millisecond precision
+	for i, v := range metadata.SliceStart {
+		metadata.SliceStart[i] = toFixed(v, 3)
+	}
+	for i, v := range metadata.SliceStop {
+		metadata.SliceStop[i] = toFixed(v, 3)
+	}
 
-	e := wav.NewEncoder(out,
-		buf.Format.SampleRate,
-		int(d.BitDepth),
-		buf.Format.NumChannels,
-		int(d.WavAudioFormat))
-	if err = e.Write(buf); err != nil {
-		log.Error(err)
-		return
-	}
-	e.Metadata = &wav.Metadata{}
 	b, err := json.Marshal(metadata)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	e.Metadata.Comments = string(b)
-	err = e.Close()
+	log.Tracef("setting metadata: %s", string(b))
+
+	fname2, err := sox.AddComment(fname, string(b))
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	os.Rename(fname2, fname)
+
 	return
 }
 
-func GetMetadata(fname string) (metadata File, err error) {
-	f, err := os.Open(fname)
+func toFixed(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+	return float64(math.Round(num*output)) / output
+}
+
+func GetMetadata(fname string) (metadata Metadata, err error) {
+	data, err := sox.GetComment(fname)
 	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	dec := wav.NewDecoder(f)
-	dec.ReadMetadata()
-	if err := dec.Err(); err != nil {
 		log.Error(err)
-	}
-	if dec.Metadata == nil {
-		err = ErrNoMetadata
 		return
 	}
-	err = json.Unmarshal([]byte(dec.Metadata.Comments), &metadata)
+	err = json.Unmarshal([]byte(data), &metadata)
 	if err != nil {
 		return
 	}

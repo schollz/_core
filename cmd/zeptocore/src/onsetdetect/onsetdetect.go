@@ -100,6 +100,10 @@ func getOnsets(fname string, numOnsets int) (onsets []float64, err error) {
 }
 
 func findWindows(data []float64, numOnsets int) (top16 []float64, err error) {
+	if len(data) == 0 {
+		err = fmt.Errorf("no onsets found")
+		return
+	}
 	min, max := minMax(data)
 	min = 0
 	win := 0.0125

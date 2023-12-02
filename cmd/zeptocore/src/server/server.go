@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/lucasepe/codename"
 	log "github.com/schollz/logger"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/onsetdetect"
 	"github.com/schollz/zeptocore/cmd/zeptocore/src/pack"
@@ -204,19 +205,19 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		} else if message.Action == "mergefiles" {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
 			fnames := make([]string, len(message.Filenames))
-			i := 0
-			for _, fname := range message.Filenames {
-				f, err := zeptocore.Get(path.Join(StorageFolder, place, fname, fname))
-				if err == nil {
-					fnames[i] = f.PathToFile
-					i++
-				} else {
-					log.Error(err)
-				}
+			for i, fname := range message.Filenames {
+				fnames[i] = path.Join(StorageFolder, place, fname, fname)
 			}
-			if i > 0 {
-				fnames = fnames[:i]
-				log.Tracef("fnames: %+v", fnames)
+			rng, errCode := codename.DefaultRNG()
+			if errCode == nil {
+				newFilename := codename.Generate(rng, 0) + ".aif"
+				os.MkdirAll(path.Join(StorageFolder, place, newFilename), 0777)
+				err = Merge(fnames, path.Join(StorageFolder, place, newFilename, newFilename))
+				if err != nil {
+					log.Error(err)
+				} else {
+					go processFile(query["id"][0], newFilename, path.Join(StorageFolder, place, newFilename, newFilename))
+				}
 			}
 		} else if message.Action == "onsetdetect" {
 			log.Info(message)
@@ -423,35 +424,37 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			return
 		}
 
-		go func(uploadedFile string, localFile string) {
-			log.Debugf("prcessing file %s from upload %s", localFile, uploadedFile)
-			f, err := zeptocore.Get(localFile)
-			if err != nil {
-				log.Error(err)
-				mutex.Lock()
-				if _, ok := connections[id]; ok {
-					connections[id].WriteJSON(Message{
-						Error: err.Error(),
-					})
-				}
-				mutex.Unlock()
-				return
-			}
-
-			mutex.Lock()
-			if _, ok := connections[id]; ok {
-				connections[id].WriteJSON(Message{
-					Action:   "processed",
-					Filename: uploadedFile,
-					File:     f,
-				})
-			}
-			mutex.Unlock()
-		}(file.Filename, localFile)
+		go processFile(id, file.Filename, localFile)
 	}
 
 	// Send a response
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"success":true}`))
 	return
+}
+
+func processFile(id string, uploadedFile string, localFile string) {
+	log.Debugf("prcessing file %s from upload %s", localFile, uploadedFile)
+	f, err := zeptocore.Get(localFile)
+	if err != nil {
+		log.Error(err)
+		mutex.Lock()
+		if _, ok := connections[id]; ok {
+			connections[id].WriteJSON(Message{
+				Error: err.Error(),
+			})
+		}
+		mutex.Unlock()
+		return
+	}
+
+	mutex.Lock()
+	if _, ok := connections[id]; ok {
+		connections[id].WriteJSON(Message{
+			Action:   "processed",
+			Filename: uploadedFile,
+			File:     f,
+		})
+	}
+	mutex.Unlock()
 }

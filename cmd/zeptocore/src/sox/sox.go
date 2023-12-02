@@ -105,6 +105,14 @@ func Left(fname string) (fname2 string, err error) {
 	return
 }
 
+func Convert(fname string, fname2 string) (err error) {
+	_, _, err = run("sox", fname, fname2)
+	if err != nil {
+		log.Error(err)
+	}
+	return
+}
+
 // ResampleRate changes the sample rate and precision
 func ResampleRate(fname string, sampleRate int, precision int) (fname2 string, err error) {
 	fname2 = Tmpfile()
@@ -364,6 +372,18 @@ func Mix(fnames ...string) (fname2 string, err error) {
 	fnames = append(fnames, fname2)
 	fnames = append(fnames, "norm")
 	_, _, err = run(append([]string{"sox", "-m"}, fnames...)...)
+	return
+}
+
+func AddComment(fname string, comment string) (fname2 string, err error) {
+	fname2 = Tmpfile() + ".aif"
+	_, _, err = run("sox", fname, "--comment", comment, fname2)
+	return
+}
+
+func GetComment(fname string) (comment string, err error) {
+	comment, _, err = run("sox", "--i", "-a", fname)
+	comment = strings.TrimSpace(comment)
 	return
 }
 
