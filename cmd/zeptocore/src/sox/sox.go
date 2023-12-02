@@ -113,6 +113,16 @@ func Convert(fname string, fname2 string) (err error) {
 	return
 }
 
+func ConvertToMatch(fname string, fnameMatch string) (fname2 string, err error) {
+	sampleRate, channels, _, err := Info(fnameMatch)
+	fname2 = Tmpfile()
+	_, _, err = run("sox", fname, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(sampleRate), fname2)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // ResampleRate changes the sample rate and precision
 func ResampleRate(fname string, sampleRate int, precision int) (fname2 string, err error) {
 	fname2 = Tmpfile()
@@ -360,6 +370,13 @@ func Pitch(fname string, notes int) (fname2 string, err error) {
 
 // Join will concatonate the files
 func Join(fnames ...string) (fname2 string, err error) {
+	// match all the files
+	for i := 1; i < len(fnames); i++ {
+		fnames[i], err = ConvertToMatch(fnames[i], fnames[0])
+		if err != nil {
+			return
+		}
+	}
 	fname2 = Tmpfile()
 	fnames = append(fnames, fname2)
 	_, _, err = run(append([]string{"sox"}, fnames...)...)
