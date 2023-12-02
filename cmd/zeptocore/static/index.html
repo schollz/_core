@@ -21,7 +21,10 @@
                     <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
                         :class="{ 'selected': index === selectedBank }">
                         <span class="mobile-bank-label" v-if="isMobile"></span>
-                        <span class="desktop-bank-label" v-else></span>
+                        <span class="desktop-bank-label" v-else> <span class="file-count"
+                                v-if="banks[index].files.length>0">{{ banks[index].files.length
+                                }}</span><span v-else>&nbsp;</span>
+                        </span>
                     </li>
                 </ul>
             </div>
