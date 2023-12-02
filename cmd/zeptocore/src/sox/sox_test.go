@@ -93,6 +93,13 @@ import (
 // 	return
 // }
 
+func TestComment(t *testing.T) {
+	fname := "amen_beats8_bpm172.wav"
+	fname2, err := AddComment(fname, "hello")
+	assert.Nil(t, err)
+	assert.Equal(t, "hello", MustString(GetComment(fname2)))
+}
+
 func TestTrimBeats(t *testing.T) {
 	os.Remove("test.wav")
 	fnames, _ := filepath.Glob("*.wav")

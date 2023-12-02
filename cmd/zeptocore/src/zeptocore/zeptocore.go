@@ -87,17 +87,23 @@ func Get(pathToOriginal string) (f File, err error) {
 		log.Tracef("opening renoise %s", f.PathToFile)
 		newPath, f.SliceStart, f.SliceStop, errSliceDetect = renoise.GetSliceMarkers(f.PathToFile)
 		if errSliceDetect == nil {
+			log.Trace("detected slices from renoise")
 			f.PathToAudio = newPath
 		}
 	} else if filepath.Ext(f.PathToFile) == ".aif" {
 		log.Tracef("attempting op1 %s", f.PathToFile)
 		f.SliceStart, f.SliceStop, errSliceDetect = op1.GetSliceMarkers(f.PathToFile)
-	} else {
-		var metad File
-		metad, errSliceDetect = GetMetadata(f.PathToFile)
 		if errSliceDetect == nil {
-			f.SliceStart = metad.SliceStart
-			f.SliceStop = metad.SliceStop
+			log.Trace("detected slices from aif")
+		} else {
+			// try again using metadata
+			var metad Metadata
+			metad, errSliceDetect = GetMetadata(f.PathToFile)
+			if errSliceDetect == nil {
+				log.Trace("detected slices from metadata")
+				f.SliceStart = metad.SliceStart
+				f.SliceStop = metad.SliceStop
+			}
 		}
 	}
 	// determine the duration
@@ -124,7 +130,11 @@ func Get(pathToOriginal string) (f File, err error) {
 
 		} else {
 			onsets, _ := onsetdetect.OnsetDetect(f.PathToAudio, 16)
-			f.SliceStart = []float64{onsets[0]}
+			if len(onsets) > 0 {
+				f.SliceStart = []float64{onsets[0]}
+			} else {
+				f.SliceStart = []float64{0.0}
+			}
 			f.SliceStop = []float64{1.0}
 		}
 	}

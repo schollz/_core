@@ -66,7 +66,9 @@
                 <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
                     <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length > 0"
                         style="margin-left: 0;">Clear all</button>
-                    <button @click="printSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Print
+                    <button @click="clearSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Clear
+                        Selected</button>
+                    <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Merge
                         Selected Files</button>
                     <ul>
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
@@ -422,7 +424,9 @@
                 isSelected(fileIndex) {
                     return this.selectedFiles.includes(fileIndex);
                 },
-                printSelectedFiles() {
+                mergeSelectedFiles() {
+                    // organize selected files by their index
+                    this.selectedFiles.sort((a, b) => (a > b) ? 1 : -1);
                     console.log('Selected Files:', this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename));
                     socket.send(JSON.stringify({
                         action: "mergefiles",
@@ -527,6 +531,14 @@
                 clearCurrentBank() {
                     this.banks[this.selectedBank].files = [];
                     this.banks[this.selectedBank].lastSelectedFile = null;
+                    this.selectedFile = null;
+                },
+                clearSelectedFiles() {
+                    // for each index of the seleced files, remove from the current bank
+                    for (var i = 0; i < this.selectedFiles.length; i++) {
+                        this.banks[this.selectedBank].files.splice(this.selectedFiles[i], 1);
+                    }
+                    this.selectedFiles = [];
                     this.selectedFile = null;
                 },
                 selectBank(index) {
