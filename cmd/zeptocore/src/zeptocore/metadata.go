@@ -1,4 +1,4 @@
-package metadata
+package zeptocore
 
 import (
 	"encoding/json"
@@ -7,13 +7,12 @@ import (
 
 	"github.com/go-audio/wav"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
 // define error for no metadata present
 var ErrNoMetadata = fmt.Errorf("no metadata present")
 
-func SetMetadata(fname string, metadata zeptocore.File) (err error) {
+func SetMetadata(fname string, metadata File) (err error) {
 	in, err := os.Open(fname)
 	if err != nil {
 		log.Error(err)
@@ -57,7 +56,7 @@ func SetMetadata(fname string, metadata zeptocore.File) (err error) {
 	return
 }
 
-func GetMetadata(fname string) (metadata zeptocore.File, err error) {
+func GetMetadata(fname string) (metadata File, err error) {
 	f, err := os.Open(fname)
 	if err != nil {
 		panic(err)
