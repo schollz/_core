@@ -146,15 +146,23 @@ void i2s_callback_func() {
     // envelope_pitch_val =
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
 
-    // TODO: check if tempo matching is activated, if not then don't change
+    // check if tempo matching is activated, if not then don't change
     // based on bpm
-    uint32_t samples_to_read =
-        buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm *
-        banks[sel_bank_cur]
+    float bpm_tempo = 1.0;
+    if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
-            ->oversampling;
+            ->tempo_match) {
+      bpm_tempo =
+          sf->bpm_tempo /
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
+    }
+    uint32_t samples_to_read = buffer->max_sample_count *
+                               round(bpm_tempo * envelope_pitch_val) *
+                               banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[sel_variation]
+                                   ->oversampling;
     uint32_t values_len = samples_to_read * banks[sel_bank_cur]
                                                 ->sample[sel_sample_cur]
                                                 .snd[sel_variation]
