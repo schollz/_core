@@ -170,22 +170,24 @@ void i2s_callback_func() {
     bool do_fade_in = false;
 
     if (!phase_change) {
-      int32_t next_phase = phases[0] + values_to_read * (phase_forward * 2 - 1);
-      int32_t splice_start = banks[sel_bank_cur]
-                                 ->sample[sel_sample_cur]
-                                 .snd[sel_variation]
-                                 ->slice_start[banks[sel_bank_cur]
-                                                   ->sample[sel_sample_cur]
-                                                   .snd[sel_variation]
-                                                   ->slice_current];
-      int32_t splice_stop = banks[sel_bank_cur]
+      const int32_t next_phase =
+          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      const int32_t splice_start =
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->slice_start[banks[sel_bank_cur]
                                 ->sample[sel_sample_cur]
                                 .snd[sel_variation]
-                                ->splice_stop[banks[sel_bank_cur]
-                                                  ->sample[sel_sample_cur]
-                                                  .snd[sel_variation]
-                                                  ->slice_current];
-      int32_t sample_stop =
+                                ->slice_current];
+      const int32_t splice_stop = banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->splice_stop[banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[sel_variation]
+                                                        ->slice_current];
+      const int32_t sample_stop =
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size;
       switch (banks[sel_bank_cur]
                   ->sample[sel_sample_cur]
@@ -205,6 +207,7 @@ void i2s_callback_func() {
               (!phase_forward && (next_phase < splice_start))) {
             do_fade_out = true;
           }
+          break;
         case PLAY_SPLICE_LOOP:
           if (phase_forward && (phase[0] > splice_stop) {
             phase_change = true;
@@ -213,6 +216,22 @@ void i2s_callback_func() {
             phase_change = true;
             phase_new = splice_stop;
           }
+          break;
+        case PLAY_SAMPLE_STOP:
+          if ((phase_forward && (next_phase > sample_stop)) ||
+              (!phase_forward && (next_phase < 0))) {
+            do_fade_out = true;
+          }
+          break;
+        case PLAY_SAMPLE_LOOP:
+          if (phase_forward && (phase[0] > sample_stop)) {
+            phase_change = true;
+            phase_new = splice_start;
+          } else if (!phase_forward && (phase[0] < 0)) {
+            phase_change = true;
+            phase_new = splice_end;
+          }
+          break;
         case default:
           break;
       }
