@@ -133,7 +133,7 @@
 
                     <p>
                         <input type="checkbox" id="tempomatch"
-                            v-model="banks[selectedBank].files[selectedFile].TempoMatch">
+                            v-model="banks[selectedBank].files[selectedFile].TempoMatch" @click="updateTempomatch">
                         <label for="tempomatch">Tempo matching: <span
                                 v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm changes
                                 speed)</span>

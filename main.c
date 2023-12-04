@@ -107,6 +107,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      ->sample[sel_sample_cur]
                      .snd[sel_variation]
                      ->splice_trigger > 0
+             // TODO if splice_trigger is 0, but we are sequencing, then need to
+             // continue here!
+
              // do not iterate the beat if we are in a timestretched variation,
              // let it roll
              && sel_variation == 0) {

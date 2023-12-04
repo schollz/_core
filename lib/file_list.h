@@ -140,7 +140,7 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
 
-  // StopCondition
+  // play_mode
   fr = f_read(&fil, &si->play_mode, sizeof(uint8_t), &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
