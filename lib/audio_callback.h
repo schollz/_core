@@ -46,7 +46,6 @@ bool audio_was_muted = false;
 
 void i2s_callback_func() {
   uint32_t t0, t1;
-  uint8_t sd_calls = 0;
 #ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
 #endif
@@ -298,9 +297,7 @@ void i2s_callback_func() {
         }
       }
 
-      ++sd_calls;
       t0 = time_us_32();
-
       if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
@@ -561,8 +558,7 @@ void i2s_callback_func() {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
 #ifdef PRINT_AUDIO_CPU_USAGE
-    printf("average cpu utilization: %2.1f\n", sd_calls,
-           ((float)cpu_utilization) / 64.0);
+    printf("average cpu utilization: %2.1f\n", ((float)cpu_utilization) / 64.0);
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING
