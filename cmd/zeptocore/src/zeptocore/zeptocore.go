@@ -406,11 +406,11 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		err = fmt.Errorf("no slices")
 		return
 	}
-	slicesStart := []uint32{}
-	slicesEnd := []uint32{}
+	slicesStart := []int32{}
+	slicesEnd := []int32{}
 	for i, _ := range f.SliceStart {
-		slicesStart = append(slicesStart, uint32(math.Round(f.SliceStart[i]*fsize))/4*4)
-		slicesEnd = append(slicesEnd, uint32(math.Round(f.SliceStop[i]*fsize))/4*4)
+		slicesStart = append(slicesStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
+		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 	}
 
 	buf := new(bytes.Buffer)
@@ -443,7 +443,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	var data = []any{
 		uint16(len([]byte(filename))),
 		[]byte(filename),
-		uint32(fsize),
+		int32(fsize),
 		uint16(f.BPM),
 		uint16(sliceNum),
 		slicesStart,

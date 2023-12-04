@@ -24,12 +24,12 @@
 
 typedef struct SampleInfo {
   char *name;
-  uint32_t size;
+  int32_t size;
   uint16_t bpm;
   uint16_t beats;
   uint16_t slice_num;
-  uint32_t *slice_start;
-  uint32_t *slice_stop;
+  int32_t *slice_start;
+  int32_t *slice_stop;
   uint8_t tempo_match;
   uint8_t play_mode;
   uint16_t splice_trigger;
