@@ -181,8 +181,7 @@ void i2s_callback_func() {
             .snd[sel_variation]
             ->play_mode == PLAY_SPLICE_STOP) {
       // do a mute once the sample extends past the start or end of the splice
-      uint32_t next_phase =
-          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      int32_t next_phase = phases[0] + values_to_read * (phase_forward * 2 - 1);
       if ((phase_forward > 0 &&
            next_phase > banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
@@ -192,7 +191,7 @@ void i2s_callback_func() {
                                              .snd[sel_variation]
                                              ->slice_current]) ||
           (phase_forward == 0 &&
-           next_phase < banks[sel_bank_cur]
+           next_phase < (int32_t)banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
                             .snd[sel_variation]
                             ->slice_start[banks[sel_bank_cur]
@@ -207,8 +206,7 @@ void i2s_callback_func() {
                    .snd[sel_variation]
                    ->play_mode == PLAY_SAMPLE_STOP) {
       // do a mute once the sample extends past the start or end of the sample
-      uint32_t next_phase =
-          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      int32_t next_phase = phases[0] + values_to_read * (phase_forward * 2 - 1);
       if ((phase_forward > 0 &&
            next_phase > banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
@@ -218,7 +216,7 @@ void i2s_callback_func() {
                                              .snd[sel_variation]
                                              ->slice_num -
                                          1]) ||
-          (phase_forward == 0 && next_phase < banks[sel_bank_cur]
+          (phase_forward == 0 && next_phase < (int32_t)banks[sel_bank_cur]
                                                   ->sample[sel_sample_cur]
                                                   .snd[sel_variation]
                                                   ->slice_start[0])) {
@@ -509,7 +507,11 @@ void i2s_callback_func() {
       if ((int64_t)phases[head] >= (int64_t)banks[sel_bank_cur]
                                        ->sample[sel_sample_cur]
                                        .snd[sel_variation]
-                                       ->size) {
+                                       ->size &&
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[sel_variation]
+                  ->play_mode != PLAY_SPLICE_STOP) {
         printf("> phase_forward: %d\n", phase_forward);
         printf("> phase[head]: %d\n", phases[head]);
         printf("> size: %d\n", banks[sel_bank_cur]
@@ -526,7 +528,10 @@ void i2s_callback_func() {
                               ->size;
           phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
         }
-      } else if (phases[head] < 0) {
+      } else if (phases[head] < 0 && banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[sel_variation]
+                                             ->play_mode != PLAY_SPLICE_STOP) {
         printf("< phase_forward: %d\n", phase_forward);
         printf("< phase[head]: %d\n", phases[head]);
         if (phase_forward == 0) {
