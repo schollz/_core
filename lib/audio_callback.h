@@ -230,6 +230,8 @@ void i2s_callback_func() {
       audio_was_muted = false;
       audio_was_cpu_muted = false;
       do_fade_in = true;
+      // if fading in then do not crossfade
+      do_crossfade = false;
     }
     // cpu_usage_flag is written when cpu usage is consistently high
     // in which case it will fade out audio and keep it muted for a little
