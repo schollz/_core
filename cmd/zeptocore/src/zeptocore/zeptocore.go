@@ -265,13 +265,18 @@ func (f *File) SetBPM(bpm int) {
 	f.BPM = bpm
 	go func() {
 		f.Save()
+		f.Regenerate()
 	}()
 }
 
 func (f *File) SetSplicePlayback(playback int) {
+	different := f.SplicePlayback != playback
 	f.SplicePlayback = playback
 	go func() {
 		f.Save()
+		if different {
+			f.Regenerate()
+		}
 	}()
 }
 
@@ -280,6 +285,7 @@ func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
 	f.SliceStop = sliceEnd
 	go func() {
 		f.Save()
+		f.Regenerate()
 	}()
 }
 
@@ -288,12 +294,10 @@ func (f *File) SetOversampling(oversampling int) {
 	f.Oversampling = oversampling
 	go func() {
 		f.Save()
-	}()
-	if different {
-		go func() {
+		if different {
 			f.Regenerate()
-		}()
-	}
+		}
+	}()
 }
 
 func (f *File) SetChannels(channels int) {
@@ -301,25 +305,31 @@ func (f *File) SetChannels(channels int) {
 	f.Channels = channels
 	go func() {
 		f.Save()
-	}()
-	if different {
-		go func() {
+		if different {
 			f.Regenerate()
-		}()
-	}
+		}
+	}()
 }
 
 func (f *File) SetOneshot(oneshot bool) {
+	different := f.OneShot != oneshot
 	f.OneShot = oneshot
 	go func() {
 		f.Save()
+		if different {
+			f.Regenerate()
+		}
 	}()
 }
 
 func (f *File) SetTempoMatch(TempoMatch bool) {
+	different := f.TempoMatch != TempoMatch
 	f.TempoMatch = TempoMatch
 	go func() {
 		f.Save()
+		if different {
+			f.Regenerate()
+		}
 	}()
 }
 
@@ -424,7 +434,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// 	uint8_t slice_num;
 	// 	uint32_t *slice_start;
 	// 	uint32_t *slice_end;
-	// 	uint8_t bpm_TempoMatch;
+	// 	uint8_t tempo_match;
 	// 	uint8_t play_mode;
 	//  uint16_t splice_trigger;
 	//  uint8_t oversampling;
@@ -444,7 +454,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		uint8(f.Oversampling),
 		uint8(f.Channels),
 	}
-	log.Tracef("data: %+v", data)
+	log.Tracef("binary data: %+v", data)
 
 	for _, v := range data {
 		err := binary.Write(buf, binary.LittleEndian, v)

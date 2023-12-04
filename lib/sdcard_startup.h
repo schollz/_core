@@ -78,6 +78,10 @@ void sdcard_startup() {
               bi, si, banks[bi]->sample[si].snd[sel_variation]->oversampling);
           printf(
               "[sdcard_startup] "
+              "banks[%d]->sample[%d].snd[sel_variation]->splice_trigger: %d\n",
+              bi, si, banks[bi]->sample[si].snd[sel_variation]->splice_trigger);
+          printf(
+              "[sdcard_startup] "
               "banks[%d]->sample[%d].snd[sel_variation]->play_mode: "
               "% d\n ",
               bi, si, banks[bi]->sample[si].snd[sel_variation]->play_mode);

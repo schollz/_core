@@ -396,6 +396,16 @@ app = new Vue({
                 }));
             }, 100);
         },
+        updateTempomatch() {
+            setTimeout(() => {
+                // update the server file
+                socket.send(JSON.stringify({
+                    action: "settempomatch",
+                    filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                    boolean: this.banks[this.selectedBank].files[this.selectedFile].TempoMatch,
+                }));
+            }, 100);
+        },
         handleDrop(event) {
             event.preventDefault();
             const files = event.target.files || event.dataTransfer.files;

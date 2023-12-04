@@ -258,6 +258,13 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			} else {
 				f.SetOneshot(message.Boolean)
 			}
+		} else if message.Action == "settempomatch" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetTempoMatch(message.Boolean)
+			}
 		} else if message.Action == "updatestate" {
 			// save into the keystore the message.State for message.Place
 			err = keystore.Update(func(tx *bolt.Tx) error {
