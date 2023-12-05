@@ -46,6 +46,10 @@ bool audio_was_muted = false;
 
 void i2s_callback_func() {
   uint32_t t0, t1;
+  // flag for new phase
+  bool do_crossfade = false;
+  bool do_fade_out = false;
+  bool do_fade_in = false;
 #ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
 #endif
@@ -172,11 +176,6 @@ void i2s_callback_func() {
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
-    // flag for new phase
-    bool do_crossfade = false;
-    bool do_fade_out = false;
-    bool do_fade_in = false;
-
     if (!phase_change) {
       const int32_t next_phase =
           phases[0] + values_to_read * (phase_forward * 2 - 1);
@@ -191,10 +190,10 @@ void i2s_callback_func() {
       const int32_t splice_stop = banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
                                       .snd[sel_variation]
-                                      ->splice_stop[banks[sel_bank_cur]
-                                                        ->sample[sel_sample_cur]
-                                                        .snd[sel_variation]
-                                                        ->slice_current];
+                                      ->slice_stop[banks[sel_bank_cur]
+                                                       ->sample[sel_sample_cur]
+                                                       .snd[sel_variation]
+                                                       ->slice_current];
       const int32_t sample_stop =
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size;
       switch (banks[sel_bank_cur]
@@ -202,12 +201,12 @@ void i2s_callback_func() {
                   .snd[sel_variation]
                   ->play_mode) {
         case PLAY_NORMAL:
-          if (phase_forward && phase[0] > sample_stop) {
+          if (phase_forward && phases[0] > sample_stop) {
             phase_change = true;
-            phase_new = phase[0] - sample_stop;
-          } else if (!phase_forward && phase[0] < 0) {
+            phase_new = phases[0] - sample_stop;
+          } else if (!phase_forward && phases[0] < 0) {
             phase_change = true;
-            phase_new = phase[0] + sample_stop;
+            phase_new = phases[0] + sample_stop;
           }
           break;
         case PLAY_SPLICE_STOP:
@@ -217,10 +216,10 @@ void i2s_callback_func() {
           }
           break;
         case PLAY_SPLICE_LOOP:
-          if (phase_forward && (phase[0] > splice_stop) {
+          if (phase_forward && (phases[0] > splice_stop)) {
             phase_change = true;
             phase_new = splice_start;
-          } else if (!phase_forward && (phase[0] < splice_stop) {
+          } else if (!phase_forward && (phases[0] < splice_stop)) {
             phase_change = true;
             phase_new = splice_stop;
           }
@@ -232,15 +231,13 @@ void i2s_callback_func() {
           }
           break;
         case PLAY_SAMPLE_LOOP:
-          if (phase_forward && (phase[0] > sample_stop)) {
+          if (phase_forward && (phases[0] > sample_stop)) {
             phase_change = true;
             phase_new = splice_start;
-          } else if (!phase_forward && (phase[0] < 0)) {
+          } else if (!phase_forward && (phases[0] < 0)) {
             phase_change = true;
-            phase_new = splice_end;
+            phase_new = splice_stop;
           }
-          break;
-        case default:
           break;
       }
     }

@@ -24,6 +24,10 @@ void check_setup_files() {
 }
 
 void sdcard_startup() {
+  for (uint8_t i = SDCARD_CMD_GPIO - 1; i < SDCARD_D0_GPIO + 5; i++) {
+    gpio_pull_up(i);
+  }
+
   if (sdcard_startup_is_starting) {
     return;
   }
@@ -107,6 +111,8 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  sleep_ms(30000000);
 
   FRESULT fr;
   fr = f_open(
