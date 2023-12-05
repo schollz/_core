@@ -155,8 +155,8 @@ func Get(pathToOriginal string) (f File, err error) {
 		// regenerate the audio
 		f.Regenerate()
 
-		// create mp3
-		_, _, err = utils.Run("sox", f.PathToAudio, f.PathToFile+".mp3")
+		// create ogg
+		_, _, err = utils.Run("sox", f.PathToAudio, f.PathToFile+".ogg")
 		if err != nil {
 			log.Error(err)
 		}

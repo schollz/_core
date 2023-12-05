@@ -583,7 +583,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd) {
         hideScrollbar: false,
         autoScroll: false,
         autoCenter: true,
-        url: filename + ".mp3",
+        url: filename + ".ogg",
     });
     // resize whenever a zoom
     wsf.on('zoom', () => {
