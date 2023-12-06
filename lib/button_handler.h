@@ -46,7 +46,7 @@ uint16_t key_num_presses;
 bool key_b_sample_select = false;
 
 // fx toggles
-bool fx_toggle[16];  // 16 possible
+bool fx_toggle[16]; // 16 possible
 #define FX_REVERSE 0
 #define FX_SLOWDOWN 1
 #define FX_NORMSPEED 2
@@ -154,32 +154,32 @@ void go_update_top() {
 void go_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
   switch (fx_num) {
-    case FX_REVERSE:
-      phase_forward = !on;
-      break;
-    case FX_SLOWDOWN:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 0.5, 1);
-      break;
-    case FX_NORMSPEED:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 1.0, 1);
-      break;
-    case FX_SPEEDUP:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 2.0, 1);
-      break;
-    case FX_TIMESTRETCH:
-      sel_variation_next = 1 - sel_variation_next;
-      // if (sel_variation == FILE_VARIATIONS - 1) {
-      //   sel_variation_next = 0;
-      // } else {
-      //   sel_variation_next = sel_variation + 1;
-      // }
-      fil_current_change = true;
-      break;
-    default:
-      break;
+  case FX_REVERSE:
+    phase_forward = !on;
+    break;
+  case FX_SLOWDOWN:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 0.5, 1);
+    break;
+  case FX_NORMSPEED:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 1.0, 1);
+    break;
+  case FX_SPEEDUP:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 2.0, 1);
+    break;
+  case FX_TIMESTRETCH:
+    sel_variation_next = 1 - sel_variation_next;
+    // if (sel_variation == FILE_VARIATIONS - 1) {
+    //   sel_variation_next = 0;
+    // } else {
+    //   sel_variation_next = sel_variation + 1;
+    // }
+    fil_current_change = true;
+    break;
+  default:
+    break;
   }
 }
 
@@ -237,18 +237,32 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     LEDS_clearAll(leds, LED_STEP_FACE);
     LEDS_set(leds, LED_STEP_FACE, key2, 2);
   }
-  if (key1 == KEY_SHIFT && key2 > 3) {
-    // S+H
-    if (mode_jump_mash == MODE_JUMP) {
-      // S+H (jump mode)
-      // toggles fx
-      fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
-      bool on = fx_toggle[key2 - 4];
-      go_update_fx(key2 - 4);
-    } else if (mode_jump_mash == MODE_MASH) {
-      // S+H (mash mode)
-      // does jump
-      key_do_jump(key2 - 4);
+  if (key1 == KEY_SHIFT) {
+    if (key2 == KEY_A) {
+      // S+A
+    } else if (key2 == KEY_B) {
+      // S+B
+      // toggle mute
+      if (audio_mute) {
+        audio_mute = false;
+      } else {
+        trigger_audio_mute = true;
+      }
+    } else if (key2 == KEY_C) {
+      // S+C
+    } else {
+      // S+H
+      if (mode_jump_mash == MODE_JUMP) {
+        // S+H (jump mode)
+        // toggles fx
+        fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
+        bool on = fx_toggle[key2 - 4];
+        go_update_fx(key2 - 4);
+      } else if (mode_jump_mash == MODE_MASH) {
+        // S+H (mash mode)
+        // does jump
+        key_do_jump(key2 - 4);
+      }
     }
   } else if (key1 > 3 && key2 > 3) {
     // H+H
