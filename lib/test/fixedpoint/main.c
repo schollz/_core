@@ -48,6 +48,20 @@ int main() {
       q16_16_multiply(q16_16_multiply(q16_16_float_to_fp(i), cons),
                       q16_16_multiply(q16_16_float_to_fp(i), cons2)));
   printf("f=%2.1f\n", f);
+
+  float bpm = 156.0;
+  float bpm_source = 138.0;
+  float pitch_change = 0.52973;
+  uint32_t samples = 1000;
+
+  printf("%2.3f\n", samples * bpm / bpm_source * pitch_change);
+  printf("%2.3f\n",
+         q16_16_fp_to_int32(
+             samples *
+             q16_16_multiply(q16_16_divide(q16_16_float_to_fp(bpm),
+                                           q16_16_float_to_fp(bpm_source)),
+                             q16_16_float_to_fp(pitch_change))));
+
   // for (float i = -3.14159 * 20; i < 32; i += 0.001) {
   //   printf("%2.3f\n", q16_16_fp_to_float(q16_16_cos(q16_16_float_to_fp(i))));
   // }

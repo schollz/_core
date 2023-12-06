@@ -233,6 +233,10 @@ void input_handling() {
                          (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
                          4096 * 2;
       } else if (button_is_pressed(KEY_B)) {
+        pitch_val_index = adc * PITCH_VAL_MAX / 4096;
+        if (pitch_val_index >= PITCH_VAL_MAX) {
+          pitch_val_index = PITCH_VAL_MAX - 1;
+        }
       } else if (button_is_pressed(KEY_C)) {
       }
     }

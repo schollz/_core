@@ -156,7 +156,8 @@ void i2s_callback_func() {
             .snd[sel_variation]
             ->tempo_match) {
       samples_to_read =
-          buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) *
+          round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
+                pitch_vals[pitch_val_index]) *
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
@@ -164,7 +165,8 @@ void i2s_callback_func() {
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
     } else {
       samples_to_read =
-          round((float)buffer->max_sample_count * envelope_pitch_val) *
+          round((float)buffer->max_sample_count * envelope_pitch_val *
+                pitch_vals[pitch_val_index]) *
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
