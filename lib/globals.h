@@ -124,6 +124,11 @@ ResonantFilter *resFilter[2];
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
 
+// pitches derived from supercollider
+// a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
+// a.do({ arg v;
+// 	v.postln;
+// });
 #define PITCH_VAL_MAX 49
 uint8_t pitch_val_index = 24;
 float pitch_vals[PITCH_VAL_MAX] = {
