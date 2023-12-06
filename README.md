@@ -104,6 +104,10 @@ knobs: X, Y, Z
 - [ ] **C** + **Y** → 
 - [ ] **C** + **Z** → 
 
+### cheat codes
+
+- [ ] 
+
 #### needs
 
 - pitch
