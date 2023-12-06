@@ -223,7 +223,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			log.Info(message)
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err == nil {
-				onsets, err := onsetdetect.OnsetDetect(f.PathToFile+".mp3", int(message.Number))
+				onsets, err := onsetdetect.OnsetDetect(f.PathToFile+".ogg", int(message.Number))
 				if err == nil {
 					log.Tracef("onsets: %+v", onsets)
 					c.WriteJSON(Message{
