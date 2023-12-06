@@ -331,7 +331,7 @@ void button_handler(ButtonMatrix *bm) {
   if (key_total_pressed == 0) {
     key_timer++;
   }
-  if (key_timer == 40 && key_pressed_num > 0) {
+  if (key_timer == 400 && key_pressed_num > 0) {
     printf("combo: ");
     for (uint8_t i = 0; i < key_pressed_num; i++) {
       printf("%d ", key_pressed[i]);
@@ -376,7 +376,6 @@ void button_handler(ButtonMatrix *bm) {
     button_key_off_any(bm->off[i]);
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
-      printf("off held %d\n", bm->off[i]);
       button_key_off_held(bm->off[i]);
 
       key_held_on = false;
