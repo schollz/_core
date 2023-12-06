@@ -46,10 +46,7 @@ bool audio_was_muted = false;
 
 void i2s_callback_func() {
   uint32_t t0, t1;
-  // flag for new phase
-  bool do_crossfade = false;
-  bool do_fade_out = false;
-  bool do_fade_in = false;
+  uint8_t sd_calls = 0;
 #ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
 #endif
@@ -149,24 +146,13 @@ void i2s_callback_func() {
     // TODO: switch for if wobble is enabled
     // envelope_pitch_val =
     //     envelope_pitch_val * Range(LFNoise2(noise_wobble, 1), 0.9, 1.1);
-
-    // check if tempo matching is activated, if not then don't change
-    // based on bpm
-    float bpm_tempo = 1.0;
-    if (banks[sel_bank_cur]
+    uint32_t samples_to_read =
+        buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) /
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm *
+        banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
-            ->tempo_match) {
-      bpm_tempo =
-          sf->bpm_tempo /
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
-    }
-    uint32_t samples_to_read = buffer->max_sample_count *
-                               round(bpm_tempo * envelope_pitch_val) *
-                               banks[sel_bank_cur]
-                                   ->sample[sel_sample_cur]
-                                   .snd[sel_variation]
-                                   ->oversampling;
+            ->oversampling;
     uint32_t values_len = samples_to_read * banks[sel_bank_cur]
                                                 ->sample[sel_sample_cur]
                                                 .snd[sel_variation]
@@ -176,84 +162,71 @@ void i2s_callback_func() {
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
 
-    if (!phase_change) {
-      const int32_t next_phase =
-          phases[0] + values_to_read * (phase_forward * 2 - 1);
-      const int32_t splice_start =
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->slice_start[banks[sel_bank_cur]
-                                ->sample[sel_sample_cur]
-                                .snd[sel_variation]
-                                ->slice_current];
-      const int32_t splice_stop = banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
-                                      ->slice_stop[banks[sel_bank_cur]
-                                                       ->sample[sel_sample_cur]
-                                                       .snd[sel_variation]
-                                                       ->slice_current];
-      const int32_t sample_stop =
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size;
-      switch (banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[sel_variation]
-                  ->play_mode) {
-        case PLAY_NORMAL:
-          if (phase_forward && phases[0] > sample_stop) {
-            phase_change = true;
-            phase_new = phases[0] - sample_stop;
-          } else if (!phase_forward && phases[0] < 0) {
-            phase_change = true;
-            phase_new = phases[0] + sample_stop;
-          }
-          break;
-        case PLAY_SPLICE_STOP:
-          if ((phase_forward && (next_phase > splice_stop)) ||
-              (!phase_forward && (next_phase < splice_start))) {
-            do_fade_out = true;
-          }
-          break;
-        case PLAY_SPLICE_LOOP:
-          if (phase_forward && (phases[0] > splice_stop)) {
-            phase_change = true;
-            phase_new = splice_start;
-          } else if (!phase_forward && (phases[0] < splice_stop)) {
-            phase_change = true;
-            phase_new = splice_stop;
-          }
-          break;
-        case PLAY_SAMPLE_STOP:
-          if ((phase_forward && (next_phase > sample_stop)) ||
-              (!phase_forward && (next_phase < 0))) {
-            do_fade_out = true;
-          }
-          break;
-        case PLAY_SAMPLE_LOOP:
-          if (phase_forward && (phases[0] > sample_stop)) {
-            phase_change = true;
-            phase_new = splice_start;
-          } else if (!phase_forward && (phases[0] < 0)) {
-            phase_change = true;
-            phase_new = splice_stop;
-          }
-          break;
-      }
-    }
-
+    // flag for new phase
+    bool do_crossfade = false;
+    bool do_fade_out = false;
+    bool do_fade_in = false;
     if (phase_change) {
       do_crossfade = true;
       phases[1] = phases[0];  // old phase
+      phases[0] = (phase_new / PHASE_DIVISOR) * PHASE_DIVISOR;
       phase_change = false;
     }
 
+    if (banks[sel_bank_cur]
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->play_mode == PLAY_SPLICE_STOP) {
+      // do a mute once the sample extends past the start or end of the splice
+      uint32_t next_phase =
+          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      if ((phase_forward > 0 &&
+           next_phase > banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->slice_stop[banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[sel_variation]
+                                             ->slice_current]) ||
+          (phase_forward == 0 &&
+           next_phase < banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->slice_start[banks[sel_bank_cur]
+                                              ->sample[sel_sample_cur]
+                                              .snd[sel_variation]
+                                              ->slice_current])) {
+        do_fade_out = true;
+        audio_mute = true;
+      }
+    } else if (banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->play_mode == PLAY_SAMPLE_STOP) {
+      // do a mute once the sample extends past the start or end of the sample
+      uint32_t next_phase =
+          phases[0] + values_to_read * (phase_forward * 2 - 1);
+      if ((phase_forward > 0 &&
+           next_phase > banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->slice_stop[banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[sel_variation]
+                                             ->slice_num -
+                                         1]) ||
+          (phase_forward == 0 && next_phase < banks[sel_bank_cur]
+                                                  ->sample[sel_sample_cur]
+                                                  .snd[sel_variation]
+                                                  ->slice_start[0])) {
+        do_fade_out = true;
+        audio_mute = true;
+      }
+    }
     if (audio_was_muted || audio_was_cpu_muted) {
       audio_was_muted = false;
       audio_was_cpu_muted = false;
       do_fade_in = true;
-      // if fading in then do not crossfade
-      do_crossfade = false;
     }
     // cpu_usage_flag is written when cpu usage is consistently high
     // in which case it will fade out audio and keep it muted for a little
@@ -294,19 +267,19 @@ void i2s_callback_func() {
 
       // optimization here, only seek if the current position is not at the
       // phases[head]
+      phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
       if (phases[head] != last_seeked) {
-        if (f_lseek(&fil_current,
-                    WAV_HEADER +
-                        (banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[sel_variation]
-                             ->num_channels *
-                         banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[sel_variation]
-                             ->oversampling *
-                         44100) +
-                        (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
+        if (f_lseek(&fil_current, WAV_HEADER +
+                                      (banks[sel_bank_cur]
+                                           ->sample[sel_sample_cur]
+                                           .snd[sel_variation]
+                                           ->num_channels *
+                                       banks[sel_bank_cur]
+                                           ->sample[sel_sample_cur]
+                                           .snd[sel_variation]
+                                           ->oversampling *
+                                       44100) +
+                                      phases[head])) {
           printf("problem seeking to phase (%d)\n", phases[head]);
           for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
             int32_t value0 = 0;
@@ -321,7 +294,9 @@ void i2s_callback_func() {
         }
       }
 
+      ++sd_calls;
       t0 = time_us_32();
+
       if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
         f_close(&fil_current);  // close and re-open trick
@@ -524,19 +499,12 @@ void i2s_callback_func() {
   buffer->sample_count = buffer->max_sample_count;
   give_audio_buffer(ap, buffer);
 
-  if (do_fade_out) {
-    audio_mute = true;
-  }
   if (fil_is_open) {
     for (uint8_t head = 0; head < 2; head++) {
       if ((int64_t)phases[head] >= (int64_t)banks[sel_bank_cur]
                                        ->sample[sel_sample_cur]
                                        .snd[sel_variation]
-                                       ->size &&
-          banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[sel_variation]
-                  ->play_mode != PLAY_SPLICE_STOP) {
+                                       ->size) {
         printf("> phase_forward: %d\n", phase_forward);
         printf("> phase[head]: %d\n", phases[head]);
         printf("> size: %d\n", banks[sel_bank_cur]
@@ -551,11 +519,9 @@ void i2s_callback_func() {
                               ->sample[sel_sample_cur]
                               .snd[sel_variation]
                               ->size;
+          phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
         }
-      } else if (phases[head] < 0 && banks[sel_bank_cur]
-                                             ->sample[sel_sample_cur]
-                                             .snd[sel_variation]
-                                             ->play_mode != PLAY_SPLICE_STOP) {
+      } else if (phases[head] < 0) {
         printf("< phase_forward: %d\n", phase_forward);
         printf("< phase[head]: %d\n", phases[head]);
         if (phase_forward == 0) {
@@ -565,6 +531,7 @@ void i2s_callback_func() {
                               ->sample[sel_sample_cur]
                               .snd[sel_variation]
                               ->size;
+          phases[head] = (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR;
         }
       }
     }
@@ -582,7 +549,8 @@ void i2s_callback_func() {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
 #ifdef PRINT_AUDIO_CPU_USAGE
-    printf("average cpu utilization: %2.1f\n", ((float)cpu_utilization) / 64.0);
+    printf("average cpu utilization: %2.1f\n", sd_calls,
+           ((float)cpu_utilization) / 64.0);
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING
