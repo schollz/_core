@@ -251,6 +251,7 @@ void i2s_callback_func() {
     if (phase_change) {
       do_crossfade = true;
       phases[1] = phases[0];  // old phase
+      phases[0] = phase_new;
       phase_change = false;
     }
 
@@ -532,48 +533,6 @@ void i2s_callback_func() {
 
   if (do_fade_out) {
     audio_mute = true;
-  }
-  if (fil_is_open) {
-    for (uint8_t head = 0; head < 2; head++) {
-      if ((int64_t)phases[head] >= (int64_t)banks[sel_bank_cur]
-                                       ->sample[sel_sample_cur]
-                                       .snd[sel_variation]
-                                       ->size &&
-          banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[sel_variation]
-                  ->play_mode != PLAY_SPLICE_STOP) {
-        printf("> phase_forward: %d\n", phase_forward);
-        printf("> phase[head]: %d\n", phases[head]);
-        printf("> size: %d\n", banks[sel_bank_cur]
-                                   ->sample[sel_sample_cur]
-                                   .snd[sel_variation]
-                                   ->size);
-        printf("> size: %d\n", banks[0]->sample[0].snd[0]->size);
-        // TODO: check playback type
-        if (phase_forward) {
-          // going forward, restart from the beginning
-          phases[head] -= banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[sel_variation]
-                              ->size;
-        }
-      } else if (phases[head] < 0 && banks[sel_bank_cur]
-                                             ->sample[sel_sample_cur]
-                                             .snd[sel_variation]
-                                             ->play_mode != PLAY_SPLICE_STOP) {
-        printf("< phase_forward: %d\n", phase_forward);
-        printf("< phase[head]: %d\n", phases[head]);
-        if (phase_forward == 0) {
-          // going backwards, restart from the end
-          printf("restart from the end!!!!\n");
-          phases[head] += banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[sel_variation]
-                              ->size;
-        }
-      }
-    }
   }
   sync_using_sdcard = false;
 
