@@ -37,11 +37,11 @@
 #define Q16_16_2PI 411774
 #define Q16_16_PI_OVER_2 102943
 #define Q16_16_MAX 2147418112
-#define Q16_16_2_OVER_PI 41721 // 2 / pi
+#define Q16_16_2_OVER_PI 41721  // 2 / pi
 // https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
-#define Q16_16_SIN_A5 102873 // 4 * (3/pi - 9/16)
-#define Q16_16_SIN_B5 41906  // 2 * a5 - 5 / 2
-#define Q16_16_SIN_C5 4569   // a5 - 3/2
+#define Q16_16_SIN_A5 102873  // 4 * (3/pi - 9/16)
+#define Q16_16_SIN_B5 41906   // 2 * a5 - 5 / 2
+#define Q16_16_SIN_C5 4569    // a5 - 3/2
 
 /* Defines the number of fractional bits used in the Q16.16 fixed-point format.
  */
@@ -82,7 +82,7 @@ int32_t q16_16_int16_to_fp(int16_t value) {
 int32_t q16_16_int32_to_fp(int32_t value) {
   /* Shift the int32 value left by the number of Q-bits to obtain the
      fixed-point value. */
-  return value;
+  return (int32_t)value << Q16_16_Q_BITS;
 }
 
 /* Multiplies two Q16.16 fixed-point values. */
