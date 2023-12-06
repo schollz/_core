@@ -50,9 +50,7 @@ void i2s_callback_func() {
   bool do_crossfade = false;
   bool do_fade_out = false;
   bool do_fade_in = false;
-#ifdef PRINT_AUDIO_CPU_USAGE
   clock_t startTime = time_us_64();
-#endif
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
   if (buffer == NULL) {
     return;
