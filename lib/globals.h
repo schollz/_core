@@ -123,6 +123,7 @@ ResonantFilter *resFilter[2];
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
+bool trigger_audio_mute = false;
 
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];

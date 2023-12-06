@@ -32,7 +32,6 @@ const uint8_t cpu_usage_flag_limit = 2;
 const uint8_t cpu_usage_limit_threshold = 80;
 
 bool audio_was_muted = false;
-bool trigger_audio_mute = false;
 
 // ignore boundaries
 #define PLAY_NORMAL 0
