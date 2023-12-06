@@ -152,22 +152,27 @@ void i2s_callback_func() {
 
     // check if tempo matching is activated, if not then don't change
     // based on bpm
-    float bpm_tempo = 1.0;
+    uint32_t samples_to_read;
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
             ->tempo_match) {
-      bpm_tempo =
-          sf->bpm_tempo /
+      samples_to_read =
+          buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) *
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->oversampling /
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
+    } else {
+      samples_to_read =
+          round((float)buffer->max_sample_count * envelope_pitch_val) *
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->oversampling;
     }
-    uint32_t samples_to_read =
-        buffer->max_sample_count * round(sf->bpm_tempo * envelope_pitch_val) *
-        banks[sel_bank_cur]
-            ->sample[sel_sample_cur]
-            .snd[sel_variation]
-            ->oversampling /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
+
     uint32_t values_len = samples_to_read * banks[sel_bank_cur]
                                                 ->sample[sel_sample_cur]
                                                 .snd[sel_variation]
