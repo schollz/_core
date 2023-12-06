@@ -112,8 +112,6 @@ void sdcard_startup() {
     }
   }  // bank loop
 
-  sleep_ms(30000000);
-
   FRESULT fr;
   fr = f_open(
       &fil_current,

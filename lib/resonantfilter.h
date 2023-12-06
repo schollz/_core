@@ -144,7 +144,7 @@ int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
   if (rf->passthrough) {
     return in;
   }
-  int32_t x = q16_16_int32_to_fp(in);
+  int32_t x = in;
   int32_t y = q16_16_multiply(rf->b0, x) + q16_16_multiply(rf->b1, rf->x1_f) +
               q16_16_multiply(rf->b2, rf->x2_f) -
               q16_16_multiply(rf->a1, rf->y1_f) -
