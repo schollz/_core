@@ -124,6 +124,8 @@ ResonantFilter *resFilter[2];
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
 bool trigger_audio_mute = false;
+bool button_mute = false;
+bool trigger_button_mute = false;
 
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
@@ -183,6 +185,17 @@ float pitch_vals[PITCH_VAL_MAX] = {
     1.943063882302,
     2.0,
 };
+
+// ignore boundaries
+#define PLAY_NORMAL 0
+// starts at splice start and ends at splice stop
+#define PLAY_SPLICE_STOP 1
+// starts at splice start, and returns to start when reaching splice boundary
+#define PLAY_SPLICE_LOOP 2
+// starts at splice start and ends at sample boundary
+#define PLAY_SAMPLE_STOP 3
+// starts at splice start and returns to start when reaching sample boundary
+#define PLAY_SAMPLE_LOOP 4
 
 #ifdef INCLUDE_RGBLED
 WS2812 *ws2812;
