@@ -56,8 +56,8 @@ void i2s_callback_func() {
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
-      samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-      samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+      samples[i * 2 + 0] = value0 + (value0 >> 16u); // L
+      samples[i * 2 + 1] = samples[i * 2 + 0];       // R = L
     }
     buffer->sample_count = buffer->max_sample_count;
     give_audio_buffer(ap, buffer);
@@ -83,11 +83,11 @@ void i2s_callback_func() {
     bool do_gate_down = false;
     if (gate_is_applied && gate_counter == 0) {
       gate_is_applied = false;
-      do_gate_up = true;  // allow the sound to come through
+      do_gate_up = true; // allow the sound to come through
     } else if (gate_active) {
       gate_counter++;
       if (!gate_is_applied && gate_counter >= gate_threshold) {
-        do_gate_down = true;  // mute the sound
+        do_gate_down = true; // mute the sound
       }
     }
 
@@ -171,7 +171,7 @@ void i2s_callback_func() {
                                                 ->sample[sel_sample_cur]
                                                 .snd[sel_variation]
                                                 ->num_channels;
-    uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
+    uint32_t values_to_read = values_len * 2; // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
     uint vol_main =
         (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
@@ -200,51 +200,51 @@ void i2s_callback_func() {
                   ->sample[sel_sample_cur]
                   .snd[sel_variation]
                   ->play_mode) {
-        case PLAY_NORMAL:
-          if (phase_forward && phases[0] > sample_stop) {
-            phase_change = true;
-            phase_new = phases[0] - sample_stop;
-          } else if (!phase_forward && phases[0] < 0) {
-            phase_change = true;
-            phase_new = phases[0] + sample_stop;
-          }
-          break;
-        case PLAY_SPLICE_STOP:
-          if ((phase_forward && (next_phase > splice_stop)) ||
-              (!phase_forward && (next_phase < splice_start))) {
-            do_fade_out = true;
-          }
-          break;
-        case PLAY_SPLICE_LOOP:
-          if (phase_forward && (phases[0] > splice_stop)) {
-            phase_change = true;
-            phase_new = splice_start;
-          } else if (!phase_forward && (phases[0] < splice_stop)) {
-            phase_change = true;
-            phase_new = splice_stop;
-          }
-          break;
-        case PLAY_SAMPLE_STOP:
-          if ((phase_forward && (next_phase > sample_stop)) ||
-              (!phase_forward && (next_phase < 0))) {
-            do_fade_out = true;
-          }
-          break;
-        case PLAY_SAMPLE_LOOP:
-          if (phase_forward && (phases[0] > sample_stop)) {
-            phase_change = true;
-            phase_new = splice_start;
-          } else if (!phase_forward && (phases[0] < 0)) {
-            phase_change = true;
-            phase_new = splice_stop;
-          }
-          break;
+      case PLAY_NORMAL:
+        if (phase_forward && phases[0] > sample_stop) {
+          phase_change = true;
+          phase_new = phases[0] - sample_stop;
+        } else if (!phase_forward && phases[0] < 0) {
+          phase_change = true;
+          phase_new = phases[0] + sample_stop;
+        }
+        break;
+      case PLAY_SPLICE_STOP:
+        if ((phase_forward && (next_phase > splice_stop)) ||
+            (!phase_forward && (next_phase < splice_start))) {
+          do_fade_out = true;
+        }
+        break;
+      case PLAY_SPLICE_LOOP:
+        if (phase_forward && (phases[0] > splice_stop)) {
+          phase_change = true;
+          phase_new = splice_start;
+        } else if (!phase_forward && (phases[0] < splice_stop)) {
+          phase_change = true;
+          phase_new = splice_stop;
+        }
+        break;
+      case PLAY_SAMPLE_STOP:
+        if ((phase_forward && (next_phase > sample_stop)) ||
+            (!phase_forward && (next_phase < 0))) {
+          do_fade_out = true;
+        }
+        break;
+      case PLAY_SAMPLE_LOOP:
+        if (phase_forward && (phases[0] > sample_stop)) {
+          phase_change = true;
+          phase_new = splice_start;
+        } else if (!phase_forward && (phases[0] < 0)) {
+          phase_change = true;
+          phase_new = splice_stop;
+        }
+        break;
       }
     }
 
     if (phase_change) {
       do_crossfade = true;
-      phases[1] = phases[0];  // old phase
+      phases[1] = phases[0]; // old phase
       phases[0] = phase_new;
       phase_change = false;
     }
@@ -311,8 +311,8 @@ void i2s_callback_func() {
           printf("problem seeking to phase (%d)\n", phases[head]);
           for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
             int32_t value0 = 0;
-            samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-            samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+            samples[i * 2 + 0] = value0 + (value0 >> 16u); // L
+            samples[i * 2 + 1] = samples[i * 2 + 0];       // R = L
           }
           buffer->sample_count = buffer->max_sample_count;
           give_audio_buffer(ap, buffer);
@@ -325,7 +325,7 @@ void i2s_callback_func() {
       t0 = time_us_32();
       if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
         printf("ERROR READING!\n");
-        f_close(&fil_current);  // close and re-open trick
+        f_close(&fil_current); // close and re-open trick
         f_open(&fil_current,
                banks[sel_bank_cur]
                    ->sample[sel_sample_cur]
@@ -418,13 +418,13 @@ void i2s_callback_func() {
             if (head == 0) {
               samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
               samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
-              samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+              samples[i * 2 + 1] = samples[i * 2 + 0]; // R = L
             }
           } else {
             samples[i * 2 + 0] += newArray[i];
             samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
             samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
-            samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+            samples[i * 2 + 1] = samples[i * 2 + 0]; // R = L
           }
           // int32_t value0 = (vol * newArray[i]) << 8u;
           // samples[i * 2 + 0] =
@@ -440,7 +440,7 @@ void i2s_callback_func() {
                      ->num_channels == 2) {
         // stereo
         for (uint8_t channel = 0; channel < 2; channel++) {
-          int16_t valuesC[samples_to_read];  // max limit
+          int16_t valuesC[samples_to_read]; // max limit
           for (uint16_t i = 0; i < values_len; i++) {
             if (i % 2 == channel) {
               valuesC[i / 2] = values[i];
@@ -510,6 +510,29 @@ void i2s_callback_func() {
     }
   }
 #endif
+
+  // apply other fx
+  // TODO: fade in/out these fx using the crossfade?
+  if (fx_tremelo_active || fx_pan_active) {
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      int32_t v;
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        if (fx_tremelo_active) {
+          samples[i * 2 + channel] =
+              q16_16_multiply(samples[i * 2 + channel], lfo_tremelo_val);
+        }
+        if (fx_pan_active) {
+          if (channel == 0) {
+            v = q16_16_sin01(lfo_pan_val);
+          } else {
+            v = Q16_16_1 - v;
+          }
+          samples[i * 2 + channel] =
+              q16_16_multiply(samples[i * 2 + channel], v);
+        }
+      }
+    }
+  }
 
   // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
   //   samples[i * 2 + 0] =
