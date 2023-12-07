@@ -352,6 +352,13 @@ void button_handler(ButtonMatrix *bm) {
     }
     printf("\n");
 
+    // combo matching
+    if (key_pressed_num == 3) {
+      if (key_pressed[0] == 8 && key_pressed[1] == 9 && key_pressed[2] == 8) {
+        printf("combo: 8 9 8!!!\n");
+      }
+    }
+
     // B + H + H...
     // chain: select sequences to chain together
     if (key_pressed[0] == KEY_B) {
