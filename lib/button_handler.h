@@ -46,7 +46,7 @@ uint16_t key_num_presses;
 bool key_b_sample_select = false;
 
 // fx toggles
-bool fx_toggle[16]; // 16 possible
+bool fx_toggle[16];  // 16 possible
 #define FX_REVERSE 0
 #define FX_SLOWDOWN 1
 #define FX_NORMSPEED 2
@@ -154,32 +154,32 @@ void go_update_top() {
 void go_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
   switch (fx_num) {
-  case FX_REVERSE:
-    phase_forward = !on;
-    break;
-  case FX_SLOWDOWN:
-    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                    Envelope2_update(envelope_pitch), 0.5, 1);
-    break;
-  case FX_NORMSPEED:
-    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                    Envelope2_update(envelope_pitch), 1.0, 1);
-    break;
-  case FX_SPEEDUP:
-    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                    Envelope2_update(envelope_pitch), 2.0, 1);
-    break;
-  case FX_TIMESTRETCH:
-    sel_variation_next = 1 - sel_variation_next;
-    // if (sel_variation == FILE_VARIATIONS - 1) {
-    //   sel_variation_next = 0;
-    // } else {
-    //   sel_variation_next = sel_variation + 1;
-    // }
-    fil_current_change = true;
-    break;
-  default:
-    break;
+    case FX_REVERSE:
+      phase_forward = !on;
+      break;
+    case FX_SLOWDOWN:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 0.5, 1);
+      break;
+    case FX_NORMSPEED:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 1.0, 1);
+      break;
+    case FX_SPEEDUP:
+      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_pitch), 2.0, 1);
+      break;
+    case FX_TIMESTRETCH:
+      sel_variation_next = 1 - sel_variation_next;
+      // if (sel_variation == FILE_VARIATIONS - 1) {
+      //   sel_variation_next = 0;
+      // } else {
+      //   sel_variation_next = sel_variation + 1;
+      // }
+      fil_current_change = true;
+      break;
+    default:
+      break;
   }
 }
 
@@ -243,10 +243,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     } else if (key2 == KEY_B) {
       // S+B
       // toggle mute
-      if (audio_mute) {
-        audio_mute = false;
+      if (button_mute) {
+        printf("[button_handler] button_mute off\n");
+        button_mute = false;
       } else {
-        trigger_audio_mute = true;
+        printf("[button_handler] trigger button_mute\n");
+        trigger_button_mute = true;
       }
     } else if (key2 == KEY_C) {
       // S+C
@@ -345,7 +347,7 @@ void button_handler(ButtonMatrix *bm) {
   if (key_total_pressed == 0) {
     key_timer++;
   }
-  if (key_timer == 400 && key_pressed_num > 0) {
+  if (key_timer == 300 && key_pressed_num > 0) {
     printf("combo: ");
     for (uint8_t i = 0; i < key_pressed_num; i++) {
       printf("%d ", key_pressed[i]);
@@ -355,7 +357,51 @@ void button_handler(ButtonMatrix *bm) {
     // combo matching
     if (key_pressed_num == 3) {
       if (key_pressed[0] == 8 && key_pressed[1] == 9 && key_pressed[2] == 8) {
+        // toggle one shot mode
+        if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->splice_trigger == 0) {
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->splice_trigger = 96;
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->play_mode = PLAY_NORMAL;
+        } else {
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->splice_trigger = 0;
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->play_mode = PLAY_SPLICE_STOP;
+        }
         printf("combo: 8 9 8!!!\n");
+      } else if (key_pressed[0] == 10 && key_pressed[1] == 11 &&
+                 key_pressed[2] == 10) {
+        printf("combo: 10 11 10!!!\n");
+        if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->play_mode < PLAY_SAMPLE_LOOP) {
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->play_mode++;
+        } else {
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[sel_variation]
+              ->play_mode = 0;
+        }
+        printf("play_mode: %d\n", banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->play_mode);
       }
     }
 
