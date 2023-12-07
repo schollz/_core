@@ -124,6 +124,12 @@ int32_t q16_16_sin(int32_t fixedValue) {
   return sin5;
 }
 
+
+int32_t q16_16_sin01(int32_t fixedValue) {
+  int32_t sin5 = q16_16_sin(fixedValue);
+  return q16_16_multiply(Q16_16_0_5, sin5) + Q16_16_0_5;
+}
+
 int32_t q16_16_cos(int32_t fixedValue) {
   return q16_16_multiply(Q16_16_MINUS_1,
                          q16_16_sin(fixedValue - Q16_16_PI_OVER_2));
