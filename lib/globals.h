@@ -137,6 +137,9 @@ int32_t lfo_tremelo_val = 0;
 // TODO: make the lfo tremelo step adjustable?
 int32_t lfo_tremelo_step = Q16_16_2PI / 32;
 
+#define ENVELOPE_PITCH_THRESHOLD 0.01
+bool fx_tape_stop_active = false;
+
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
 // a.do({ arg v;
