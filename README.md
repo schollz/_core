@@ -104,9 +104,32 @@ knobs: X, Y, Z
 - [ ] **C** + **Y** → 
 - [ ] **C** + **Z** → 
 
+### effects 
+
+effects for the 16 buttons 
+
+- [ ] **1** -> reverse 
+- [ ] **2** -> slow speed
+- [ ] **3** -> normal speed
+- [ ] **4** -> fast speed
+- [ ] **5** -> timestretch
+- [ ] **6** -> 
+- [ ] **7** -> 
+- [ ] **8** -> 
+- [ ] **9** -> 
+- [ ] **10** -> 
+- [ ] **11** -> 
+- [ ] **12** -> 
+- [ ] **13** -> toggle low pass?
+- [ ] **14** -> tremelo?
+- [ ] **15** -> crazy pan?
+- [ ] **16** -> tape stop/start?
+
 ### cheat codes
 
-- [ ] 
+- [ ] **4**,**5**,**4** -> toggle one-shot mode
+- [ ] **7**,**8**,**7** -> toggle play mode
+- [ ] ?? -> toggle sync mode?
 
 #### needs
 
