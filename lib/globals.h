@@ -127,6 +127,16 @@ bool trigger_audio_mute = false;
 bool button_mute = false;
 bool trigger_button_mute = false;
 
+// lfos
+bool fx_pan_active = false;
+int32_t lfo_pan_val = 0;
+// TODO: make the lfo pan step adjustable?
+int32_t lfo_pan_step = Q16_16_2PI / 96;
+bool fx_tremelo_active = false;
+int32_t lfo_tremelo_val = 0;
+// TODO: make the lfo tremelo step adjustable?
+int32_t lfo_tremelo_step = Q16_16_2PI / 32;
+
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
 // a.do({ arg v;

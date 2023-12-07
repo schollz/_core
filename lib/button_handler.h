@@ -46,12 +46,14 @@ uint16_t key_num_presses;
 bool key_b_sample_select = false;
 
 // fx toggles
-bool fx_toggle[16];  // 16 possible
-#define FX_REVERSE 0
-#define FX_SLOWDOWN 1
-#define FX_NORMSPEED 2
-#define FX_SPEEDUP 3
-#define FX_TIMESTRETCH 4
+bool fx_toggle[16]; // 16 possible
+#define FX_REVERSE 1
+#define FX_SLOWDOWN 2
+#define FX_NORMSPEED 3
+#define FX_SPEEDUP 4
+#define FX_TIMESTRETCH 5
+#define FX_PAN 15
+#define FX_TREMELO 14
 
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
@@ -153,33 +155,39 @@ void go_update_top() {
 // uptate all the fx based on the fx_toggle
 void go_update_fx(uint8_t fx_num) {
   bool on = fx_toggle[fx_num];
-  switch (fx_num) {
-    case FX_REVERSE:
-      phase_forward = !on;
-      break;
-    case FX_SLOWDOWN:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 0.5, 1);
-      break;
-    case FX_NORMSPEED:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 1.0, 1);
-      break;
-    case FX_SPEEDUP:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 2.0, 1);
-      break;
-    case FX_TIMESTRETCH:
-      sel_variation_next = 1 - sel_variation_next;
-      // if (sel_variation == FILE_VARIATIONS - 1) {
-      //   sel_variation_next = 0;
-      // } else {
-      //   sel_variation_next = sel_variation + 1;
-      // }
-      fil_current_change = true;
-      break;
-    default:
-      break;
+  switch (fx_num + 1) {
+  case FX_REVERSE:
+    phase_forward = !on;
+    break;
+  case FX_SLOWDOWN:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 0.5, 1);
+    break;
+  case FX_NORMSPEED:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 1.0, 1);
+    break;
+  case FX_PAN:
+    fx_pan_active = !fx_pan_active;
+    break;
+  case FX_TREMELO:
+    fx_tremelo_active = !fx_tremelo_active;
+    break;
+  case FX_SPEEDUP:
+    Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                    Envelope2_update(envelope_pitch), 2.0, 1);
+    break;
+  case FX_TIMESTRETCH:
+    sel_variation_next = 1 - sel_variation_next;
+    // if (sel_variation == FILE_VARIATIONS - 1) {
+    //   sel_variation_next = 0;
+    // } else {
+    //   sel_variation_next = sel_variation + 1;
+    // }
+    fil_current_change = true;
+    break;
+  default:
+    break;
   }
 }
 

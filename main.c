@@ -159,8 +159,16 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
     }
   }
-  // Charlieplex_toggle(cp, beat_current % 16);
-  // printf("Repeat at %lld\n", time_us_64());
+  // update lfos
+  lfo_pan_val += lfo_pan_step;
+  if (lfo_pan_val > Q16_16_2PI) {
+    lfo_pan_val -= Q16_16_2PI;
+  }
+  lfo_tremelo_val += lfo_tremelo_step;
+  if (lfo_tremelo_val > Q16_16_2PI) {
+    lfo_tremelo_val -= Q16_16_2PI;
+  }
+
   return true;
 }
 
