@@ -113,10 +113,10 @@ effects for the 16 buttons
 - [ ] **3** -> normal speed
 - [ ] **4** -> fast speed
 - [ ] **5** -> timestretch
-- [ ] **6** -> TODO volume down
+- [ ] **6** -> volume down
 - [ ] **7** -> TODO delay (special bounds based on tempo)
 - [ ] **8** -> 
-- [ ] **9** -> TODO volume up
+- [ ] **9** -> volume up
 - [ ] **10** -> 
 - [ ] **11** -> 
 - [ ] **12** -> 
