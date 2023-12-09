@@ -129,6 +129,7 @@ effects for the 16 buttons
 
 - [ ] **4**,**5**,**4** -> toggle one-shot mode
 - [ ] **7**,**8**,**7** -> toggle play mode
+- [ ] **13**,**16**,**14**,**15** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
 
 #### needs
