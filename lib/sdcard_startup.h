@@ -42,7 +42,7 @@ void sdcard_startup() {
   }
   envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
   envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
-  envelope3 = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
+  envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
 #ifdef INCLUDE_BASS

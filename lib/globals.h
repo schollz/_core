@@ -66,7 +66,7 @@ bool sync_using_sdcard = false;
 // voice 2 takes place of old voice and continues
 Envelope2 *envelope1;
 Envelope2 *envelope2;
-Envelope2 *envelope3;
+Envelope2 *envelope_volume;
 Envelope2 *envelope_pitch;
 Noise *noise_wobble;
 uint vols[2];

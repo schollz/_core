@@ -190,7 +190,7 @@ void run_keyboard() {
       fil_current_change = true;
     }
     if (c == 'a') {
-      Envelope2_reset(envelope3, BLOCKS_PER_SECOND, 0, 1.0, 1.5);
+      Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND, 0, 1.0, 1.5);
       // debounce_quantize = 2;
     }
     if (c == 'q') {
