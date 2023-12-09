@@ -423,6 +423,16 @@ void button_handler(ButtonMatrix *bm) {
                                       .snd[sel_variation]
                                       ->play_mode);
       }
+    } else if (key_pressed_num == 4) {
+      if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
+          key_pressed[2] == 13 && key_pressed[3] == 14) {
+        quadratic_resampling = !quadratic_resampling;
+        if (quadratic_resampling) {
+          printf("combo: change resampling to quadratic");
+        } else {
+          printf("combo: change resampling to linear");
+        }
+      }
     }
 
     // B + H + H...
