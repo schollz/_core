@@ -131,11 +131,11 @@ bool trigger_button_mute = false;
 bool fx_pan_active = false;
 int32_t lfo_pan_val = 0;
 // TODO: make the lfo pan step adjustable?
-int32_t lfo_pan_step = Q16_16_2PI / 96;
+int32_t lfo_pan_step = Q16_16_2PI / (96 * 5);
 bool fx_tremelo_active = false;
 int32_t lfo_tremelo_val = 0;
 // TODO: make the lfo tremelo step adjustable?
-int32_t lfo_tremelo_step = Q16_16_2PI / 32;
+int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 
 #define ENVELOPE_PITCH_THRESHOLD 0.01
 bool fx_tape_stop_active = false;

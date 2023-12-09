@@ -53,6 +53,7 @@ void i2s_callback_func() {
       (gate_active && gate_counter >= gate_threshold) || audio_mute ||
       button_mute || reduce_cpu_usage > 0 ||
       (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD)) {
+    envelope_pitch_val = envelope_pitch_val_new;
     if (reduce_cpu_usage > 0) {
       // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
@@ -512,21 +513,30 @@ void i2s_callback_func() {
   // apply other fx
   // TODO: fade in/out these fx using the crossfade?
   if (fx_tremelo_active || fx_pan_active) {
+    int32_t u;
+    int32_t v;
+    int32_t w;
+    if (fx_tremelo_active) {
+      u = q16_16_sin01(lfo_tremelo_val);
+    }
+    if (fx_pan_active) {
+      v = q16_16_sin01(lfo_pan_val);
+      w = Q16_16_1 - v;
+    }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      int32_t v;
       for (uint8_t channel = 0; channel < 2; channel++) {
         if (fx_tremelo_active) {
           samples[i * 2 + channel] =
-              q16_16_multiply(samples[i * 2 + channel], lfo_tremelo_val);
+              q16_16_multiply(samples[i * 2 + channel], u);
         }
         if (fx_pan_active) {
           if (channel == 0) {
-            v = q16_16_sin01(lfo_pan_val);
+            samples[i * 2 + channel] =
+                q16_16_multiply(samples[i * 2 + channel], v);
           } else {
-            v = Q16_16_1 - v;
+            samples[i * 2 + channel] =
+                q16_16_multiply(samples[i * 2 + channel], w);
           }
-          samples[i * 2 + channel] =
-              q16_16_multiply(samples[i * 2 + channel], v);
         }
       }
     }
