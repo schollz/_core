@@ -47,11 +47,13 @@ bool key_b_sample_select = false;
 
 // fx toggles
 bool fx_toggle[16];  // 16 possible
-#define FX_REVERSE 1
+#define FX_TIMESTRETCH 1
 #define FX_SLOWDOWN 2
 #define FX_NORMSPEED 3
 #define FX_SPEEDUP 4
-#define FX_TIMESTRETCH 5
+#define FX_VOLUME_RAMP_DOWN 5
+#define FX_VOLUME_RAMP_UP 8
+#define FX_REVERSE 13
 #define FX_TREMELO 14
 #define FX_PAN 15
 #define FX_TAPE_STOP 16
@@ -188,6 +190,14 @@ void go_update_fx(uint8_t fx_num) {
     case FX_SPEEDUP:
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                       Envelope2_update(envelope_pitch), 2.0, 1);
+      break;
+    case FX_VOLUME_RAMP_DOWN:
+      Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_volume), 0, 2.7);
+      break;
+    case FX_VOLUME_RAMP_UP:
+      Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                      Envelope2_update(envelope_volume), 1, 2.7);
       break;
     case FX_TIMESTRETCH:
       sel_variation_next = 1 - sel_variation_next;
