@@ -432,6 +432,23 @@ void button_handler(ButtonMatrix *bm) {
         } else {
           printf("combo: change resampling to linear");
         }
+      } else if (key_pressed[0] == 8 && key_pressed[1] == 11 &&
+                 key_pressed[2] == 10 && key_pressed[3] == 9) {
+        banks[sel_bank_cur]
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->tempo_match = !banks[sel_bank_cur]
+                                 ->sample[sel_sample_cur]
+                                 .snd[sel_variation]
+                                 ->tempo_match;
+        if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->tempo_match) {
+          printf("combo: enabled to tempo match mode");
+        } else {
+          printf("combo: disabled tempo match mode");
+        }
       }
     }
 

@@ -113,25 +113,25 @@ effects for the 16 buttons
 - [ ] **3** -> normal speed
 - [ ] **4** -> fast speed
 - [ ] **5** -> timestretch
-- [ ] **6** -> 
-- [ ] **7** -> 
+- [ ] **6** -> TODO volume down
+- [ ] **7** -> TODO delay (special bounds based on tempo)
 - [ ] **8** -> 
-- [ ] **9** -> 
+- [ ] **9** -> TODO volume up
 - [ ] **10** -> 
 - [ ] **11** -> 
 - [ ] **12** -> 
-- [ ] **13** -> toggle low pass?
-- [ ] **14** -> tremelo?
-- [ ] **15** -> crazy pan?
-- [ ] **16** -> tape stop/start?
+- [ ] **13** -> TODO toggle low pass?
+- [ ] **14** -> tremelo
+- [ ] **15** -> panning
+- [ ] **16** -> tape stop/start
 
 ### cheat codes
 
 - [ ] **4**,**5**,**4** -> toggle one-shot mode
 - [ ] **7**,**8**,**7** -> toggle play mode
+- [ ] **9**, **12**, **10**, **11** -> toggle tempo match mode
 - [ ] **13**,**16**,**14**,**15** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
-- [ ] ?? -> toggle tempo match mode
 
 #### needs
 
