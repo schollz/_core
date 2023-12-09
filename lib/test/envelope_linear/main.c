@@ -22,16 +22,30 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-#ifndef LIB_UTILS
-#define LIB_UTILS 1
+//  gcc -o main main.c && ./main  | gnuplot -p -e 'plot "/dev/stdin"  using 0:1'
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-// callback definitions
-typedef void (*callback_int_int)(int, int);
-typedef void (*callback_int)(int);
-typedef void (*callback_int32)(int32_t);
-typedef void (*callback_uint8_uint8)(uint8_t, uint8_t);
-typedef void (*callback_uint8)(uint8_t);
-typedef void (*callback_uint16)(uint16_t);
-typedef void (*callback_void)();
+#include "../../envelope_linear_integer.h"
 
-#endif
+void env_changed_callback(int32_t v) { printf("changed to %d\n", v); }
+
+int main() {
+  // Create a EnvelopeLinearInteger instance
+  uint32_t sampleRate = 500;
+  EnvelopeLinearInteger *envelope1 =
+      EnvelopeLinearInteger_create(sampleRate, 30, -30, 0.9);
+
+  for (int i = 0; i < sampleRate; i++) {
+    int32_t value =
+        EnvelopeLinearInteger_update(envelope1, env_changed_callback);
+    printf("%d\n", value);
+  }
+
+  EnvelopeLinearInteger_destroy(envelope1);
+
+  return 0;
+}
