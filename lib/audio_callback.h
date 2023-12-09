@@ -173,7 +173,7 @@ void i2s_callback_func() {
     uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
     uint vol_main =
-        (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope3));
+        (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope_volume));
 
     if (!phase_change) {
       const int32_t next_phase =
