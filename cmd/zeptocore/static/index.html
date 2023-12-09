@@ -61,13 +61,18 @@
                     </p>
                     <p v-if="previousPages.length>0">
                         Some previous pages:
-                        <span v-for="link in previousPages"><a
-                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</span>
+                        <ul>                       
+                             <li v-for="link in previousPages"  style="padding-top:0.5em"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</li>
+                            </ul>
+
                     </p>
                     <p>
                         Some new pages:
-                        <span v-for="link in randomPages"><a
-                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</span>
+                        <ul>
+                        <li v-for="link in randomPages" style="padding-top:0.5em"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;</li>
+                        </ul>
 
                     </p>
                 </div>
