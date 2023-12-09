@@ -172,15 +172,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   return true;
 }
 
-uint16_t freqs_available[74] = {
-    200,   250,   262,   277,   294,   311,   330,   349,  370,  392,  415,
-    440,   466,   494,   523,   554,   587,   622,   659,  698,  740,  784,
-    831,   880,   932,   988,   1047,  1109,  1175,  1245, 1319, 1397, 1480,
-    1568,  1661,  1760,  1865,  1976,  2093,  2217,  2349, 2489, 2637, 2794,
-    2960,  3136,  3322,  3520,  3729,  3951,  4186,  4435, 4699, 4978, 5274,
-    5588,  5920,  6272,  6645,  7040,  7459,  7902,  8372, 8870, 9397, 9956,
-    10548, 11175, 11840, 12544, 13290, 14080, 14917, 15804};
-
 void clock_handling(int time_diff) {
   printf("[main] clock_handling: %d", time_diff);
 }
@@ -265,14 +256,15 @@ void input_handling() {
       } else if (button_is_pressed(KEY_A)) {
         for (uint8_t channel = 0; channel < 2; channel++) {
           if (adc < 2000) {
+            global_filter_index = adc * (resonantfilter_fc_max) / 2000;
             ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel],
-                                 adc * (resonantfilter_fc_max) / 2000);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else if (adc > 2096) {
+            global_filter_index = (adc - 2096) * (resonantfilter_fc_max) / 2000;
             ResonantFilter_setFilterType(resFilter[channel], 1);
-            ResonantFilter_setFc(resFilter[channel],
-                                 (adc - 2096) * (resonantfilter_fc_max) / 2000);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else {
+            global_filter_index = resonantfilter_fc_max;
             ResonantFilter_setFilterType(resFilter[channel], 0);
             ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
           }
