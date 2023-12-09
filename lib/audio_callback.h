@@ -374,7 +374,7 @@ void i2s_callback_func() {
       }
 
       // saturate before resampling?
-      if (fx_overdrive_active) {
+      if (fx_saturate_active) {
         for (uint16_t i = 0; i < values_len; i++) {
           values[i] = transfer_doublesine(values[i]);
         }
