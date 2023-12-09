@@ -48,6 +48,29 @@ main {
     flex: 1;
 }
 
+
+.help-banner {
+    margin: 3em;
+    padding: 2em;
+    max-width: 600px;
+    border-color: var(--header-footer-background);
+    border-style: solid;
+    background: var(--banks-background);
+    margin: auto;
+}
+
+.help-banner a {
+    color: white;
+    text-decoration: none;
+    background: var(--header-footer-background);
+    padding: 0.25em;
+
+}
+
+.help-banner a:hover {
+    background: var(--highlight-color);
+}
+
 .banks-selector {
     background-color: var(--banks-background);
     padding: 1rem;
@@ -268,6 +291,13 @@ body {
     body {
         padding: 0;
     }
+
+
+
+    .help-banner {
+        padding: 1em;
+        margin: 1em;
+    }
 }
 
 a {
@@ -314,27 +344,6 @@ a {
     }
 }
 
-.help-banner {
-    margin: 3em;
-    padding: 2em;
-    max-width: 600px;
-    border-color: var(--header-footer-background);
-    border-style: solid;
-    background: var(--banks-background);
-    margin: auto;
-}
-
-.help-banner a {
-    color: white;
-    text-decoration: none;
-    background: var(--header-footer-background);
-    padding: 0.25em;
-
-}
-
-.help-banner a:hover {
-    background: var(--highlight-color);
-}
 
 [v-cloak] {
     display: none;
