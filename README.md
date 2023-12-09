@@ -131,6 +131,7 @@ effects for the 16 buttons
 - [ ] **7**,**8**,**7** -> toggle play mode
 - [ ] **13**,**16**,**14**,**15** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
+- [ ] ?? -> toggle tempo match mode
 
 #### needs
 
