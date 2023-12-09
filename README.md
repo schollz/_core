@@ -114,13 +114,13 @@ effects for the 16 buttons
 - [ ] **4** -> fast speed
 - [ ] **5** -> timestretch
 - [ ] **6** -> volume down
-- [ ] **7** -> TODO delay (special bounds based on tempo)
-- [ ] **8** -> 
+- [ ] **7** -> filter down
+- [ ] **8** -> filter up
 - [ ] **9** -> volume up
-- [ ] **10** -> 
+- [ ] **10** -> TODO saturation
 - [ ] **11** -> 
 - [ ] **12** -> 
-- [ ] **13** -> TODO toggle low pass?
+- [ ] **13** -> TODO delay
 - [ ] **14** -> tremelo
 - [ ] **15** -> panning
 - [ ] **16** -> tape stop/start
