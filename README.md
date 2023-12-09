@@ -117,7 +117,7 @@ effects for the 16 buttons
 - [ ] **7** -> filter down
 - [ ] **8** -> filter up
 - [ ] **9** -> volume up
-- [ ] **10** -> TODO saturation
+- [ ] **10** -> saturation
 - [ ] **11** -> 
 - [ ] **12** -> 
 - [ ] **13** -> TODO delay

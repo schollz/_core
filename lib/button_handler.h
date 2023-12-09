@@ -55,6 +55,7 @@ bool fx_toggle[16];  // 16 possible
 #define FX_FILTER_DOWN 6
 #define FX_FILTER_UP 7
 #define FX_VOLUME_RAMP_UP 8
+#define FX_SATURATE 9
 #define FX_REVERSE 13
 #define FX_TREMELO 14
 #define FX_PAN 15
@@ -188,6 +189,9 @@ void go_update_fx(uint8_t fx_num) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch), 1.0, 1.9);
       }
+      break;
+    case FX_SATURATE:
+      fx_saturate_active = !fx_saturate_active;
       break;
     case FX_SPEEDUP:
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
