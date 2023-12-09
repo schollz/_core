@@ -45,6 +45,7 @@ void i2s_callback_func() {
     return;
   }
 
+  float envelope_volume_val = Envelope2_update(envelope_volume);
   float envelope_pitch_val_new = Envelope2_update(envelope_pitch);
 
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
@@ -52,7 +53,8 @@ void i2s_callback_func() {
   if (sync_using_sdcard || !fil_is_open ||
       (gate_active && gate_counter >= gate_threshold) || audio_mute ||
       button_mute || reduce_cpu_usage > 0 ||
-      (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD)) {
+      (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
+      envelope_volume_val < 0.001) {
     envelope_pitch_val = envelope_pitch_val_new;
     if (reduce_cpu_usage > 0) {
       // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
@@ -172,8 +174,7 @@ void i2s_callback_func() {
                                                 ->num_channels;
     uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
-    uint vol_main =
-        (uint)round(sf->vol * retrig_vol * Envelope2_update(envelope_volume));
+    uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
 
     if (!phase_change) {
       const int32_t next_phase =
