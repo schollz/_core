@@ -68,6 +68,7 @@ Envelope2 *envelope1;
 Envelope2 *envelope2;
 Envelope2 *envelope_volume;
 Envelope2 *envelope_pitch;
+EnvelopeLinearInteger *envelope_filter;
 Noise *noise_wobble;
 uint vols[2];
 
@@ -139,6 +140,8 @@ int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 
 #define ENVELOPE_PITCH_THRESHOLD 0.01
 bool fx_tape_stop_active = false;
+
+uint16_t global_filter_index = 0;
 
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
