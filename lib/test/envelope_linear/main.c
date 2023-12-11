@@ -31,7 +31,8 @@
 
 #include "../../envelope_linear_integer.h"
 
-void env_changed_callback(int32_t v) { printf("changed to %d\n", v); }
+int32_t val;
+void env_changed_callback(int32_t v) { val = v; }
 
 int main() {
   // Create a EnvelopeLinearInteger instance
@@ -40,9 +41,8 @@ int main() {
       EnvelopeLinearInteger_create(sampleRate, 30, -30, 0.9);
 
   for (int i = 0; i < sampleRate; i++) {
-    int32_t value =
-        EnvelopeLinearInteger_update(envelope1, env_changed_callback);
-    printf("%d\n", value);
+    EnvelopeLinearInteger_update(envelope1, env_changed_callback);
+    printf("%d\n", val);
   }
 
   EnvelopeLinearInteger_destroy(envelope1);

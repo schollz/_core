@@ -33,6 +33,14 @@ const uint8_t cpu_usage_limit_threshold = 80;
 
 bool audio_was_muted = false;
 
+void update_filter_from_envelope(int32_t val) {
+  printf("[audio_callback] filter changed: %d\n", val);
+  for (uint8_t channel = 0; channel < 2; channel++) {
+    ResonantFilter_setFilterType(resFilter[channel], 0);
+    ResonantFilter_setFc(resFilter[channel], val);
+  }
+}
+
 void i2s_callback_func() {
   uint32_t t0, t1;
   // flag for new phase
@@ -44,6 +52,8 @@ void i2s_callback_func() {
   if (buffer == NULL) {
     return;
   }
+
+  EnvelopeLinearInteger_update(envelope_filter, update_filter_from_envelope);
 
   float envelope_volume_val = Envelope2_update(envelope_volume);
   float envelope_pitch_val_new = Envelope2_update(envelope_pitch);

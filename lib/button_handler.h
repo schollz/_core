@@ -198,24 +198,29 @@ void go_update_fx(uint8_t fx_num) {
                       Envelope2_update(envelope_pitch), 2.0, 1);
       break;
     case FX_FILTER_DOWN:
-      EnvelopeLinearInteger_reset(
-          envelope_filter, BLOCKS_PER_SECOND,
-          EnvelopeLinearInteger_update(envelope_filter, NULL), 1, 2.7);
-      break;
-    case FX_FILTER_UP:
-      EnvelopeLinearInteger_reset(
-          envelope_filter, BLOCKS_PER_SECOND,
-          EnvelopeLinearInteger_update(envelope_filter, NULL),
-          global_filter_index, 2.7);
-
+      fx_filter_ramp_active = !fx_filter_ramp_active;
+      if (fx_filter_ramp_active) {
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL), 1, 1.618);
+      } else {
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL),
+            global_filter_index, 1.618);
+      }
       break;
     case FX_VOLUME_RAMP_DOWN:
-      Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_volume), 0, 2.7);
+      fx_volume_ramp_active = !fx_volume_ramp_active;
+      if (fx_volume_ramp_active) {
+        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_volume), 0, 1.618 / 2);
+      } else {
+        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_volume), 1, 1.618 / 2);
+      }
       break;
     case FX_VOLUME_RAMP_UP:
-      Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_volume), 1, 2.7);
       break;
     case FX_TIMESTRETCH:
       sel_variation_next = 1 - sel_variation_next;

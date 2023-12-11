@@ -44,6 +44,12 @@ EnvelopeLinearInteger *EnvelopeLinearInteger_reset(EnvelopeLinearInteger *env,
   // increments +1 every t until reaching stop
   env->t = 0;
   env->inc_t = round(mSampleRate * duration_time / ((float)abs(stop - start)));
+  // printf("[EnvelopeLinearInteger_reset] inc_t: %d\n", env->inc_t);
+  // printf("[EnvelopeLinearInteger_reset] start: %d\n", start);
+  // printf("[EnvelopeLinearInteger_reset] stop: %d\n", stop);
+  // printf("[EnvelopeLinearInteger_update] env->forward: %d\n", env->forward);
+  // printf("[EnvelopeLinearInteger_update] env->curr: %d\n", env->curr);
+  // printf("[EnvelopeLinearInteger_update] env->stop: %d\n", env->stop);
   return env;
 }
 
@@ -53,6 +59,7 @@ EnvelopeLinearInteger *EnvelopeLinearInteger_create(uint32_t mSampleRate,
   EnvelopeLinearInteger *env =
       (EnvelopeLinearInteger *)malloc(sizeof(EnvelopeLinearInteger));
   EnvelopeLinearInteger_reset(env, mSampleRate, start, stop, duration_time);
+  return env;
 }
 
 int32_t EnvelopeLinearInteger_update(EnvelopeLinearInteger *env,
