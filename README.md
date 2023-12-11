@@ -113,10 +113,10 @@ effects for the 16 buttons
 - [ ] **3** -> normal speed
 - [ ] **4** -> fast speed
 - [ ] **5** -> timestretch
-- [ ] **6** -> volume down
-- [ ] **7** -> filter down
-- [ ] **8** -> filter up
-- [ ] **9** -> volume up
+- [ ] **6** -> toggle volume
+- [ ] **7** -> toggle filter
+- [ ] **8** -> 
+- [ ] **9** -> 
 - [ ] **10** -> saturation
 - [ ] **11** -> 
 - [ ] **12** -> 
