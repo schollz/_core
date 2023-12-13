@@ -32,6 +32,7 @@
 
 typedef struct ResonantFilter {
   bool passthrough;
+  uint8_t passthrough_last;
   uint8_t filter_type;
   uint8_t fc;
   uint8_t q;
@@ -136,12 +137,14 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   rf->q = 0;
   rf->fc = resonantfilter_fc_max - 1;
   rf->passthrough = true;
+  rf->passthrough_last = 0;
   ResonantFilter_reset(rf);
   return rf;
 }
 
 int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
   if (rf->passthrough) {
+    rf->passthrough_last = 0;
     return in;
   }
   int32_t x = in;
@@ -154,5 +157,9 @@ int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
   rf->x1_f = x;
   rf->y2_f = rf->y1_f;
   rf->y1_f = y;
+  if (rf->passthrough_last < 20) {
+    rf->passthrough_last++;
+    return in;
+  }
   return q16_16_fp_to_int32(y);
 }

@@ -461,9 +461,9 @@ void button_handler(ButtonMatrix *bm) {
           key_pressed[2] == 13 && key_pressed[3] == 14) {
         quadratic_resampling = !quadratic_resampling;
         if (quadratic_resampling) {
-          printf("combo: change resampling to quadratic");
+          printf("combo: change resampling to quadratic\n");
         } else {
-          printf("combo: change resampling to linear");
+          printf("combo: change resampling to linear\n");
         }
       } else if (key_pressed[0] == 8 && key_pressed[1] == 11 &&
                  key_pressed[2] == 10 && key_pressed[3] == 9) {
@@ -478,9 +478,9 @@ void button_handler(ButtonMatrix *bm) {
                 ->sample[sel_sample_cur]
                 .snd[sel_variation]
                 ->tempo_match) {
-          printf("combo: enabled to tempo match mode");
+          printf("combo: enabled to tempo match mode\n");
         } else {
-          printf("combo: disabled tempo match mode");
+          printf("combo: disabled tempo match mode\n");
         }
       }
     }
