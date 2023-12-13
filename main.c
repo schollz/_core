@@ -214,6 +214,7 @@ void input_handling() {
 
   while (1) {
     adc_select_input(0);
+    sleep_ms(1);
     int adc;
 
     // knob X
@@ -245,6 +246,7 @@ void input_handling() {
 
     // knob Y
     adc_select_input(1);
+    sleep_ms(1);
     adc = FilterExp_update(adcs[1], adc_read());
     if (abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
@@ -279,6 +281,7 @@ void input_handling() {
 
     // knob Z
     adc_select_input(2);
+    sleep_ms(1);
     adc = FilterExp_update(adcs[2], adc_read());
     if (abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
@@ -305,7 +308,6 @@ void input_handling() {
 
     // update the text if any
     LEDText_update(ledtext, leds);
-
     LEDS_render(leds);
   }
 }
