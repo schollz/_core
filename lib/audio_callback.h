@@ -27,8 +27,9 @@ uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
 uint8_t cpu_usage_flag = 0;
+uint16_t cpu_flag_counter = 0;
 bool audio_was_cpu_muted = false;
-const uint8_t cpu_usage_flag_limit = 1;
+const uint8_t cpu_usage_flag_limit = 3;
 const uint8_t cpu_usage_limit_threshold = 80;
 
 bool audio_was_muted = false;
@@ -602,15 +603,21 @@ void i2s_callback_func() {
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
-    reduce_cpu_usage = 2;
+    reduce_cpu_usage = BLOCKS_PER_SECOND * 60 / sf->bpm_tempo;
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
-      // reduce_cpu_usage = reduce_cpu_usage + 5;
       cpu_usage_flag++;
+      if (cpu_flag_counter == 0) {
+        cpu_flag_counter = BLOCKS_PER_SECOND;
+      }
       printf("cpu utilization: %d, flag: %d\n",
              cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
     } else {
-      cpu_usage_flag = 0;
+      if (cpu_flag_counter > 0) {
+        cpu_flag_counter--;
+      } else {
+        cpu_usage_flag = 0;
+      }
     }
   }
 
