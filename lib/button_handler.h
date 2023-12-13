@@ -565,7 +565,9 @@ void button_handler(ButtonMatrix *bm) {
     }
     // keep track of combos
     key_pressed[key_pressed_num] = bm->on[i];
-    key_pressed_num++;
+    if (key_pressed_num < 100) {
+      key_pressed_num++;
+    }
     key_timer = 0;
 
     // keep track of all
