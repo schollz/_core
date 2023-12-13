@@ -28,13 +28,12 @@ uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
 uint8_t cpu_usage_flag = 0;
 bool audio_was_cpu_muted = false;
-const uint8_t cpu_usage_flag_limit = 2;
+const uint8_t cpu_usage_flag_limit = 1;
 const uint8_t cpu_usage_limit_threshold = 80;
 
 bool audio_was_muted = false;
 
 void update_filter_from_envelope(int32_t val) {
-  printf("[audio_callback] filter changed: %d\n", val);
   for (uint8_t channel = 0; channel < 2; channel++) {
     ResonantFilter_setFilterType(resFilter[channel], 0);
     ResonantFilter_setFc(resFilter[channel], val);
@@ -69,6 +68,9 @@ void i2s_callback_func() {
     if (reduce_cpu_usage > 0) {
       // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
+      if (reduce_cpu_usage == 0) {
+        audio_mute = false;
+      }
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       int32_t value0 = 0;
@@ -600,13 +602,13 @@ void i2s_callback_func() {
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
-    reduce_cpu_usage = 10;
+    reduce_cpu_usage = 2;
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
       // reduce_cpu_usage = reduce_cpu_usage + 5;
       cpu_usage_flag++;
-      // printf("cpu utilization: %d, flag: %d\n",
-      //        cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
+      printf("cpu utilization: %d, flag: %d\n",
+             cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
     } else {
       cpu_usage_flag = 0;
     }
