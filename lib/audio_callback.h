@@ -43,13 +43,19 @@ void update_filter_from_envelope(int32_t val) {
 }
 
 void i2s_callback_func() {
+  uint32_t values_to_read;
   uint32_t t0, t1;
+  uint32_t sd_card_total_time = 0;
+  uint32_t give_audio_buffer_time = 0;
+  uint32_t take_audio_buffer_time = 0;
+
   // flag for new phase
   bool do_crossfade = false;
   bool do_fade_out = false;
   bool do_fade_in = false;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
+  take_audio_buffer_time = (time_us_64() - startTime);
   if (buffer == NULL) {
     return;
   }
@@ -186,7 +192,7 @@ void i2s_callback_func() {
                                                 ->sample[sel_sample_cur]
                                                 .snd[sel_variation]
                                                 ->num_channels;
-    uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
+    values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
     int16_t values[values_len];
     uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
 
@@ -292,6 +298,7 @@ void i2s_callback_func() {
         sel_variation = sel_variation_next;
 
         FRESULT fr;
+        t0 = time_us_32();
         fr = f_close(&fil_current);
         if (fr != FR_OK) {
           debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
@@ -302,6 +309,9 @@ void i2s_callback_func() {
                         .snd[sel_variation]
                         ->name,
                     FA_READ);
+        t1 = time_us_32();
+        sd_card_total_time += (t1 - t0);
+
         if (fr != FR_OK) {
           debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
         }
@@ -310,6 +320,7 @@ void i2s_callback_func() {
       // optimization here, only seek if the current position is not at the
       // phases[head]
       if (phases[head] != last_seeked) {
+        t0 = time_us_32();
         if (f_lseek(&fil_current,
                     WAV_HEADER +
                         (banks[sel_bank_cur]
@@ -334,6 +345,8 @@ void i2s_callback_func() {
           sdcard_startup();
           return;
         }
+        t1 = time_us_32();
+        sd_card_total_time += (t1 - t0);
       }
 
       t0 = time_us_32();
@@ -360,6 +373,7 @@ void i2s_callback_func() {
                     (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
       }
       t1 = time_us_32();
+      sd_card_total_time += (t1 - t0);
       last_seeked = phases[head] + fil_bytes_read;
 
       if (fil_bytes_read < values_to_read) {
@@ -571,7 +585,9 @@ void i2s_callback_func() {
   // }
 
   buffer->sample_count = buffer->max_sample_count;
+  t0 = time_us_32();
   give_audio_buffer(ap, buffer);
+  give_audio_buffer_time = (time_us_32() - t0);
 
   if (do_fade_out) {
     printf("[audio_callback] do_fade_out -> audio_mute\n");
@@ -589,17 +605,20 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
-  if (cpu_utilizations_i == 64) {
+  if (cpu_utilizations_i == 64 || sd_card_total_time > 3000) {
     uint16_t cpu_utilization = 0;
-    for (uint8_t i = 0; i < 64; i++) {
+    for (uint8_t i = 0; i < cpu_utilizations_i; i++) {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
 #ifdef PRINT_AUDIO_CPU_USAGE
-    printf("average cpu utilization: %2.1f\n", ((float)cpu_utilization) / 64.0);
+    printf("average cpu utilization: %2.1f\n",
+           ((float)cpu_utilization) / (float)cpu_utilizations_i);
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING
-    printf("%ld\n", t1 - t0);
+    printf("sdcard%2.1f %ld %d %d %ld\n", ((float)cpu_utilization) / 64.0,
+           sd_card_total_time, values_to_read, give_audio_buffer_time,
+           take_audio_buffer_time);
 #endif
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
@@ -608,7 +627,9 @@ void i2s_callback_func() {
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
 #ifdef PRINT_SDCARD_TIMING
-      printf("%ld\n", t1 - t0);
+      printf("sdcard%d %ld %d %d %ld\n", cpu_utilizations[cpu_utilizations_i],
+             sd_card_total_time, values_to_read, give_audio_buffer_time,
+             take_audio_buffer_time);
 #endif
       cpu_usage_flag++;
       cpu_usage_flag_total++;
