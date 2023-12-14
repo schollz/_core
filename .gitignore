@@ -163,3 +163,10 @@ cmd/zeptocore/favicon.ico
 cmd/zeptocore/src/pack/1/
 cmd/zeptocore/2.aif
 cmd/zeptocore/src/zeptocore/1.aif
+core/core
+core/src/renoise/Instrument.xml
+core/src/zeptocore/amen.xrni.json
+core/src/zeptocore/lofi.0.wav.info
+core/src/zeptocore/lofi.1.wav.info
+core/src/zeptocore/lofi.aif.json
+core/src/zeptocore/lofi.aif.ogg
