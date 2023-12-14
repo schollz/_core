@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/schollz/-core/core/src/sox"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 )
 
 var DebugMode = false

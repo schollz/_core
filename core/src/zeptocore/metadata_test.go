@@ -3,8 +3,8 @@ package zeptocore
 import (
 	"testing"
 
+	"github.com/schollz/-core/core/src/sox"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 	"github.com/stretchr/testify/assert"
 )
 

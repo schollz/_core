@@ -13,12 +13,12 @@ import (
 	"time"
 
 	"github.com/bep/debounce"
+	"github.com/schollz/-core/core/src/onsetdetect"
+	"github.com/schollz/-core/core/src/op1"
+	"github.com/schollz/-core/core/src/renoise"
+	"github.com/schollz/-core/core/src/sox"
+	"github.com/schollz/-core/core/src/utils"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/onsetdetect"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/op1"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/renoise"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/utils"
 )
 
 type File struct {

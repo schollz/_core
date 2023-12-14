@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/schollz/-core/core/src/sox"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
 )
 
 func OnsetDetect(fname string, numOnsets int) (onsets []float64, err error) {
