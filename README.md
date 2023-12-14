@@ -2,8 +2,6 @@
 
 source code for rp2040-based sample wrangler's.
 
-![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
-
 ## the spec
 
 - mono or stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
@@ -19,7 +17,17 @@ source code for rp2040-based sample wrangler's.
 - powered by USB or AAA batteries (consumes ~100 mA, should last ~12 hours on batteries)
 - can load in pre-spliced files from Renoise (`.xnri`) or OP-1 files (`.aif`)
 
+# ectocore
+
+the eurorack version of the -core software.
+
+![image](https://private-user-images.githubusercontent.com/6550035/290404042-c07ae9ad-339a-4a28-b639-4ddc63eb38b4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDI1Mjk1MjYsIm5iZiI6MTcwMjUyOTIyNiwicGF0aCI6Ii82NTUwMDM1LzI5MDQwNDA0Mi1jMDdhZTlhZC0zMzlhLTRhMjgtYjYzOS00ZGRjNjNlYjM4YjQucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQUlXTkpZQVg0Q1NWRUg1M0ElMkYyMDIzMTIxNCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyMzEyMTRUMDQ0NzA2WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9MTM2YjcxODVkZmNjOWU2ZGRkZmRiZDg4ZTM3MTljZDNjOGM2OGM0NzE2YmE4MDQ3YjU1NTFmMTk2MGUyZjhlYyZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.kNSeJ_RG0Hrfcr3ZSgFqkuplmoZmfYFt1ye3hUTECvA)
+
 # zeptocore
+
+the hand-held version of the -core software
+
+![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 
 ## goals and non-goals
 
