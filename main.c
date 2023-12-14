@@ -309,6 +309,9 @@ void input_handling() {
     // update the text if any
     LEDText_update(ledtext, leds);
     LEDS_render(leds);
+
+    // check keyboard
+    run_keyboard();
   }
 }
 
