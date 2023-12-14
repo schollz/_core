@@ -601,22 +601,25 @@ void i2s_callback_func() {
 #ifdef PRINT_SDCARD_TIMING
     printf("%ld\n", t1 - t0);
 #endif
-#ifdef PRINT_AUDIO_OVERLOADS
-    if (cpu_usage_flag_total > 0) {
-      clock_t currentTime = time_us_64();
-      printf(
-          "cpu overloads every: %d ms\n",
-          (currentTime - time_of_initialization) / 1000 / cpu_usage_flag_total);
-    }
-#endif
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
     reduce_cpu_usage = BLOCKS_PER_SECOND * 120 / sf->bpm_tempo;
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
+#ifdef PRINT_SDCARD_TIMING
+      printf("%ld\n", t1 - t0);
+#endif
       cpu_usage_flag++;
       cpu_usage_flag_total++;
+#ifdef PRINT_AUDIO_OVERLOADS
+      if (cpu_usage_flag_total > 0) {
+        clock_t currentTime = time_us_64();
+        printf("cpu overloads every: %d ms\n",
+               (currentTime - time_of_initialization) / 1000 /
+                   cpu_usage_flag_total);
+      }
+#endif
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }

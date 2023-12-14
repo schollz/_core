@@ -19,7 +19,7 @@ source code for rp2040-based sample wrangler's.
 
 # ectocore
 
-the eurorack version of the -core software.
+the eurorack version of the -core software, made in collaboration with [Toadstool Tech](https://www.instagram.com/the_izaak_guy/).
 
 ![image](https://github.com/schollz/-core/assets/6550035/7fee4176-5166-4b33-8182-aa8e343e2ab7)
 
@@ -47,11 +47,21 @@ fourthly, my goal for this project is to make it possible to mash buttons to ach
 
 ### non-goals
 
-a non-goal for this project is to be emulate a specific musical device. there are few devices that are fun to randomly button mash, with exception of [joydrums](TODO) which I consider an inspiration to this project.
+a non-goal for this project is to be emulate a specific musical device. there are few devices that are fun to randomly button mash, with exception of  which I consider an inspiration to this project.
 
 a non-goal for this project is synthesis. though I may change my mind about this.
 
 a non-goal for this project is an enclsoure. I encourage custom enclosures, but I like the aesthetic of the circuit board.
+
+
+## similar devices
+
+if you like this device, you might also like:
+
+- [joydrums](https://www.yzhkinstruments.com/download), as if a beat pad and a loop pedal had a baby.
+- [bitty](https://www.curioussoundobjects.com/), n Arduino-compatible device that makes making music fun.
+- [hss2020](http://gieskes.nl/instruments/?file=HSS2020), a trimmed down version of the hard soft synth that fits in the hands.
+- [phantasmal force](https://www.tindie.com/products/distropolis/phantasmal-force-micro-midi-controller/), a micro midi controller.
 
 
 ## ideas
