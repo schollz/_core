@@ -129,4 +129,5 @@ void sdcard_startup() {
   sync_using_sdcard = false;
   sdcard_startup_is_starting = false;
   fil_is_open = true;
+  time_of_initialization = time_us_64();
 }
