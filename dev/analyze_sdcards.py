@@ -1,4 +1,5 @@
 # sudo minicom -b 115200 -o -D /dev/ttyACM0 | tee dev/sdcards/micro_center_10_64gb_xc.txt
+# mogrify -resize 440x560! *.png
 
 import glob
 import math
