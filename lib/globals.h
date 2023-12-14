@@ -28,6 +28,7 @@
 // audio_pool.h
 audio_buffer_pool_t *ap;
 
+clock_t time_of_initialization;
 FIL fil_current;
 char *fil_current_name;
 bool fil_is_open;

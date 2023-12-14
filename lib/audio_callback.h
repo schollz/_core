@@ -26,6 +26,7 @@ uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
+uint32_t cpu_usage_flag_total = 0;
 uint8_t cpu_usage_flag = 0;
 uint16_t cpu_flag_counter = 0;
 bool audio_was_cpu_muted = false;
@@ -600,6 +601,14 @@ void i2s_callback_func() {
 #ifdef PRINT_SDCARD_TIMING
     printf("%ld\n", t1 - t0);
 #endif
+#ifdef PRINT_AUDIO_OVERLOADS
+    if (cpu_usage_flag_total > 0) {
+      clock_t currentTime = time_us_64();
+      printf(
+          "cpu overloads every: %d ms\n",
+          (currentTime - time_of_initialization) / 1000 / cpu_usage_flag_total);
+    }
+#endif
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
@@ -607,6 +616,7 @@ void i2s_callback_func() {
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
       cpu_usage_flag++;
+      cpu_usage_flag_total++;
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }

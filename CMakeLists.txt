@@ -102,6 +102,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     # debug printing
     PRINT_AUDIO_USAGE=1
+    PRINT_AUDIO_OVERLOADS=1
     # PRINT_AUDIO_CPU_USAGE=1
     # PRINT_SDCARD_TIMING=1
 
