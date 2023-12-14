@@ -52,8 +52,7 @@ bool fx_toggle[16];  // 16 possible
 #define FX_NORMSPEED 3
 #define FX_SPEEDUP 4
 #define FX_VOLUME_RAMP_DOWN 5
-#define FX_FILTER_DOWN 6
-#define FX_FILTER_UP 7
+#define FX_FILTER 6
 #define FX_VOLUME_RAMP_UP 8
 #define FX_SATURATE 9
 #define FX_REVERSE 13
@@ -197,7 +196,7 @@ void go_update_fx(uint8_t fx_num) {
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                       Envelope2_update(envelope_pitch), 2.0, 1);
       break;
-    case FX_FILTER_DOWN:
+    case FX_FILTER:
       fx_filter_ramp_active = !fx_filter_ramp_active;
       if (fx_filter_ramp_active) {
         EnvelopeLinearInteger_reset(
