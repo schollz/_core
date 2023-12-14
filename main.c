@@ -394,7 +394,7 @@ int main() {
   leds = LEDS_create();
   ledtext = LEDText_create();
 
-  LEDText_display(ledtext, "HELLO");
+  // LEDText_display(ledtext, "HELLO");
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
 
@@ -408,7 +408,7 @@ int main() {
   }
 
   sleep_ms(1000);
-  printf("startup!\n");
+  // printf("startup!\n");
   sdcard_startup();
 
   // TODO
