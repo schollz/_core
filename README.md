@@ -19,6 +19,8 @@ source code for rp2040-based sample wrangler's.
 - powered by USB or AAA batteries (consumes ~100 mA, should last ~12 hours on batteries)
 - can load in pre-spliced files from Renoise (`.xnri`) or OP-1 files (`.aif`)
 
+# zeptocore
+
 ## goals and non-goals
 
 ### goals
