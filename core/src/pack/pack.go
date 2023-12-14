@@ -9,9 +9,9 @@ import (
 
 	"github.com/lucasepe/codename"
 
+	"github.com/schollz/-core/core/src/utils"
+	"github.com/schollz/-core/core/src/zeptocore"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/utils"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
 var Storage = "zips"

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
+	"github.com/schollz/-core/core/src/server"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/server"
 )
 
 var flagLogLevel string

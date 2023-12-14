@@ -3,9 +3,9 @@ package server
 import (
 	"os"
 
+	"github.com/schollz/-core/core/src/sox"
+	"github.com/schollz/-core/core/src/zeptocore"
 	log "github.com/schollz/logger"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/sox"
-	"github.com/schollz/zeptocore/cmd/zeptocore/src/zeptocore"
 )
 
 // Merges the files together and writes metadata
