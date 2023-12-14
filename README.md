@@ -91,11 +91,11 @@ knobs: X, Y, Z
 - [ ] **X** → n/a
 - [ ] **Y** → n/a
 - [ ] **Z** → n/a
-- [ ] **S** + **X** → tempo
+- [x] **S** + **X** → tempo
 - [ ] **S** + **Y** → 
-- [ ] **S** + **Z** → volume
+- [x] **S** + **Z** → volume
 - [ ] **A** + **X** → gate
-- [ ] **A** + **Y** → filter fc (lowpass/highpass?)
+- [x] **A** + **Y** → filter fc (lowpass/highpass?)
 - [ ] **A** + **Z** → filter q
 - [ ] **B** + **X** → pitch
 - [ ] **B** + **Y** → quantize
@@ -109,12 +109,12 @@ knobs: X, Y, Z
 effects for the 16 buttons 
 
 - [ ] **1** -> reverse 
-- [ ] **2** -> slow speed
-- [ ] **3** -> normal speed
-- [ ] **4** -> fast speed
-- [ ] **5** -> timestretch
-- [ ] **6** -> toggle volume
-- [ ] **7** -> toggle filter
+- [ ] **2** -> timestretch
+- [ ] **3** -> slow
+- [ ] **4** -> fast
+- [ ] **5** -> volume
+- [ ] **6** -> filter
+- [ ] **7** -> 
 - [ ] **8** -> 
 - [ ] **9** -> 
 - [ ] **10** -> saturation
