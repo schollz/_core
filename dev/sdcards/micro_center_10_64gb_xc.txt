@@ -212,4 +212,282 @@ sdcard22.7 1133 846 5 3
 [20;89H [21;1Hsdcard22.1 1072 846 1 2
 [20;89H [21;1Hsdcard22.7 1136 846 1 2
 [20;89H [21;1Hsdcard22.5 1127 846 1 3
-[20;89H [21;1H
+[20;89H [21;1Hsdcard22.5 1070 846 4 2
+[20;89H [21;1Hsdcard22.3 1077 846 3 2
+[20;89H [21;1Hsdcard22.9 1072 846 1 2
+[20;89H [21;1Hsdcard22.7 1098 846 2 2
+[20;89H [21;1Hsdcard23.1 1135 846 1 2
+[20;89H [21;1Hsdcard22.6 891 846 1 1
+[20;89H [21;1Hsdcard22.9 1070 846 1 3
+[20;89H [21;1Hsdcard22.1 698 846 2 1
+[20;89H [21;1Hsdcard22.6 1123 846 2 1
+[20;89H [21;1Hsdcard22.4 1132 846 2 3
+[20;89H [21;1Hsdcard22.6 1075 846 1 3
+[20;89H [21;1Hsdcard22.3 1073 846 3 3
+[20;89H [21;1Hsdcard22.9 1133 846 2 2
+[20;89H [21;1Hsdcard22.8 1572 846 5 1
+[20;89H [21;1Hsdcard22.4 918 846 2 2
+[20;89H [21;1Hsdcard22.3 343 846 1 5
+[20;89H [21;1Hsdcard22.3 843 846 2 1
+[20;89H [21;1Hsdcard23.1 1162 846 3 3
+[20;89H [21;1Hsdcard22.7 1148 846 2 2
+[20;89H [21;1Hsdcard22.8 1080 846 3 3
+[20;89H [21;1Hsdcard22.9 1077 846 1 2
+[20;89H [21;1Hsdcard22.6 1138 846 1 1
+[20;89H [21;1Hsdcard22.4 874 846 1 3
+[20;89H [21;1Hsdcard23.1 1068 846 1 3
+[20;89H [21;1Hsdcard22.5 932 846 2 1
+[20;89H [21;1Hsdcard22.8 842 846 1 1
+[20;89H [21;1Hsdcard22.6 1106 846 2 1
+[20;89H [21;1Hsdcard22.7 1131 846 2 3
+[20;89H [21;1Hsdcard22.1 951 846 1 2
+[20;89H [21;1Hsdcard23.1 1142 846 1 2
+[20;89H [21;1Hsdcard22.3 881 846 1 3
+[20;89H [21;1Hon single 10
+[20;89H [21;1Hkey_do_jump 6
+[20;89H [21;1Hdub_step_beat: 70
+[20;89H [21;1H[dub_step_break] beat_current: 70
+[20;89H [21;1Hsdcard22.9 452 846 1 3
+[20;89H [21;1Hoff any 10
+[20;89H [21;1Hoff held 10
+[20;89H [21;1Hon single 10
+[20;89H [21;1Hkey_do_jump 6
+[20;89H [21;1Hdub_step_beat: 70
+[20;89H [21;1H[dub_step_break] beat_current: 70
+[20;89H [21;1Hoff any 10
+[20;89H [21;1Hoff held 10
+[20;89H [21;1Hon single 10
+[20;89H [21;1Hkey_do_jump 6
+[20;89H [21;1Hdub_step_beat: 70
+[20;89H [21;1H[dub_step_break] beat_current: 70
+[20;89H [21;1Hoff any 10
+[20;89H [21;1Hoff held 10
+[20;89H [21;1Hon single 8
+[20;89H [21;1Hkey_do_jump 4
+[20;89H [21;1Hdub_step_beat: 68
+[20;89H [21;1Hsdcard22.9 901 846 2 2
+[20;89H [21;1H[dub_step_break] beat_current: 68
+[20;89H [21;1Hoff any 8
+[20;89H [21;1Hoff held 8
+[20;89H [21;1Hon single 9
+[20;89H [21;1Hkey_do_jump 5
+[20;89H [21;1Hdub_step_beat: 69
+[20;89H [21;1Hoff any 9
+[20;89H [21;1Hoff held 9
+[20;89H [21;1Hon single 8
+[20;89H [21;1Hkey_do_jump 4
+[20;89H [21;1Hdub_step_beat: 68
+[20;89H [21;1H[dub_step_break] beat_current: 68
+[20;89H [21;1Hon 8+9
+[20;89H [21;1Hretrig_beat_num=15,retrig_timer_reset=16,total_time=0.909s
+[20;89H [21;1Hsdcard23.9 917 846 2 4
+[20;89H [21;1Hoff any 9
+[20;89H [21;1Hoff 8+9
+[20;89H [21;1Hoff any 8
+[20;89H [21;1Hoff held 8
+[20;89H [21;1Hsdcard24.5 927 846 3 3
+[20;89H [21;1Hon single 0
+[20;89H [21;1Hon 0+4
+[20;89H [21;1Hnext file: bank0/amen_beats8_bpm172.1.wav
+[20;89H [21;1Hphase[0] -> phase_new: 107528*1969104/246138 -> 860224
+[20;89H [21;1Hbeat_current -> new beat_current: 71 -> 71
+[20;89H [21;1Hoff any 4
+[20;89H [21;1Hoff 0+4
+[20;89H [21;1Hoff any 0
+[20;89H [21;1Hoff held 0
+[20;89H [21;1Hsdcard24.1 1131 846 1 3
+[20;89H [21;1Hsdcard153 1122 846 1 3
+[20;89H [21;1Hcpu utilization: 153, flag: 1
+[20;89H [21;1Hsdcard21.3 1064 846 3 2
+[20;89H [21;1Hcombo: 10 10 10 8 9 8 9 0 4 
+[20;89H [21;1Hsdcard21.6 938 846 1 3
+[20;89H [21;1Hon single 0
+[20;89H [21;1Hon 0+4
+[20;89H [21;1Hnext file: bank0/amen_beats8_bpm172.0.wav
+[20;89H [21;1Hphase[0] -> phase_new: 1060726*246138/1969104 -> 132591
+[20;89H [21;1Hbeat_current -> new beat_current: 71 -> 71
+[20;89H [21;1Hsdcard23.6 2929 846 6 3
+[20;89H [21;1Hoff any 4
+[20;89H [21;1Hoff 0+4
+[20;89H [21;1Hoff any 0
+[20;89H [21;1Hoff held 0
+[20;89H [21;1Hon single 9
+[20;89H [21;1Hkey_do_jump 5
+[20;89H [21;1Hdub_step_beat: 69
+[20;89H [21;1H[dub_step_break] beat_current: 69
+[20;89H [21;1Hoff any 9
+[20;89H [21;1Hoff held 9
+[20;89H [21;1Hsdcard156 914 846 1 3
+[20;89H [21;1Hcpu utilization: 156, flag: 1
+[20;89H [21;1Hsdcard22.8 1183 846 1 5
+[20;89H [21;1Hon single 8
+[20;89H [21;1Hkey_do_jump 4
+[20;89H [21;1Hdub_step_beat: 68
+[20;89H [21;1H[dub_step_break] beat_current: 68
+[20;89H [21;1Hon 8+10
+[20;89H [21;1Hretrig_beat_num=23,retrig_timer_reset=13,total_time=1.133s
+[20;89H [21;1Hsdcard25.3 1670 846 2 3
+[20;89H [21;1Hoff any 8
+[20;89H [21;1Hoff held 8
+[20;89H [21;1Hoff any 10
+[20;89H [21;1Hoff held 10
+[20;89H [21;1Hon single 14
+[20;89H [21;1Hkey_do_jump 10
+[20;89H [21;1Hdub_step_beat: 74
+[20;89H [21;1H[dub_step_break] beat_current: 74
+[20;89H [21;1Hoff any 14
+[20;89H [21;1Hoff held 14
+[20;89H [21;1Hon single 14
+[20;89H [21;1Hkey_do_jump 10
+[20;89H [21;1Hdub_step_beat: 74
+[20;89H [21;1Hsdcard25.7 1073 846 1 1
+[20;89H [21;1Hoff any 14
+[20;89H [21;1Hoff held 14
+[20;89H [21;1Hon single 14
+[20;89H [21;1Hkey_do_jump 10
+[20;89H [21;1Hdub_step_beat: 74
+[20;89H [21;1Hon 14+13
+[20;89H [21;1Hretrig_beat_num=14,retrig_timer_reset=38,total_time=2.015s
+[20;89H [21;1Hoff any 14
+[20;89H [21;1Hoff held 14
+[20;89H [21;1Hoff any 13
+[20;89H [21;1Hoff held 13
+[20;89H [21;1Hon single 14
+[20;89H [21;1Hkey_do_jump 10
+[20;89H [21;1Hdub_step_beat: 74
+[20;89H [21;1Hoff any 14
+[20;89H [21;1Hoff held 14
+[20;89H [21;1Hon single 13
+[20;89H [21;1Hkey_do_jump 9
+[20;89H [21;1Hdub_step_beat: 73
+[20;89H [21;1Hoff any 13
+[20;89H [21;1Hoff held 13
+[20;89H [21;1Hsdcard23.0 1044 846 3 3
+[20;89H [21;1Hon single 0
+[20;89H [21;1Hon 0+16
+[20;89H [21;1Hoff any 16
+[20;89H [21;1Hoff 0+16
+[20;89H [21;1Hsdcard22.3 1229 846 1 1
+[20;89H [21;1Hon 0+4
+[20;89H [21;1Hnext file: bank0/amen_beats8_bpm172.1.wav
+[20;89H [21;1Hphase[0] -> phase_new: 140990*1969104/246138 -> 1127920
+[20;89H [21;1Hbeat_current -> new beat_current: 73 -> 73
+[20;89H [21;1Hsdcard7.6 3071 846 9 5
+[20;89H [21;1Hoff any 4
+[20;89H [21;1Hoff 0+4
+[20;89H [21;1Hsdcard159 425 846 0 2
+[20;89H [21;1Hcpu utilization: 159, flag: 1
+[20;89H [21;1Hon 0+17
+[20;89H [21;1Hoff any 17
+[20;89H [21;1Hoff 0+17
+[20;89H [21;1Hsdcard25.8 1143 846 4 3
+[20;89H [21;1Hon 0+10
+[20;89H [21;1Hoff any 10
+[20;89H [21;1Hoff 0+10
+[20;89H [21;1Hon 0+17
+[20;89H [21;1Hsdcard29.0 1220 846 2 1
+[20;89H [21;1Hoff any 17
+[20;89H [21;1Hoff 0+17
+[20;89H [21;1Hon 0+16
+[20;89H [21;1Hoff any 16
+[20;89H [21;1Hoff 0+16
+[20;89H [21;1Hsdcard22.1 877 846 2 2
+[20;89H [21;1Hon 0+4
+[20;89H [21;1Hnext file: bank0/amen_beats8_bpm172.0.wav
+[20;89H [21;1Hphase[0] -> phase_new: 1040782*246138/1969104 -> 130098
+[20;89H [21;1Hbeat_current -> new beat_current: 73 -> 73
+[20;89H [21;1Hsdcard5.1 3031 846 8 7
+[20;89H [21;1Hsdcard157 1102 846 2 2
+[20;89H [21;1Hcpu utilization: 157, flag: 1
+[20;89H [21;1Hoff any 4
+[20;89H [21;1Hoff 0+4
+[20;89H [21;1Hoff any 0
+[20;89H [21;1Hoff held 0
+[20;89H [21;1Hsdcard22.4 1660 846 6 1
+[20;89H [21;1Hon single 9
+[20;89H [21;1Hkey_do_jump 5
+[20;89H [21;1Hdub_step_beat: 69
+[20;89H [21;1Hoff any 9
+[20;89H [21;1Hoff held 9
+[20;89H [21;1Hsdcard22.0 1077 846 2 2
+[20;89H [21;1Hsdcard22.5 956 846 2 3
+[20;89H [21;1Hcombo: 0 4 9 8 10 14 14 14 13 14 13 0 16 4 17 10 17 16 4 9 
+[20;89H [21;1Hsdcard22.7 252 846 1 3
+[20;89H [21;1Hsdcard23.1 1163 846 2 4
+[20;89H [21;1Hsdcard22.5 1072 846 1 2
+[20;89H [21;1Hsdcard22.8 1079 846 1 2
+[20;89H [21;1Hsdcard22.1 1025 846 1 3
+[20;89H [21;1Hsdcard22.7 1166 846 2 2
+[20;89H [21;1Hsdcard22.3 1133 846 2 2
+[20;89H [21;1Hsdcard22.7 845 846 3 3
+[20;89H [21;1Hsdcard22.2 925 846 2 2
+[20;89H [21;1Hsdcard22.8 1082 846 3 3
+[20;89H [21;1Hsdcard22.3 875 846 1 2
+[20;89H [21;1Hsdcard22.6 1134 846 1 1
+[20;89H [21;1Hsdcard22.1 930 846 1 3
+[20;89H [21;1Hsdcard22.7 1017 846 4 2
+[20;89H [21;1Hsdcard22.7 1142 846 3 3
+[20;89H [21;1Hsdcard23.0 1132 846 2 2
+[20;89H [21;1Hsdcard22.7 1008 846 3 3
+[20;89H [21;1Hsdcard23.2 1070 846 1 2
+[20;89H [21;1Hsdcard22.2 1072 846 1 2
+[20;89H [21;1Hsdcard22.6 874 846 1 3
+[20;89H [21;1Hsdcard22.7 1121 846 2 3
+[20;89H [21;1Hsdcard22.8 1144 846 4 2
+[20;89H [21;1Hsdcard22.6 1586 846 6 2
+[20;89H [21;1Hsdcard22.4 870 846 2 2
+[20;89H [21;1Hsdcard22.6 538 846 1 7
+[20;89H [21;1Hsdcard22.1 1068 846 2 1
+[20;89H [21;1Hsdcard22.7 1021 846 3 4
+[20;89H [21;1Hsdcard22.5 1094 846 1 3
+[20;89H [21;1Hsdcard22.7 257 846 3 4
+[20;89H [21;1Hsdcard22.4 889 846 2 1
+[20;89H [21;1Hsdcard22.7 1135 846 3 1
+[20;89H [21;1Hsdcard22.2 920 846 3 1
+[20;89H [21;1Hsdcard22.4 453 846 4 2
+[20;89H [21;1Hsdcard22.3 1104 846 4 2
+[20;89H [21;1Hsdcard22.8 858 846 1 2
+[20;89H [21;1Hsdcard22.3 1076 846 3 2
+[20;89H [21;1Hsdcard22.7 1072 846 1 5
+[20;89H [21;1Hsdcard22.3 1135 846 3 2
+[20;89H [21;1Hsdcard22.6 873 846 1 2
+[20;89H [21;1Hsdcard22.0 1075 846 1 3
+[20;89H [21;1Hsdcard22.7 926 846 1 1
+[20;89H [21;1Hsdcard22.6 892 846 3 2
+[20;89H [21;1Hsdcard23.0 1077 846 3 2
+[20;89H [21;1Hsdcard22.7 1071 846 1 2
+[20;89H [21;1Hsdcard22.9 1083 846 2 3
+[20;89H [21;1Hsdcard22.7 1592 846 4 5
+[20;89H [21;1Hsdcard22.3 1138 846 2 3
+[20;89H [21;1Hsdcard22.9 1355 846 7 1
+[20;89H [21;1Hsdcard22.5 1017 846 1 2
+[20;89H [21;1Hsdcard22.9 946 846 1 2
+[20;89H [21;1Hsdcard22.4 1146 846 2 2
+[20;89H [21;1Hsdcard22.4 1107 846 3 3
+[20;89H [21;1Hsdcard22.3 1068 846 2 3
+[20;89H [21;1Hsdcard22.8 1114 846 1 1
+[20;89H [21;1Hsdcard22.6 1022 846 1 2
+[20;89H [21;1Hsdcard22.9 1160 846 2 2
+[20;89H [21;1Hsdcard22.5 1159 846 3 3
+[20;89H [21;1Hsdcard22.5 869 846 1 1
+[20;89H [21;1Hsdcard22.6 1076 846 1 2
+[20;89H [21;1Hsdcard22.4 932 846 2 2
+[20;89H [21;1Hsdcard22.3 1130 846 1 3
+[20;89H [21;1Hsdcard22.9 1150 846 1 2
+[20;89H [21;1Hsdcard22.5 929 846 1 3
+[20;89H [21;1Hsdcard22.6 1020 846 1 2
+[20;89H [21;1Hsdcard22.2 255 846 1 3
+[20;89H [21;1Hsdcard22.6 1131 846 2 1
+[20;89H [21;1Hsdcard22.2 1083 846 1 2
+[20;89H [21;1Hsdcard22.5 1066 846 2 2
+[20;89H [21;1Hsdcard22.5 1072 846 1 2
+[20;89H [21;1Hsdcard23.1 874 846 2 2
+[20;89H [21;1Hsdcard22.7 1552 846 3 3
+[20;89H [21;1Hsdcard22.4 1135 846 3 1
+[20;89H [21;1Hsdcard22.4 303 846 2 8
+[20;89H [21;1Hsdcard22.4 875 846 1 1
+[20;89H [21;1Hsdcard22.8 1153 846 1 4
+[20;89H [21;1Hsdcard22.6 1070 846 2 3
+[20;89H [21;1Hsdcard22.9 1073 846 2 2
+[20;89H [21;1Hsdcard22.5 1066 846 2 1
+[20;89H [21;1H[8;30H[?25l+-----------------------------+[9;30H|                             |[10;30H|  Cannot open /dev/ttyACM0!  |[11;30H|                             |[12;30H+-----------------------------+[10;58H[?25l

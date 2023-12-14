@@ -1,3 +1,5 @@
+# sudo minicom -b 115200 -o -D /dev/ttyACM0 | tee dev/sdcards/micro_center_10_64gb_xc.txt
+
 import glob
 import math
 
