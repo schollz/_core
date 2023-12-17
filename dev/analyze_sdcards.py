@@ -42,6 +42,14 @@ def getImage(path):
 # glob get all *.txt files in dev/sdcards
 fnames = glob.glob("dev/sdcards/*.txt")
 
+medians = []
+for fname in fnames:
+    _, sd = get_numbers(fname)
+    medians.append(np.median(sd))
+
+# Sort filenames based on the median values
+fnames = [x for _, x in sorted(zip(medians, fnames))]
+
 cpu_timings = []
 sd_timings = []
 images = []
