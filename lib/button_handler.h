@@ -173,12 +173,6 @@ void toggle_fx(uint8_t fx_num) {
                         Envelope2_update(envelope_pitch), 1.0, 1);
       }
       break;
-    case FX_PAN:
-      fx_active[FX_PAN] = !fx_active[FX_PAN];
-      break;
-    case FX_TREMELO:
-      fx_active[FX_TREMELO] = !fx_active[FX_TREMELO];
-      break;
     case FX_TAPE_STOP:
       fx_tape_stop_active = !fx_tape_stop_active;
       if (fx_tape_stop_active) {
@@ -189,8 +183,6 @@ void toggle_fx(uint8_t fx_num) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch), 1.0, 1.9);
       }
-      break;
-    case FX_SATURATE:
       break;
     case FX_FILTER:
       if (fx_active[FX_FILTER]) {
