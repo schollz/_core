@@ -399,8 +399,9 @@ void i2s_callback_func() {
       newArray1 = array_resample_linear(values, values_len, values_len / 2);
       newArray2 = array_resample_linear(newArray1, values_len / 2, values_len);
       for (uint16_t i = 0; i < values_len; i++) {
-        // chop off bunch of bits
-        values[i] = (newArray2[i] >> 5) << 5;
+        values[i] = newArray2[i];
+        // // chop off bunch of bits?
+        // values[i] = (newArray2[i] >> 5) << 5;
       }
       free(newArray1);
       free(newArray2);
