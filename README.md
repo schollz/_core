@@ -139,7 +139,7 @@ effects for the 16 buttons
 - [ ] **8** -> 
 - [ ] **9** -> 
 - [ ] **10** -> saturation
-- [ ] **11** -> 
+- [ ] **11** -> tighten
 - [ ] **12** -> 
 - [ ] **13** -> TODO delay
 - [ ] **14** -> tremelo

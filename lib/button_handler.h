@@ -55,6 +55,7 @@ bool fx_toggle[16];  // 16 possible
 #define FX_FILTER 6
 #define FX_VOLUME_RAMP_UP 8
 #define FX_SATURATE 9
+#define FX_TIGHTEN 11
 #define FX_REVERSE 13
 #define FX_TREMELO 14
 #define FX_PAN 15
@@ -164,6 +165,15 @@ void go_update_fx(uint8_t fx_num) {
     case FX_REVERSE:
       phase_forward = !on;
       break;
+    case FX_TIGHTEN:
+      fx_tighten_active = !fx_tighten_active;
+      if (fx_tighten_active) {
+        gate_threshold =
+            70 * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 100;
+        gate_active = true;
+      } else {
+        gate_active = false;
+      }
     case FX_SLOWDOWN:
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                       Envelope2_update(envelope_pitch), 0.5, 1);
