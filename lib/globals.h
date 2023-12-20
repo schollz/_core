@@ -122,6 +122,7 @@ Bass *bass;
 #endif
 
 ResonantFilter *resFilter[2];
+Gate *audio_gate;
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
@@ -248,6 +249,7 @@ inline void do_update_phase_from_beat_current() {
   gate_counter = 0;
   phase_change = true;
   audio_mute = false;
+  Gate_reset(audio_gate);
   // printf("do_update_phase_from_beat_current: %d\n", phase_new);
 }
 #endif
