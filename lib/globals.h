@@ -131,6 +131,7 @@ bool trigger_button_mute = false;
 
 bool fx_filter_ramp_active = false;
 bool fx_volume_ramp_active = false;
+bool fx_tighten_active = false;
 
 // lfos
 bool fx_pan_active = false;
