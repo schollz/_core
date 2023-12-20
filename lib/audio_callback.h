@@ -393,15 +393,17 @@ void i2s_callback_func() {
 
     // bitcrush before resampling
     if (fx_active[FX_BITCRUSH]) {
+      // resample
+      int16_t *newArray1;
+      int16_t *newArray2;
+      newArray1 = array_resample_linear(values, values_len, values_len / 2);
+      newArray2 = array_resample_linear(newArray1, values_len / 2, values_len);
       for (uint16_t i = 0; i < values_len; i++) {
-        if (i % 2 == 0) {
-          // chop off bunch of bits
-          values[0] = (values[0] >> 5) << 5;
-        } else {
-          // reduce sampling rate by half
-          values[i] = values[i - 1];
-        }
+        // chop off bunch of bits
+        values[i] = (newArray2[i] >> 5) << 5;
       }
+      free(newArray1);
+      free(newArray2);
     }
 
     if (banks[sel_bank_cur]

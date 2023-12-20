@@ -196,8 +196,8 @@ void toggle_fx(uint8_t fx_num) {
             global_filter_index, 1.618);
       }
       break;
-    case FX_VOLUME_RAMP_DOWN:
-      if (fx_active[FX_VOLUME_RAMP_DOWN]) {
+    case FX_VOLUME_RAMP:
+      if (fx_active[FX_VOLUME_RAMP]) {
         Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_volume), 0, 1.618 / 2);
       } else {
