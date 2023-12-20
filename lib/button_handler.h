@@ -45,22 +45,6 @@ bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 bool key_b_sample_select = false;
 
-// fx toggles
-bool fx_toggle[16];  // 16 possible
-#define FX_TIMESTRETCH 1
-#define FX_SLOWDOWN 2
-#define FX_NORMSPEED 3
-#define FX_SPEEDUP 4
-#define FX_VOLUME_RAMP_DOWN 5
-#define FX_FILTER 6
-#define FX_VOLUME_RAMP_UP 8
-#define FX_SATURATE 9
-#define FX_TIGHTEN 11
-#define FX_REVERSE 13
-#define FX_TREMELO 14
-#define FX_PAN 15
-#define FX_TAPE_STOP 16
-
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
 void key_do_jump(uint8_t beat) {
@@ -158,33 +142,42 @@ void go_update_top() {
   }
 }
 
-// uptate all the fx based on the fx_toggle
-void go_update_fx(uint8_t fx_num) {
-  bool on = fx_toggle[fx_num];
-  switch (fx_num + 1) {
+// toggle the fx
+void toggle_fx(uint8_t fx_num) {
+  fx_active[fx_num] = !fx_active[fx_num];
+  switch (fx_num) {
     case FX_REVERSE:
-      phase_forward = !on;
+      phase_forward = !fx_active[fx_num];
       break;
     case FX_TIGHTEN:
-      fx_tighten_active = !fx_tighten_active;
-      if (fx_tighten_active) {
+      if (fx_active[fx_num]) {
         Gate_set_percent(audio_gate, 70);
       } else {
         Gate_set_percent(audio_gate, 100);
       }
     case FX_SLOWDOWN:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 0.5, 1);
+      if (fx_active[fx_num]) {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 0.5, 1);
+      } else {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1);
+      }
       break;
-    case FX_NORMSPEED:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 1.0, 1);
+    case FX_SPEEDUP:
+      if (fx_active[fx_num]) {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 2.0, 1);
+      } else {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1);
+      }
       break;
     case FX_PAN:
-      fx_pan_active = !fx_pan_active;
+      fx_active[FX_PAN] = !fx_active[FX_PAN];
       break;
     case FX_TREMELO:
-      fx_tremelo_active = !fx_tremelo_active;
+      fx_active[FX_TREMELO] = !fx_active[FX_TREMELO];
       break;
     case FX_TAPE_STOP:
       fx_tape_stop_active = !fx_tape_stop_active;
@@ -198,15 +191,9 @@ void go_update_fx(uint8_t fx_num) {
       }
       break;
     case FX_SATURATE:
-      fx_saturate_active = !fx_saturate_active;
-      break;
-    case FX_SPEEDUP:
-      Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                      Envelope2_update(envelope_pitch), 2.0, 1);
       break;
     case FX_FILTER:
-      fx_filter_ramp_active = !fx_filter_ramp_active;
-      if (fx_filter_ramp_active) {
+      if (fx_active[FX_FILTER]) {
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL), 1, 1.618);
@@ -218,8 +205,7 @@ void go_update_fx(uint8_t fx_num) {
       }
       break;
     case FX_VOLUME_RAMP_DOWN:
-      fx_volume_ramp_active = !fx_volume_ramp_active;
-      if (fx_volume_ramp_active) {
+      if (fx_active[FX_VOLUME_RAMP_DOWN]) {
         Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_volume), 0, 1.618 / 2);
       } else {
@@ -227,15 +213,12 @@ void go_update_fx(uint8_t fx_num) {
                         Envelope2_update(envelope_volume), 1, 1.618 / 2);
       }
       break;
-    case FX_VOLUME_RAMP_UP:
-      break;
     case FX_TIMESTRETCH:
-      sel_variation_next = 1 - sel_variation_next;
-      // if (sel_variation == FILE_VARIATIONS - 1) {
-      //   sel_variation_next = 0;
-      // } else {
-      //   sel_variation_next = sel_variation + 1;
-      // }
+      if (fx_active[FX_TIMESTRETCH]) {
+        sel_variation_next = 1;
+      } else {
+        sel_variation_next = 0;
+      }
       fil_current_change = true;
       break;
     default:
@@ -255,12 +238,6 @@ void button_key_off_any(uint8_t key) {
     if (key_total_pressed == 0) {
       dub_step_break = -1;
       //      key_do_jump(key - 4);
-    }
-    if (mode_jump_mash == MODE_MASH) {
-      // 1-16 off (mash mode)
-      // remove momentary fx
-      fx_toggle[key - 4] = false;
-      go_update_fx(key - 4);
     }
   }
 }
@@ -286,7 +263,7 @@ void button_key_on_single(uint8_t key) {
       // 1-16 (mash mode)
       // do momentary fx
       fx_toggle[key - 4] = true;
-      go_update_fx(key - 4);
+      toggle_fx(key - 4);
     }
   }
 }
@@ -319,7 +296,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         // toggles fx
         fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
         bool on = fx_toggle[key2 - 4];
-        go_update_fx(key2 - 4);
+        toggle_fx(key2 - 4);
       } else if (mode_jump_mash == MODE_MASH) {
         // S+H (mash mode)
         // does jump
