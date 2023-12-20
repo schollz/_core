@@ -391,6 +391,19 @@ void i2s_callback_func() {
       }
     }
 
+    // bitcrush before resampling
+    if (fx_active[FX_BITCRUSH]) {
+      for (uint16_t i = 0; i < values_len; i++) {
+        if (i % 2 == 0) {
+          // chop off bunch of bits
+          values[0] = (values[0] >> 5) << 5;
+        } else {
+          // reduce sampling rate by half
+          values[i] = values[i - 1];
+        }
+      }
+    }
+
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]

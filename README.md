@@ -129,22 +129,22 @@ knobs: X, Y, Z
 
 effects for the 16 buttons 
 
-- [ ] **1** -> reverse 
-- [ ] **2** -> timestretch
-- [ ] **3** -> slow
-- [ ] **4** -> fast
-- [ ] **5** -> volume
-- [ ] **6** -> filter
+- [ ] **0** -> reverse 
+- [ ] **1** -> timestretch
+- [ ] **2** -> slow
+- [ ] **3** -> fast
+- [ ] **4** -> volume
+- [ ] **5** -> filter
+- [ ] **6** -> 
 - [ ] **7** -> 
 - [ ] **8** -> 
-- [ ] **9** -> 
-- [ ] **10** -> saturation
-- [ ] **11** -> tighten
-- [ ] **12** -> 
-- [ ] **13** -> TODO delay
-- [ ] **14** -> tremelo
-- [ ] **15** -> panning
-- [ ] **16** -> tape stop/start
+- [ ] **9** -> saturation
+- [ ] **10** -> tighten
+- [ ] **11** -> 
+- [ ] **12** -> TODO delay
+- [ ] **13** -> tremelo
+- [ ] **14** -> panning
+- [ ] **15** -> tape stop/start
 
 ### cheat codes
 
