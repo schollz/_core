@@ -130,16 +130,14 @@ bool trigger_audio_mute = false;
 bool button_mute = false;
 bool trigger_button_mute = false;
 
-bool fx_filter_ramp_active = false;
-bool fx_volume_ramp_active = false;
-bool fx_tighten_active = false;
+// fx toggles
+bool fx_active[16];
+bool fx_toggle[16];  // 16 possible
 
 // lfos
-bool fx_pan_active = false;
 int32_t lfo_pan_val = 0;
 // TODO: make the lfo pan step adjustable?
 int32_t lfo_pan_step = Q16_16_2PI / (96 * 5);
-bool fx_tremelo_active = false;
 int32_t lfo_tremelo_val = 0;
 // TODO: make the lfo tremelo step adjustable?
 int32_t lfo_tremelo_step = Q16_16_2PI / (96);
@@ -148,7 +146,6 @@ int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 bool fx_tape_stop_active = false;
 
 uint16_t global_filter_index = resonantfilter_fc_max;
-bool fx_saturate_active = false;
 
 // pitches derived from supercollider
 // a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];

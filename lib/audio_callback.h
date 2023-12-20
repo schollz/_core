@@ -385,7 +385,7 @@ void i2s_callback_func() {
     }
 
     // saturate before resampling?
-    if (fx_saturate_active) {
+    if (fx_active[FX_SATURATE]) {
       for (uint16_t i = 0; i < values_len; i++) {
         values[i] = transfer_doublesine(values[i]);
       }
@@ -509,24 +509,24 @@ void i2s_callback_func() {
 
   // apply other fx
   // TODO: fade in/out these fx using the crossfade?
-  if (fx_tremelo_active || fx_pan_active) {
+  if (fx_active[FX_TREMELO] || fx_active[FX_PAN]) {
     int32_t u;
     int32_t v;
     int32_t w;
-    if (fx_tremelo_active) {
+    if (fx_active[FX_TREMELO]) {
       u = q16_16_sin01(lfo_tremelo_val);
     }
-    if (fx_pan_active) {
+    if (fx_active[FX_PAN]) {
       v = q16_16_sin01(lfo_pan_val);
       w = Q16_16_1 - v;
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       for (uint8_t channel = 0; channel < 2; channel++) {
-        if (fx_tremelo_active) {
+        if (fx_active[FX_TREMELO]) {
           samples[i * 2 + channel] =
               q16_16_multiply(samples[i * 2 + channel], u);
         }
-        if (fx_pan_active) {
+        if (fx_active[FX_PAN]) {
           if (channel == 0) {
             samples[i * 2 + channel] =
                 q16_16_multiply(samples[i * 2 + channel], v);
