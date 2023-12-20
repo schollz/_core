@@ -36,7 +36,8 @@ void Gate_reset(Gate *gate) { gate->counter = 0; }
 
 void Gate_update_threshold(Gate *gate) {
   if (gate->percent < 100) {
-    gate->threshold = (uint32_t)round((30.0 * / gate->bpm) * gate->percent);
+    gate->threshold = (uint32_t)round(gate->blocks_per_second * gate->percent *
+                                      30.0 / (gate->bpm * 100));
   }
 }
 

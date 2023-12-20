@@ -70,8 +70,13 @@ void i2s_callback_func() {
       (gate_active && gate_counter >= gate_threshold) || audio_mute ||
       button_mute || reduce_cpu_usage > 0 ||
       (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
-      envelope_volume_val < 0.001) {
+      envelope_volume_val < 0.001 || Gate_is_up(audio_gate)) {
     envelope_pitch_val = envelope_pitch_val_new;
+
+    // continue to update the gate
+    Gate_update(audio_gate, sf->bpm_tempo);
+
+    // check cpu usage
     if (reduce_cpu_usage > 0) {
       // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
@@ -96,6 +101,10 @@ void i2s_callback_func() {
     return;
   }
 
+  Gate_update(audio_gate, sf->bpm_tempo);
+  if (Gate_is_up(audio_gate)) {
+    do_fade_out = true;
+  }
   envelope_pitch_val = envelope_pitch_val_new;
   if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) {
     do_fade_out = true;

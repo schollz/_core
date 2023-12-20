@@ -168,11 +168,9 @@ void go_update_fx(uint8_t fx_num) {
     case FX_TIGHTEN:
       fx_tighten_active = !fx_tighten_active;
       if (fx_tighten_active) {
-        gate_threshold =
-            70 * (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) / 100;
-        gate_active = true;
+        Gate_set_percent(audio_gate, 70);
       } else {
-        gate_active = false;
+        Gate_set_percent(audio_gate, 100);
       }
     case FX_SLOWDOWN:
       Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
