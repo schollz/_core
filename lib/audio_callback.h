@@ -102,11 +102,10 @@ void i2s_callback_func() {
   }
 
   Gate_update(audio_gate, sf->bpm_tempo);
-  if (Gate_is_up(audio_gate)) {
-    do_fade_out = true;
-  }
   envelope_pitch_val = envelope_pitch_val_new;
-  if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) {
+
+  if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD ||
+      Gate_is_up(audio_gate)) {
     do_fade_out = true;
   }
 
