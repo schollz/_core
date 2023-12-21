@@ -150,6 +150,7 @@ void toggle_fx(uint8_t fx_num) {
       phase_forward = !fx_active[fx_num];
       break;
     case FX_TIGHTEN:
+      printf("FX_TIGHTEN\n");
       if (fx_active[fx_num]) {
         Gate_set_percent(audio_gate, 70);
       } else {
