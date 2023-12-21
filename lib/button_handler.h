@@ -152,10 +152,11 @@ void toggle_fx(uint8_t fx_num) {
     case FX_TIGHTEN:
       printf("FX_TIGHTEN\n");
       if (fx_active[fx_num]) {
-        Gate_set_percent(audio_gate, 70);
+        Gate_set_percent(audio_gate, 85);
       } else {
         Gate_set_percent(audio_gate, 100);
       }
+      break;
     case FX_SLOWDOWN:
       if (fx_active[fx_num]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
@@ -175,8 +176,7 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_TAPE_STOP:
-      fx_tape_stop_active = !fx_tape_stop_active;
-      if (fx_tape_stop_active) {
+      if (fx_active[FX_TAPE_STOP]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch),
                         ENVELOPE_PITCH_THRESHOLD / 2, 2.7);
@@ -189,7 +189,7 @@ void toggle_fx(uint8_t fx_num) {
       if (fx_active[FX_FILTER]) {
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
-            EnvelopeLinearInteger_update(envelope_filter, NULL), 1, 1.618);
+            EnvelopeLinearInteger_update(envelope_filter, NULL), 5, 1.618);
       } else {
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
