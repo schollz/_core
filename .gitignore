@@ -174,3 +174,4 @@ core/.gitignore
 core/storage/
 dist/
 core/src/sox/soxstatic/
+core/soxstatic/
