@@ -15,9 +15,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lucasepe/codename"
-	"github.com/schollz/-core/core/src/onsetdetect"
-	"github.com/schollz/-core/core/src/pack"
-	"github.com/schollz/-core/core/src/zeptocore"
+	"github.com/schollz/_core/core/src/onsetdetect"
+	"github.com/schollz/_core/core/src/pack"
+	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
 	bolt "go.etcd.io/bbolt"
 )

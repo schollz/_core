@@ -19,14 +19,14 @@ source code for rp2040-based sample wrangler's.
 
 # ectocore
 
-the eurorack version of the -core software, made in collaboration with [Toadstool Tech](https://www.instagram.com/the_izaak_guy/).
+the eurorack version of the _core software, made in collaboration with [Toadstool Tech](https://www.instagram.com/the_izaak_guy/).
 
-![image](https://github.com/schollz/-core/assets/6550035/7fee4176-5166-4b33-8182-aa8e343e2ab7)
+![image](https://github.com/schollz/_core/assets/6550035/7fee4176-5166-4b33-8182-aa8e343e2ab7)
 
 
 # zeptocore
 
-the hand-held version of the -core software
+the hand-held version of the _core software
 
 ![image](https://github.com/schollz/zeptocore/assets/6550035/1d834182-fea8-41aa-830a-b5a894e1f2a2)
 

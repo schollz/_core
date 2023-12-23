@@ -6,7 +6,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/schollz/-core/core/src/sox"
+	"github.com/schollz/_core/core/src/sox"
 )
 
 func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, err error) {

@@ -9,8 +9,8 @@ import (
 
 	"github.com/lucasepe/codename"
 
-	"github.com/schollz/-core/core/src/utils"
-	"github.com/schollz/-core/core/src/zeptocore"
+	"github.com/schollz/_core/core/src/utils"
+	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
 )
 

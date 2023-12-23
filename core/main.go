@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/schollz/-core/core/src/server"
+	"github.com/schollz/_core/core/src/server"
 	log "github.com/schollz/logger"
 )
 
