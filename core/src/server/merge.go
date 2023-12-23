@@ -3,8 +3,8 @@ package server
 import (
 	"os"
 
-	"github.com/schollz/-core/core/src/sox"
-	"github.com/schollz/-core/core/src/zeptocore"
+	"github.com/schollz/_core/core/src/sox"
+	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
 )
 

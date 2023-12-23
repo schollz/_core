@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/schollz/-core/core/src/sox"
+	"github.com/schollz/_core/core/src/sox"
 	log "github.com/schollz/logger"
 )
 

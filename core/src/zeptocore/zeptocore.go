@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/bep/debounce"
-	"github.com/schollz/-core/core/src/onsetdetect"
-	"github.com/schollz/-core/core/src/op1"
-	"github.com/schollz/-core/core/src/renoise"
-	"github.com/schollz/-core/core/src/sox"
-	"github.com/schollz/-core/core/src/utils"
+	"github.com/schollz/_core/core/src/onsetdetect"
+	"github.com/schollz/_core/core/src/op1"
+	"github.com/schollz/_core/core/src/renoise"
+	"github.com/schollz/_core/core/src/sox"
+	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
 )
 
