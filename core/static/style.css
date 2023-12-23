@@ -93,6 +93,7 @@ main {
     margin-bottom: 0.5rem;
     padding: 0.5rem;
     background-color: var(--highlight-color);
+    line-height: 0.5;
 }
 
 .banks-selector li.selected {

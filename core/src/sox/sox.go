@@ -16,7 +16,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	log "github.com/schollz/logger"
 )
@@ -40,22 +39,20 @@ func Tmpfile() string {
 	return filepath.Join(TempDir, TempPrefix+hex.EncodeToString(randBytes)+"."+TempType)
 }
 
-func init() {
-	log.SetLevel("info")
-	var errBinary error
-	soxbinary, errBinary = getPath()
-	if errBinary != nil {
-		fmt.Println(errBinary)
-		time.Sleep(30 * time.Second)
-		os.Exit(1)
+func Init() (err error) {
+	fmt.Println("getting sox path")
+	soxbinary, err = getPath()
+	if err != nil {
+		return
 	}
+	log.Trace("testing sox")
 	stdout, _, _ := run(soxbinary, "--help")
 	if !strings.Contains(stdout, "SoX") {
-		fmt.Println("uhoh, sox not found")
-		time.Sleep(30 * time.Second)
-		os.Exit(1)
+		err = fmt.Errorf("sox not found")
+		return
 	}
-
+	log.Trace("sox found")
+	return
 }
 
 func run(args ...string) (string, string, error) {
