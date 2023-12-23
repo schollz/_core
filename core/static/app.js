@@ -669,11 +669,15 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd) {
                 playing = false;
             } else {
                 region.play();
+                wsf.setVolume(1);
                 playing = true;
-                setTimeout(() => {
-                    wsf.pause();
-                    playing = false;
-                }, (region.end - region.start) * 960);
+                for (var i = 0; i < 10; i++) {
+                    let j = i;
+                    setTimeout(() => {
+                        console.log(j / 10);
+                        wsf.setVolume(j / 10);
+                    }, (region.end - region.start) * 1000 - j * 5);
+                }
             }
             // region.setOptions({ color: randomColor() })
         })

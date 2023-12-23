@@ -28,15 +28,19 @@ var connections map[string]*websocket.Conn
 var mutex sync.Mutex
 var keystore *bolt.DB
 
-func Serve() {
+func Serve() (err error) {
+	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
 
-	var err error
-	keystore, err = bolt.Open(path.Join(StorageFolder, "states.db"), 0600, nil)
+	log.Trace("opening bolt db")
+	keystore, err = bolt.Open(path.Join(StorageFolder, "states.db"), 0600, &bolt.Options{
+		Timeout: 1 * time.Second,
+	})
 	if err != nil {
-		panic(err)
+		return
 	}
-	// create the bucket if it doesn't exist
+
+	log.Trace("creating bucket for bolt db")
 	err = keystore.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("states"))
 		if err != nil {
@@ -45,13 +49,14 @@ func Serve() {
 		return nil
 	})
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	connections = make(map[string]*websocket.Conn)
 	log.Infof("listening on :%d", Port)
 	http.HandleFunc("/", handler)
-	http.ListenAndServe(fmt.Sprintf(":%d", Port), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", Port), nil)
+	return
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {

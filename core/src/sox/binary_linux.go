@@ -9,7 +9,7 @@ import (
 var embedfs embed.FS
 
 var foldername = "sox-14.4.2-linux"
-var binaryname = "soxstatic/sox"
+var binaryname = "./soxstatic/sox"
 
 func getPath() (pathname string, err error) {
 	// check if soxstatic folder exists
