@@ -173,3 +173,4 @@ core/src/zeptocore/lofi.aif.ogg
 core/.gitignore
 core/storage/
 dist/
+core/src/sox/soxstatic/
