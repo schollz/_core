@@ -93,6 +93,11 @@ import (
 // 	return
 // }
 
+func TestVersion(t *testing.T) {
+	version, err := Version()
+	assert.Nil(t, err)
+	assert.Equal(t, "v14.4.2", version)
+}
 func TestComment(t *testing.T) {
 	fname := "amen_beats8_bpm172.wav"
 	fname2, err := AddComment(fname, "hello")

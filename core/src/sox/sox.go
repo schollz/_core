@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/schollz/logger"
 )
@@ -29,6 +30,8 @@ var TempPrefix = "sox"
 // TempType is the type of file to be generated (should be "wav")
 var TempType = "wav"
 
+var soxbinary = "sox"
+
 var GarbageCollection = false
 
 func Tmpfile() string {
@@ -39,9 +42,18 @@ func Tmpfile() string {
 
 func init() {
 	log.SetLevel("info")
-	stdout, _, _ := run("sox", "--help")
+	var errBinary error
+	soxbinary, errBinary = getPath()
+	if errBinary != nil {
+		fmt.Println(errBinary)
+		time.Sleep(30 * time.Second)
+		os.Exit(1)
+	}
+	stdout, _, _ := run(soxbinary, "--help")
 	if !strings.Contains(stdout, "SoX") {
-		panic("need to install sox")
+		fmt.Println("uhoh, sox not found")
+		time.Sleep(30 * time.Second)
+		os.Exit(1)
 	}
 
 }
@@ -61,6 +73,14 @@ func run(args ...string) (string, string, error) {
 		log.Error(errb.String())
 	}
 	return outb.String(), errb.String(), err
+}
+
+func Version() (out string, err error) {
+	out, _, err = run(soxbinary, "--version")
+	out = strings.TrimSpace(out)
+	foo := strings.Fields(out)
+	out = foo[len(foo)-1]
+	return
 }
 
 // MustString returns only the first argument of any function, as a string
@@ -98,7 +118,7 @@ func Clean() (err error) {
 // Left returns only the left channel
 func Left(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "remix", "1")
+	_, _, err = run(soxbinary, fname, fname2, "remix", "1")
 	if err != nil {
 		return
 	}
@@ -106,7 +126,7 @@ func Left(fname string) (fname2 string, err error) {
 }
 
 func Convert(fname string, fname2 string) (err error) {
-	_, _, err = run("sox", fname, fname2)
+	_, _, err = run(soxbinary, fname, fname2)
 	if err != nil {
 		log.Error(err)
 	}
@@ -116,7 +136,7 @@ func Convert(fname string, fname2 string) (err error) {
 func ConvertToMatch(fname string, fnameMatch string) (fname2 string, err error) {
 	sampleRate, channels, _, err := Info(fnameMatch)
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(sampleRate), fname2)
+	_, _, err = run(soxbinary, fname, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(sampleRate), fname2)
 	if err != nil {
 		return
 	}
@@ -126,7 +146,7 @@ func ConvertToMatch(fname string, fnameMatch string) (fname2 string, err error) 
 // ResampleRate changes the sample rate and precision
 func ResampleRate(fname string, sampleRate int, precision int) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, "-r", fmt.Sprint(sampleRate), "-b", fmt.Sprint(precision), "--encoding", "signed-integer", "--endian", "little", fname2)
+	_, _, err = run(soxbinary, fname, "-r", fmt.Sprint(sampleRate), "-b", fmt.Sprint(precision), "--encoding", "signed-integer", "--endian", "little", fname2)
 	if err != nil {
 		return
 	}
@@ -141,11 +161,11 @@ func PCM16(fname string) (fname2 string, err error) {
 	}
 	rawfile := Tmpfile() + ".raw"
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile)
+	_, _, err = run(soxbinary, fname, "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile)
 	if err != nil {
 		return
 	}
-	_, _, err = run("sox", "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile, fname2)
+	_, _, err = run(soxbinary, "-c", fmt.Sprint(c), "-r", fmt.Sprint(sr), "-b", fmt.Sprint(16), "--encoding", "signed-integer", "--endian", "little", rawfile, fname2)
 	if err != nil {
 		return
 	}
@@ -154,7 +174,7 @@ func PCM16(fname string) (fname2 string, err error) {
 
 // NumSamples returns the number of samples in the file
 func NumSamples(fname string) (numSamples int, err error) {
-	stdout, _, err := run("sox", "--i", fname)
+	stdout, _, err := run(soxbinary, "--i", fname)
 	if err != nil {
 		return
 	}
@@ -177,7 +197,7 @@ func NumSamples(fname string) (numSamples int, err error) {
 
 // Info returns the sample rate and number of channels for file
 func Info(fname string) (samplerate int, channels int, precision int, err error) {
-	stdout, stderr, err := run("sox", "--i", fname)
+	stdout, stderr, err := run(soxbinary, "--i", fname)
 	if err != nil {
 		return
 	}
@@ -226,7 +246,7 @@ func Onsets(fname string) (onsets []float64, err error) {
 // FadeIn will fade the audio in using quarter-sine wave
 func FadeIn(fname string, duration float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "fade", "q", fmt.Sprint(duration))
+	_, _, err = run(soxbinary, fname, fname2, "fade", "q", fmt.Sprint(duration))
 	if err != nil {
 		return
 	}
@@ -236,7 +256,7 @@ func FadeIn(fname string, duration float64) (fname2 string, err error) {
 // FadeOut will fade the audio out using quarter-sine wave
 func FadeOut(fname string, duration float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "fade", "q", "0", "-0", fmt.Sprint(duration))
+	_, _, err = run(soxbinary, fname, fname2, "fade", "q", "0", "-0", fmt.Sprint(duration))
 	if err != nil {
 		return
 	}
@@ -245,7 +265,7 @@ func FadeOut(fname string, duration float64) (fname2 string, err error) {
 
 // Length returns the length of the file in seconds
 func Length(fname string) (length float64, err error) {
-	stdout, stderr, err := run("sox", fname, "-n", "stat")
+	stdout, stderr, err := run(soxbinary, fname, "-n", "stat")
 	if err != nil {
 		return
 	}
@@ -270,12 +290,12 @@ func SilenceAppend(fname string, length float64) (fname2 string, err error) {
 	defer os.Remove(silencefile)
 	fname2 = Tmpfile()
 	// generate silence
-	_, _, err = run("sox", "-n", "-r", fmt.Sprint(samplerate), "-c", fmt.Sprint(channels), silencefile, "trim", "0.0", fmt.Sprint(length))
+	_, _, err = run(soxbinary, "-n", "-r", fmt.Sprint(samplerate), "-c", fmt.Sprint(channels), silencefile, "trim", "0.0", fmt.Sprint(length))
 	if err != nil {
 		return
 	}
 	// combine with original file
-	_, _, err = run("sox", fname, silencefile, fname2)
+	_, _, err = run(soxbinary, fname, silencefile, fname2)
 	if err != nil {
 		return
 	}
@@ -297,12 +317,12 @@ func SilencePrepend(fname string, length float64) (fname2 string, err error) {
 	defer os.Remove(silencefile)
 	fname2 = Tmpfile()
 	// generate silence
-	_, _, err = run("sox", "-n", "-r", fmt.Sprint(samplerate), "-c", fmt.Sprint(channels), silencefile, "trim", "0.0", fmt.Sprint(length))
+	_, _, err = run(soxbinary, "-n", "-r", fmt.Sprint(samplerate), "-c", fmt.Sprint(channels), silencefile, "trim", "0.0", fmt.Sprint(length))
 	if err != nil {
 		return
 	}
 	// combine with original file
-	_, _, err = run("sox", silencefile, fname, fname2)
+	_, _, err = run(soxbinary, silencefile, fname, fname2)
 	if err != nil {
 		return
 	}
@@ -311,35 +331,35 @@ func SilencePrepend(fname string, length float64) (fname2 string, err error) {
 
 // FFT
 func FFT(fname string) (data string, err error) {
-	_, data, err = run("sox", fname, "-n", "stat", "-freq")
+	_, data, err = run(soxbinary, fname, "-n", "stat", "-freq")
 	return
 }
 
 // Norm normalizes the audio
 func Norm(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "norm")
+	_, _, err = run(soxbinary, fname, fname2, "norm")
 	return
 }
 
 // SilenceTrim trims silence around a file
 func SilenceTrim(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "silence", "1", "0.1", `-50d`, "reverse", "silence", "1", "0.1", `-50d`, "reverse")
+	_, _, err = run(soxbinary, fname, fname2, "silence", "1", "0.1", `-50d`, "reverse", "silence", "1", "0.1", `-50d`, "reverse")
 	return
 }
 
 // SilenceTrimEnd trims silence from end of file
 func SilenceTrimEnd(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "reverse", "silence", "1", "0.1", `-50d`, "reverse")
+	_, _, err = run(soxbinary, fname, fname2, "reverse", "silence", "1", "0.1", `-50d`, "reverse")
 	return
 }
 
 // SilenceTrimFront trims silence from beginning of file
 func SilenceTrimFront(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "silence", "1", "0.1", `-50d`, "reverse")
+	_, _, err = run(soxbinary, fname, fname2, "silence", "1", "0.1", `-50d`, "reverse")
 	return
 }
 
@@ -347,9 +367,9 @@ func SilenceTrimFront(fname string) (fname2 string, err error) {
 func Trim(fname string, start float64, length ...float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
 	if len(length) > 0 {
-		_, _, err = run("sox", fname, fname2, "trim", fmt.Sprint(start), fmt.Sprint(length[0]))
+		_, _, err = run(soxbinary, fname, fname2, "trim", fmt.Sprint(start), fmt.Sprint(length[0]))
 	} else {
-		_, _, err = run("sox", fname, fname2, "trim", fmt.Sprint(start))
+		_, _, err = run(soxbinary, fname, fname2, "trim", fmt.Sprint(start))
 	}
 	return
 }
@@ -357,14 +377,14 @@ func Trim(fname string, start float64, length ...float64) (fname2 string, err er
 // Reverse will reverse the audio
 func Reverse(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "reverse")
+	_, _, err = run(soxbinary, fname, fname2, "reverse")
 	return
 }
 
 // Pitch repitched the audio
 func Pitch(fname string, notes int) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "pitch", fmt.Sprintf("%d", notes*100))
+	_, _, err = run(soxbinary, fname, fname2, "pitch", fmt.Sprintf("%d", notes*100))
 	return
 }
 
@@ -394,12 +414,12 @@ func Mix(fnames ...string) (fname2 string, err error) {
 
 func AddComment(fname string, comment string) (fname2 string, err error) {
 	fname2 = Tmpfile() + ".aif"
-	_, _, err = run("sox", fname, "--comment", comment, fname2)
+	_, _, err = run(soxbinary, fname, "--comment", comment, fname2)
 	return
 }
 
 func GetComment(fname string) (comment string, err error) {
-	comment, _, err = run("sox", "--i", "-a", fname)
+	comment, _, err = run(soxbinary, "--i", "-a", fname)
 	comment = strings.TrimSpace(comment)
 	return
 }
@@ -407,28 +427,28 @@ func GetComment(fname string) (comment string, err error) {
 // Repeat will add n repeats to the audio
 func Repeat(fname string, n int) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "repeat", fmt.Sprintf("%d", n))
+	_, _, err = run(soxbinary, fname, fname2, "repeat", fmt.Sprintf("%d", n))
 	return
 }
 
 // RetempoSpeed will change the tempo of the audio and pitch
 func RetempoSpeed(fname string, old_tempo float64, new_tempo float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "speed", fmt.Sprint(new_tempo/old_tempo), "rate", "-v", "48k")
+	_, _, err = run(soxbinary, fname, fname2, "speed", fmt.Sprint(new_tempo/old_tempo), "rate", "-v", "48k")
 	return
 }
 
 // RetempoStretch will change the tempo of the audio trying to keep pitch similar
 func RetempoStretch(fname string, old_tempo float64, new_tempo float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "tempo", "-m", fmt.Sprint(new_tempo/old_tempo))
+	_, _, err = run(soxbinary, fname, fname2, "tempo", "-m", fmt.Sprint(new_tempo/old_tempo))
 	return
 }
 
 // RetempoStretch will change the tempo of the audio trying to keep pitch similar
 func Slowdown(fname string, slowdown float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "tempo", "-m", fmt.Sprint(slowdown))
+	_, _, err = run(soxbinary, fname, fname2, "tempo", "-m", fmt.Sprint(slowdown))
 	return
 }
 
@@ -452,7 +472,7 @@ func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64,
 		leeway = leeway0[0]
 	}
 	// 	os.cmd(string.format("sox %s %s trim %f %f",fname,piece,copy_start-e,copy_length+2*e))
-	_, _, err = run("sox", fname, piece, "trim", fmt.Sprint(startPos-crossfade), fmt.Sprint(copyLength+2*crossfade))
+	_, _, err = run(soxbinary, fname, piece, "trim", fmt.Sprint(startPos-crossfade), fmt.Sprint(copyLength+2*crossfade))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -460,7 +480,7 @@ func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64,
 	}
 
 	// 	os.cmd(string.format("sox %s %s trim 0 %f",fname,part1,paste_start+e))
-	_, _, err = run("sox", fname, part1, "trim", "0", fmt.Sprint(pastePos+crossfade))
+	_, _, err = run(soxbinary, fname, part1, "trim", "0", fmt.Sprint(pastePos+crossfade))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -468,7 +488,7 @@ func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64,
 	}
 
 	// 	os.cmd(string.format("sox %s %s trim %f",fname,part2,paste_start+copy_length-e))
-	_, _, err = run("sox", fname, part2, "trim", fmt.Sprint(pastePos+copyLength-crossfade))
+	_, _, err = run(soxbinary, fname, part2, "trim", fmt.Sprint(pastePos+copyLength-crossfade))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -476,7 +496,7 @@ func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64,
 	}
 
 	// 	os.cmd(string.format("sox %s %s %s splice %f,%f,%f",part1,piece,splice1,paste_start+e,e,l))
-	_, _, err = run("sox", part1, piece, splice1, "splice", fmt.Sprintf("%f,%f,%f", pastePos+crossfade, crossfade, leeway))
+	_, _, err = run(soxbinary, part1, piece, splice1, "splice", fmt.Sprintf("%f,%f,%f", pastePos+crossfade, crossfade, leeway))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -484,7 +504,7 @@ func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64,
 	}
 
 	// 	os.cmd(string.format("sox %s %s %s splice %f,%f,%f",splice1,part2,fname2,paste_start+copy_length+e,e,l))
-	_, _, err = run("sox", splice1, part2, fname2, "splice", fmt.Sprintf("%f,%f,%f", pastePos+copyLength+crossfade, crossfade, leeway))
+	_, _, err = run(soxbinary, splice1, part2, fname2, "splice", fmt.Sprintf("%f,%f,%f", pastePos+copyLength+crossfade, crossfade, leeway))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -513,7 +533,7 @@ func Paste(fname string, piece string, pasteStart float64, crossfade float64) (f
 	leeway := 0.0
 
 	// 	os.cmd(string.format("sox %s %s trim 0 %f",fname,part1,paste_start+e))
-	_, _, err = run("sox", fname, part1, "trim", "0", fmt.Sprint(pasteStart+crossfade))
+	_, _, err = run(soxbinary, fname, part1, "trim", "0", fmt.Sprint(pasteStart+crossfade))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -522,7 +542,7 @@ func Paste(fname string, piece string, pasteStart float64, crossfade float64) (f
 	// copy(part1, "1.wav")
 
 	// 	os.cmd(string.format("sox %s %s trim %f",fname,part2,paste_start+copy_length-e*3))
-	_, _, err = run("sox", fname, part2, "trim", fmt.Sprint(pasteStart+copyLength-crossfade*3))
+	_, _, err = run(soxbinary, fname, part2, "trim", fmt.Sprint(pasteStart+copyLength-crossfade*3))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -531,7 +551,7 @@ func Paste(fname string, piece string, pasteStart float64, crossfade float64) (f
 	// copy(part2, "2.wav")
 
 	// 	os.cmd(string.format("sox %s %s %s splice %f,%f,%f",part1,piece,splice1,paste_start+e,e,l))
-	_, _, err = run("sox", part1, piece, splice1, "splice", fmt.Sprintf("%f,%f,%f", pasteStart+crossfade, crossfade, leeway))
+	_, _, err = run(soxbinary, part1, piece, splice1, "splice", fmt.Sprintf("%f,%f,%f", pasteStart+crossfade, crossfade, leeway))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -540,7 +560,7 @@ func Paste(fname string, piece string, pasteStart float64, crossfade float64) (f
 	// copy(splice1, "3.wav")
 
 	// 	os.cmd(string.format("sox %s %s %s splice %f,%f,%f",splice1,part2,fname2,paste_start+copy_length+e,e,l))
-	_, _, err = run("sox", splice1, part2, fname2, "splice", fmt.Sprintf("%f,%f,%f", pasteStart+copyLength+crossfade, crossfade, leeway))
+	_, _, err = run(soxbinary, splice1, part2, fname2, "splice", fmt.Sprintf("%f,%f,%f", pasteStart+copyLength+crossfade, crossfade, leeway))
 	if err != nil {
 		log.Error(err)
 		fname2 = fname
@@ -558,34 +578,34 @@ func SampleRate(fname string, srCh ...int) (fname2 string, err error) {
 		sampleRate = srCh[0]
 	}
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "rate", fmt.Sprint(sampleRate))
+	_, _, err = run(soxbinary, fname, fname2, "rate", fmt.Sprint(sampleRate))
 	return
 }
 
 // PostProcess
 func PostProcess(fname string, gain float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "reverse", "silence", "1", "0.1", `0.5%`, "reverse", "gain", fmt.Sprint(gain))
+	_, _, err = run(soxbinary, fname, fname2, "reverse", "silence", "1", "0.1", `0.5%`, "reverse", "gain", fmt.Sprint(gain))
 	return
 }
 
 // Gain applies gain
 func Gain(fname string, gain float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "gain", fmt.Sprint(gain))
+	_, _, err = run(soxbinary, fname, fname2, "gain", fmt.Sprint(gain))
 	return
 }
 
 // Stretch does a time stretch
 func Stretch(fname string, stretch float64) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "stretch", fmt.Sprint(stretch))
+	_, _, err = run(soxbinary, fname, fname2, "stretch", fmt.Sprint(stretch))
 	return
 }
 
 func Reverb(fname string) (fname2 string, err error) {
 	fname2 = Tmpfile()
-	_, _, err = run("sox", fname, fname2, "reverb", "70", "60", "90", "90", "1", "3")
+	_, _, err = run(soxbinary, fname, fname2, "reverb", "70", "60", "90", "90", "1", "3")
 	return
 }
 
@@ -669,7 +689,7 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 	defer os.Remove(partLast)
 
 	// 	os.cmd(string.format("sox %s %s trim %f %f",fname,partFirst,pos_start-crossfade_piece,stutter_length+crossfade_piece+crossfade_stutter))
-	_, _, err = run("sox", fname, partFirst, "trim",
+	_, _, err = run(soxbinary, fname, partFirst, "trim",
 		fmt.Sprint(pos_start-crossfade_piece), fmt.Sprint(stutter_length+crossfade_piece+crossfade_stutter))
 	if err != nil {
 		log.Error(err)
@@ -677,7 +697,7 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 		return
 	}
 	// 	os.cmd(string.format("sox %s %s trim %f %f",fname,partMiddle,pos_start-crossfade_stutter,stutter_length+crossfade_stutter+crossfade_stutter))
-	_, _, err = run("sox", fname, partMiddle, "trim", fmt.Sprint(pos_start-crossfade_stutter),
+	_, _, err = run(soxbinary, fname, partMiddle, "trim", fmt.Sprint(pos_start-crossfade_stutter),
 		fmt.Sprint(stutter_length+crossfade_stutter+crossfade_stutter))
 	if err != nil {
 		log.Error(err)
@@ -685,7 +705,7 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 		return
 	}
 	// 	os.cmd(string.format("sox %s %s trim %f %f",fname,partLast,pos_start-crossfade_stutter,stutter_length+crossfade_piece+crossfade_stutter))
-	_, _, err = run("sox", fname, partLast, "trim", fmt.Sprint(pos_start-crossfade_stutter),
+	_, _, err = run(soxbinary, fname, partLast, "trim", fmt.Sprint(pos_start-crossfade_stutter),
 		fmt.Sprint(stutter_length+crossfade_piece+crossfade_stutter))
 	if err != nil {
 		log.Error(err)
@@ -726,7 +746,7 @@ func Stutter(fname string, stutter_length float64, pos_start float64, count floa
 			}
 
 			// os.cmd(string.format("sox %s %s %s splice %f,%f,0",fname2,fnameMid,fnameNext,audio.length(fname2),crossfade_stutter))
-			_, _, err = run("sox", fname2, fnameMid, fnameNext, "splice", fmt.Sprintf("%f,%f,0",
+			_, _, err = run(soxbinary, fname2, fnameMid, fnameNext, "splice", fmt.Sprintf("%f,%f,0",
 				fname2Length, crossfade_stutter))
 			if err != nil {
 				log.Errorf("stutter %f: %s", i, err.Error())
