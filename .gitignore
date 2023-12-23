@@ -170,3 +170,6 @@ core/src/zeptocore/lofi.0.wav.info
 core/src/zeptocore/lofi.1.wav.info
 core/src/zeptocore/lofi.aif.json
 core/src/zeptocore/lofi.aif.ogg
+core/.gitignore
+core/storage/
+dist/

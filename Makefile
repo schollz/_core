@@ -84,3 +84,6 @@ cloc:
 ignore:
 	git status --porcelain | grep '^??' | cut -c4- >> .gitignore
 	git commit -am "update gitignore"
+
+release:
+	cd core && goreleaser release -p 32 --clean --snapshot
