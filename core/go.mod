@@ -1,14 +1,14 @@
-module github.com/schollz/-core/core
+module github.com/schollz/_core/core
 
 go 1.21
 
-replace github.com/schollz/-core/core/src/op1 => ./src/op1
+replace github.com/schollz/_core/core/src/op1 => ./src/op1
 
-replace github.com/schollz/-core/core/src/renoise => ./src/renoise
+replace github.com/schollz/_core/core/src/renoise => ./src/renoise
 
-replace github.com/schollz/-core/core/src/sox => ./src/sox
+replace github.com/schollz/_core/core/src/sox => ./src/sox
 
-replace github.com/schollz/-core/core/src/utils => ./src/utils
+replace github.com/schollz/_core/core/src/utils => ./src/utils
 
 require (
 	github.com/bep/debounce v1.2.1
