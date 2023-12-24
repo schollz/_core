@@ -93,14 +93,15 @@ void i2s_callback_func() {
     buffer->sample_count = buffer->max_sample_count;
 
 #ifdef INCLUDE_SINEBASS
-    // apply bass
-    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      uint8_t volume = 2;
-      int32_t v = SinOsc_next(sinosc[0]) >> (1 + volume);
-      int32_t v2 = SinOsc_next(sinosc[1]);
-      int32_t v3 = SinOsc_next(sinosc[2]);
-      samples[i * 2 + 0] += (v + (v2 >> (4 + volume)) + (v3 >> (5 + volume)));
-      samples[i * 2 + 1] += (v + (v2 >> (5 + volume)) + (v3 >> (4 + volume)));
+    if (fil_is_open) {
+      // apply bass
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        int32_t v = SinOsc_next(sinosc[0]) >> (1);
+        int32_t v2 = SinOsc_next(sinosc[1]);
+        int32_t v3 = SinOsc_next(sinosc[2]);
+        samples[i * 2 + 0] += (v + (v2 >> (4)) + (v3 >> (5)));
+        samples[i * 2 + 1] += (v + (v2 >> (5)) + (v3 >> (4)));
+      }
     }
 #endif
 
@@ -595,12 +596,11 @@ void i2s_callback_func() {
 #ifdef INCLUDE_SINEBASS
   // apply bass
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-    uint8_t volume = 2;
-    int32_t v = SinOsc_next(sinosc[0]) >> (1 + volume);
+    int32_t v = SinOsc_next(sinosc[0]) >> (1);
     int32_t v2 = SinOsc_next(sinosc[1]);
     int32_t v3 = SinOsc_next(sinosc[2]);
-    samples[i * 2 + 0] += (v + (v2 >> (3 + volume)) + (v3 >> (4 + volume)));
-    samples[i * 2 + 1] += (v + (v2 >> (4 + volume)) + (v3 >> (3 + volume)));
+    samples[i * 2 + 0] += (v + (v2 >> (4)) + (v3 >> (5)));
+    samples[i * 2 + 1] += (v + (v2 >> (5)) + (v3 >> (4)));
   }
 #endif
 
