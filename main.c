@@ -337,19 +337,24 @@ void input_handling() {
 
 int main() {
   // Set PLL_USB 96MHz
-  pll_init(pll_usb, 1, 1536 * MHZ, 4, 4);
+  const uint32_t main_line = 96;
+  pll_init(pll_usb, 1, main_line * 16 * MHZ, 4, 4);
   clock_configure(clk_usb, 0, CLOCKS_CLK_USB_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
-                  96 * MHZ, 48 * MHZ);
+                  main_line * MHZ, main_line / 2 * MHZ);
   // Change clk_sys to be 96MHz.
   clock_configure(clk_sys, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
-                  CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB, 96 * MHZ,
-                  96 * MHZ);
+                  CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
+                  main_line * MHZ, main_line * MHZ);
   // CLK peri is clocked from clk_sys so need to change clk_peri's freq
   clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
-                  96 * MHZ, 96 * MHZ);
+                  main_line * MHZ, main_line * MHZ);
   // Reinit uart now that clk_peri has changed
   stdio_init_all();
-
+  // overclocking!!!
+  // note that overclocking >200Mhz requires setting sd_card_sdio
+  // rp2040_sdio_init(sd_card_p, 2);
+  // otherwise clock divider of 1 is fine
+  set_sys_clock_khz(270000, true);
   sleep_ms(100);
 
   // run multi core
@@ -419,9 +424,9 @@ int main() {
   for (uint8_t i = 0; i < 3; i++) {
     sinosc[i] = SinOsc_malloc();
   }
-  SinOsc_wave(sinosc[0], 0);
-  SinOsc_wave(sinosc[1], 0);
-  SinOsc_wave(sinosc[2], 0);
+  SinOsc_wave(sinosc[0], 2);
+  SinOsc_wave(sinosc[1], 2 + 12);
+  SinOsc_wave(sinosc[2], 2 + 12 + 7);
   SinOsc_quiet(sinosc[0], 2);
   SinOsc_quiet(sinosc[1], 2);
   SinOsc_quiet(sinosc[2], 2);
