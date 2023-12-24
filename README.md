@@ -17,12 +17,6 @@ source code for rp2040-based sample wrangler's.
 - powered by USB or AAA batteries (consumes ~100 mA, should last ~12 hours on batteries)
 - can load in pre-spliced files from Renoise (`.xnri`) or OP-1 files (`.aif`)
 
-# ectocore
-
-the eurorack version of the _core software, made in collaboration with [Toadstool Tech](https://www.instagram.com/the_izaak_guy/).
-
-![image](https://github.com/schollz/_core/assets/6550035/7fee4176-5166-4b33-8182-aa8e343e2ab7)
-
 
 # zeptocore
 
