@@ -124,12 +124,12 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 			return
 		}
 		// go through each file and copy it into the bank
-		for _, file := range bank.Files {
+		for filei, file := range bank.Files {
 			log.Tracef("bank %d: %s", i, file)
 			filenameWithoutExtension := file[:len(file)-len(path.Ext(file))]
 			for i := 0; i < 100; i++ {
 				oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.wav", filenameWithoutExtension, i))
-				newFname := path.Join(bankFolder, fmt.Sprintf("%s.%d.wav", filenameWithoutExtension, i))
+				newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, i))
 				if _, err := os.Stat(oldFname); os.IsNotExist(err) {
 					break
 				}

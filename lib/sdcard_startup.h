@@ -67,10 +67,7 @@ void sdcard_startup() {
       banks_with_samples_num++;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
         if (bi == 0) {
-          printf(
-              "[sdcard_startup] "
-              "banks[%d]->sample[%d].snd[sel_variation]->name: %s\n",
-              bi, si, banks[bi]->sample[si].snd[sel_variation]->name);
+          printf("[sdcard_startup] printing information\n");
           printf(
               "[sdcard_startup] "
               "banks[%d]->sample[%d].snd[sel_variation]->size: %d\n",
@@ -115,15 +112,18 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+  uint32_t total_heap = getTotalHeap();
+  uint32_t used_heap = total_heap - getFreeHeap();
+  printf("memory usage: %2.1f%% (%ld/%ld)\n",
+         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+
   FRESULT fr;
-  fr = f_open(
-      &fil_current,
-      banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
-      FA_READ);
+  char fname[100];
+  sprintf(fname, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
+          sel_variation);
+  fr = f_open(&fil_current, fname, FA_READ);
   if (fr != FR_OK) {
-    printf("[sdcard_startup] could not open %s: %s\n",
-           banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
-           FRESULT_str(fr));
+    printf("[sdcard_startup] could not open %s: %s\n", fname, FRESULT_str(fr));
   }
   phase_new = 0;
   phase_change = true;
