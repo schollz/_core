@@ -222,9 +222,17 @@ void input_handling() {
       if (sinebass_update_counter == 10) {
         SinOsc_new(sinosc[0], sinebass_update_note);
       } else if (sinebass_update_counter == 20) {
-        SinOsc_new(sinosc[1], sinebass_update_note + 12);
+        if (sinebass_update_note == 0) {
+          SinOsc_new(sinosc[1], 0);
+        } else {
+          SinOsc_new(sinosc[1], sinebass_update_note + 12);
+        }
       } else if (sinebass_update_counter == 30) {
-        SinOsc_new(sinosc[2], sinebass_update_note + 12 + 7);
+        if (sinebass_update_note == 0) {
+          SinOsc_new(sinosc[2], 0);
+        } else {
+          SinOsc_new(sinosc[2], sinebass_update_note + 12 + 7);
+        }
       }
     }
 #endif

@@ -124,7 +124,7 @@ Bass *bass;
 #ifdef INCLUDE_SINEBASS
 SinOsc *sinosc[3];
 uint8_t sinebass_update_note = 0;
-uint8_t sinebass_update_counter = 0;
+uint8_t sinebass_update_counter = 31;
 #endif
 
 ResonantFilter *resFilter[2];

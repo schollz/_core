@@ -31,28 +31,35 @@
 #include "../../sinewave.h"
 
 int main() {
+  init_sinewaves();
   SinOsc *osc1 = SinOsc_malloc();
   SinOsc *osc2 = SinOsc_malloc();
+  SinOsc_new(osc1, 24);
+  for (int i = 0; i < 4000; i++) {
+    printf("%d\n", (SinOsc_next(osc1) >> 2));
+  }
+  SinOsc_new(osc1, 0);
+  for (int i = 0; i < 4000; i++) {
+    printf("%d\n", (SinOsc_next(osc1) >> 2));
+  }
+  SinOsc_free(osc1);
+  SinOsc_free(osc2);
   SinOsc_new(osc1, 0);
   SinOsc_new(osc2, 15);
   for (int i = 0; i < 1650; i++) {
-    printf("%d\n",
-           SinOsc_next(osc1, Q16_16_0_5) + SinOsc_next(osc2, Q16_16_0_5));
+    printf("%d\n", (SinOsc_next(osc1) >> 2) + (SinOsc_next(osc2) >> 2));
   }
   SinOsc_new(osc1, 12);
   for (int i = 0; i < 2000; i++) {
-    printf("%d\n",
-           SinOsc_next(osc1, Q16_16_0_5) + SinOsc_next(osc2, Q16_16_0_5));
+    printf("%d\n", (SinOsc_next(osc1) >> 2) + (SinOsc_next(osc2) >> 2));
   }
   SinOsc_new(osc1, 3);
   for (int i = 0; i < 1000; i++) {
-    printf("%d\n",
-           SinOsc_next(osc1, Q16_16_0_5) + SinOsc_next(osc2, Q16_16_0_5));
+    printf("%d\n", (SinOsc_next(osc1) >> 2) + (SinOsc_next(osc2) >> 2));
   }
   SinOsc_new(osc1, 0);
   for (int i = 0; i < 200; i++) {
-    printf("%d\n",
-           SinOsc_next(osc1, Q16_16_0_5) + SinOsc_next(osc2, Q16_16_0_5));
+    printf("%d\n", (SinOsc_next(osc1) >> 2) + (SinOsc_next(osc2) >> 2));
   }
   return 0;
 }
