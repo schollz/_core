@@ -37,31 +37,36 @@ def lcm(a, b):
     return abs(a * b) // math.gcd(a, b)
 
 
+total_bytes = 0
+sinewave_max = 36
 print("#ifndef LIB_SINEWAVE")
 print("#define LIB_SINEWAVE 1")
+print("#define SINEWAVE_MAX " + str(sinewave_max))
 sinewave_len = []
-for i in range(16):
+for i in range(sinewave_max):
     note = i + 24
     s = sinewave(mtof(note), 44100)
     sinewave_len.append(len(s))
     print("const int32_t sinewave%d[%d] = {" % (i, len(s)))
     for j in range(len(s)):
         print("  %d," % round(s[j] * 2147483647))
+        total_bytes += 4
     print("};")
 print("uint16_t sinewave_len(uint8_t wave) {")
 print("  switch (wave) {")
-for i in range(16):
+for i in range(sinewave_max):
     print("    case %d: return %d;" % (i, sinewave_len[i]))
 print("    default: return 0;")
 print("  }")
 print("}")
 print("int32_t sinewave_sample(uint8_t wave, uint16_t index) {")
 print("  switch (wave) {")
-for i in range(16):
-    print("    case %d: return sinewave%d[index %% %d];" % (i, i, sinewave_len[i]))
+for i in range(sinewave_max):
+    print("    case %d: return sinewave%d[index];" % (i, i))
 print("    default: return 0;")
 print("  }")
 print("}")
 
+print("#define SINEWAVE_TOTAL_BYTES " + str(total_bytes))
 
 print("#endif")

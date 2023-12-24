@@ -394,13 +394,14 @@ int main() {
   leds = LEDS_create();
   ledtext = LEDText_create();
 
-  printf("%d\n", sinewave0[0]);
-  printf("%d\n", sinewave1[0]);
-  printf("%d\n", sinewave2[0]);
-  printf("%d\n", sinewave3[0]);
-  printf("%d\n", sinewave4[0]);
-  printf("%d\n", sinewave5[0]);
-  printf("%d\n", sinewave6[0]);
+#ifdef INCLUDE_SINEBASS
+  for (uint8_t i = 0; i < 3; i++) {
+    sinosc[i] = SinOsc_malloc();
+  }
+  SinOsc_new(sinosc[0], 2);
+  SinOsc_new(sinosc[1], 2 + 12);
+  SinOsc_new(sinosc[2], 2 + 12 + 7);
+#endif
 
   // LEDText_display(ledtext, "HELLO");
   // show X in case the files aren't loaded
