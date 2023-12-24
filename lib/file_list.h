@@ -23,7 +23,6 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 typedef struct SampleInfo {
-  char *name;
   int32_t size;
   uint16_t bpm;
   uint16_t beats;
@@ -49,12 +48,7 @@ typedef struct SampleList {
   Sample *sample;
 } SampleList;
 
-SampleInfo *SampleInfo_load(const char *dir, char *fno) {
-  char fname[100];
-  strcpy(fname, dir);
-  strcat(fname, "/");
-  strcat(fname, fno);
-
+SampleInfo *SampleInfo_load(const char *fname) {
   SampleInfo *si;
   FIL fil;
   FRESULT fr;
@@ -63,6 +57,8 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
   unsigned int bytes_read;
+
+  // total size to allocate
   uint16_t sampleInfoSize;
   fr = f_read(&fil, &sampleInfoSize, sizeof(uint16_t), &bytes_read);
   if (fr != FR_OK || bytes_read == 0) {
@@ -70,29 +66,6 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
     return NULL;
   }
   si = malloc(sampleInfoSize);
-
-  // read in the name len
-  uint16_t NameLen;
-  fr = f_read(&fil, &NameLen, sizeof(uint16_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
-  // Name
-  si->name = (char *)malloc((NameLen + 8) * sizeof(char));
-  for (uint8_t i = 0; i < NameLen; i++) {
-    fr = f_read(&fil, &si->name[i], sizeof(char), &bytes_read);
-    if (fr != FR_OK) {
-      printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    }
-  }
-  si->name[NameLen] = '\0';
-  // prepend s->name with dir
-  char name[100];
-  strcpy(name, dir);
-  strcat(name, "/");
-  strcat(name, si->name);
-  strcpy(si->name, name);
 
   // Size
   fr = f_read(&fil, &si->size, sizeof(uint32_t), &bytes_read);
@@ -174,35 +147,21 @@ SampleInfo *SampleInfo_load(const char *dir, char *fno) {
 
 uint8_t count_files(const char *dir, int num_channels) {
   uint8_t filelist_count = 0;
-  DIR dj;      /* Directory object */
-  FILINFO fno; /* File information */
-  FRESULT fr;  /* File result error */
+  FILINFO fno;
 
-  memset(&dj, 0, sizeof dj);
-  memset(&fno, 0, sizeof fno);
-  fr = f_findfirst(&dj, &fno, dir, "*");
-  if (FR_OK != fr) {
-    // printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
-    return filelist_count;
-  }
-  while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (filelist_count >= 16) {
-      break;
-    }
-    if (strstr(fno.fname, ".0.wav.info")) {
+  for (uint8_t i = 0; i < 16; i++) {
+    char fname[100];
+    sprintf(fname, "%s/%d.0.wav.info", dir, i);
+    FRESULT fr = f_stat(fname, &fno);
+    if (FR_OK == fr) {
       filelist_count++;
     }
-    fr = f_findnext(&dj, &fno); /* Search for next item */
   }
-  f_closedir(&dj);
 
   return filelist_count;
 }
 
 SampleList *list_files(const char *dir, int num_channels) {
-  DIR dj;      /* Directory object */
-  FILINFO fno; /* File information */
-  FRESULT fr;  /* File result error */
   uint8_t total_files = count_files(dir, num_channels);
   SampleList *samplelist = malloc(sizeof(SampleList));
   samplelist->num_samples = total_files;
@@ -213,38 +172,21 @@ SampleList *list_files(const char *dir, int num_channels) {
   }
   samplelist->sample = malloc(sizeof(Sample) * total_files);
 
-  memset(&dj, 0, sizeof dj);
-  memset(&fno, 0, sizeof fno);
-  fr = f_findfirst(&dj, &fno, dir, "*");
-  if (FR_OK != fr) {
-    printf("[file_list] f_findfirst error: %s (%d)\n", FRESULT_str(fr), fr);
-    return samplelist;
-  }
   uint8_t filelist_count = 0;
-  while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (filelist_count >= 16) {
-      break;
-    }
-    if (strstr(fno.fname, ".0.wav.info")) {
-      printf("[file_list] loading %s\n", fno.fname);
-      samplelist->sample[filelist_count].snd[0] =
-          SampleInfo_load(dir, fno.fname);
-
-      for (uint8_t k = 1; k < FILE_VARIATIONS; k++) {
-        // replace fno.fname "0.wav" with ".%d.wav
-        char fname2[100];
-        strcpy(fname2, fno.fname);
-        fname2[strlen(fname2) - 10] = '\0';
-        sprintf(fname2, "%s%d.wav.info", fname2, k);
-        printf("[file_list] loading %s\n", fname2);
-        samplelist->sample[filelist_count].snd[k] =
-            SampleInfo_load(dir, fname2);
+  for (uint8_t i = 0; i < 16; i++) {
+    char fname[100];
+    sprintf(fname, "%s/%d.0.wav.info", dir, i);
+    FILINFO fno; /* File information */
+    FRESULT fr = f_stat(fname, &fno);
+    if (FR_OK == fr) {
+      for (uint8_t j = 0; j < FILE_VARIATIONS; j++) {
+        char fnameLoad[100];
+        sprintf(fnameLoad, "%s/%d.%d.wav.info", dir, i, j);
+        samplelist->sample[filelist_count].snd[j] = SampleInfo_load(fnameLoad);
       }
       filelist_count++;
     }
-    fr = f_findnext(&dj, &fno); /* Search for next item */
   }
-  f_closedir(&dj);
 
   return samplelist;
 }

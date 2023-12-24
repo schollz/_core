@@ -390,8 +390,6 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 }
 
 func (f File) updateInfo(fnameIn string) (err error) {
-	_, filename := filepath.Split(fnameIn)
-
 	// determine the size
 	finfo, err := os.Stat(fnameIn)
 	if err != nil {
@@ -428,8 +426,6 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	// file_list.h:
 	// typedef struct WavFile {
-	// 	uint32_t size;
-	// 	char *name;
 	// 	uint16_t bpm;
 	// 	uint8_t slice_num;
 	// 	uint32_t *slice_start;
@@ -441,8 +437,6 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	//  uint8_t num_channels;
 	// } WavFile;
 	var data = []any{
-		uint16(len([]byte(filename))),
-		[]byte(filename),
 		int32(fsize),
 		uint16(f.BPM),
 		uint16(sliceNum),

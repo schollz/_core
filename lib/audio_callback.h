@@ -296,10 +296,10 @@ void i2s_callback_func() {
       if (fr != FR_OK) {
         debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
       }
-      fr = f_open(
-          &fil_current,
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
-          FA_READ);
+      char fname[100];
+      sprintf(fname, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
+              sel_variation);
+      fr = f_open(&fil_current, fname, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
 #ifdef PRINT_SDCARD_TIMING
@@ -353,10 +353,10 @@ void i2s_callback_func() {
     if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
       printf("ERROR READING!\n");
       f_close(&fil_current);  // close and re-open trick
-      f_open(
-          &fil_current,
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->name,
-          FA_READ);
+      char fname[100];
+      sprintf(fname, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
+              sel_variation);
+      f_open(&fil_current, fname, FA_READ);
       f_lseek(&fil_current, WAV_HEADER +
                                 (banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]

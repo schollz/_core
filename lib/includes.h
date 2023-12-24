@@ -54,6 +54,8 @@
 #include "definitions.h"
 #include "pcg_basic.h"
 //
+#include "memusage.h"
+//
 #include "array_resample.h"
 #include "audio_pool.h"
 #ifdef INCLUDE_BASS
@@ -76,7 +78,6 @@
 #include "iir.h"
 #include "leds.h"
 #include "ledtext.h"
-#include "memusage.h"
 #include "noise.h"
 #include "pca9552.h"
 #include "random.h"
