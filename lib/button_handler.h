@@ -31,7 +31,7 @@
 #define KEY_C 3
 #define MODE_JUMP 0
 #define MODE_MASH 1
-#define MODE_BANK 1
+#define MODE_BASS 2
 
 uint8_t key_held_num = 0;
 bool key_held_on = false;
@@ -136,7 +136,7 @@ void go_update_top() {
   if (all_off) {
     // top row is not held
     // show jump/mash, mute, play
-    // LEDS_set(leds, LED_BASE_FACE, KEY_A, 2 * (1 - mode_jump_mash));
+    // LEDS_set(leds, LED_BASE_FACE, KEY_A, 2 * (1 - mode_buttons16));
     // LEDS_set(leds, LED_BASE_FACE, KEY_B, 2 * mode_mute);
     // LEDS_set(leds, LED_BASE_FACE, KEY_C, 2 * mode_play);
   }
@@ -240,7 +240,7 @@ void button_key_on_single(uint8_t key) {
   if (key < 4) {
   } else if (key >= 4) {
     // 1-16
-    if (mode_jump_mash == MODE_JUMP) {
+    if (mode_buttons16 == MODE_JUMP) {
       // 1-16 (jump mode)
       // do jump
       debounce_quantize = 2;
@@ -252,11 +252,17 @@ void button_key_on_single(uint8_t key) {
       if (toggle_chain_rec) {
         Chain_add_current(chain, key - 4, bpm_timer_counter);
       }
-    } else if (mode_jump_mash == MODE_MASH) {
+    } else if (mode_buttons16 == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
       fx_toggle[key - 4] = true;
       toggle_fx(key - 4);
+    } else if (mode_buttons16 == MODE_BASS) {
+#ifdef INCLUDE_SINEBASS
+      printf("updaing sinosc\n");
+      sinebass_update_note = key - 4;
+      sinebass_update_counter = 0;
+#endif
     }
   }
 }
@@ -284,13 +290,13 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // S+C
     } else {
       // S+H
-      if (mode_jump_mash == MODE_JUMP) {
+      if (mode_buttons16 == MODE_JUMP) {
         // S+H (jump mode)
         // toggles fx
         fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
         bool on = fx_toggle[key2 - 4];
         toggle_fx(key2 - 4);
-      } else if (mode_jump_mash == MODE_MASH) {
+      } else if (mode_buttons16 == MODE_MASH) {
         // S+H (mash mode)
         // does jump
         key_do_jump(key2 - 4);
@@ -298,7 +304,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     }
   } else if (key1 > 3 && key2 > 3) {
     // H+H
-    if (mode_jump_mash == MODE_JUMP) {
+    if (mode_buttons16 == MODE_JUMP) {
       // retrigger
       go_retrigger_2key(key1, key2);
     }

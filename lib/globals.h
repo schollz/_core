@@ -90,7 +90,7 @@ float retrig_vol_step = 0;
 // buttons
 // mode toggles
 //   mode  ==0  ==1
-bool mode_jump_mash = 0;
+uint8_t mode_buttons16 = 2;
 bool mode_mute = 0;
 bool mode_play = 0;
 
@@ -123,6 +123,8 @@ Bass *bass;
 
 #ifdef INCLUDE_SINEBASS
 SinOsc *sinosc[3];
+uint8_t sinebass_update_note = 0;
+uint8_t sinebass_update_counter = 0;
 #endif
 
 ResonantFilter *resFilter[2];

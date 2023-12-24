@@ -216,6 +216,18 @@ void input_handling() {
     adc_select_input(0);
     sleep_ms(1);
     int adc;
+#ifdef INCLUDE_SINEBASS
+    if (sinebass_update_counter < 30) {
+      sinebass_update_counter++;
+      if (sinebass_update_counter == 10) {
+        SinOsc_new(sinosc[0], sinebass_update_note);
+      } else if (sinebass_update_counter == 20) {
+        SinOsc_new(sinosc[1], sinebass_update_note + 12);
+      } else if (sinebass_update_counter == 30) {
+        SinOsc_new(sinosc[2], sinebass_update_note + 12 + 7);
+      }
+    }
+#endif
 
     // knob X
     adc = FilterExp_update(adcs[0], adc_read());
