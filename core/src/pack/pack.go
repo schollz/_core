@@ -152,13 +152,16 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	// zip the folder
 	cwd, _ := os.Getwd()
 	os.Chdir(zipStorage)
-	_, _, err = utils.Run("zip", "-r", zipFilename+".zip", zipFilename)
+	err = utils.ZipFolder(zipFilename)
 	if err != nil {
 		log.Error(err)
 	}
 
 	// remove the directory
-	os.RemoveAll(zipFilename)
+	err = os.RemoveAll(zipFilename)
+	if err != nil {
+		log.Error(err)
+	}
 
 	os.Chdir(cwd)
 
