@@ -57,6 +57,7 @@ def run():
 #define CROSSFADE3_LINE 3
 """
     )
+    print("#define CROSSFADE3_LIMIT %d" % block_size)
     print(f"static int32_t crossfade3_cos_out[{block_size}]={{")
     s = ""
     for _, v in enumerate(cos_out):

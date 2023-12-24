@@ -83,6 +83,7 @@
 #include "savefile.h"
 #include "sdcard.h"
 #include "selectx.h"
+#include "sinewaves.h"
 #include "wav.h"
 //
 #include "crossfade3.h"

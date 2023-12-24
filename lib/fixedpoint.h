@@ -37,6 +37,7 @@
 #define Q16_16_2PI 411774
 #define Q16_16_PI_OVER_2 102943
 #define Q16_16_MAX 2147418112
+#define Q16_16_0_333 10923
 #define Q16_16_2_OVER_PI 41721  // 2 / pi
 // https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
 #define Q16_16_SIN_A5 102873  // 4 * (3/pi - 9/16)
@@ -123,7 +124,6 @@ int32_t q16_16_sin(int32_t fixedValue) {
   }
   return sin5;
 }
-
 
 int32_t q16_16_sin01(int32_t fixedValue) {
   int32_t sin5 = q16_16_sin(fixedValue);

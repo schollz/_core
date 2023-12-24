@@ -394,6 +394,14 @@ int main() {
   leds = LEDS_create();
   ledtext = LEDText_create();
 
+  printf("%d\n", sinewave0[0]);
+  printf("%d\n", sinewave1[0]);
+  printf("%d\n", sinewave2[0]);
+  printf("%d\n", sinewave3[0]);
+  printf("%d\n", sinewave4[0]);
+  printf("%d\n", sinewave5[0]);
+  printf("%d\n", sinewave6[0]);
+
   // LEDText_display(ledtext, "HELLO");
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
