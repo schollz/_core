@@ -149,8 +149,8 @@ void i2s_callback_func() {
                          .snd[sel_variation]
                          ->slice_num;
       printf(" -> %d\n", beat_current);
-      phase_change = true;
       do_open_file = true;
+      phase_change = true;
     }
   }
 
@@ -278,7 +278,6 @@ void i2s_callback_func() {
     }
 
     if (head == 0 && do_open_file) {
-      do_open_file = false;
       // setup the next
       sel_sample_cur = sel_sample_next;
       sel_bank_cur = sel_bank_next;
@@ -296,7 +295,11 @@ void i2s_callback_func() {
           FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
-
+#ifdef PRINT_SDCARD_TIMING
+      if (do_open_file) {
+        printf("[audio_callback] do_open_file f_close+f_open: %d\n", (t1 - t0));
+      }
+#endif
       if (fr != FR_OK) {
         debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
       }
@@ -304,7 +307,7 @@ void i2s_callback_func() {
 
     // optimization here, only seek if the current position is not at the
     // phases[head]
-    if (phases[head] != last_seeked) {
+    if (phases[head] != last_seeked || do_open_file) {
       t0 = time_us_32();
       if (f_lseek(&fil_current,
                   WAV_HEADER +
@@ -331,6 +334,11 @@ void i2s_callback_func() {
         return;
       }
       t1 = time_us_32();
+#ifdef PRINT_SDCARD_TIMING
+      if (do_open_file) {
+        printf("[audio_callback] do_open_file f_lseek: %d\n", (t1 - t0));
+      }
+#endif
       sd_card_total_time += (t1 - t0);
     }
 
@@ -356,6 +364,11 @@ void i2s_callback_func() {
     }
     t1 = time_us_32();
     sd_card_total_time += (t1 - t0);
+#ifdef PRINT_SDCARD_TIMING
+    if (do_open_file) {
+      printf("[audio_callback] do_open_file f_read: %d\n", (t1 - t0));
+    }
+#endif
     last_seeked = phases[head] + fil_bytes_read;
 
     if (fil_bytes_read < values_to_read) {
@@ -421,7 +434,7 @@ void i2s_callback_func() {
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade) {
-          if (head == 0 && !do_fade_out) {
+          if (head == 0 && (!do_fade_out)) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           } else if (!do_fade_in) {
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
@@ -586,7 +599,7 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
-  if (cpu_utilizations_i == 64 || sd_card_total_time > 3000) {
+  if (cpu_utilizations_i == 64 || sd_card_total_time > 3000 || do_open_file) {
     uint16_t cpu_utilization = 0;
     for (uint8_t i = 0; i < cpu_utilizations_i; i++) {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
