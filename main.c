@@ -220,18 +220,18 @@ void input_handling() {
     if (sinebass_update_counter < 30) {
       sinebass_update_counter++;
       if (sinebass_update_counter == 10) {
-        SinOsc_new(sinosc[0], sinebass_update_note);
+        SinOsc_wave(sinosc[0], sinebass_update_note);
       } else if (sinebass_update_counter == 20) {
         if (sinebass_update_note == 0) {
-          SinOsc_new(sinosc[1], 0);
+          SinOsc_wave(sinosc[1], 0);
         } else {
-          SinOsc_new(sinosc[1], sinebass_update_note + 12);
+          SinOsc_wave(sinosc[1], sinebass_update_note + 12);
         }
       } else if (sinebass_update_counter == 30) {
         if (sinebass_update_note == 0) {
-          SinOsc_new(sinosc[2], 0);
+          SinOsc_wave(sinosc[2], 0);
         } else {
-          SinOsc_new(sinosc[2], sinebass_update_note + 12 + 7);
+          SinOsc_wave(sinosc[2], sinebass_update_note + 12 + 7);
         }
       }
     }
@@ -419,9 +419,12 @@ int main() {
   for (uint8_t i = 0; i < 3; i++) {
     sinosc[i] = SinOsc_malloc();
   }
-  SinOsc_new(sinosc[0], 2);
-  SinOsc_new(sinosc[1], 2 + 12);
-  SinOsc_new(sinosc[2], 2 + 12 + 7);
+  SinOsc_wave(sinosc[0], 0);
+  SinOsc_wave(sinosc[1], 0);
+  SinOsc_wave(sinosc[2], 0);
+  SinOsc_quiet(sinosc[0], 2);
+  SinOsc_quiet(sinosc[1], 2);
+  SinOsc_quiet(sinosc[2], 2);
 #endif
 
   // LEDText_display(ledtext, "HELLO");
