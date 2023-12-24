@@ -232,9 +232,11 @@ void button_key_off_any(uint8_t key) {
       dub_step_break = -1;
       //      key_do_jump(key - 4);
       if (mode_buttons16 == MODE_BASS) {
+#ifdef INCLUDE_SINEBASS
         // turn off sinosc
         sinebass_update_note = 0;
         sinebass_update_counter = 0;
+#endif
       }
     }
   }
