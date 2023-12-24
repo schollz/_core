@@ -1,4 +1,4 @@
-dobuild: pico-extras lib/biquad.h lib/crossfade.h lib/resonantfilter_data.h lib/transfer_doublesine.h build
+dobuild: pico-extras lib/biquad.h lib/sinewaves.h lib/crossfade.h lib/resonantfilter_data.h lib/transfer_doublesine.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
@@ -13,11 +13,15 @@ lib/transfer_doublesine.h:
 	clang-format -i --style=google lib/transfer_doublesine.h
 
 
+lib/sinewaves.h:
+	python3 lib/sinewaves.py > lib/sinewaves.h
+	clang-format -i lib/sinewaves.h
+
 lib/crossfade3.h:
 	# set block size to 441
 	cd lib && python3 crossfade3.py 441 > crossfade3.h
 	clang-format -i --style=google lib/crossfade3.h 
- 
+
 lib/selectx2.h:
 	cd lib && python3 selectx2.py > selectx2.h
 	clang-format -i --style=google lib/selectx2.h
