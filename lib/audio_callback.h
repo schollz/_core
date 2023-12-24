@@ -33,6 +33,7 @@ const uint8_t cpu_usage_flag_limit = 3;
 const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
+bool do_open_file_ready = false;
 
 void update_filter_from_envelope(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
@@ -112,45 +113,51 @@ void i2s_callback_func() {
   // mutex
   sync_using_sdcard = true;
 
-  bool do_open_file = false;
+  bool do_open_file = do_open_file_ready;
   // check if the file is the right one
+  if (do_open_file_ready) {
+    // printf("[audio_callback] next file: %s\n", banks[sel_bank_next]
+    //                               ->sample[sel_sample_next]
+    //                               .snd[sel_variation_next]
+    //                               ->name);
+    phases[0] = round(((float)phases[0] * (float)banks[sel_bank_next]
+                                              ->sample[sel_sample_next]
+                                              .snd[sel_variation_next]
+                                              ->size) /
+                      (float)banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->size);
+
+    // printf("[audio_callback] phase[0] -> phase_new: %d*%d/%d -> %d\n",
+    // phases[0],
+    //        banks[sel_bank_next]
+    //            ->sample[sel_sample_next]
+    //            .snd[sel_variation_next]
+    //            ->size,
+    //        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size,
+    //        phase_new);
+    // printf("[audio_callback] beat_current -> new beat_current: %d",
+    // beat_current);
+    beat_current = round(((float)beat_current * (float)banks[sel_bank_next]
+                                                    ->sample[sel_sample_next]
+                                                    .snd[sel_variation_next]
+                                                    ->slice_num)) /
+                   (float)banks[sel_bank_cur]
+                       ->sample[sel_sample_cur]
+                       .snd[sel_variation]
+                       ->slice_num;
+    // printf(" -> %d\n", beat_current);
+    do_open_file = true;
+    do_fade_in = true;
+    do_open_file_ready = false;
+  }
   if (fil_current_change) {
     fil_current_change = false;
     if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next ||
         sel_variation != sel_variation_next) {
-      printf("next file: %s\n", banks[sel_bank_next]
-                                    ->sample[sel_sample_next]
-                                    .snd[sel_variation_next]
-                                    ->name);
-      phase_new = round(((float)phases[0] * (float)banks[sel_bank_next]
-                                                ->sample[sel_sample_next]
-                                                .snd[sel_variation_next]
-                                                ->size) /
-                        (float)banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->size);
-
-      printf(
-          "phase[0] -> phase_new: %d*%d/%d -> %d\n", phases[0],
-          banks[sel_bank_next]
-              ->sample[sel_sample_next]
-              .snd[sel_variation_next]
-              ->size,
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size,
-          phase_new);
-      printf("beat_current -> new beat_current: %d", beat_current);
-      beat_current = round(((float)beat_current * (float)banks[sel_bank_next]
-                                                      ->sample[sel_sample_next]
-                                                      .snd[sel_variation_next]
-                                                      ->slice_num)) /
-                     (float)banks[sel_bank_cur]
-                         ->sample[sel_sample_cur]
-                         .snd[sel_variation]
-                         ->slice_num;
-      printf(" -> %d\n", beat_current);
-      do_open_file = true;
-      phase_change = true;
+      do_open_file_ready = true;
+      do_fade_out = true;
     }
   }
 
@@ -273,7 +280,7 @@ void i2s_callback_func() {
 
   bool first_loop = true;
   for (int8_t head = 1; head >= 0; head--) {
-    if (head == 1 && !do_crossfade) {
+    if (head == 1 && (!do_crossfade || do_fade_in)) {
       continue;
     }
 
@@ -433,15 +440,21 @@ void i2s_callback_func() {
       }
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-        if (do_crossfade) {
-          if (head == 0 && (!do_fade_out)) {
+        if (do_crossfade && !do_fade_in) {
+          if (head == 0) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-          } else if (!do_fade_in) {
+          } else {
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
           }
         } else if (do_fade_out) {
+          // if (i == 0) {
+          //   printf("[audio_callback] do_fade_out head: %d\n", head);
+          // }
           newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
         } else if (do_fade_in) {
+          // if (i == 0) {
+          //   printf("[audio_callback] do_fade_in head: %d\n", head);
+          // }
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
         }
 
@@ -584,8 +597,10 @@ void i2s_callback_func() {
   give_audio_buffer_time = (time_us_32() - t0);
 
   if (do_fade_out) {
-    printf("[audio_callback] do_fade_out -> audio_mute\n");
-    audio_mute = true;
+    if (!do_open_file_ready) {
+      printf("[audio_callback] do_fade_out -> audio_mute\n");
+      audio_mute = true;
+    }
   }
   if (trigger_button_mute) {
     button_mute = true;
