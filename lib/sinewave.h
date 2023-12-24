@@ -15,7 +15,7 @@ void SinOsc_new(SinOsc *self, uint8_t wave) {
   if (self->wave[0] == wave) {
     return;
   }
-  if (wave >= 0 && wave < 16) {
+  if (wave >= 0 && wave < SINEWAVE_MAX) {
     self->crossfade = 0;
     self->wave[1] = self->wave[0];
     self->phase[1] = self->phase[0];
@@ -38,8 +38,10 @@ SinOsc *SinOsc_malloc() {
   return self;
 }
 
+void SinOsc_free(SinOsc *self) { free(self); }
+
 int32_t SinOsc_next(SinOsc *self) {
-  int32_t val;
+  int32_t val = 0;
   if (self->crossfade < CROSSFADE3_LIMIT) {
     if (self->phase[0] >= self->limit[0]) {
       self->phase[0] = 0;
@@ -47,14 +49,23 @@ int32_t SinOsc_next(SinOsc *self) {
     if (self->phase[1] >= self->limit[1]) {
       self->phase[1] = 0;
     }
-    val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
-                          sinewave_sample(self->wave[0], self->phase[0])) +
-          q16_16_multiply(crossfade3_line[self->crossfade],
-                          sinewave_sample(self->wave[1], self->phase[1]));
+    if (self->wave[0] == 0) {
+      val = q16_16_multiply(crossfade3_line[self->crossfade],
+                            sinewave_sample(self->wave[1], self->phase[1]));
+    } else if (self->wave[1] == 0) {
+      val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
+                            sinewave_sample(self->wave[0], self->phase[0]));
+
+    } else {
+      val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
+                            sinewave_sample(self->wave[0], self->phase[0])) +
+            q16_16_multiply(crossfade3_line[self->crossfade],
+                            sinewave_sample(self->wave[1], self->phase[1]));
+    }
     self->phase[0]++;
     self->phase[1]++;
     self->crossfade++;
-  } else {
+  } else if (self->wave[0] > 0) {
     if (self->phase[0] >= self->limit[0]) {
       self->phase[0] = 0;
     }

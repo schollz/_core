@@ -99,8 +99,8 @@ void i2s_callback_func() {
       int32_t v = SinOsc_next(sinosc[0]) >> (1 + volume);
       int32_t v2 = SinOsc_next(sinosc[1]);
       int32_t v3 = SinOsc_next(sinosc[2]);
-      samples[i * 2 + 0] += (v + (v2 >> (3 + volume)) + (v3 >> (4 + volume)));
-      samples[i * 2 + 1] += (v + (v2 >> (4 + volume)) + (v3 >> (3 + volume)));
+      samples[i * 2 + 0] += (v + (v2 >> (4 + volume)) + (v3 >> (5 + volume)));
+      samples[i * 2 + 1] += (v + (v2 >> (5 + volume)) + (v3 >> (4 + volume)));
     }
 #endif
 

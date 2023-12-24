@@ -231,6 +231,11 @@ void button_key_off_any(uint8_t key) {
     if (key_total_pressed == 0) {
       dub_step_break = -1;
       //      key_do_jump(key - 4);
+      if (mode_buttons16 == MODE_BASS) {
+        // turn off sinosc
+        sinebass_update_note = 0;
+        sinebass_update_counter = 0;
+      }
     }
   }
 }
@@ -257,12 +262,6 @@ void button_key_on_single(uint8_t key) {
       // do momentary fx
       fx_toggle[key - 4] = true;
       toggle_fx(key - 4);
-    } else if (mode_buttons16 == MODE_BASS) {
-#ifdef INCLUDE_SINEBASS
-      printf("updaing sinosc\n");
-      sinebass_update_note = key - 4;
-      sinebass_update_counter = 0;
-#endif
     }
   }
 }
@@ -550,6 +549,15 @@ void button_handler(ButtonMatrix *bm) {
     } else {
       button_key_on_double(key_held_num, bm->on[i]);
     }
+
+#ifdef INCLUDE_SINEBASS
+    if (mode_buttons16 == MODE_BASS) {
+      printf("updaing sinosc\n");
+      sinebass_update_note = bm->on[i] - 4 + 1;
+      sinebass_update_counter = 0;
+    }
+#endif
+
     // keep track of combos
     key_pressed[key_pressed_num] = bm->on[i];
     if (key_pressed_num < 100) {
