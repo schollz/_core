@@ -553,6 +553,15 @@ void i2s_callback_func() {
     }
   }
 
+  // apply bass
+#ifdef INCLUDE_SINEBASS
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    int32_t v = SinOsc_next(sinosc[0]) >> 1;
+    samples[i * 2 + 0] += (v + (SinOsc_next(sinosc[1]) >> 3));
+    samples[i * 2 + 1] += (v + (SinOsc_next(sinosc[2]) >> 4));
+  }
+#endif
+
   // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
   //   samples[i * 2 + 0] =
   //       q16_16_sin(q16_16_multiply(

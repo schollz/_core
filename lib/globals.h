@@ -121,6 +121,10 @@ bool quadratic_resampling = false;
 Bass *bass;
 #endif
 
+#ifdef INCLUDE_SINEBASS
+SinOsc *sinosc[3];
+#endif
+
 ResonantFilter *resFilter[2];
 Gate *audio_gate;
 

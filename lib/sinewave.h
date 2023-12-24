@@ -38,30 +38,30 @@ SinOsc *SinOsc_malloc() {
   return self;
 }
 
-int32_t SinOsc_next(SinOsc *self, int32_t volume) {
+int32_t SinOsc_next(SinOsc *self) {
   int32_t val;
   if (self->crossfade < CROSSFADE3_LIMIT) {
+    if (self->phase[0] >= self->limit[0]) {
+      self->phase[0] = 0;
+    }
+    if (self->phase[1] >= self->limit[1]) {
+      self->phase[1] = 0;
+    }
     val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
                           sinewave_sample(self->wave[0], self->phase[0])) +
           q16_16_multiply(crossfade3_line[self->crossfade],
                           sinewave_sample(self->wave[1], self->phase[1]));
     self->phase[0]++;
-    if (self->phase[0] >= self->limit[0]) {
-      self->phase[0] = 0;
-    }
     self->phase[1]++;
-    if (self->phase[1] >= self->limit[1]) {
-      self->phase[1] = 0;
-    }
     self->crossfade++;
   } else {
-    val = sinewave_sample(self->wave[0], self->phase[0]);
-    self->phase[0]++;
     if (self->phase[0] >= self->limit[0]) {
       self->phase[0] = 0;
     }
+    val = sinewave_sample(self->wave[0], self->phase[0]);
+    self->phase[0]++;
   }
-  return q16_16_multiply(volume, val);
+  return val;
 }
 
 #endif
