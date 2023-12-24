@@ -5,9 +5,11 @@ var totalBytesRequested = 0;
 var activeRegion = null;
 var app;
 var socket;
+var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 const ccolor = 'rgba(138, 180, 215, 0.4)';
 const wavecolor = 'rgba(0, 92, 153,0.95)';
+
 
 const debounce = (callback, wait) => {
     let timeoutId = null;
@@ -133,7 +135,13 @@ const socketMessageListener = (e) => {
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStop);
             }, 100);
         }
-
+    } else if (data.action == "connected") {
+        if (serverID == "" || serverID == data.message) {
+            serverID = data.message;
+        } else {
+            // do hot reload to get the latest
+            location.reload();
+        }
     } else if (data.action == "processingstart") {
         app.uploading = false;
         app.processing = true;
@@ -165,8 +173,10 @@ const socketOpenListener = (e) => {
                 }));
             }
         }, 50);
-
     }
+    socket.send(JSON.stringify({
+        action: "connected"
+    }));
 };
 const socketErrorListener = (e) => {
     console.error(e);

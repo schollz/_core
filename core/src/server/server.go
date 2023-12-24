@@ -27,6 +27,7 @@ var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
 var mutex sync.Mutex
 var keystore *bolt.DB
+var serverID string
 
 func Serve() (err error) {
 	log.Trace("setting up server")
@@ -39,6 +40,14 @@ func Serve() (err error) {
 	if err != nil {
 		return
 	}
+
+	// generate a random integer for the session
+	rng, err := codename.DefaultRNG()
+	if err != nil {
+		return
+	}
+	serverID = codename.Generate(rng, 0)
+	log.Tracef("serverID: %s", serverID)
 
 	log.Trace("creating bucket for bolt db")
 	err = keystore.Update(func(tx *bolt.Tx) error {
@@ -207,6 +216,11 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Success:  true,
 				})
 			}
+		} else if message.Action == "connected" {
+			c.WriteJSON(Message{
+				Action:  "connected",
+				Message: serverID,
+			})
 		} else if message.Action == "mergefiles" {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
 			fnames := make([]string, len(message.Filenames))
