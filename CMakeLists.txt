@@ -104,6 +104,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PRINT_AUDIO_USAGE=1
     # PRINT_AUDIO_OVERLOADS=1
     PRINT_AUDIO_CPU_USAGE=1
+    PRINT_MEMORY_USAGE=1
     # PRINT_SDCARD_TIMING=1
 
     # turn off gpio for leds
@@ -115,7 +116,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # includes for different versions
     # INCLUDE_RGBLED=1
     INCLUDE_FILTER=1
-    # INCLUDE_SINEBASS=1
+    INCLUDE_SINEBASS=1
     # INCLUDE_TRANSFER=1 
     # INCLUDE_BASS=1
 )

@@ -553,25 +553,17 @@ void i2s_callback_func() {
     }
   }
 
-  // apply bass
 #ifdef INCLUDE_SINEBASS
+  // apply bass
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-    int32_t v = SinOsc_next(sinosc[0]) >> 1;
-    samples[i * 2 + 0] += (v + (SinOsc_next(sinosc[1]) >> 3));
-    samples[i * 2 + 1] += (v + (SinOsc_next(sinosc[2]) >> 4));
+    uint8_t volume = 2;
+    int32_t v = SinOsc_next(sinosc[0]) >> (1 + volume);
+    int32_t v2 = SinOsc_next(sinosc[1]);
+    int32_t v3 = SinOsc_next(sinosc[2]);
+    samples[i * 2 + 0] += (v + (v2 >> (3 + volume)) + (v3 >> (4 + volume)));
+    samples[i * 2 + 1] += (v + (v2 >> (4 + volume)) + (v3 >> (3 + volume)));
   }
 #endif
-
-  // for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-  //   samples[i * 2 + 0] =
-  //       q16_16_sin(q16_16_multiply(
-  //           Q16_16_2PI, q16_16_divide(samples[i * 2 + 0], Q16_16_MAX)))
-  //       << 15;
-  //   samples[i * 2 + 1] =
-  //       q16_16_sin(q16_16_multiply(
-  //           Q16_16_2PI, q16_16_divide(samples[i * 2 + 1], Q16_16_MAX)))
-  //       << 15;
-  // }
 
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
@@ -602,6 +594,14 @@ void i2s_callback_func() {
 #ifdef PRINT_AUDIO_CPU_USAGE
     printf("average cpu utilization: %2.1f\n",
            ((float)cpu_utilization) / (float)cpu_utilizations_i);
+
+#endif
+#ifdef PRINT_MEMORY_USAGE
+    uint32_t total_heap = getTotalHeap();
+    uint32_t used_heap = total_heap - getFreeHeap();
+    printf("memory usage: %2.1f%% (%ld/%ld)\n",
+           (float)(used_heap) / (float)(total_heap)*100.0, used_heap,
+           total_heap);
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING

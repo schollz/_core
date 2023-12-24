@@ -76,6 +76,7 @@
 #include "iir.h"
 #include "leds.h"
 #include "ledtext.h"
+#include "memusage.h"
 #include "noise.h"
 #include "pca9552.h"
 #include "random.h"
@@ -103,4 +104,5 @@
 //
 #include "audio_callback.h"
 //
+
 #include "button_handler.h"

@@ -58,7 +58,7 @@ int32_t SinOsc_next(SinOsc *self) {
     if (self->phase[0] >= self->limit[0]) {
       self->phase[0] = 0;
     }
-    val = sinewave_sample(self->wave[0], self->phase[0]);
+    val = sinewave_sample2(self->wave[0], self->phase[0]);
     self->phase[0]++;
   }
   return val;
