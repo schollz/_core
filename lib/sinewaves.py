@@ -69,4 +69,32 @@ print("}")
 
 print("#define SINEWAVE_TOTAL_BYTES " + str(total_bytes))
 
+print(
+    """
+int32_t *sinewave_samples;
+void init_sinewaves() {
+    sinewave_samples = (int32_t *)malloc(SINEWAVE_TOTAL_BYTES);
+    """
+)
+j = 0
+for i in range(sinewave_max):
+    print(
+        "    memcpy(sinewave_samples + %d, sinewave%d, sinewave_len(%d) * sizeof(int32_t));"
+        % (j, i, i)
+    )
+    j += sinewave_len[i]
+print(
+    """
+}
+"""
+)
+print("static int32_t sinewave_sample2(uint8_t wave, uint16_t index) {")
+print("  switch (wave) {")
+j = 0
+for i in range(sinewave_max):
+    print("    case %d: return sinewave_samples[index + %d];" % (i, j))
+    j += sinewave_len[i]
+print("    default: return 0;")
+print("  }")
+print("}")
 print("#endif")
