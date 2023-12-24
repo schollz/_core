@@ -88,7 +88,7 @@ knobs: X, Y, Z
 - [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
 - [ ] **S** + **A** → toggle playback
 - [ ] **S** + **B** → toggle mute
-- [ ] **S** + **C** → toggle jump/mash mode
+- [ ] **S** + **C** → toggle jump/mash/bass mode
 - [ ] **A** → show current bank (dim) + sample (bright)
 - [ ] **A** + **H** + **H** → select bank (1st) + sample (2nd)
 - [ ] **A** + **B** → toggle one-shot vs classic
