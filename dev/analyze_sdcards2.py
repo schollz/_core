@@ -55,7 +55,7 @@ for fname in fnames:
     sd_timings.append(sd)
     # Extracting the file name without the extension for labels
     file_label = fname.split("/")[-1].split(".")[0]
-    file_labels.append(file_label)
+    file_labels.append(f"{file_label}\ncpu ~ {np.average(cpu):2.1f} %")
 
 # Create a separate figure for SD card timings
 fig2, ax2 = plt.subplots(figsize=(12, 6))
@@ -63,9 +63,11 @@ ax2.boxplot(sd_timings)
 ax2.set_title("SD Card Timings")
 ax2.set_yscale("log")
 ax2.set_ylabel("Read duration (sec/MB)")
-ax2.set_ylim(0.01, 100)
+ax2.set_ylim(0.1, 20)
 
 ax2.set_xticklabels(file_labels, rotation=45, ha="right")
+# create more room at the bottom for the label
+plt.subplots_adjust(bottom=0.3)
 
 # Create a rectangle to cover the area above 10.0
 # x = 0.5 to start just before the first box, width = len(sd_timings) to cover all boxes
