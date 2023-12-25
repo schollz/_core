@@ -13,7 +13,7 @@ this is the source code for *_core* music devices that utilize the rp2040. devic
 
 ## pcm5102 + sdio card reader + raspberry pi pico
 
-these are the minimal requirements, which will be outlined below (TODO)
+these are the minimal requirements, which will be outlined below (TODO). ([demo](https://www.instagram.com/p/CvzdZTYtV8H/))
 
 ## zeptocore
 
