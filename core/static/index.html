@@ -92,7 +92,7 @@
 
                 <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
                     <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length > 0"
-                        style="margin-left: 0;">Clear all</button>
+                        style="margin-left: 0.5rem;">Clear all</button>
                     <button @click="clearSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Clear
                         Selected</button>
                     <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Merge

@@ -14,11 +14,11 @@ body {
 
 :root {
     --background-color: #f4f0ff;
-    --header-footer-background: #6a0572;
+    --header-footer-background: #bdafeb;
     --banks-background: #dcd6f7;
     --highlight-color: #c3b8e6;
     --hover-color: #d2cde9;
-    --light-highlight-color: #e3def1;
+    --other-color: #6d51c9;
 }
 
 /* :root {
@@ -127,8 +127,8 @@ main {
 }
 
 .file-details {
-    background-color: var(--light-highlight-color);
-    border-radius: 20px;
+    border: 3px solid var(--highlight-color);
+    border-radius: 10px;
     padding: 1em;
     margin: 1em;
 }
@@ -148,15 +148,17 @@ main {
 .file-list li {
     cursor: pointer;
     margin-bottom: 0.5rem;
+    margin-left: 0.5rem;
     padding: 0.5rem;
     background-color: var(--highlight-color);
     position: relative;
+    border-radius: 10px;
 }
 
 .file-list li::before {
     content: attr(data-file-number);
     position: absolute;
-    left: -0.75rem;
+    left: -1rem;
     z-index: 1;
 }
 
@@ -201,7 +203,7 @@ button {
     font-family: 'MonaspaceKrypton', monospace;
     background-color: var(--banks-background);
     /* Light purple background color for buttons */
-    color: var(--header-footer-background);
+    color: black;
     /* Dark purple text color for buttons */
     padding: 0.5rem 1rem;
     border: none;
@@ -213,7 +215,7 @@ button {
 button:hover {
     background-color: var(--highlight-color);
     /* Slightly darker purple on button hover */
-    color: var(--header-footer-background);
+    color: white;
 }
 
 
