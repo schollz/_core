@@ -19,7 +19,8 @@ these are the minimal requirements, which will be outlined below (TODO). ([demo]
 - pcm5102
 - sdio sd card
 
-![PXL_20231225_060210016](https://github.com/schollz/_core/assets/6550035/07abcb19-e55f-4210-af50-f9c7caa89e3a)
+![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
+
 
 
 ## zeptocore
