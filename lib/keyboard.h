@@ -23,8 +23,8 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 void run_keyboard() {
-  //   int c = getchar_timeout_us(0);
-  //   if (c >= 0) {
-  //     printf("Got character %c\n", c);
-  //   }
+  int c = getchar_timeout_us(100);
+  if (c >= 0) {
+    printf("Got character %c\n", c);
+  }
 }
