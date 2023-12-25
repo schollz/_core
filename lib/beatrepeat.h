@@ -67,57 +67,60 @@ BeatRepeat *BeatRepeat_malloc() {
   return self;
 }
 
-int16_t BeatRepeat_process(BeatRepeat *self, int16_t sample) {
-  // do beat repeat
-  if (self->repeat_start > -1 && self->repeat_end > -1) {
-    int16_t sample2 = self->ringbuffer[self->repeat_index];
-    if (self->crossfade_in < CROSSFADE3_LIMIT) {
-      sample = q16_16_fp_to_int16(
-          q16_16_multiply(crossfade3_line[self->crossfade_in],
-                          q16_16_int16_to_fp(sample)) +
-          q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_in],
-                          q16_16_int16_to_fp(sample2)));
-      self->crossfade_in++;
-    } else if (self->crossfade_out < CROSSFADE3_LIMIT) {
-      sample = q16_16_fp_to_int16(
-          q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_out],
-                          q16_16_int16_to_fp(sample)) +
-          q16_16_multiply(crossfade3_line[self->crossfade_out],
-                          q16_16_int16_to_fp(sample2)));
-      self->crossfade_out++;
-      if (self->crossfade_out == CROSSFADE3_LIMIT) {
-        self->repeat_start = -1;
-        self->repeat_end = -1;
-        self->crossfade_in = CROSSFADE3_LIMIT;
-        self->crossfade_out = CROSSFADE3_LIMIT;
+void BeatRepeat_process(BeatRepeat *self, int16_t *samples,
+                        int16_t num_samples) {
+  for (int ii = 0; ii < num_samples; ii++) {
+    int16_t sample = samples[ii];
+    // do beat repeat
+    if (self->repeat_start > -1 && self->repeat_end > -1) {
+      int16_t sample2 = self->ringbuffer[self->repeat_index];
+      if (self->crossfade_in < CROSSFADE3_LIMIT) {
+        sample = q16_16_fp_to_int16(
+            q16_16_multiply(crossfade3_line[self->crossfade_in],
+                            q16_16_int16_to_fp(sample)) +
+            q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_in],
+                            q16_16_int16_to_fp(sample2)));
+        self->crossfade_in++;
+      } else if (self->crossfade_out < CROSSFADE3_LIMIT) {
+        sample = q16_16_fp_to_int16(
+            q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_out],
+                            q16_16_int16_to_fp(sample)) +
+            q16_16_multiply(crossfade3_line[self->crossfade_out],
+                            q16_16_int16_to_fp(sample2)));
+        self->crossfade_out++;
+        if (self->crossfade_out == CROSSFADE3_LIMIT) {
+          self->repeat_start = -1;
+          self->repeat_end = -1;
+          self->crossfade_in = CROSSFADE3_LIMIT;
+          self->crossfade_out = CROSSFADE3_LIMIT;
+        }
+      } else {
+        sample = sample2;
       }
+      self->repeat_index++;
+      if (self->repeat_index == self->repeat_end) {
+        self->repeat_index = self->repeat_start;
+      } else if (self->repeat_index > BEATREPEAT_RINGBUFFER_SIZE) {
+        self->repeat_index = 0;
+      }
+      samples[ii] = sample;
     } else {
-      sample = sample2;
-    }
-    self->repeat_index++;
-    if (self->repeat_index == self->repeat_end) {
-      self->repeat_index = self->repeat_start;
-    } else if (self->repeat_index > BEATREPEAT_RINGBUFFER_SIZE) {
-      self->repeat_index = 0;
-    }
-    return sample;
-  }
-
-  // do zerocrossing detection
-  if (self->last < 0 && sample >= 0) {
-    self->zerocrossings[self->zerocrossings_index] = self->ringbuffer_index;
-    self->zerocrossings_index++;
-    if (self->zerocrossings_index > BEATREPEAT_ZEROCROSSING_SIZE) {
-      self->zerocrossings_index = 0;
+      // do zerocrossing detection
+      if (self->last < 0 && sample >= 0) {
+        self->zerocrossings[self->zerocrossings_index] = self->ringbuffer_index;
+        self->zerocrossings_index++;
+        if (self->zerocrossings_index > BEATREPEAT_ZEROCROSSING_SIZE) {
+          self->zerocrossings_index = 0;
+        }
+      }
+      self->ringbuffer[self->ringbuffer_index] = sample;
+      self->ringbuffer_index++;
+      if (self->ringbuffer_index > BEATREPEAT_RINGBUFFER_SIZE) {
+        self->ringbuffer_index = 0;
+      }
+      self->last = sample;
     }
   }
-  self->ringbuffer[self->ringbuffer_index] = sample;
-  self->ringbuffer_index++;
-  if (self->ringbuffer_index > BEATREPEAT_RINGBUFFER_SIZE) {
-    self->ringbuffer_index = 0;
-  }
-  self->last = sample;
-  return sample;
 }
 
 void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
