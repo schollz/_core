@@ -38,6 +38,7 @@ typedef struct BeatRepeat {
   int16_t repeat_end;
   int16_t repeat_index;
   int16_t crossfade_in;
+  int16_t crossfade_out;
 } BeatRepeat;
 
 BeatRepeat *BeatRepeat_malloc() {
@@ -50,6 +51,7 @@ BeatRepeat *BeatRepeat_malloc() {
   self->repeat_end = -1;
   self->repeat_index = 0;
   self->crossfade_in = CROSSFADE3_LIMIT;
+  self->crossfade_out = CROSSFADE3_LIMIT;
 
   return self;
 }
@@ -65,6 +67,19 @@ int16_t BeatRepeat_process(BeatRepeat *self, int16_t sample) {
           q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_in],
                           q16_16_int16_to_fp(sample2)));
       self->crossfade_in++;
+    } else if (self->crossfade_out < CROSSFADE3_LIMIT) {
+      sample = q16_16_fp_to_int16(
+          q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_in],
+                          q16_16_int16_to_fp(sample)) +
+          q16_16_multiply(crossfade3_line[self->crossfade_in],
+                          q16_16_int16_to_fp(sample2)));
+      self->crossfade_out++;
+      if (self->crossfade_out == CROSSFADE3_LIMIT) {
+        self->repeat_start = -1;
+        self->repeat_end = -1;
+        self->crossfade_in = CROSSFADE3_LIMIT;
+        self->crossfade_out = CROSSFADE3_LIMIT;
+      }
     } else {
       sample = sample2;
     }
@@ -86,6 +101,13 @@ int16_t BeatRepeat_process(BeatRepeat *self, int16_t sample) {
 }
 
 void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
+  if (num_samples == 0) {
+    if (self->repeat_start > -1 && self->repeat_end > -1) {
+      self->crossfade_in = CROSSFADE3_LIMIT;
+      self->crossfade_out = 0;
+    }
+    return;
+  }
   self->crossfade_in = 0;
   self->repeat_end = self->ringbuffer_index;
   self->repeat_start = self->ringbuffer_index - num_samples;
