@@ -25,20 +25,27 @@
 #ifndef BEATREPEAT_LIB
 #define BEATREPEAT_LIB 1
 #define BEATREPEAT_RINGBUFFER_SIZE 22100
-
+#define BEATREPEAT_ZEROCROSSING_SIZE 1000
 #include "fixedpoint.h"
 //
 #include "crossfade3.h"
 #include "stdbool.h"
 
 typedef struct BeatRepeat {
+  // buffer for holding original samples
   int16_t ringbuffer[BEATREPEAT_RINGBUFFER_SIZE];
   int16_t ringbuffer_index;
+  // repeat state
   int16_t repeat_start;
   int16_t repeat_end;
   int16_t repeat_index;
+  // crossfading repeats
   int16_t crossfade_in;
   int16_t crossfade_out;
+  // zerocrossings for selecting best repeat
+  int16_t zerocrossings[BEATREPEAT_ZEROCROSSING_SIZE];
+  int16_t zerocrossings_index;
+  int16_t last;
 } BeatRepeat;
 
 BeatRepeat *BeatRepeat_malloc() {
@@ -53,6 +60,10 @@ BeatRepeat *BeatRepeat_malloc() {
   self->crossfade_in = CROSSFADE3_LIMIT;
   self->crossfade_out = CROSSFADE3_LIMIT;
 
+  self->zerocrossings_index = 0;
+  for (int i = 0; i < BEATREPEAT_ZEROCROSSING_SIZE; i++) {
+    self->zerocrossings[i] = -1;
+  }
   return self;
 }
 
@@ -69,9 +80,9 @@ int16_t BeatRepeat_process(BeatRepeat *self, int16_t sample) {
       self->crossfade_in++;
     } else if (self->crossfade_out < CROSSFADE3_LIMIT) {
       sample = q16_16_fp_to_int16(
-          q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_in],
+          q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_out],
                           q16_16_int16_to_fp(sample)) +
-          q16_16_multiply(crossfade3_line[self->crossfade_in],
+          q16_16_multiply(crossfade3_line[self->crossfade_out],
                           q16_16_int16_to_fp(sample2)));
       self->crossfade_out++;
       if (self->crossfade_out == CROSSFADE3_LIMIT) {
@@ -92,11 +103,20 @@ int16_t BeatRepeat_process(BeatRepeat *self, int16_t sample) {
     return sample;
   }
 
+  // do zerocrossing detection
+  if (self->last < 0 && sample >= 0) {
+    self->zerocrossings[self->zerocrossings_index] = self->ringbuffer_index;
+    self->zerocrossings_index++;
+    if (self->zerocrossings_index > BEATREPEAT_ZEROCROSSING_SIZE) {
+      self->zerocrossings_index = 0;
+    }
+  }
   self->ringbuffer[self->ringbuffer_index] = sample;
   self->ringbuffer_index++;
   if (self->ringbuffer_index > BEATREPEAT_RINGBUFFER_SIZE) {
     self->ringbuffer_index = 0;
   }
+  self->last = sample;
   return sample;
 }
 
@@ -108,11 +128,29 @@ void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
     }
     return;
   }
+  if (self->zerocrossings_index < 2) {
+    return;
+  }
   self->crossfade_in = 0;
-  self->repeat_end = self->ringbuffer_index;
-  self->repeat_start = self->ringbuffer_index - num_samples;
-  if (self->repeat_start < 0) {
-    self->repeat_start += BEATREPEAT_RINGBUFFER_SIZE;
+  self->crossfade_out = CROSSFADE3_LIMIT;
+
+  self->repeat_end = self->zerocrossings[self->zerocrossings_index - 1];
+  // find the first repeat_start that exceeds the requested num_samples
+  for (int j = 0; j < BEATREPEAT_ZEROCROSSING_SIZE; j++) {
+    int i = self->zerocrossings_index - j - 1;
+    if (i < 0) {
+      i += BEATREPEAT_ZEROCROSSING_SIZE;
+    }
+    if (self->zerocrossings[i] > -1) {
+      self->repeat_start = self->zerocrossings[i];
+      int16_t diff = self->repeat_end - self->repeat_start;
+      if (diff < 0) {
+        diff += BEATREPEAT_RINGBUFFER_SIZE;
+      }
+      if (diff > num_samples) {
+        break;
+      }
+    }
   }
   self->repeat_index = self->repeat_start;
   fprintf(stderr, "repeating %d->%d\n", self->repeat_start, self->repeat_end);
