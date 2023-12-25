@@ -149,6 +149,13 @@ void toggle_fx(uint8_t fx_num) {
     case FX_REVERSE:
       phase_forward = !fx_active[fx_num];
       break;
+    case FX_BEATREPEAT:
+      if (fx_active[fx_num]) {
+        BeatRepeat_repeat(beatrepeat, 1000);
+      } else {
+        BeatRepeat_repeat(beatrepeat, 0);
+      }
+      break;
     case FX_TIGHTEN:
       printf("FX_TIGHTEN\n");
       if (fx_active[fx_num]) {
