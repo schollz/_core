@@ -11,9 +11,16 @@ this is the source code for *_core* music devices that utilize the rp2040. devic
 - low-latency (<10 ms)
 
 
-## pcm5102 + sdio card reader + raspberry pi pico
+## breadboard
 
 these are the minimal requirements, which will be outlined below (TODO). ([demo](https://www.instagram.com/p/CvzdZTYtV8H/))
+
+- raspberry pi pico (various versions)
+- pcm5102
+- sdio sd card
+
+![PXL_20231225_060210016](https://github.com/schollz/_core/assets/6550035/07abcb19-e55f-4210-af50-f9c7caa89e3a)
+
 
 ## zeptocore
 
