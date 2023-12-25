@@ -7,8 +7,8 @@ var app;
 var socket;
 var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-const ccolor = 'rgba(138, 180, 215, 0.4)';
-const wavecolor = 'rgba(0, 92, 153,0.95)';
+const ccolor = '#dcd6f799';
+const wavecolor = '#3919a1';
 
 
 const debounce = (callback, wait) => {
