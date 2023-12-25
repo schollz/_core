@@ -175,3 +175,6 @@ core/storage/
 dist/
 core/src/sox/soxstatic/
 core/soxstatic/
+core/src/sox/sox-14.4.2-darwin.zip
+core/src/sox/sox-14.4.2-linux.zip
+core/src/sox/sox-14.4.2-win32.zip
