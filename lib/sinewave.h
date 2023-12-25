@@ -1,5 +1,7 @@
 #ifndef LIB_SINEWAVE_H
 #define LIB_SINEWAVE_H 1
+#include "fixedpoint.h"
+//
 #include "crossfade3.h"
 #include "sinewaves.h"
 #include "stdbool.h"
