@@ -330,6 +330,9 @@ void input_handling() {
         }
       } else if (button_is_pressed(KEY_B)) {
       } else if (button_is_pressed(KEY_C)) {
+        const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
+        printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
+        Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
       }
     }
 #endif
