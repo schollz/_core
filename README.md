@@ -17,7 +17,7 @@ these are the minimal requirements, which will be outlined below (TODO)
 
 ## zeptocore
 
-the hand-held version of the _core software (NOT YET AVAILABLE).
+the hand-held version of the _core software (see [demo1](https://www.instagram.com/p/C1PFLGDvB9I/)).
 
 ![image](https://schollz.com/img/zeptocore_instructions2.png.thumbnail.png)
 
