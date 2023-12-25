@@ -171,11 +171,14 @@ bool sd_sdio_begin(sd_card_t *sd_card_p) {
     return false;
   }
 
-  // Increase to 25 MHz clock rate
-  // Actually, clk_sys / CLKDIV (from rp2040_sdio.pio),
-  // So, say, 125 MHz / 4 = 31.25 MHz
+// Increase to 25 MHz clock rate
+// Actually, clk_sys / CLKDIV (from rp2040_sdio.pio),
+// So, say, 125 MHz / 4 = 31.25 MHz
+#ifdef DO_OVERCLOCK
   rp2040_sdio_init(sd_card_p, 2);
-
+#else
+  rp2040_sdio_init(sd_card_p, 1);
+#endif
   return true;
 }
 

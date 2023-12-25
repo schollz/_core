@@ -109,14 +109,17 @@ LEDS *LEDS_create() {
                        //
                        1, 2, 1, 2};
 
+#ifdef INCLUDE_PCA9552
   leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }
+#endif
   sleep_ms(1);
+#ifdef INCLUDE_PCA9552
   PCA9552_clear(leds->pca);
   PCA9552_render(leds->pca);
-
+#endif
   // setup GPIO leds (1,2,3)
   for (uint8_t i = 0; i < 3; i++) {
     gpio_init(leds->gpio_leds_pin[i]);
@@ -180,6 +183,7 @@ void LEDS_render(LEDS *leds) {
     }
   }
 
+#ifdef INCLUDE_PCA9552
   // light up the PCA9552
   for (uint8_t i = 1; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
@@ -188,6 +192,7 @@ void LEDS_render(LEDS *leds) {
     }
   }
   PCA9552_render(leds->pca);
+#endif
 
 #ifndef LEDS_NO_GPIO
   // light up the GPIO leds
