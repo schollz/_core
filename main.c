@@ -237,6 +237,7 @@ void input_handling() {
     }
 #endif
 
+#ifdef INCLUDE_KNOBS
     // knob X
     adc = FilterExp_update(adcs[0], adc_read());
     if (abs(adc_last[0] - adc) > adc_threshold) {
@@ -260,10 +261,12 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
+#endif
 
     // button handler
     button_handler(bm);
 
+#ifdef INCLUDE_KNOBS
     // knob Y
     adc_select_input(1);
     sleep_ms(1);
@@ -295,10 +298,14 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
+#endif
 
+#ifdef INCLUDE_CLOCKINPUT
     // clock input handler
     ClockInput_update(clockinput);
+#endif
 
+#ifdef INCLUDE_KNOBS
     // knob Z
     adc_select_input(2);
     sleep_ms(1);
@@ -325,13 +332,16 @@ void input_handling() {
       } else if (button_is_pressed(KEY_C)) {
       }
     }
+#endif
 
     // update the text if any
     LEDText_update(ledtext, leds);
     LEDS_render(leds);
 
+#ifdef INCLUDE_KEYBOARD
     // check keyboard
     run_keyboard();
+#endif
   }
 }
 
@@ -350,11 +360,16 @@ int main() {
                   main_line * MHZ, main_line * MHZ);
   // Reinit uart now that clk_peri has changed
   stdio_init_all();
-  // overclocking!!!
-  // note that overclocking >200Mhz requires setting sd_card_sdio
-  // rp2040_sdio_init(sd_card_p, 2);
-  // otherwise clock divider of 1 is fine
+// overclocking!!!
+// note that overclocking >200Mhz requires setting sd_card_sdio
+// rp2040_sdio_init(sd_card_p, 2);
+// otherwise clock divider of 1 is fine
+// set_sys_clock_khz(270000, true);
+#ifdef DO_OVERCLOCK
   set_sys_clock_khz(270000, true);
+#else
+  set_sys_clock_khz(125000, true);
+#endif
   sleep_ms(100);
 
   // run multi core
@@ -406,9 +421,6 @@ int main() {
   // cancel_repeating_timer(&timer);
   add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                          repeating_timer_callback, NULL, &timer);
-
-  // Loop forever doing nothing
-  printf("-/+ to change volume");
 
   // initialize random library
   random_initialize();
@@ -489,9 +501,17 @@ int main() {
   sel_variation = 0;
   fil_current_change = true;
 
-  // blocking
+// blocking
+#ifdef INCLUDE_INPUTHANDLING
   input_handling();
-  // while (true) {
-  //   run_keyboard();
-  // }
+#else
+  while (true) {
+    sleep_ms(1);
+#ifdef INCLUDE_KEYBOARD
+    run_keyboard();
+#else
+    sleep_ms(1000);
+#endif
+  }
+#endif
 }

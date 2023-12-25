@@ -494,8 +494,10 @@ void button_handler(ButtonMatrix *bm) {
     key_pressed_num = 0;
   }
 
+#ifdef INCLUDE_BUTTONS
   // read the latest from the queue
   ButtonMatrix_read(bm);
+#endif
 
   // check queue for buttons that turned off
   bool do_update_top = false;
