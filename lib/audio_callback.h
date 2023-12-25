@@ -418,9 +418,7 @@ void i2s_callback_func() {
     }
 
     // beat repeat
-    for (uint16_t i = 0; i < values_len; i++) {
-      values[i] = BeatRepeat_process(beatrepeat, values[i]);
-    }
+    BeatRepeat_process(beatrepeat, values, values_len);
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
