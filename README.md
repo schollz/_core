@@ -19,7 +19,9 @@ these are the minimal requirements, which will be outlined below (TODO). ([demo]
 
 the hand-held version of the _core software (see [demo1](https://www.instagram.com/p/C1PFLGDvB9I/)).
 
-![zeptocore2](https://github.com/schollz/_core/assets/6550035/c648be5f-eb1a-438f-979d-3e01331d259b)
+<center>
+<img src="https://github.com/schollz/_core/assets/6550035/c648be5f-eb1a-438f-979d-3e01331d259b">
+</center>
 
 
 ### goals
