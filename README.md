@@ -11,9 +11,9 @@ this is the source code for *_core* music devices that utilize the rp2040. devic
 - low-latency (<10 ms)
 
 
-## breadboard
+## boardcore
 
-these are the minimal requirements, which will be outlined below (TODO). ([demo](https://www.instagram.com/p/CvzdZTYtV8H/))
+breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
 
 - raspberry pi pico (various versions)
 - pcm5102
@@ -25,7 +25,7 @@ these are the minimal requirements, which will be outlined below (TODO). ([demo]
 
 ## zeptocore
 
-the hand-held version of the _core software (see [demo1](https://www.instagram.com/p/C1PFLGDvB9I/)).
+hand-held version (see [demo](https://www.instagram.com/p/C1PFLGDvB9I/)).
 
 <center>
 <img src="https://github.com/schollz/_core/assets/6550035/c648be5f-eb1a-438f-979d-3e01331d259b" width=50%>
