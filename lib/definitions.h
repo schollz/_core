@@ -44,6 +44,7 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define FX_SATURATE 8
 #define FX_BITCRUSH 9
 #define FX_TIGHTEN 10
+#define FX_BEATREPEAT 12
 #define FX_TREMELO 13
 #define FX_PAN 14
 #define FX_TAPE_STOP 15

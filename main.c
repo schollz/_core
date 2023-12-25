@@ -412,6 +412,9 @@ int main() {
   // initialize sequencers
   chain = Chain_create();
 
+  // intialize beat repeater
+  beatrepeat = BeatRepeat_malloc();
+
   leds = LEDS_create();
   ledtext = LEDText_create();
 
