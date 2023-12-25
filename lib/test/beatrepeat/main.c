@@ -39,28 +39,29 @@ int main() {
   SinOsc_wave(osc2, 29);
   SinOsc_quiet(osc2, 1);
   BeatRepeat *br = BeatRepeat_malloc();
+  int16_t vals[2000];
   for (int i = 0; i < 2000; i++) {
-    int16_t val = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
-    BeatRepeat_process(br, val);
-    printf("%d\n", val);
+    vals[i] = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
   }
-  BeatRepeat_repeat(br, 300);
-  for (int i = 0; i < 4000; i++) {
-    int16_t val = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
-    val = BeatRepeat_process(br, val);
-    printf("%d\n", val);
+  BeatRepeat_process(br, vals, 2000);
+  for (int i = 0; i < 2000; i++) {
+    printf("%d\n", vals[i]);
+  }
+  BeatRepeat_repeat(br, 200);
+  for (int i = 0; i < 2000; i++) {
+    vals[i] = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
+  }
+  BeatRepeat_process(br, vals, 2000);
+  for (int i = 0; i < 2000; i++) {
+    printf("%d\n", vals[i]);
   }
   BeatRepeat_repeat(br, 0);
-  for (int i = 0; i < 4000; i++) {
-    int16_t val = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
-    val = BeatRepeat_process(br, val);
-    printf("%d\n", val);
+  for (int i = 0; i < 2000; i++) {
+    vals[i] = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
   }
-  BeatRepeat_repeat(br, 1350);
-  for (int i = 0; i < 4000; i++) {
-    int16_t val = (SinOsc_next(osc1) >> 17) + (SinOsc_next(osc2) >> 17);
-    val = BeatRepeat_process(br, val);
-    printf("%d\n", val);
+  BeatRepeat_process(br, vals, 2000);
+  for (int i = 0; i < 2000; i++) {
+    printf("%d\n", vals[i]);
   }
 
   SinOsc_free(osc1);
