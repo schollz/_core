@@ -372,31 +372,12 @@ int main() {
 #endif
   sleep_ms(100);
 
-  // run multi core
-  // multicore_launch_core1(core1_main);
-
   // DCDC PSM control
   // 0: PFM mode (best efficiency)
   // 1: PWM mode (improved ripple)
   gpio_init(PIN_DCDC_PSM_CTRL);
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
-
-  // test stuff
-  // sleep_ms(3000);
-  // printf("hello\n");
-  // uint32_t t0, t1;
-  // t0 = time_us_32();
-  // envelope_pitch = Envelope2_create(441, 0.5, 1.0, 1.5);
-  // int32_t v = Q16_16_1;
-  // uint32_t iterations = 441;
-  // for (uint32_t i = 0; i < iterations; i++) {
-  //   v = q16_16_multiply(q16_16_float_to_fp(1.231),
-  //                       Envelope2_update(envelope_pitch));
-  // }
-  // t1 = time_us_32();
-  // printf("it/s: %2.3f\n", (float)iterations / (float)(t1 - t0) * 1000000.0);
-  // sleep_ms(300000000);
 
   ap = init_audio();
 
