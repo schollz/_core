@@ -129,6 +129,7 @@ uint8_t sinebass_update_counter = 31;
 
 ResonantFilter *resFilter[2];
 Gate *audio_gate;
+Saturation *saturation;
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;

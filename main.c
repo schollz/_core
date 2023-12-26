@@ -419,6 +419,8 @@ int main() {
   Delay_setActive(delay, false);
   Delay_setDuration(delay, 8018);
 
+  saturation = Saturation_malloc();
+
   leds = LEDS_create();
   ledtext = LEDText_create();
 
