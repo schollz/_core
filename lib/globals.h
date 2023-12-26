@@ -72,6 +72,7 @@ Envelope2 *envelope_pitch;
 EnvelopeLinearInteger *envelope_filter;
 Noise *noise_wobble;
 BeatRepeat *beatrepeat;
+// Delay *delay;
 uint vols[2];
 
 float vol3 = 0;
