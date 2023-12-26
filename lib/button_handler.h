@@ -156,6 +156,9 @@ void toggle_fx(uint8_t fx_num) {
         BeatRepeat_repeat(beatrepeat, 0);
       }
       break;
+    case FX_DELAY:
+      Delay_setActive(delay, fx_active[fx_num]);
+      break;
     case FX_TIGHTEN:
       printf("FX_TIGHTEN\n");
       if (fx_active[fx_num]) {

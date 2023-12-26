@@ -24,13 +24,13 @@
 
 #ifndef DELAY_LIB
 #define DELAY_LIB 1
-#define DELAY_RINGBUFFER_SIZE 44100
+#define DELAY_RINGBUFFER_SIZE 22050
 #define DELAY_ZEROCROSSING_SIZE 10000
 #include "fixedpoint.h"
 //
 #include "crossfade3.h"
 #include "stdbool.h"
-int32_t delay_ringbuffer[DELAY_RINGBUFFER_SIZE];
+int16_t delay_ringbuffer[DELAY_RINGBUFFER_SIZE];
 
 typedef struct Delay {
   // buffer for holding original samples
@@ -62,7 +62,7 @@ void Delay_setDuration(Delay *self, uint16_t num_samples) {
   self->duration = num_samples;
 }
 
-void Delay_process(Delay *self, int32_t *samples, uint16_t num_samples) {
+void Delay_process(Delay *self, int16_t *samples, uint16_t num_samples) {
   for (int ii = 0; ii < num_samples; ii++) {
     while (self->ringbuffer_index > self->duration) {
       self->ringbuffer_index -= self->duration;

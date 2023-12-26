@@ -85,10 +85,18 @@ void i2s_callback_func() {
         audio_mute = false;
       }
     }
+    int16_t values[buffer->max_sample_count];
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      int32_t value0 = 0;
-      samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
-      samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
+      values[i] = 0;
+    }
+
+    Delay_process(delay, values, buffer->max_sample_count);
+    uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      samples[i * 2 + 0] = values[i];
+      samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
+      samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
+      samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
     }
     buffer->sample_count = buffer->max_sample_count;
 
@@ -419,6 +427,9 @@ void i2s_callback_func() {
 
     // beat repeat
     BeatRepeat_process(beatrepeat, values, values_len);
+
+    // delay
+    Delay_process(delay, values, values_len);
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
