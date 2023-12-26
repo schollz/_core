@@ -60,7 +60,7 @@ def design_filter(fc, fs, db, q, filter_type):
 # for each note, generate a filter
 # produce a multidimensional array, indexed by q and frequency
 # for C-code generation
-qs = [0.707, 1.414]
+qs = [0.707]
 notes = list(range(44, 128))
 print(f"const uint8_t resonantfilter_q_max = {len(qs)};")
 print(f"const uint8_t resonantfilter_fc_max = {len(notes)};")
