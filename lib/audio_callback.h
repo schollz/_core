@@ -91,6 +91,17 @@ void i2s_callback_func() {
     }
 
     Delay_process(delay, values, buffer->max_sample_count);
+
+    // saturate before resampling?
+    if (fx_active[FX_SATURATE]) {
+      Saturation_process(values, values_len);
+    }
+
+    // bitcrush
+    if (fx_active[FX_BITCRUSH]) {
+      Bitcrush_process(values, values_len);
+    }
+
     uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       samples[i * 2 + 0] = values[i];
@@ -433,24 +444,12 @@ void i2s_callback_func() {
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
-      for (uint16_t i = 0; i < values_len; i++) {
-        values[i] = transfer_doublesine(values[i]);
-      }
+      Saturation_process(values, values_len);
     }
 
     // bitcrush
     if (fx_active[FX_BITCRUSH]) {
-      for (uint16_t i = 0; i < values_len; i++) {
-        // reduce sample rate
-        // TODO: make this a parameter
-        if (i % 5 == 0) {
-          // reduce bit rate
-          // TODO: make this a parameter
-          values[i] = (values[i] >> 8) << 8;
-        } else {
-          values[i] = values[i - 1];
-        }
-      }
+      Bitcrush_process(values, values_len);
     }
 
     if (banks[sel_bank_cur]

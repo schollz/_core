@@ -56,6 +56,9 @@
 //
 #include "memusage.h"
 //
+#include "bitcrush.h"
+#include "saturation.h"
+//
 #include "array_resample.h"
 #include "audio_pool.h"
 #ifdef INCLUDE_BASS
@@ -94,8 +97,6 @@
 #include "wav.h"
 //
 #include "crossfade3.h"
-#include "transfer_distortion.h"
-#include "transfer_doublesine.h"
 //
 #include "globals.h"
 //
