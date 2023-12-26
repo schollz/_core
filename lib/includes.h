@@ -56,6 +56,10 @@
 //
 #include "memusage.h"
 //
+#include "fixedpoint.h"
+//
+#include "crossfade3.h"
+//
 #include "bitcrush.h"
 #include "saturation.h"
 //
@@ -78,7 +82,6 @@
 #include "envelope_linear_integer.h"
 #include "file_list.h"
 #include "filterexp.h"
-#include "fixedpoint.h"
 #include "gate.h"
 #include "iir.h"
 #include "leds.h"
@@ -95,8 +98,6 @@
 #include "sinewaves.h"
 #endif
 #include "wav.h"
-//
-#include "crossfade3.h"
 //
 #include "globals.h"
 //
