@@ -94,12 +94,12 @@ void i2s_callback_func() {
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
-      Saturation_process(values, values_len);
+      Saturation_process(values, buffer->max_sample_count);
     }
 
     // bitcrush
     if (fx_active[FX_BITCRUSH]) {
-      Bitcrush_process(values, values_len);
+      Bitcrush_process(values, buffer->max_sample_count);
     }
 
     uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
