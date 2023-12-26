@@ -49,7 +49,7 @@ for i in range(sinewave_max):
     sinewave_len.append(len(s))
     print("const int32_t sinewave%d[%d] = {" % (i, len(s)))
     for j in range(len(s)):
-        print("  %d," % round(s[j] * 2147483647))
+        print("  %d," % round(s[j] * 2147483647))  # 32767 2147483647
         total_bytes += 4
     print("};")
 print("uint16_t sinewave_len(uint8_t wave) {")
