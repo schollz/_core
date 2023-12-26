@@ -544,7 +544,6 @@ void i2s_callback_func() {
     }
 
     phases[head] += (values_to_read * (phase_forward * 2 - 1));
-    phases_old[head] = phases[head];
   }
 
 // apply filter
