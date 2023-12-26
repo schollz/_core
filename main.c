@@ -415,6 +415,10 @@ int main() {
   // intialize beat repeater
   beatrepeat = BeatRepeat_malloc();
 
+  // delay = Delay_malloc();
+  // Delay_setActive(delay, false);
+  // Delay_setDuration(delay, 8018);
+
   leds = LEDS_create();
   ledtext = LEDText_create();
 
