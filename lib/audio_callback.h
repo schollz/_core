@@ -94,7 +94,7 @@ void i2s_callback_func() {
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
-      Saturation_process(values, buffer->max_sample_count);
+      Saturation_process(saturation, values, buffer->max_sample_count);
     }
 
     // bitcrush
@@ -444,7 +444,7 @@ void i2s_callback_func() {
 
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
-      Saturation_process(values, values_len);
+      Saturation_process(saturation, values, values_len);
     }
 
     // bitcrush

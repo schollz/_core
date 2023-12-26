@@ -149,6 +149,9 @@ void toggle_fx(uint8_t fx_num) {
     case FX_REVERSE:
       phase_forward = !fx_active[fx_num];
       break;
+    case FX_SATURATE:
+      Saturation_setActive(saturation, fx_active[fx_num]);
+      break;
     case FX_BEATREPEAT:
       if (fx_active[fx_num]) {
         BeatRepeat_repeat(beatrepeat, 1000);
