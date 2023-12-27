@@ -427,7 +427,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
 	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
-	cStruct := C.SampleInfo_malloc(C.uint(f.BPM), C.uchar(f.SplicePlayback), C.uchar(f.SpliceTrigger), C.uchar(BPMTempoMatch), C.uchar(f.Oversampling), C.uchar(f.Channels),
+	cStruct := C.SampleInfo_malloc(C.uint(fsize), C.uint(f.BPM), C.uchar(f.SplicePlayback), C.uchar(f.SpliceTrigger), C.uchar(BPMTempoMatch), C.uchar(f.Oversampling), C.uchar(f.Channels),
 		C.uint(sliceNum), sliceStartPtr, sliceStopPtr)
 	defer C.SampleInfo_free(cStruct)
 
@@ -436,5 +436,22 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		err = fmt.Errorf("Failed to write struct to file")
 		return
 	}
+
+	cStruct2 := C.SampleInfo_readFromDisk()
+	if cStruct2 == nil {
+		fmt.Println("Failed to read struct from file")
+		return
+	}
+	defer C.free(unsafe.Pointer(cStruct2))
+	fmt.Println("SampleInfo_getBPM", C.SampleInfo_getBPM(cStruct2))
+	fmt.Println("SampleInfo_getSliceNum", C.SampleInfo_getSliceNum(cStruct2))
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
+	}
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStop", i, C.SampleInfo_getSliceStop(cStruct2, C.ushort(i)))
+	}
+
+	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
 }

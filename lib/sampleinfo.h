@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 typedef struct SampleInfo {
+  uint32_t size;
   uint32_t bpm : 9;
   uint32_t slice_num : 7;
   uint32_t slice_current : 7;
@@ -23,7 +24,7 @@ void SampleInfo_free(SampleInfo *si) {
   free(si);
 }
 
-SampleInfo *SampleInfo_malloc(uint32_t bpm, uint8_t play_mode,
+SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
                               uint8_t splice_trigger, uint8_t tempo_match,
                               uint8_t oversampling, uint8_t num_channels,
                               uint32_t slice_num, int32_t *slice_start,
@@ -34,7 +35,7 @@ SampleInfo *SampleInfo_malloc(uint32_t bpm, uint8_t play_mode,
     return NULL;
   }
   fprintf(stderr, "sizeof(SampleInfo) = %lu\n", sizeof(SampleInfo));
-
+  si->size = size;
   si->bpm = bpm;
   si->slice_num = slice_num;
   si->slice_current = 0;
@@ -81,7 +82,7 @@ int32_t SampleInfo_getSliceStart(SampleInfo *si, uint16_t i) {
 }
 
 int SampleInfo_writeToDisk(SampleInfo *si) {
-  FILE *file = fopen("test.bin", "wb");
+  FILE *file = fopen("sampleinfo.bin", "wb");
   if (file == NULL) {
     perror("Error opening file");
     SampleInfo_free(si);
@@ -118,7 +119,7 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
 }
 
 SampleInfo *SampleInfo_readFromDisk() {
-  FILE *file = fopen("test.bin", "rb");
+  FILE *file = fopen("sampleinfo.bin", "rb");
   if (file == NULL) {
     perror("Error opening file");
     return NULL;
