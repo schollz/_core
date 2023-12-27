@@ -22,22 +22,7 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-typedef struct SampleInfo {
-  int32_t size;
-  uint16_t bpm;
-  uint16_t beats;
-  uint16_t slice_num;
-  int32_t *slice_start;
-  int32_t *slice_stop;
-  uint8_t tempo_match;
-  uint8_t play_mode;
-  uint16_t splice_trigger;
-  uint8_t oversampling;
-  uint8_t num_channels;
-
-  // internal variables
-  uint16_t slice_current;
-} SampleInfo;
+#include "sampleinfo.h"
 
 typedef struct Sample {
   SampleInfo *snd[FILE_VARIATIONS];
