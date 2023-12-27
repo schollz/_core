@@ -59,7 +59,7 @@ void sdcard_startup() {
   for (uint8_t bi = 0; bi < 16; bi++) {
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
-    banks[bi] = list_files(dirname, 1);
+    banks[bi] = list_files(dirname);
     if (banks[bi]->num_samples > 0) {
       printf("[sdcard_startup] bank %d has %d samples\n", bi,
              banks[bi]->num_samples);
