@@ -419,7 +419,7 @@ void button_handler(ButtonMatrix *bm) {
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->splice_trigger = 96;
+              ->splice_trigger = 1;
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
