@@ -86,7 +86,7 @@ SampleInfo *SampleInfo_load(const char *fname) {
   return si;
 }
 
-uint8_t count_files(const char *dir, int num_channels) {
+uint8_t count_files(const char *dir) {
   uint8_t filelist_count = 0;
   FILINFO fno;
 
@@ -102,8 +102,8 @@ uint8_t count_files(const char *dir, int num_channels) {
   return filelist_count;
 }
 
-SampleList *list_files(const char *dir, int num_channels) {
-  uint8_t total_files = count_files(dir, num_channels);
+SampleList *list_files(const char *dir) {
+  uint8_t total_files = count_files(dir);
   SampleList *samplelist = malloc(sizeof(SampleList));
   samplelist->num_samples = total_files;
   if (total_files == 0) {

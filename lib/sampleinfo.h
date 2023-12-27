@@ -4,14 +4,14 @@
 
 typedef struct SampleInfo {
   uint32_t size;
-  uint32_t bpm : 9;
-  uint32_t slice_num : 7;
-  uint32_t slice_current : 7;
-  uint32_t play_mode : 3;
-  uint32_t splice_trigger : 3;
-  uint32_t tempo_match : 1;
-  uint32_t oversampling : 1;
-  uint32_t num_channels : 1;
+  uint32_t bpm : 9;             // 0-511
+  uint32_t slice_num : 7;       // 0-127
+  uint32_t slice_current : 7;   // 0-127
+  uint32_t play_mode : 3;       // 0-7
+  uint32_t splice_trigger : 3;  // 0-7
+  uint32_t tempo_match : 1;     // 0-1 (off/on)
+  uint32_t oversampling : 1;    // 0-1 (1x or 2x)
+  uint32_t num_channels : 1;    // 0-1 (mono or stereo)
   int32_t *slice_start;
   int32_t *slice_stop;
 } SampleInfo;
