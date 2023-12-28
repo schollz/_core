@@ -204,24 +204,27 @@ void i2s_callback_func() {
     samples_to_read =
         round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
               pitch_vals[pitch_val_index]) *
-        banks[sel_bank_cur]
-            ->sample[sel_sample_cur]
-            .snd[sel_variation]
-            ->oversampling /
+        (banks[sel_bank_cur]
+             ->sample[sel_sample_cur]
+             .snd[sel_variation]
+             ->oversampling +
+         1) /
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
   } else {
     samples_to_read = round((float)buffer->max_sample_count *
                             envelope_pitch_val * pitch_vals[pitch_val_index]) *
-                      banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[sel_variation]
-                          ->oversampling;
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[sel_variation]
+                           ->oversampling +
+                       1);
   }
 
-  uint32_t values_len = samples_to_read * banks[sel_bank_cur]
-                                              ->sample[sel_sample_cur]
-                                              .snd[sel_variation]
-                                              ->num_channels;
+  uint32_t values_len = samples_to_read * (banks[sel_bank_cur]
+                                               ->sample[sel_sample_cur]
+                                               .snd[sel_variation]
+                                               ->num_channels +
+                                           1);
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
   uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
@@ -351,14 +354,16 @@ void i2s_callback_func() {
       t0 = time_us_32();
       if (f_lseek(&fil_current,
                   WAV_HEADER +
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[sel_variation]
-                           ->num_channels *
-                       banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[sel_variation]
-                           ->oversampling *
+                      ((banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->num_channels +
+                        1) *
+                       (banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->oversampling +
+                        1) *
                        44100) +
                       (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
         printf("problem seeking to phase (%d)\n", phases[head]);
@@ -391,14 +396,16 @@ void i2s_callback_func() {
               sel_variation);
       f_open(&fil_current, fname, FA_READ);
       f_lseek(&fil_current, WAV_HEADER +
-                                (banks[sel_bank_cur]
-                                     ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
-                                     ->num_channels *
-                                 banks[sel_bank_cur]
-                                     ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
-                                     ->oversampling *
+                                ((banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->num_channels +
+                                  1) *
+                                 (banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->oversampling +
+                                  1) *
                                  44100) +
                                 (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
     }
@@ -414,14 +421,16 @@ void i2s_callback_func() {
     if (fil_bytes_read < values_to_read) {
       printf("%d %d: asked for %d bytes, read %d bytes\n", phases[head],
              WAV_HEADER +
-                 (banks[sel_bank_cur]
-                      ->sample[sel_sample_cur]
-                      .snd[sel_variation]
-                      ->num_channels *
-                  banks[sel_bank_cur]
-                      ->sample[sel_sample_cur]
-                      .snd[sel_variation]
-                      ->oversampling *
+                 ((banks[sel_bank_cur]
+                       ->sample[sel_sample_cur]
+                       .snd[sel_variation]
+                       ->num_channels +
+                   1) *
+                  (banks[sel_bank_cur]
+                       ->sample[sel_sample_cur]
+                       .snd[sel_variation]
+                       ->oversampling +
+                   1) *
                   44100) +
                  phases[head],
              values_to_read, fil_bytes_read);
@@ -455,7 +464,7 @@ void i2s_callback_func() {
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
-            ->num_channels == 1) {
+            ->num_channels == 0) {
       // mono
       int16_t *newArray;
       if (quadratic_resampling) {
@@ -509,7 +518,7 @@ void i2s_callback_func() {
     } else if (banks[sel_bank_cur]
                    ->sample[sel_sample_cur]
                    .snd[sel_variation]
-                   ->num_channels == 2) {
+                   ->num_channels == 1) {
       // stereo
       for (uint8_t channel = 0; channel < 2; channel++) {
         int16_t valuesC[samples_to_read];  // max limit
@@ -565,7 +574,7 @@ void i2s_callback_func() {
       if (banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->num_channels == 1) {
+              ->num_channels == 2) {
         samples[i * 2 + 1] = samples[i * 2 + 0];
         break;
       }

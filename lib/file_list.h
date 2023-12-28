@@ -22,22 +22,7 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-typedef struct SampleInfo {
-  int32_t size;
-  uint16_t bpm;
-  uint16_t beats;
-  uint16_t slice_num;
-  int32_t *slice_start;
-  int32_t *slice_stop;
-  uint8_t tempo_match;
-  uint8_t play_mode;
-  uint16_t splice_trigger;
-  uint8_t oversampling;
-  uint8_t num_channels;
-
-  // internal variables
-  uint16_t slice_current;
-} SampleInfo;
+#include "sampleinfo.h"
 
 typedef struct Sample {
   SampleInfo *snd[FILE_VARIATIONS];
@@ -58,81 +43,37 @@ SampleInfo *SampleInfo_load(const char *fname) {
   }
   unsigned int bytes_read;
 
-  // total size to allocate
-  uint16_t sampleInfoSize;
-  fr = f_read(&fil, &sampleInfoSize, sizeof(uint16_t), &bytes_read);
-  if (fr != FR_OK || bytes_read == 0) {
-    printf("[sampleinfo] %s, bytes read = %d\n", FRESULT_str(fr), bytes_read);
-    return NULL;
-  }
-  si = malloc(sampleInfoSize);
+  si = (SampleInfo *)malloc(sizeof(SampleInfo));
 
   // Size
-  fr = f_read(&fil, &si->size, sizeof(uint32_t), &bytes_read);
+  fr = f_read(&fil, si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)),
+              &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
 
-  // BPM
-  fr = f_read(&fil, &si->bpm, sizeof(uint16_t), &bytes_read);
+  // Slice start
+  si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_start == NULL) {
+    perror("Error allocating memory for array");
+    free(si);
+    return NULL;
+  }
+  fr = f_read(&fil, si->slice_start, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
 
-  // SliceNum
-  fr = f_read(&fil, &si->slice_num, sizeof(uint16_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  // Slice stop
+  si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_stop == NULL) {
+    perror("Error allocating memory for array");
+    free(si->slice_start);
+    return NULL;
   }
-
-  // SliceStart
-  si->slice_start = (uint32_t *)malloc(si->slice_num * sizeof(uint32_t));
-  for (uint8_t i = 0; i < si->slice_num; i++) {
-    fr = f_read(&fil, &si->slice_start[i], sizeof(uint32_t), &bytes_read);
-    if (fr != FR_OK) {
-      printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    }
-    // validate
-    si->slice_start[i] = (si->slice_start[i] / 4) * 4;
-  }
-
-  // SliceStop
-  si->slice_stop = (uint32_t *)malloc(si->slice_num * sizeof(uint32_t));
-  for (uint8_t i = 0; i < si->slice_num; i++) {
-    fr = f_read(&fil, &si->slice_stop[i], sizeof(uint32_t), &bytes_read);
-    if (fr != FR_OK) {
-      printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    }
-    // validate
-    si->slice_stop[i] = (si->slice_stop[i] / 4) * 4;
-  }
-
-  // BPMTransposable
-  fr = f_read(&fil, &si->tempo_match, sizeof(uint8_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
-  // play_mode
-  fr = f_read(&fil, &si->play_mode, sizeof(uint8_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
-  // Splice trigger
-  fr = f_read(&fil, &si->splice_trigger, sizeof(uint16_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
-  // Oversampling
-  fr = f_read(&fil, &si->oversampling, sizeof(uint8_t), &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-
-  // NumChannels
-  fr = f_read(&fil, &si->num_channels, sizeof(uint8_t), &bytes_read);
+  fr = f_read(&fil, si->slice_stop, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
@@ -145,7 +86,7 @@ SampleInfo *SampleInfo_load(const char *fname) {
   return si;
 }
 
-uint8_t count_files(const char *dir, int num_channels) {
+uint8_t count_files(const char *dir) {
   uint8_t filelist_count = 0;
   FILINFO fno;
 
@@ -161,8 +102,8 @@ uint8_t count_files(const char *dir, int num_channels) {
   return filelist_count;
 }
 
-SampleList *list_files(const char *dir, int num_channels) {
-  uint8_t total_files = count_files(dir, num_channels);
+SampleList *list_files(const char *dir) {
+  uint8_t total_files = count_files(dir);
   SampleList *samplelist = malloc(sizeof(SampleList));
   samplelist->num_samples = total_files;
   if (total_files == 0) {
@@ -178,6 +119,7 @@ SampleList *list_files(const char *dir, int num_channels) {
     sprintf(fname, "%s/%d.0.wav.info", dir, i);
     FILINFO fno; /* File information */
     FRESULT fr = f_stat(fname, &fno);
+    // printf("[list_files] %s, %s\n", fname, FRESULT_str(fr));
     if (FR_OK == fr) {
       for (uint8_t j = 0; j < FILE_VARIATIONS; j++) {
         char fnameLoad[100];
@@ -185,6 +127,8 @@ SampleList *list_files(const char *dir, int num_channels) {
         samplelist->sample[filelist_count].snd[j] = SampleInfo_load(fnameLoad);
       }
       filelist_count++;
+    } else {
+      printf("[list_files] %s\n", FRESULT_str(fr));
     }
   }
 

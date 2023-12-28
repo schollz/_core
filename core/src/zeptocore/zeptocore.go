@@ -1,8 +1,11 @@
 package zeptocore
 
+/*
+#cgo CFLAGS: -I.
+#include "../../../lib/sampleinfo.h"
+*/
+import "C"
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -11,6 +14,7 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/bep/debounce"
 	"github.com/schollz/_core/core/src/onsetdetect"
@@ -411,62 +415,53 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 	}
 
-	buf := new(bytes.Buffer)
-
 	BPMTempoMatch := uint8(0)
 	if f.TempoMatch {
 		BPMTempoMatch = 1
 	}
 
-	// TODO: make other splice triggers optional?
-	f.SpliceTrigger = 96
+	f.SpliceTrigger = 1
 	if f.OneShot {
 		f.SpliceTrigger = 0
 	}
 
-	// file_list.h:
-	// typedef struct WavFile {
-	// 	uint16_t bpm;
-	// 	uint8_t slice_num;
-	// 	uint32_t *slice_start;
-	// 	uint32_t *slice_end;
-	// 	uint8_t tempo_match;
-	// 	uint8_t play_mode;
-	//  uint16_t splice_trigger;
-	//  uint8_t oversampling;
-	//  uint8_t num_channels;
-	// } WavFile;
-	var data = []any{
-		int32(fsize),
-		uint16(f.BPM),
-		uint16(sliceNum),
-		slicesStart,
-		slicesEnd,
-		uint8(BPMTempoMatch),
-		uint8(f.SplicePlayback),
-		uint16(f.SpliceTrigger),
-		uint8(f.Oversampling),
-		uint8(f.Channels),
-	}
-	log.Tracef("binary data: %+v", data)
+	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
+	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
+	cStruct := C.SampleInfo_malloc(
+		C.uint(fsize),
+		C.uint(f.BPM),
+		C.uchar(f.SplicePlayback),
+		C.uchar(f.SpliceTrigger),
+		C.uchar(BPMTempoMatch),
+		C.uchar(f.Oversampling-1),
+		C.uchar(f.Channels-1),
+		C.uint(sliceNum),
+		sliceStartPtr,
+		sliceStopPtr,
+	)
+	defer C.SampleInfo_free(cStruct)
 
-	for _, v := range data {
-		err := binary.Write(buf, binary.LittleEndian, v)
-		if err != nil {
-			log.Errorf("binary.Write failed: %s", err.Error())
-		}
+	ret := C.SampleInfo_writeToDisk(cStruct)
+	if ret != 0 {
+		err = fmt.Errorf("Failed to write struct to file")
+		return
 	}
-	// prepend with the total size
-	data = append([]any{uint16(buf.Len())}, data...)
-	buf2 := new(bytes.Buffer)
-	for _, v := range data {
-		err := binary.Write(buf2, binary.LittleEndian, v)
-		if err != nil {
-			log.Errorf("binary.Write failed: %s", err.Error())
-		}
+
+	cStruct2 := C.SampleInfo_readFromDisk()
+	if cStruct2 == nil {
+		fmt.Println("Failed to read struct from file")
+		return
 	}
-	fInfoWrite, _ := os.Create(fnameIn + ".info")
-	fInfoWrite.Write(buf2.Bytes())
-	fInfoWrite.Close()
+	defer C.free(unsafe.Pointer(cStruct2))
+	fmt.Println("SampleInfo_getBPM", C.SampleInfo_getBPM(cStruct2))
+	fmt.Println("SampleInfo_getSliceNum", C.SampleInfo_getSliceNum(cStruct2))
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
+	}
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStop", i, C.SampleInfo_getSliceStop(cStruct2, C.ushort(i)))
+	}
+
+	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
 }

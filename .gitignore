@@ -178,3 +178,7 @@ core/soxstatic/
 core/src/sox/sox-14.4.2-darwin.zip
 core/src/sox/sox-14.4.2-linux.zip
 core/src/sox/sox-14.4.2-win32.zip
+core/src/zeptocore/test.bin
+lib/test/bitfields_go/bitfields
+lib/test/bitfields_go/test.bin
+lib/test/bitfields/numbers.bin
