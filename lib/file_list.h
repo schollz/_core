@@ -46,7 +46,7 @@ SampleInfo *SampleInfo_load(const char *fname) {
   si = (SampleInfo *)malloc(sizeof(SampleInfo));
 
   // Size
-  fr = f_read(&fil, &si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)),
+  fr = f_read(&fil, si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)),
               &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
@@ -119,6 +119,7 @@ SampleList *list_files(const char *dir) {
     sprintf(fname, "%s/%d.0.wav.info", dir, i);
     FILINFO fno; /* File information */
     FRESULT fr = f_stat(fname, &fno);
+    // printf("[list_files] %s, %s\n", fname, FRESULT_str(fr));
     if (FR_OK == fr) {
       for (uint8_t j = 0; j < FILE_VARIATIONS; j++) {
         char fnameLoad[100];
@@ -126,6 +127,8 @@ SampleList *list_files(const char *dir) {
         samplelist->sample[filelist_count].snd[j] = SampleInfo_load(fnameLoad);
       }
       filelist_count++;
+    } else {
+      printf("[list_files] %s\n", FRESULT_str(fr));
     }
   }
 
