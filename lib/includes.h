@@ -72,7 +72,6 @@
 #include "WS2812.h"
 #endif
 #include "beatrepeat.h"
-#include "biquad.h"
 #include "buttonmatrix3.h"
 #include "chain.h"
 #include "charlieplex.h"

@@ -1,4 +1,4 @@
-dobuild: pico-extras lib/biquad.h lib/transfer_saturate2.h lib/sinewaves.h lib/crossfade3.h lib/resonantfilter_data.h lib/transfer_doublesine.h build
+dobuild: pico-extras lib/transfer_saturate2.h lib/sinewaves.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
