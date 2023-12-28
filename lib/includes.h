@@ -83,7 +83,6 @@
 #include "file_list.h"
 #include "filterexp.h"
 #include "gate.h"
-#include "iir.h"
 #include "leds.h"
 #include "ledtext.h"
 #include "noise.h"
