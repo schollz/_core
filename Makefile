@@ -1,4 +1,4 @@
-dobuild: pico-extras lib/biquad.h lib/sinewaves.h lib/crossfade.h lib/resonantfilter_data.h lib/transfer_doublesine.h build
+dobuild: pico-extras lib/biquad.h lib/transfer_saturate2.h lib/sinewaves.h lib/crossfade3.h lib/resonantfilter_data.h lib/transfer_doublesine.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
@@ -39,6 +39,10 @@ lib/crossfade.h: lib/crossfade3.h
 	clang-format -i --style=google lib/crossfade.h
 	cd lib && python3 crossfade2.py > crossfade2.h
 	clang-format -i --style=google lib/crossfade2.h 
+
+lib/transfer_saturate2.h:
+	cd lib && python3 transfer_saturate2.py > transfer_saturate2.h
+	clang-format -i --style=google lib/transfer_saturate2.h
 
 lib/resonantfilter_data.h:
 	cd lib && python3 resonantfilter.py > resonantfilter_data.h
