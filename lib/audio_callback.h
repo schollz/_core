@@ -90,8 +90,6 @@ void i2s_callback_func() {
       values[i] = 0;
     }
 
-    Delay_process(delay, values, buffer->max_sample_count);
-
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, buffer->max_sample_count);
@@ -448,9 +446,6 @@ void i2s_callback_func() {
     // beat repeat
     BeatRepeat_process(beatrepeat, values, values_len);
 
-    // delay
-    Delay_process(delay, values, values_len);
-
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, values_len);
@@ -613,6 +608,9 @@ void i2s_callback_func() {
       }
     }
   }
+
+  // apply delay
+  Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
   // apply bass
