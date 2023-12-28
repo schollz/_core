@@ -3,7 +3,7 @@
 #include "fixedpoint.h"
 //
 #include "crossfade3.h"
-#include "sinewaves.h"
+#include "sinewaves2.h"
 #include "stdbool.h"
 
 typedef struct SinOsc {
@@ -68,19 +68,19 @@ int32_t SinOsc_next(SinOsc *self) {
     }
     if (self->wave[0] == 0) {
       val = q16_16_multiply(crossfade3_line[self->crossfade],
-                            sinewave_sample2(self->wave[1], self->phase[1])) >>
+                            sinewave_sample(self->wave[1], self->phase[1])) >>
             self->quiet[1];
     } else if (self->wave[1] == 0) {
       val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
-                            sinewave_sample2(self->wave[0], self->phase[0])) >>
+                            sinewave_sample(self->wave[0], self->phase[0])) >>
             self->quiet[0];
 
     } else {
       val = (q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
-                             sinewave_sample2(self->wave[0], self->phase[0])) >>
+                             sinewave_sample(self->wave[0], self->phase[0])) >>
              self->quiet[0]) +
             (q16_16_multiply(crossfade3_line[self->crossfade],
-                             sinewave_sample2(self->wave[1], self->phase[1])) >>
+                             sinewave_sample(self->wave[1], self->phase[1])) >>
              self->quiet[1]);
     }
     self->phase[0]++;
@@ -90,7 +90,7 @@ int32_t SinOsc_next(SinOsc *self) {
     if (self->phase[0] >= self->limit[0]) {
       self->phase[0] = 0;
     }
-    val = sinewave_sample2(self->wave[0], self->phase[0]) >> self->quiet[0];
+    val = sinewave_sample(self->wave[0], self->phase[0]) >> self->quiet[0];
     self->phase[0]++;
   }
   return val;

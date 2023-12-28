@@ -421,7 +421,7 @@ int main() {
   ledtext = LEDText_create();
 
 #ifdef INCLUDE_SINEBASS
-  init_sinewaves();
+  // init_sinewaves();
   for (uint8_t i = 0; i < 3; i++) {
     sinosc[i] = SinOsc_malloc();
   }
