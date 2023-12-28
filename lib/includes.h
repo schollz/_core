@@ -90,7 +90,6 @@
 #include "resonantfilter.h"
 #include "savefile.h"
 #include "sdcard.h"
-#include "selectx.h"
 #ifdef INCLUDE_SINEBASS
 #include "sinewave.h"
 #include "sinewaves.h"
