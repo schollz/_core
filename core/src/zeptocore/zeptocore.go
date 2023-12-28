@@ -427,8 +427,18 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
 	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
-	cStruct := C.SampleInfo_malloc(C.uint(fsize), C.uint(f.BPM), C.uchar(f.SplicePlayback), C.uchar(f.SpliceTrigger), C.uchar(BPMTempoMatch), C.uchar(f.Oversampling), C.uchar(f.Channels),
-		C.uint(sliceNum), sliceStartPtr, sliceStopPtr)
+	cStruct := C.SampleInfo_malloc(
+		C.uint(fsize),
+		C.uint(f.BPM),
+		C.uchar(f.SplicePlayback),
+		C.uchar(f.SpliceTrigger),
+		C.uchar(BPMTempoMatch),
+		C.uchar(f.Oversampling-1),
+		C.uchar(f.Channels-1),
+		C.uint(sliceNum),
+		sliceStartPtr,
+		sliceStopPtr,
+	)
 	defer C.SampleInfo_free(cStruct)
 
 	ret := C.SampleInfo_writeToDisk(cStruct)
