@@ -280,13 +280,9 @@ void input_handling() {
       if (button_is_pressed(KEY_SHIFT)) {
       } else if (button_is_pressed(KEY_A)) {
         for (uint8_t channel = 0; channel < 2; channel++) {
-          if (adc < 2000) {
-            global_filter_index = adc * (resonantfilter_fc_max) / 2000;
+          if (adc < 3500) {
+            global_filter_index = adc * (resonantfilter_fc_max) / 3500;
             ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel], global_filter_index);
-          } else if (adc > 2096) {
-            global_filter_index = (adc - 2096) * (resonantfilter_fc_max) / 2000;
-            ResonantFilter_setFilterType(resFilter[channel], 1);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else {
             global_filter_index = resonantfilter_fc_max;
