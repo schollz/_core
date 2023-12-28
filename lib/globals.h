@@ -63,8 +63,6 @@ bool sync_using_sdcard = false;
 // voice 2 is always an envelope DOWN
 // voice 1 is only voice that jumps
 // voice 2 takes place of old voice and continues
-Envelope2 *envelope1;
-Envelope2 *envelope2;
 Envelope2 *envelope_volume;
 Envelope2 *envelope_pitch;
 EnvelopeLinearInteger *envelope_filter;

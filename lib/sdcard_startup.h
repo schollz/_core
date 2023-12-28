@@ -40,8 +40,6 @@ void sdcard_startup() {
   while (!run_mount()) {
     sleep_ms(200);
   }
-  envelope1 = Envelope2_create(BLOCKS_PER_SECOND, 0.01, 1, 1.5);
-  envelope2 = Envelope2_create(BLOCKS_PER_SECOND, 1, 0, 0.01);
   envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelope_filter = EnvelopeLinearInteger_create(BLOCKS_PER_SECOND, 1,
