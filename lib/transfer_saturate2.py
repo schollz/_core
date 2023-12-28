@@ -2,7 +2,7 @@ import math
 
 print(
     """
-const uint16_t __in_flash() transfer_doublesine_raw[] = {
+const int16_t transfer_doublesine_raw[] = {
 """
 )
 points = []
