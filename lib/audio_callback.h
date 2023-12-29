@@ -609,8 +609,8 @@ void i2s_callback_func() {
     }
   }
 
-  // apply delay
-  Delay_process(delay, samples, buffer->max_sample_count, 0);
+  // // apply delay
+  // Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
   // apply bass
