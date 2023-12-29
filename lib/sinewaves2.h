@@ -1044,396 +1044,396 @@ int32_t sinewave_sample(uint8_t wave, uint16_t index) {
     if (index < 337) {
       return sinewave0[index];
     } else if (index < 674) {
-      return sinewave0[673 - index];
+      return sinewave0[336 - (index - 337)];
     } else if (index < 1011) {
-      return -1 * sinewave0[index];
+      return -1 * sinewave0[(index - 674)];
     } else {
-      return -1 * sinewave0[1347 - index];
+      return -1 * sinewave0[336 - (index - 1011)];
     }
     break;
   case 1:
     if (index < 318) {
       return sinewave1[index];
     } else if (index < 636) {
-      return sinewave1[635 - index];
+      return sinewave1[317 - (index - 318)];
     } else if (index < 954) {
-      return -1 * sinewave1[index];
+      return -1 * sinewave1[(index - 636)];
     } else {
-      return -1 * sinewave1[1271 - index];
+      return -1 * sinewave1[317 - (index - 954)];
     }
     break;
   case 2:
     if (index < 300) {
       return sinewave2[index];
     } else if (index < 600) {
-      return sinewave2[599 - index];
+      return sinewave2[299 - (index - 300)];
     } else if (index < 900) {
-      return -1 * sinewave2[index];
+      return -1 * sinewave2[(index - 600)];
     } else {
-      return -1 * sinewave2[1199 - index];
+      return -1 * sinewave2[299 - (index - 900)];
     }
     break;
   case 3:
     if (index < 283) {
       return sinewave3[index];
     } else if (index < 566) {
-      return sinewave3[565 - index];
+      return sinewave3[282 - (index - 283)];
     } else if (index < 849) {
-      return -1 * sinewave3[index];
+      return -1 * sinewave3[(index - 566)];
     } else {
-      return -1 * sinewave3[1131 - index];
+      return -1 * sinewave3[282 - (index - 849)];
     }
     break;
   case 4:
     if (index < 267) {
       return sinewave4[index];
     } else if (index < 534) {
-      return sinewave4[533 - index];
+      return sinewave4[266 - (index - 267)];
     } else if (index < 801) {
-      return -1 * sinewave4[index];
+      return -1 * sinewave4[(index - 534)];
     } else {
-      return -1 * sinewave4[1067 - index];
+      return -1 * sinewave4[266 - (index - 801)];
     }
     break;
   case 5:
     if (index < 252) {
       return sinewave5[index];
     } else if (index < 504) {
-      return sinewave5[503 - index];
+      return sinewave5[251 - (index - 252)];
     } else if (index < 756) {
-      return -1 * sinewave5[index];
+      return -1 * sinewave5[(index - 504)];
     } else {
-      return -1 * sinewave5[1007 - index];
+      return -1 * sinewave5[251 - (index - 756)];
     }
     break;
   case 6:
     if (index < 238) {
       return sinewave6[index];
     } else if (index < 476) {
-      return sinewave6[475 - index];
+      return sinewave6[237 - (index - 238)];
     } else if (index < 714) {
-      return -1 * sinewave6[index];
+      return -1 * sinewave6[(index - 476)];
     } else {
-      return -1 * sinewave6[951 - index];
+      return -1 * sinewave6[237 - (index - 714)];
     }
     break;
   case 7:
     if (index < 225) {
       return sinewave7[index];
     } else if (index < 450) {
-      return sinewave7[449 - index];
+      return sinewave7[224 - (index - 225)];
     } else if (index < 675) {
-      return -1 * sinewave7[index];
+      return -1 * sinewave7[(index - 450)];
     } else {
-      return -1 * sinewave7[899 - index];
+      return -1 * sinewave7[224 - (index - 675)];
     }
     break;
   case 8:
     if (index < 212) {
       return sinewave8[index];
     } else if (index < 424) {
-      return sinewave8[423 - index];
+      return sinewave8[211 - (index - 212)];
     } else if (index < 636) {
-      return -1 * sinewave8[index];
+      return -1 * sinewave8[(index - 424)];
     } else {
-      return -1 * sinewave8[847 - index];
+      return -1 * sinewave8[211 - (index - 636)];
     }
     break;
   case 9:
     if (index < 200) {
       return sinewave9[index];
     } else if (index < 400) {
-      return sinewave9[399 - index];
+      return sinewave9[199 - (index - 200)];
     } else if (index < 600) {
-      return -1 * sinewave9[index];
+      return -1 * sinewave9[(index - 400)];
     } else {
-      return -1 * sinewave9[799 - index];
+      return -1 * sinewave9[199 - (index - 600)];
     }
     break;
   case 10:
     if (index < 189) {
       return sinewave10[index];
     } else if (index < 378) {
-      return sinewave10[377 - index];
+      return sinewave10[188 - (index - 189)];
     } else if (index < 567) {
-      return -1 * sinewave10[index];
+      return -1 * sinewave10[(index - 378)];
     } else {
-      return -1 * sinewave10[755 - index];
+      return -1 * sinewave10[188 - (index - 567)];
     }
     break;
   case 11:
     if (index < 178) {
       return sinewave11[index];
     } else if (index < 356) {
-      return sinewave11[355 - index];
+      return sinewave11[177 - (index - 178)];
     } else if (index < 534) {
-      return -1 * sinewave11[index];
+      return -1 * sinewave11[(index - 356)];
     } else {
-      return -1 * sinewave11[711 - index];
+      return -1 * sinewave11[177 - (index - 534)];
     }
     break;
   case 12:
     if (index < 168) {
       return sinewave12[index];
     } else if (index < 336) {
-      return sinewave12[335 - index];
+      return sinewave12[167 - (index - 168)];
     } else if (index < 504) {
-      return -1 * sinewave12[index];
+      return -1 * sinewave12[(index - 336)];
     } else {
-      return -1 * sinewave12[671 - index];
+      return -1 * sinewave12[167 - (index - 504)];
     }
     break;
   case 13:
     if (index < 159) {
       return sinewave13[index];
     } else if (index < 318) {
-      return sinewave13[317 - index];
+      return sinewave13[158 - (index - 159)];
     } else if (index < 477) {
-      return -1 * sinewave13[index];
+      return -1 * sinewave13[(index - 318)];
     } else {
-      return -1 * sinewave13[635 - index];
+      return -1 * sinewave13[158 - (index - 477)];
     }
     break;
   case 14:
     if (index < 150) {
       return sinewave14[index];
     } else if (index < 300) {
-      return sinewave14[299 - index];
+      return sinewave14[149 - (index - 150)];
     } else if (index < 450) {
-      return -1 * sinewave14[index];
+      return -1 * sinewave14[(index - 300)];
     } else {
-      return -1 * sinewave14[599 - index];
+      return -1 * sinewave14[149 - (index - 450)];
     }
     break;
   case 15:
     if (index < 141) {
       return sinewave15[index];
     } else if (index < 282) {
-      return sinewave15[281 - index];
+      return sinewave15[140 - (index - 141)];
     } else if (index < 423) {
-      return -1 * sinewave15[index];
+      return -1 * sinewave15[(index - 282)];
     } else {
-      return -1 * sinewave15[563 - index];
+      return -1 * sinewave15[140 - (index - 423)];
     }
     break;
   case 16:
     if (index < 133) {
       return sinewave16[index];
     } else if (index < 266) {
-      return sinewave16[265 - index];
+      return sinewave16[132 - (index - 133)];
     } else if (index < 399) {
-      return -1 * sinewave16[index];
+      return -1 * sinewave16[(index - 266)];
     } else {
-      return -1 * sinewave16[531 - index];
+      return -1 * sinewave16[132 - (index - 399)];
     }
     break;
   case 17:
     if (index < 126) {
       return sinewave17[index];
     } else if (index < 252) {
-      return sinewave17[251 - index];
+      return sinewave17[125 - (index - 126)];
     } else if (index < 378) {
-      return -1 * sinewave17[index];
+      return -1 * sinewave17[(index - 252)];
     } else {
-      return -1 * sinewave17[503 - index];
+      return -1 * sinewave17[125 - (index - 378)];
     }
     break;
   case 18:
     if (index < 119) {
       return sinewave18[index];
     } else if (index < 238) {
-      return sinewave18[237 - index];
+      return sinewave18[118 - (index - 119)];
     } else if (index < 357) {
-      return -1 * sinewave18[index];
+      return -1 * sinewave18[(index - 238)];
     } else {
-      return -1 * sinewave18[475 - index];
+      return -1 * sinewave18[118 - (index - 357)];
     }
     break;
   case 19:
     if (index < 112) {
       return sinewave19[index];
     } else if (index < 224) {
-      return sinewave19[223 - index];
+      return sinewave19[111 - (index - 112)];
     } else if (index < 336) {
-      return -1 * sinewave19[index];
+      return -1 * sinewave19[(index - 224)];
     } else {
-      return -1 * sinewave19[447 - index];
+      return -1 * sinewave19[111 - (index - 336)];
     }
     break;
   case 20:
     if (index < 106) {
       return sinewave20[index];
     } else if (index < 212) {
-      return sinewave20[211 - index];
+      return sinewave20[105 - (index - 106)];
     } else if (index < 318) {
-      return -1 * sinewave20[index];
+      return -1 * sinewave20[(index - 212)];
     } else {
-      return -1 * sinewave20[423 - index];
+      return -1 * sinewave20[105 - (index - 318)];
     }
     break;
   case 21:
     if (index < 100) {
       return sinewave21[index];
     } else if (index < 200) {
-      return sinewave21[199 - index];
+      return sinewave21[99 - (index - 100)];
     } else if (index < 300) {
-      return -1 * sinewave21[index];
+      return -1 * sinewave21[(index - 200)];
     } else {
-      return -1 * sinewave21[399 - index];
+      return -1 * sinewave21[99 - (index - 300)];
     }
     break;
   case 22:
     if (index < 94) {
       return sinewave22[index];
     } else if (index < 188) {
-      return sinewave22[187 - index];
+      return sinewave22[93 - (index - 94)];
     } else if (index < 282) {
-      return -1 * sinewave22[index];
+      return -1 * sinewave22[(index - 188)];
     } else {
-      return -1 * sinewave22[375 - index];
+      return -1 * sinewave22[93 - (index - 282)];
     }
     break;
   case 23:
     if (index < 89) {
       return sinewave23[index];
     } else if (index < 178) {
-      return sinewave23[177 - index];
+      return sinewave23[88 - (index - 89)];
     } else if (index < 267) {
-      return -1 * sinewave23[index];
+      return -1 * sinewave23[(index - 178)];
     } else {
-      return -1 * sinewave23[355 - index];
+      return -1 * sinewave23[88 - (index - 267)];
     }
     break;
   case 24:
     if (index < 84) {
       return sinewave24[index];
     } else if (index < 168) {
-      return sinewave24[167 - index];
+      return sinewave24[83 - (index - 84)];
     } else if (index < 252) {
-      return -1 * sinewave24[index];
+      return -1 * sinewave24[(index - 168)];
     } else {
-      return -1 * sinewave24[335 - index];
+      return -1 * sinewave24[83 - (index - 252)];
     }
     break;
   case 25:
     if (index < 79) {
       return sinewave25[index];
     } else if (index < 158) {
-      return sinewave25[157 - index];
+      return sinewave25[78 - (index - 79)];
     } else if (index < 237) {
-      return -1 * sinewave25[index];
+      return -1 * sinewave25[(index - 158)];
     } else {
-      return -1 * sinewave25[315 - index];
+      return -1 * sinewave25[78 - (index - 237)];
     }
     break;
   case 26:
     if (index < 75) {
       return sinewave26[index];
     } else if (index < 150) {
-      return sinewave26[149 - index];
+      return sinewave26[74 - (index - 75)];
     } else if (index < 225) {
-      return -1 * sinewave26[index];
+      return -1 * sinewave26[(index - 150)];
     } else {
-      return -1 * sinewave26[299 - index];
+      return -1 * sinewave26[74 - (index - 225)];
     }
     break;
   case 27:
     if (index < 70) {
       return sinewave27[index];
     } else if (index < 140) {
-      return sinewave27[139 - index];
+      return sinewave27[69 - (index - 70)];
     } else if (index < 210) {
-      return -1 * sinewave27[index];
+      return -1 * sinewave27[(index - 140)];
     } else {
-      return -1 * sinewave27[279 - index];
+      return -1 * sinewave27[69 - (index - 210)];
     }
     break;
   case 28:
     if (index < 66) {
       return sinewave28[index];
     } else if (index < 132) {
-      return sinewave28[131 - index];
+      return sinewave28[65 - (index - 66)];
     } else if (index < 198) {
-      return -1 * sinewave28[index];
+      return -1 * sinewave28[(index - 132)];
     } else {
-      return -1 * sinewave28[263 - index];
+      return -1 * sinewave28[65 - (index - 198)];
     }
     break;
   case 29:
     if (index < 63) {
       return sinewave29[index];
     } else if (index < 126) {
-      return sinewave29[125 - index];
+      return sinewave29[62 - (index - 63)];
     } else if (index < 189) {
-      return -1 * sinewave29[index];
+      return -1 * sinewave29[(index - 126)];
     } else {
-      return -1 * sinewave29[251 - index];
+      return -1 * sinewave29[62 - (index - 189)];
     }
     break;
   case 30:
     if (index < 59) {
       return sinewave30[index];
     } else if (index < 118) {
-      return sinewave30[117 - index];
+      return sinewave30[58 - (index - 59)];
     } else if (index < 177) {
-      return -1 * sinewave30[index];
+      return -1 * sinewave30[(index - 118)];
     } else {
-      return -1 * sinewave30[235 - index];
+      return -1 * sinewave30[58 - (index - 177)];
     }
     break;
   case 31:
     if (index < 56) {
       return sinewave31[index];
     } else if (index < 112) {
-      return sinewave31[111 - index];
+      return sinewave31[55 - (index - 56)];
     } else if (index < 168) {
-      return -1 * sinewave31[index];
+      return -1 * sinewave31[(index - 112)];
     } else {
-      return -1 * sinewave31[223 - index];
+      return -1 * sinewave31[55 - (index - 168)];
     }
     break;
   case 32:
     if (index < 53) {
       return sinewave32[index];
     } else if (index < 106) {
-      return sinewave32[105 - index];
+      return sinewave32[52 - (index - 53)];
     } else if (index < 159) {
-      return -1 * sinewave32[index];
+      return -1 * sinewave32[(index - 106)];
     } else {
-      return -1 * sinewave32[211 - index];
+      return -1 * sinewave32[52 - (index - 159)];
     }
     break;
   case 33:
     if (index < 50) {
       return sinewave33[index];
     } else if (index < 100) {
-      return sinewave33[99 - index];
+      return sinewave33[49 - (index - 50)];
     } else if (index < 150) {
-      return -1 * sinewave33[index];
+      return -1 * sinewave33[(index - 100)];
     } else {
-      return -1 * sinewave33[199 - index];
+      return -1 * sinewave33[49 - (index - 150)];
     }
     break;
   case 34:
     if (index < 47) {
       return sinewave34[index];
     } else if (index < 94) {
-      return sinewave34[93 - index];
+      return sinewave34[46 - (index - 47)];
     } else if (index < 141) {
-      return -1 * sinewave34[index];
+      return -1 * sinewave34[(index - 94)];
     } else {
-      return -1 * sinewave34[187 - index];
+      return -1 * sinewave34[46 - (index - 141)];
     }
     break;
   case 35:
     if (index < 44) {
       return sinewave35[index];
     } else if (index < 88) {
-      return sinewave35[87 - index];
+      return sinewave35[43 - (index - 44)];
     } else if (index < 132) {
-      return -1 * sinewave35[index];
+      return -1 * sinewave35[(index - 88)];
     } else {
-      return -1 * sinewave35[175 - index];
+      return -1 * sinewave35[43 - (index - 132)];
     }
     break;
   default:
