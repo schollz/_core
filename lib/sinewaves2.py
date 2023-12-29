@@ -65,10 +65,14 @@ for i in range(sinewave_max):
     print("    case %d:" % i)
     print(f"if (index<{sinewave_len[i]}) {{return sinewave{i}[index];}}")
     print(
-        f"else if (index<{2*sinewave_len[i]}) {{return sinewave{i}[{sinewave_len[i]*2-1}-index];}}"
+        f"else if (index<{2*sinewave_len[i]}) {{return sinewave{i}[{sinewave_len[i]-1}-(index-{sinewave_len[i]})];}}"
     )
-    print(f"else if (index<{3*sinewave_len[i]}) {{return -1*sinewave{i}[index];}}")
-    print(f"else {{return -1*sinewave{i}[{sinewave_len[i]*4-1}-index];}}")
+    print(
+        f"else if (index<{3*sinewave_len[i]}) {{return -1*sinewave{i}[(index-{sinewave_len[i]*2})];}}"
+    )
+    print(
+        f"else {{return -1*sinewave{i}[{sinewave_len[i]-1}-(index-{sinewave_len[i]*3})];}}"
+    )
     print("break;")
 print("    default: return 0;")
 print("  }")
