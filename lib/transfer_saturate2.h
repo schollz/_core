@@ -749,23 +749,23 @@ const int16_t transfer_doublesine_raw[] = {
 };
 
 int16_t transfer_doublesine(int32_t v) {
-  v = (v + 32768) % 8192;
+  v = (v + 32768);
   if (v < 8192) {
     return transfer_doublesine_raw[v];
   } else if (v < 16384) {
-    return transfer_doublesine_raw[8191 - v];
+    return transfer_doublesine_raw[8191 - (v - 8192)];
   } else if (v < 24576) {
-    return -1 * transfer_doublesine_raw[v];
+    return -1 * transfer_doublesine_raw[(v - 16384)];
   } else if (v < 32768) {
-    return -1 * transfer_doublesine_raw[8191 - v];
+    return -1 * transfer_doublesine_raw[8191 - (v - 24576)];
   } else if (v < 40960) {
-    return transfer_doublesine_raw[v];
+    return transfer_doublesine_raw[v - 32768];
   } else if (v < 49152) {
-    return transfer_doublesine_raw[8191 - v];
+    return transfer_doublesine_raw[8191 - (v - 40960)];
   } else if (v < 57344) {
-    return -1 * transfer_doublesine_raw[v];
+    return -1 * transfer_doublesine_raw[(v - 49152)];
   } else if (v < 65536) {
-    return -1 * transfer_doublesine_raw[8191 - v];
+    return -1 * transfer_doublesine_raw[8191 - (v - 57344)];
   }
   return 0;
 }
