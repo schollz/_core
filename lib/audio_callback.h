@@ -122,6 +122,9 @@ void i2s_callback_func() {
     }
 #endif
 
+    // apply delay
+    Delay_process(delay, samples, buffer->max_sample_count, 0);
+
     give_audio_buffer(ap, buffer);
     // if (!gate_active && fil_is_open && !audio_mute) {
     //   printf("[i2s_callback_func] sync_using_sdcard being used\n");
@@ -609,8 +612,8 @@ void i2s_callback_func() {
     }
   }
 
-  // // apply delay
-  // Delay_process(delay, samples, buffer->max_sample_count, 0);
+  // apply delay
+  Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
   // apply bass
