@@ -198,6 +198,10 @@ void toggle_fx(uint8_t fx_num) {
                         Envelope2_update(envelope_pitch), 1.0, 1.9);
       }
       break;
+    case FX_FUZZ:
+      if (fx_active[FX_FUZZ]) {
+        printf("fuzz activated!\n");
+      }
     case FX_FILTER:
       if (fx_active[FX_FILTER]) {
         EnvelopeLinearInteger_reset(
