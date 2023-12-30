@@ -21,7 +21,7 @@ lib/sinewaves.h:
 	python3 lib/sinewaves.py > lib/sinewaves.h
 	clang-format -i lib/sinewaves.h
 
-lib/sinewaves.h:
+lib/sinewaves2.h:
 	python3 lib/sinewaves2.py > lib/sinewaves2.h
 	clang-format -i lib/sinewaves2.h
 
@@ -95,7 +95,7 @@ debug:
 	sudo minicom -b 115200 -o -D /dev/ttyACM
 
 cloc:
-	cloc --by-file lib/*.h --exclude-list-file=dev/.clocignore
+	cloc --exclude-list-file=dev/.clocignore *
 
 ignore:
 	git status --porcelain | grep '^??' | cut -c4- >> .gitignore
