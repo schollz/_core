@@ -34,4 +34,17 @@ typedef void (*callback_uint8)(uint8_t);
 typedef void (*callback_uint16)(uint16_t);
 typedef void (*callback_void)();
 
+// multiplies and clips the output
+void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,
+                            uint16_t num_values) {
+  for (uint16_t i = 0; i < num_values; i++) {
+    int32_t v = ((int32_t)values[i] * mul);
+    if (v > max_val) {
+      v = max_val;
+    } else if (v < -max_val) {
+      v = -max_val;
+    }
+    values[i] = v;
+  }
+}
 #endif
