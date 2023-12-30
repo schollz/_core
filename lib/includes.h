@@ -61,6 +61,7 @@
 #include "crossfade3.h"
 //
 #include "bitcrush.h"
+#include "fuzz.h"
 #include "saturation.h"
 //
 #include "array_resample.h"

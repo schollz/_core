@@ -1,4 +1,4 @@
-dobuild: pico-extras lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
 envs:
@@ -7,6 +7,10 @@ envs:
 
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
+
+lib/fuzz.h:
+	cd lib && python3 fuzz.py > fuzz.h
+	clang-format -i --style=google lib/fuzz.h
 
 lib/transfer_doublesine.h:
 	cd lib && python3 transfer_doublesine.py > transfer_doublesine.h

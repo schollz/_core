@@ -95,6 +95,10 @@ void i2s_callback_func() {
       Saturation_process(saturation, values, buffer->max_sample_count);
     }
 
+    if (fx_active[FX_FUZZ]) {
+      Fuzz_process(values, buffer->max_sample_count);
+    }
+
     // bitcrush
     if (fx_active[FX_BITCRUSH]) {
       Bitcrush_process(values, buffer->max_sample_count);
@@ -452,6 +456,11 @@ void i2s_callback_func() {
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, values_len);
+    }
+
+    if (fx_active[FX_FUZZ]) {
+      MultipyAndClip_process(4, 32767, values, values_len);
+      Fuzz_process(values, values_len);
     }
 
     // bitcrush
