@@ -63,6 +63,7 @@
 #include "bitcrush.h"
 #include "fuzz.h"
 #include "saturation.h"
+#include "shaper.h"
 //
 #include "array_resample.h"
 #include "audio_pool.h"

@@ -25,7 +25,7 @@ plt.show()
 print("#ifndef LIB_FUZZ")
 print("#define LIB_FUZZ 1")
 print("#include <stdint.h>\n")
-print(f"const int16_t fuzz_samples[{len(samples)}] = {{")
+print(f"const int16_t __in_flash() fuzz_samples[{len(samples)}] = {{")
 for sample in samples:
     print(f"\t{int(sample)},")
 print("};")

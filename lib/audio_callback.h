@@ -95,6 +95,7 @@ void i2s_callback_func() {
       Saturation_process(saturation, values, buffer->max_sample_count);
     }
 
+    // fuzz
     if (fx_active[FX_FUZZ]) {
       Fuzz_process(values, buffer->max_sample_count);
     }
@@ -456,6 +457,12 @@ void i2s_callback_func() {
     // saturate before resampling?
     if (fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, values_len);
+    }
+
+    // shaper
+    if (fx_active[FX_SHAPER]) {
+      // Shaper_expandOver_compressUnder_process(values, values_len, 12000);
+      Shaper_expandUnder_compressOver_process(values, values_len, 4000);
     }
 
     if (fx_active[FX_FUZZ]) {

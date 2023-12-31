@@ -2,7 +2,7 @@
 #define LIB_FUZZ 1
 #include <stdint.h>
 
-const int16_t fuzz_samples[32768] = {
+const int16_t __in_flash() fuzz_samples[32768] = {
     0,     5,     10,    16,    21,    27,    32,    37,    43,    48,    54,
     59,    64,    70,    75,    80,    86,    91,    97,    102,   107,   113,
     118,   124,   129,   134,   140,   145,   150,   156,   161,   166,   172,
