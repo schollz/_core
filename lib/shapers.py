@@ -1,8 +1,6 @@
 import math
 import numpy as np
 
-resolution = 12
-
 
 def compress_curve(mu):
     y = []
@@ -20,6 +18,7 @@ def expand_curve(mu):
     return np.multiply(y, math.pow(2, 15) - 1)
 
 
+resolution = 15
 mu = 255 * 2
 cc = compress_curve(mu)
 ce = expand_curve(mu)
@@ -37,12 +36,12 @@ print("#ifndef LIB_SHAPER")
 print("#define LIB_SHAPER 1")
 print("#define SHAPER_RESOLUTION " + str(resolution))
 print("#define SHAPER_REDUCE " + str(15 - resolution))
-print(f"const int16_t compress_curve_data[{len(cc)}] = {{")
+print(f"const int16_t __in_flash() compress_curve_data[{len(cc)}] = {{")
 for v in cc:
     print(f"\t{int(v)},")
 print("};")
 
-print(f"const int16_t expand_curve_data[{len(ce)}] = {{")
+print(f"const int16_t __in_flash() expand_curve_data[{len(ce)}] = {{")
 for v in ce:
     print(f"\t{int(v)},")
 print("};")
