@@ -35,19 +35,24 @@ static int PHASE_DIVISOR = 4;
 
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 
-#define FX_TIMESTRETCH 0
-#define FX_REVERSE 1
-#define FX_SLOWDOWN 2
-#define FX_SPEEDUP 3
-#define FX_VOLUME_RAMP 4
-#define FX_FILTER 5
-#define FX_FUZZ 6
-#define FX_SHAPER 7
-#define FX_SATURATE 8
-#define FX_BITCRUSH 9
-#define FX_TIGHTEN 10
-#define FX_DELAY 11
-#define FX_BEATREPEAT 12
-#define FX_TREMELO 13
-#define FX_PAN 14
+// shape
+#define FX_SATURATE 0
+#define FX_SHAPER 1
+#define FX_FUZZ 2
+#define FX_BITCRUSH 3
+// time
+#define FX_REVERSE 4
+#define FX_TIMESTRETCH 5
+#define FX_DELAY 6
+#define FX_BEATREPEAT 7
+// space
+#define FX_TIGHTEN 8
+#define FX_TREMELO 9
+#define FX_PAN 10
+#define FX_VOLUME_RAMP 11
+#define FX_WALTZ
+// pitch
+#define FX_FILTER 12
+#define FX_SLOWDOWN 13
+#define FX_SPEEDUP 14
 #define FX_TAPE_STOP 15
