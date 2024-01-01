@@ -109,24 +109,24 @@ knobs: X, Y, Z
 
 #### effects 
 
-effects for the 16 buttons 
+there are 16 effects in four categories - "shape", "time", "space", and "pitch".
 
-- [ ] **0** -> timestretch 
-- [ ] **1** -> reverse
-- [ ] **2** -> pitch down
-- [ ] **3** -> pitch up
-- [ ] **4** -> volume
-- [ ] **5** -> filter
-- [ ] **6** -> 
-- [ ] **7** -> 
-- [ ] **8** -> saturate
-- [ ] **9** -> bitcrush
-- [ ] **10** -> tighten
-- [ ] **11** -> 
-- [ ] **12** -> TODO repeat
-- [ ] **13** -> tremelo
-- [ ] **14** -> panning
-- [ ] **15** -> tape stop/start
+- [ ] **0** -> warm 
+- [ ] **1** -> loss
+- [ ] **2** -> fuzz
+- [ ] **3** -> crush
+- [ ] **4** -> esrever 
+- [ ] **5** -> strrrretch
+- [ ] **6** -> delayelay
+- [ ] **7** -> repeatttt
+- [ ] **8** -> tighten
+- [ ] **9** -> heighten
+- [ ] **10** -> circulate
+- [ ] **11** -> waltz
+- [ ] **12** -> lower
+- [ ] **13** -> slower
+- [ ] **14** -> faster
+- [ ] **15** -> stop
 
 #### cheat codes
 
