@@ -84,10 +84,12 @@
 #include "file_list.h"
 #include "filterexp.h"
 #include "gate.h"
+#ifdef INCLUDE_ZEPTOCORE
 #include "leds.h"
 #include "ledtext.h"
-#include "noise.h"
 #include "pca9552.h"
+#endif
+#include "noise.h"
 #include "random.h"
 #include "resonantfilter.h"
 #include "savefile.h"
@@ -108,5 +110,6 @@
 //
 #include "audio_callback.h"
 //
-
+#ifdef INCLUDE_ZEPTOCORE
 #include "button_handler.h"
+#endif
