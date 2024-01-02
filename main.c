@@ -322,7 +322,7 @@ void input_handling() {
       adc_last[2] = adc;
       adc_debounce[2]--;
       if (button_is_pressed(KEY_SHIFT)) {
-        new_vol = adc * MAX_VOLUME / 4096;
+        new_vol = adc * VOLUME_STEPS / 4096;
         // new_vol = 100;
         if (new_vol != sf->vol) {
           sf->vol = new_vol;
