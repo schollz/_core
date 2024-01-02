@@ -99,8 +99,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (beat > -1) {
       printf("[toggle_chain_play] beat: %d\n", beat);
       beat_current = beat;
+#ifdef INCLUDE_ZEPTOCORE
       LEDS_clearAll(leds, LED_STEP_FACE);
       LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
+#endif
       do_update_phase_from_beat_current();
     }
   } else if (banks[sel_bank_cur]
@@ -146,8 +148,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         //   printf("[step_pressed] beat_current: %d\n", beat_current);
         // }
         // printf("beat_current: %d\n", beat_current);
+#ifdef INCLUDE_ZEPTOCORE
         LEDS_clearAll(leds, LED_STEP_FACE);
         LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
+#endif
         if (key_jump_debounce == 0) {
           do_update_phase_from_beat_current();
         } else {
@@ -176,6 +180,7 @@ void clock_handling(int time_diff) {
   printf("[main] clock_handling: %d", time_diff);
 }
 
+#ifdef INCLUDE_ZEPTOCORE
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
@@ -186,9 +191,11 @@ void input_handling() {
   LEDS_clearAll(leds, 2);
   LEDS_render(leds);
 
+#ifdef BTN_COL_START
   ButtonMatrix *bm;
   // initialize button matrix
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
+#endif
 
   printf("entering while loop\n");
 
@@ -263,8 +270,10 @@ void input_handling() {
     }
 #endif
 
+#ifdef BTN_COL_START
     // button handler
     button_handler(bm);
+#endif
 
 #ifdef INCLUDE_KNOBS
     // knob Y
@@ -343,6 +352,7 @@ void input_handling() {
 #endif
   }
 }
+#endif
 
 int main() {
   // Set PLL_USB 96MHz
@@ -388,11 +398,13 @@ int main() {
   // before enabling the card detect interrupt:
   sd_init_driver();
 
+#ifdef INCLUDE_ZEPTOCORE
   // initialize adcs
   adc_init();
   adc_gpio_init(26);
   adc_gpio_init(27);
   adc_gpio_init(28);
+#endif
 
   // init timers
   // Negative delay so means we will call repeating_timer_callback, and call
@@ -417,8 +429,10 @@ int main() {
 
   saturation = Saturation_malloc();
 
+#ifdef INCLUDE_ZEPTOCORE
   leds = LEDS_create();
   ledtext = LEDText_create();
+#endif
 
 #ifdef INCLUDE_SINEBASS
   // init_sinewaves();
@@ -437,6 +451,7 @@ int main() {
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
 
+#ifdef INCLUDE_ZEPTOCORE
   for (uint8_t i = 4; i < 20; i++) {
     LEDS_set(leds, LED_BASE_FACE, i, 2);
     LEDS_render(leds);
@@ -445,6 +460,7 @@ int main() {
     LEDS_render(leds);
     sleep_ms(10);
   }
+#endif
 
   sleep_ms(1000);
   // printf("startup!\n");

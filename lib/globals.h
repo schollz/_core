@@ -93,8 +93,10 @@ bool mode_mute = 0;
 bool mode_play = 0;
 
 SaveFile *sf;
+#ifdef INCLUDE_ZEPTOCORE
 LEDS *leds;
 LEDText *ledtext;
+#endif
 
 Chain *chain;
 bool toggle_chain_play = false;
