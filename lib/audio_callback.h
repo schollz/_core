@@ -105,7 +105,8 @@ void i2s_callback_func() {
       Bitcrush_process(values, buffer->max_sample_count);
     }
 
-    uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
+    uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
+                                envelope_volume_val / VOLUME_DIVISOR);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       samples[i * 2 + 0] = values[i];
       samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
@@ -233,7 +234,8 @@ void i2s_callback_func() {
                                            1);
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
-  uint vol_main = (uint)round(sf->vol * retrig_vol * envelope_volume_val);
+  uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
+                              envelope_volume_val / VOLUME_DIVISOR);
 
   if (!phase_change) {
     const int32_t next_phase =
