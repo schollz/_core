@@ -110,18 +110,19 @@ knobs: X, Y, Z
 #### effects 
 
 there are 16 effects in four categories - "shape", "time", "space", and "pitch".
+holding an effect and using a knob will change its parameters.
 
-- [ ] **0** -> warm 
-- [ ] **1** -> loss
-- [ ] **2** -> fuzz
-- [ ] **3** -> crush
+- [ ] **0** -> warm (preamp multiplier)
+- [ ] **1** -> loss (preamp multiplier, threshold)
+- [ ] **2** -> fuzz (preamp multliplier)
+- [ ] **3** -> crush (frequency, crushing)
 - [ ] **4** -> esrever 
 - [ ] **5** -> strrrretch
-- [ ] **6** -> delayelay
-- [ ] **7** -> repeatttt
-- [ ] **8** -> tighten
-- [ ] **9** -> heighten
-- [ ] **10** -> circulate
+- [ ] **6** -> delayelay (delay length, feedback)
+- [ ] **7** -> repeatttt (repeat length)
+- [ ] **8** -> tighten (gate amount)
+- [ ] **9** -> heighten (tremelo speed)
+- [ ] **10** -> circulate (pan speed)
 - [ ] **11** -> waltz
 - [ ] **12** -> lower
 - [ ] **13** -> slower
