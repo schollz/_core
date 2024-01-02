@@ -1,32 +1,44 @@
-# pip install pyserial
+# arduino code:
 
-import serial
-import sys
+# void setup() {
+#   pinMode(4, OUTPUT);
+#   pinMode(5, OUTPUT);
+#   digitalWrite(4, 1);
+#   delay(200);
+#   digitalWrite(5, 1);
+#   delay(200);
+#   digitalWrite(5, 0);
+#   delay(200);
+#   digitalWrite(4, 0);
+# }
+
+# void loop() {
+#   delay(1000);
+# }
+
 import time
+import sys
+import subprocess
 
-ser = serial.Serial(sys.argv[1], 9600)
-# clear serial data
-ser.write(("\n\n\n").encode("utf-8"))
-# turn off the buttons
-ser.write(("20go\n").encode("utf-8"))
-time.sleep(0.4)
-ser.write(("30go\n").encode("utf-8"))
-time.sleep(0.4)
-# turn on the first button
-print("BOOT ON")
-ser.write(("21go\n").encode("utf-8"))
-time.sleep(0.4)
-# turn on the second button
-print("RESET ON")
-ser.write(("31go\n").encode("utf-8"))
-time.sleep(0.4)
-# turn off the second button
-print("RESET OFF")
-ser.write(("30go\n").encode("utf-8"))
-time.sleep(0.4)
-# turn off the first button
-print("BOOT OFF")
-ser.write(("20go\n").encode("utf-8"))
-time.sleep(0.4)
+import serial.tools.list_ports
+import serial
+
+ports = serial.tools.list_ports.comports()
+port_name = ""
+for port in ports:
+    if "Arduino" in port.manufacturer:
+        port_name = port.device
+        break
+
+if port_name == "":
+    raise ("could not find Arduino")
+
+print(f"pinging {port_name}")
+ser = serial.Serial(port_name, 9600)
+while True:
+    time.sleep(0.1)
+    # check if drive is available called RPI-RP2
+    if "RPI-RP2" in subprocess.check_output("df -H", shell=True).decode():
+        break
 
 ser.close()
