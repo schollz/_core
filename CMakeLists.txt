@@ -89,15 +89,37 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # INCLUDE_FILTER=1
     # INCLUDE_ZEPTOCORE=1
 
-    # ecto
-    SDCARD_CMD_GPIO=25
-    SDCARD_D0_GPIO=26                                                                # CLK=17,D1=20,D2=21,D3=22
-    AUDIO_CLK_GPIO=21 # LCK=17
-    AUDIO_DIN_GPIO=23
+    # black
+    SDCARD_CMD_GPIO=2
+    SDCARD_D0_GPIO=3
+    AUDIO_CLK_GPIO=16 # LCK=17
+    AUDIO_DIN_GPIO=18
+    I2C_SDA_PIN=20
+    I2C_SCL_PIN=21
+    LED_1_GPIO=0
+    LED_2_GPIO=19
+    LED_3_GPIO=19
+    LED_4_GPIO=19
+    CLOCK_INPUT_GPIO=22
+    BTN_ROW_START=7
+    BTN_COL_START=12
+    INCLUDE_BUTTONS=1
+    INCLUDE_KNOBS=1
+    INCLUDE_PCA9552=1
+    INCLUDE_CLOCKINPUT=1
+    INCLUDE_INPUTHANDLING=1
+    INCLUDE_FILTER=1
+    INCLUDE_ZEPTOCORE=1
+
+    # # ecto
+    # SDCARD_CMD_GPIO=25
+    # SDCARD_D0_GPIO=26 
+    # AUDIO_CLK_GPIO=21 # LCK=17
+    # AUDIO_DIN_GPIO=23
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
-    # DO_OVERCLOCK=1
+    DO_OVERCLOCK=1
 
     # debug printing
     # PRINT_AUDIO_USAGE=1
