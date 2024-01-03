@@ -67,17 +67,17 @@ knobs: X, Y, Z
 #### combo buttons
 
 - [ ] **none** → top shows punch/mash, mute, playback states 
-- [ ] **H** → JUMP: do jump, MASH: do fx (momentary)
+- [ ] **H** → (JUMP): do jump, (MASH): toggle fx, (BASS): play bass
 - [ ] **H** + **H** → JUMP: retrig depending on location
 - [ ] **A** → n/a
-- [ ] **A** + **H** → JUMP: do fx (toggle), MASH: do jump
-- [ ] **A** + **B** → toggle playback
-- [ ] **A** + **C** → toggle mute
-- [ ] **A** + **D** → toggle jump/mash/bass mode
-- [ ] **B** → show current bank (dim) + sample (bright)
+- [ ] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
+- [ ] **A** + **B** → JUMP mode
+- [ ] **A** + **C** → MASH mode
+- [ ] **A** + **D** → BASS mode
+- [ ] **B** → n/a
 - [ ] **B** + **H** + **H** → select bank (1st) + sample (2nd)
-- [ ] **B** + **C** → toggle one-shot vs classic
-- [ ] **B** + **D** → toggle sync mode (none, clock-in, clock-out, clock-in+out)
+- [ ] **B** + **C** → ?
+- [ ] **B** + **D** → ?
 - [ ] **C** → n/a
 - [ ] **C** + **H** + **H**... → create chain of sequences
 - [ ] **C** + **B** → toggle play sequence
@@ -112,22 +112,22 @@ knobs: X, Y, Z
 there are 16 effects in four categories - "shape", "time", "space", and "pitch".
 holding an effect and using a knob will change its parameters.
 
-- [ ] **0** -> warm (preamp multiplier)
-- [ ] **1** -> loss (preamp multiplier, threshold)
-- [ ] **2** -> fuzz (preamp multliplier)
-- [ ] **3** -> crush (frequency, crushing)
-- [ ] **4** -> reverse 
-- [ ] **5** -> stretch
-- [ ] **6** -> delay (delay length, feedback)
-- [ ] **7** -> repeat (repeat length)
-- [ ] **8** -> tighten (gate amount)
-- [ ] **9** -> heighten (tremelo speed, depth)
-- [ ] **10** -> circulate (pan speed, depth)
-- [ ] **11** -> waltz
-- [ ] **12** -> lower (depth)
-- [ ] **13** -> slower (duration, depth)
-- [ ] **14** -> faster (duration, depth)
-- [ ] **15** -> stop (duration)
+- [ ] **1** -> warm (preamp multiplier)
+- [ ] **2** -> loss (preamp multiplier, threshold)
+- [ ] **3** -> fuzz (preamp multliplier)
+- [ ] **4** -> crush (frequency, crushing)
+- [ ] **5** -> reverse 
+- [ ] **6** -> stretch
+- [ ] **7** -> delay (delay length, feedback)
+- [ ] **8** -> repeat (repeat length)
+- [ ] **9** -> tighten (gate amount)
+- [ ] **10** -> heighten (tremelo speed, depth)
+- [ ] **11** -> circulate (pan speed, depth)
+- [ ] **12** -> waltz
+- [ ] **13** -> lower (depth)
+- [ ] **14** -> slower (duration, depth)
+- [ ] **15** -> faster (duration, depth)
+- [ ] **16** -> stop (duration)
 
 #### cheat codes
 
