@@ -260,7 +260,7 @@ button:hover {
 
 footer>form {
     max-width: 500px;
-    margin: auto;
+    margin: left;
 }
 
 footer>form>select {
