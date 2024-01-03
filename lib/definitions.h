@@ -22,6 +22,9 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef LIB_DEFINITIONS
+#define LIB_DEFINITIONS 1
+
 #define debugf(format, ...) \
   printf(format " %s:%d\n", __VA_ARGS__, __FILE__, __LINE__)
 
@@ -56,3 +59,10 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define FX_SLOWDOWN 13
 #define FX_SPEEDUP 14
 #define FX_TAPE_STOP 15
+
+#define LED_NONE 0
+#define LED_DIM 1
+#define LED_BRIGHT 2
+#define LED_BLINK 3
+
+#endif
