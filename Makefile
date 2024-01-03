@@ -103,3 +103,6 @@ ignore:
 
 release:
 	cd core && goreleaser release -p 32 --clean --snapshot
+
+server:
+	cd core && air
