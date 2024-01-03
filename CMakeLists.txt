@@ -111,6 +111,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_FILTER=1
     INCLUDE_ZEPTOCORE=1
 
+
     # # ecto
     # SDCARD_CMD_GPIO=25
     # SDCARD_D0_GPIO=26 
