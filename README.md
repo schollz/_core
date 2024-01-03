@@ -56,9 +56,9 @@ if you like this device, you might also like:
 
 ### zeptocore spec (draft)
 
-top buttons are **S**, **A**, **B**, and **C**.
+top buttons are **A**, **B**, **C**, and **D**.
 
-buttons: S, A, B, C, H (H = 1-16)
+buttons: A, B, C, D, H (H = 1-16)
 
 knobs: X, Y, Z
 
@@ -69,24 +69,24 @@ knobs: X, Y, Z
 - [ ] **none** → top shows punch/mash, mute, playback states 
 - [ ] **H** → JUMP: do jump, MASH: do fx (momentary)
 - [ ] **H** + **H** → JUMP: retrig depending on location
-- [ ] **S** → n/a
-- [ ] **S** + **H** → JUMP: do fx (toggle), MASH: do jump
-- [ ] **S** + **A** → toggle playback
-- [ ] **S** + **B** → toggle mute
-- [ ] **S** + **C** → toggle jump/mash/bass mode
-- [ ] **A** → show current bank (dim) + sample (bright)
-- [ ] **A** + **H** + **H** → select bank (1st) + sample (2nd)
-- [ ] **A** + **B** → toggle one-shot vs classic
-- [ ] **A** + **C** → toggle sync mode (none, clock-in, clock-out, clock-in+out)
-- [ ] **B** → n/a
-- [ ] **B** + **H** + **H**... → create chain of sequences
-- [ ] **B** + **A** → toggle play sequence
-- [ ] **B** + **C** → toggle record sequence
-- [ ] **B** + **H** → select sequence
+- [ ] **A** → n/a
+- [ ] **A** + **H** → JUMP: do fx (toggle), MASH: do jump
+- [ ] **A** + **B** → toggle playback
+- [ ] **A** + **C** → toggle mute
+- [ ] **A** + **D** → toggle jump/mash/bass mode
+- [ ] **B** → show current bank (dim) + sample (bright)
+- [ ] **B** + **H** + **H** → select bank (1st) + sample (2nd)
+- [ ] **B** + **C** → toggle one-shot vs classic
+- [ ] **B** + **D** → toggle sync mode (none, clock-in, clock-out, clock-in+out)
 - [ ] **C** → n/a
-- [ ] **C** + **H** → select save slot
-- [ ] **C** + **A** load from save slot
-- [ ] **C** + **B** → save into save slot
+- [ ] **C** + **H** + **H**... → create chain of sequences
+- [ ] **C** + **B** → toggle play sequence
+- [ ] **C** + **D** → toggle record sequence
+- [ ] **C** + **H** → select sequence
+- [ ] **D** → n/a
+- [ ] **D** + **H** → select save slot
+- [ ] **D** + **B** load from save slot
+- [ ] **D** + **C** → save into save slot
 
 
 #### combo knobs
@@ -94,18 +94,18 @@ knobs: X, Y, Z
 - [ ] **X** → n/a
 - [ ] **Y** → n/a
 - [ ] **Z** → n/a
-- [x] **S** + **X** → tempo
-- [ ] **S** + **Y** → 
-- [x] **S** + **Z** → volume
-- [ ] **A** + **X** → gate
-- [x] **A** + **Y** → filter fc (lowpass/highpass?)
-- [ ] **A** + **Z** → filter q
-- [ ] **B** + **X** → pitch
-- [ ] **B** + **Y** → quantize
-- [ ] **B** + **Z** → 
-- [ ] **C** + **X** → 
-- [ ] **C** + **Y** → 
+- [x] **A** + **X** → tempo
+- [ ] **A** + **Y** → 
+- [x] **A** + **Z** → volume
+- [ ] **B** + **X** → gate
+- [x] **B** + **Y** → filter fc (lowpass/highpass?)
+- [ ] **B** + **Z** → filter q
+- [ ] **C** + **X** → pitch
+- [ ] **C** + **Y** → quantize
 - [ ] **C** + **Z** → 
+- [ ] **D** + **X** → 
+- [ ] **D** + **Y** → 
+- [ ] **D** + **Z** → 
 
 #### effects 
 
@@ -116,18 +116,18 @@ holding an effect and using a knob will change its parameters.
 - [ ] **1** -> loss (preamp multiplier, threshold)
 - [ ] **2** -> fuzz (preamp multliplier)
 - [ ] **3** -> crush (frequency, crushing)
-- [ ] **4** -> esrever 
-- [ ] **5** -> strrrretch
-- [ ] **6** -> delayelay (delay length, feedback)
-- [ ] **7** -> repeatttt (repeat length)
+- [ ] **4** -> reverse 
+- [ ] **5** -> stretch
+- [ ] **6** -> delay (delay length, feedback)
+- [ ] **7** -> repeat (repeat length)
 - [ ] **8** -> tighten (gate amount)
-- [ ] **9** -> heighten (tremelo speed)
-- [ ] **10** -> circulate (pan speed)
+- [ ] **9** -> heighten (tremelo speed, depth)
+- [ ] **10** -> circulate (pan speed, depth)
 - [ ] **11** -> waltz
-- [ ] **12** -> lower
-- [ ] **13** -> slower
-- [ ] **14** -> faster
-- [ ] **15** -> stop
+- [ ] **12** -> lower (depth)
+- [ ] **13** -> slower (duration, depth)
+- [ ] **14** -> faster (duration, depth)
+- [ ] **15** -> stop (duration)
 
 #### cheat codes
 
