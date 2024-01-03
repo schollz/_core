@@ -101,4 +101,5 @@ rect = patches.Rectangle(
 )
 ax2.add_patch(rect)
 
+plt.savefig("dev/sdcards/sdcard_timings.png", dpi=300, transparent=True)
 plt.show()
