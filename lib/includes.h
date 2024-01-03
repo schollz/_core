@@ -85,9 +85,8 @@
 #include "filterexp.h"
 #include "gate.h"
 #ifdef INCLUDE_ZEPTOCORE
-#include "leds.h"
+#include "leds2.h"
 #include "ledtext.h"
-#include "pca9552.h"
 #endif
 #include "noise.h"
 #include "random.h"
