@@ -68,6 +68,7 @@ func run(args ...string) (string, string, error) {
 		log.Errorf("%s -> '%s'", strings.Join(args, " "), err.Error())
 		log.Error(outb.String())
 		log.Error(errb.String())
+		err = fmt.Errorf("%s%s", outb.String(), errb.String())
 	}
 	return outb.String(), errb.String(), err
 }
@@ -264,6 +265,7 @@ func FadeOut(fname string, duration float64) (fname2 string, err error) {
 func Length(fname string) (length float64, err error) {
 	stdout, stderr, err := run(soxbinary, fname, "-n", "stat")
 	if err != nil {
+		log.Error(err)
 		return
 	}
 	stdout += stderr

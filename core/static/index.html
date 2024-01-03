@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>*core load</title>
+    <title>_core load</title>
     <link rel="apple-touch-icon" sizes="57x57" href="/static/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/static/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/static/apple-icon-72x72.png">
@@ -29,7 +29,7 @@
     <div id="app" v-cloak>
         <header>
             <h1 style="margin:0; padding:0;"><a
-                    :href="window.location.protocol+'//'+window.location.host + title + '/'">*core{{title}}</a></h1>
+                    :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a></h1>
             <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         </header>
         <main>
@@ -48,16 +48,26 @@
 
 
             <div class="content-area">
+                <div class="help-message" v-if="error_message">
+                    <p>Sorry, an error occurred:</p>
+                    <small><em>"{{error_message}}"</em></small>
+                    <p>
+                        Please <a
+                            :href="'https://github.com/schollz/_core/issues/new?title=' + error_message + '&body=' + window.location.pathname"
+                            target="_blank">click here to let me know</a>.
+                    </p>
+                </div>
                 <div v-if="!isMain">
                     <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
                     </h2>
                 </div>
 
 
+
                 <div v-if="isMain" class="help-banner">
-                    <h2>*core load</h2>
+                    <h2>_core load</h2>
                     <p>
-                        This tool lets you easily organize files for using on *core devices.
+                        This tool lets you easily organize files for using on _core devices.
                     </p>
                     <p v-if="previousPages.length>0">
                         Some previous pages:
