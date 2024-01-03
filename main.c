@@ -99,10 +99,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (beat > -1) {
       printf("[toggle_chain_play] beat: %d\n", beat);
       beat_current = beat;
-#ifdef INCLUDE_ZEPTOCORE
-      LEDS_clearAll(leds, LED_STEP_FACE);
-      LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
-#endif
       do_update_phase_from_beat_current();
     }
   } else if (banks[sel_bank_cur]
@@ -148,10 +144,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         //   printf("[step_pressed] beat_current: %d\n", beat_current);
         // }
         // printf("beat_current: %d\n", beat_current);
-#ifdef INCLUDE_ZEPTOCORE
-        LEDS_clearAll(leds, LED_STEP_FACE);
-        LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 1);
-#endif
         if (key_jump_debounce == 0) {
           do_update_phase_from_beat_current();
         } else {
@@ -188,7 +180,7 @@ void input_handling() {
     printf("waiting to start\n");
     sleep_ms(10);
   }
-  LEDS_clearAll(leds, 2);
+  LEDS_clear(leds);
   LEDS_render(leds);
 
 #ifdef BTN_COL_START
@@ -453,10 +445,10 @@ int main() {
 
 #ifdef INCLUDE_ZEPTOCORE
   for (uint8_t i = 4; i < 20; i++) {
-    LEDS_set(leds, LED_BASE_FACE, i, 2);
+    LEDS_set(leds, i, 2);
     LEDS_render(leds);
     sleep_ms(10);
-    LEDS_set(leds, LED_BASE_FACE, i, 0);
+    LEDS_set(leds, i, 0);
     LEDS_render(leds);
     sleep_ms(10);
   }

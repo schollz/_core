@@ -53,8 +53,6 @@ void key_do_jump(uint8_t beat) {
     key_jump_debounce = 1;
     beat_current = (beat_current / 16) * 16 + beat;
     do_update_phase_from_beat_current();
-    LEDS_clearAll(leds, LED_STEP_FACE);
-    LEDS_set(leds, LED_STEP_FACE, beat_current % 16 + 4, 2);
   }
 }
 
@@ -242,7 +240,6 @@ void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 void button_key_off_any(uint8_t key) {
   printf("off any %d\n", key);
   if (key > 3) {
-    LEDS_set(leds, LED_STEP_FACE, key, 0);
     // 1-16 off
     // TODO: make this an option?
     if (key_total_pressed == 0) {
@@ -287,10 +284,6 @@ void button_key_on_single(uint8_t key) {
 
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on %d+%d\n", key1, key2);
-  if (key2 >= 4) {
-    LEDS_clearAll(leds, LED_STEP_FACE);
-    LEDS_set(leds, LED_STEP_FACE, key2, 2);
-  }
   if (key1 == KEY_SHIFT) {
     if (key2 == KEY_A) {
       // S+A
@@ -522,7 +515,6 @@ void button_handler(ButtonMatrix *bm) {
     key_did_go_off[i] = false;
   }
   for (uint8_t i = 0; i < bm->off_num; i++) {
-    LEDS_set(leds, LED_PRESS_FACE, bm->off[i], 0);
     key_total_pressed--;
     key_on_buttons_last[bm->off[i]] = key_on_buttons[bm->off[i]];
     key_on_buttons[bm->off[i]] = 0;
@@ -561,7 +553,6 @@ void button_handler(ButtonMatrix *bm) {
   // check queue for buttons that turned on
   bool key_held = false;
   for (uint8_t i = 0; i < bm->on_num; i++) {
-    LEDS_set(leds, LED_PRESS_FACE, bm->on[i], 2);
     key_total_pressed++;
     if (!key_held_on) {
       key_held_on = true;
@@ -615,25 +606,30 @@ void button_handler(ButtonMatrix *bm) {
     }
   }
 
+  // leds
+  LEDS_clear(leds);
   if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
-    LEDS_clearAll(leds, LED_STEAL_FACE);
     if (key_total_pressed > 0) {
-      LEDS_set(leds, LED_STEAL_FACE, sel_bank_next + 4, 2);
-      LEDS_set(leds, LED_STEAL_FACE, sel_sample_next + 4, 3);
+      LEDS_set(leds, sel_bank_next + 4, 2);
+      LEDS_set(leds, sel_sample_next + 4, 3);
     } else {
       key_b_sample_select = false;
     }
-    LEDS_render(leds);
   } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
-    LEDS_clearAll(leds, LED_STEAL_FACE);
     if (key_total_pressed == 1) {
       for (uint8_t i = 0; i < 16; i++) {
         if (Chain_has_data(chain, i)) {
-          LEDS_set(leds, LED_STEAL_FACE, i + 4, 1);
+          LEDS_set(leds, i + 4, 1);
         }
       }
-      LEDS_set(leds, LED_STEAL_FACE, Chain_get_current(chain) + 4, 3);
+      LEDS_set(leds, Chain_get_current(chain) + 4, 3);
     }
-    LEDS_render(leds);
   }
+
+  LEDS_set(leds, beat_current % 16 + 4, 1);
+
+  for (uint8_t i = 0; i < bm->on_num; i++) {
+    LEDS_set(leds, bm->on[i], 2);
+  }
+  LEDS_render(leds);
 }

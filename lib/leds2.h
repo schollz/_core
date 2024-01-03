@@ -125,7 +125,7 @@ void LEDS_set(LEDS *leds, uint8_t led, uint8_t state) {
   leds->state[led / 4][led % 4] = state;
 }
 
-void LEDS_clear(LEDS *leds, uint8_t m) {
+void LEDS_clear(LEDS *leds) {
   for (uint8_t i = 0; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
       leds->state[i][j] = 0;
@@ -146,7 +146,7 @@ void LEDS_render(LEDS *leds) {
   for (uint8_t j = 0; j < 4; j++) {
     if (leds->gpio_leds_state[j] != leds->state[0][j]) {
       leds->gpio_leds_state[j] = leds->state[0][j];
-      if (leds->gpio_leds_state[j] == LED_OFF) {
+      if (leds->gpio_leds_state[j] == LED_NONE) {
         gpio_put(leds->gpio_leds_pin[j], 0);
       } else if (leds->gpio_leds_state[j] == LED_BRIGHT) {
         gpio_put(leds->gpio_leds_pin[j], 1);
