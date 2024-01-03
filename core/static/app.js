@@ -158,7 +158,17 @@ const socketMessageListener = (e) => {
             app.progressBarWidth = `${maxWidth}px`;
         }
     } else {
-        console.log(`unknown action: ${data.action}`);
+        if (data.error != "") {
+            app.error_message = data.error;
+            // strip white space from the front and back:
+            app.error_message = app.error_message.trim();
+            // remove the error message after 30 seconds
+            setTimeout(() => {
+                app.error_message = "";
+            }, 30000);
+        } else {
+            console.log(`unknown action: ${data.action}`);
+        }
     }
 };
 const socketOpenListener = (e) => {
@@ -215,6 +225,7 @@ app = new Vue({
         isMobile: false, // Define isMobile variable
         downloading: false,
         processing: false,
+        error_message: "",
         uploading: false,
         resampling: 'linear',
         title: window.location.pathname,
