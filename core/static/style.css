@@ -59,7 +59,8 @@ footer {
     /* Dark purple header and footer background color */
     color: white;
     padding: 1rem;
-    text-align: center;
+    display: flex;
+    align-items: center;
 }
 
 main {
@@ -67,6 +68,27 @@ main {
     flex: 1;
 }
 
+a:hover {
+    text-decoration: underline;
+}
+
+.help-message {
+    margin: 1em;
+    padding: 1em;
+    border-color: var(--header-footer-background);
+    border-style: solid;
+    background: var(--banks-background);
+    text-align: center;
+}
+
+.help-message a {
+    color: black;
+    text-decoration: underline;
+}
+
+.help-message a:hover {
+    color: var(--other-color);
+}
 
 .help-banner {
     margin: 3em;

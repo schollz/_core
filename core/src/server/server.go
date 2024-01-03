@@ -433,7 +433,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		byteCounter := &ByteCounter{
 			TargetWriter: destination,
 			Callback: func(n int64) {
-				log.Debugf("n: %d", n)
+				log.Tracef("n: %d", n)
 				mutex.Lock()
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
@@ -467,7 +467,7 @@ func processFile(id string, uploadedFile string, localFile string) {
 		mutex.Lock()
 		if _, ok := connections[id]; ok {
 			connections[id].WriteJSON(Message{
-				Error: err.Error(),
+				Error: fmt.Sprintf("could not process '%s': %s", uploadedFile, err.Error()),
 			})
 		}
 		mutex.Unlock()
