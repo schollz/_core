@@ -55,7 +55,7 @@ void LEDText_showGlyph(LEDText *lt, LEDS *leds, uint8_t char_glyph) {
       // print out the jth bit of the byte b
       printf("%d (%2d) ", (b >> j) & 1, led_index);
       // read the jth bit of the byte b
-      LEDS_set(leds, LED_TEXT_FACE, led_index, 2 * ((b >> j) & 1));
+      LEDS_set(leds, led_index, 2 * ((b >> j) & 1));
     }
     printf("\n");
   }
@@ -85,7 +85,7 @@ void LEDText_update(LEDText *lt, LEDS *leds) {
         LEDText_showGlyph(lt, leds, lt->text[lt->i]);
         lt->i++;
       } else {
-        LEDS_clearAll(leds, LED_TEXT_FACE);
+        LEDS_clear(leds);
       }
   }
 }
