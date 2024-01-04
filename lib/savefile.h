@@ -31,6 +31,8 @@ typedef struct SaveFile {
   uint8_t vol;
   uint16_t bpm_tempo;
   Sequencer *sequencers[3][16];
+  bool fx_active[16];
+  uint8_t fx_param[16][3];
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -45,6 +47,12 @@ SaveFile *SaveFile_malloc() {
     for (int j = 0; j < 16; j++) {
       sf->sequencers[i][j] = Sequencer_malloc();
     }
+  }
+  for (uint8_t i = 0; i < 16; i++) {
+    sf->fx_active[i] = false;
+    sf->fx_param[i][0] = 0;
+    sf->fx_param[i][1] = 0;
+    sf->fx_param[i][2] = 0;
   }
 
   return sf;
