@@ -270,9 +270,9 @@ void button_key_on_single(uint8_t key) {
       dub_step_divider = 0;
       dub_step_beat = beat_current;
       printf("dub_step_beat: %d\n", dub_step_beat);
-      if (toggle_chain_rec) {
-        Chain_add_current(chain, key - 4, bpm_timer_counter);
-      }
+      // if (toggle_chain_rec) {
+      //   Chain_add_current(chain, key - 4, bpm_timer_counter);
+      // }
     } else if (mode_buttons16 == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
@@ -358,38 +358,38 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_A) {
       // B + A
       // toggle play sequence
-      toggle_chain_play = !toggle_chain_play;
-      if (toggle_chain_rec) {
-        Chain_save(chain, &sync_using_sdcard);
-      }
-      if (toggle_chain_play) {
-        Chain_load(chain, &sync_using_sdcard);
-      }
-      toggle_chain_rec = false;
-      Chain_restart(chain);
-      if (toggle_chain_play) {
-        printf("[button_handler] sequence playback on\n");
-      } else {
-        printf("[button_handler] sequence playback off\n");
-      }
+      // toggle_chain_play = !toggle_chain_play;
+      // if (toggle_chain_rec) {
+      //   Chain_save(chain, &sync_using_sdcard);
+      // }
+      // if (toggle_chain_play) {
+      //   Chain_load(chain, &sync_using_sdcard);
+      // }
+      // toggle_chain_rec = false;
+      // Chain_restart(chain);
+      // if (toggle_chain_play) {
+      //   printf("[button_handler] sequence playback on\n");
+      // } else {
+      //   printf("[button_handler] sequence playback off\n");
+      // }
     } else if (key2 == KEY_C) {
       // B + C
       // toggle record sequence
-      if (toggle_chain_rec) {
-        Chain_save(chain, &sync_using_sdcard);
-      }
-      toggle_chain_rec = !toggle_chain_rec;
-      toggle_chain_play = false;
-      if (toggle_chain_rec) {
-        Chain_clear_seq_current(chain);
-        printf("[button_handler] sequence recording on\n");
-      } else {
-        printf("[button_handler] sequence recording off\n");
-      }
+      // if (toggle_chain_rec) {
+      //   Chain_save(chain, &sync_using_sdcard);
+      // }
+      // toggle_chain_rec = !toggle_chain_rec;
+      // toggle_chain_play = false;
+      // if (toggle_chain_rec) {
+      //   Chain_clear_seq_current(chain);
+      //   printf("[button_handler] sequence recording on\n");
+      // } else {
+      //   printf("[button_handler] sequence recording off\n");
+      // }
     } else if (key2 > 3) {
       // B + H
       // update the current chain
-      Chain_set_current(chain, key2 - 4);
+      // Chain_set_current(chain, key2 - 4);
     }
   }
 }
@@ -495,8 +495,8 @@ void button_handler(ButtonMatrix *bm) {
         }
       }
       if (count > 0) {
-        toggle_chain_rec = false;
-        Chain_link(chain, links, count);
+        // toggle_chain_rec = false;
+        // Chain_link(chain, links, count);
       }
       free(links);
     }
@@ -617,12 +617,12 @@ void button_handler(ButtonMatrix *bm) {
     }
   } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
     if (key_total_pressed == 1) {
-      for (uint8_t i = 0; i < 16; i++) {
-        if (Chain_has_data(chain, i)) {
-          LEDS_set(leds, i + 4, 1);
-        }
-      }
-      LEDS_set(leds, Chain_get_current(chain) + 4, 3);
+      // for (uint8_t i = 0; i < 16; i++) {
+      //   if (Chain_has_data(chain, i)) {
+      //     LEDS_set(leds, i + 4, 1);
+      //   }
+      // }
+      // LEDS_set(leds, Chain_get_current(chain) + 4, 3);
     }
   }
 

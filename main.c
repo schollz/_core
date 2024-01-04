@@ -95,12 +95,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       }
     }
   } else if (toggle_chain_play) {
-    int8_t beat = Chain_emit(chain, bpm_timer_counter);
-    if (beat > -1) {
-      printf("[toggle_chain_play] beat: %d\n", beat);
-      beat_current = beat;
-      do_update_phase_from_beat_current();
-    }
+    // int8_t beat = Chain_emit(chain, bpm_timer_counter);
+    // if (beat > -1) {
+    //   printf("[toggle_chain_play] beat: %d\n", beat);
+    //   beat_current = beat;
+    //   do_update_phase_from_beat_current();
+    // }
   } else if (banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
                      .snd[sel_variation]
@@ -313,9 +313,9 @@ void input_handling() {
         }
       } else if (button_is_pressed(KEY_B)) {
       } else if (button_is_pressed(KEY_C)) {
-        const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
-        printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
-        Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
+        // const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
+        // printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
+        // Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
       }
     }
 #endif
@@ -394,9 +394,6 @@ int main() {
 
   // initialize random library
   random_initialize();
-
-  // initialize sequencers
-  chain = Chain_create();
 
   // intialize beat repeater
   beatrepeat = BeatRepeat_malloc();
