@@ -30,21 +30,14 @@
 
 #define NOSDCARD
 
-#include "../../pcg_basic.h"
 #include "../../savefile.h"
 
 int main() {
   SaveFile *sf;
-  sf = SaveFile_New();
+  sf = SaveFile_malloc();
 
   printf("bpm: %d\n", sf->bpm_tempo);
 
-  pcg32_random_t rng;
-  pcg32_srandom_r(&rng, 42u, 54u);
-
-  SaveFile_PatternRandom(sf, &rng, 0, 8);
-  SaveFile_PatternPrint(sf);
-  SaveFile_PatternRandom(sf, &rng, 0, 8);
-  SaveFile_PatternPrint(sf);
+  SaveFile_free(sf);
   return 0;
 }

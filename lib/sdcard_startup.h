@@ -110,6 +110,10 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+  // load save file
+  // load new save file
+  sf = SaveFile_malloc();
+
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",

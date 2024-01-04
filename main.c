@@ -368,9 +368,6 @@ int main() {
 
   ap = init_audio();
 
-  // load new save file
-  sf = SaveFile_New();
-
   // Implicitly called by disk_initialize,
   // but called here to set up the GPIOs
   // before enabling the card detect interrupt:

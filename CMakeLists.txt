@@ -111,6 +111,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_FILTER=1
     INCLUDE_ZEPTOCORE=1
 
+
     # # ecto
     # SDCARD_CMD_GPIO=25
     # SDCARD_D0_GPIO=26 
@@ -126,7 +127,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # PRINT_AUDIO_OVERLOADS=1
     # PRINT_AUDIO_CPU_USAGE=1
     # PRINT_MEMORY_USAGE=1
-    PRINT_SDCARD_TIMING=1
+    # PRINT_SDCARD_TIMING=1
+    DISABLE_FX=1
 
     # turn off gpio for leds
     LEDS_NO_GPIO=1
