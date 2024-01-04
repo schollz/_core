@@ -136,6 +136,7 @@ void sdcard_startup() {
   if (fr != FR_OK) {
     printf("[sdcard_startup] could not open %s: %s\n", fname, FRESULT_str(fr));
   }
+  sf->vol = 180;
   phase_new = 0;
   phase_change = true;
   sync_using_sdcard = false;

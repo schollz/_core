@@ -43,8 +43,8 @@ void SinOsc_quiet(SinOsc *self, uint8_t quiet) {
 
 SinOsc *SinOsc_malloc() {
   SinOsc *self = malloc(sizeof(SinOsc));
-  self->quiet[0] = 16;
-  self->quiet[1] = 16;
+  self->quiet[0] = 0;
+  self->quiet[1] = 0;
   self->wave[0] = 0;
   self->wave[1] = 0;
   self->phase[0] = 0;
