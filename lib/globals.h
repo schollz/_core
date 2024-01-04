@@ -98,7 +98,6 @@ LEDS *leds;
 LEDText *ledtext;
 #endif
 
-Chain *chain;
 bool toggle_chain_play = false;
 bool toggle_chain_rec = false;
 
