@@ -46,6 +46,11 @@ SaveFile *SaveFile_malloc() {
       sf->sequencers[i][j] = Sequencer_malloc();
     }
   }
+
+  return sf;
+}
+
+void SaveFile_test_sequencer(SaveFile *sf) {
   Sequencer_set_callbacks(sf->sequencers[0][0], test_sequencer_emit,
                           test_sequencer_stop);
   Sequencer_add(sf->sequencers[0][0], 1, 1);
@@ -53,12 +58,12 @@ SaveFile *SaveFile_malloc() {
   Sequencer_add(sf->sequencers[0][0], 3, 7);
   Sequencer_add(sf->sequencers[0][0], 4, 11);
   Sequencer_add(sf->sequencers[0][0], 5, 15);
+  Sequencer_play(sf->sequencers[0][0]);
   for (int i = 0; i < 18; i++) {
     printf("step %d ", i);
     Sequencer_step(sf->sequencers[0][0], i);
     printf("\n");
   }
-  return sf;
 }
 
 void SaveFile_free(SaveFile *sf) {
@@ -72,14 +77,18 @@ void SaveFile_free(SaveFile *sf) {
 
 #ifndef NOSDCARD
 
-bool SaveFile_Load(SaveFile *sf) {
+bool SaveFile_load(SaveFile *sf, bool *sync_sd_card) {
+  while (*sync_sd_card) {
+    sleep_us(100);
+  }
   FIL fil; /* File object */
   printf("[SaveFile] reading\n");
   if (f_open(&fil, SAVEFILE_PATHNAME, FA_READ)) {
     printf("[SaveFile] no save file, skipping ");
   } else {
     unsigned int bytes_read;
-    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read)) {
+    if (f_read(&fil, sf, sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16),
+               &bytes_read)) {
       printf("[SaveFile] problem reading save file");
     } else {
       printf("[SaveFile] bpm_tempo = %d\n", sf->bpm_tempo);
@@ -89,7 +98,7 @@ bool SaveFile_Load(SaveFile *sf) {
   return true;
 }
 
-bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
+bool SaveFile_save(SaveFile *sf, bool *sync_sd_card) {
   while (*sync_sd_card) {
     sleep_us(100);
   }
@@ -105,7 +114,8 @@ bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
     return false;
   }
   unsigned int bw;
-  if (f_write(&file, sf, sizeof(SaveFile), &bw)) {
+  if (f_write(&file, sf, sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16),
+              &bw)) {
     printf("[SaveFile] problem writing save\n");
   }
   printf("[SaveFile] wrote %d bytes\n", bw);

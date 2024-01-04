@@ -54,7 +54,7 @@ typedef struct Sequencer {
   // playing data
   uint8_t play_pos;
   uint16_t play_step;
-  bool play_finished;
+  bool is_playing;
 
   // callbacks
   callback_uint8 sequence_emit;
@@ -68,12 +68,15 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_key[i] = 0;
     seq->rec_steps[i] = 0;
   }
-  seq->play_finished = true;
+  seq->is_playing = false;
   seq->quantization = 1;
+  seq->play_pos = 0;
+  seq->play_step = 0;
 }
 
 Sequencer *Sequencer_malloc() {
   Sequencer *seq = (Sequencer *)malloc(sizeof(Sequencer));
+  seq->quantization = 1;
   seq->sequence_emit = NULL;
   seq->sequence_finished = NULL;
   Sequencer_clear(seq);
@@ -124,17 +127,17 @@ void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
 void Sequencer_play(Sequencer *seq) {
   seq->play_pos = 0;
   seq->play_step = 0;
-  seq->play_finished = false;
+  seq->is_playing = true;
 }
 
 void Sequencer_step(Sequencer *seq, uint32_t step) {
-  if (seq->rec_len == 0 || seq->play_finished) {
+  if (seq->rec_len == 0 || !seq->is_playing) {
     return;
   }
   if (seq->play_step >=
       round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
     if (seq->play_pos >= seq->rec_len - 1) {
-      seq->play_finished = true;
+      seq->is_playing = false;
       seq->play_pos = 0;
       seq->play_step = 0;
       if (seq->sequence_finished != NULL) {
@@ -151,7 +154,7 @@ void Sequencer_step(Sequencer *seq, uint32_t step) {
   seq->play_step++;
 }
 
-bool Sequencer_is_finished(Sequencer *seq) { return seq->play_finished; }
-void Sequencer_stop(Sequencer *seq) { seq->play_finished = true; }
+bool Sequencer_is_playing(Sequencer *seq) { return seq->is_playing; }
+void Sequencer_stop(Sequencer *seq) { seq->is_playing = false; }
 
 #endif
