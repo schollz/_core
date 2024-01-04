@@ -28,43 +28,36 @@
 #include <stdlib.h>
 
 #define NOSDCARD 1
-#include "../../chain.h"
 #include "../../sequencer.h"
 
+void sequencer_emit(uint8_t key) { printf("key %d\n", key); }
+void sequencer_stop() { printf("stop\n"); }
+
 int main() {
-  Chain *chain = Chain_create();
-  Chain_add(chain, 0, 0, 91);
-  Chain_add(chain, 0, 1, 92);
-  Chain_add(chain, 0, 2, 93);
-  Chain_add(chain, 0, 3, 94);
-  // this one will not be played, it will be the beginning of the next
-  Chain_add(chain, 0, 4, 91 + 13);
-  Sequencer_print(&chain->seq[0]);
-  Chain_quantize(chain, 0, 6);
-  Sequencer_print(&chain->seq[0]);
+  Sequencer *seq = Sequencer_malloc();
+  Sequencer_set_callbacks(seq, sequencer_emit, sequencer_stop);
+  Sequencer_add(seq, 1, 1);
+  Sequencer_add(seq, 2, 3);
+  Sequencer_add(seq, 3, 7);
+  Sequencer_add(seq, 4, 11);
+  Sequencer_add(seq, 5, 15);
 
-  Chain_add(chain, 1, 5, 2);
-  Chain_add(chain, 1, 6, 2 + 7);
-  Chain_add(chain, 1, 7, 2 + 13);
-  // this one will not be played, it will be the beginning of the next
-  Chain_add(chain, 1, 8, 2 + 21);
-  // Chain_quantize(chain, 1, 10);
-
-  uint8_t links[] = {0, 1, 1};
-  Chain_link(chain, links, 3);
-
-  printf("%d\n", round_uint16_to(0, 4));
-  printf("%d\n", round_uint16_to(1, 4));
-  printf("%d\n", round_uint16_to(7, 4));
-  printf("%d\n", round_uint16_to(13, 4));
-  // // BEAT MUST START ON 1!
-  for (uint16_t i = 1; i < 90; i++) {
-    int8_t beat = Chain_emit(chain, i);
-    if (beat != -1) {
-      printf("beat %02d) chain %d -> key %d\n", i, Chain_get_current(chain),
-             beat);
-    }
+  Sequencer_quantize(seq, 4);
+  Sequencer_play(seq);
+  for (int i = 0; i < 18; i++) {
+    printf("step %d ", i);
+    Sequencer_step(seq, i);
+    printf("\n");
   }
 
+  Sequencer_quantize(seq, 8);
+  Sequencer_play(seq);
+  for (int i = 0; i < 18; i++) {
+    printf("step %d ", i);
+    Sequencer_step(seq, i);
+    printf("\n");
+  }
+
+  Sequencer_free(seq);
   return 0;
 }
