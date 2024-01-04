@@ -30,6 +30,8 @@
 typedef struct SaveFile {
   uint8_t vol;
   uint16_t bpm_tempo;
+  uint8_t bank : 8;
+  uint8_t sample : 8;
   Sequencer *sequencers[3][16];
   bool fx_active[16];
   uint8_t fx_param[16][3];
@@ -41,7 +43,9 @@ void test_sequencer_stop() { printf("stop\n"); }
 SaveFile *SaveFile_malloc() {
   SaveFile *sf;
   sf = malloc(sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16));
-  sf->vol = 20;
+  sf->bank = 0;
+  sf->sample = 0;
+  sf->vol = 80;
   sf->bpm_tempo = 165;
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 16; j++) {
