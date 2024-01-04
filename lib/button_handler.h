@@ -142,34 +142,34 @@ void go_update_top() {
 
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
-  fx_active[fx_num] = !fx_active[fx_num];
+  sf->fx_active[fx_num] = !sf->fx_active[fx_num];
   switch (fx_num) {
     case FX_REVERSE:
-      phase_forward = !fx_active[fx_num];
+      phase_forward = !sf->fx_active[fx_num];
       break;
     case FX_SATURATE:
-      Saturation_setActive(saturation, fx_active[fx_num]);
+      Saturation_setActive(saturation, sf->fx_active[fx_num]);
       break;
     case FX_BEATREPEAT:
-      if (fx_active[fx_num]) {
+      if (sf->fx_active[fx_num]) {
         BeatRepeat_repeat(beatrepeat, 1000);
       } else {
         BeatRepeat_repeat(beatrepeat, 0);
       }
       break;
     case FX_DELAY:
-      Delay_setActive(delay, fx_active[fx_num]);
+      Delay_setActive(delay, sf->fx_active[fx_num]);
       break;
     case FX_TIGHTEN:
       printf("FX_TIGHTEN\n");
-      if (fx_active[fx_num]) {
+      if (sf->fx_active[fx_num]) {
         Gate_set_percent(audio_gate, 85);
       } else {
         Gate_set_percent(audio_gate, 100);
       }
       break;
     case FX_SLOWDOWN:
-      if (fx_active[fx_num]) {
+      if (sf->fx_active[fx_num]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch), 0.5, 1);
       } else {
@@ -178,7 +178,7 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_SPEEDUP:
-      if (fx_active[fx_num]) {
+      if (sf->fx_active[fx_num]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch), 2.0, 1);
       } else {
@@ -187,7 +187,7 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_TAPE_STOP:
-      if (fx_active[FX_TAPE_STOP]) {
+      if (sf->fx_active[FX_TAPE_STOP]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch),
                         ENVELOPE_PITCH_THRESHOLD / 2, 2.7);
@@ -197,11 +197,11 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_FUZZ:
-      if (fx_active[FX_FUZZ]) {
+      if (sf->fx_active[FX_FUZZ]) {
         printf("fuzz activated!\n");
       }
     case FX_FILTER:
-      if (fx_active[FX_FILTER]) {
+      if (sf->fx_active[FX_FILTER]) {
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL), 5, 1.618);
@@ -213,7 +213,7 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_VOLUME_RAMP:
-      if (fx_active[FX_VOLUME_RAMP]) {
+      if (sf->fx_active[FX_VOLUME_RAMP]) {
         Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_volume), 0, 1.618 / 2);
       } else {
@@ -222,7 +222,7 @@ void toggle_fx(uint8_t fx_num) {
       }
       break;
     case FX_TIMESTRETCH:
-      if (fx_active[FX_TIMESTRETCH]) {
+      if (sf->fx_active[FX_TIMESTRETCH]) {
         sel_variation_next = 1;
       } else {
         sel_variation_next = 0;
@@ -276,7 +276,6 @@ void button_key_on_single(uint8_t key) {
     } else if (mode_buttons16 == MODE_MASH) {
       // 1-16 (mash mode)
       // do momentary fx
-      fx_toggle[key - 4] = true;
       toggle_fx(key - 4);
     }
   }
@@ -306,8 +305,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       if (mode_buttons16 == MODE_JUMP) {
         // S+H (jump mode)
         // toggles fx
-        fx_toggle[key2 - 4] = !fx_toggle[key2 - 4];
-        bool on = fx_toggle[key2 - 4];
         toggle_fx(key2 - 4);
       } else if (mode_buttons16 == MODE_MASH) {
         // S+H (mash mode)
