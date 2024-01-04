@@ -22,28 +22,52 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+#ifndef LIB_SAVEFILE
+#define LIB_SAVEFILE 1
+
+#include "sequencer.h"
+
 typedef struct SaveFile {
-  uint16_t bpm_tempo;
   uint8_t vol;
-  uint8_t distortion_level;
-  uint8_t distortion_wet;
-  uint8_t saturate_wet;
-  uint8_t wavefold;
+  uint16_t bpm_tempo;
+  Sequencer *sequencers[3][16];
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
-
-SaveFile *SaveFile_New() {
+void test_sequencer_emit(uint8_t key) { printf("key %d\n", key); }
+void test_sequencer_stop() { printf("stop\n"); }
+SaveFile *SaveFile_malloc() {
   SaveFile *sf;
-  sf = malloc(sizeof(SaveFile));
+  sf = malloc(sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16));
   sf->vol = 20;
   sf->bpm_tempo = 165;
-  sf->distortion_level = 0;
-  sf->distortion_wet = 0;
-  sf->saturate_wet = 0;
-  sf->wavefold = 0;
-
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 16; j++) {
+      sf->sequencers[i][j] = Sequencer_malloc();
+    }
+  }
+  Sequencer_set_callbacks(sf->sequencers[0][0], test_sequencer_emit,
+                          test_sequencer_stop);
+  Sequencer_add(sf->sequencers[0][0], 1, 1);
+  Sequencer_add(sf->sequencers[0][0], 2, 3);
+  Sequencer_add(sf->sequencers[0][0], 3, 7);
+  Sequencer_add(sf->sequencers[0][0], 4, 11);
+  Sequencer_add(sf->sequencers[0][0], 5, 15);
+  for (int i = 0; i < 18; i++) {
+    printf("step %d ", i);
+    Sequencer_step(sf->sequencers[0][0], i);
+    printf("\n");
+  }
   return sf;
+}
+
+void SaveFile_free(SaveFile *sf) {
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 16; j++) {
+      Sequencer_free(sf->sequencers[i][j]);
+    }
+  }
+  free(sf);
 }
 
 #ifndef NOSDCARD
@@ -89,5 +113,7 @@ bool SaveFile_Save(SaveFile *sf, bool *sync_sd_card) {
   *sync_sd_card = false;
   return true;
 }
+
+#endif
 
 #endif
