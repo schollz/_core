@@ -199,6 +199,21 @@ void input_handling() {
 
   while (1) {
     adc_select_input(0);
+
+    // check if a single button is held
+    // for purposes of changing the fx params
+    int8_t single_key = -1;
+    for (uint8_t i = 4; i < 20; i++) {
+      if (key_on_buttons[i] > 0) {
+        if (single_key == -1) {
+          single_key = i;
+        } else {
+          single_key = -1;
+          break;
+        }
+      }
+    }
+
     sleep_ms(1);
     int adc;
 #ifdef INCLUDE_SINEBASS
@@ -231,19 +246,22 @@ void input_handling() {
     if (adc_debounce[0] > 0) {
       adc_last[0] = adc;
       adc_debounce[0]--;
-      // TODO: keep track of old value and
-      if (button_is_pressed(KEY_SHIFT)) {
-        sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
-      } else if (button_is_pressed(KEY_A)) {
-        gate_threshold = adc *
-                         (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
-                         4096 * 2;
-      } else if (button_is_pressed(KEY_B)) {
-        pitch_val_index = adc * PITCH_VAL_MAX / 4096;
-        if (pitch_val_index >= PITCH_VAL_MAX) {
-          pitch_val_index = PITCH_VAL_MAX - 1;
+      if (mode_buttons16 == MODE_MASH && single_key > -1) {
+        sf->fx_param[single_key - 4][0] = adc * 128 / 4096;
+      } else {
+        if (button_is_pressed(KEY_SHIFT)) {
+          sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+        } else if (button_is_pressed(KEY_A)) {
+          gate_threshold = adc *
+                           (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
+                           4096 * 2;
+        } else if (button_is_pressed(KEY_B)) {
+          pitch_val_index = adc * PITCH_VAL_MAX / 4096;
+          if (pitch_val_index >= PITCH_VAL_MAX) {
+            pitch_val_index = PITCH_VAL_MAX - 1;
+          }
+        } else if (button_is_pressed(KEY_C)) {
         }
-      } else if (button_is_pressed(KEY_C)) {
       }
     }
 #endif
@@ -264,21 +282,25 @@ void input_handling() {
     if (adc_debounce[1] > 0) {
       adc_last[1] = adc;
       adc_debounce[1]--;
-      if (button_is_pressed(KEY_SHIFT)) {
-      } else if (button_is_pressed(KEY_A)) {
-        for (uint8_t channel = 0; channel < 2; channel++) {
-          if (adc < 3500) {
-            global_filter_index = adc * (resonantfilter_fc_max) / 3500;
-            ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel], global_filter_index);
-          } else {
-            global_filter_index = resonantfilter_fc_max;
-            ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
+      if (mode_buttons16 == MODE_MASH && single_key > -1) {
+        sf->fx_param[single_key - 4][1] = adc * 128 / 4096;
+      } else {
+        if (button_is_pressed(KEY_SHIFT)) {
+        } else if (button_is_pressed(KEY_A)) {
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            if (adc < 3500) {
+              global_filter_index = adc * (resonantfilter_fc_max) / 3500;
+              ResonantFilter_setFilterType(resFilter[channel], 0);
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            } else {
+              global_filter_index = resonantfilter_fc_max;
+              ResonantFilter_setFilterType(resFilter[channel], 0);
+              ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
+            }
           }
+        } else if (button_is_pressed(KEY_B)) {
+        } else if (button_is_pressed(KEY_C)) {
         }
-      } else if (button_is_pressed(KEY_B)) {
-      } else if (button_is_pressed(KEY_C)) {
       }
     }
 #endif
@@ -299,23 +321,27 @@ void input_handling() {
     if (adc_debounce[2] > 0) {
       adc_last[2] = adc;
       adc_debounce[2]--;
-      if (button_is_pressed(KEY_SHIFT)) {
-        new_vol = adc * VOLUME_STEPS / 4096;
-        // new_vol = 100;
-        if (new_vol != sf->vol) {
-          sf->vol = new_vol;
-          printf("sf-vol: %d\n", sf->vol);
+      if (mode_buttons16 == MODE_MASH && single_key > -1) {
+        sf->fx_param[single_key - 4][2] = adc * 128 / 4096;
+      } else {
+        if (button_is_pressed(KEY_SHIFT)) {
+          new_vol = adc * VOLUME_STEPS / 4096;
+          // new_vol = 100;
+          if (new_vol != sf->vol) {
+            sf->vol = new_vol;
+            printf("sf-vol: %d\n", sf->vol);
+          }
+        } else if (button_is_pressed(KEY_A)) {
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            ResonantFilter_setQ(resFilter[channel],
+                                adc * (resonantfilter_q_max) / 4096);
+          }
+        } else if (button_is_pressed(KEY_B)) {
+        } else if (button_is_pressed(KEY_C)) {
+          // const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
+          // printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
+          // Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
         }
-      } else if (button_is_pressed(KEY_A)) {
-        for (uint8_t channel = 0; channel < 2; channel++) {
-          ResonantFilter_setQ(resFilter[channel],
-                              adc * (resonantfilter_q_max) / 4096);
-        }
-      } else if (button_is_pressed(KEY_B)) {
-      } else if (button_is_pressed(KEY_C)) {
-        // const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
-        // printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
-        // Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
       }
     }
 #endif
@@ -477,6 +503,8 @@ int main() {
   sel_sample_cur = 0;
   sel_variation = 0;
   fil_current_change = true;
+
+  mode_buttons16 = MODE_MASH;
 
 // blocking
 #ifdef INCLUDE_INPUTHANDLING
