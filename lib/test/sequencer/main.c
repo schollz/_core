@@ -36,13 +36,12 @@ void sequencer_stop() { printf("stop\n"); }
 int main() {
   Sequencer *seq = Sequencer_malloc();
   Sequencer_set_callbacks(seq, sequencer_emit, sequencer_stop);
-  Sequencer_add(seq, 1, 1);
-  Sequencer_add(seq, 2, 3);
+  Sequencer_add(seq, 1, 0);
+  Sequencer_add(seq, 2, 5);
   Sequencer_add(seq, 3, 7);
   Sequencer_add(seq, 4, 11);
   Sequencer_add(seq, 5, 15);
 
-  Sequencer_quantize(seq, 4);
   Sequencer_play(seq);
   for (int i = 0; i < 18; i++) {
     printf("step %d ", i);
@@ -50,7 +49,7 @@ int main() {
     printf("\n");
   }
 
-  Sequencer_quantize(seq, 8);
+  Sequencer_quantize(seq, 4);
   Sequencer_play(seq);
   for (int i = 0; i < 18; i++) {
     printf("step %d ", i);
