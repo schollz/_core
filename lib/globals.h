@@ -88,7 +88,7 @@ float retrig_vol_step = 0;
 // buttons
 // mode toggles
 //   mode  ==0  ==1
-uint8_t mode_buttons16 = 2;
+uint8_t mode_buttons16 = 0;
 bool mode_mute = 0;
 bool mode_play = 0;
 

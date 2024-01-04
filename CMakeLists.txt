@@ -67,7 +67,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_USE_CD=false
     SDCARD_CD_GPIO=21 # not used...
 
-    # # weact
+    # weact
     # SDCARD_CMD_GPIO=11
     # SDCARD_D0_GPIO=12                                                                # CLK=17,D1=20,D2=21,D3=22
     # AUDIO_CLK_GPIO=16 # LCK=17
