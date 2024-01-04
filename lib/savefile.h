@@ -23,14 +23,6 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 typedef struct SaveFile {
-  uint8_t chain_length;
-  uint8_t chain_sequence[128];
-  bool pattern_on;
-  uint8_t pattern_current;
-  uint8_t pattern_length[16];
-  uint8_t pattern_sequence[16][128];
-  uint8_t fx_length[16];
-  uint8_t fx_sequence[16][128];
   uint16_t bpm_tempo;
   uint8_t vol;
   uint8_t distortion_level;
@@ -46,44 +38,12 @@ SaveFile *SaveFile_New() {
   sf = malloc(sizeof(SaveFile));
   sf->vol = 20;
   sf->bpm_tempo = 165;
-  sf->chain_length = 0;
   sf->distortion_level = 0;
   sf->distortion_wet = 0;
   sf->saturate_wet = 0;
   sf->wavefold = 0;
-  for (uint8_t i = 0; i < 128; i++) {
-    sf->chain_sequence[i] = 0;
-  }
-  sf->pattern_current = 0;
-  for (uint8_t i = 0; i < 16; i++) {
-    sf->pattern_length[i] = 0;
-    for (uint8_t j = 0; j < 128; j++) {
-      sf->pattern_sequence[i][j] = 0;
-    }
-  }
+
   return sf;
-}
-
-bool SaveFile_PatternRandom(SaveFile *sf, pcg32_random_t *rng,
-                            uint8_t pattern_id, uint8_t pattern_length) {
-  sf->pattern_length[pattern_id] = pattern_length;
-  for (uint8_t j = 0; j < sf->pattern_length[pattern_id]; j++) {
-    sf->pattern_sequence[pattern_id][j] = (int)pcg32_boundedrand_r(rng, 16) + 0;
-  }
-
-  return true;
-}
-
-void SaveFile_PatternPrint(SaveFile *sf) {
-  for (uint8_t i = 0; i < 16; i++) {
-    if (sf->pattern_length[i] > 0) {
-      printf("pattern %d\n", i);
-      for (uint8_t j = 0; j < sf->pattern_length[i]; j++) {
-        printf("%d ", sf->pattern_sequence[i][j]);
-      }
-      printf("\n");
-    }
-  }
 }
 
 #ifndef NOSDCARD

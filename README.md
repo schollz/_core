@@ -56,12 +56,11 @@ if you like this device, you might also like:
 
 ### zeptocore spec (draft)
 
-top buttons are **A**, **B**, **C**, and **D**.
-
-buttons: A, B, C, D, H (H = 1-16)
-
 knobs: X, Y, Z
 
+top buttons are **A**, **B**, **C**, and **D**.
+
+the rest of the buttons (1-16) are just called **H**.
 
 
 #### combo buttons
@@ -74,16 +73,16 @@ knobs: X, Y, Z
 - [ ] **A** + **B** → JUMP mode
 - [ ] **A** + **C** → MASH mode
 - [ ] **A** + **D** → BASS mode
-- [ ] **B** → n/a
+- [ ] **B** → show bank (blinking) + sample (bright)
 - [ ] **B** + **H** + **H** → select bank (1st) + sample (2nd)
 - [ ] **B** + **C** → ?
 - [ ] **B** + **D** → ?
-- [ ] **C** → n/a
+- [ ] **C** → show which sequence is selected (bright)
 - [ ] **C** + **H** + **H**... → create chain of sequences
 - [ ] **C** + **B** → toggle play sequence
 - [ ] **C** + **D** → toggle record sequence
 - [ ] **C** + **H** → select sequence
-- [ ] **D** → n/a
+- [ ] **D** → show which save slot is selected (bright)
 - [ ] **D** + **H** → select save slot
 - [ ] **D** + **B** load from save slot
 - [ ] **D** + **C** → save into save slot

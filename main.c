@@ -129,20 +129,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           beat_current += (phase_forward * 2 - 1);
         }
         beat_total++;
-        if (sf->pattern_on && sf->pattern_length[sf->pattern_current] > 0) {
-          beat_current =
-              sf->pattern_sequence[sf->pattern_current]
-                                  [beat_total %
-                                   sf->pattern_length[sf->pattern_current]];
-        }
-        // int8_t step_pressed = single_step_pressed();
-        // if (step_pressed > -1) {
-        //   beat_current = step_pressed % banks[sel_bank_cur]
-        //                                     ->sample[sel_sample_cur]
-        //                                     .snd[sel_variation]
-        //                                     ->slice_num;
-        //   printf("[step_pressed] beat_current: %d\n", beat_current);
-        // }
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0) {
           do_update_phase_from_beat_current();
