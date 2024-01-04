@@ -75,7 +75,6 @@
 #endif
 #include "beatrepeat.h"
 #include "buttonmatrix3.h"
-#include "chain.h"
 #include "charlieplex.h"
 #include "clock_input.h"
 #include "delay.h"
