@@ -87,7 +87,6 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **D** + **B** load from save slot
 - [ ] **D** + **C** → save into save slot
 
-
 #### combo knobs
 
 - [ ] **X** → n/a
@@ -105,6 +104,7 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **D** + **X** → 
 - [ ] **D** + **Y** → 
 - [ ] **D** + **Z** → 
+- [ ] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
 
 #### effects 
 
