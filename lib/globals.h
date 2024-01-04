@@ -136,10 +136,6 @@ bool trigger_audio_mute = false;
 bool button_mute = false;
 bool trigger_button_mute = false;
 
-// fx toggles
-bool fx_active[16];
-bool fx_toggle[16];  // 16 possible
-
 // lfos
 int32_t lfo_pan_val = 0;
 // TODO: make the lfo pan step adjustable?

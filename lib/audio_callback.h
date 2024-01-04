@@ -91,17 +91,17 @@ void i2s_callback_func() {
     }
 
     // saturate before resampling?
-    if (fx_active[FX_SATURATE]) {
+    if (sf->fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, buffer->max_sample_count);
     }
 
     // fuzz
-    if (fx_active[FX_FUZZ]) {
+    if (sf->fx_active[FX_FUZZ]) {
       Fuzz_process(values, buffer->max_sample_count);
     }
 
     // bitcrush
-    if (fx_active[FX_BITCRUSH]) {
+    if (sf->fx_active[FX_BITCRUSH]) {
       Bitcrush_process(values, buffer->max_sample_count);
     }
 
@@ -457,23 +457,23 @@ void i2s_callback_func() {
     BeatRepeat_process(beatrepeat, values, values_len);
 
     // saturate before resampling?
-    if (fx_active[FX_SATURATE]) {
+    if (sf->fx_active[FX_SATURATE]) {
       Saturation_process(saturation, values, values_len);
     }
 
     // shaper
-    if (fx_active[FX_SHAPER]) {
+    if (sf->fx_active[FX_SHAPER]) {
       // Shaper_expandOver_compressUnder_process(values, values_len, 12000);
       Shaper_expandUnder_compressOver_process(values, values_len, 4000);
     }
 
-    if (fx_active[FX_FUZZ]) {
+    if (sf->fx_active[FX_FUZZ]) {
       MultipyAndClip_process(4, 32767, values, values_len);
       Fuzz_process(values, values_len);
     }
 
     // bitcrush
-    if (fx_active[FX_BITCRUSH]) {
+    if (sf->fx_active[FX_BITCRUSH]) {
       Bitcrush_process(values, values_len);
     }
 
@@ -600,24 +600,24 @@ void i2s_callback_func() {
 
   // apply other fx
   // TODO: fade in/out these fx using the crossfade?
-  if (fx_active[FX_TREMELO] || fx_active[FX_PAN]) {
+  if (sf->fx_active[FX_TREMELO] || sf->fx_active[FX_PAN]) {
     int32_t u;
     int32_t v;
     int32_t w;
-    if (fx_active[FX_TREMELO]) {
+    if (sf->fx_active[FX_TREMELO]) {
       u = q16_16_sin01(lfo_tremelo_val);
     }
-    if (fx_active[FX_PAN]) {
+    if (sf->fx_active[FX_PAN]) {
       v = q16_16_sin01(lfo_pan_val);
       w = Q16_16_1 - v;
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       for (uint8_t channel = 0; channel < 2; channel++) {
-        if (fx_active[FX_TREMELO]) {
+        if (sf->fx_active[FX_TREMELO]) {
           samples[i * 2 + channel] =
               q16_16_multiply(samples[i * 2 + channel], u);
         }
-        if (fx_active[FX_PAN]) {
+        if (sf->fx_active[FX_PAN]) {
           if (channel == 0) {
             samples[i * 2 + channel] =
                 q16_16_multiply(samples[i * 2 + channel], v);
