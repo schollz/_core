@@ -130,6 +130,10 @@ ResonantFilter *resFilter[2];
 Gate *audio_gate;
 Saturation *saturation;
 
+#define DEBOUNCE_UINT8_LED_BAR 0
+#define DEBOUNCE_UINT8_NUM 2
+DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
+
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
 bool trigger_audio_mute = false;

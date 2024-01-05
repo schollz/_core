@@ -603,27 +603,52 @@ void button_handler(ButtonMatrix *bm) {
     }
   }
 
+  // rendering!
+
   // leds
   LEDS_clear(leds);
-  if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
-    if (key_total_pressed > 0) {
-      LEDS_set(leds, sel_bank_next + 4, 2);
-      LEDS_set(leds, sel_sample_next + 4, 3);
-    } else {
-      key_b_sample_select = false;
+  // check debouncers
+  if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR])) {
+    // show an LED bar
+    const uint8_t led_bar_ordering[32] = {
+        17, 18, 17, 18, 16, 16, 19, 19, 13, 13, 14, 15, 15, 14, 12, 12,
+        9,  10, 10, 9,  8,  8,  11, 5,  5,  11, 6,  6,  7,  4,  4,  7};
+    const bool led_bar_brightness[32] = {
+        0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1,
+        0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1,
+    };
+    for (uint8_t i = 0;
+         i < linlin_uint8_t(
+                 DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR]), 10,
+                 240, 0, 32);
+         i++) {
+      if (led_bar_brightness[i]) {
+        LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+      } else {
+        LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
     }
-  } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
-    if (key_total_pressed == 1) {
-      // for (uint8_t i = 0; i < 16; i++) {
-      //   if (Chain_has_data(chain, i)) {
-      //     LEDS_set(leds, i + 4, 1);
-      //   }
-      // }
-      // LEDS_set(leds, Chain_get_current(chain) + 4, 3);
+  } else {
+    if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
+      if (key_total_pressed > 0) {
+        LEDS_set(leds, sel_bank_next + 4, 2);
+        LEDS_set(leds, sel_sample_next + 4, 3);
+      } else {
+        key_b_sample_select = false;
+      }
+    } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
+      if (key_total_pressed == 1) {
+        // for (uint8_t i = 0; i < 16; i++) {
+        //   if (Chain_has_data(chain, i)) {
+        //     LEDS_set(leds, i + 4, 1);
+        //   }
+        // }
+        // LEDS_set(leds, Chain_get_current(chain) + 4, 3);
+      }
     }
-  }
 
-  LEDS_set(leds, beat_current % 16 + 4, 1);
+    LEDS_set(leds, beat_current % 16 + 4, 1);
+  }
 
   for (uint8_t i = 0; i < bm->on_num; i++) {
     LEDS_set(leds, bm->on[i], 2);
