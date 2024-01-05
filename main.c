@@ -516,7 +516,7 @@ int main() {
   sel_variation = 0;
   fil_current_change = true;
 
-  mode_buttons16 = MODE_MASH;
+  // mode_buttons16 = MODE_MASH;
 
 // blocking
 #ifdef INCLUDE_INPUTHANDLING
