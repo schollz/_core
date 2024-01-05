@@ -248,6 +248,8 @@ void input_handling() {
       adc_debounce[0]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][0] = adc * 255 / 4096;
+        DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+                          sf->fx_param[single_key - 4][0], 100);
         printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
@@ -424,11 +426,18 @@ int main() {
   // intialize beat repeater
   beatrepeat = BeatRepeat_malloc();
 
+  // initialize delay
   delay = Delay_malloc();
   Delay_setActive(delay, false);
   Delay_setDuration(delay, 8018);
 
+  // initialize saturation
   saturation = Saturation_malloc();
+
+  // initialize debouncers
+  for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
+    debouncer_uint8[i] = DebounceUint8_malloc();
+  }
 
 #ifdef INCLUDE_ZEPTOCORE
   leds = LEDS_create();

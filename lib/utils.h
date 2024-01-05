@@ -34,6 +34,8 @@ typedef void (*callback_uint8)(uint8_t);
 typedef void (*callback_uint16)(uint16_t);
 typedef void (*callback_void)();
 
+#define util_clamp(x, a, b) (x > b ? b : (x < a ? a : x))
+
 // multiplies and clips the output
 void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,
                             uint16_t num_values) {
@@ -50,21 +52,25 @@ void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,
 
 static inline uint8_t linlin_uint8_t(uint8_t in, uint8_t in_min, uint8_t in_max,
                                      uint8_t out_min, uint8_t out_max) {
-  return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  return util_clamp(
+      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+      out_min, out_max);
 }
 
 static inline uint16_t linlin_uint16_t(uint8_t in, uint8_t in_min,
                                        uint8_t in_max, uint16_t out_min,
                                        uint16_t out_max) {
-  return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  return util_clamp(
+      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+      out_min, out_max);
 }
 
 static inline uint32_t linlin_uint32_t(uint8_t in, uint8_t in_min,
                                        uint8_t in_max, uint32_t out_min,
                                        uint32_t out_max) {
-  return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  return util_clamp(
+      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+      out_min, out_max);
 }
-
-#define util_clamp(x, a, b) (x > b ? b : (x < a ? a : x))
 
 #endif
