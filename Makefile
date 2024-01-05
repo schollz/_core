@@ -95,7 +95,7 @@ debug:
 	sudo minicom -b 115200 -o -D /dev/ttyACM
 
 cloc:
-	cloc --exclude-list-file=dev/.clocignore *
+	cloc --exclude-list-file=dev/.clocignore --exclude-lang="make,CMake,D,Markdown,JSON,INI,Bourne Shell,TOML,TypeScript,YAML,Assembly" *
 
 ignore:
 	git status --porcelain | grep '^??' | cut -c4- >> .gitignore
