@@ -57,6 +57,8 @@
 #include "memusage.h"
 //
 #include "fixedpoint.h"
+#include "utils.h"
+#include "volume.h"
 //
 #include "crossfade3.h"
 //
