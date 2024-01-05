@@ -19,7 +19,13 @@ samples = fuzz(math.pow(2, 15), (math.pow(2, 16) - 1) * dbamp(-6))
 # plot samples
 from matplotlib import pyplot as plt
 
-plt.plot(samples)
+samples_plot = []
+for i in range(len(samples) - 1, 0, -1):
+    samples_plot.append(-1 * samples[i])
+samples_plot += samples
+plt.plot(range(-32768, 32767), samples_plot)
+plt.xlabel("in (int16_t)")
+plt.ylabel("out (int16_t)")
 plt.show()
 
 print("#ifndef LIB_FUZZ")
