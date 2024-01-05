@@ -64,4 +64,7 @@ static inline uint32_t linlin_uint32_t(uint8_t in, uint8_t in_min,
                                        uint32_t out_max) {
   return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+#define util_clamp(x, a, b) (x > b ? b : (x < a ? a : x))
+
 #endif

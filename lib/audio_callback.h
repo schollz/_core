@@ -95,10 +95,10 @@ void i2s_callback_func() {
       Saturation_process(saturation, values, buffer->max_sample_count);
     }
 
-    // fuzz
-    if (sf->fx_active[FX_FUZZ]) {
-      Fuzz_process(values, buffer->max_sample_count);
-    }
+    // // fuzz
+    // if (sf->fx_active[FX_FUZZ]) {
+    //   Fuzz_process(values, buffer->max_sample_count);
+    // }
 
     // bitcrush
     if (sf->fx_active[FX_BITCRUSH]) {
@@ -106,7 +106,7 @@ void i2s_callback_func() {
     }
 
     uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
-                                envelope_volume_val / VOLUME_DIVISOR);
+                                envelope_volume_val / VOLUME_DIVISOR_0_200);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       samples[i * 2 + 0] = values[i];
       samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
@@ -235,7 +235,7 @@ void i2s_callback_func() {
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
   uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
-                              envelope_volume_val / VOLUME_DIVISOR);
+                              envelope_volume_val / VOLUME_DIVISOR_0_200);
 
   if (!phase_change) {
     const int32_t next_phase =
@@ -468,8 +468,8 @@ void i2s_callback_func() {
     }
 
     if (sf->fx_active[FX_FUZZ]) {
-      MultipyAndClip_process(4, 32767, values, values_len);
-      Fuzz_process(values, values_len);
+      Fuzz_process(values, values_len, sf->fx_param[FX_FUZZ][0],
+                   sf->fx_param[FX_FUZZ][1]);
     }
 
     // bitcrush

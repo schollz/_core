@@ -247,7 +247,8 @@ void input_handling() {
       adc_last[0] = adc;
       adc_debounce[0]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][0] = adc * 128 / 4096;
+        sf->fx_param[single_key - 4][0] = adc * 255 / 4096;
+        printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
           sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
@@ -283,7 +284,8 @@ void input_handling() {
       adc_last[1] = adc;
       adc_debounce[1]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][1] = adc * 128 / 4096;
+        sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
+        printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
         } else if (button_is_pressed(KEY_A)) {
@@ -322,7 +324,8 @@ void input_handling() {
       adc_last[2] = adc;
       adc_debounce[2]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][2] = adc * 128 / 4096;
+        sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
+        printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
           new_vol = adc * VOLUME_STEPS / 4096;
