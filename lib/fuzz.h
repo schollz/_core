@@ -2983,7 +2983,6 @@ const int16_t __in_flash() fuzz_samples[32768] = {
     27710, 27710, 27710, 27710, 27710, 27711, 27711, 27711, 27711, 27711, 27711,
     27711, 27712, 27712, 27712, 27712, 27712, 27712, 27712, 27712, 27713,
 };
-
 void Fuzz_process(int16_t *values, uint16_t num_values, uint8_t pre_amp,
                   uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
