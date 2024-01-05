@@ -29,13 +29,18 @@ print(f"const int16_t __in_flash() fuzz_samples[{len(samples)}] = {{")
 for sample in samples:
     print(f"\t{int(sample)},")
 print("};")
-print("void Fuzz_process(int16_t *values, uint16_t num_values) {")
-print("\tfor (uint16_t i = 0; i < num_values; i++) {")
-print("\t\tif (values[i] >= 0) {")
-print("\tvalues[i] = fuzz_samples[values[i]];")
-print("\t\t} else {")
-print("\t\tvalues[i] = -1*fuzz_samples[-values[i]];")
-print("\t}")
-print("}")
-print("}")
+print(
+    """void Fuzz_process(int16_t *values, uint16_t num_values, uint8_t pre_amp,
+                  uint8_t post_amp) {
+  for (uint16_t i = 0; i < num_values; i++) {
+    values[i] = util_clamp((values[i] * pre_amp) / 16, -32767, 32767);
+    if (values[i] >= 0) {
+      values[i] = fuzz_samples[values[i]];
+    } else {
+      values[i] = -1 * fuzz_samples[-values[i]];
+    }
+    values[i] = util_clamp((values[i] * post_amp) / 256, -32767, 32767);
+  }
+}"""
+)
 print("#endif")
