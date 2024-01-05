@@ -650,8 +650,10 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_set(leds, beat_current % 16 + 4, 1);
   }
 
-  for (uint8_t i = 0; i < bm->on_num; i++) {
-    LEDS_set(leds, bm->on[i], 2);
+  for (uint8_t i = 0; i < 20; i++) {
+    if (key_on_buttons[i] > 0) {
+      LEDS_set(leds, i, LED_BRIGHT);
+    }
   }
   LEDS_render(leds);
 }
