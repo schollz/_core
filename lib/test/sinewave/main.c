@@ -31,20 +31,19 @@
 #include "../../sinewave.h"
 
 int main() {
-  init_sinewaves();
   SinOsc *osc1 = SinOsc_malloc();
   SinOsc *osc2 = SinOsc_malloc();
   SinOsc_wave(osc1, 24);
   SinOsc_quiet(osc1, 0);
-  for (int i = 0; i < 600; i++) {
+  for (int i = 0; i < 4000; i++) {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_quiet(osc1, 3);
-  for (int i = 0; i < 600; i++) {
+  for (int i = 0; i < 4000; i++) {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_wave(osc1, 0);
-  for (int i = 0; i < 600; i++) {
+  for (int i = 0; i < 8000; i++) {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_free(osc1);
