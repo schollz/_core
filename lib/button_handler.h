@@ -647,7 +647,24 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
 
-    LEDS_set(leds, beat_current % 16 + 4, 1);
+    if (sel_variation == 0) {
+      LEDS_set(leds, beat_current % 16 + 4, LED_DIM);
+    } else {
+      LEDS_set(leds,
+               linlin(phases[0], 0,
+                      banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->size,
+                      0,
+                      banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_num) %
+                       16 +
+                   4,
+               LED_DIM);
+    }
   }
 
   for (uint8_t i = 0; i < 20; i++) {
