@@ -5,7 +5,7 @@ do
 if mount | grep RPI-RP2 > /dev/null; then
 	sleep 0.5
 	echo "uploading!"
-	time pv -batep build/zeptocore.uf2 > /media/zns/RPI-RP2/picocore.uf2
+	time pv -batep build/zeptocore.uf2 > /media/zns/RPI-RP2/zeptocore.uf2
 	exit
 fi
 sleep 0.1

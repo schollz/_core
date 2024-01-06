@@ -22,6 +22,20 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+/* spec
+Amen is for slice based effects (how many slices and how often it jumps)
+Break would be the wacky effects (filtering, reversing, etc.)
+Sample selects currently playing sample from the current bank
+*/
+
+#include "mcp3208.h"
+
+#define KNOB_BREAK 3
+#define KNOB_AMEN 0
+#define KNOB_SAMPLE 6
+#define ATTEN_BREAK 4
+#define ATTEN_AMEN 2
+
 void input_handling() {
   // flash bad signs
   while (!fil_is_open) {
@@ -29,7 +43,18 @@ void input_handling() {
     sleep_ms(10);
   }
 
+  MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
+
   while (1) {
-    sleep_ms(1);
+    uint16_t val;
+
+    val = MCP3208_read(mcp3208, KNOB_SAMPLE, false);
+    val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
+    if (val != sel_sample_cur) {
+      sel_sample_next = val;
+      fil_current_change = true;
+      printf("[ectocore] switch sample %d\n", val);
+    }
+    sleep_ms(10);
   }
 }
