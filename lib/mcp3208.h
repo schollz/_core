@@ -33,8 +33,9 @@ typedef struct MCP3208 {
   uint8_t mosi_pin;
   uint8_t miso_pin;
   spi_inst_t *spi;
+  uint8_t *buffer;
+  uint8_t *data;
 } MCP3208;
-#endif
 
 void MCP3208_free(MCP3208 *self) { free(self); }
 
@@ -46,6 +47,11 @@ MCP3208 *MCP3208_malloc(spi_inst_t *spi, uint8_t cs_pin, uint8_t sck_pin,
   self->mosi_pin = mosi_pin;
   self->miso_pin = miso_pin;
   self->spi = spi;
+  self->buffer = (uint8_t *)malloc(3 * sizeof(uint8_t));
+  self->data = (uint8_t *)malloc(3 * sizeof(uint8_t));
+
+  self->buffer[0] = 0x01;
+  self->buffer[2] = 0x00;
 
   // Initialize CS pin high
   gpio_init(self->cs_pin);
@@ -64,15 +70,17 @@ MCP3208 *MCP3208_malloc(spi_inst_t *spi, uint8_t cs_pin, uint8_t sck_pin,
 }
 
 uint16_t MCP3208_read(MCP3208 *self, uint8_t channel, bool differential) {
-  uint8_t buffer[3] = {0x01, ((differential ? 0 : 1) << 7) | (channel << 4),
-                       0x00};
-  uint8_t data[3] = {0x00, 0x00, 0x00};
-
+  uint16_t val = 0;
+  self->buffer[1] = ((differential ? 0 : 1) << 7) | (channel << 4);
   gpio_put(self->cs_pin, 0);
-  int num_bytes_wrote = spi_write_read_blocking(self->spi, &buffer, &data, 3);
+  int num_bytes_wrote =
+      spi_write_read_blocking(self->spi, self->buffer, self->data, 3);
   gpio_put(self->cs_pin, 1);
-  if (num_bytes_wrote != 3) {
-    return 0;
+
+  if (num_bytes_wrote == 3) {
+    val = 1023 - (self->data[2] + (self->data[1] << 8));
   }
-  return 1023 - (data[2] + (data[1] << 8));
+  return val;
 }
+
+#endif
