@@ -106,3 +106,9 @@ release:
 
 server:
 	cd core && air
+
+resetpico: 
+	python3 dev/reset_pico.py 
+
+ectocore: dobuild resetpico
+	./dev/upload.sh

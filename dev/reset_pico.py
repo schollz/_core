@@ -1,5 +1,7 @@
 # arduino code:
 """
+// incoming serial byte
+
 void setup() {
   Serial.begin(9600);
   pinMode(4, OUTPUT);
@@ -17,17 +19,16 @@ void activateRelay() {
 }
 
 void loop() {
+  delay(1);
   if (Serial.available() > 0) {
-    int incomingData = Serial.read();  // can be -1 if read error
-    switch (incomingData) {
-      case '1':
-        activateRelay();
-        break;
-      default:
-        break;
+    int v = Serial.read();  // can be -1 if read error
+    if (v != 10) {
+      Serial.println(v);
+      activateRelay();
     }
   }
 }
+
 """
 
 import time
@@ -48,12 +49,19 @@ if port_name == "":
     raise ("could not find Arduino")
 
 print(f"pinging {port_name}")
-ser = serial.Serial(port_name, 9600)
-ser.write(b"1")
+wait = 2
+while True:
+    ser = serial.Serial(port_name, 9600, write_timeout=0.5, timeout=0.5)
+    print(wait)
+    time.sleep(wait)
+    ser.write(b"1")
+    if ser.readline() != b"":
+        ser.close()
+        break
+    ser.close()
+    wait += 0.5
 while True:
     time.sleep(0.1)
     # check if drive is available called RPI-RP2
     if "RPI-RP2" in subprocess.check_output("df -H", shell=True).decode():
         break
-
-ser.close()
