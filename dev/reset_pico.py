@@ -52,7 +52,6 @@ print(f"pinging {port_name}")
 wait = 2
 while True:
     ser = serial.Serial(port_name, 9600, write_timeout=0.5, timeout=0.5)
-    print(wait)
     time.sleep(wait)
     ser.write(b"1")
     if ser.readline() != b"":

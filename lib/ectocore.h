@@ -29,12 +29,7 @@ Sample selects currently playing sample from the current bank
 */
 
 #include "mcp3208.h"
-
-#define KNOB_BREAK 3
-#define KNOB_AMEN 0
-#define KNOB_SAMPLE 6
-#define ATTEN_BREAK 4
-#define ATTEN_AMEN 2
+#include "taptempo.h"
 
 void input_handling() {
   // flash bad signs
@@ -43,10 +38,31 @@ void input_handling() {
     sleep_ms(10);
   }
 
+  gpio_init(GPIO_TAPTEMPO);
+  gpio_set_dir(GPIO_TAPTEMPO, GPIO_IN);
+  gpio_pull_up(GPIO_TAPTEMPO);
+  gpio_init(GPIO_TAPTEMPO_LED);
+  gpio_set_dir(GPIO_TAPTEMPO_LED, GPIO_OUT);
+  gpio_put(GPIO_TAPTEMPO_LED, 1);
+
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
+  TapTempo *taptempo = TapTempo_malloc();
+  bool btn_taptempo_on = false;
 
   while (1) {
     uint16_t val;
+    if (gpio_get(GPIO_TAPTEMPO) == 0 && !btn_taptempo_on) {
+      btn_taptempo_on = true;
+      gpio_put(GPIO_TAPTEMPO_LED, 0);
+      val = TapTempo_tap(taptempo);
+      if (val > 0) {
+        printf("[ectocore] tap bpm -> %d\n", val);
+        sf->bpm_tempo = val;
+      }
+    } else if (gpio_get(GPIO_TAPTEMPO) == 1 && btn_taptempo_on) {
+      btn_taptempo_on = false;
+      gpio_put(GPIO_TAPTEMPO_LED, 1);
+    }
 
     val = MCP3208_read(mcp3208, KNOB_SAMPLE, false);
     val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
@@ -55,6 +71,6 @@ void input_handling() {
       fil_current_change = true;
       printf("[ectocore] switch sample %d\n", val);
     }
-    sleep_ms(10);
+    sleep_ms(1);
   }
 }
