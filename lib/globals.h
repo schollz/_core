@@ -227,6 +227,7 @@ float pitch_vals[PITCH_VAL_MAX] = {
 WS2812 *ws2812;
 #endif
 
+bool repeating_timer_callback_taptempo = false;
 uint8_t key_jump_debounce = 0;
 inline void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
@@ -253,6 +254,11 @@ inline void do_update_phase_from_beat_current() {
   phase_change = true;
   audio_mute = false;
   Gate_reset(audio_gate);
+#ifdef INCLUDE_ECTOCORE
+  gpio_put(GPIO_TAPTEMPO_LED, repeating_timer_callback_taptempo);
+  repeating_timer_callback_taptempo = !repeating_timer_callback_taptempo;
+#endif
+
   // printf("do_update_phase_from_beat_current: %d\n", phase_new);
 }
 #endif

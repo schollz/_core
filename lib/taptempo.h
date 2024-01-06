@@ -73,6 +73,7 @@ uint16_t TapTempo_tap(TapTempo *self) {
   uint32_t current_time = time_us_32();
   milliseconds = (current_time - self->last) / 1000;
   self->last = current_time;
+//   printf("[taptempo] milliseconds %d\n", milliseconds);
 #endif
   if (milliseconds > TAPTEMPO_MS_LIMIT) {
     for (int i = 0; i < TAPTEMPO_SIZE; i++) {
@@ -93,8 +94,8 @@ uint16_t TapTempo_tap(TapTempo *self) {
   milliseconds = round(30000.0 / ((float)sum / count));
   if (milliseconds > 300) {
     milliseconds = 300;
-  } else if (milliseconds < 60) {
-    milliseconds = 60;
+  } else if (milliseconds < 30) {
+    milliseconds = 30;
   }
   return milliseconds;
 }
