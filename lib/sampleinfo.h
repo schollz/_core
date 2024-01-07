@@ -134,8 +134,11 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
     return -1;
   }
 
-  // Write the struct (excluding the array)
-  if (fwrite(si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)), 1, file) != 1) {
+  // Write the struct (excluding the arrays)
+  if (fwrite(
+          si,
+          sizeof(SampleInfo) - (2 * sizeof(int32_t *)) - (1 * sizeof(uint8_t)),
+          1, file) != 1) {
     perror("Error writing struct to file");
     fclose(file);
     SampleInfo_free(si);
@@ -160,6 +163,7 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
     return -1;
   }
 
+  // Write the array content of the slice_type
   if (fwrite(si->slice_type, sizeof(uint8_t), si->slice_num, file) !=
       si->slice_num) {
     perror("Error writing array to file");
@@ -187,8 +191,8 @@ SampleInfo *SampleInfo_readFromDisk() {
   }
 
   if (fread(si,
-            sizeof(SampleInfo) -
-                (2 * sizeof(int32_t *) - (1 * sizeof(uint8_t *))),
+            sizeof(SampleInfo) - (2 * sizeof(int32_t *)) -
+                (1 * sizeof(uint8_t *)),
             1, file) != 1) {
     perror("Error reading struct from file");
     fclose(file);
@@ -204,7 +208,6 @@ SampleInfo *SampleInfo_readFromDisk() {
     SampleInfo_free(si);
     return NULL;
   }
-
   // Read the array content
   if (fread(si->slice_start, sizeof(int32_t), si->slice_num, file) !=
       si->slice_num) {
@@ -223,7 +226,6 @@ SampleInfo *SampleInfo_readFromDisk() {
     SampleInfo_free(si);
     return NULL;
   }
-
   // Read the slice_stop array content
   if (fread(si->slice_stop, sizeof(int32_t), si->slice_num, file) !=
       si->slice_num) {
