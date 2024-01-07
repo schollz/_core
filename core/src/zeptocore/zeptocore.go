@@ -479,6 +479,9 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
 	// }
 	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
+	}
+	for i := range slicesStart {
 		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
 	}
 

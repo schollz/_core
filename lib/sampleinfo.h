@@ -104,7 +104,7 @@ SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
     return NULL;
   }
   for (int i = 0; i < si->slice_num; i++) {
-    si->slice_type[i] = 0;
+    si->slice_type[i] = 3;
   }
 
   return si;
@@ -135,10 +135,10 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
   }
 
   // Write the struct (excluding the arrays)
-  if (fwrite(
-          si,
-          sizeof(SampleInfo) - (2 * sizeof(int32_t *)) - (1 * sizeof(uint8_t)),
-          1, file) != 1) {
+  if (fwrite(si,
+             sizeof(SampleInfo) - sizeof(int32_t *) - sizeof(int32_t *) -
+                 sizeof(uint8_t *),
+             1, file) != 1) {
     perror("Error writing struct to file");
     fclose(file);
     SampleInfo_free(si);
@@ -191,8 +191,8 @@ SampleInfo *SampleInfo_readFromDisk() {
   }
 
   if (fread(si,
-            sizeof(SampleInfo) - (2 * sizeof(int32_t *)) -
-                (1 * sizeof(uint8_t *)),
+            sizeof(SampleInfo) - sizeof(int32_t *) - sizeof(int32_t *) -
+                sizeof(uint8_t *),
             1, file) != 1) {
     perror("Error reading struct from file");
     fclose(file);
