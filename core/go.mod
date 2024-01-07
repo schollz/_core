@@ -10,6 +10,8 @@ replace github.com/schollz/_core/core/src/sox => ./src/sox
 
 replace github.com/schollz/_core/core/src/utils => ./src/utils
 
+replace github.com/schollz/_core/core/src/kickextract => ./src/kickextract
+
 require (
 	github.com/bep/debounce v1.2.1
 	github.com/gorilla/websocket v1.5.1

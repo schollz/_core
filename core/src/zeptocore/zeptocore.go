@@ -17,6 +17,7 @@ import (
 	"unsafe"
 
 	"github.com/bep/debounce"
+	"github.com/schollz/_core/core/src/kickextract"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/op1"
 	"github.com/schollz/_core/core/src/renoise"
@@ -33,6 +34,7 @@ type File struct {
 	BPM           int
 	SliceStart    []float64 // fractional (0-1)
 	SliceStop     []float64 // fractional (0-1)
+	SliceType     []int     // 0 = normal, 1 = kick
 	TempoMatch    bool
 	OneShot       bool
 	Channels      int // 1 if mono, 2 if stereo
@@ -143,6 +145,8 @@ func Get(pathToOriginal string) (f File, err error) {
 		}
 	}
 
+	f.SliceType = make([]int, len(f.SliceStart))
+
 	// get the folder of the original flie
 	folder, filename := filepath.Split(f.PathToFile)
 	// remove extension from file name
@@ -217,6 +221,18 @@ func (f File) Regenerate() {
 			log.Errorf("could not process sound: %s %s", f.PathToAudio, err.Error())
 			return
 		}
+		// calculate the splice type
+		kicks, err := kickextract.KickExtract(f.PathToFile, f.SliceStart, f.SliceStop)
+		if err != nil {
+			log.Error(err)
+		}
+		for i := range kicks {
+			if kicks[i] {
+				f.SliceType[i] = 1
+			}
+		}
+		log.Tracef("slice types: %+v", f.SliceType)
+
 		err = f.updateInfo(fname0)
 		if err != nil {
 			log.Error(err)
@@ -410,9 +426,11 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	}
 	slicesStart := []int32{}
 	slicesEnd := []int32{}
+	slicesType := []uint8{}
 	for i, _ := range f.SliceStart {
 		slicesStart = append(slicesStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
 		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
+		slicesType = append(slicesType, uint8(3))
 	}
 
 	BPMTempoMatch := uint8(0)
@@ -427,6 +445,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
 	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
+	sliceTypePtr := (*C.uchar)(unsafe.Pointer(&slicesType[0]))
 	cStruct := C.SampleInfo_malloc(
 		C.uint(fsize),
 		C.uint(f.BPM),
@@ -438,6 +457,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		C.uint(sliceNum),
 		sliceStartPtr,
 		sliceStopPtr,
+		sliceTypePtr,
 	)
 	defer C.SampleInfo_free(cStruct)
 
@@ -458,9 +478,9 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// for i := range slicesStart {
 	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
 	// }
-	// for i := range slicesStart {
-	// 	fmt.Println("SampleInfo_getSliceStop", i, C.SampleInfo_getSliceStop(cStruct2, C.ushort(i)))
-	// }
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
+	}
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
