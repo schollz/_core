@@ -10,6 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestOne(t *testing.T) {
+	log.SetLevel("trace")
+	os.Remove("lofi.aif.json")
+	os.Remove("lofi.0.wav.info")
+	os.Remove("lofi.0.wav")
+	f, err := Get("lofi.aif")
+	assert.Nil(t, err)
+	fmt.Println(f)
+	time.Sleep(2 * time.Second)
+}
+
 func TestOp1(t *testing.T) {
 	log.SetLevel("trace")
 	os.Remove("lofi.aif.json")
