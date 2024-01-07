@@ -8,6 +8,7 @@ var socket;
 var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 const ccolor = '#dcd6f799';
+const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
 
 
@@ -78,6 +79,7 @@ function generateRandomWord() {
 
 const socketMessageListener = (e) => {
     data = JSON.parse(e.data);
+    console.log("socketMessageListener", data.action)
     if (data.action == "processed") {
         console.log("processed");
         for (var i = 0; i < data.file.SliceStart.length; i++) {
@@ -114,7 +116,6 @@ const socketMessageListener = (e) => {
         if (savedState.banks) {
             app.banks = savedState.banks;
         }
-        console.log(app.banks[0].files[0].SliceStart);
         if (savedState.oversampling) {
             app.oversampling = savedState.oversampling;
         }
@@ -132,7 +133,9 @@ const socketMessageListener = (e) => {
                 showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
                     app.banks[app.selectedBank].files[app.selectedFile].Duration,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop);
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                );
             }, 100);
         }
     } else if (data.action == "connected") {
@@ -381,7 +384,9 @@ app = new Vue({
                     showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
                         this.banks[this.selectedBank].files[this.selectedFile].Duration,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
-                        this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
+                        this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
+                        this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                    );
                 }, 100);
             }
         },
@@ -472,7 +477,9 @@ app = new Vue({
                     showWaveform(this.banks[this.selectedBank].files[this.selectedFile].PathToFile,
                         this.banks[this.selectedBank].files[this.selectedFile].Duration,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
-                        this.banks[this.selectedBank].files[this.selectedFile].SliceStop);
+                        this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
+                        this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                    );
                 }, 100);
             }
         },
@@ -588,11 +595,12 @@ app = new Vue({
 
 const showWaveform = debounce(showWaveform_, 100);
 
-function showWaveform_(filename, duration, sliceStart, sliceEnd) {
+function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
     if (wsf != null) {
         wsf.destroy();
     }
     console.log('showWaveform', filename);
+    console.log('sliceType', sliceType);
     var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
     var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
     document.getElementById('waveform-parent').style = newWidth;
@@ -622,7 +630,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd) {
             wsRegions.addRegion({
                 start: sliceStart[i] * wsf.getDuration(),
                 end: sliceEnd[i] * wsf.getDuration(),
-                color: ccolor,
+                color: (sliceType[i] == 1 ? ccolor2 : ccolor),
                 drag: true,
                 resize: true,
                 loop: false,

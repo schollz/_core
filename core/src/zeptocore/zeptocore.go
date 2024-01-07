@@ -146,6 +146,7 @@ func Get(pathToOriginal string) (f File, err error) {
 	}
 
 	f.SliceType = make([]int, len(f.SliceStart))
+	f.UpdateSliceTypes()
 
 	// get the folder of the original flie
 	folder, filename := filepath.Split(f.PathToFile)
@@ -221,17 +222,6 @@ func (f File) Regenerate() {
 			log.Errorf("could not process sound: %s %s", f.PathToAudio, err.Error())
 			return
 		}
-		// calculate the splice type
-		kicks, err := kickextract.KickExtract(f.PathToFile, f.SliceStart, f.SliceStop)
-		if err != nil {
-			log.Error(err)
-		}
-		for i := range kicks {
-			if kicks[i] {
-				f.SliceType[i] = 1
-			}
-		}
-		log.Tracef("slice types: %+v", f.SliceType)
 
 		err = f.updateInfo(fname0)
 		if err != nil {
@@ -247,6 +237,7 @@ func (f File) Regenerate() {
 		}
 		log.Trace("-------------------------")
 		log.Tracef("slices: %+v", f.SliceStart)
+		log.Tracef("slice types: %+v", f.SliceType)
 		log.Trace("-------------------------")
 		err = f.updateInfo(fname1)
 		if err != nil {
@@ -300,9 +291,26 @@ func (f *File) SetSplicePlayback(playback int) {
 	}()
 }
 
+func (f *File) UpdateSliceTypes() {
+	// calculate the splice type
+	fmt.Println("FINDING KICKS!!!")
+	kicks, err := kickextract.KickExtract(f.PathToFile, f.SliceStart, f.SliceStop)
+	if err != nil {
+		log.Error(err)
+	}
+	f.SliceType = make([]int, len(kicks))
+	for i := range kicks {
+		if kicks[i] {
+			f.SliceType[i] = 1
+		}
+	}
+	log.Tracef("slice types: %+v", f.SliceType)
+}
+
 func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
 	f.SliceStart = sliceStart
 	f.SliceStop = sliceEnd
+	f.UpdateSliceTypes()
 	go func() {
 		f.Save()
 		f.Regenerate()
@@ -478,12 +486,12 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// for i := range slicesStart {
 	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
 	// }
-	for i := range slicesStart {
-		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
-	}
-	for i := range slicesStart {
-		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
-	}
+	// for i := range slicesStart {
+	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
+	// }
+	// for i := range slicesStart {
+	// 	fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
+	// }
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
