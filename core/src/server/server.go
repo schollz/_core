@@ -473,7 +473,6 @@ func processFile(id string, uploadedFile string, localFile string) {
 		mutex.Unlock()
 		return
 	}
-
 	mutex.Lock()
 	if _, ok := connections[id]; ok {
 		connections[id].WriteJSON(Message{
