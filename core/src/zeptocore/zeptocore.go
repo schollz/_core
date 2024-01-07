@@ -426,11 +426,11 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	}
 	slicesStart := []int32{}
 	slicesEnd := []int32{}
-	slicesType := []uint8{}
+	slicesType := []byte{}
 	for i, _ := range f.SliceStart {
 		slicesStart = append(slicesStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
 		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
-		slicesType = append(slicesType, uint8(3))
+		slicesType = append(slicesType, byte(f.SliceType[i]))
 	}
 
 	BPMTempoMatch := uint8(0)
@@ -445,7 +445,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
 	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
-	sliceTypePtr := (*C.uchar)(unsafe.Pointer(&slicesType[0]))
+	sliceTypePtr := (*C.schar)(unsafe.Pointer(&slicesType[0]))
 	cStruct := C.SampleInfo_malloc(
 		C.uint(fsize),
 		C.uint(f.BPM),
@@ -481,9 +481,9 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	for i := range slicesStart {
 		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
 	}
-	// for i := range slicesStart {
-	// 	fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
-	// }
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
+	}
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
