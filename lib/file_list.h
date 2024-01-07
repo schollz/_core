@@ -46,8 +46,10 @@ SampleInfo *SampleInfo_load(const char *fname) {
   si = (SampleInfo *)malloc(sizeof(SampleInfo));
 
   // Size
-  fr = f_read(&fil, si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)),
-              &bytes_read);
+  fr = f_read(
+      &fil, si,
+      sizeof(SampleInfo) - (2 * sizeof(int32_t *) - (1 * sizeof(uint8_t *))),
+      &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }
@@ -73,6 +75,20 @@ SampleInfo *SampleInfo_load(const char *fname) {
     return NULL;
   }
   fr = f_read(&fil, si->slice_stop, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
+
+  // Slice type
+  si->slice_type = malloc(sizeof(uint8_t) * si->slice_num);
+  if (si->slice_type == NULL) {
+    perror("Error allocating memory for array");
+    free(si->slice_start);
+    free(si->slice_stop);
+    return NULL;
+  }
+  fr = f_read(&fil, si->slice_type, sizeof(uint8_t) * si->slice_num,
               &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
