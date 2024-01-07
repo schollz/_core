@@ -19,6 +19,7 @@ func TestKickExtract(t *testing.T) {
 	}
 	for i := 0; i < 16; i++ {
 		fmt.Printf("kick %d: %t\n", i, kicks[i])
+		break
 	}
 
 }
