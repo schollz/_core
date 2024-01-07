@@ -95,17 +95,17 @@ SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
     si->slice_stop[i] = slice_stop[i];
   }
 
-  si->slice_type = malloc(sizeof(uint8_t) * si->slice_num);
-  if (si->slice_type == NULL) {
-    perror("Error allocating memory for array");
-    free(si->slice_start);
-    free(si->slice_stop);
-    free(si);
-    return NULL;
-  }
-  for (int i = 0; i < si->slice_num; i++) {
-    si->slice_type[i] = 3;
-  }
+  // si->slice_type = malloc(sizeof(uint8_t) * si->slice_num);
+  // if (si->slice_type == NULL) {
+  //   perror("Error allocating memory for array");
+  //   free(si->slice_start);
+  //   free(si->slice_stop);
+  //   free(si);
+  //   return NULL;
+  // }
+  // for (int i = 0; i < si->slice_num; i++) {
+  //   si->slice_type[i] = 3;
+  // }
 
   return si;
 }
@@ -135,10 +135,8 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
   }
 
   // Write the struct (excluding the arrays)
-  if (fwrite(si,
-             sizeof(SampleInfo) - sizeof(int32_t *) - sizeof(int32_t *) -
-                 sizeof(uint8_t *),
-             1, file) != 1) {
+  if (fwrite(si, sizeof(SampleInfo) - sizeof(int32_t *) - sizeof(int32_t *), 1,
+             file) != 1) {
     perror("Error writing struct to file");
     fclose(file);
     SampleInfo_free(si);
@@ -163,14 +161,14 @@ int SampleInfo_writeToDisk(SampleInfo *si) {
     return -1;
   }
 
-  // Write the array content of the slice_type
-  if (fwrite(si->slice_type, sizeof(uint8_t), si->slice_num, file) !=
-      si->slice_num) {
-    perror("Error writing array to file");
-    fclose(file);
-    SampleInfo_free(si);
-    return -1;
-  }
+  // // Write the array content of the slice_type
+  // if (fwrite(si->slice_type, sizeof(uint8_t), si->slice_num, file) !=
+  //     si->slice_num) {
+  //   perror("Error writing array to file");
+  //   fclose(file);
+  //   SampleInfo_free(si);
+  //   return -1;
+  // }
 
   fclose(file);
   return 0;
@@ -237,27 +235,27 @@ SampleInfo *SampleInfo_readFromDisk() {
     return NULL;
   }
 
-  // Allocate memory for the slice_type array
-  si->slice_type = (uint8_t *)malloc(sizeof(uint8_t) * si->slice_num);
-  if (si->slice_type == NULL) {
-    perror("Error allocating memory for slice_type array");
-    fclose(file);
-    free(si->slice_start);
-    free(si->slice_stop);
-    SampleInfo_free(si);
-    return NULL;
-  }
-  // Read the slice_type array content
-  if (fread(si->slice_type, sizeof(uint8_t), si->slice_num, file) !=
-      si->slice_num) {
-    perror("Error reading slice_type array from file");
-    fclose(file);
-    free(si->slice_start);
-    free(si->slice_stop);
-    free(si->slice_type);
-    SampleInfo_free(si);
-    return NULL;
-  }
+  // // Allocate memory for the slice_type array
+  // si->slice_type = (uint8_t *)malloc(sizeof(uint8_t) * si->slice_num);
+  // if (si->slice_type == NULL) {
+  //   perror("Error allocating memory for slice_type array");
+  //   fclose(file);
+  //   free(si->slice_start);
+  //   free(si->slice_stop);
+  //   SampleInfo_free(si);
+  //   return NULL;
+  // }
+  // // Read the slice_type array content
+  // if (fread(si->slice_type, sizeof(uint8_t), si->slice_num, file) !=
+  //     si->slice_num) {
+  //   perror("Error reading slice_type array from file");
+  //   fclose(file);
+  //   free(si->slice_start);
+  //   free(si->slice_stop);
+  //   free(si->slice_type);
+  //   SampleInfo_free(si);
+  //   return NULL;
+  // }
 
   fclose(file);
   return si;
