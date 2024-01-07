@@ -1,7 +1,6 @@
 package kickextract
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -17,9 +16,11 @@ func TestKickExtract(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	correctKicks := []bool{true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false}
 	for i := 0; i < 16; i++ {
-		fmt.Printf("kick %d: %t\n", i, kicks[i])
-		break
+		if kicks[i] != correctKicks[i] {
+			t.Errorf("kick %d: %t != %t", i, kicks[i], correctKicks[i])
+		}
 	}
 
 }
