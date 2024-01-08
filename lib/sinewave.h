@@ -73,7 +73,7 @@ int32_t SinOsc_next(SinOsc *self) {
             self->quiet[1];
       if (self->crossfade_factor == 0) {
         self->crossfade++;
-        self->crossfade_factor = 100;
+        self->crossfade_factor = 2;
       } else {
         self->crossfade_factor--;
       }
