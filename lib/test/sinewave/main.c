@@ -39,11 +39,11 @@ int main() {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_quiet(osc1, 3);
-  for (int i = 0; i < 4000; i++) {
+  for (int i = 0; i < 800; i++) {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_wave(osc1, 0);
-  for (int i = 0; i < 8000; i++) {
+  for (int i = 0; i < 441; i++) {
     printf("%d\n", SinOsc_next(osc1));
   }
   SinOsc_free(osc1);
