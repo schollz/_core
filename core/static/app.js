@@ -382,6 +382,20 @@ app = new Vue({
             this.selectedFiles = [];
             this.selectedFile = null;
         },
+
+        removeSelectedFiles() {
+            // Remove selected files from the current bank
+            const updatedFiles = this.banks[this.selectedBank].files.filter((file, index) => !this.selectedFiles.includes(index));
+
+            // Update the files array in the current bank
+            this.$set(this.banks[this.selectedBank], 'files', updatedFiles);
+
+            // Clear the selected files array
+            this.selectedFiles = [];
+
+            // Deselect the currently selected file
+            this.selectedFile = null;
+        },
         selectBank(index) {
             // Save the currently selected file index in the current bank
             this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
@@ -494,19 +508,6 @@ app = new Vue({
                     );
                 }, 100);
             }
-        },
-        removeSelectedFiles() {
-            // Remove selected files from the current bank
-            const updatedFiles = this.banks[this.selectedBank].files.filter((file, index) => !this.selectedFiles.includes(index));
-
-            // Update the files array in the current bank
-            this.$set(this.banks[this.selectedBank], 'files', updatedFiles);
-
-            // Clear the selected files array
-            this.selectedFiles = [];
-
-            // Deselect the currently selected file
-            this.selectedFile = null;
         },
         removeSelectedFile() {
             if (this.selectedFile !== null) {
