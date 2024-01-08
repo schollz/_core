@@ -52,6 +52,8 @@ body {
     display: flex;
     flex-direction: column;
     /* min-height: 100vh; */
+    border-right: 5px solid var(--header-footer-background);
+    border-radius: 12px;
 }
 
 header,
@@ -62,6 +64,16 @@ footer {
     padding: 1rem;
     display: flex;
     align-items: center;
+}
+
+header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 5px;
+}
+
+footer {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 5px;
 }
 
 main {
