@@ -88,6 +88,18 @@ const socketMessageListener = (e) => {
         }
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
+    } else if (data.action == "slicetype") {
+        app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
+        if (app.selectedFile != null) {
+            setTimeout(() => {
+                showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
+                    app.banks[app.selectedBank].files[app.selectedFile].Duration,
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
+                    app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                );
+            }, 100);
+        }
     } else if (data.action == "onsetdetect") {
         if (wsf != null) {
             app.deleteAllRegions();
