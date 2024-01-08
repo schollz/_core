@@ -319,7 +319,8 @@ int main() {
   sel_variation = 0;
   fil_current_change = true;
 
-  // mode_buttons16 = MODE_MASH;
+  mode_buttons16 = MODE_BASS;
+  audio_mute = true;
 
   // blocking
   input_handling();

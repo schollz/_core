@@ -245,13 +245,26 @@ void button_key_off_any(uint8_t key) {
     if (key_total_pressed == 0) {
       dub_step_break = -1;
       //      key_do_jump(key - 4);
-      if (mode_buttons16 == MODE_BASS) {
 #ifdef INCLUDE_SINEBASS
+      if (mode_buttons16 == MODE_BASS) {
         // turn off sinosc
         sinebass_update_note = 0;
         sinebass_update_counter = 0;
-#endif
       }
+#endif
+    } else {
+#ifdef INCLUDE_SINEBASS
+      if (mode_buttons16 == MODE_BASS) {
+        // find which key is on
+        for (uint8_t i = 4; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+          if (key_on_buttons[i] > 0) {
+            sinebass_update_note = i - 4 + 1;
+            sinebass_update_counter = 0;
+            break;
+          }
+        }
+      }
+#endif
     }
   }
 }
