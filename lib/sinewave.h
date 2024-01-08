@@ -68,12 +68,12 @@ int32_t SinOsc_next(SinOsc *self) {
       self->phase[1] = 0;
     }
     if (self->wave[0] == 0) {
-      val = q16_16_multiply(crossfade3_line[self->crossfade],
+      val = q16_16_multiply(crossfade3_cos_out[self->crossfade],
                             sinewave_sample(self->wave[1], self->phase[1])) >>
             self->quiet[1];
       if (self->crossfade_factor == 0) {
         self->crossfade++;
-        self->crossfade_factor = 20;
+        self->crossfade_factor = 100;
       } else {
         self->crossfade_factor--;
       }
