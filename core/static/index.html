@@ -109,7 +109,7 @@
                         selected</button> -->
                     <button @click="removeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Remove
                         selected</button>
-                    <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Merge
+                    <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 1" style="margin-left: 0;">Merge
                         selected files</button>
                     <ul>
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"

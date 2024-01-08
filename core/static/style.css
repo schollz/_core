@@ -17,6 +17,7 @@ body {
     --header-footer-background: #bdafeb;
     --banks-background: #dcd6f7;
     --highlight-color: #c3b8e6;
+    --highlight-color-darker: #afa2db;
     --hover-color: #d2cde9;
     --other-color: #6d51c9;
 }
@@ -189,14 +190,14 @@ a:hover {
 }
 
 .file-list li.selected {
-    background-color: var(--header-footer-background);
+    background-color: var(--highlight-color-darker);
     /* Highlight color for selected file */
-    color: white;
+    color: #333;
 }
 
-.file-list li:hover {
+/* .file-list li:hover {
     background-color: var(--hover-color);
-}
+} */
 
 .progress-bar {
     height: 5px;
