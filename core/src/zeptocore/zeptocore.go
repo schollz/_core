@@ -307,7 +307,7 @@ func (f *File) UpdateSliceTypes() {
 	log.Tracef("slice types: %+v", f.SliceType)
 }
 
-func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
+func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) (sliceType []int) {
 	f.SliceStart = sliceStart
 	f.SliceStop = sliceEnd
 	f.UpdateSliceTypes()
@@ -315,6 +315,7 @@ func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) {
 		f.Save()
 		f.Regenerate()
 	}()
+	return f.SliceType
 }
 
 func (f *File) SetOversampling(oversampling int) {

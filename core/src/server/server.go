@@ -155,6 +155,7 @@ type Message struct {
 	File       zeptocore.File `json:"file"`
 	SliceStart []float64      `json:"sliceStart"`
 	SliceStop  []float64      `json:"sliceStop"`
+	SliceType  []int          `json:"sliceType"`
 	State      string         `json:"state"`
 	Place      string         `json:"place"`
 }
@@ -261,7 +262,9 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			if err != nil {
 				log.Error(err)
 			} else {
-				f.SetSlices(message.SliceStart, message.SliceStop)
+				message.SliceType = f.SetSlices(message.SliceStart, message.SliceStop)
+				message.Action = "slicetype"
+				c.WriteJSON(message)
 			}
 		} else if message.Action == "setspliceplayback" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
