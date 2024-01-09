@@ -24,7 +24,7 @@
 
 void clock_handling(int time_diff) {
   int new_bpm = 60000000 / (time_diff * 2);
-  printf("[main] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
+  printf("[zeptocore] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
 }
 
 void input_handling() {
