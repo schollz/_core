@@ -23,8 +23,10 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 void clock_handling(int time_diff) {
-  int new_bpm = 60000000 / (time_diff * 2);
-  printf("[zeptocore] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
+  sf->bpm_tempo = 60000000 / (time_diff * 2);
+  // printf("[zeptocore] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
+  clock_in_debounce = 2000;
+  clock_in_ready = true;
 }
 
 void input_handling() {
@@ -180,6 +182,9 @@ void input_handling() {
 #ifdef INCLUDE_CLOCKINPUT
     // clock input handler
     ClockInput_update(clockinput);
+    if (clock_in_debounce > 0) {
+      clock_in_debounce--;
+    }
 #endif
 
 #ifdef INCLUDE_KNOBS
