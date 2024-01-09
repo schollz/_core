@@ -644,6 +644,19 @@ void i2s_callback_func() {
   }
 #endif
 
+  if (clock_out_do) {
+    if (clock_out_ready) {
+      clock_out_ready = false;
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        samples[i * 2 + 1] = 2147483645;
+      }
+    } else {
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        samples[i * 2 + 1] = 0;
+      }
+    }
+  }
+
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);
