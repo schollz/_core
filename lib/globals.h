@@ -115,8 +115,10 @@ uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 
 bool quadratic_resampling = false;
-bool clock_out_do = true;
+bool clock_out_do = false;
 bool clock_out_ready = false;
+bool clock_in_ready = false;
+uint16_t clock_in_debounce = 0;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
@@ -231,7 +233,7 @@ WS2812 *ws2812;
 
 bool repeating_timer_callback_taptempo = false;
 uint8_t key_jump_debounce = 0;
-inline void do_update_phase_from_beat_current() {
+void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
   // beat_current);
   uint16_t slice =
