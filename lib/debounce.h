@@ -12,6 +12,8 @@ DebounceUint8 *DebounceUint8_malloc() {
     perror("Error allocating memory for struct");
     return NULL;
   }
+  self->duration = 0;
+  self->value = 0;
   return self;
 }
 
