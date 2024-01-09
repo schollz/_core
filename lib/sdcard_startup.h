@@ -55,6 +55,12 @@ void sdcard_startup() {
   // sleep_ms(2000);
 
   for (uint8_t bi = 0; bi < 16; bi++) {
+#ifdef INCLUDE_ZEPTOCORE
+    for (uint8_t i = 0; i < bi; i++) {
+      LEDS_set(leds, i, 2);
+    }
+    LEDS_render(leds);
+#endif
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname);

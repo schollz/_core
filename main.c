@@ -264,18 +264,6 @@ int main() {
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
 
-#ifdef INCLUDE_ZEPTOCORE
-  for (uint8_t i = 4; i < 20; i++) {
-    LEDS_set(leds, i, 2);
-    LEDS_render(leds);
-    sleep_ms(10);
-    LEDS_set(leds, i, 0);
-    LEDS_render(leds);
-    sleep_ms(10);
-  }
-#endif
-
-  sleep_ms(1000);
   // printf("startup!\n");
   sdcard_startup();
 
@@ -319,8 +307,8 @@ int main() {
   sel_variation = 0;
   fil_current_change = true;
 
-  mode_buttons16 = MODE_BASS;
-  audio_mute = true;
+  mode_buttons16 = MODE_JUMP;
+  // audio_mute = true;
 
   // blocking
   input_handling();
