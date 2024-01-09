@@ -83,21 +83,21 @@ LEDS *LEDS_create() {
 
   // my unique PCA9552 wiring requires a unique mapping
   uint8_t row_map[] = {// row 1
-                       0, 0, 2, 3,
+                       0, 0, 3, 3,
                        // row 2
-                       1, 0, 3, 3,
+                       0, 0, 3, 3,
                        // row 3
-                       0, 1, 3, 2,
+                       1, 1, 2, 2,
                        // row 4
                        1, 1, 2, 2};
   uint8_t col_map[] = {//
-                       3, 2, 3, 0,
+                       3, 2, 0, 1,
                        //
-                       3, 0, 3, 2,
+                       1, 0, 2, 3,
                        //
-                       1, 0, 1, 0,
+                       3, 2, 0, 1,
                        //
-                       1, 2, 1, 2};
+                       1, 0, 2, 3};
 
   leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
   if (leds->pca->error != PCA9552_OK) {
