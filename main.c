@@ -129,6 +129,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           beat_current += (phase_forward * 2 - 1);
         }
         beat_total++;
+        clock_out_ready = true;
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0) {
           do_update_phase_from_beat_current();

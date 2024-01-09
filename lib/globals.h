@@ -115,6 +115,8 @@ uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 
 bool quadratic_resampling = false;
+bool clock_out_do = true;
+bool clock_out_ready = false;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
