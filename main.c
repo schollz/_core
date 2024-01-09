@@ -155,10 +155,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   return true;
 }
 
-void clock_handling(int time_diff) {
-  printf("[main] clock_handling: %d", time_diff);
-}
-
 #ifdef INCLUDE_ZEPTOCORE
 #include "lib/zeptocore.h"
 #else
