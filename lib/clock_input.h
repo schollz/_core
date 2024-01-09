@@ -43,7 +43,7 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_int callback) {
   ci->last_state = 0;
   ci->last_time = time_us_32();
   ci->callback = callback;
-  ci->filter = FilterExp_create(10);
+  ci->filter = FilterExp_create(60);
 
   gpio_init(gpio);
   gpio_set_dir(gpio, GPIO_IN);
@@ -57,7 +57,7 @@ void ClockInput_update(ClockInput *ci) {
   if (clock_pin == 1 && ci->last_state == 0) {
     uint32_t now_time = time_us_32();
     int time_diff = FilterExp_update(ci->filter, now_time - ci->last_time);
-    printf("[ClockInput] on after %d ms\n", time_diff / 1000);
+    ci->last_time = now_time;
     ci->callback(time_diff);
   }
 
