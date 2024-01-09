@@ -22,6 +22,11 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+void clock_handling(int time_diff) {
+  int new_bpm = 60000000 / (time_diff * 2);
+  printf("[main] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
+}
+
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
