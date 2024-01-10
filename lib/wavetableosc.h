@@ -51,9 +51,21 @@ int32_t WaveOsc_next(WaveOsc *self) {
   for (uint8_t i = 0; i < 2; i++) {
     if (self->fade_on[i]) {
       if (i == 0) {
-        val = q16_16_multiply(val, crossfade3_cos_in[self->fade_pos[i]]);
+        int32_t xfade = crossfade3_cos_in[self->fade_pos[i]];
+        if (self->fade_pos[i] < CROSSFADE3_LIMIT - 1) {
+          xfade += (((crossfade3_cos_in[self->fade_pos[i] + 1] - xfade) *
+                     self->fade_posi[i]) /
+                    self->fade_len[i]);
+        }
+        val = q16_16_multiply(val, xfade);
       } else {
-        val = q16_16_multiply(val, crossfade3_exp_out[self->fade_pos[i]]);
+        int32_t xfade = crossfade3_exp_out[self->fade_pos[i]];
+        if (self->fade_pos[i] < CROSSFADE3_LIMIT) {
+          xfade += (((crossfade3_exp_out[self->fade_pos[i] + 1] - xfade) *
+                     self->fade_posi[i]) /
+                    self->fade_len[i]);
+        }
+        val = q16_16_multiply(val, xfade);
       }
       self->fade_posi[i]++;
       if (self->fade_posi[i] >= self->fade_len[i]) {
