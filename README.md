@@ -65,7 +65,7 @@ the rest of the buttons (1-16) are just called **H**.
 
 #### combo buttons
 
-- [ ] **none** → top shows punch/mash, mute, playback states 
+- [ ] **none** → n/a
 - [ ] **H** → (JUMP): do jump, (MASH): toggle fx, (BASS): play bass
 - [ ] **H** + **H** → JUMP: retrig depending on location
 - [ ] **A** → n/a
