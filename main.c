@@ -113,13 +113,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
              // do not iterate the beat if we are in a timestretched variation,
              // let it roll
              && sel_variation == 0) {
-    clock_in_ready = false;
     retrig_vol = 1.0;
-    if (bpm_timer_counter % (96 * banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
-                                      ->splice_trigger) ==
-        0) {
+    if (clock_in_ready || bpm_timer_counter % (96 * banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[sel_variation]
+                                                        ->splice_trigger) ==
+                              0) {
+      clock_in_ready = false;
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {

@@ -648,11 +648,11 @@ void i2s_callback_func() {
     if (clock_out_ready) {
       clock_out_ready = false;
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-        samples[i * 2 + 1] = 2147483645;
+        samples[i * 2 + 0] = 2147483645;
       }
     } else {
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-        samples[i * 2 + 1] = 0;
+        samples[i * 2 + 0] = 0;
       }
     }
   }
