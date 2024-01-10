@@ -25,6 +25,7 @@
 #ifndef DELAY_LIB
 #define DELAY_LIB 1
 #define DELAY_RINGBUFFER_SIZE 11025
+#define DELAY_RINGBUFFER_SIZE_MINUS 10925
 #define DELAY_ZEROCROSSING_SIZE 10000
 #include "fixedpoint.h"
 //
@@ -62,7 +63,21 @@ void Delay_setDuration(Delay *self, uint16_t num_samples) {
   if (num_samples > DELAY_RINGBUFFER_SIZE) {
     num_samples = DELAY_RINGBUFFER_SIZE;
   }
-  self->duration = num_samples;
+  if (num_samples != self->duration) {
+    printf("[delay] duration %d\n", num_samples);
+    self->duration = num_samples;
+  }
+}
+
+void Delay_setLength(Delay *self, uint8_t length) {
+  Delay_setDuration(self, 100 + ((DELAY_RINGBUFFER_SIZE_MINUS * length) >> 8));
+}
+
+void Delay_setFeedback(Delay *self, uint8_t feedback) {
+  if (feedback != self->feedback) {
+    printf("[delay] feedback %d\n", feedback);
+    self->feedback = feedback;
+  }
 }
 
 void Delay_process(Delay *self, int32_t *samples, uint16_t num_samples,
