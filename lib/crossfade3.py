@@ -49,6 +49,9 @@ def run():
     exp_in = np.exp(x * np.exp(1.5)) / np.exp(np.exp(1.5))
     line_out = 1 - x
 
+    # fade out the last 10% of the exponential
+    for i in range(int(block_size * 0.9), block_size):
+        exp_out[i] = exp_out[i] * (1 - (i - int(block_size * 0.9)) / (block_size * 0.1))
     print(
         """#ifndef CROSSFADE3_LIB
 #define CROSSFADE3_COS 0      

@@ -18,8 +18,9 @@ def wavetable(f, sr):
     # one full cycle
     dur = 1.0 / float(f)
     samples = []
-    for n in range(int(sr * dur / 4)):
-        samples.append(math.sin(2 * math.pi * f * n / sr))
+    num_samples = round(sr * dur / 4.0)
+    for n in range(num_samples):
+        samples.append(math.sin(2 * math.pi * f * (n + 0.5) / sr))
     return samples
 
 
@@ -46,10 +47,12 @@ wavetable_len = []
 for i in range(wavetable_max):
     note = i + 24
     s = wavetable(mtof(note), 44100)
+    # if i == 0:
+    #     plot_wavetable(mtof(note), 44100)
     wavetable_len.append(len(s))
     print("const int32_t wavetable%d[%d] = {" % (i, len(s)))
     for j in range(len(s)):
-        print("  %d," % round(s[j] * 2147483647))  # 32767 2147483647
+        print("  %d," % round(s[j] * 1073741823))  # 32767 2147483647
         total_bytes += 4
     print("};")
 print("uint16_t wavetable_len(uint8_t wave) {")
@@ -64,6 +67,7 @@ print("  switch (wave) {")
 for i in range(wavetable_max):
     print("    case %d:" % i)
     print(f"if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
+    print(f"else if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
     print(
         f"else if (index<{2*wavetable_len[i]}) {{return wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]})];}}"
     )
