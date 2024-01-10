@@ -22,11 +22,13 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
-void clock_handling(int time_diff) {
+void clock_handling_up(int time_diff) {
   sf->bpm_tempo = 60000000 / (time_diff * 2);
-  // printf("[zeptocore] clock_handling: %d, bpm: %d\n", time_diff, new_bpm);
-  clock_in_debounce = 2000;
   clock_in_ready = true;
+}
+
+void clock_handling_down(int time_diff) {
+  printf("[zeptocore] clock_handling_down: %d\n", time_diff);
 }
 
 void input_handling() {
@@ -55,7 +57,8 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling);
+  ClockInput *clockinput = ClockInput_create(
+      CLOCK_INPUT_GPIO, clock_handling_up, clock_handling_down);
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
@@ -182,8 +185,10 @@ void input_handling() {
 #ifdef INCLUDE_CLOCKINPUT
     // clock input handler
     ClockInput_update(clockinput);
-    if (clock_in_debounce > 0) {
-      clock_in_debounce--;
+    if (clock_in_do) {
+      if (ClockInput_time_since(clockinput) > 1000000) {
+        beat_current = 0;
+      }
     }
 #endif
 
