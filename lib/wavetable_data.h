@@ -1,5 +1,5 @@
-#ifndef LIB_WAVETABLE
-#define LIB_WAVETABLE 1
+#ifndef LIB_WAVETABLE_DATA_H
+#define LIB_WAVETABLE_DATA_H 1
 #define WAVETABLE_MAX 36
 const int32_t wavetable0[337] = {
     0,          10005983,   20011749,   30017080,   40021760,   50025571,
