@@ -53,17 +53,31 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           } else {
             retrig_vol = 0;
           }
+          retrig_pitch = PITCH_VAL_MID;
+          if (random_integer_in_range(1, 10) < 2) {
+            if (random_integer_in_range(1, 10) < 5) {
+              retrig_pitch_change = -random_integer_in_range(1, 3);
+            } else {
+              retrig_pitch_change = random_integer_in_range(1, 3);
+            }
+          } else {
+            retrig_pitch_change = 0;
+          }
         }
         retrig_beat_num--;
         if (retrig_beat_num == 0) {
           retrig_ready = false;
           retrig_vol = 1.0;
+          retrig_pitch = PITCH_VAL_MID;
         }
         if (retrig_vol < 1.0) {
           retrig_vol += retrig_vol_step;
           if (retrig_vol > 1.0) {
             retrig_vol = 1.0;
           }
+        }
+        if (retrig_pitch > 0 && retrig_pitch < PITCH_VAL_MAX - 1) {
+          retrig_pitch += retrig_pitch_change;
         }
         if (fil_is_open && debounce_quantize == 0) {
           do_update_phase_from_beat_current();
@@ -114,6 +128,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
              // let it roll
              && sel_variation == 0) {
     retrig_vol = 1.0;
+    retrig_pitch = PITCH_VAL_MID;
+    retrig_pitch_change = 0;
     if ((clock_in_do && clock_in_ready) ||
         bpm_timer_counter % (96 * banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
