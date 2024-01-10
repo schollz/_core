@@ -299,20 +299,21 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
   if (key1 == KEY_SHIFT) {
     if (key2 == KEY_A) {
       // S+A
+      mode_buttons16 = MODE_JUMP;
     } else if (key2 == KEY_B) {
       // S+B
-      // toggle mute
-      if (button_mute) {
-        printf("[button_handler] button_mute off\n");
-        button_mute = false;
-      } else {
-        printf("[button_handler] trigger button_mute\n");
-        trigger_button_mute = true;
-      }
+      mode_buttons16 = MODE_MASH;
+      // // toggle mute
+      // if (button_mute) {
+      //   printf("[button_handler] button_mute off\n");
+      //   button_mute = false;
+      // } else {
+      //   printf("[button_handler] trigger button_mute\n");
+      //   trigger_button_mute = true;
+      // }
     } else if (key2 == KEY_C) {
       // S+C
       // toggle mash/fx/bass mode
-      mode_buttons16 = (mode_buttons16 + 1) % 3;
     } else {
       // S+H
       if (mode_buttons16 == MODE_JUMP) {
@@ -659,15 +660,21 @@ void button_handler(ButtonMatrix *bm) {
         // LEDS_set(leds, Chain_get_current(chain) + 4, 3);
       }
     }
+    if (mode_buttons16 == MODE_MASH) {
+      LEDS_set(leds, 2, LED_BRIGHT);
+    } else if (mode_buttons16 == MODE_JUMP) {
+      LEDS_set(leds, 1, LED_BRIGHT);
+    }
 
-    if (mode_buttons16 == MODE_MASH ||
-        (mode_buttons16 == MODE_JUMP && key_on_buttons[0])) {
+    if ((!key_on_buttons[KEY_SHIFT] && mode_buttons16 == MODE_MASH) ||
+        (key_on_buttons[KEY_SHIFT] && mode_buttons16 == MODE_JUMP)) {
       for (uint8_t i = 0; i < 16; i++) {
         if (sf->fx_active[i]) {
           LEDS_set(leds, i + 4, LED_BRIGHT);
         }
       }
-    } else if (mode_buttons16 == MODE_JUMP) {
+    } else if ((!key_on_buttons[KEY_SHIFT] && mode_buttons16 == MODE_JUMP) ||
+               (key_on_buttons[KEY_SHIFT] && mode_buttons16 == MODE_MASH)) {
       if (sel_variation == 0) {
         LEDS_set(leds, beat_current % 16 + 4, LED_DIM);
       } else {
