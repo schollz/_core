@@ -660,7 +660,14 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
 
-    if (mode_buttons16 == MODE_JUMP) {
+    if (mode_buttons16 == MODE_MASH ||
+        (mode_buttons16 == MODE_JUMP && key_on_buttons[0])) {
+      for (uint8_t i = 0; i < 16; i++) {
+        if (sf->fx_active[i]) {
+          LEDS_set(leds, i + 4, LED_BRIGHT);
+        }
+      }
+    } else if (mode_buttons16 == MODE_JUMP) {
       if (sel_variation == 0) {
         LEDS_set(leds, beat_current % 16 + 4, LED_DIM);
       } else {
@@ -678,12 +685,6 @@ void button_handler(ButtonMatrix *bm) {
                          16 +
                      4,
                  LED_DIM);
-      }
-    } else if (mode_buttons16 == MODE_MASH) {
-      for (uint8_t i = 0; i < 16; i++) {
-        if (sf->fx_active[i]) {
-          LEDS_set(leds, i + 4, LED_BRIGHT);
-        }
       }
     }
   }
