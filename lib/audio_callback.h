@@ -100,10 +100,10 @@ void i2s_callback_func() {
     //   Fuzz_process(values, buffer->max_sample_count);
     // }
 
-    // bitcrush
-    if (sf->fx_active[FX_BITCRUSH]) {
-      Bitcrush_process(values, buffer->max_sample_count);
-    }
+    // // bitcrush
+    // if (sf->fx_active[FX_BITCRUSH]) {
+    //   Bitcrush_process(values, buffer->max_sample_count);
+    // }
 
     uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
                                 envelope_volume_val / VOLUME_DIVISOR_0_200);
@@ -458,13 +458,21 @@ void i2s_callback_func() {
 
     // saturate before resampling?
     if (sf->fx_active[FX_SATURATE]) {
+      for (uint16_t i = 0; i < values_len; i++) {
+        values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
+      }
       Saturation_process(saturation, values, values_len);
     }
 
     // shaper
     if (sf->fx_active[FX_SHAPER]) {
-      // Shaper_expandOver_compressUnder_process(values, values_len, 12000);
-      Shaper_expandUnder_compressOver_process(values, values_len, 4000);
+      if (sf->fx_param[FX_SHAPER][0] > 128) {
+        Shaper_expandUnder_compressOver_process(
+            values, values_len, sf->fx_param[FX_SHAPER][1] << 7);
+      } else {
+        Shaper_expandOver_compressUnder_process(
+            values, values_len, sf->fx_param[FX_SHAPER][1] << 7);
+      }
     }
 
     if (sf->fx_active[FX_FUZZ]) {
@@ -474,7 +482,8 @@ void i2s_callback_func() {
 
     // bitcrush
     if (sf->fx_active[FX_BITCRUSH]) {
-      Bitcrush_process(values, values_len);
+      Bitcrush_process(values, values_len, sf->fx_param[FX_BITCRUSH][0],
+                       sf->fx_param[FX_BITCRUSH][1]);
     }
 
     if (banks[sel_bank_cur]
