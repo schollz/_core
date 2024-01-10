@@ -39,8 +39,8 @@ def lcm(a, b):
 
 total_bytes = 0
 wavetable_max = 36
-print("#ifndef LIB_WAVETABLE")
-print("#define LIB_WAVETABLE 1")
+print("#ifndef LIB_WAVETABLE_DATA_H")
+print("#define LIB_WAVETABLE_DATA_H 1")
 print("#define WAVETABLE_MAX " + str(wavetable_max))
 wavetable_len = []
 for i in range(wavetable_max):
