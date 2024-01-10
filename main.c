@@ -105,8 +105,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                        ->sample[sel_sample_cur]
                        .snd[sel_variation]
                        ->splice_trigger > 0 &&
-               clock_in_debounce == 0) ||
-              (clock_in_ready && clock_in_debounce > 0))
+               !clock_in_do) ||
+              (clock_in_ready && clock_in_do))
              // TODO if splice_trigger is 0, but we are sequencing, then need to
              // continue here!
 
@@ -114,11 +114,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
              // let it roll
              && sel_variation == 0) {
     retrig_vol = 1.0;
-    if (clock_in_ready || bpm_timer_counter % (96 * banks[sel_bank_cur]
-                                                        ->sample[sel_sample_cur]
-                                                        .snd[sel_variation]
-                                                        ->splice_trigger) ==
-                              0) {
+    if ((clock_in_do && clock_in_ready) ||
+        bpm_timer_counter % (96 * banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->splice_trigger) ==
+            0) {
       clock_in_ready = false;
       mem_use = false;
       // keep to the beat
