@@ -68,7 +68,7 @@ void input_handling() {
   }
 
   while (1) {
-    adc_select_input(0);
+    adc_select_input(2);
 
     // check if a single button is held
     // for purposes of changing the fx params
@@ -189,7 +189,7 @@ void input_handling() {
 
 #ifdef INCLUDE_KNOBS
     // knob Z
-    adc_select_input(2);
+    adc_select_input(0);
     sleep_ms(1);
     adc = FilterExp_update(adcs[2], adc_read());
     if (abs(adc_last[2] - adc) > adc_threshold) {
