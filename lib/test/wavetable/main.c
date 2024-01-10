@@ -29,34 +29,15 @@
 #include <string.h>
 
 #include "../../fixedpoint.h"
-#include "../../sinewave.h"
+#include "../../wavetableosc.h"
 
 int main() {
-  SinOsc *osc1 = SinOsc_malloc();
-  // SinOsc *osc2 = SinOsc_malloc();
-  SinOsc_quiet(osc1, 0);
-  SinOsc_wave(osc1, 12);
+  WaveOsc *osc1 = WaveOsc_malloc();
+  WaveOsc_wave(osc1, 1);
   for (int i = 0; i < 4000; i++) {
-    printf("%d\n", SinOsc_next(osc1));
+    printf("%d\n", WaveOsc_next(osc1));
   }
-  SinOsc_wave(osc1, 24);
-  for (int i = 0; i < 4000; i++) {
-    printf("%d\n", SinOsc_next(osc1));
-  }
-  SinOsc_wave(osc1, 0);
-  for (int i = 0; i < 8000; i++) {
-    printf("%d\n", SinOsc_next(osc1));
-  }
-  SinOsc_wave(osc1, 23);
-  for (int i = 0; i < 8000; i++) {
-    printf("%d\n", SinOsc_next(osc1));
-  }
-  // SinOsc_wave(osc1, 0);
-  // for (int i = 0; i < 441; i++) {
-  //   printf("%d\n", SinOsc_next(osc1));
-  // }
-  // SinOsc_free(osc1);
-  // SinOsc_free(osc2);
+  WaveOsc_free(osc1);
 
   return 0;
 }
