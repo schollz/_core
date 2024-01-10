@@ -87,7 +87,6 @@ void input_handling() {
       }
     }
 
-    sleep_ms(1);
     int adc;
 #ifdef INCLUDE_SINEBASS
     if (sinebass_update_counter < 30) {
@@ -150,7 +149,6 @@ void input_handling() {
 #ifdef INCLUDE_KNOBS
     // knob Y
     adc_select_input(1);
-    sleep_ms(1);
     adc = FilterExp_update(adcs[1], adc_read());
     if (abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
@@ -195,7 +193,6 @@ void input_handling() {
 #ifdef INCLUDE_KNOBS
     // knob Z
     adc_select_input(0);
-    sleep_ms(1);
     adc = FilterExp_update(adcs[2], adc_read());
     if (abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
