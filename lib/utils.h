@@ -34,7 +34,7 @@ typedef void (*callback_uint8)(uint8_t);
 typedef void (*callback_uint16)(uint16_t);
 typedef void (*callback_void)();
 
-#define util_clamp(x, a, b) (x > b ? b : (x < a ? a : x))
+#define util_clamp(x, a, b) ((x) > (b) ? (b) : ((x) < (a) ? (a) : (x)))
 
 #define linlin(x, xmin, xmax, ymin, ymax) \
   util_clamp((ymin + (x - xmin) * (ymax - ymin) / (xmax - xmin)), ymin, ymax)
