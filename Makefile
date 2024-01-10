@@ -5,6 +5,11 @@ envs:
 	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
 	export PICO_SDK_PATH=/home/zns/pico/pico-sdk 
 
+
+wavetable:
+	cd lib && python3 wavetable.py > wavetable_data.h
+	clang-format -i --style=google lib/wavetable_data.h
+
 lib/biquad.h:
 	cd lib && python3 biquad.py > biquad.h
 
