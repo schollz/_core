@@ -42,14 +42,14 @@ int main() {
   }
   WaveOsc_free(osc1);
 
-  osc1 = WaveOsc_malloc(21, 3, 12, 4);
-  for (int i = 0; i < 4000; i++) {
-    printf("%d\n", WaveOsc_next(osc1));
-  }
-  WaveOsc_release_fast(osc1);
-  for (int i = 0; i < 4000; i++) {
-    printf("%d\n", WaveOsc_next(osc1));
-  }
-  WaveOsc_free(osc1);
+  // osc1 = WaveOsc_malloc(21, 3, 12, 4);
+  // for (int i = 0; i < 4000; i++) {
+  //   printf("%d\n", WaveOsc_next(osc1));
+  // }
+  // WaveOsc_release_fast(osc1);
+  // for (int i = 0; i < 4000; i++) {
+  //   printf("%d\n", WaveOsc_next(osc1));
+  // }
+  // WaveOsc_free(osc1);
   return 0;
 }
