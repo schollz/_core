@@ -11,72 +11,72 @@ typedef struct WaveOsc {
   uint16_t phase;
   uint16_t limit;
   uint8_t quiet;
-  bool fade_in;
-  bool fade_out;
-  uint16_t crossfade;
-  uint8_t crossfade_factor;
+  bool fade_on[2];
+  bool finished;
+  uint8_t fade_len[2];
+  uint16_t fade_pos[2];
+  uint16_t fade_posi[2];
 } WaveOsc;
 
-WaveOsc *WaveOsc_malloc(uint8_t wave, uint8_t quiet) {
+WaveOsc *WaveOsc_malloc(uint8_t wave, uint8_t quiet, uint8_t attack,
+                        uint8_t decay) {
   WaveOsc *self = malloc(sizeof(WaveOsc));
   self->wave = wave;
   self->quiet = quiet;
   self->phase = 0;
   self->limit = wavetable_len(wave);
-  self->fade_in = true;
-  self->fade_out = false;
-  self->crossfade = 0;
-  self->crossfade_factor = 0;
+  self->fade_on[0] = true;
+  self->fade_on[1] = false;
+  self->fade_len[0] = attack;
+  self->fade_len[1] = decay;
+  self->fade_pos[0] = 0;
+  self->fade_pos[1] = 0;
+  self->fade_posi[0] = 0;
+  self->fade_posi[1] = 0;
+  self->finished = false;
   return self;
 }
 
 void WaveOsc_free(WaveOsc *self) { free(self); }
 
 int32_t WaveOsc_next(WaveOsc *self) {
-  int32_t val = 0;
-
-  if (self->crossfade < CROSSFADE3_LIMIT) {
-    if (self->phase[0] >= self->limit[0]) {
-      self->phase[0] = 0;
-    }
-    if (self->phase[1] >= self->limit[1]) {
-      self->phase[1] = 0;
-    }
-    if (self->wave[0] == 0) {
-      val = q16_16_multiply(crossfade3_cos_out[self->crossfade],
-                            wavetable_sample(self->wave[1], self->phase[1])) >>
-            self->quiet[1];
-      if (self->crossfade_factor == 0) {
-        self->crossfade++;
-        self->crossfade_factor = 2;
-      } else {
-        self->crossfade_factor--;
-      }
-    } else if (self->wave[1] == 0) {
-      val = q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
-                            wavetable_sample(self->wave[0], self->phase[0])) >>
-            self->quiet[0];
-
-      self->crossfade++;
-    } else {
-      val = (q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade],
-                             wavetable_sample(self->wave[0], self->phase[0])) >>
-             self->quiet[0]) +
-            (q16_16_multiply(crossfade3_line[self->crossfade],
-                             wavetable_sample(self->wave[1], self->phase[1])) >>
-             self->quiet[1]);
-      self->crossfade++;
-    }
-    self->phase[0]++;
-    self->phase[1]++;
-  } else if (self->wave[0] > 0) {
-    if (self->phase[0] >= self->limit[0]) {
-      self->phase[0] = 0;
-    }
-    val = wavetable_sample(self->wave[0], self->phase[0]) >> self->quiet[0];
-    self->phase[0]++;
+  if (self->finished) {
+    return 0;
   }
+  int32_t val = wavetable_sample(self->wave, self->phase) >> self->quiet;
+  // TODO: if quiet is changed, update it when the val is 0
+  if (self->phase >= self->limit) {
+    self->phase = 0;
+  }
+  for (uint8_t i = 0; i < 2; i++) {
+    if (self->fade_on[i]) {
+      if (i == 0) {
+        val = q16_16_multiply(val, crossfade3_cos_in[self->fade_pos[i]]);
+      } else {
+        val = q16_16_multiply(val, crossfade3_exp_out[self->fade_pos[i]]);
+      }
+      self->fade_posi[i]++;
+      if (self->fade_posi[i] >= self->fade_len[i]) {
+        self->fade_posi[i] = 0;
+        self->fade_pos[i]++;
+      }
+      if (self->fade_pos[i] >= CROSSFADE3_LIMIT) {
+        self->fade_on[i] = false;
+        if (i == 1) {
+          self->finished = true;
+        }
+      }
+    }
+  }
+
+  self->phase++;
   return val;
 }
 
+void WaveOsc_release(WaveOsc *self) { self->fade_on[1] = true; }
+
+void WaveOsc_release_fast(WaveOsc *self) {
+  self->fade_len[1] = 0;
+  self->fade_on[1] = true;
+}
 #endif
