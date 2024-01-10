@@ -58,7 +58,8 @@ SaveFile *SaveFile_malloc() {
     sf->fx_param[i][1] = 0;
     sf->fx_param[i][2] = 0;
   }
-
+  sf->fx_param[FX_FUZZ][0] = 250;
+  sf->fx_param[FX_FUZZ][1] = 110;
   return sf;
 }
 
