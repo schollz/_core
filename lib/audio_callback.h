@@ -640,6 +640,8 @@ void i2s_callback_func() {
   }
 
   // apply delay
+  Delay_setFeedback(delay, 8 - linlin(sf->fx_param[FX_DELAY][0], 0, 240, 2, 8));
+  Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
