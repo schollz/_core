@@ -84,6 +84,8 @@ bool retrig_first = false;
 bool retrig_ready = false;
 float retrig_vol = 1.0;
 float retrig_vol_step = 0;
+uint8_t retrig_pitch = 48;
+int8_t retrig_pitch_change = 0;
 
 // buttons
 // mode toggles
@@ -158,13 +160,42 @@ bool fx_tape_stop_active = false;
 uint16_t global_filter_index = resonantfilter_fc_max;
 
 // pitches derived from supercollider
-// a=(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
-// a.do({ arg v;
-// 	v.postln;
-// });
-#define PITCH_VAL_MAX 49
-uint8_t pitch_val_index = 24;
+/*
+a=(Tuning.et(24).ratios/4)++(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
+a.do({ arg v;
+        v.postln;
+});
+a.size
+*/
+
+#define PITCH_VAL_MAX 73
+#define PITCH_VAL_MID 48
+uint8_t pitch_val_index = PITCH_VAL_MID;
 float pitch_vals[PITCH_VAL_MAX] = {
+    0.25,
+    0.25732555916084,
+    0.26486577358976,
+    0.27262693316622,
+    0.28061551207721,
+    0.2888381742179,
+    0.29730177875047,
+    0.30601338582592,
+    0.31498026247343,
+    0.32420988866242,
+    0.33370996354212,
+    0.34348841186409,
+    0.35355339059278,
+    0.36391329571,
+    0.37457676921856,
+    0.38555270635132,
+    0.39685026299132,
+    0.40847886330947,
+    0.42044820762598,
+    0.43276828050212,
+    0.44544935906914,
+    0.45850202160122,
+    0.47193715633965,
+    0.48576597057551,
     0.5,
     0.51465111832169,
     0.52973154717953,
@@ -213,7 +244,7 @@ float pitch_vals[PITCH_VAL_MAX] = {
     1.8340080864049,
     1.8877486253586,
     1.943063882302,
-    2.0,
+    2,
 };
 
 // ignore boundaries

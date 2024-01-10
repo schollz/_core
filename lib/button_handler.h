@@ -52,6 +52,7 @@ void key_do_jump(uint8_t beat) {
     printf("key_do_jump %d\n", beat);
     key_jump_debounce = 1;
     beat_current = (beat_current / 16) * 16 + beat;
+    retrig_pitch = PITCH_VAL_MID;
     do_update_phase_from_beat_current();
   }
 }
