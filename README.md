@@ -114,10 +114,10 @@ holding an effect and using a knob will change its parameters.
 - [ ] **1** -> warm (preamp multiplier)
 - [ ] **2** -> loss (preamp multiplier, threshold)
 - [ ] **3** -> fuzz (preamp multliplier)
-- [ ] **4** -> crush (frequency, crushing)
+- [ ] **4** -> crush (frequency, bitdepth)
 - [ ] **5** -> reverse 
 - [ ] **6** -> stretch
-- [ ] **7** -> delay (delay length, feedback)
+- [ ] **7** -> delay (delay feedback, delay length)
 - [ ] **8** -> repeat (repeat length)
 - [ ] **9** -> tighten (gate amount)
 - [ ] **10** -> heighten (tremelo speed, depth)
