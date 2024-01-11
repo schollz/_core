@@ -266,15 +266,7 @@ int main() {
 
 #ifdef INCLUDE_SINEBASS
   // init_sinewaves();
-  for (uint8_t i = 0; i < 3; i++) {
-    sinosc[i] = SinOsc_malloc();
-  }
-  SinOsc_wave(sinosc[0], 2);
-  SinOsc_wave(sinosc[1], 2 + 12);
-  SinOsc_wave(sinosc[2], 2 + 12 + 7);
-  SinOsc_quiet(sinosc[0], 2);
-  SinOsc_quiet(sinosc[1], 2);
-  SinOsc_quiet(sinosc[2], 2);
+  wavebass = WaveBass_malloc();
 #endif
 
   // LEDText_display(ledtext, "HELLO");
