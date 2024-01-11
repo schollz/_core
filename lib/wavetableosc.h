@@ -43,11 +43,11 @@ int32_t WaveOsc_next(WaveOsc *self) {
   if (self->finished) {
     return 0;
   }
-  int32_t val = wavetable_sample(self->wave, self->phase) >> self->quiet;
-  // TODO: if quiet is changed, update it when the val is 0
-  if (self->phase >= self->limit - 1) {
+  if (self->phase >= self->limit) {
     self->phase = 0;
   }
+  int32_t val = wavetable_sample(self->wave, self->phase) >> self->quiet;
+  // TODO: if quiet is changed, update it when the val is 0
   for (uint8_t i = 0; i < 2; i++) {
     if (self->fade_on[i]) {
       if (i == 0) {

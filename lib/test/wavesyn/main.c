@@ -103,7 +103,7 @@ int main() {
     printf("%d\n", sine_wave[j]);
     j++;
   }
-  WaveSyn_new(wavesyn, 17, 1, 5, 12);
+  WaveSyn_new(wavesyn, 17, 2, 5, 30);
   for (int i = 0; i < 44100; i++) {
     sine_wave[j] = WaveSyn_next(wavesyn);
     printf("%d\n", sine_wave[j]);

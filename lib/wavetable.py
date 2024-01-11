@@ -18,9 +18,9 @@ def wavetable(f, sr):
     # one full cycle
     dur = 1.0 / float(f)
     samples = []
-    num_samples = round(sr * dur / 4.0)
+    num_samples = round(sr * dur)
     for n in range(num_samples):
-        samples.append(math.sin(2 * math.pi * f * (n + 0.5) / sr))
+        samples.append(math.sin(2 * math.pi * f * n / sr))
     return samples
 
 
@@ -58,7 +58,7 @@ for i in range(wavetable_max):
 print("uint16_t wavetable_len(uint8_t wave) {")
 print("  switch (wave) {")
 for i in range(wavetable_max):
-    print("    case %d: return %d;" % (i, 4 * wavetable_len[i]))
+    print("    case %d: return %d;" % (i, wavetable_len[i]))
 print("    default: return 0;")
 print("  }")
 print("}")
@@ -66,17 +66,18 @@ print("int32_t wavetable_sample(uint8_t wave, uint16_t index) {")
 print("  switch (wave) {")
 for i in range(wavetable_max):
     print("    case %d:" % i)
-    print(f"if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
-    print(f"else if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
-    print(
-        f"else if (index<{2*wavetable_len[i]}) {{return wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]})];}}"
-    )
-    print(
-        f"else if (index<{3*wavetable_len[i]}) {{return -1*wavetable{i}[(index-{wavetable_len[i]*2})];}}"
-    )
-    print(
-        f"else {{return -1*wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]*3})];}}"
-    )
+    print(f"return wavetable{i}[index];")
+    # print(f"if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
+    # print(f"else if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
+    # print(
+    #     f"else if (index<{2*wavetable_len[i]}) {{return wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]})];}}"
+    # )
+    # print(
+    #     f"else if (index<{3*wavetable_len[i]}) {{return -1*wavetable{i}[(index-{wavetable_len[i]*2})];}}"
+    # )
+    # print(
+    #     f"else {{return -1*wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]*3})];}}"
+    # )
     print("break;")
 print("    default: return 0;")
 print("  }")
