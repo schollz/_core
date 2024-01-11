@@ -2,7 +2,7 @@
 #define LIB_WAVETABLESYN_H 1
 #include "wavetableosc.h"
 
-#define WAVETABLESYN_MAX 4
+#define WAVETABLESYN_MAX 3
 
 typedef struct WaveSyn {
   WaveOsc *osc[WAVETABLESYN_MAX];

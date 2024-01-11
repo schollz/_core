@@ -121,7 +121,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
-    # DO_OVERCLOCK=1
+    DO_OVERCLOCK=1
 
     # debug printing
     # PRINT_AUDIO_USAGE=1
