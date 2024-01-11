@@ -109,13 +109,13 @@ void BeatRepeat_process(BeatRepeat *self, int16_t *samples,
       if (self->last < 0 && sample >= 0) {
         self->zerocrossings[self->zerocrossings_index] = self->ringbuffer_index;
         self->zerocrossings_index++;
-        if (self->zerocrossings_index > BEATREPEAT_ZEROCROSSING_SIZE) {
+        if (self->zerocrossings_index >= BEATREPEAT_ZEROCROSSING_SIZE) {
           self->zerocrossings_index = 0;
         }
       }
       self->ringbuffer[self->ringbuffer_index] = sample;
       self->ringbuffer_index++;
-      if (self->ringbuffer_index > BEATREPEAT_RINGBUFFER_SIZE) {
+      if (self->ringbuffer_index >= BEATREPEAT_RINGBUFFER_SIZE) {
         self->ringbuffer_index = 0;
       }
       self->last = sample;
@@ -124,6 +124,7 @@ void BeatRepeat_process(BeatRepeat *self, int16_t *samples,
 }
 
 void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
+  fprintf(stderr, "repeat %d\n", num_samples);
   if (num_samples == 0) {
     if (self->repeat_start > -1 && self->repeat_end > -1) {
       self->crossfade_in = CROSSFADE3_LIMIT;
@@ -156,7 +157,9 @@ void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
     }
   }
   self->repeat_index = self->repeat_start;
-  fprintf(stderr, "repeating %d->%d\n", self->repeat_start, self->repeat_end);
+  fprintf(stderr, "repeating %d->%d (%d samples used, asked for %d)\n",
+          self->repeat_start, self->repeat_end,
+          self->repeat_end - self->repeat_start, num_samples);
 }
 
 void BeatRepeat_free(BeatRepeat *self) { free(self); }
