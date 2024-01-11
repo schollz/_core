@@ -126,7 +126,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # debug printing
     # PRINT_AUDIO_USAGE=1
     # PRINT_AUDIO_OVERLOADS=1
-    # PRINT_AUDIO_CPU_USAGE=1
+    PRINT_AUDIO_CPU_USAGE=1
     # PRINT_MEMORY_USAGE=1
     # PRINT_SDCARD_TIMING=1
 
@@ -139,7 +139,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # basics 
     # INCLUDE_KEYBOARD=1
     # INCLUDE_RGBLED=1
-    # INCLUDE_SINEBASS=1
+    INCLUDE_SINEBASS=1
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
