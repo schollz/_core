@@ -33,7 +33,7 @@
 
 int main() {
   WaveOsc *osc1 = WaveOsc_malloc(18, 3, 7, 15);
-  for (int i = 0; i < 1600; i++) {
+  for (int i = 0; i < 4000; i++) {
     printf("%d\n", WaveOsc_next(osc1));
   }
   // WaveOsc_release(osc1);
