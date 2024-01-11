@@ -314,7 +314,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // }
     } else if (key2 == KEY_C) {
       // S+C
-      // toggle mash/fx/bass mode
+      // toggle bass mode
+      mode_buttons16 = MODE_BASS;
     } else {
       // S+H
       if (mode_buttons16 == MODE_JUMP) {
@@ -665,6 +666,8 @@ void button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, 2, LED_BRIGHT);
     } else if (mode_buttons16 == MODE_JUMP) {
       LEDS_set(leds, 1, LED_BRIGHT);
+    } else if (mode_buttons16 == MODE_BASS) {
+      LEDS_set(leds, 3, LED_BRIGHT);
     }
     if (mode_buttons16 == MODE_MASH || mode_buttons16 == MODE_JUMP) {
       if (sel_variation == 0) {
