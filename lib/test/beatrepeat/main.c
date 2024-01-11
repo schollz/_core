@@ -124,7 +124,7 @@ int main() {
     int16_t audio_block[1000];
     memcpy(audio_block, audio_data + i, 1000 * sizeof(int16_t));
     if (i == 20000) {
-      BeatRepeat_repeat(br, 2000);
+      BeatRepeat_repeat(br, 3000);
     }
     if (i == 40000) {
       BeatRepeat_repeat(br, 0);
@@ -133,6 +133,12 @@ int main() {
       BeatRepeat_repeat(br, 10000);
     }
     if (i == 80000) {
+      BeatRepeat_repeat(br, 0);
+    }
+    if (i == 81000) {
+      BeatRepeat_repeat(br, 1000);
+    }
+    if (i == 92000) {
       BeatRepeat_repeat(br, 0);
     }
     BeatRepeat_process(br, audio_block, 1000);
