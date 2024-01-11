@@ -97,8 +97,7 @@
 #include "savefile.h"
 #include "sdcard.h"
 #ifdef INCLUDE_SINEBASS
-#include "sinewave.h"
-#include "sinewaves.h"
+#include "wavetablebass.h"
 #endif
 #include "wav.h"
 //

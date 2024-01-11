@@ -88,26 +88,6 @@ void input_handling() {
     }
 
     int adc;
-#ifdef INCLUDE_SINEBASS
-    if (sinebass_update_counter < 30) {
-      sinebass_update_counter++;
-      if (sinebass_update_counter == 10) {
-        SinOsc_wave(sinosc[0], sinebass_update_note);
-      } else if (sinebass_update_counter == 20) {
-        if (sinebass_update_note == 0) {
-          SinOsc_wave(sinosc[1], 0);
-        } else {
-          SinOsc_wave(sinosc[1], sinebass_update_note + 12);
-        }
-      } else if (sinebass_update_counter == 30) {
-        if (sinebass_update_note == 0) {
-          SinOsc_wave(sinosc[2], 0);
-        } else {
-          SinOsc_wave(sinosc[2], sinebass_update_note + 12 + 7);
-        }
-      }
-    }
-#endif
 
 #ifdef INCLUDE_KNOBS
     // knob X
