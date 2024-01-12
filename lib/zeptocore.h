@@ -70,6 +70,8 @@ void input_handling() {
     adcs[i] = FilterExp_create(10);
   }
 
+  uint8_t debounce_beat_repeat = 0;
+
   while (1) {
     adc_select_input(2);
 
@@ -84,6 +86,16 @@ void input_handling() {
           single_key = -1;
           break;
         }
+      }
+    }
+
+    if (debounce_beat_repeat > 0) {
+      debounce_beat_repeat--;
+      if (debounce_beat_repeat == 10) {
+        BeatRepeat_repeat(beatrepeat,
+                          sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
+      } else if (debounce_beat_repeat == 100) {
+        BeatRepeat_repeat(beatrepeat, 20);
       }
     }
 
@@ -103,6 +115,9 @@ void input_handling() {
         DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                           sf->fx_param[single_key - 4][0], 100);
         printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
+        if (key_on_buttons[FX_BEATREPEAT + 4] && do_update_beat_repeat == 0) {
+          debounce_beat_repeat = 30;
+        }
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
           sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
