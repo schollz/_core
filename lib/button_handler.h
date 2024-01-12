@@ -153,7 +153,8 @@ void toggle_fx(uint8_t fx_num) {
       break;
     case FX_BEATREPEAT:
       if (sf->fx_active[fx_num]) {
-        BeatRepeat_repeat(beatrepeat, 1000);
+        BeatRepeat_repeat(beatrepeat,
+                          sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
       } else {
         BeatRepeat_repeat(beatrepeat, 0);
       }

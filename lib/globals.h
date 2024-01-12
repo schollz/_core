@@ -122,6 +122,8 @@ bool clock_out_ready = false;
 bool clock_in_do = false;
 bool clock_in_ready = false;
 
+uint8_t do_update_beat_repeat = 0;
+
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
