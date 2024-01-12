@@ -27,6 +27,7 @@
 static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
 static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
 static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
+
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -40,6 +41,28 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                            repeating_timer_callback, NULL, &timer);
   }
+  if (do_restart_playback) {
+    do_restart_playback = false;
+    bpm_timer_counter = -1;
+    beat_total = -1;
+    dub_step_break = -1;
+    retrig_beat_num = 0;
+    beat_current = banks[sel_bank_cur]
+                       ->sample[sel_sample_cur]
+                       .snd[sel_variation]
+                       ->slice_num -
+                   1;
+    playback_stopped = false;
+  }
+  if (do_stop_playback) {
+    beat_current = 0;
+    do_stop_playback = false;
+    playback_stopped = true;
+  }
+  if (playback_stopped) {
+    return true;
+  }
+
   bpm_timer_counter++;
   if (retrig_beat_num > 0) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {

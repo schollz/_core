@@ -75,8 +75,8 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **A** + **D** → BASS mode
 - [ ] **B** → show bank (blinking) + sample (bright)
 - [ ] **B** + **H** + **H** → select bank (1st) + sample (2nd)
-- [ ] **B** + **C** → ?
-- [ ] **B** + **D** → ?
+- [ ] **B** + **C** → start/stop
+- [ ] **B** + **D** → mute
 - [ ] **C** → show which sequence is selected (bright)
 - [ ] **C** + **H** + **H**... → create chain of sequences
 - [ ] **C** + **B** → toggle play sequence

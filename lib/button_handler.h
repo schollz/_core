@@ -304,13 +304,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // S+B
       mode_buttons16 = MODE_MASH;
       // // toggle mute
-      // if (button_mute) {
-      //   printf("[button_handler] button_mute off\n");
-      //   button_mute = false;
-      // } else {
-      //   printf("[button_handler] trigger button_mute\n");
-      //   trigger_button_mute = true;
-      // }
     } else if (key2 == KEY_C) {
       // S+C
       // toggle bass mode
@@ -337,18 +330,34 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     // A
     if (key2 == KEY_B) {
       // A+B
-      // toggle one-shot vs classic
-      banks[sel_bank_cur]
-          ->sample[sel_sample_cur]
-          .snd[sel_variation]
-          ->play_mode = (banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[sel_variation]
-                             ->play_mode +
-                         1) %
-                        3;
+      if (button_mute) {
+        printf("[button_handler] button_mute off\n");
+        button_mute = false;
+      } else if (!button_mute) {
+        printf("[button_handler] trigger button_mute\n");
+        trigger_button_mute = true;
+      }
+
+      // // toggle one-shot vs classic
+      // banks[sel_bank_cur]
+      //     ->sample[sel_sample_cur]
+      //     .snd[sel_variation]
+      //     ->play_mode = (banks[sel_bank_cur]
+      //                        ->sample[sel_sample_cur]
+      //                        .snd[sel_variation]
+      //                        ->play_mode +
+      //                    1) %
+      //                   3;
     } else if (key2 == KEY_C) {
       // A+C
+      if (playback_stopped) {
+        do_restart_playback = true;
+        button_mute = false;
+      } else {
+        if (!button_mute) trigger_button_mute = true;
+        do_stop_playback = true;
+      }
+
     } else if (key2 > 3) {
       // A+H
       if (!key_b_sample_select) {
@@ -386,6 +395,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // }
     } else if (key2 == KEY_C) {
       // B + C
+
       // toggle record sequence
       // if (toggle_chain_rec) {
       //   Chain_save(chain, &sync_using_sdcard);
