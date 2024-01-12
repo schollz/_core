@@ -74,10 +74,10 @@ uint vols[2];
 float vol3 = 0;
 float envelope_pitch_val;
 float envelope_wobble_val;
-uint beat_current = 0;
-uint beat_total = 0;
+int32_t beat_current = 0;
+int32_t beat_total = 0;
 uint debounce_quantize = 0;
-uint32_t bpm_timer_counter = 0;
+int64_t bpm_timer_counter = 0;
 uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
 bool retrig_first = false;
@@ -124,6 +124,9 @@ bool clock_in_ready = false;
 
 uint8_t do_update_beat_repeat = 0;
 
+bool do_stop_playback = false;
+bool do_restart_playback = true;
+bool playback_stopped = true;
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
