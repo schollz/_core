@@ -652,6 +652,53 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(
+                 debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1])) {
+    // show an LED bar
+    const uint8_t led_bar_ordering[32] = {
+        10, 14, 13, 9, 5, 6, 7, 11, 15, 19, 18, 17, 16, 12, 8, 4,
+        10, 14, 13, 9, 5, 6, 7, 11, 15, 19, 18, 17, 16, 12, 8, 4};
+    const bool led_bar_brightness[32] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    };
+    for (uint8_t i = 0;
+         i < linlin_uint8_t(
+                 DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1]),
+                 10, 240, 0, 32);
+         i++) {
+      if (led_bar_brightness[i]) {
+        LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+      } else {
+        LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL])) {
+    // show an LED bar
+    const uint8_t led_bar_ordering[32] = {
+        16, 12, 8,  4, 4, 8,  12, 16, 17, 13, 9,  5,  5,  9,  13, 17,
+        18, 14, 10, 6, 6, 10, 14, 18, 7,  11, 15, 19, 19, 15, 11, 7};
+    const bool led_bar_brightness[32] = {
+        0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+        0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+    };
+    for (uint8_t i = 0;
+         i < linlin_uint8_t(
+                 DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL]),
+                 10, 240, 0, 32);
+         i++) {
+      if (led_bar_brightness[i]) {
+        LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+      } else {
+        LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
+    }
+    LEDS_render(leds);
+    return;
   } else {
     if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
       if (key_total_pressed > 0) {

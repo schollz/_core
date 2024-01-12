@@ -140,7 +140,9 @@ Gate *audio_gate;
 Saturation *saturation;
 
 #define DEBOUNCE_UINT8_LED_BAR 0
-#define DEBOUNCE_UINT8_NUM 2
+#define DEBOUNCE_UINT8_LED_SPIRAL1 1
+#define DEBOUNCE_UINT8_LED_WALL 2
+#define DEBOUNCE_UINT8_NUM 3
 DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
 
 bool sdcard_startup_is_starting = false;
