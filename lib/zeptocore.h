@@ -168,6 +168,8 @@ void input_handling() {
               ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
             }
           }
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
+                            adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
         } else if (button_is_pressed(KEY_C)) {
         }
@@ -206,11 +208,10 @@ void input_handling() {
             sf->vol = new_vol;
             printf("sf-vol: %d\n", sf->vol);
           }
+
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
+                            adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_A)) {
-          for (uint8_t channel = 0; channel < 2; channel++) {
-            ResonantFilter_setQ(resFilter[channel],
-                                adc * (resonantfilter_q_max) / 4096);
-          }
         } else if (button_is_pressed(KEY_B)) {
         } else if (button_is_pressed(KEY_C)) {
           // const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
