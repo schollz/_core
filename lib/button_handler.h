@@ -657,6 +657,8 @@ void button_handler(ButtonMatrix *bm) {
       if (key_total_pressed > 0) {
         LEDS_set(leds, sel_bank_next + 4, 2);
         LEDS_set(leds, sel_sample_next + 4, 3);
+        LEDS_render(leds);
+        return;
       } else {
         key_b_sample_select = false;
       }
@@ -697,9 +699,12 @@ void button_handler(ButtonMatrix *bm) {
                  LED_DIM);
       }
     }
-    for (uint8_t i = 0; i < 16; i++) {
-      if (sf->fx_active[i]) {
-        LEDS_set(leds, i + 4, LED_BRIGHT);
+    if (mode_buttons16 == MODE_MASH ||
+        (mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_SHIFT])) {
+      for (uint8_t i = 0; i < 16; i++) {
+        if (sf->fx_active[i]) {
+          LEDS_set(leds, i + 4, LED_BRIGHT);
+        }
       }
     }
   }
@@ -707,6 +712,14 @@ void button_handler(ButtonMatrix *bm) {
     if (key_on_buttons[i] > 0) {
       LEDS_set(leds, i, LED_BRIGHT);
     }
+  }
+
+  if (playback_stopped) {
+    LEDS_set(leds, 1, LED_BRIGHT);
+    LEDS_set(leds, 3, LED_BLINK);
+  } else if (button_mute) {
+    LEDS_set(leds, 1, LED_BRIGHT);
+    LEDS_set(leds, 2, LED_BLINK);
   }
   LEDS_render(leds);
 }
