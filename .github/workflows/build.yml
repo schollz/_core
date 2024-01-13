@@ -32,14 +32,13 @@ jobs:
         submodules: true
     - name: Set PICO_SDK_PATH
       run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-    - name: Build build/_core.uf2
+    - name: Build UF2s
       run: |
-        make
-    - name: Rename _core.uf2
-      run: |
-        mv build/*.uf2 _core.uf2
-        echo "UF2_FILE=_core.uf2" >> $GITHUB_ENV
+        make zeptocore
+        make ectocore
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: _core.uf2
+        files: |
+          zeptocore.uf2
+          ectocore.uf2
