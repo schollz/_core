@@ -1,6 +1,7 @@
 # _core
 
-![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)
+![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
+
 
 this is the source code for *_core* music devices that utilize the rp2040. devices may differ, but the basic specification is as follows:
 
