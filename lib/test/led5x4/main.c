@@ -26,7 +26,7 @@
 #include "../../led_text_5x4.h"
 
 int main() {
-  int number = 123;
+  int number = 103;
   char output[3];  // Assuming the number won't have more than 3 digits
 
   int numDigits = numberToCharArray(number, output);
