@@ -4,12 +4,12 @@
 typedef struct DebounceDigits {
   uint16_t duration;
   uint16_t max_duration;
-  uint16_t value : 9;
-  uint16_t active : 1;
-  uint16_t num_digits : 2;
-  uint16_t current_digit : 2;
-  uint16_t repeats : 2;
-  char digits[3];
+  uint16_t value : 10;
+  uint16_t active : 3;
+  uint16_t num_digits : 3;
+  uint8_t current_digit : 4;
+  uint8_t repeats : 4;
+  char digits[4];
 } DebounceDigits;
 
 DebounceDigits *DebounceDigits_malloc() {
@@ -61,10 +61,12 @@ void DebounceDigits_set(DebounceDigits *self, uint16_t number,
   if (number == 0) {
     self->digits[i++] = '0';
   } else {
-    while (number > 0) {
+    uint8_t j = 0;
+    while (number > 0 && j < 3) {
       self->digits[i++] =
           (number % 10) + '0';  // Convert digit to char and store in array
       number /= 10;
+      j++;
     }
   }
   self->num_digits = i;
@@ -82,7 +84,7 @@ bool DebounceDigits_active(DebounceDigits *self) {
   if (self->duration == 0) {
     self->current_digit++;
     // printf("current digit: %d/%d\n", self->current_digit, self->num_digits);
-    if (self->current_digit == self->num_digits) {
+    if (self->current_digit == self->num_digits + 1) {
       if (++self->repeats == 3) {
         self->active = 0;
         return false;
@@ -95,7 +97,10 @@ bool DebounceDigits_active(DebounceDigits *self) {
 }
 
 char DebounceDigits_get(DebounceDigits *self) {
-  return self->digits[self->current_digit];
+  if (self->current_digit == 0) {
+    return ' ';
+  }
+  return self->digits[self->current_digit - 1];
 }
 
 #endif

@@ -677,6 +677,29 @@ void button_handler(ButtonMatrix *bm) {
     }
     LEDS_render(leds);
     return;
+  } else if (DebounceDigits_active(debouncer_digits)) {
+    char digit = DebounceDigits_get(debouncer_digits);
+
+    for (int i = 0; i < sizeof(led_text_5x4) / sizeof(led_text_5x4[0]); i++) {
+      if (led_text_5x4[i].character == digit) {
+        int led = 0;
+        for (int j = 0; j < 5; j++) {
+          // print out 0 or 1
+          for (int k = 0; k < 4; k++) {
+            bool is_one = (led_text_5x4[i].dots[j] >> (3 - k)) & 1;
+            if (is_one) {
+              LEDS_set(leds, led, LED_BRIGHT);
+            } else {
+              LEDS_set(leds, led, 0);
+            }
+            led++;
+          }
+        }
+        break;
+      }
+    }
+    LEDS_render(leds);
+    return;
   } else if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL])) {
     // show an LED bar
     const uint8_t led_bar_ordering[32] = {

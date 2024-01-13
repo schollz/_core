@@ -147,6 +147,7 @@ void input_handling() {
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
           sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+          DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 400);
         } else if (button_is_pressed(KEY_A)) {
           gate_threshold = adc *
                            (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
