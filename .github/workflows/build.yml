@@ -14,7 +14,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.11'
     - name: Install Pico SDK dependencies
       run: |
         sudo apt update
@@ -25,13 +25,11 @@ jobs:
       with:
         repository: raspberrypi/pico-sdk
         path: pico-sdk
+        submodules: true
     - name: Set PICO_SDK_PATH
       run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
     - name: Build
       run: |
-        mkdir build
-        cd build
-        cmake ..
         make
     - name: Rename and upload UF2 file
       run: |
