@@ -1,5 +1,18 @@
-dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+
+zeptocore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	mv build/_core.uf2 zeptocore.uf2
+
+ectocore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+	cp ectocore_compile_definitions.cmake target_compile_definitions.cmake
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	mv build/_core.uf2 ectocore.uf2
+
+boardcore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+	cp boardcore_compile_definitions.cmake target_compile_definitions.cmake
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	mv build/_core.uf2 ectocore.uf2
 
 envs:
 	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
@@ -114,6 +127,3 @@ server:
 
 resetpico: 
 	python3 dev/reset_pico.py 
-
-ectocore: dobuild resetpico
-	./dev/upload.sh

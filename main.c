@@ -281,9 +281,9 @@ int main() {
   for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
     debouncer_uint8[i] = DebounceUint8_malloc();
   }
-  debouncer_digits = DebounceDigits_malloc();
 
 #ifdef INCLUDE_ZEPTOCORE
+  debouncer_digits = DebounceDigits_malloc();
   leds = LEDS_create();
   ledtext = LEDText_create();
 #endif
@@ -340,7 +340,10 @@ int main() {
   sel_variation = 0;
   fil_current_change = true;
 
+#ifdef INCLUDE_ZEPTOCORE
+
   mode_buttons16 = MODE_JUMP;
+#endif
   // audio_mute = true;
 
   // blocking
