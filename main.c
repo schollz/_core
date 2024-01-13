@@ -281,6 +281,7 @@ int main() {
   for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
     debouncer_uint8[i] = DebounceUint8_malloc();
   }
+  debouncer_digits = DebounceDigits_malloc();
 
 #ifdef INCLUDE_ZEPTOCORE
   leds = LEDS_create();
