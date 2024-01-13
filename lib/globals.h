@@ -145,7 +145,9 @@ Saturation *saturation;
 #define DEBOUNCE_UINT8_LED_DIAGONAL 3
 #define DEBOUNCE_UINT8_NUM 4
 DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
+#ifdef INCLUDE_ZEPTOCORE
 DebounceDigits *debouncer_digits;
+#endif
 
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
