@@ -193,8 +193,10 @@ cd pico-sdk &&  git submodule update --init
 Do a build:
 
 ```
-make clean && PICO_SDK_PATH=../pico-sdk make
+make clean && PICO_SDK_PATH=../pico-sdk make zeptocore
 ```
+
+(replac 'zeptocore' with 'ectocore' if you are building the latter)
 
 # license
 
