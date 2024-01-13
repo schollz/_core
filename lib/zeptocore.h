@@ -22,6 +22,13 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
+void clear_debouncers() {
+  for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
+    DebounceUint8_clear(debouncer_uint8[i]);
+  }
+  DebounceDigits_clear(debouncer_digits);
+}
+
 void clock_handling_up(int time_diff) {
   sf->bpm_tempo = 60000000 / (time_diff * 2);
   clock_in_ready = true;
@@ -138,6 +145,7 @@ void input_handling() {
       adc_debounce[0]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][0] = adc * 255 / 4096;
+        clear_debouncers();
         DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                           sf->fx_param[single_key - 4][0], 100);
         printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
@@ -147,6 +155,9 @@ void input_handling() {
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
           sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
+                            adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 400);
         } else if (button_is_pressed(KEY_A)) {
           gate_threshold = adc *
@@ -195,6 +206,7 @@ void input_handling() {
               ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
             }
           }
+          clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
@@ -235,7 +247,7 @@ void input_handling() {
             sf->vol = new_vol;
             printf("sf-vol: %d\n", sf->vol);
           }
-
+          clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_A)) {
