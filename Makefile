@@ -1,18 +1,20 @@
+dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 
-zeptocore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 	mv build/_core.uf2 zeptocore.uf2
 
-ectocore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
-	cp ectocore_compile_definitions.cmake target_compile_definitions.cmake
+ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
 	mv build/_core.uf2 ectocore.uf2
 
-boardcore: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
-	cp boardcore_compile_definitions.cmake target_compile_definitions.cmake
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
-	mv build/_core.uf2 ectocore.uf2
+copyzepto:
+	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
+
+copyecto:
+	cp ectocore_compile_definitions.cmake target_compile_definitions.cmake
 
 envs:
 	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
