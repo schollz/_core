@@ -129,7 +129,7 @@ void sdcard_startup() {
   // SaveFile_load(sf);
   // SaveFile_test_sequencer(sf);
 
-  sleep_ms(1000);
+  // sleep_ms(1000);
 
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
