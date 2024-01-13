@@ -1,5 +1,7 @@
 # _core
 
+![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)
+
 this is the source code for *_core* music devices that utilize the rp2040. devices may differ, but the basic specification is as follows:
 
 - mono or stereo playback of 16-bit (internal 32-bit) audio files @ 44.1 kHz sampling rate

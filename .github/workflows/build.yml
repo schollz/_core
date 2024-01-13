@@ -1,13 +1,10 @@
-name: Build UF2 File on Release
+name: Build Check
 
 on:
-  release:
-    types: [created]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,13 +29,9 @@ jobs:
         submodules: true
     - name: Set PICO_SDK_PATH
       run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-    - name: Build UF2s
-      run: |
+    - name: Build zeptocore
+      run:
         make zeptocore
+    - name: Build ectocore
+      run:
         make ectocore
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          zeptocore.uf2
-          ectocore.uf2
