@@ -196,7 +196,7 @@ Do a build:
 make clean && PICO_SDK_PATH=../pico-sdk make zeptocore
 ```
 
-(replac 'zeptocore' with 'ectocore' if you are building the latter)
+(replace '`zeptocore`' with '`ectocore`' if you are building the latter)
 
 # license
 
