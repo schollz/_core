@@ -1,0 +1,37 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout project
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install Pico SDK dependencies
+      run: |
+        sudo apt update
+        sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
+        python3 -m pip install numpy matplotlib tqdm icecream
+    - name: Checkout pico-sdk
+      uses: actions/checkout@v4
+      with:
+        repository: raspberrypi/pico-sdk
+        path: pico-sdk
+        submodules: true
+    - name: Set PICO_SDK_PATH
+      run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
+    - name: Build zeptocore
+      run:
+        make zeptocore
+    - name: Build ectocore
+      run:
+        make ectocore
