@@ -31,7 +31,7 @@ breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
 hand-held version (see [demo](https://www.instagram.com/p/C1PFLGDvB9I/)).
 
 <center>
-<img src="https://github.com/schollz/_core/assets/6550035/c648be5f-eb1a-438f-979d-3e01331d259b" width=50%>
+<img src="https://github.com/schollz/_core/assets/6550035/05e2b34b-efbc-47d1-8ba0-605ad723f85c" width=40%>
 </center>
 
 
