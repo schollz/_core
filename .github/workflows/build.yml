@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout project
+      uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Install Pico SDK dependencies
@@ -24,22 +25,21 @@ jobs:
         sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
         python3 -m pip install numpy matplotlib tqdm icecream
     - name: Checkout pico-sdk
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: raspberrypi/pico-sdk
         path: pico-sdk
         submodules: true
     - name: Set PICO_SDK_PATH
       run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-    - name: Build
+    - name: Build build/_core.uf2
       run: |
         make
-    - name: Rename and upload UF2 file
+    - name: Rename _core.uf2
       run: |
         mv build/*.uf2 _core.uf2
         echo "UF2_FILE=_core.uf2" >> $GITHUB_ENV
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: _core.uf2
