@@ -72,6 +72,32 @@ void input_handling() {
 
   uint8_t debounce_beat_repeat = 0;
 
+  // debug test
+  for (int i = 0; i < sizeof(led_text_5x4) / sizeof(led_text_5x4[0]); i++) {
+    if (led_text_5x4[i].character == 'Z') {
+      int led = 0;
+      for (int j = 0; j < 5; j++) {
+        // print out 0 or 1
+        for (int k = 0; k < 4; k++) {
+          bool is_one = (led_text_5x4[i].dots[j] >> (3 - k)) & 1;
+          if (is_one) {
+            LEDS_set(leds, led, LED_BRIGHT);
+            printf("1");
+          } else {
+            LEDS_set(leds, led, 0);
+            printf("0");
+          }
+          led++;
+        }
+        printf("\n");
+      }
+      printf("\n");
+      break;
+    }
+  }
+  LEDS_render(leds);
+  sleep_ms(1000);
+
   while (1) {
     adc_select_input(2);
 
