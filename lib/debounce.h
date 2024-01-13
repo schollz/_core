@@ -24,6 +24,8 @@ void DebounceUint8_free(DebounceUint8 *self) {
   free(self);
 }
 
+void DebounceUint8_clear(DebounceUint8 *self) { self->duration = 0; }
+
 void DebounceUint8_set(DebounceUint8 *self, uint8_t value, uint16_t duration) {
   self->duration = duration;
   self->value = value;

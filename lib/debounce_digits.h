@@ -8,7 +8,8 @@ typedef struct DebounceDigits {
   uint16_t active : 3;
   uint16_t num_digits : 3;
   uint8_t current_digit : 4;
-  uint8_t repeats : 4;
+  uint8_t repeats : 3;
+  uint8_t space : 1;
   char digits[4];
 } DebounceDigits;
 
@@ -52,10 +53,11 @@ void DebounceDigits_set(DebounceDigits *self, uint16_t number,
                         uint16_t duration) {
   self->value = number;
   self->max_duration = duration;
-  self->duration = duration;
+  self->duration = duration * 0.1;
   self->current_digit = 0;
   self->repeats = 0;
   self->active = 1;
+  self->space = 1;
   // determine the digits
   int i = 0;
   if (number == 0) {
@@ -82,7 +84,13 @@ bool DebounceDigits_active(DebounceDigits *self) {
   self->duration--;
   // printf("self->duration: %d\n", self->duration);
   if (self->duration == 0) {
-    self->current_digit++;
+    self->space = !self->space;
+    if (self->space) {
+      self->current_digit++;
+      self->duration = self->max_duration * 0.1;
+    } else {
+      self->duration = self->max_duration;
+    }
     // printf("current digit: %d/%d\n", self->current_digit, self->num_digits);
     if (self->current_digit == self->num_digits + 1) {
       if (++self->repeats == 3) {
@@ -91,13 +99,17 @@ bool DebounceDigits_active(DebounceDigits *self) {
       }
       self->current_digit = 0;
     }
-    self->duration = self->max_duration;
   }
   return true;
 }
 
+void DebounceDigits_clear(DebounceDigits *self) { self->active = 0; }
+
 char DebounceDigits_get(DebounceDigits *self) {
-  if (self->current_digit == 0) {
+  if (self->active == 0) {
+    return ' ';
+  }
+  if (self->current_digit == 0 || self->space) {
     return ' ';
   }
   return self->digits[self->current_digit - 1];
