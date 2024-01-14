@@ -106,6 +106,10 @@ void input_handling() {
   sleep_ms(1000);
 
   while (1) {
+    if (MessageSync_hasMessage(messagesync)) {
+      MessageSync_print(messagesync);
+      MessageSync_clear(messagesync);
+    }
     adc_select_input(2);
 
     // check if a single button is held

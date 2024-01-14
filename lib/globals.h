@@ -149,6 +149,7 @@ DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
 DebounceDigits *debouncer_digits;
 #endif
 
+MessageSync *messagesync;
 bool sdcard_startup_is_starting = false;
 bool audio_mute = false;
 bool trigger_audio_mute = false;
