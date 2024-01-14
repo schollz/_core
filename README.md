@@ -150,6 +150,49 @@ holding an effect and using a knob will change its parameters.
 - probability tunnel
 - probability repitch
 
+# building image
+
+## windows
+
+Install WSL 2
+
+```
+$ wsl --set-default-version 2
+$ wsl --install Ubuntu
+```
+
+Then restart computer and run 
+
+```
+$ wsl --install
+```
+
+That should start your system. Then you can follow the Linux directions:
+
+## linux
+
+Install the pre-requisites:
+
+```
+sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib git python3 g++
+sudo -H python3 -m pip install numpy matplotlib tqdm icecream librosa click
+```
+
+Clone this repo and install the Pico SDK:
+
+```
+git clone https://github.com/schollz/_core
+cd _core
+git clone https://github.com/raspberrypi/pico-sdk
+cd pico-sdk &&  git submodule update --init
+```
+
+Do a build:
+
+```
+make clean && PICO_SDK_PATH=../pico-sdk make
+```
+
 # license
 
 - Apache License 2.0 for no-OS-FatFS (Copyright 2021 Carl John Kugler III)

@@ -1,0 +1,43 @@
+name: Build UF2 File on Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install Pico SDK dependencies
+      run: |
+        sudo apt update
+        sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
+        python3 -m pip install numpy matplotlib tqdm icecream librosa click
+    - name: Checkout pico-sdk
+      uses: actions/checkout@v2
+      with:
+        repository: raspberrypi/pico-sdk
+        path: pico-sdk
+    - name: Set PICO_SDK_PATH
+      run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
+    - name: Rename and upload UF2 file
+      run: |
+        mv build/*.uf2 _core.uf2
+        echo "UF2_FILE=_core.uf2" >> $GITHUB_ENV
+    - name: Upload UF2
+      uses: actions/upload-artifact@v2
+      with:
+        name: uf2
+        path: ${{ env.UF2_FILE }}
