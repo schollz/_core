@@ -13,6 +13,7 @@ this is the source code for *_core* music devices that utilize the rp2040. devic
 - realtime sequencer with optional quantization
 - low-latency (<10 ms)
 
+there are a few versions of the "*_core*" devices that utilize this firmware:
 
 ## boardcore
 
