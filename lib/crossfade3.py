@@ -179,20 +179,20 @@ int16_t crossfade3_in(int16_t val, uint16_t i, uint8_t crossfade_type) {
 """
     )
 
-    # Plot the sine wave
-    plt.plot(x, cos_out, label="Cos", color="r")
-    plt.plot(x, sqrt_out, label="Sqrt", color="b")
-    plt.plot(x, line_out, label="Line", color="g")
-    plt.plot(x, exp_out, label="Exp", color="y")
-    plt.plot(x, cos_in, color="r")
-    plt.plot(x, sqrt_in, color="b")
-    plt.plot(x, 1 - line_out, color="g")
-    plt.plot(x, exp_in, color="y")
-    plt.legend()
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.title("Curves")
-    plt.show()
+    # # Plot the sine wave
+    # plt.plot(x, cos_out, label="Cos", color="r")
+    # plt.plot(x, sqrt_out, label="Sqrt", color="b")
+    # plt.plot(x, line_out, label="Line", color="g")
+    # plt.plot(x, exp_out, label="Exp", color="y")
+    # plt.plot(x, cos_in, color="r")
+    # plt.plot(x, sqrt_in, color="b")
+    # plt.plot(x, 1 - line_out, color="g")
+    # plt.plot(x, exp_in, color="y")
+    # plt.legend()
+    # plt.xlabel("X")
+    # plt.ylabel("Y")
+    # plt.title("Curves")
+    # plt.show()
 
 
 if __name__ == "__main__":
