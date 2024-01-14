@@ -30,7 +30,10 @@ int main() {
   MessageSync_print(ms);
   MessageSync_clear(ms);
   MessageSync_print(ms);
-  MessageSync_append(ms, "ok\n");
+  MessageSync_printf(ms, "%d + %d = %d\n", 1, 1, 1 + 1);
+  MessageSync_printf(ms, "%d + %d = %d\n", 2, 1, 2 + 1);
+  MessageSync_printf(ms, "%d + %d = %d\n", 4, 1, 4 + 1);
+  MessageSync_printf(ms, "%d + %d = %d\n", 3, 1, 3 + 1);
   MessageSync_print(ms);
   MessageSync_free(ms);
 
