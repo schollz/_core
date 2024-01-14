@@ -426,21 +426,23 @@ void i2s_callback_func() {
     last_seeked = phases[head] + fil_bytes_read;
 
     if (fil_bytes_read < values_to_read) {
-      printf("%d %d: asked for %d bytes, read %d bytes\n", phases[head],
-             WAV_HEADER +
-                 ((banks[sel_bank_cur]
-                       ->sample[sel_sample_cur]
-                       .snd[sel_variation]
-                       ->num_channels +
-                   1) *
-                  (banks[sel_bank_cur]
-                       ->sample[sel_sample_cur]
-                       .snd[sel_variation]
-                       ->oversampling +
-                   1) *
-                  44100) +
-                 phases[head],
-             values_to_read, fil_bytes_read);
+      MessageSync_printf(messagesync,
+                         "%d %d: asked for %d bytes, read %d bytes\n",
+                         phases[head],
+                         WAV_HEADER +
+                             ((banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[sel_variation]
+                                   ->num_channels +
+                               1) *
+                              (banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[sel_variation]
+                                   ->oversampling +
+                               1) *
+                              44100) +
+                             phases[head],
+                         values_to_read, fil_bytes_read);
     }
 
     if (!phase_forward) {
@@ -672,7 +674,7 @@ void i2s_callback_func() {
 
   if (do_fade_out) {
     if (!do_open_file_ready) {
-      printf("[audio_callback] do_fade_out -> audio_mute\n");
+      // printf("[audio_callback] do_fade_out -> audio_mute\n");
       audio_mute = true;
     }
   }
@@ -694,22 +696,23 @@ void i2s_callback_func() {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
 #ifdef PRINT_AUDIO_CPU_USAGE
-    printf("average cpu utilization: %2.1f\n",
-           ((float)cpu_utilization) / (float)cpu_utilizations_i);
+    MessageSync_printf(messagesync, "average cpu utilization: %2.1f\n",
+                       ((float)cpu_utilization) / (float)cpu_utilizations_i);
 
 #endif
 #ifdef PRINT_MEMORY_USAGE
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
-    printf("memory usage: %2.1f%% (%ld/%ld)\n",
-           (float)(used_heap) / (float)(total_heap)*100.0, used_heap,
-           total_heap);
+    MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
+                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING
-    printf("sdcard%2.1f %ld %d %d %ld\n", ((float)cpu_utilization) / 64.0,
-           sd_card_total_time, values_to_read, give_audio_buffer_time,
-           take_audio_buffer_time);
+    MessageSync_printf(messagesync, "sdcard%2.1f %ld %d %d %ld\n",
+                       ((float)cpu_utilization) / 64.0, sd_card_total_time,
+                       values_to_read, give_audio_buffer_time,
+                       take_audio_buffer_time);
 #endif
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
@@ -718,25 +721,26 @@ void i2s_callback_func() {
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
 #ifdef PRINT_SDCARD_TIMING
-      printf("sdcard%d %ld %d %d %ld\n", cpu_utilizations[cpu_utilizations_i],
-             sd_card_total_time, values_to_read, give_audio_buffer_time,
-             take_audio_buffer_time);
+      MessageSync_printf(messagesync, "sdcard%d %ld %d %d %ld\n",
+                         cpu_utilizations[cpu_utilizations_i],
+                         sd_card_total_time, values_to_read,
+                         give_audio_buffer_time, take_audio_buffer_time);
 #endif
       cpu_usage_flag++;
       cpu_usage_flag_total++;
 #ifdef PRINT_AUDIO_OVERLOADS
       if (cpu_usage_flag_total > 0) {
         clock_t currentTime = time_us_64();
-        printf("cpu overloads every: %d ms\n",
-               (currentTime - time_of_initialization) / 1000 /
-                   cpu_usage_flag_total);
+        MessageSync_printf(messagesync, "cpu overloads every: %d ms\n",
+                           (currentTime - time_of_initialization) / 1000 /
+                               cpu_usage_flag_total);
       }
 #endif
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }
-      printf("cpu utilization: %d, flag: %d\n",
-             cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
+      MessageSync_printf(messagesync, "cpu utilization: %d, flag: %d\n",
+                         cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
     } else {
       if (cpu_flag_counter > 0) {
         cpu_flag_counter--;
@@ -746,5 +750,6 @@ void i2s_callback_func() {
     }
   }
 
+  MessageSync_lockIfNotEmpty(messagesync);
   return;
 }
