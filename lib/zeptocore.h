@@ -111,6 +111,7 @@ void input_handling() {
       MessageSync_clear(messagesync);
     }
 
+#ifdef PRINT_SDCARD_TIMING
     // random stuff
     if (random_integer_in_range(1, 10000) < 10) {
       // printf("random retrig\n");
@@ -119,6 +120,7 @@ void input_handling() {
       // printf("random retrigger\n");
       go_retrigger_2key(1, 1);
     }
+#endif
 
     adc_select_input(2);
 
