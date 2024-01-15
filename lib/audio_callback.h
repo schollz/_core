@@ -347,7 +347,9 @@ void i2s_callback_func() {
       sd_card_total_time += (t1 - t0);
 #ifdef PRINT_SDCARD_TIMING
       if (do_open_file) {
-        printf("[audio_callback] do_open_file f_close+f_open: %d\n", (t1 - t0));
+        MessageSync_printf(messagesync,
+                           "[audio_callback] do_open_file f_close+f_open: %d\n",
+                           (t1 - t0));
       }
 #endif
       if (fr != FR_OK) {
@@ -388,7 +390,9 @@ void i2s_callback_func() {
       t1 = time_us_32();
 #ifdef PRINT_SDCARD_TIMING
       if (do_open_file) {
-        printf("[audio_callback] do_open_file f_lseek: %d\n", (t1 - t0));
+        MessageSync_printf(messagesync,
+                           "[audio_callback] do_open_file f_lseek: %d\n",
+                           (t1 - t0));
       }
 #endif
       sd_card_total_time += (t1 - t0);
@@ -420,7 +424,8 @@ void i2s_callback_func() {
     sd_card_total_time += (t1 - t0);
 #ifdef PRINT_SDCARD_TIMING
     if (do_open_file) {
-      printf("[audio_callback] do_open_file f_read: %d\n", (t1 - t0));
+      MessageSync_printf(
+          messagesync, "[audio_callback] do_open_file f_read: %d\n", (t1 - t0));
     }
 #endif
     last_seeked = phases[head] + fil_bytes_read;
@@ -690,7 +695,7 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
-  if (cpu_utilizations_i == 64 || sd_card_total_time > 3000 || do_open_file) {
+  if (cpu_utilizations_i == 64 || sd_card_total_time > 10000 || do_open_file) {
     uint16_t cpu_utilization = 0;
     for (uint8_t i = 0; i < cpu_utilizations_i; i++) {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
