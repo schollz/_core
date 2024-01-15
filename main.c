@@ -227,7 +227,7 @@ int main() {
 // otherwise clock divider of 1 is fine
 // set_sys_clock_khz(270000, true);
 #ifdef DO_OVERCLOCK
-  set_sys_clock_khz(200000, true);
+  set_sys_clock_khz(250000, true);
 #else
   set_sys_clock_khz(125000, true);
 #endif
@@ -346,6 +346,14 @@ int main() {
 #ifdef INCLUDE_ZEPTOCORE
 
   mode_buttons16 = MODE_JUMP;
+
+  EnvelopeLinearInteger_reset(
+      envelope_filter, BLOCKS_PER_SECOND,
+      EnvelopeLinearInteger_update(envelope_filter, NULL), 5, 1.618);
+  sf->fx_active[FX_FUZZ] = true;
+  sf->fx_active[FX_SATURATE] = true;
+  sf->fx_active[FX_SHAPER] = true;
+
 #endif
   // audio_mute = true;
 
