@@ -72,7 +72,7 @@ plt.subplots_adjust(bottom=0.3)
 # Create a rectangle to cover the area above 10.0
 # x = 0.5 to start just before the first box, width = len(sd_timings) to cover all boxes
 rect = patches.Rectangle(
-    (0.5, 10000 / 846),
+    (0.5, 10),
     100,
     100,
     linewidth=0,
