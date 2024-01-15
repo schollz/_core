@@ -695,7 +695,7 @@ void i2s_callback_func() {
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
-  if (cpu_utilizations_i == 64 || sd_card_total_time > 10000 || do_open_file) {
+  if (cpu_utilizations_i == 64 || sd_card_total_time > 9000 || do_open_file) {
     uint16_t cpu_utilization = 0;
     for (uint8_t i = 0; i < cpu_utilizations_i; i++) {
       cpu_utilization = cpu_utilization + cpu_utilizations[i];

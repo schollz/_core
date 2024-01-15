@@ -110,6 +110,16 @@ void input_handling() {
       MessageSync_print(messagesync);
       MessageSync_clear(messagesync);
     }
+
+    // random stuff
+    if (random_integer_in_range(1, 10000) < 10) {
+      // printf("random retrig\n");
+      key_do_jump(random_integer_in_range(0, 15));
+    } else if (random_integer_in_range(1, 10000) < 5) {
+      // printf("random retrigger\n");
+      go_retrigger_2key(1, 1);
+    }
+
     adc_select_input(2);
 
     // check if a single button is held

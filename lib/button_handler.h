@@ -49,7 +49,7 @@ bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
-    printf("key_do_jump %d\n", beat);
+    // printf("key_do_jump %d\n", beat);
     key_jump_debounce = 1;
     beat_current = (beat_current / 16) * 16 + beat;
     retrig_pitch = PITCH_VAL_MID;
@@ -119,8 +119,8 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
     }
   }
   retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-  printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-         retrig_beat_num, retrig_timer_reset, total_time);
+  // printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+  //        retrig_beat_num, retrig_timer_reset, total_time);
   retrig_ready = true;
 }
 
