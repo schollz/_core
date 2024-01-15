@@ -44,7 +44,7 @@ typedef struct LEDS {
   uint8_t state[LEDS_ROWS][LEDS_COLS];
   PCA9552 *pca;
   uint8_t gpio_leds_state[4];
-  uint8_t gpio_leds_count[4];
+  uint16_t gpio_leds_count[4];
   int8_t gpio_leds_pin[4];
 } LEDS;
 
@@ -155,10 +155,11 @@ void LEDS_render(LEDS *leds) {
     // blink GPIO leds
     if (leds->gpio_leds_state[j] == LED_BLINK) {
       leds->gpio_leds_count[j]++;
-      if (leds->gpio_leds_count[j] == 128) {
+      if (leds->gpio_leds_count[j] == 700) {
         gpio_put(leds->gpio_leds_pin[j], 1);
-      } else if (leds->gpio_leds_count[j] == 0) {
+      } else if (leds->gpio_leds_count[j] >= 1400) {
         gpio_put(leds->gpio_leds_pin[j], 0);
+        leds->gpio_leds_count[j] = 0;
       }
     }
   }
