@@ -173,6 +173,9 @@ void input_handling() {
         } else if (key_on_buttons[FX_TREMELO + 4]) {
           lfo_tremelo_step =
               Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
+        } else if (key_on_buttons[FX_PAN + 4]) {
+          lfo_pan_step =
+              Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
         }
       } else {
         if (button_is_pressed(KEY_SHIFT)) {
