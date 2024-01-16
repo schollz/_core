@@ -1,12 +1,14 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -123,6 +125,21 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		if err != nil {
 			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
+		}
+		if filename == "static/index.html" {
+			// determine the current version with
+			// git describe --tags --abbrev=0 --always
+			// and replace the version in the index.html
+			// use the external git command
+			cmd := exec.Command("git", "describe", "--tags", "--abbrev=0", "--always")
+			var out bytes.Buffer
+			cmd.Stdout = &out
+			err = cmd.Run()
+			if err != nil {
+				log.Error(err)
+			} else {
+				b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte(out.String()), 2)
+			}
 		}
 		w.Write(b)
 	}
