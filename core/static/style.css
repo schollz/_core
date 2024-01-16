@@ -64,6 +64,21 @@ footer {
     padding: 1rem;
     display: flex;
     align-items: center;
+    display: flex;
+    align-items: center;
+}
+
+#floater {
+    margin-left: auto;
+    font-weight: 900;
+    font-size: 1.5rem;
+}
+
+@media (max-width: 600px) {
+    #floater {
+        font-size: 1rem;
+        /* or you can specify a specific size like 12px */
+    }
 }
 
 header {
@@ -169,8 +184,8 @@ a:hover {
 }
 
 .drop-area {
-    border: 2px dashed #ddd;
-    padding: 1rem;
+    border: 2px dashed #aaa;
+    padding: 2rem;
     text-align: center;
     cursor: pointer;
 }
