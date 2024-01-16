@@ -23,28 +23,32 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #ifndef GATE_LIB
+#define GATE_LIB 1
+#define GATE_MAX 245.0
+
+#include "utils.h"
 
 typedef struct Gate {
   uint32_t threshold;
   uint32_t counter;
   uint32_t blocks_per_second;
   float bpm;
-  float percent;
+  float setpoint;
 } Gate;
 
 void Gate_reset(Gate *gate) { gate->counter = 0; }
 
 void Gate_update_threshold(Gate *gate) {
-  if (gate->percent < 100) {
-    gate->threshold = (uint32_t)round(gate->blocks_per_second * gate->percent *
-                                      30.0 / (gate->bpm * 100));
+  if (gate->setpoint < GATE_MAX) {
+    gate->threshold = (uint32_t)round(gate->blocks_per_second * gate->setpoint *
+                                      30.0 / (gate->bpm * GATE_MAX));
   }
 }
 
 Gate *Gate_create(uint32_t blocks_per_second, float bpm) {
   Gate *gate = (Gate *)malloc(sizeof(Gate));
   gate->blocks_per_second = blocks_per_second;
-  gate->percent = 100.0;
+  gate->setpoint = GATE_MAX;
   gate->bpm = bpm;
   Gate_reset(gate);
   return gate;
@@ -60,13 +64,13 @@ void Gate_update(Gate *gate, float bpm) {
   }
 }
 
-void Gate_set_percent(Gate *gate, float percent) {
-  gate->percent = percent;
+void Gate_set_amount(Gate *gate, float setpoint) {
+  gate->setpoint = util_clamp(setpoint, 0, GATE_MAX);
   Gate_update_threshold(gate);
 }
 
 bool Gate_is_up(Gate *gate) {
-  if (gate->percent >= 100.0) {
+  if (gate->setpoint >= GATE_MAX) {
     return false;
   }
   return gate->counter >= gate->threshold;

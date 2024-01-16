@@ -167,6 +167,9 @@ void input_handling() {
         printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_BEATREPEAT + 4] && do_update_beat_repeat == 0) {
           debounce_beat_repeat = 30;
+        } else if (key_on_buttons[FX_TIGHTEN + 4]) {
+          printf("updating gate\n");
+          Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
         }
       } else {
         if (button_is_pressed(KEY_SHIFT)) {

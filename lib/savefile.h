@@ -67,7 +67,8 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_BITCRUSH][1] = 90;
   sf->fx_param[FX_DELAY][0] = 200;
   sf->fx_param[FX_DELAY][1] = 200;
-  sf->fx_param[FX_BEATREPEAT][0] = 54;
+  sf->fx_param[FX_BEATREPEAT][0] = 45;
+  sf->fx_param[FX_TIGHTEN][0] = 215;
   return sf;
 }
 
