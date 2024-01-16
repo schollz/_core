@@ -12,6 +12,17 @@ const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
 
 
+function fadeInCircle() {
+    var circle = document.getElementById('fadeCircle');
+    circle.style.opacity = '1';
+}
+
+function fadeOutCircle() {
+    var circle = document.getElementById('fadeCircle');
+    circle.style.opacity = '0';
+}
+
+
 const debounce = (callback, wait) => {
     let timeoutId = null;
     return (...args) => {
@@ -21,6 +32,10 @@ const debounce = (callback, wait) => {
         }, wait);
     };
 }
+
+const fadeOut = debounce(function () {
+    fadeOutCircle();
+}, 1000);
 
 // Function to read cookies
 function readCookie(name) {
@@ -91,14 +106,14 @@ const socketMessageListener = (e) => {
     } else if (data.action == "slicetype") {
         app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
         if (app.selectedFile != null) {
-            setTimeout(() => {
-                showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
-                    app.banks[app.selectedBank].files[app.selectedFile].Duration,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceType,
-                );
-            }, 100);
+            // setTimeout(() => {
+            //     showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
+            //         app.banks[app.selectedBank].files[app.selectedFile].Duration,
+            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
+            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
+            //         app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+            //     );
+            // }, 100);
         }
     } else if (data.action == "onsetdetect") {
         if (wsf != null) {
@@ -362,6 +377,8 @@ app = new Vue({
                 selectedFile: app.selectedFile,
             };
             if (socket != null) {
+                fadeInCircle();
+                fadeOut();
                 socket.send(JSON.stringify({
                     action: "updatestate",
                     place: window.location.pathname,

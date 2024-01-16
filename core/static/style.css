@@ -405,3 +405,18 @@ a {
 [v-cloak] {
     display: none;
 }
+
+
+#fadeCircle {
+    width: 25px;
+    height: 25px;
+    background-color: var(--header-footer-background);
+    border-radius: 50%;
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    opacity: 0;
+    transition: opacity 0.2s ease-in, opacity 1s ease-out;
+    z-index: 999;
+    /* Set a higher z-index value */
+}
