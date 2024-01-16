@@ -31,6 +31,55 @@ Sample selects currently playing sample from the current bank
 #include "mcp3208.h"
 #include "taptempo.h"
 
+void key_do_jump(uint8_t beat) {
+  if (beat >= 0 && beat < 16) {
+    // printf("key_do_jump %d\n", beat);
+    key_jump_debounce = 1;
+    beat_current = (beat_current / 16) * 16 + beat;
+    retrig_pitch = PITCH_VAL_MID;
+    do_update_phase_from_beat_current();
+  }
+}
+
+void go_retrigger_2key(uint8_t key1, uint8_t key2) {
+  debounce_quantize = 0;
+  retrig_first = true;
+  retrig_beat_num = random_integer_in_range(8, 24);
+  retrig_timer_reset =
+      96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
+  float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
+                     (float)(96 * sf->bpm_tempo);
+  if (total_time > 5.0f) {
+    total_time = total_time / 2;
+    retrig_timer_reset = retrig_timer_reset / 2;
+  }
+  if (total_time > 5.0f) {
+    total_time = total_time / 2;
+    retrig_beat_num = retrig_beat_num / 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  if (total_time < 0.5f) {
+    total_time = total_time * 2;
+    retrig_beat_num = retrig_beat_num * 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  if (total_time < 0.5f) {
+    total_time = total_time * 2;
+    retrig_beat_num = retrig_beat_num * 2;
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 1;
+    }
+  }
+  retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+  // printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+  //        retrig_beat_num, retrig_timer_reset, total_time);
+  retrig_ready = true;
+}
+
 void input_handling() {
   // flash bad signs
   while (!fil_is_open) {
@@ -59,15 +108,14 @@ void input_handling() {
 
 #ifdef PRINT_SDCARD_TIMING
     // random stuff
-    if (random_integer_in_range(1, 10000) < 10) {
+    if (random_integer_in_range(1, 20000) < 10) {
       // printf("random retrig\n");
       key_do_jump(random_integer_in_range(0, 15));
-    } else if (random_integer_in_range(1, 10000) < 5) {
+    } else if (random_integer_in_range(1, 20000) < 5) {
       // printf("random retrigger\n");
       go_retrigger_2key(1, 1);
     }
 #endif
-
 
     if (gpio_get(GPIO_TAPTEMPO) == 0 && !btn_taptempo_on) {
       btn_taptempo_on = true;
