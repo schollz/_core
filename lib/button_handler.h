@@ -165,9 +165,9 @@ void toggle_fx(uint8_t fx_num) {
     case FX_TIGHTEN:
       printf("FX_TIGHTEN\n");
       if (sf->fx_active[fx_num]) {
-        Gate_set_percent(audio_gate, 85);
+        Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
       } else {
-        Gate_set_percent(audio_gate, 100);
+        Gate_set_amount(audio_gate, 255);
       }
       break;
     case FX_SLOWDOWN:
