@@ -229,12 +229,12 @@ a:hover {
 .progress-bar {
     height: 5px;
     background: var(--header-footer-background);
-    position: relative;
-    bottom: -1.5rem;
-    left: -1rem;
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 0.5rem;
     width: 0;
-    transition: width 0.2s ease;
+    transition: width 0.2s ease, opacity 0.2s ease-in, opacity 5s ease-out;
     /* Add a smooth transition effect */
 }
 
