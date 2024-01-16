@@ -37,6 +37,17 @@ const fadeOut = debounce(function () {
     fadeOutCircle();
 }, 1000);
 
+function fadeInProgressbar() {
+    var circle = document.getElementsByClassName('progress-bar')[0];
+    circle.style.opacity = '1';
+}
+
+function fadeOutProgressbar() {
+    var circle = document.getElementsByClassName('progress-bar')[0];
+    circle.style.opacity = '0';
+}
+
+
 // Function to read cookies
 function readCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -182,10 +193,11 @@ const socketMessageListener = (e) => {
         app.downloading = true;
     } else if (data.action == "progress") {
         totalBytesUploaded += data.number;
-        var maxWidth = document.getElementsByClassName("progress-bar")[0].parentElement.offsetWidth;
+        var maxWidth = window.innerWidth;
         app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
         if (totalBytesUploaded >= totalBytesRequested) {
             app.progressBarWidth = `${maxWidth}px`;
+            fadeOutProgressbar();
         }
     } else {
         if (data.error != "") {
@@ -479,6 +491,7 @@ app = new Vue({
             event.preventDefault();
             const files = event.target.files || event.dataTransfer.files;
             this.progressBarWidth = '0%';
+            fadeInProgressbar();
             totalBytesUploaded = 0;
             totalBytesRequested = 0;
             for (var i = 0; i < files.length; i++) {
