@@ -51,6 +51,24 @@ void input_handling() {
 
   while (1) {
     uint16_t val;
+
+    if (MessageSync_hasMessage(messagesync)) {
+      MessageSync_print(messagesync);
+      MessageSync_clear(messagesync);
+    }
+
+#ifdef PRINT_SDCARD_TIMING
+    // random stuff
+    if (random_integer_in_range(1, 10000) < 10) {
+      // printf("random retrig\n");
+      key_do_jump(random_integer_in_range(0, 15));
+    } else if (random_integer_in_range(1, 10000) < 5) {
+      // printf("random retrigger\n");
+      go_retrigger_2key(1, 1);
+    }
+#endif
+
+
     if (gpio_get(GPIO_TAPTEMPO) == 0 && !btn_taptempo_on) {
       btn_taptempo_on = true;
       gpio_put(GPIO_TAPTEMPO_LED, 0);
