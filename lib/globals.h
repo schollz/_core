@@ -58,6 +58,8 @@ struct repeating_timer timer;
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
 
+SequencerHandler sequencerhandler[3];
+
 // voice 1 + 2
 // voice 1 is always an envelope UP
 // voice 2 is always an envelope DOWN
@@ -306,4 +308,22 @@ void do_update_phase_from_beat_current() {
 
   // printf("do_update_phase_from_beat_current: %d\n", phase_new);
 }
+
+void key_do_jump(uint8_t beat) {
+  if (beat >= 0 && beat < 16) {
+    printf("key_do_jump %d\n", beat);
+    // TODO: [0] should be which sequencer it is on
+    if (sequencerhandler[0].recording) {
+      Sequencer_add(sf->sequencers[0][0], beat, bpm_timer_counter);
+    }
+    key_jump_debounce = 1;
+    beat_current = (beat_current / 16) * 16 + beat;
+    retrig_pitch = PITCH_VAL_MID;
+    do_update_phase_from_beat_current();
+  }
+}
+
+void step_sequencer_emit(uint8_t key) { key_do_jump(key); }
+void step_sequencer_stop() { printf("stop\n"); }
+
 #endif

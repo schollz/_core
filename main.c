@@ -109,28 +109,28 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         retrig_first = false;
       }
     }
-  } else if (dub_step_break > -1) {
-    if (bpm_timer_counter % (192 * dub_step_numerator[dub_step_divider] /
-                             dub_step_denominator[dub_step_divider]) ==
-        0) {
-      dub_step_break++;
-      if (dub_step_break == dub_step_steps[dub_step_divider]) {
-        dub_step_divider++;
-        dub_step_break = 0;
-        if (dub_step_divider == 5) {
-          dub_step_break = -1;
-        }
-      }
-      beat_current = dub_step_beat;
-      printf("[dub_step_break] beat_current: %d\n", beat_current);
-      // debounce a little bit before going into the mode
-      if (dub_step_divider > 0 || dub_step_break > 1) {
-        // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
-        //        bpm_timer_counter);
-        do_update_phase_from_beat_current();
-        printf("%d %ld\n", phase_new, time_us_32());
-      }
-    }
+    // } else if (dub_step_break > -1) {
+    //   if (bpm_timer_counter % (192 * dub_step_numerator[dub_step_divider] /
+    //                            dub_step_denominator[dub_step_divider]) ==
+    //       0) {
+    //     dub_step_break++;
+    //     if (dub_step_break == dub_step_steps[dub_step_divider]) {
+    //       dub_step_divider++;
+    //       dub_step_break = 0;
+    //       if (dub_step_divider == 5) {
+    //         dub_step_break = -1;
+    //       }
+    //     }
+    //     beat_current = dub_step_beat;
+    //     printf("[dub_step_break] beat_current: %d\n", beat_current);
+    //     // debounce a little bit before going into the mode
+    //     if (dub_step_divider > 0 || dub_step_break > 1) {
+    //       // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
+    //       //        bpm_timer_counter);
+    //       do_update_phase_from_beat_current();
+    //       printf("%d %ld\n", phase_new, time_us_32());
+    //     }
+    //   }
   } else if (toggle_chain_play) {
     // int8_t beat = Chain_emit(chain, bpm_timer_counter);
     // if (beat > -1) {
@@ -153,12 +153,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     retrig_vol = 1.0;
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
-    if ((clock_in_do && clock_in_ready) ||
-        bpm_timer_counter % (96 * banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
-                                      ->splice_trigger) ==
-            0) {
+    if (sequencerhandler[0].playing) {
+      Sequencer_step(sf->sequencers[0][0], bpm_timer_counter);
+    } else if ((clock_in_do && clock_in_ready) ||
+               bpm_timer_counter % (96 * banks[sel_bank_cur]
+                                             ->sample[sel_sample_cur]
+                                             .snd[sel_variation]
+                                             ->splice_trigger) ==
+                   0) {
       clock_in_ready = false;
       mem_use = false;
       // keep to the beat

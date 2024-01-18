@@ -52,6 +52,7 @@ SaveFile *SaveFile_malloc() {
       sf->sequencers[i][j] = Sequencer_malloc();
     }
   }
+
   for (uint8_t i = 0; i < 16; i++) {
     sf->fx_active[i] = false;
     sf->fx_param[i][0] = 0;
@@ -80,7 +81,7 @@ void SaveFile_test_sequencer(SaveFile *sf) {
   Sequencer_add(sf->sequencers[0][0], 3, 7);
   Sequencer_add(sf->sequencers[0][0], 4, 11);
   Sequencer_add(sf->sequencers[0][0], 5, 15);
-  Sequencer_play(sf->sequencers[0][0]);
+  Sequencer_play(sf->sequencers[0][0], false);
   for (int i = 0; i < 18; i++) {
     printf("step %d ", i);
     Sequencer_step(sf->sequencers[0][0], i);
