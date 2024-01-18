@@ -88,6 +88,7 @@
 #include "filterexp.h"
 #include "gate.h"
 #include "messagesync.h"
+#include "sequencehandler.h"
 #ifdef INCLUDE_ZEPTOCORE
 #include "debounce_digits.h"
 #include "led_text_5x4.h"
@@ -97,12 +98,13 @@
 #include "noise.h"
 #include "random.h"
 #include "resonantfilter.h"
-#include "savefile.h"
 #include "sdcard.h"
 #ifdef INCLUDE_SINEBASS
 #include "wavetablebass.h"
 #endif
 #include "wav.h"
+//
+#include "savefile.h"
 //
 #include "globals.h"
 //
