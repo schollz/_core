@@ -277,10 +277,12 @@ void input_handling() {
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_A)) {
         } else if (button_is_pressed(KEY_B)) {
+          const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
+                                             64, 96, 144, 192, 192};
+          printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
+          Sequencer_quantize(sf->sequencers[mode_buttons16][0],
+                             quantizations[adc * 9 / 4096]);
         } else if (button_is_pressed(KEY_C)) {
-          // const uint8_t quantizations[7] = {1, 6, 12, 24, 48, 96, 192};
-          // printf("quantization: %d\n", quantizations[adc * 7 / 4096]);
-          // Chain_quantize_current(chain, quantizations[adc * 7 / 4096]);
         }
       }
     }

@@ -123,13 +123,19 @@ void sdcard_startup() {
   // load save file
   // load new save file
   sf = SaveFile_malloc();
+
+  // initialize sequencers
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
+                            step_sequencer_stop);
+  }
   // sync_using_sdcard = false;
   // SaveFile_save(sf, &sync_using_sdcard);
   // SaveFile_test_sequencer(sf);
   // SaveFile_load(sf);
   // SaveFile_test_sequencer(sf);
 
-  // sleep_ms(1000);
+  sleep_ms(1000);
 
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();

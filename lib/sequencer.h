@@ -27,7 +27,7 @@
 
 #include "utils.h"
 
-#define SEQUENCER_MAX_STEPS 32
+#define SEQUENCER_MAX_STEPS 64
 #define SEQUENCER_FINISHED -2
 
 uint16_t round_uint16_to(uint16_t num, uint16_t multiple) {
@@ -46,7 +46,7 @@ typedef struct Sequencer {
   uint8_t rec_len;
   uint8_t rec_key[SEQUENCER_MAX_STEPS];
   uint16_t rec_steps[SEQUENCER_MAX_STEPS];
-  uint32_t rec_step_offset;
+  int64_t rec_step_offset;
 
   // quantization
   uint8_t quantization;  // 1, 6, 12, 24, 48, 96, 192
@@ -70,6 +70,7 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_steps[i] = 0;
   }
   seq->is_playing = 0;
+  seq->is_repeating = 0;
   seq->quantization = 1;
   seq->play_pos = 0;
   seq->play_step = 0;
@@ -97,13 +98,15 @@ bool Sequencer_has_data(Sequencer *seq) { return seq->rec_len > 0; }
 // Sequencer_add adds a key and step to the sequencer.
 // The start of the sequence is always 0 and the last item of the sequence
 // is not played.
-uint16_t Sequencer_add(Sequencer *seq, uint8_t key, uint32_t step) {
+uint16_t Sequencer_add(Sequencer *seq, uint8_t key, int64_t step) {
   if (seq->rec_len < SEQUENCER_MAX_STEPS) {
     if (seq->rec_len == 0) {
       seq->rec_steps[seq->rec_len] = 0;
     } else {
       seq->rec_steps[seq->rec_len] = (step - seq->rec_step_offset);
     }
+    printf("[sequencer] step %d: %d\n", seq->rec_len,
+           seq->rec_steps[seq->rec_len]);
     seq->rec_key[seq->rec_len] = key;
     seq->rec_step_offset = step;
     seq->rec_len++;
@@ -151,7 +154,7 @@ void Sequencer_continue(Sequencer *seq) {
   seq->is_playing = 1;
 }
 
-void Sequencer_step(Sequencer *seq, uint32_t step) {
+void Sequencer_step(Sequencer *seq, int64_t step) {
   if (seq->rec_len == 0 || !seq->is_playing) {
     return;
   }
