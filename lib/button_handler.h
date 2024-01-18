@@ -47,16 +47,6 @@ bool key_b_sample_select = false;
 
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
-void key_do_jump(uint8_t beat) {
-  if (beat >= 0 && beat < 16) {
-    // printf("key_do_jump %d\n", beat);
-    key_jump_debounce = 1;
-    beat_current = (beat_current / 16) * 16 + beat;
-    retrig_pitch = PITCH_VAL_MID;
-    do_update_phase_from_beat_current();
-  }
-}
-
 int8_t single_step_pressed() {
   uint8_t pressed = 0;
   int8_t val = -1;
@@ -379,35 +369,41 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_A) {
       // B + A
       // toggle play sequence
-      // toggle_chain_play = !toggle_chain_play;
-      // if (toggle_chain_rec) {
-      //   Chain_save(chain, &sync_using_sdcard);
-      // }
-      // if (toggle_chain_play) {
-      //   Chain_load(chain, &sync_using_sdcard);
-      // }
-      // toggle_chain_rec = false;
-      // Chain_restart(chain);
-      // if (toggle_chain_play) {
-      //   printf("[button_handler] sequence playback on\n");
-      // } else {
-      //   printf("[button_handler] sequence playback off\n");
-      // }
+      if (sequencerhandler[mode_buttons16].recording) {
+        sequencerhandler[mode_buttons16].recording = false;
+      }
+      sequencerhandler[mode_buttons16].playing =
+          !sequencerhandler[mode_buttons16].playing;
+
+      if (sequencerhandler[mode_buttons16].playing) {
+        printf("[button_handler] sequence %d playing on\n", mode_buttons16);
+        if (Sequencer_has_data(sf->sequencers[mode_buttons16][0])) {
+          Sequencer_play(sf->sequencers[mode_buttons16][0], true);
+        } else {
+          printf("[button_handler] sequence %d has no data\n", mode_buttons16);
+          sequencerhandler[mode_buttons16].playing = false;
+        }
+      } else {
+        printf("[button_handler] sequence %d playing off\n", mode_buttons16);
+        Sequencer_stop(sf->sequencers[mode_buttons16][0]);
+      }
     } else if (key2 == KEY_C) {
       // B + C
 
       // toggle record sequence
-      // if (toggle_chain_rec) {
-      //   Chain_save(chain, &sync_using_sdcard);
-      // }
-      // toggle_chain_rec = !toggle_chain_rec;
-      // toggle_chain_play = false;
-      // if (toggle_chain_rec) {
-      //   Chain_clear_seq_current(chain);
-      //   printf("[button_handler] sequence recording on\n");
-      // } else {
-      //   printf("[button_handler] sequence recording off\n");
-      // }
+      if (sequencerhandler[mode_buttons16].playing) {
+        sequencerhandler[mode_buttons16].playing = false;
+      }
+      sequencerhandler[mode_buttons16].recording =
+          !sequencerhandler[mode_buttons16].recording;
+      if (sequencerhandler[mode_buttons16].recording) {
+        // todo [0] should be which sequencer is currently on
+        Sequencer_clear(sf->sequencers[mode_buttons16][0]);
+        printf("[button_handler] sequence %d recording on\n", mode_buttons16);
+      } else {
+        printf("[button_handler] sequence %d recording off\n", mode_buttons16);
+      }
+
     } else if (key2 > 3) {
       // B + H
       // update the current chain
@@ -767,11 +763,20 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
     if (mode_buttons16 == MODE_MASH) {
-      LEDS_set(leds, 2, LED_BRIGHT);
+      LEDS_set(leds, 0, LED_BRIGHT);
+      LEDS_set(leds, 1, 0);
+      LEDS_set(leds, 2, LED_BLINK);
+      LEDS_set(leds, 3, 0);
     } else if (mode_buttons16 == MODE_JUMP) {
-      LEDS_set(leds, 1, LED_BRIGHT);
+      LEDS_set(leds, 0, LED_BRIGHT);
+      LEDS_set(leds, 1, LED_BLINK);
+      LEDS_set(leds, 2, 0);
+      LEDS_set(leds, 3, 0);
     } else if (mode_buttons16 == MODE_BASS) {
-      LEDS_set(leds, 3, LED_BRIGHT);
+      LEDS_set(leds, 0, LED_BRIGHT);
+      LEDS_set(leds, 1, 0);
+      LEDS_set(leds, 2, 0);
+      LEDS_set(leds, 3, LED_BLINK);
     }
     if (mode_buttons16 == MODE_MASH || mode_buttons16 == MODE_JUMP) {
       if (sel_variation == 0) {
@@ -809,11 +814,28 @@ void button_handler(ButtonMatrix *bm) {
   }
 
   if (playback_stopped) {
+    LEDS_set(leds, 0, 0);
     LEDS_set(leds, 1, LED_BRIGHT);
+    LEDS_set(leds, 2, 0);
     LEDS_set(leds, 3, LED_BLINK);
   } else if (button_mute) {
+    LEDS_set(leds, 0, 0);
     LEDS_set(leds, 1, LED_BRIGHT);
     LEDS_set(leds, 2, LED_BLINK);
+    LEDS_set(leds, 3, 0);
+  }
+  for (uint8_t i = 0; i < 3; i++) {
+    if (sequencerhandler[i].playing) {
+      LEDS_set(leds, 0, 0);
+      LEDS_set(leds, 1, LED_BLINK);
+      LEDS_set(leds, 2, LED_BRIGHT);
+      LEDS_set(leds, 3, 0);
+    } else if (sequencerhandler[i].recording) {
+      LEDS_set(leds, 0, 0);
+      LEDS_set(leds, 1, 0);
+      LEDS_set(leds, 2, LED_BRIGHT);
+      LEDS_set(leds, 3, LED_BLINK);
+    }
   }
   LEDS_render(leds);
 }
