@@ -138,6 +138,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     //   beat_current = beat;
     //   do_update_phase_from_beat_current();
     // }
+  } else if (sequencerhandler[0].playing &&
+             banks[sel_bank_cur]
+                     ->sample[sel_sample_cur]
+                     .snd[sel_variation]
+                     ->play_mode != PLAY_NORMAL) {
+    Sequencer_step(sf->sequencers[0][0], bpm_timer_counter);
   } else if (((banks[sel_bank_cur]
                        ->sample[sel_sample_cur]
                        .snd[sel_variation]
