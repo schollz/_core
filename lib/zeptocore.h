@@ -282,6 +282,8 @@ void input_handling() {
           printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
           Sequencer_quantize(sf->sequencers[mode_buttons16][0],
                              quantizations[adc * 9 / 4096]);
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
+                            adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
         }
       }
