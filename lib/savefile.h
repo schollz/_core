@@ -59,10 +59,10 @@ SaveFile *SaveFile_malloc() {
     sf->fx_param[i][2] = 0;
   }
   sf->fx_param[FX_SATURATE][0] = 64;
-  sf->fx_param[FX_FUZZ][0] = 245;
-  sf->fx_param[FX_FUZZ][1] = 60;
   sf->fx_param[FX_SHAPER][0] = 250;
   sf->fx_param[FX_SHAPER][1] = 35;
+  sf->fx_param[FX_FUZZ][0] = 245;
+  sf->fx_param[FX_FUZZ][1] = 60;
   sf->fx_param[FX_BITCRUSH][0] = 218;
   sf->fx_param[FX_BITCRUSH][1] = 90;
   sf->fx_param[FX_DELAY][0] = 200;
