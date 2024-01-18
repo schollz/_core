@@ -103,8 +103,8 @@ the rest of the buttons (1-16) are just called **H**.
 - [x] **B** + **Y** → filter fc (lowpass/highpass?)
 - [ ] **B** + **Z** → filter q
 - [ ] **C** + **X** → pitch
-- [ ] **C** + **Y** → quantize
-- [ ] **C** + **Z** → 
+- [ ] **C** + **Y** → 
+- [ ] **C** + **Z** → quantize
 - [ ] **D** + **X** → 
 - [ ] **D** + **Y** → 
 - [ ] **D** + **Z** → 
