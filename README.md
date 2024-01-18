@@ -69,22 +69,26 @@ the rest of the buttons (1-16) are just called **H**.
 
 #### combo buttons
 
+x = finished
+
+o = partially finished
+
 - [ ] **none** → n/a
-- [ ] **H** → (JUMP): do jump, (MASH): toggle fx, (BASS): play bass
-- [ ] **H** + **H** → JUMP: retrig depending on location
+- [o] **H** → (JUMP): do jump, (MASH): toggle fx, (BASS): play bass
+- [x] **H** + **H** → JUMP: retrig depending on location
 - [ ] **A** → n/a
-- [ ] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
-- [ ] **A** + **B** → JUMP mode
-- [ ] **A** + **C** → MASH mode
-- [ ] **A** + **D** → BASS mode
-- [ ] **B** → show bank (blinking) + sample (bright)
-- [ ] **B** + **H** + **H** → select bank (1st) + sample (2nd)
-- [ ] **B** + **C** → start/stop
-- [ ] **B** + **D** → mute
+- [x] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
+- [x] **A** + **B** → JUMP mode
+- [x] **A** + **C** → MASH mode
+- [x] **A** + **D** → BASS mode
+- [x] **B** → show bank (blinking) + sample (bright)
+- [x] **B** + **H** + **H** → select bank (1st) + sample (2nd)
+- [x] **B** + **C** → start/stop
+- [x] **B** + **D** → mute
 - [ ] **C** → show which sequence is selected (bright)
 - [ ] **C** + **H** + **H**... → create chain of sequences
-- [ ] **C** + **B** → toggle play sequence
-- [ ] **C** + **D** → toggle record sequence
+- [x] **C** + **B** → toggle play sequence
+- [x] **C** + **D** → toggle record sequence
 - [ ] **C** + **H** → select sequence
 - [ ] **D** → show which save slot is selected (bright)
 - [ ] **D** + **H** → select save slot
@@ -99,45 +103,45 @@ the rest of the buttons (1-16) are just called **H**.
 - [x] **A** + **X** → tempo
 - [ ] **A** + **Y** → 
 - [x] **A** + **Z** → volume
-- [ ] **B** + **X** → gate
+- [ ] **B** + **X** → 
 - [x] **B** + **Y** → filter fc (lowpass/highpass?)
-- [ ] **B** + **Z** → filter q
+- [ ] **B** + **Z** → 
 - [ ] **C** + **X** → pitch
 - [ ] **C** + **Y** → 
-- [ ] **C** + **Z** → quantize
+- [x] **C** + **Z** → quantize
 - [ ] **D** + **X** → 
 - [ ] **D** + **Y** → 
 - [ ] **D** + **Z** → 
-- [ ] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
+- [o] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
 
 #### effects 
 
 there are 16 effects in four categories - "shape", "time", "space", and "pitch".
 holding an effect and using a knob will change its parameters.
 
-- [ ] **1** -> warm (preamp multiplier)
-- [ ] **2** -> loss (preamp multiplier, threshold)
-- [ ] **3** -> fuzz (preamp multliplier)
-- [ ] **4** -> crush (frequency, bitdepth)
-- [ ] **5** -> reverse 
-- [ ] **6** -> stretch
-- [ ] **7** -> delay (delay feedback, delay length)
-- [ ] **8** -> repeat (repeat length)
-- [ ] **9** -> tighten (gate amount)
-- [ ] **10** -> heighten (tremelo speed, depth)
-- [ ] **11** -> circulate (pan speed, depth)
-- [ ] **12** -> waltz
-- [ ] **13** -> lower (depth)
-- [ ] **14** -> slower (duration, depth)
-- [ ] **15** -> faster (duration, depth)
-- [ ] **16** -> stop (duration)
+- [x] **1** -> warm (preamp multiplier)
+- [x] **2** -> loss (preamp multiplier, threshold)
+- [x] **3** -> fuzz (preamp multliplier)
+- [x] **4** -> crush (frequency, bitdepth)
+- [x] **5** -> reverse 
+- [x] **6** -> stretch
+- [x] **7** -> delay (delay feedback, delay length)
+- [x] **8** -> repeat (repeat length)
+- [x] **9** -> tighten (gate amount)
+- [x] **10** -> heighten (tremelo speed, depth)
+- [x] **11** -> circulate (pan speed, depth)
+- [ ] **12** -> phasor/flanger
+- [x] **13** -> lower (depth)
+- [o] **14** -> slower (duration, depth)
+- [o] **15** -> faster (duration, depth)
+- [o] **16** -> stop (duration)
 
 #### cheat codes
 
-- [ ] **4**,**5**,**4** -> toggle one-shot mode
+- [x] **4**,**5**,**4** -> toggle one-shot mode
 - [ ] **7**,**8**,**7** -> toggle play mode
-- [ ] **9**, **12**, **10**, **11** -> toggle tempo match mode
-- [ ] **13**,**16**,**14**,**15** -> change resampling (linear or quadratic)
+- [x] **5**, **8**, **7**, **6** -> toggle tempo match mode
+- [x] **9**,**12**,**10**,**11** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
 
 #### needs
