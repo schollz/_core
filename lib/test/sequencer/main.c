@@ -30,31 +30,33 @@
 #define NOSDCARD 1
 #include "../../sequencer.h"
 
-void sequencer_emit(uint8_t key) { printf("key %d\n", key); }
+void sequencer_emit(uint8_t key) { printf("\nkey %d\n", key); }
 void sequencer_stop() { printf("stop\n"); }
 
 int main() {
   Sequencer *seq = Sequencer_malloc();
   Sequencer_set_callbacks(seq, sequencer_emit, sequencer_stop);
   Sequencer_add(seq, 1, 0);
-  Sequencer_add(seq, 2, 5);
-  Sequencer_add(seq, 3, 7);
-  Sequencer_add(seq, 4, 11);
-  Sequencer_add(seq, 5, 15);
+  Sequencer_add(seq, 2, 3);
+  Sequencer_add(seq, 3, 6);
+  Sequencer_add(seq, 4, 9);
+  Sequencer_add(seq, 5, 12);
 
-  Sequencer_play(seq);
-  for (int i = 0; i < 18; i++) {
-    printf("step %d ", i);
+  Sequencer_play(seq, false);
+  for (int i = 0; i < 21; i++) {
+    printf("[%d] ", i);
     Sequencer_step(seq, i);
-    printf("\n");
+    if (!Sequencer_is_playing(seq)) {
+      Sequencer_continue(seq);
+    }
   }
+  printf("\n");
 
   Sequencer_quantize(seq, 4);
-  Sequencer_play(seq);
-  for (int i = 0; i < 18; i++) {
-    printf("step %d ", i);
+  Sequencer_play(seq, true);
+  for (int i = 0; i < 30; i++) {
+    printf("[%d] ", i);
     Sequencer_step(seq, i);
-    printf("\n");
   }
 
   Sequencer_free(seq);

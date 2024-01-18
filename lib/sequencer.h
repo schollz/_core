@@ -53,8 +53,9 @@ typedef struct Sequencer {
 
   // playing data
   uint8_t play_pos;
-  uint16_t play_step;
-  bool is_playing;
+  uint16_t play_step : 14;
+  uint16_t is_playing : 1;
+  uint16_t is_repeating : 1;
 
   // callbacks
   callback_uint8 sequence_emit;
@@ -68,7 +69,7 @@ void Sequencer_clear(Sequencer *seq) {
     seq->rec_key[i] = 0;
     seq->rec_steps[i] = 0;
   }
-  seq->is_playing = false;
+  seq->is_playing = 0;
   seq->quantization = 1;
   seq->play_pos = 0;
   seq->play_step = 0;
@@ -124,10 +125,30 @@ void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
   seq->quantization = quantization;
 }
 
-void Sequencer_play(Sequencer *seq) {
+void Sequencer_play(Sequencer *seq, bool do_repeat) {
   seq->play_pos = 0;
   seq->play_step = 0;
-  seq->is_playing = true;
+  seq->is_playing = 1;
+  seq->is_repeating = do_repeat;
+}
+
+bool Sequencer_is_playing(Sequencer *seq) { return seq->is_playing; }
+void Sequencer_stop(Sequencer *seq) {
+  seq->is_playing = false;
+  seq->play_pos = 0;
+  seq->play_step = 0;
+  if (seq->sequence_finished != NULL) {
+    seq->sequence_finished();
+  }
+}
+
+void Sequencer_continue(Sequencer *seq) {
+  if (seq->sequence_emit != NULL) {
+    seq->sequence_emit(seq->rec_key[0]);
+  }
+  seq->play_pos = 1;
+  seq->play_step = 1;
+  seq->is_playing = 1;
 }
 
 void Sequencer_step(Sequencer *seq, uint32_t step) {
@@ -137,12 +158,12 @@ void Sequencer_step(Sequencer *seq, uint32_t step) {
   if (seq->play_step >=
       round_uint16_to(seq->rec_steps[seq->play_pos], seq->quantization)) {
     if (seq->play_pos >= seq->rec_len - 1) {
-      seq->is_playing = false;
-      seq->play_pos = 0;
-      seq->play_step = 0;
-      if (seq->sequence_finished != NULL) {
-        seq->sequence_finished();
+      if (seq->is_repeating) {
+        Sequencer_continue(seq);
+      } else {
+        Sequencer_stop(seq);
       }
+      return;
     } else {
       if (seq->sequence_emit != NULL) {
         seq->sequence_emit(seq->rec_key[seq->play_pos]);
@@ -153,8 +174,5 @@ void Sequencer_step(Sequencer *seq, uint32_t step) {
   }
   seq->play_step++;
 }
-
-bool Sequencer_is_playing(Sequencer *seq) { return seq->is_playing; }
-void Sequencer_stop(Sequencer *seq) { seq->is_playing = false; }
 
 #endif
