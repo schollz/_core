@@ -55,12 +55,13 @@ void sdcard_startup() {
   // sleep_ms(2000);
 
   for (uint8_t bi = 0; bi < 16; bi++) {
-#ifdef INCLUDE_ZEPTOCORE
-    for (uint8_t i = 0; i < bi; i++) {
-      LEDS_set(leds, i, 2);
-    }
-    LEDS_render(leds);
-#endif
+    // TODO: show which banks are loading?
+    // #ifdef INCLUDE_ZEPTOCORE
+    //     for (uint8_t i = 0; i < bi; i++) {
+    //       LEDS_set(leds, i, 2);
+    //     }
+    //     LEDS_render(leds);
+    // #endif
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname);
@@ -135,7 +136,7 @@ void sdcard_startup() {
   // SaveFile_load(sf);
   // SaveFile_test_sequencer(sf);
 
-  sleep_ms(1000);
+  // sleep_ms(1000);
 
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
