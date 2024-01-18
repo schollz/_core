@@ -21,6 +21,37 @@
 // THE SOFTWARE.
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
+void printStringWithDelay(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char currentChar = str[i];
+    for (int j = 0; j < sizeof(led_text_5x4) / sizeof(led_text_5x4[0]); j++) {
+      if (led_text_5x4[j].character == currentChar) {
+        int led = 0;
+        for (int row = 0; row < 5; row++) {
+          for (int col = 0; col < 4; col++) {
+            bool is_one = (led_text_5x4[j].dots[row] >> (3 - col)) & 1;
+            if (is_one) {
+              LEDS_set(leds, led, LED_BRIGHT);
+            } else {
+              LEDS_set(leds, led, 0);
+            }
+            led++;
+          }
+          printf("\n");
+        }
+        printf("\n");
+        LEDS_render(leds);
+        if (currentChar == '.') {
+          sleep_ms(100);
+        } else {
+          sleep_ms(400);
+        }
+        break;
+      }
+    }
+  }
+}
 
 void clear_debouncers() {
   for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
@@ -80,30 +111,7 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  for (int i = 0; i < sizeof(led_text_5x4) / sizeof(led_text_5x4[0]); i++) {
-    if (led_text_5x4[i].character == 'Z') {
-      int led = 0;
-      for (int j = 0; j < 5; j++) {
-        // print out 0 or 1
-        for (int k = 0; k < 4; k++) {
-          bool is_one = (led_text_5x4[i].dots[j] >> (3 - k)) & 1;
-          if (is_one) {
-            LEDS_set(leds, led, LED_BRIGHT);
-            printf("1");
-          } else {
-            LEDS_set(leds, led, 0);
-            printf("0");
-          }
-          led++;
-        }
-        printf("\n");
-      }
-      printf("\n");
-      break;
-    }
-  }
-  LEDS_render(leds);
-  sleep_ms(1000);
+  printStringWithDelay("v0.0.5");
 
   while (1) {
     if (MessageSync_hasMessage(messagesync)) {
