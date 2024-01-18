@@ -31,16 +31,6 @@ Sample selects currently playing sample from the current bank
 #include "mcp3208.h"
 #include "taptempo.h"
 
-void key_do_jump(uint8_t beat) {
-  if (beat >= 0 && beat < 16) {
-    // printf("key_do_jump %d\n", beat);
-    key_jump_debounce = 1;
-    beat_current = (beat_current / 16) * 16 + beat;
-    retrig_pitch = PITCH_VAL_MID;
-    do_update_phase_from_beat_current();
-  }
-}
-
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   debounce_quantize = 0;
   retrig_first = true;
