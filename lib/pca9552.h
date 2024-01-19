@@ -72,6 +72,8 @@ typedef struct PCA9552 {
 
 uint8_t PCA9552_writeReg(PCA9552 *pca, uint8_t reg, uint8_t value) {
   uint8_t txdata[2] = {reg, value};
+  // TODO: try non-blocking writing?
+  // https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#rpip317241e8905932f407c0
   pca->error = i2c_write_blocking(pca->i2c, pca->address, txdata, 2, false);
   if (pca->error == 2)
     pca->error = PCA9552_OK;

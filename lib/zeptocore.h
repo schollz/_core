@@ -114,6 +114,8 @@ void input_handling() {
   printStringWithDelay("v0.0.5");
 
   while (1) {
+    // TODO: check timing of this?
+
     if (MessageSync_hasMessage(messagesync)) {
       MessageSync_print(messagesync);
       MessageSync_clear(messagesync);
@@ -298,8 +300,10 @@ void input_handling() {
     }
 #endif
 
+    // TODO: dead code?
     // update the text if any
     LEDText_update(ledtext, leds);
+    // TODO: redundant code?
     LEDS_render(leds);
 
 #ifdef INCLUDE_KEYBOARD
