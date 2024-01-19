@@ -25,10 +25,10 @@
 #include "globals.h"
 
 // keys
-#define KEY_SHIFT 0
-#define KEY_A 1
-#define KEY_B 2
-#define KEY_C 3
+#define KEY_A 0
+#define KEY_B 1
+#define KEY_C 2
+#define KEY_D 3
 #define MODE_JUMP 0
 #define MODE_MASH 1
 #define MODE_BASS 2
@@ -43,7 +43,7 @@ int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 int16_t key_on_buttons_last[BUTTONMATRIX_BUTTONS_MAX];
 bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
-bool key_b_sample_select = false;
+bool KEY_C_sample_select = false;
 
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
@@ -125,9 +125,9 @@ void go_update_top() {
   if (all_off) {
     // top row is not held
     // show jump/mash, mute, play
-    // LEDS_set(leds, LED_BASE_FACE, KEY_A, 2 * (1 - mode_buttons16));
-    // LEDS_set(leds, LED_BASE_FACE, KEY_B, 2 * mode_mute);
-    // LEDS_set(leds, LED_BASE_FACE, KEY_C, 2 * mode_play);
+    // LEDS_set(leds, LED_BASE_FACE, KEY_B, 2 * (1 - mode_buttons16));
+    // LEDS_set(leds, LED_BASE_FACE, KEY_C, 2 * mode_mute);
+    // LEDS_set(leds, LED_BASE_FACE, KEY_D, 2 * mode_play);
   }
 }
 
@@ -286,15 +286,15 @@ void button_key_on_single(uint8_t key) {
 
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on %d+%d\n", key1, key2);
-  if (key1 == KEY_SHIFT) {
-    if (key2 == KEY_A) {
+  if (key1 == KEY_A) {
+    if (key2 == KEY_B) {
       // S+A
       mode_buttons16 = MODE_JUMP;
-    } else if (key2 == KEY_B) {
+    } else if (key2 == KEY_C) {
       // S+B
       mode_buttons16 = MODE_MASH;
       // // toggle mute
-    } else if (key2 == KEY_C) {
+    } else if (key2 == KEY_D) {
       // S+C
       // toggle bass mode
       mode_buttons16 = MODE_BASS;
@@ -316,9 +316,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // retrigger
       go_retrigger_2key(key1, key2);
     }
-  } else if (key1 == KEY_A) {
+  } else if (key1 == KEY_B) {
     // A
-    if (key2 == KEY_B) {
+    if (key2 == KEY_C) {
       // A+B
       if (button_mute) {
         printf("[button_handler] button_mute off\n");
@@ -338,7 +338,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       //                        ->play_mode +
       //                    1) %
       //                   3;
-    } else if (key2 == KEY_C) {
+    } else if (key2 == KEY_D) {
       // A+C
       if (playback_stopped) {
         do_restart_playback = true;
@@ -350,10 +350,10 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
 
     } else if (key2 > 3) {
       // A+H
-      if (!key_b_sample_select) {
+      if (!KEY_C_sample_select) {
         sel_bank_select =
             banks_with_samples[(key2 - 4) % banks_with_samples_num];
-        key_b_sample_select = true;
+        KEY_C_sample_select = true;
         printf("sel_bank_select: %d\n", sel_bank_select);
       } else {
         sel_bank_next = sel_bank_select;
@@ -361,12 +361,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         printf("sel_bank_next: %d\n", sel_bank_next);
         printf("sel_sample_next: %d\n", sel_sample_next);
         fil_current_change = true;
-        key_b_sample_select = false;
+        KEY_C_sample_select = false;
       }
     }
-  } else if (key1 == KEY_B) {
+  } else if (key1 == KEY_C) {
     // B
-    if (key2 == KEY_A) {
+    if (key2 == KEY_B) {
       // B + A
       // toggle play sequence
       if (sequencerhandler[mode_buttons16].recording) {
@@ -387,7 +387,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         printf("[button_handler] sequence %d playing off\n", mode_buttons16);
         Sequencer_stop(sf->sequencers[mode_buttons16][0]);
       }
-    } else if (key2 == KEY_C) {
+    } else if (key2 == KEY_D) {
       // B + C
 
       // toggle record sequence
@@ -503,7 +503,7 @@ void button_handler(ButtonMatrix *bm) {
 
     // B + H + H...
     // chain: select sequences to chain together
-    if (key_pressed[0] == KEY_B) {
+    if (key_pressed[0] == KEY_C) {
       uint8_t *links = malloc(sizeof(uint8_t) * (key_pressed_num - 1));
       uint16_t count = 0;
       for (uint8_t i = 0; i < key_pressed_num; i++) {
@@ -629,8 +629,8 @@ void button_handler(ButtonMatrix *bm) {
   LEDS_clear(leds);
 
   // show the sequencer state when pressing the key down
-  if (key_pressed_num > 0 && key_pressed[0] == KEY_B && key_on_buttons[KEY_B]) {
-    LEDS_set(leds, KEY_B, LED_BRIGHT);
+  if (key_pressed_num > 0 && key_pressed[0] == KEY_C && key_on_buttons[KEY_C]) {
+    LEDS_set(leds, KEY_C, LED_BRIGHT);
     for (uint8_t i = 0; i < 16; i++) {
       // TODO blink the current sequence
       if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
@@ -758,16 +758,16 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   } else {
-    if (key_on_buttons[KEY_A] || key_did_go_off[KEY_A]) {
+    if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
       if (key_total_pressed > 0) {
         LEDS_set(leds, sel_bank_next + 4, 2);
         LEDS_set(leds, sel_sample_next + 4, 3);
         LEDS_render(leds);
         return;
       } else {
-        key_b_sample_select = false;
+        KEY_C_sample_select = false;
       }
-    } else if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
+    } else if (key_on_buttons[KEY_C] || key_did_go_off[KEY_C]) {
       if (key_total_pressed == 1) {
         // for (uint8_t i = 0; i < 16; i++) {
         //   if (Chain_has_data(chain, i)) {
@@ -814,7 +814,7 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
     if (mode_buttons16 == MODE_MASH ||
-        (mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_SHIFT])) {
+        (mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_A])) {
       for (uint8_t i = 0; i < 16; i++) {
         if (sf->fx_active[i]) {
           LEDS_set(leds, i + 4, LED_BRIGHT);

@@ -188,22 +188,22 @@ void input_handling() {
               Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
         }
       } else {
-        if (button_is_pressed(KEY_SHIFT)) {
+        if (button_is_pressed(KEY_A)) {
           sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 400);
-        } else if (button_is_pressed(KEY_A)) {
+        } else if (button_is_pressed(KEY_B)) {
           gate_threshold = adc *
                            (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
                            4096 * 2;
-        } else if (button_is_pressed(KEY_B)) {
+        } else if (button_is_pressed(KEY_C)) {
           pitch_val_index = adc * PITCH_VAL_MAX / 4096;
           if (pitch_val_index >= PITCH_VAL_MAX) {
             pitch_val_index = PITCH_VAL_MAX - 1;
           }
-        } else if (button_is_pressed(KEY_C)) {
+        } else if (button_is_pressed(KEY_D)) {
         }
       }
     }
@@ -228,8 +228,8 @@ void input_handling() {
         sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
       } else {
-        if (button_is_pressed(KEY_SHIFT)) {
-        } else if (button_is_pressed(KEY_A)) {
+        if (button_is_pressed(KEY_A)) {
+        } else if (button_is_pressed(KEY_B)) {
           for (uint8_t channel = 0; channel < 2; channel++) {
             if (adc < 3500) {
               global_filter_index = adc * (resonantfilter_fc_max) / 3500;
@@ -244,8 +244,8 @@ void input_handling() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_B)) {
         } else if (button_is_pressed(KEY_C)) {
+        } else if (button_is_pressed(KEY_D)) {
         }
       }
     }
@@ -275,7 +275,7 @@ void input_handling() {
         sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else {
-        if (button_is_pressed(KEY_SHIFT)) {
+        if (button_is_pressed(KEY_A)) {
           new_vol = adc * VOLUME_STEPS / 4096;
           // new_vol = 100;
           if (new_vol != sf->vol) {
@@ -285,8 +285,8 @@ void input_handling() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_A)) {
         } else if (button_is_pressed(KEY_B)) {
+        } else if (button_is_pressed(KEY_C)) {
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                              64, 96, 144, 192, 192};
           printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
@@ -294,7 +294,7 @@ void input_handling() {
                              quantizations[adc * 9 / 4096]);
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_C)) {
+        } else if (button_is_pressed(KEY_D)) {
         }
       }
     }
