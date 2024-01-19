@@ -498,6 +498,7 @@ void i2s_callback_func() {
             ->num_channels == 0) {
       // mono
       int16_t *newArray;
+      // TODO: use a function pointer that will change the function
       if (quadratic_resampling) {
         newArray = array_resample_quadratic_fp(values, samples_to_read,
                                                buffer->max_sample_count);
@@ -568,6 +569,7 @@ void i2s_callback_func() {
                                            buffer->max_sample_count);
         }
 
+        // TODO: function pointer for audio block here?
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           if (first_loop) {
             samples[i * 2 + channel] = 0;
@@ -615,6 +617,7 @@ void i2s_callback_func() {
 
   // apply other fx
   // TODO: fade in/out these fx using the crossfade?
+  // TODO: LFO's move to main thread?
   if (sf->fx_active[FX_TREMELO] || sf->fx_active[FX_PAN]) {
     int32_t u;
     int32_t v;

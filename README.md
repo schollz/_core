@@ -86,14 +86,16 @@ o = partially finished
 - [x] **B** + **C** → start/stop
 - [x] **B** + **D** → mute
 - [ ] **C** → show which sequence is selected (bright)
-- [ ] **C** + **H** + **H**... → create chain of sequences
+- [ ] **C** + **H** + **H**... → merge sequences into next available slot
 - [x] **C** + **B** → toggle play sequence
 - [x] **C** + **D** → toggle record sequence
+- [x] **C** + **D**, **C** + **D** → erase current sequence
 - [ ] **C** + **H** → select sequence
 - [ ] **D** → show which save slot is selected (bright)
 - [ ] **D** + **H** → select save slot
 - [ ] **D** + **B** load from save slot
 - [ ] **D** + **C** → save into save slot
+- [ ] ?? copy sequences? 
 
 #### combo knobs
 
