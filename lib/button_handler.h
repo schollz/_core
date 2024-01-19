@@ -627,6 +627,21 @@ void button_handler(ButtonMatrix *bm) {
 
   // leds
   LEDS_clear(leds);
+
+  // show the sequencer state when pressing the key down
+  if (key_pressed_num > 0 && key_pressed[0] == KEY_B && key_on_buttons[KEY_B]) {
+    LEDS_set(leds, KEY_B, LED_BRIGHT);
+    for (uint8_t i = 0; i < 16; i++) {
+      // TODO blink the current sequence
+      if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
+        LEDS_set(leds, i + 4, LED_BRIGHT);
+      } else {
+        LEDS_set(leds, i + 4, 0);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  }
   // check debouncers
   if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR])) {
     // show an LED bar
