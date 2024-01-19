@@ -154,6 +154,43 @@ void Sequencer_continue(Sequencer *seq) {
   seq->is_playing = 1;
 }
 
+void Sequencer_copy(Sequencer *seq, Sequencer *copy) {
+  copy->rec_len = seq->rec_len;
+  copy->rec_step_offset = seq->rec_step_offset;
+  for (uint8_t i = 0; i < seq->rec_len; i++) {
+    copy->rec_key[i] = seq->rec_key[i];
+    copy->rec_steps[i] = seq->rec_steps[i];
+  }
+  copy->is_playing = 0;
+  copy->is_repeating = 0;
+  copy->quantization = seq->quantization;
+  copy->play_pos = 0;
+  copy->play_step = 0;
+  copy->sequence_emit = seq->sequence_emit;
+  copy->sequence_finished = seq->sequence_finished;
+}
+
+Sequencer *Sequencer_merge(Sequencer *seq, Sequencer *other) {
+  Sequencer *merged = (Sequencer *)malloc(sizeof(Sequencer));
+  Sequencer_copy(seq, merged);
+  if (other->rec_len == 0) {
+    return merged;
+  }
+  // merge them togehter
+  other->rec_steps[0] = seq->rec_steps[seq->rec_len - 1];
+  for (uint8_t i = 0; i < other->rec_len; i++) {
+    if (merged->rec_len < SEQUENCER_MAX_STEPS) {
+      merged->rec_steps[merged->rec_len - 1] = other->rec_steps[i];
+      merged->rec_key[merged->rec_len - 1] = other->rec_key[i];
+      merged->rec_len++;
+    } else {
+      break;
+    }
+  }
+  merged->rec_len--;
+  return merged;
+}
+
 void Sequencer_step(Sequencer *seq, int64_t step) {
   if (seq->rec_len == 0 || !seq->is_playing) {
     return;
