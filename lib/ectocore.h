@@ -88,6 +88,8 @@ void input_handling() {
   TapTempo *taptempo = TapTempo_malloc();
   bool btn_taptempo_on = false;
 
+  sf->vol = 200;
+
   while (1) {
     uint16_t val;
 
