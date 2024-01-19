@@ -205,6 +205,37 @@ make clean && PICO_SDK_PATH=../pico-sdk make zeptocore
 
 (replace '`zeptocore`' with '`ectocore`' if you are building the latter)
 
+# building upload tool
+
+## windows
+
+First [install Scoop](https://scoop.sh/), open PowerShell terminal and type:
+
+```PowerShell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+```
+
+Then in the Powershell:
+
+```PowerShell
+> scoop update
+> scoop install go zig sox
+```
+
+Now you can build with:
+
+```PowerShell
+> cd core
+> $env:CGO_ENABLED=1; $env:CC="zig cc"; go build -v -x
+```
+
+Now the upload tool can be run by typing
+
+```
+./core.exe
+```
+
 # license
 
 - Apache License 2.0 for no-OS-FatFS (Copyright 2021 Carl John Kugler III)
