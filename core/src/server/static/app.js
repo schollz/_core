@@ -271,6 +271,7 @@ app = new Vue({
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
         selectedFile: null,
+        lastSelectedFile: null,
         progressBarWidth: '0px',
         oversampling: '1x', // Default to '1x'
         stereoMono: 'mono', // Default to 'mono'
@@ -297,6 +298,7 @@ app = new Vue({
         stereoMono: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
+        selectedFile: 'saveLastSelected',
     },
     methods: {
         isSelected(fileIndex) {
@@ -393,6 +395,9 @@ app = new Vue({
 
             // Clear the file input value to allow selecting the same file again
             event.target.value = null;
+        },
+        saveLastSelected() {
+            this.lastSelectedFile = this.selectedFile;
         },
         saveState() {
             const savedState = {
@@ -564,6 +569,25 @@ app = new Vue({
         moveFileUp() {
             if (this.selectedFile > 0) {
                 this.swapFiles(this.selectedFile, this.selectedFile - 1);
+                this.selectedFile--;
+                this.selectedFiles = [];
+                this.selectedFiles.push(this.selectedFile);
+            }
+        },
+        moveFileDownIndex(index) {
+            this.selectedFile = null;
+            this.selectedFiles = [];
+            if (index < this.banks[this.selectedBank].files.length - 1) {
+                this.swapFiles(index,index+1);
+            }
+        },
+        moveFileUpIndex(index) {
+            this.selectedFile = null;
+            this.selectedFiles = [];
+            if (index > 0) {
+                this.swapFiles(index, index - 1);
+            }
+            if (this.selectedFile == index) {
                 this.selectedFile--;
                 this.selectedFiles = [];
                 this.selectedFiles.push(this.selectedFile);
