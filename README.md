@@ -123,9 +123,9 @@ holding an effect and using a knob will change its parameters.
 - [x] **11** -> circulate (pan speed, depth)
 - [ ] **12** -> phasor/flanger
 - [x] **13** -> lower (depth)
-- [o] **14** -> slower (duration, depth)
-- [o] **15** -> faster (duration, depth)
-- [o] **16** -> stop (duration)
+- [ ] **14** -> slower (duration, depth)
+- [ ] **15** -> faster (duration, depth)
+- [ ] **16** -> stop (duration)
 
 #### cheat codes
 
