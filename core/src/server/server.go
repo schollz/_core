@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"io"
 	"mime"
@@ -23,6 +24,11 @@ import (
 	log "github.com/schollz/logger"
 	bolt "go.etcd.io/bbolt"
 )
+
+// embed the static files
+
+//go:embed static/*
+var staticFiles embed.FS
 
 var Port = 8101
 var StorageFolder = "storage"
@@ -121,7 +127,12 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Content-Type", mimeType)
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		var b []byte
-		b, err = os.ReadFile(filename)
+		log.Debugf("filename: %s", filename)
+		if strings.HasPrefix(filename, StorageFolder) {
+			b, err = os.ReadFile(filename)
+		} else {
+			b, err = staticFiles.ReadFile(filename)
+		}
 		if err != nil {
 			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
@@ -150,7 +161,9 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
 	w.Header().Set("Content-Type", "image/x-icon")
 	var b []byte
-	b, err = os.ReadFile("static/favicon.ico")
+
+	// b, err = os.ReadFile("static/favicon.ico")
+	b, err = staticFiles.ReadFile("static/favicon.ico")
 	if err != nil {
 		return
 	}
