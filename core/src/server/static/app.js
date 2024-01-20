@@ -246,9 +246,13 @@ const socketOpenListener = (e) => {
             }
         }, 50);
     }
-    socket.send(JSON.stringify({
-        action: "connected"
-    }));
+    try{
+        socket.send(JSON.stringify({
+            action: "connected"
+        }));    
+    } catch(error) {
+        // oh well
+    }
 };
 const socketErrorListener = (e) => {
     console.error(e);

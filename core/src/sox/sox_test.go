@@ -157,7 +157,7 @@ func TestReverseReverb(t *testing.T) {
 	Clean()
 }
 func TestRun(t *testing.T) {
-	stdout, stderr, err := run("sox", "--help")
+	stdout, stderr, err := run(sox.GetBinary(), "--help")
 	assert.Nil(t, err)
 	assert.True(t, strings.Contains(stdout, "SoX"))
 	assert.Empty(t, stderr)
