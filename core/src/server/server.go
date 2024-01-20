@@ -36,8 +36,10 @@ var connections map[string]*websocket.Conn
 var mutex sync.Mutex
 var keystore *bolt.DB
 var serverID string
+var useFilesOnDisk bool
 
-func Serve() (err error) {
+func Serve(useFiles bool) (err error) {
+	useFilesOnDisk = useFiles
 	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
 
