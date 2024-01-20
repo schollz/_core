@@ -7,6 +7,7 @@ var app;
 var socket;
 var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+var fadeOutTimeout = null;
 const ccolor = '#dcd6f799';
 const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
@@ -38,11 +39,13 @@ const fadeOut = debounce(function () {
 }, 1000);
 
 function fadeInProgressbar() {
+    console.log('fadeInProgressbar');
     var circle = document.getElementsByClassName('progress-bar')[0];
     circle.style.opacity = '1';
 }
 
 function fadeOutProgressbar() {
+    console.log('fadeOutProgressbar');
     var circle = document.getElementsByClassName('progress-bar')[0];
     circle.style.opacity = '0';
 }
@@ -192,12 +195,19 @@ const socketMessageListener = (e) => {
         app.processing = false;
         app.downloading = true;
     } else if (data.action == "progress") {
-        totalBytesUploaded += data.number;
+        totalBytesUploaded = data.number;
         var maxWidth = window.innerWidth;
         app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
+        console.log(`bytes uploaded: ${totalBytesUploaded}/${totalBytesRequested}`);
         if (totalBytesUploaded >= totalBytesRequested) {
             app.progressBarWidth = `${maxWidth}px`;
             fadeOutProgressbar();
+            fadeOutTimeout = setTimeout(() => {
+                app.progressBarWidth = '0px';
+            }, 5000);
+        } else {
+            var circle = document.getElementsByClassName('progress-bar')[0];
+            circle.style.opacity = '1';        
         }
     } else {
         if (data.error != "") {
@@ -356,6 +366,11 @@ app = new Vue({
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
+            console.log('totalBytesRequested', totalBytesRequested);
+            if (fadeOutTimeout != null) {
+                clearTimeout(fadeOutTimeout);
+            }
+            fadeInProgressbar();
 
             const formData = new FormData();
             for (const file of files) {
