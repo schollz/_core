@@ -40,7 +40,6 @@ func Tmpfile() string {
 }
 
 func Init() (err error) {
-	fmt.Println("getting sox path")
 	soxbinary, err = getPath()
 	if err != nil {
 		return
@@ -51,7 +50,7 @@ func Init() (err error) {
 		err = fmt.Errorf("sox not found")
 		return
 	}
-	log.Trace("sox found")
+	log.Debugf("sox found: %s", soxbinary)
 	return
 }
 
