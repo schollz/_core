@@ -71,7 +71,7 @@ func Serve(useFiles bool) (err error) {
 	}
 
 	connections = make(map[string]*websocket.Conn)
-	log.Infof("listening on :%d", Port)
+	log.Debugf("listening on :%d", Port)
 	http.HandleFunc("/", handler)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", Port), nil)
 	return
@@ -89,7 +89,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	log.Infof("%v %v %v %s\n", r.RemoteAddr, r.Method, r.URL.Path, time.Since(t))
+	log.Debugf("%v %v %v %s\n", r.RemoteAddr, r.Method, r.URL.Path, time.Since(t))
 }
 
 func handle(w http.ResponseWriter, r *http.Request) (err error) {
@@ -130,12 +130,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		if strings.HasPrefix(filename, StorageFolder) {
 			b, err = os.ReadFile(filename)
 		} else {
-			if log.GetLevel() == "trace" {
+			if useFilesOnDisk {
 				filename = path.Join("src/server/", filename)
 				b, err = os.ReadFile(filename)
 			} else {
 				b, err = staticFiles.ReadFile(filename)
-
 			}
 		}
 		if err != nil {
@@ -225,7 +224,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		if message.Filename != "" {
 			_, message.Filename = filepath.Split(message.Filename)
 		}
-		log.Debugf("message: %s->%+v", query["id"][0], message.Action)
+		log.Tracef("message: %s->%+v", query["id"][0], message.Action)
 		if message.Action == "getinfo" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
