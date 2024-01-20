@@ -497,6 +497,7 @@ app = new Vue({
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
+            console.log('totalBytesRequested', totalBytesRequested);
 
             const formData = new FormData();
             for (const file of files) {
