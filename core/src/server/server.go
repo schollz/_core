@@ -433,6 +433,9 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 	// Retrieve the files from the form data
 	files := r.MultipartForm.File["files"]
 
+	// keep track of the total byte count
+	totalBytesWritten := int64(0)
+
 	// Process each file
 	for _, file := range files {
 		// Open the uploaded file
@@ -463,7 +466,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Action: "progress",
-						Number: n,
+						Number: n + totalBytesWritten,
 					})
 				}
 				mutex.Unlock()
@@ -475,6 +478,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			return
 		}
 
+		totalBytesWritten += byteCounter.TotalBytes
 		go processFile(id, file.Filename, localFile)
 	}
 
