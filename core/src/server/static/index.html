@@ -33,7 +33,7 @@
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a></h1>
-            <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" id="floater">firmware
+            <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" class="hideIfMobile" id="floater">firmware
                 VERSION_CURRENT</a>
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
@@ -120,8 +120,8 @@
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
                             <!-- file movers -->
-                            <a @click.stop="moveFileUpIndex(fileIndex)" style="float:right; z-index:999;">▲</a>
-                            <a @click.stop="moveFileDownIndex(fileIndex)"
+                            <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile" style="float:right; z-index:999;">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)"  class="hideIfMobile" 
                                 style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
                         </li>
                     </ul>
