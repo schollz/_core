@@ -228,7 +228,7 @@
                         <div v-if="uploading">uploading</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
-                        <button type="submit" v-else>Download</button>
+                        <button type="submit" v-else>Download ({{ formatBytes(diskUsage) }})</button>
                     </div>
                 </div>
             </form>
