@@ -33,6 +33,7 @@ typedef struct SaveFile {
   uint8_t bank : 8;
   uint8_t sample : 8;
   Sequencer *sequencers[3][16];
+  uint8_t sequence_sel[3];
   bool fx_active[16];
   uint8_t fx_param[16][3];
 } SaveFile;
@@ -74,17 +75,17 @@ SaveFile *SaveFile_malloc() {
 }
 
 void SaveFile_test_sequencer(SaveFile *sf) {
-  Sequencer_set_callbacks(sf->sequencers[0][0], test_sequencer_emit,
-                          test_sequencer_stop);
-  Sequencer_add(sf->sequencers[0][0], 1, 1);
-  Sequencer_add(sf->sequencers[0][0], 2, 3);
-  Sequencer_add(sf->sequencers[0][0], 3, 7);
-  Sequencer_add(sf->sequencers[0][0], 4, 11);
-  Sequencer_add(sf->sequencers[0][0], 5, 15);
-  Sequencer_play(sf->sequencers[0][0], false);
+  Sequencer_set_callbacks(sf->sequencers[0][sf->sequence_sel[0]],
+                          test_sequencer_emit, test_sequencer_stop);
+  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 1, 1);
+  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 2, 3);
+  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 3, 7);
+  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 4, 11);
+  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 5, 15);
+  Sequencer_play(sf->sequencers[0][sf->sequence_sel[0]], false);
   for (int i = 0; i < 18; i++) {
     printf("step %d ", i);
-    Sequencer_step(sf->sequencers[0][0], i);
+    Sequencer_step(sf->sequencers[0][sf->sequence_sel[0]], i);
     printf("\n");
   }
 }
