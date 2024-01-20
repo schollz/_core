@@ -79,13 +79,6 @@ footer {
     font-size: 1.5rem;
 }
 
-@media (max-width: 600px) {
-    #floater {
-        font-size: 1rem;
-        /* or you can specify a specific size like 12px */
-    }
-}
-
 header {
     border-top-left-radius: 10px;
     border-top-right-radius: 5px;
@@ -307,6 +300,16 @@ body {
 @media screen and (max-width: 768px) {
     /* Adjustments for mobile devices */
 
+    .hideIfMobile {
+        display: none;
+    }
+
+
+    #app {
+        border-left: 5px solid var(--header-footer-background);
+        font-size-adjust: 0.4;
+    }
+
     header {
         box-sizing: border-box;
         /* Adjust the maximum height as needed */
@@ -365,11 +368,14 @@ body {
         /* Adjust the font size as needed for smaller screens */
     }
 
-    body {
-        padding: 0;
+    h1 {
+        font-size: 1.5rem;
+        /* Adjust the font size as needed for smaller screens */
     }
 
-
+    body {
+        padding: 1em;
+    }
 
     .help-banner {
         padding: 1em;
