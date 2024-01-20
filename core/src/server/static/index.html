@@ -33,7 +33,8 @@
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a></h1>
-            <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" class="hideIfMobile" id="floater">firmware
+            <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" class="hideIfMobile"
+                id="floater">firmware
                 VERSION_CURRENT</a>
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
@@ -62,7 +63,7 @@
                             target="_blank">click here to let me know</a>.
                     </p>
                 </div>
-                <div v-if="!isMain">
+                <div v-if="!isMain && !disconnected">
                     <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
                     </h2>
                 </div>
@@ -101,8 +102,8 @@
                         Drop your files here or click to select
                     </div>
                 </div>
-                <div v-if="disconnected && !isMain" style="text-align: center;">
-                    <img src="/static/Infinity-2.3s-200px.svg" style="width: 100px; margin: 0 auto; display: block;">
+                <div v-if="disconnected && !isMain" style="height: 100%; display: flex;">
+                    <img src="/static/Infinity-2.3s-200px.svg" style="margin: 0 auto; text-align: center;">
                 </div>
 
                 <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
@@ -120,8 +121,9 @@
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
                             <!-- file movers -->
-                            <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile" style="float:right; z-index:999;">▲</a>
-                            <a @click.stop="moveFileDownIndex(fileIndex)"  class="hideIfMobile" 
+                            <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile"
+                                style="float:right; z-index:999;">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)" class="hideIfMobile"
                                 style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
                         </li>
                     </ul>
@@ -175,18 +177,20 @@
                     </p>
                     <div id="waveform-parent">
                         <div id="waveform"></div>
-                        <p>
-
-                            <label style="margin-left: 2em">
-                                Zoom: <input type="range" min="10" max="1000" value="10" />
-                            </label>
+                        <p style="display: flex; align-items: center;">
+                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="playingSample">Stop
+                                sample</button>
+                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="!playingSample">Play
+                                sample</button>
+                            <label style="margin-left:1em;">Zoom:</label>
+                            <input type="range" min="10" max="1000" value="10" />
                         </p>
                         <p>
                             <button @click="deleteRegion" style="margin-left:0;">Delete selected region</button>
                             <button @click="deleteAllRegions" style="margin-left:0;">Delete all regions</button>
                         </p>
                         <p>
-                            <label style="margin-left: 2em">
+                            <label>
                                 Number of regions: <input id="onsetSlices" type="number" min="1" max="128" value=16
                                     style="width:3em;" />
                             </label>
