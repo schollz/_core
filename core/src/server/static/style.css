@@ -32,14 +32,14 @@ body {
 } */
 
 
-@font-face {
+/* @font-face {
     font-family: 'MonaspaceKrypton';
     src: url('/static/MonaspaceKrypton-Regular.woff') format('woff');
-}
+} */
 
 
 @font-face {
-    font-family: "OdinRounded";
+    font-family: "MonaspaceKrypton";
     src: url('/static/odin-rounded.light.woff') format('woff');
 }
 
