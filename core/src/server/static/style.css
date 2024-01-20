@@ -39,12 +39,12 @@ body {
 
 
 @font-face {
-    font-family: "MonaspaceKrypton";
-    src: url('/static/odin-rounded.light.woff') format('woff');
+    font-family: "OdinRounded";
+    src: url('/static/odin-rounded.regular.woff') format('woff');
 }
 
 body {
-    font-family: 'MonaspaceKrypton', monospace;
+    font-family: 'OdinRounded', monospace;
     margin: 0;
     background-color: var(--background-color);
     ;
@@ -244,11 +244,11 @@ a:hover {
 
 
 select {
-    font-family: 'MonaspaceKrypton', monospace;
+    font-family: 'OdinRounded', monospace;
 }
 
 button {
-    font-family: 'MonaspaceKrypton', monospace;
+    font-family: 'OdinRounded', monospace;
     background-color: var(--banks-background);
     /* Light purple background color for buttons */
     color: black;
