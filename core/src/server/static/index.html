@@ -119,6 +119,10 @@
                             @click="showFileDetails(fileIndex)" :class="{ 'selected': isSelected(fileIndex) }"
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
+                            <!-- file movers -->
+                            <a @click.stop="moveFileUpIndex(fileIndex)" style="float:right; z-index:999;">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)"
+                                style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
                         </li>
                     </ul>
                 </div>
