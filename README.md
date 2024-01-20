@@ -85,8 +85,9 @@ o = partially finished
 - [x] **B** + **H** + **H** → select bank (1st) + sample (2nd)
 - [x] **B** + **C** → start/stop
 - [x] **B** + **D** → mute
-- [ ] **C** → show which sequence is selected (bright)
-- [ ] **C** + **H** + **H**... → merge sequences into next available slot
+- [x] **C** → show which sequence is selected (bright)
+- [x] **C** + **H** → select sequence (led dim or bright = used, led off or blinking = unused) 
+- [x] **C** + **H** + **H** + **H** ... → chains sequences together, though the first selected must be empty
 - [x] **C** + **B** → toggle play sequence
 - [x] **C** + **D** → toggle record sequence
 - [x] **C** + **D**, **C** + **D** → erase current sequence
@@ -95,7 +96,7 @@ o = partially finished
 - [ ] **D** + **H** → select save slot
 - [ ] **D** + **B** load from save slot
 - [ ] **D** + **C** → save into save slot
-- [ ] ?? copy sequences? 
+
 
 #### combo knobs
 
