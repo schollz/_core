@@ -149,7 +149,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 			if err != nil {
 				log.Error(err)
 			} else {
-				b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte(out.String()), 2)
+				b = bytes.Replace(b, []byte("v0.0.5"), []byte(out.String()), 2)
 			}
 		}
 		w.Write(b)
