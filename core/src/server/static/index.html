@@ -119,6 +119,10 @@
                             @click="showFileDetails(fileIndex)" :class="{ 'selected': isSelected(fileIndex) }"
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
+                            <!-- file movers -->
+                            <a @click.stop="moveFileUpIndex(fileIndex)" style="float:right; z-index:999;">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)"
+                                style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
                         </li>
                     </ul>
                 </div>
@@ -127,11 +131,12 @@
                     <p style="margin-top:0;
                     padding: 0.5rem;
                     text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
-                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices)</p>
+                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
+                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(1)*1000)}})</p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <button @click="removeSelectedFile" style="margin-left:0;">Remove current</button>
+                    <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button>
                     <span v-if="banks[selectedBank].files.length>1">
                         <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                         <button @click="moveFileDown"
@@ -223,7 +228,7 @@
                         <div v-if="uploading">uploading</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
-                        <button type="submit" v-else>Download</button>
+                        <button type="submit" v-else>Download ({{ formatBytes(diskUsage) }})</button>
                     </div>
                 </div>
             </form>
@@ -232,6 +237,7 @@
     </div>
 
 
+    <script src="/static/humanize-duration.min.js"></script>
     <script src="/static/vue.js"></script>
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";

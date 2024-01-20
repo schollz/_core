@@ -31,11 +31,16 @@ body {
     --light-highlight-color: #e1ecfa;
 } */
 
+
 @font-face {
     font-family: 'MonaspaceKrypton';
-    /* Choose a name for your font family */
     src: url('/static/MonaspaceKrypton-Regular.woff') format('woff');
-    /* Adjust the path to your .woff file */
+}
+
+
+@font-face {
+    font-family: "OdinRounded";
+    src: url('/static/odin-rounded.light.woff') format('woff');
 }
 
 body {
@@ -234,7 +239,7 @@ a:hover {
     left: 0;
     height: 0.5rem;
     width: 0;
-    transition: width 0.2s ease, opacity 0.2s ease-in, opacity 5s ease-out;
+    transition: width 0.05s ease, opacity 0.5s ease-out;
     /* Add a smooth transition effect */
 }
 
@@ -431,7 +436,7 @@ a {
     top: 1em;
     right: 1em;
     opacity: 0;
-    transition: opacity 0.2s ease-in, opacity 1s ease-out;
+    transition: opacity 0.2s ease-in, opacity 5s ease-out;
     z-index: 999;
     /* Set a higher z-index value */
 }
