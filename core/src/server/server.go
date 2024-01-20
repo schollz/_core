@@ -9,7 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -131,26 +130,21 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		if strings.HasPrefix(filename, StorageFolder) {
 			b, err = os.ReadFile(filename)
 		} else {
-			b, err = staticFiles.ReadFile(filename)
+			log.Tracef("log.GetLevel(): %s", log.GetLevel())
+			if log.GetLevel() == "trace" {
+				filename = path.Join("src/server/", filename)
+				b, err = os.ReadFile(filename)
+			} else {
+				b, err = staticFiles.ReadFile(filename)
+
+			}
 		}
 		if err != nil {
 			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
 		}
-		if filename == "static/index.html" {
-			// determine the current version with
-			// git describe --tags --abbrev=0 --always
-			// and replace the version in the index.html
-			// use the external git command
-			cmd := exec.Command("git", "describe", "--tags", "--abbrev=0", "--always")
-			var out bytes.Buffer
-			cmd.Stdout = &out
-			err = cmd.Run()
-			if err != nil {
-				log.Error(err)
-			} else {
-				b = bytes.Replace(b, []byte("v0.0.5"), []byte(out.String()), 2)
-			}
+		if strings.Contains(filename, "static/index.html") {
+			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.5"), -1)
 		}
 		w.Write(b)
 	}
