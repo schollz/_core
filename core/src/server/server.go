@@ -9,7 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -127,33 +126,26 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
 		w.Header().Set("Content-Type", mimeType)
-		log.Tracef("serving %s with mime %s", filename, mimeType)
 		var b []byte
-		log.Debugf("filename: %s", filename)
 		if strings.HasPrefix(filename, StorageFolder) {
 			b, err = os.ReadFile(filename)
 		} else {
-			b, err = staticFiles.ReadFile(filename)
+			if log.GetLevel() == "trace" {
+				filename = path.Join("src/server/", filename)
+				b, err = os.ReadFile(filename)
+			} else {
+				b, err = staticFiles.ReadFile(filename)
+
+			}
 		}
 		if err != nil {
 			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
 		}
-		if filename == "static/index.html" {
-			// determine the current version with
-			// git describe --tags --abbrev=0 --always
-			// and replace the version in the index.html
-			// use the external git command
-			cmd := exec.Command("git", "describe", "--tags", "--abbrev=0", "--always")
-			var out bytes.Buffer
-			cmd.Stdout = &out
-			err = cmd.Run()
-			if err != nil {
-				log.Error(err)
-			} else {
-				b = bytes.Replace(b, []byte("v0.0.5"), []byte(out.String()), 2)
-			}
+		if strings.Contains(filename, "static/index.html") {
+			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.5"), -1)
 		}
+		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
 	}
 
@@ -443,6 +435,9 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 	// Retrieve the files from the form data
 	files := r.MultipartForm.File["files"]
 
+	// keep track of the total byte count
+	totalBytesWritten := int64(0)
+
 	// Process each file
 	for _, file := range files {
 		// Open the uploaded file
@@ -473,7 +468,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 				if _, ok := connections[id]; ok {
 					connections[id].WriteJSON(Message{
 						Action: "progress",
-						Number: n,
+						Number: n + totalBytesWritten,
 					})
 				}
 				mutex.Unlock()
@@ -485,6 +480,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			return
 		}
 
+		totalBytesWritten += byteCounter.TotalBytes
 		go processFile(id, file.Filename, localFile)
 	}
 
