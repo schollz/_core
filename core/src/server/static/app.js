@@ -13,6 +13,16 @@ const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
 
 
+
+function formatBytes(bytes,decimals) {
+    if(bytes == 0) return '0 Bytes';
+    var k = 1024,
+        dm = decimals || 2,
+        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+ }
+ 
 function fadeInCircle() {
     var circle = document.getElementById('fadeCircle');
     circle.style.opacity = '1';
@@ -299,6 +309,19 @@ app = new Vue({
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
+    },
+    computed: {
+        diskUsage: function() {
+            // loop through all banks
+            var total = 0;
+            for (var i = 0; i < this.banks.length; i++) {
+                // loop through all files in the bank
+                for (var j = 0; j < this.banks[i].files.length; j++) {
+                    total += this.banks[i].files[j].Duration * 44100 * 2 *10;
+                }
+            }
+            return total;
+        }
     },
     methods: {
         isSelected(fileIndex) {
