@@ -19,6 +19,12 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+    - name: Set up Zig
+      uses: goto-bus-stop/setup-zig@v2
+      run: zig fmt --check .
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      run: go version
     - name: Install Pico SDK dependencies
       run: |
         sudo apt update
@@ -36,9 +42,11 @@ jobs:
       run: |
         make zeptocore
         make ectocore
+        make core.exe
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           zeptocore.uf2
           ectocore.uf2
+          core.exe

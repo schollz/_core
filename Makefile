@@ -129,3 +129,7 @@ server:
 
 resetpico: 
 	python3 dev/reset_pico.py 
+
+core.exe:
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -x
+	mv core/core.exe core.exe
