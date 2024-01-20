@@ -165,7 +165,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		f.Regenerate()
 
 		// create ogg
-		_, _, err = utils.Run("sox", f.PathToAudio, f.PathToFile+".ogg")
+		_, _, err = utils.Run(sox.GetBinary(), f.PathToAudio, f.PathToFile+".ogg")
 		if err != nil {
 			log.Error(err)
 		}
@@ -365,7 +365,7 @@ func (f *File) SetTempoMatch(TempoMatch bool) {
 // and process it to format it for zeptocore
 func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channels int, oversampling int) (err error) {
 	log.Tracef("creating timestretched %s", fnameOut)
-	_, _, err = utils.Run("sox", fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
+	_, _, err = utils.Run(sox.GetBinary(), fnameIn, "1.wav", "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
 	if err != nil {
 		log.Error(err)
 		return
@@ -404,12 +404,12 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 		os.Remove(pieceJoin)
 	}()
 
-	_, _, err = utils.Run("sox", pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-6")
+	_, _, err = utils.Run(sox.GetBinary(), pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", "norm", "gain", "-6")
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	_, _, err = utils.Run("sox", "-t", "raw", "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
+	_, _, err = utils.Run(sox.GetBinary(), "-t", "raw", "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", "1.raw", fnameOut)
 	if err != nil {
 		log.Error(err)
 		return

@@ -63,7 +63,7 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 					defer os.Remove(fname2)
 
 					// split into a splice
-					_, _, r.err = run("sox",
+					_, _, r.err = run(sox.GetBinary(),
 						fname, fname2,
 						"trim",
 						fmt.Sprintf("%2.0fs", math.Round(totalSamples*slice_start[j.index])),
@@ -74,7 +74,7 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 
 					// gather frequency information
 					var dataString string
-					_, dataString, r.err = run("sox", fname2, "-n", "stat", "-freq")
+					_, dataString, r.err = run(sox.GetBinary(), fname2, "-n", "stat", "-freq")
 					if r.err != nil {
 						return
 					}

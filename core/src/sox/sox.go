@@ -54,6 +54,10 @@ func Init() (err error) {
 	return
 }
 
+func GetBinary() string {
+	return soxbinary
+}
+
 func run(args ...string) (string, string, error) {
 	log.Trace(strings.Join(args, " "))
 	baseCmd := args[0]
@@ -397,7 +401,7 @@ func Join(fnames ...string) (fname2 string, err error) {
 	}
 	fname2 = Tmpfile()
 	fnames = append(fnames, fname2)
-	_, _, err = run(append([]string{"sox"}, fnames...)...)
+	_, _, err = run(append([]string{soxbinary}, fnames...)...)
 	return
 }
 
@@ -406,7 +410,7 @@ func Mix(fnames ...string) (fname2 string, err error) {
 	fname2 = Tmpfile()
 	fnames = append(fnames, fname2)
 	fnames = append(fnames, "norm")
-	_, _, err = run(append([]string{"sox", "-m"}, fnames...)...)
+	_, _, err = run(append([]string{soxbinary, "-m"}, fnames...)...)
 	return
 }
 
