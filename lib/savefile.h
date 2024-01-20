@@ -53,6 +53,9 @@ SaveFile *SaveFile_malloc() {
       sf->sequencers[i][j] = Sequencer_malloc();
     }
   }
+  sf->sequence_sel[0] = 0;
+  sf->sequence_sel[1] = 0;
+  sf->sequence_sel[2] = 0;
 
   for (uint8_t i = 0; i < 16; i++) {
     sf->fx_active[i] = false;

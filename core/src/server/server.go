@@ -142,7 +142,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 			return
 		}
 		if strings.Contains(filename, "static/index.html") {
-			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.5"), -1)
+			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.6"), -1)
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)

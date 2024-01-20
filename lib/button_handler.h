@@ -443,6 +443,41 @@ void button_handler(ButtonMatrix *bm) {
     }
     printf("\n");
 
+    if (key_pressed_num >= 3) {
+      bool do_merge = key_pressed[0] == KEY_C;
+      for (uint8_t i = 1; i < key_pressed_num; i++) {
+        if (key_pressed[i] < 4) {
+          do_merge = false;
+        }
+      }
+      if (do_merge) {
+        uint8_t merge_sequence_num = key_pressed[1] - 4;
+        if (!Sequencer_has_data(
+                sf->sequencers[mode_buttons16][merge_sequence_num])) {
+          printf("[button_handler] merging sequences into sequence %d: \n",
+                 merge_sequence_num);
+          // copy the first sequence into the empty slot
+          Sequencer_copy(sf->sequencers[mode_buttons16][key_pressed[2] - 4],
+                         sf->sequencers[mode_buttons16][merge_sequence_num]);
+          // merge the rest into that slot
+          for (uint8_t i = 3; i < key_pressed_num; i++) {
+            printf("merging %d\n", key_pressed[i] - 4);
+            Sequencer *merged = Sequencer_merge(
+                sf->sequencers[mode_buttons16][merge_sequence_num],
+                sf->sequencers[mode_buttons16][key_pressed[i] - 4]);
+            Sequencer_copy(merged,
+                           sf->sequencers[mode_buttons16][merge_sequence_num]);
+            free(merged);
+          }
+          Sequencer_print(sf->sequencers[mode_buttons16][merge_sequence_num]);
+          sf->sequence_sel[mode_buttons16] = merge_sequence_num;
+          sequencerhandler[mode_buttons16].playing = true;
+          Sequencer_play(sf->sequencers[mode_buttons16][merge_sequence_num],
+                         true);
+        }
+      }
+    }
+
     // combo matching
     if (key_pressed_num == 3) {
       if (key_pressed[0] == 8 && key_pressed[1] == 9 && key_pressed[2] == 8) {
@@ -654,11 +689,29 @@ void button_handler(ButtonMatrix *bm) {
     for (uint8_t i = 0; i < 16; i++) {
       // TODO blink the current sequence
       if (sf->sequence_sel[mode_buttons16] == i) {
-        LEDS_set(leds, i + 4, LED_BRIGHT);
+        if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
+          LEDS_set(leds, i + 4, LED_BRIGHT);
+        } else {
+          LEDS_set(leds, i + 4, LED_BLINK);
+        }
       } else if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
         LEDS_set(leds, i + 4, LED_DIM);
       } else {
         LEDS_set(leds, i + 4, 0);
+      }
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+      if (sequencerhandler[i].playing) {
+        LEDS_set(leds, 0, 0);
+        LEDS_set(leds, 1, LED_BLINK);
+        LEDS_set(leds, 2, LED_BRIGHT);
+        LEDS_set(leds, 3, 0);
+      } else if (sequencerhandler[i].recording) {
+        LEDS_set(leds, 0, 0);
+        LEDS_set(leds, 1, 0);
+        LEDS_set(leds, 2, LED_BRIGHT);
+        LEDS_set(leds, 3, LED_BLINK);
       }
     }
     LEDS_render(leds);
