@@ -143,7 +143,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      ->sample[sel_sample_cur]
                      .snd[sel_variation]
                      ->play_mode != PLAY_NORMAL) {
-    Sequencer_step(sf->sequencers[0][0], bpm_timer_counter);
+    Sequencer_step(sf->sequencers[0][sf->sequence_sel[0]], bpm_timer_counter);
   } else if (((banks[sel_bank_cur]
                        ->sample[sel_sample_cur]
                        .snd[sel_variation]
@@ -160,7 +160,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
     if (sequencerhandler[0].playing) {
-      Sequencer_step(sf->sequencers[0][0], bpm_timer_counter);
+      Sequencer_step(sf->sequencers[0][sf->sequence_sel[0]], bpm_timer_counter);
     } else if ((clock_in_do && clock_in_ready) ||
                bpm_timer_counter % (96 * banks[sel_bank_cur]
                                              ->sample[sel_sample_cur]

@@ -377,15 +377,20 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
 
       if (sequencerhandler[mode_buttons16].playing) {
         printf("[button_handler] sequence %d playing on\n", mode_buttons16);
-        if (Sequencer_has_data(sf->sequencers[mode_buttons16][0])) {
-          Sequencer_play(sf->sequencers[mode_buttons16][0], true);
+        if (Sequencer_has_data(
+                sf->sequencers[mode_buttons16]
+                              [sf->sequence_sel[mode_buttons16]])) {
+          Sequencer_play(
+              sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
+              true);
         } else {
           printf("[button_handler] sequence %d has no data\n", mode_buttons16);
           sequencerhandler[mode_buttons16].playing = false;
         }
       } else {
         printf("[button_handler] sequence %d playing off\n", mode_buttons16);
-        Sequencer_stop(sf->sequencers[mode_buttons16][0]);
+        Sequencer_stop(
+            sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
       }
     } else if (key2 == KEY_D) {
       // B + C
@@ -398,7 +403,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
           !sequencerhandler[mode_buttons16].recording;
       if (sequencerhandler[mode_buttons16].recording) {
         // todo [0] should be which sequencer is currently on
-        Sequencer_clear(sf->sequencers[mode_buttons16][0]);
+        Sequencer_clear(
+            sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
         printf("[button_handler] sequence %d recording on\n", mode_buttons16);
       } else {
         printf("[button_handler] sequence %d recording off\n", mode_buttons16);
@@ -406,8 +412,22 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
 
     } else if (key2 > 3) {
       // B + H
-      // update the current chain
-      // Chain_set_current(chain, key2 - 4);
+      // change the current pattern if it exists
+      uint8_t prev_sequence = sf->sequence_sel[mode_buttons16];
+      sf->sequence_sel[mode_buttons16] = key2 - 4;
+      if (sequencerhandler[mode_buttons16].recording) {
+        sequencerhandler[mode_buttons16].recording = false;
+      }
+      if (sequencerhandler[mode_buttons16].playing) {
+        Sequencer_stop(sf->sequencers[mode_buttons16][prev_sequence]);
+        if (Sequencer_has_data(
+                sf->sequencers[mode_buttons16]
+                              [sf->sequence_sel[mode_buttons16]])) {
+          Sequencer_play(
+              sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
+              true);
+        }
+      }
     }
   }
 }
@@ -633,8 +653,10 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_set(leds, KEY_C, LED_BRIGHT);
     for (uint8_t i = 0; i < 16; i++) {
       // TODO blink the current sequence
-      if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
+      if (sf->sequence_sel[mode_buttons16] == i) {
         LEDS_set(leds, i + 4, LED_BRIGHT);
+      } else if (Sequencer_has_data(sf->sequencers[mode_buttons16][i])) {
+        LEDS_set(leds, i + 4, LED_DIM);
       } else {
         LEDS_set(leds, i + 4, 0);
       }
