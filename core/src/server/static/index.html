@@ -135,7 +135,7 @@
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <button @click="removeSelectedFile" style="margin-left:0;">Remove current</button>
+                    <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button>
                     <span v-if="banks[selectedBank].files.length>1">
                         <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                         <button @click="moveFileDown"
