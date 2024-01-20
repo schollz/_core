@@ -31,11 +31,12 @@ body {
     --light-highlight-color: #e1ecfa;
 } */
 
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,500;1,600;1,700&display=swap');
 
-/* @font-face {
+@font-face {
     font-family: 'MonaspaceKrypton';
     src: url('/static/MonaspaceKrypton-Regular.woff') format('woff');
-} */
+}
 
 
 @font-face {
@@ -44,7 +45,7 @@ body {
 }
 
 body {
-    font-family: 'OdinRounded', monospace;
+    font-family: 'Nunito', monospace;
     margin: 0;
     background-color: var(--background-color);
     ;
@@ -244,11 +245,11 @@ a:hover {
 
 
 select {
-    font-family: 'OdinRounded', monospace;
+    font-family: 'Nunito', monospace;
 }
 
 button {
-    font-family: 'OdinRounded', monospace;
+    font-family: 'Nunito', monospace;
     background-color: var(--banks-background);
     /* Light purple background color for buttons */
     color: black;
