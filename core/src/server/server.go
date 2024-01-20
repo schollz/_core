@@ -124,13 +124,10 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
 		w.Header().Set("Content-Type", mimeType)
-		log.Tracef("serving %s with mime %s", filename, mimeType)
 		var b []byte
-		log.Debugf("filename: %s", filename)
 		if strings.HasPrefix(filename, StorageFolder) {
 			b, err = os.ReadFile(filename)
 		} else {
-			log.Tracef("log.GetLevel(): %s", log.GetLevel())
 			if log.GetLevel() == "trace" {
 				filename = path.Join("src/server/", filename)
 				b, err = os.ReadFile(filename)
@@ -146,6 +143,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		if strings.Contains(filename, "static/index.html") {
 			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.5"), -1)
 		}
+		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
 	}
 
