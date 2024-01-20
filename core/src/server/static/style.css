@@ -31,11 +31,16 @@ body {
     --light-highlight-color: #e1ecfa;
 } */
 
+
 @font-face {
     font-family: 'MonaspaceKrypton';
-    /* Choose a name for your font family */
     src: url('/static/MonaspaceKrypton-Regular.woff') format('woff');
-    /* Adjust the path to your .woff file */
+}
+
+
+@font-face {
+    font-family: "OdinRounded";
+    src: url('/static/odin-rounded.light.woff') format('woff');
 }
 
 body {
