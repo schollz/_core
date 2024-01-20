@@ -13,9 +13,11 @@ import (
 
 var flagLogLevel string
 var flagDontOpen bool
+var flagUseFilesOnDisk bool
 
 func init() {
 	flag.StringVar(&flagLogLevel, "log", "debug", "log level (trace, debug, info)")
+	flag.BoolVar(&flagUseFilesOnDisk, "usefiles", false, "use files on disk")
 	flag.BoolVar(&flagDontOpen, "dontopen", false, "don't open browser")
 }
 
@@ -31,7 +33,7 @@ func main() {
 		time.Sleep(38 * time.Second)
 		os.Exit(1)
 	}
-	err = server.Serve()
+	err = server.Serve(flagUseFilesOnDisk)
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)
