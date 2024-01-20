@@ -131,7 +131,8 @@
                     <p style="margin-top:0;
                     padding: 0.5rem;
                     text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
-                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices)</p>
+                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
+                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(1)*1000)}})</p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
@@ -236,6 +237,7 @@
     </div>
 
 
+    <script src="/static/humanize-duration.min.js"></script>
     <script src="/static/vue.js"></script>
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
