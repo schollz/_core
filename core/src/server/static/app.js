@@ -77,8 +77,6 @@ function writeCookie(name, value) {
 function loadPreviousPages() {
     const previousPagesString = readCookie('previousPages');
     let previousPages = previousPagesString ? JSON.parse(previousPagesString) : [];
-    console.log(previousPagesString);
-    console.log(previousPages);
     return Array.from(new Set(previousPages));
 }
 
@@ -725,7 +723,7 @@ app = new Vue({
 });
 
 
-const showWaveform = debounce(showWaveform_, 100);
+const showWaveform = debounce(showWaveform_, 50);
 
 
 function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
@@ -795,7 +793,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
                 sliceStart: sliceStart,
                 sliceStop: sliceStop,
             }));
-        }, 1000);
+        }, 200);
         var regionTriggers = ['region-updated', 'region-created']
         for (regionTrigger of regionTriggers) {
             wsRegions.on(
