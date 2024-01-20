@@ -69,14 +69,7 @@ the rest of the buttons (1-16) are just called **H**.
 
 #### combo buttons
 
-x = finished
-
-o = partially finished
-
-- [ ] **none** → n/a
-- [o] **H** → (JUMP): do jump, (MASH): toggle fx, (BASS): play bass
 - [x] **H** + **H** → JUMP: retrig depending on location
-- [ ] **A** → n/a
 - [x] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
 - [x] **A** + **B** → JUMP mode
 - [x] **A** + **C** → MASH mode
@@ -91,8 +84,6 @@ o = partially finished
 - [x] **C** + **B** → toggle play sequence
 - [x] **C** + **D** → toggle record sequence
 - [x] **C** + **D**, **C** + **D** → erase current sequence
-- [ ] **C** + **H** → select sequence
-- [ ] **D** → show which save slot is selected (bright)
 - [ ] **D** + **H** → select save slot
 - [ ] **D** + **B** load from save slot
 - [ ] **D** + **C** → save into save slot
@@ -100,9 +91,6 @@ o = partially finished
 
 #### combo knobs
 
-- [ ] **X** → n/a
-- [ ] **Y** → n/a
-- [ ] **Z** → n/a
 - [x] **A** + **X** → tempo
 - [ ] **A** + **Y** → 
 - [x] **A** + **Z** → volume
