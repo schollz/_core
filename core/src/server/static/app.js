@@ -7,11 +7,22 @@ var app;
 var socket;
 var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+var fadeOutTimeout = null;
 const ccolor = '#dcd6f799';
 const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
 
 
+
+function formatBytes(bytes,decimals) {
+    if(bytes == 0) return '0 Bytes';
+    var k = 1024,
+        dm = decimals || 2,
+        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+ }
+ 
 function fadeInCircle() {
     var circle = document.getElementById('fadeCircle');
     circle.style.opacity = '1';
@@ -38,11 +49,13 @@ const fadeOut = debounce(function () {
 }, 1000);
 
 function fadeInProgressbar() {
+    console.log('fadeInProgressbar');
     var circle = document.getElementsByClassName('progress-bar')[0];
     circle.style.opacity = '1';
 }
 
 function fadeOutProgressbar() {
+    console.log('fadeOutProgressbar');
     var circle = document.getElementsByClassName('progress-bar')[0];
     circle.style.opacity = '0';
 }
@@ -192,12 +205,19 @@ const socketMessageListener = (e) => {
         app.processing = false;
         app.downloading = true;
     } else if (data.action == "progress") {
-        totalBytesUploaded += data.number;
+        totalBytesUploaded = data.number;
         var maxWidth = window.innerWidth;
         app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
+        console.log(`bytes uploaded: ${totalBytesUploaded}/${totalBytesRequested}`);
         if (totalBytesUploaded >= totalBytesRequested) {
             app.progressBarWidth = `${maxWidth}px`;
             fadeOutProgressbar();
+            fadeOutTimeout = setTimeout(() => {
+                app.progressBarWidth = '0px';
+            }, 5000);
+        } else {
+            var circle = document.getElementsByClassName('progress-bar')[0];
+            circle.style.opacity = '1';        
         }
     } else {
         if (data.error != "") {
@@ -261,6 +281,7 @@ app = new Vue({
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
         selectedFile: null,
+        lastSelectedFile: null,
         progressBarWidth: '0px',
         oversampling: '1x', // Default to '1x'
         stereoMono: 'mono', // Default to 'mono'
@@ -287,6 +308,20 @@ app = new Vue({
         stereoMono: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
+        selectedFile: 'saveLastSelected',
+    },
+    computed: {
+        diskUsage: function() {
+            // loop through all banks
+            var total = 0;
+            for (var i = 0; i < this.banks.length; i++) {
+                // loop through all files in the bank
+                for (var j = 0; j < this.banks[i].files.length; j++) {
+                    total += this.banks[i].files[j].Duration * 44100 * 2 *10;
+                }
+            }
+            return total;
+        }
     },
     methods: {
         isSelected(fileIndex) {
@@ -356,6 +391,11 @@ app = new Vue({
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
+            console.log('totalBytesRequested', totalBytesRequested);
+            if (fadeOutTimeout != null) {
+                clearTimeout(fadeOutTimeout);
+            }
+            fadeInProgressbar();
 
             const formData = new FormData();
             for (const file of files) {
@@ -378,6 +418,9 @@ app = new Vue({
 
             // Clear the file input value to allow selecting the same file again
             event.target.value = null;
+        },
+        saveLastSelected() {
+            this.lastSelectedFile = this.selectedFile;
         },
         saveState() {
             const savedState = {
@@ -497,6 +540,7 @@ app = new Vue({
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
+            console.log('totalBytesRequested', totalBytesRequested);
 
             const formData = new FormData();
             for (const file of files) {
@@ -548,6 +592,25 @@ app = new Vue({
         moveFileUp() {
             if (this.selectedFile > 0) {
                 this.swapFiles(this.selectedFile, this.selectedFile - 1);
+                this.selectedFile--;
+                this.selectedFiles = [];
+                this.selectedFiles.push(this.selectedFile);
+            }
+        },
+        moveFileDownIndex(index) {
+            this.selectedFile = null;
+            this.selectedFiles = [];
+            if (index < this.banks[this.selectedBank].files.length - 1) {
+                this.swapFiles(index,index+1);
+            }
+        },
+        moveFileUpIndex(index) {
+            this.selectedFile = null;
+            this.selectedFiles = [];
+            if (index > 0) {
+                this.swapFiles(index, index - 1);
+            }
+            if (this.selectedFile == index) {
                 this.selectedFile--;
                 this.selectedFiles = [];
                 this.selectedFiles.push(this.selectedFile);
