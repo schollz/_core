@@ -293,7 +293,6 @@ func (f *File) SetSplicePlayback(playback int) {
 
 func (f *File) UpdateSliceTypes() {
 	// calculate the splice type
-	fmt.Println("FINDING KICKS!!!")
 	kicks, err := kickextract.KickExtract(f.PathToFile, f.SliceStart, f.SliceStop)
 	if err != nil {
 		log.Error(err)

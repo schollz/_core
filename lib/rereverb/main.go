@@ -26,7 +26,7 @@ func rereverb(fname string) (fname2 string, err error) {
 	if err != nil {
 		return
 	}
-	log.Infof("fname: %s, beats: %2.1f, bpm: %2.1f", fname, totalBeats, bpm)
+	log.Debugf("fname: %s, beats: %2.1f, bpm: %2.1f", fname, totalBeats, bpm)
 	fname2, err = sox.Gain(fname, -3)
 	if err != nil {
 		return
