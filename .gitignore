@@ -186,3 +186,4 @@ dev/sdcards/kootion_i_32gb_10_2.txt
 ectocore.uf2
 target_compile_definitions.cmake
 zeptocore.uf2
+lib/test/buttonmatrix3/
