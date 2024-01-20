@@ -8,21 +8,22 @@ var socket;
 var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 var fadeOutTimeout = null;
+var disconnectedTimeout = null;
 const ccolor = '#dcd6f799';
 const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
 
 
 
-function formatBytes(bytes,decimals) {
-    if(bytes == 0) return '0 Bytes';
+function formatBytes(bytes, decimals) {
+    if (bytes == 0) return '0 Bytes';
     var k = 1024,
         dm = decimals || 2,
         sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
         i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
- }
- 
+}
+
 function fadeInCircle() {
     var circle = document.getElementById('fadeCircle');
     circle.style.opacity = '1';
@@ -217,7 +218,7 @@ const socketMessageListener = (e) => {
             }, 5000);
         } else {
             var circle = document.getElementsByClassName('progress-bar')[0];
-            circle.style.opacity = '1';        
+            circle.style.opacity = '1';
         }
     } else {
         if (data.error != "") {
@@ -236,6 +237,9 @@ const socketMessageListener = (e) => {
 const socketOpenListener = (e) => {
     console.log('Connected');
     if (!app.isMain) {
+        if (disconnectedTimeout != null) {
+            clearTimeout(disconnectedTimeout);
+        }
         app.disconnected = false;
         setTimeout(() => {
             if (socket != null) {
@@ -246,11 +250,11 @@ const socketOpenListener = (e) => {
             }
         }, 50);
     }
-    try{
+    try {
         socket.send(JSON.stringify({
             action: "connected"
-        }));    
-    } catch(error) {
+        }));
+    } catch (error) {
         // oh well
     }
 };
@@ -260,7 +264,9 @@ const socketErrorListener = (e) => {
 const socketCloseListener = (e) => {
     if (socket) {
         console.log('Disconnected.');
-        app.disconnected = true;
+        disconnectedTimeout = setTimeout(() => {
+            app.disconnected = true;
+        }, 100);
     }
     var url = window.origin.replace("http", "ws") + '/ws?id=' + randomID + "&place=" + window.location.pathname;
     socket = new WebSocket(url);
@@ -290,13 +296,14 @@ app = new Vue({
         oversampling: '1x', // Default to '1x'
         stereoMono: 'mono', // Default to 'mono'
         isMobile: false, // Define isMobile variable
+        playingSample: false,
         downloading: false,
         processing: false,
         error_message: "",
         uploading: false,
         resampling: 'linear',
         title: window.location.pathname,
-        disconnected: true,
+        disconnected: false,
         isMain: window.location.pathname == '/',
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
@@ -315,13 +322,13 @@ app = new Vue({
         selectedFile: 'saveLastSelected',
     },
     computed: {
-        diskUsage: function() {
+        diskUsage: function () {
             // loop through all banks
             var total = 0;
             for (var i = 0; i < this.banks.length; i++) {
                 // loop through all files in the bank
                 for (var j = 0; j < this.banks[i].files.length; j++) {
-                    total += this.banks[i].files[j].Duration * 44100 * 2 *10;
+                    total += this.banks[i].files[j].Duration * 44100 * 2 * 10;
                 }
             }
             return total;
@@ -330,6 +337,21 @@ app = new Vue({
     methods: {
         isSelected(fileIndex) {
             return this.selectedFiles.includes(fileIndex);
+        },
+        toggleSamplePlayback() {
+            if (wsf == null) {
+                return;
+            }
+            this.playingSample = !this.playingSample;
+            if (this.playingSample) {
+                activeRegion = null;
+                wsf.setTime(0);
+                wsf.setVolume(1);
+                wsf.play();
+            } else {
+                wsf.pause();
+                wsf.setVolume(0);
+            }
         },
         mergeSelectedFiles() {
             // organize selected files by their index
@@ -605,7 +627,7 @@ app = new Vue({
             this.selectedFile = null;
             this.selectedFiles = [];
             if (index < this.banks[this.selectedBank].files.length - 1) {
-                this.swapFiles(index,index+1);
+                this.swapFiles(index, index + 1);
             }
         },
         moveFileUpIndex(index) {
@@ -705,6 +727,7 @@ app = new Vue({
 
 const showWaveform = debounce(showWaveform_, 100);
 
+
 function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
     if (wsf != null) {
         wsf.destroy();
@@ -793,9 +816,11 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
         })
         wsRegions.on('region-out', (region) => {
             console.log('out', region.id);
-            if (activeRegion.id === region.id) {
-                wsf.pause();
-                playing = false;
+            if (activeRegion != null) {
+                if (activeRegion.id === region.id) {
+                    wsf.pause();
+                    playing = false;
+                }
             }
         })
         wsRegions.on('region-clicked', (region, e) => {
