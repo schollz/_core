@@ -41,6 +41,6 @@ jobs:
     - name: Build ectocore
       run:
         make ectocore
-    - name: Build core.exe
+    - name: Build core_windows.exe
       run:
-        make core.exe
+        make core_windows.exe
