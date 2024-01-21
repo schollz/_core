@@ -104,13 +104,16 @@ void SaveFile_free(SaveFile *sf) {
 
 #ifndef NOSDCARD
 
-bool SaveFile_load(SaveFile *sf, bool *sync_sd_card) {
+bool SaveFile_load(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   while (*sync_sd_card) {
     sleep_us(100);
   }
+  *sync_sd_card = true;
   FIL fil; /* File object */
-  printf("[SaveFile] reading\n");
-  if (f_open(&fil, SAVEFILE_PATHNAME, FA_READ)) {
+  char fname[32];
+  sprintf(fname, "savefile%d", savefile_index);
+  printf("[SaveFile] reading %s\n", fname);
+  if (f_open(&fil, fname, FA_READ)) {
     printf("[SaveFile] no save file, skipping ");
   } else {
     unsigned int bytes_read;
@@ -122,10 +125,11 @@ bool SaveFile_load(SaveFile *sf, bool *sync_sd_card) {
     }
   }
   f_close(&fil);
+  *sync_sd_card = false;
   return true;
 }
 
-bool SaveFile_save(SaveFile *sf, bool *sync_sd_card) {
+bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   while (*sync_sd_card) {
     sleep_us(100);
   }
@@ -133,8 +137,10 @@ bool SaveFile_save(SaveFile *sf, bool *sync_sd_card) {
   printf("[SaveFile] writing\n");
   FRESULT fr;
   FIL file; /* File object */
+  char fname[32];
+  sprintf(fname, "savefile%d", savefile_index);
   printf("[SaveFile] opening savefile for writing\n");
-  fr = f_open(&file, SAVEFILE_PATHNAME, FA_WRITE | FA_CREATE_ALWAYS);
+  fr = f_open(&file, fname, FA_WRITE | FA_CREATE_ALWAYS);
   if (FR_OK != fr) {
     printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
     *sync_sd_card = false;
