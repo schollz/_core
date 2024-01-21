@@ -333,6 +333,10 @@ app = new Vue({
         }
     },
     methods: {
+        newURL(evt) {
+            var data = evt.target.value;
+            window.location.href = window.location.href+data;
+        },
         isSelected(fileIndex) {
             return this.selectedFiles.includes(fileIndex);
         },

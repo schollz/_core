@@ -45,7 +45,7 @@ body {
 }
 
 body {
-    font-family: 'Nunito', monospace;
+    font-family: 'MonaspaceKrypton', monospace;
     margin: 0;
     background-color: var(--background-color);
     ;
@@ -244,12 +244,24 @@ a:hover {
 }
 
 
-select {
-    font-family: 'Nunito', monospace;
+select,
+.inputURL {
+    font-family: 'MonaspaceKrypton', monospace;
+}
+
+.inputURL {
+    padding: 0.25em;
+    padding-top: 0.25em;
+    font-size: 0.9em;
+    color: white;
+    background: var(--header-footer-background);
+    border: solid 1px;
+    border-color: white;
+    padding-top: 0.5em;
 }
 
 button {
-    font-family: 'Nunito', monospace;
+    font-family: 'MonaspaceKrypton', monospace;
     background-color: var(--banks-background);
     /* Light purple background color for buttons */
     color: black;
