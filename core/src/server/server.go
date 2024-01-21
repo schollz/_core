@@ -17,6 +17,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lucasepe/codename"
+	"github.com/schollz/_core/core/src/names"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/pack"
 	"github.com/schollz/_core/core/src/zeptocore"
@@ -143,6 +144,9 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		if strings.Contains(filename, "static/index.html") {
 			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.6"), -1)
+			b = bytes.Replace(b, []byte("GENURL1"), []byte(names.Random()), -1)
+			b = bytes.Replace(b, []byte("GENURL2"), []byte(names.Random()), -1)
+			b = bytes.Replace(b, []byte("GENURL3"), []byte(names.Random()), -1)
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
