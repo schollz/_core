@@ -84,9 +84,10 @@ the rest of the buttons (1-16) are just called **H**.
 - [x] **C** + **B** → toggle play sequence
 - [x] **C** + **D** → toggle record sequence
 - [x] **C** + **D**, **C** + **D** → erase current sequence
-- [ ] **D** + **H** → select save slot
-- [ ] **D** + **B** load from save slot
-- [ ] **D** + **C** → save into save slot
+- [x] **D** → shows current slot (blinking / bright) and slots with data (dim)
+- [x] **D** + **H** → select save slot
+- [x] **D** + **B** load from save slot
+- [x] **D** + **C** → save into save slot
 
 
 #### combo knobs
