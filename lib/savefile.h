@@ -28,10 +28,10 @@
 #include "sequencer.h"
 
 typedef struct SaveFile {
-  uint8_t vol;
-  uint16_t bpm_tempo;
-  uint8_t bank : 8;
-  uint8_t sample : 8;
+  uint32_t vol : 9;
+  uint32_t bpm_tempo : 9;
+  uint32_t bank : 7;
+  uint32_t sample : 7;
   Sequencer *sequencers[3][16];
   uint8_t sequence_sel[3];
   bool fx_active[16];
