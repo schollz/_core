@@ -717,6 +717,28 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   }
+
+  // show the current save file is pressed
+  if (key_pressed_num > 0 && key_pressed[0] == KEY_D && key_on_buttons[KEY_D]) {
+    LEDS_set(leds, KEY_D, LED_BRIGHT);
+    for (uint8_t i = 0; i < 16; i++) {
+      if (savefile_has_data[i]) {
+        if (savefile_current == i) {
+          LEDS_set(leds, i + 4, LED_BRIGHT);
+        } else {
+          LEDS_set(leds, i + 4, LED_DIM);
+        }
+      } else {
+        if (savefile_current == i) {
+          LEDS_set(leds, i + 4, LED_BLINK);
+        } else {
+          LEDS_set(leds, i + 4, 0);
+        }
+      }
+    }
+    LEDS_render(leds);
+    return;
+  }
   // check debouncers
   if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR])) {
     // show an LED bar
