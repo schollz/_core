@@ -84,15 +84,13 @@
                     <p>
                         Use this website to create audio files for loading onto the <a
                             href="https://zeptocore.com">zeptocore</a> or ectocore. There is no
-                        login nessecary. To get started, simply type in a name that you can remember and press enter, OR
-                        click one of these randomly generated URLs:
-                    <ul>
-                        <li><input v-on:keyup.enter="newURL" class="inputURL"></li>
-                        <li v-for="link in randomPages" style="padding-top:0.5em"><a
-                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;
-                        </li>
-                    </ul>
+                        login nessecary. To get started, simply type in a name that you can remember and press enter:
+                        <input v-on:keyup.enter="newURL" class="inputURL" style="max-width:100%;">
 
+                    </p>
+                    <p>
+                        OR click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
+                            href="/GENURL2">GENURL2</a>, <a href="/GENURL3">GENURL3</a>.
                     </p>
                 </div>
 
