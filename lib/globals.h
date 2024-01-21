@@ -30,7 +30,7 @@ audio_buffer_pool_t *ap;
 
 clock_t time_of_initialization;
 FIL fil_current;
-char *fil_current_name;
+char fil_current_name[32];
 bool fil_is_open;
 uint8_t cpu_utilization;
 int32_t phases[2];
