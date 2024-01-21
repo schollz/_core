@@ -142,11 +142,17 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 			log.Errorf("could not read %s: %s", filename, err.Error())
 			return
 		}
+
+		rng, errR := codename.DefaultRNG()
+		if errR != nil {
+			err = errR
+			return
+		}
+		serverID = codename.Generate(rng, 0)
 		if strings.Contains(filename, "static/index.html") {
 			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.6"), -1)
-			b = bytes.Replace(b, []byte("GENURL1"), []byte(names.Random()), -1)
+			b = bytes.Replace(b, []byte("GENURL1"), []byte(codename.Generate(rng, 0)), -1)
 			b = bytes.Replace(b, []byte("GENURL2"), []byte(names.Random()), -1)
-			b = bytes.Replace(b, []byte("GENURL3"), []byte(names.Random()), -1)
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
