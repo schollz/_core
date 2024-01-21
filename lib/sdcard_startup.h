@@ -4,6 +4,11 @@ void check_setup_files() {
   FILINFO fno; /* File information */
   FRESULT fr;  /* File result error */
 
+  // initialize save file
+  for (uint8_t i = 0; i < 16; i++) {
+    savefile_has_data[i] = false;
+  }
+
   memset(&dj, 0, sizeof dj);
   memset(&fno, 0, sizeof fno);
   fr = f_findfirst(&dj, &fno, "", "*");
@@ -18,6 +23,17 @@ void check_setup_files() {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
     }
+
+    // create savefile name
+    for (uint8_t i = 0; i < 16; i++) {
+      char savefile_name[100];
+      sprintf(savefile_name, "savefile%d", i);
+      if (strcmp(fno.fname, savefile_name) == 0) {
+        printf("[sdcard_startup] found savefile%d\n", i);
+        savefile_has_data[i] = true;
+      }
+    }
+
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
@@ -50,9 +66,9 @@ void sdcard_startup() {
   bass = Bass_create();
 #endif
 
+  sleep_ms(2000);
   check_setup_files();
-
-  // sleep_ms(2000);
+  sleep_ms(2000);
 
   for (uint8_t bi = 0; bi < 16; bi++) {
     // TODO: show which banks are loading?

@@ -126,6 +126,9 @@ bool clock_in_ready = false;
 
 uint8_t do_update_beat_repeat = 0;
 
+uint8_t savefile_current = 0;
+bool savefile_has_data[16];
+
 bool do_stop_playback = false;
 bool do_restart_playback = true;
 bool playback_stopped = true;
