@@ -72,11 +72,8 @@
 
                 <div v-if="isMain" class="help-banner">
                     <h2>_core load</h2>
-                    <p>
-                        This tool lets you easily organize files for using on _core devices.
-                    </p>
                     <p v-if="previousPages.length>0">
-                        Some previous pages:
+                        Your _core URLs:
                     <ul>
                         <li v-for="link in previousPages" style="padding-top:0.5em"><a
                                 :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;
@@ -85,8 +82,12 @@
 
                     </p>
                     <p>
-                        Some new pages:
+                        Use this website to create audio files for loading onto the <a
+                            href="https://zeptocore.com">zeptocore</a> or ectocore. There is no
+                        login nessecary. To get started, simply type in a name that you can remember and press enter, OR
+                        click one of these randomly generated URLs:
                     <ul>
+                        <li><input v-on:keyup.enter="newURL" class="inputURL"></li>
                         <li v-for="link in randomPages" style="padding-top:0.5em"><a
                                 :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;
                         </li>
@@ -243,7 +244,9 @@
                         <div v-if="uploading">uploading</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
-                        <button type="submit" v-else-if="diskUsage>0">Download ({{ formatBytes(diskUsage) }})</button>
+                        <button type="submit" v-else-if="diskUsage>0">Download .zip to load onto SD card ({{
+                            formatBytes(diskUsage)
+                            }})</button>
                     </div>
                 </div>
             </form>
