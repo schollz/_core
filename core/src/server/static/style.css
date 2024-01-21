@@ -502,3 +502,23 @@ a {
         stroke-dashoffset: -240.34889px;
     }
 }
+
+
+.help-banner a {
+    color: black;
+    text-decoration: underline;
+    background: inherit;
+}
+
+.help-banner input {
+    background: inherit;
+    padding: 0.5em;
+    font-family: inherit;
+    border: 1px solid #000;
+    margin-top: 0.25em;
+    filter: drop-shadow(1px 1px 1px #4444dd);
+}
+
+.file-details {
+    box-shadow: 3px 3px 2px 1px #bdafedaa;
+}

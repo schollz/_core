@@ -70,21 +70,22 @@
 
 
 
-                <div v-if="isMain" class="help-banner">
+                <div v-if="isMain" class="help-banner"
+                    style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
-                        Your _core URLs: <span v-for="link in previousPages"><a
-                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp</span>.
+                        Previous workspaces: <span v-for="link in previousPages"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp</span>
                     </p>
                     <p>
-                        Use this website to create audio files for loading onto the <a
-                            href="https://zeptocore.com">zeptocore</a> or ectocore. There is no
+                        Use this website to allocate audio files onto the <a href="https://zeptocore.com">zeptocore</a>
+                        or ectocore. There is no
                         login nessecary. To get started, simply type in a name that you can remember and press enter:
-                        <input v-on:keyup.enter="newURL" class="inputURL" style="max-width:100%;">
+                        <input v-on:keyup.enter="newURL">
 
                     </p>
                     <p>
-                        OR click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
+                        <em>or</em> click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
                             href="/GENURL2">GENURL2</a>.
                     </p>
                 </div>
