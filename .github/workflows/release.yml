@@ -40,11 +40,13 @@ jobs:
       run: |
         make zeptocore
         make ectocore
-        make core.exe
+        make core_windows.exe
+        make core_linux_amd64
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           zeptocore.uf2
           ectocore.uf2
-          core.exe
+          core_windows.exe
+          core_linux_amd64

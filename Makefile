@@ -130,6 +130,17 @@ server:
 resetpico: 
 	python3 dev/reset_pico.py 
 
-core.exe:
+.PHONY: core_windows.exe
+core_windows.exe:
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -x
-	mv core/core.exe core.exe
+	mv core/core.exe core_windows.exe
+
+.PHONY: core_macos
+core_macos:
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-macos" GOOS=darwin GOARCH=amd64 go build -v -x
+	mv core/core core_macos
+
+.PHONY: core_linux_amd64
+core_linux_amd64:
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -v -x
+	mv core/core core_linux_amd64
