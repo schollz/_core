@@ -187,3 +187,6 @@ ectocore.uf2
 target_compile_definitions.cmake
 zeptocore.uf2
 lib/test/buttonmatrix3/
+core_linux_amd64
+soxstatic/
+storage/
