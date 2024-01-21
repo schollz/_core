@@ -71,15 +71,10 @@
 
 
                 <div v-if="isMain" class="help-banner">
-                    <h2>_core load</h2>
+                    <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
-                        Your _core URLs:
-                    <ul>
-                        <li v-for="link in previousPages" style="padding-top:0.5em"><a
-                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp;
-                        </li>
-                    </ul>
-
+                        Your _core URLs: <span v-for="link in previousPages"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link + '/'">{{link}}</a>&nbsp</span>.
                     </p>
                     <p>
                         Use this website to create audio files for loading onto the <a
@@ -90,7 +85,7 @@
                     </p>
                     <p>
                         OR click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
-                            href="/GENURL2">GENURL2</a>, <a href="/GENURL3">GENURL3</a>.
+                            href="/GENURL2">GENURL2</a>.
                     </p>
                 </div>
 

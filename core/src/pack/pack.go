@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
-
-	"github.com/lucasepe/codename"
 
 	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
@@ -51,13 +50,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		channels = 2
 	}
 
-	rng, err := codename.DefaultRNG()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	zipFilename = codename.Generate(rng, 0)
+	_, zipFilename = filepath.Split(pathToStorage)
 
 	// create a temporary folder to store the files
 	err = os.MkdirAll(path.Join(zipStorage, zipFilename), 0777)
