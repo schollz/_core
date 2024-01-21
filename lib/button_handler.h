@@ -429,6 +429,32 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         }
       }
     }
+  } else if (key1 == KEY_D) {
+    // D
+    if (key2 == KEY_B) {
+      // D+B
+      // do load
+      if (savefile_has_data[savefile_current]) {
+        printf("[button_handler] loading %d to sd card\n", savefile_current);
+        SaveFile_load(sf, &sync_using_sdcard, savefile_current);
+        printf("[button_handler] loading %s again\n", fil_current_name);
+        f_open(&fil_current, fil_current_name, FA_READ);
+      }
+    } else if (key2 == KEY_C) {
+      // D+C
+      // do save
+      printf("[button_handler] saving %d to sd card\n", savefile_current);
+      SaveFile_save(sf, &sync_using_sdcard, savefile_current);
+      // load prevoius file
+      printf("[button_handler] loading %s again\n", fil_current_name);
+      f_open(&fil_current, fil_current_name, FA_READ);
+      savefile_has_data[savefile_current] = true;
+    } else if (key2 == KEY_A) {
+      // D+A
+    } else {
+      // D+H
+      savefile_current = key2 - 4;
+    }
   }
 }
 
@@ -719,7 +745,7 @@ void button_handler(ButtonMatrix *bm) {
   }
 
   // show the current save file is pressed
-  if (key_pressed_num > 0 && key_pressed[0] == KEY_D && key_on_buttons[KEY_D]) {
+  if (key_pressed_num > 0 && key_on_buttons[KEY_D]) {
     LEDS_set(leds, KEY_D, LED_BRIGHT);
     for (uint8_t i = 0; i < 16; i++) {
       if (savefile_has_data[i]) {
