@@ -522,3 +522,43 @@ a {
 .file-details {
     box-shadow: 3px 3px 2px 1px #bdafedaa;
 }
+
+.cookie-consent-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--other-color);
+    padding: 2em;
+    z-index: 1000;
+    display: none;
+    color: white;
+}
+
+.cookie-consent-container a {
+    text-decoration: underline;
+}
+
+.content-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.cookie-consent-container p {
+    margin: 0;
+    padding: 0;
+}
+
+.cookie-consent-button {
+    background-color: var(--highlight-color-darker);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.cookie-consent-button:hover {
+    background-color: var(--highlight-color);
+}

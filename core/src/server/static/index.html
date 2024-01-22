@@ -88,6 +88,59 @@
                         <em>or</em> click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
                             href="/GENURL2">GENURL2</a>.
                     </p>
+                    <div v-if="showCookiePolicy">
+                        <br>
+                        <br>
+                        <h1>Cookie Policy for tool.zeptocore.com</h1>
+                        <p><strong>Last Updated:</strong> January 22nd, 2024</p>
+
+                        <h2>Understanding Cookies</h2>
+                        <p>A cookie is a small text file that our website places on your computer or device when you
+                            visit.
+                            Cookies are widely used to make websites work or to work more efficiently, as well as to
+                            provide
+                            information to the site owners.</p>
+
+                        <h2>Use of Cookies on Our Website</h2>
+                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This means that
+                            the
+                            cookies are essential to help you move around our website and use its features, such as
+                            accessing secure areas of the site. Without these cookies, some services you have asked for,
+                            like navigation between pages, cannot be provided.</p>
+
+                        <h2>Your Consent</h2>
+                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its terms. When
+                            you
+                            visit tool.zeptocore.com for the first time, a cookie consent banner will appear, allowing
+                            you
+                            to give explicit consent to this policy.</p>
+
+                        <h2>Managing Cookies</h2>
+                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are already on
+                            your
+                            computer, and you can set most browsers to prevent them from being placed. However, if you
+                            do
+                            this, you may have to manually adjust some preferences every time you visit a site, and some
+                            services and functionalities may not work.</p>
+
+                        <h2>Changes to the Cookie Policy</h2>
+                        <p>We may update our Cookie Policy from time to time. We encourage visitors to frequently check
+                            this
+                            page for any changes. Your continued use of our site after any change in this Cookie Policy
+                            will
+                            constitute your acceptance of such change.</p>
+
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                    </div>
                 </div>
 
                 <div class=" file-uploader" v-if="!disconnected && !isMain">
@@ -245,8 +298,19 @@
                 </div>
             </form>
         </footer>
-
+        <div id="cookieConsentContainer" class="cookie-consent-container">
+            <div class="content-container">
+                <p>This website uses cookies to ensure you get the best experience on our website. <a href="#"
+                        @click.prevent="showCookiePolicy=true">Learn
+                        more</a>.</p>
+                <div class="button-container">
+                    <button id="cookieConsentButton" class="cookie-consent-button">Got it!</button>
+                </div>
+            </div>
+        </div>
     </div>
+
+
 
 
     <script src="/static/humanize-duration.min.js"></script>
@@ -257,6 +321,19 @@
         window.RegionsPlugin = RegionsPluginG;
     </script>
     <script src="/static/app.js"></script>
+    <script>
+        window.onload = function () {
+            let consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                document.getElementById('cookieConsentContainer').style.display = 'block';
+            }
+
+            document.getElementById('cookieConsentButton').onclick = function () {
+                localStorage.setItem('cookieConsent', 'true');
+                document.getElementById('cookieConsentContainer').style.display = 'none';
+            };
+        };
+    </script>
 </body>
 
 </html>
