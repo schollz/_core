@@ -12,6 +12,8 @@ var disconnectedTimeout = null;
 const ccolor = '#dcd6f799';
 const ccolor2 = '#dcd6f766';
 const wavecolor = '#3919a1';
+var hasSavedToCookie = false;
+
 
 
 
@@ -69,9 +71,16 @@ function readCookie(name) {
 }
 
 // Function to write cookies
-function writeCookie(name, value) {
-    document.cookie = `${name}=${value}; path=/`;
+function writeCookie(name, value, sameSite = 'Lax') {
+    let cookieText = `${name}=${value}; path=/`;
+    if (sameSite === 'None') {
+        cookieText += '; SameSite=None; Secure';
+    } else {
+        cookieText += `; SameSite=${sameSite}`;
+    }
+    document.cookie = cookieText;
 }
+
 
 // Function to load previousPages from cookies
 function loadPreviousPages() {
@@ -277,9 +286,6 @@ window.addEventListener('load', (event) => {
     // Load previousPages from cookies into the app
     app.previousPages = loadPreviousPages();
 
-    // Save the current page address into previousPages in cookies
-    saveCurrentPage();
-
     socketCloseListener();
 });
 
@@ -296,6 +302,7 @@ app = new Vue({
         isMobile: false, // Define isMobile variable
         playingSample: false,
         downloading: false,
+        showCookiePolicy: false,
         processing: false,
         error_message: "",
         uploading: false,
@@ -335,7 +342,7 @@ app = new Vue({
     methods: {
         newURL(evt) {
             var data = evt.target.value;
-            window.location.href = window.location.href+data;
+            window.location.href = window.location.href + data;
         },
         isSelected(fileIndex) {
             return this.selectedFiles.includes(fileIndex);
@@ -459,6 +466,10 @@ app = new Vue({
                 selectedBank: app.selectedBank,
                 selectedFile: app.selectedFile,
             };
+            if (!hasSavedToCookie) {
+                saveCurrentPage();
+                hasSavedToCookie = true;
+            }
             if (socket != null) {
                 fadeInCircle();
                 fadeOut();
