@@ -39,6 +39,111 @@ void check_setup_files() {
   f_closedir(&dj);
 }
 
+void update_fx(uint8_t fx_num) {
+  switch (fx_num) {
+    case FX_REVERSE:
+      phase_forward = !sf->fx_active[fx_num];
+      break;
+    case FX_SATURATE:
+      Saturation_setActive(saturation, sf->fx_active[fx_num]);
+      break;
+    case FX_BEATREPEAT:
+      if (sf->fx_active[fx_num]) {
+        BeatRepeat_repeat(beatrepeat,
+                          sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
+      } else {
+        BeatRepeat_repeat(beatrepeat, 0);
+      }
+      break;
+    case FX_DELAY:
+      Delay_setActive(delay, sf->fx_active[fx_num]);
+      break;
+    case FX_TIGHTEN:
+      printf("FX_TIGHTEN\n");
+      if (sf->fx_active[fx_num]) {
+        Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
+      } else {
+        Gate_set_amount(audio_gate, 255);
+      }
+      break;
+    case FX_SLOWDOWN:
+      if (sf->fx_active[fx_num]) {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 0.5, 1);
+      } else {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1);
+      }
+      break;
+    case FX_SPEEDUP:
+      if (sf->fx_active[fx_num]) {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 2.0, 1);
+      } else {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1);
+      }
+      break;
+    case FX_TAPE_STOP:
+      if (sf->fx_active[FX_TAPE_STOP]) {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch),
+                        ENVELOPE_PITCH_THRESHOLD / 2, 2.7);
+      } else {
+        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_pitch), 1.0, 1.9);
+      }
+      break;
+    case FX_FUZZ:
+      if (sf->fx_active[FX_FUZZ]) {
+        printf("fuzz activated!\n");
+      }
+    case FX_FILTER:
+      if (sf->fx_active[FX_FILTER]) {
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL), 5, 1.618);
+      } else {
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL),
+            global_filter_index, 1.618);
+      }
+      break;
+    case FX_VOLUME_RAMP:
+      if (sf->fx_active[FX_VOLUME_RAMP]) {
+        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_volume), 0, 1.618 / 2);
+      } else {
+        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+                        Envelope2_update(envelope_volume), 1, 1.618 / 2);
+      }
+      break;
+    case FX_TIMESTRETCH:
+      if (sf->fx_active[FX_TIMESTRETCH]) {
+        sel_variation_next = 1;
+      } else {
+        sel_variation_next = 0;
+      }
+      fil_current_change = true;
+      break;
+    default:
+      break;
+  }
+}
+
+void savefile_do_load() {
+  if (savefile_has_data[savefile_current]) {
+    SaveFile_load(sf, &sync_using_sdcard, savefile_current);
+    printf("[button_handler] loading %s again\n", fil_current_name);
+    f_open(&fil_current, fil_current_name, FA_READ);
+    // update all the fx
+    for (uint8_t i = 0; i < 16; i++) {
+      update_fx(i);
+    }
+  }
+}
+
 void sdcard_startup() {
   for (uint8_t i = SDCARD_CMD_GPIO - 1; i < SDCARD_D0_GPIO + 5; i++) {
     gpio_pull_up(i);
@@ -162,6 +267,7 @@ void sdcard_startup() {
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
           sel_variation);
+
   fr = f_open(&fil_current, fil_current_name, FA_READ);
   if (fr != FR_OK) {
     printf("[sdcard_startup] could not open %s: %s\n", fil_current_name,
@@ -172,6 +278,9 @@ void sdcard_startup() {
   phase_change = true;
   sync_using_sdcard = false;
   sdcard_startup_is_starting = false;
+
+  savefile_do_load();
+
   fil_is_open = true;
   time_of_initialization = time_us_64();
 }
