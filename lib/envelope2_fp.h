@@ -23,6 +23,7 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 #ifndef ENVELOPE2_FP_LIB
+#define ENVELOPE2_FP_LIB 1
 #include "fixedpoint.h"
 
 typedef struct Envelope2 {
@@ -33,6 +34,7 @@ typedef struct Envelope2 {
   int32_t acc;
   int32_t t;
   int32_t duration_samples;
+  float stop_float;
 } Envelope2;
 
 void Envelope2_reset(Envelope2 *envelope2, float mSampleRate, float start,
@@ -40,6 +42,7 @@ void Envelope2_reset(Envelope2 *envelope2, float mSampleRate, float start,
   envelope2->mSampleRate = q16_16_float_to_fp(mSampleRate);
   envelope2->start = q16_16_float_to_fp(start);
   envelope2->stop = q16_16_float_to_fp(stop);
+  envelope2->stop_float = stop;
   envelope2->curr = envelope2->start;
   envelope2->duration_samples =
       q16_16_float_to_fp(round(mSampleRate * duration_time));
@@ -65,12 +68,15 @@ float Envelope2_update(Envelope2 *envelope2) {
     envelope2->curr =
         q16_16_multiply(envelope2->curr, (envelope2->stop - envelope2->start)) +
         envelope2->start;
+    return q16_16_fp_to_float(envelope2->curr);
   }
-  return q16_16_fp_to_float(envelope2->curr);
-  // return exp(envelope2->curr);
+  return envelope2->stop_float;
+}
+
+bool Envelope2_is_active(Envelope2 *envelope2) {
+  return envelope2->t < envelope2->duration_samples;
 }
 
 void Envelope2_destroy(Envelope2 *envelope2) { free(envelope2); }
 
-#endif /* Envelope2_LIB */
-#define ENVELOPE2_FP_LIB 1
+#endif
