@@ -52,8 +52,9 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define FX_TIGHTEN 8
 #define FX_TREMELO 9
 #define FX_PAN 10
-#define FX_VOLUME_RAMP 11
-#define FX_WALTZ
+#define FX_VOLUME_RAMP 17  // deactivated
+#define FX_WALTZ 18        // deactivated
+#define FX_SCRATCH 11
 // pitch
 #define FX_FILTER 12
 #define FX_SLOWDOWN 13

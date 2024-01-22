@@ -119,6 +119,8 @@ void update_fx(uint8_t fx_num) {
                         Envelope2_update(envelope_volume), 1, 1.618 / 2);
       }
       break;
+    case FX_SCRATCH:
+      break;
     case FX_TIMESTRETCH:
       if (sf->fx_active[FX_TIMESTRETCH]) {
         sel_variation_next = 1;
