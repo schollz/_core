@@ -34,15 +34,15 @@
 int main() {
   int32_t x = 0;
   float hz = 2;
-  int32_t increase = round(9.34 * hz);
-  for (int i = 0; i < 44100; i++) {
+  int32_t increase = round(9340 * hz);
+  for (int i = 0; i < 441; i++) {
     x += increase;
     float y;
     y = q16_16_fp_to_float(q16_16_cos(x));
     printf("%2.3f\n", y);
   }
-  increase = round(9.34 * hz * 2);
-  for (int i = 0; i < 44100; i++) {
+  increase = round(9340 * hz * 2);
+  for (int i = 0; i < 441; i++) {
     x += increase;
     float y;
     y = q16_16_fp_to_float(q16_16_cos(x));

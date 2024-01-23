@@ -199,6 +199,22 @@ void i2s_callback_func() {
     }
   }
 
+  // check if scratch is active
+  float scratch_pitch = 1.0;
+  bool change_phase_forward = false;
+  if (sf->fx_active[FX_SCRATCH] && sf->fx_param[FX_SCRATCH][0] > 20) {
+    scratch_lfo_val += scratch_lfo_inc;
+    scratch_pitch = q16_16_fp_to_float(q16_16_cos(scratch_lfo_val));
+    if (scratch_pitch < 0) {
+      scratch_pitch = -scratch_pitch;
+      change_phase_forward = true;
+      phase_forward = !phase_forward;
+    }
+    if (scratch_pitch < 0.05) {
+      scratch_pitch = 0.05;
+    }
+  }
+
   // check if tempo matching is activated, if not then don't change
   // based on bpm
   uint32_t samples_to_read;
@@ -208,7 +224,8 @@ void i2s_callback_func() {
           ->tempo_match) {
     samples_to_read =
         round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
-              pitch_vals[pitch_val_index] * pitch_vals[retrig_pitch]) *
+              pitch_vals[pitch_val_index] * scratch_pitch *
+              pitch_vals[retrig_pitch]) *
         (banks[sel_bank_cur]
              ->sample[sel_sample_cur]
              .snd[sel_variation]
@@ -216,14 +233,14 @@ void i2s_callback_func() {
          1) /
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
   } else {
-    samples_to_read =
-        round((float)buffer->max_sample_count * envelope_pitch_val *
-              pitch_vals[pitch_val_index] * pitch_vals[retrig_pitch]) *
-        (banks[sel_bank_cur]
-             ->sample[sel_sample_cur]
-             .snd[sel_variation]
-             ->oversampling +
-         1);
+    samples_to_read = round((float)buffer->max_sample_count *
+                            envelope_pitch_val * pitch_vals[pitch_val_index] *
+                            scratch_pitch * pitch_vals[retrig_pitch]) *
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[sel_variation]
+                           ->oversampling +
+                       1);
   }
 
   uint32_t values_len = samples_to_read * (banks[sel_bank_cur]
@@ -757,5 +774,10 @@ void i2s_callback_func() {
   }
 
   MessageSync_lockIfNotEmpty(messagesync);
+
+  // change phase_forward back if it was switched
+  if (change_phase_forward) {
+    phase_forward = !phase_forward;
+  }
   return;
 }

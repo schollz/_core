@@ -182,7 +182,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         beat_total++;
         clock_out_ready = true;
         // printf("beat_current: %d\n", beat_current);
-        if (key_jump_debounce == 0) {
+        if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
           do_update_phase_from_beat_current();
         } else {
           key_jump_debounce--;
