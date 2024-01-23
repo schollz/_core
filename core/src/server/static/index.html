@@ -147,7 +147,7 @@
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
                     <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
-                        Drop your files here or click to select
+                        Drop audio files (mp3, wav, flac, xrni, aif) or click to select
                     </div>
                 </div>
                 <div v-if=" (disconnected && !isMain)"
