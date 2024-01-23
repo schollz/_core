@@ -146,6 +146,7 @@ WaveBass *wavebass;
 
 ResonantFilter *resFilter[2];
 Gate *audio_gate;
+TapTempo *taptempo;
 Saturation *saturation;
 
 #define DEBOUNCE_UINT8_LED_BAR 0
