@@ -840,6 +840,11 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
             e.stopPropagation() // prevent triggering a click on the waveform
             activeRegion = region;
             console.log(region);
+            // iterate over wsRegions.regions 
+            for (var i = 0; i < wsRegions.regions.length; i++) {
+                wsRegions.regions[i].setOptions({ color: (sliceType[i] == 1 ? ccolor2 : ccolor) });
+            }
+            region.setOptions({ color: "#00770033" });
             if (playing) {
                 console.log('pausing');
                 wsf.pause();
