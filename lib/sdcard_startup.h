@@ -120,6 +120,9 @@ void update_fx(uint8_t fx_num) {
       }
       break;
     case FX_SCRATCH:
+      scratch_lfo_val = 0;
+      scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
+      scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
       break;
     case FX_TIMESTRETCH:
       if (sf->fx_active[FX_TIMESTRETCH]) {

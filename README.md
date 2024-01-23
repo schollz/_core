@@ -78,7 +78,7 @@ the rest of the buttons (1-16) are just called **H**.
 - [x] **B** + **H** + **H** → select bank (1st) + sample (2nd)
 - [x] **B** + **C** → start/stop
 - [x] **B** + **D** → mute
-- [x] **C** → show which sequence is selected (bright)
+- [x] **C** → display which sequence is selected (bright)
 - [x] **C** + **H** → select sequence (led dim or bright = used, led off or blinking = unused) 
 - [x] **C** + **H** + **H** + **H** ... → chains sequences together, though the first selected must be empty
 - [x] **C** + **B** → toggle play sequence
@@ -122,7 +122,7 @@ holding an effect and using a knob will change its parameters.
 - [x] **9** -> tighten (gate amount)
 - [x] **10** -> heighten (tremelo speed, depth)
 - [x] **11** -> circulate (pan speed, depth)
-- [ ] **12** -> phasor/flanger
+- [x] **12** -> scratch (scratch speed)
 - [x] **13** -> lower (depth)
 - [ ] **14** -> slower (duration, depth)
 - [ ] **15** -> faster (duration, depth)
