@@ -76,41 +76,42 @@ void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
 }
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
+  uint16_t retrig_times[16] = {
+      4, 8, 16, 20, 24, 32, 48, 54, 64, 72, 96, 104, 112, 128, 144, 192,
+  };
   debounce_quantize = 0;
   retrig_first = true;
   retrig_beat_num = random_integer_in_range(8, 24);
-  retrig_timer_reset =
-      96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
+  retrig_timer_reset = retrig_times[key2 - 4];
+  // 96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
   float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                      (float)(96 * sf->bpm_tempo);
   if (total_time > 5.0f) {
     total_time = total_time / 2;
     retrig_timer_reset = retrig_timer_reset / 2;
   }
-  if (total_time > 5.0f) {
-    total_time = total_time / 2;
-    retrig_beat_num = retrig_beat_num / 2;
-    if (retrig_beat_num == 0) {
-      retrig_beat_num = 1;
-    }
-  }
-  if (total_time < 0.5f) {
-    total_time = total_time * 2;
-    retrig_beat_num = retrig_beat_num * 2;
-    if (retrig_beat_num == 0) {
-      retrig_beat_num = 1;
-    }
-  }
-  if (total_time < 0.5f) {
-    total_time = total_time * 2;
-    retrig_beat_num = retrig_beat_num * 2;
-    if (retrig_beat_num == 0) {
-      retrig_beat_num = 1;
-    }
-  }
+  // if (total_time > 5.0f) {
+  //   total_time = total_time / 2;
+  //   retrig_beat_num = retrig_beat_num / 2;
+  //   if (retrig_beat_num == 0) {
+  //     retrig_beat_num = 1;
+  //   }
+  // }
+  // if (total_time < 0.5f) {
+  //   total_time = total_time * 2;
+  //   retrig_beat_num = retrig_beat_num * 2;
+  //   if (retrig_beat_num == 0) {
+  //     retrig_beat_num = 1;
+  //   }
+  // }
+  // if (total_time < 0.5f) {
+  //   total_time = total_time * 2;
+  //   retrig_beat_num = retrig_beat_num * 2;
+  //   if (retrig_beat_num == 0) {
+  //     retrig_beat_num = 1;
+  //   }
+  // }
   retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-  // printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-  //        retrig_beat_num, retrig_timer_reset, total_time);
   retrig_ready = true;
 }
 
