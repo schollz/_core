@@ -170,7 +170,7 @@ void button_key_off_any(uint8_t key) {
         // find which key is on
         for (uint8_t i = 4; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
           if (key_on_buttons[i] > 0) {
-            WaveBass_note_on(wavebass, i - 4 + 1);
+            WaveBass_note_on(wavebass, i - 4);
             break;
           }
         }
@@ -604,7 +604,7 @@ void button_handler(ButtonMatrix *bm) {
 #ifdef INCLUDE_SINEBASS
     if (mode_buttons16 == MODE_BASS) {
       printf("updaing sinosc\n");
-      WaveBass_note_on(wavebass, bm->on[i] - 4 + 1);
+      WaveBass_note_on(wavebass, bm->on[i] - 4);
     }
 #endif
 
