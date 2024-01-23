@@ -429,8 +429,10 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	fsize := totalSamples * float64(f.Channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
 	sliceNum := len(f.SliceStart)
 	if sliceNum == 0 {
-		err = fmt.Errorf("no slices")
-		return
+		f.SliceStart = []float64{0.0}
+		f.SliceStop = []float64{1.0}
+		f.SliceType = []int{0}
+		sliceNum = 1
 	}
 	slicesStart := []int32{}
 	slicesEnd := []int32{}
