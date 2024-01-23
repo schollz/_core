@@ -135,6 +135,15 @@ void go_update_top() {
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
   sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  if (sequencerhandler[1].recording) {
+    if (sf->fx_active[fx_num]) {
+      Sequencer_add(sf->sequencers[1][sf->sequence_sel[1]], fx_num,
+                    bpm_timer_counter);
+    } else {
+      Sequencer_add(sf->sequencers[1][sf->sequence_sel[1]], fx_num + 16,
+                    bpm_timer_counter);
+    }
+  }
   update_fx(fx_num);
 }
 
@@ -893,18 +902,6 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_set(leds, 2, LED_BLINK);
     LEDS_set(leds, 3, 0);
   }
-  for (uint8_t i = 0; i < 3; i++) {
-    if (sequencerhandler[i].playing) {
-      LEDS_set(leds, 0, 0);
-      LEDS_set(leds, 1, LED_BLINK);
-      LEDS_set(leds, 2, LED_BRIGHT);
-      LEDS_set(leds, 3, 0);
-    } else if (sequencerhandler[i].recording) {
-      LEDS_set(leds, 0, 0);
-      LEDS_set(leds, 1, 0);
-      LEDS_set(leds, 2, LED_BRIGHT);
-      LEDS_set(leds, 3, LED_BLINK);
-    }
-  }
+
   LEDS_render(leds);
 }
