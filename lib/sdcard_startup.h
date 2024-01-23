@@ -146,6 +146,11 @@ void savefile_do_load() {
     for (uint8_t i = 0; i < 16; i++) {
       update_fx(i);
     }
+    // update the sequencer callbacks
+    for (uint8_t j = 0; j < 16; j++) {
+      Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
+                              step_sequencer_stop);
+    }
   }
 }
 
