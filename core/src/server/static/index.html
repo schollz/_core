@@ -26,6 +26,10 @@
 </head>
 
 <body>
+    <div class="ear leftear"><a href="https://github.com/schollz/_core" target="_blank">source</a></div>
+    <div class="ear rightear"><a href="https://infinitedigits.co/wares/zeptocore/#buy" target="_blank">buy</a></div>
+
+
     <div id="fadeCircle"></div>
     <div id="app" v-cloak>
         <header>
@@ -80,7 +84,8 @@
                     <p>
                         Use this website to allocate audio files onto the <a href="https://zeptocore.com">zeptocore</a>
                         or ectocore. There is no
-                        login nessecary. To get started, simply type in a name that you can remember and press enter:
+                        login nessecary. To get started, simply type in a name that you can remember and press
+                        enter:
                         <input v-on:keyup.enter="newURL">
 
                     </p>
@@ -102,31 +107,40 @@
                             information to the site owners.</p>
 
                         <h2>Use of Cookies on Our Website</h2>
-                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This means that
+                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This means
+                            that
                             the
                             cookies are essential to help you move around our website and use its features, such as
-                            accessing secure areas of the site. Without these cookies, some services you have asked for,
+                            accessing secure areas of the site. Without these cookies, some services you have asked
+                            for,
                             like navigation between pages, cannot be provided.</p>
 
                         <h2>Your Consent</h2>
-                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its terms. When
+                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its terms.
+                            When
                             you
-                            visit tool.zeptocore.com for the first time, a cookie consent banner will appear, allowing
+                            visit tool.zeptocore.com for the first time, a cookie consent banner will appear,
+                            allowing
                             you
                             to give explicit consent to this policy.</p>
 
                         <h2>Managing Cookies</h2>
-                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are already on
+                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are already
+                            on
                             your
-                            computer, and you can set most browsers to prevent them from being placed. However, if you
+                            computer, and you can set most browsers to prevent them from being placed. However, if
+                            you
                             do
-                            this, you may have to manually adjust some preferences every time you visit a site, and some
+                            this, you may have to manually adjust some preferences every time you visit a site, and
+                            some
                             services and functionalities may not work.</p>
 
                         <h2>Changes to the Cookie Policy</h2>
-                        <p>We may update our Cookie Policy from time to time. We encourage visitors to frequently check
+                        <p>We may update our Cookie Policy from time to time. We encourage visitors to frequently
+                            check
                             this
-                            page for any changes. Your continued use of our site after any change in this Cookie Policy
+                            page for any changes. Your continued use of our site after any change in this Cookie
+                            Policy
                             will
                             constitute your acceptance of such change.</p>
 
@@ -193,7 +207,8 @@
                     padding: 0.5rem;
                     text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
                         banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
-                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(1)*1000)}})</p>
+                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(1)*1000)}})
+                    </p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
