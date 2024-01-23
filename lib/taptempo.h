@@ -91,7 +91,7 @@ uint16_t TapTempo_tap(TapTempo *self) {
       sum += self->taps[i];
     }
   }
-  milliseconds = round(30000.0 / ((float)sum / count));
+  milliseconds = round(60000.0 / ((float)sum / count));
   if (milliseconds > 300) {
     milliseconds = 300;
   } else if (milliseconds < 30) {

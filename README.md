@@ -69,7 +69,9 @@ the rest of the buttons (1-16) are just called **H**.
 
 #### combo buttons
 
+
 - [x] **H** + **H** → JUMP: retrig depending on location
+- [x] **A** + **A** ... → set tempo via tapping
 - [x] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
 - [x] **A** + **B** → JUMP mode
 - [x] **A** + **C** → MASH mode

@@ -29,7 +29,6 @@ Sample selects currently playing sample from the current bank
 */
 
 #include "mcp3208.h"
-#include "taptempo.h"
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   debounce_quantize = 0;
@@ -85,7 +84,7 @@ void input_handling() {
   gpio_put(GPIO_TAPTEMPO_LED, 1);
 
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
-  TapTempo *taptempo = TapTempo_malloc();
+
   bool btn_taptempo_on = false;
 
   sf->vol = 200;

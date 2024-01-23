@@ -304,6 +304,9 @@ int main() {
   wavebass = WaveBass_malloc();
 #endif
 
+  // intialize tap tempo
+  taptempo = TapTempo_malloc();
+
   // LEDText_display(ledtext, "HELLO");
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
