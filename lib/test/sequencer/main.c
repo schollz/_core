@@ -116,7 +116,21 @@ void test2() {
   Sequencer_free(seq);
   Sequencer_free(seq2);
 }
+
+void test3() {
+  Sequencer *seq = Sequencer_malloc();
+  Sequencer_set_callbacks(seq, sequencer_emit, sequencer_stop);
+  Sequencer_add(seq, 1, 0);
+  Sequencer_add(seq, 2, 2);
+  Sequencer_play(seq, true);
+  for (int i = 0; i < 30; i++) {
+    printf("[%d] ", i);
+    Sequencer_step(seq, i);
+  }
+  printf("len: %d\n", seq->rec_len);
+  Sequencer_free(seq);
+}
 int main() {
-  test2();
+  test3();
   return 0;
 }

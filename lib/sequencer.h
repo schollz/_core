@@ -93,7 +93,7 @@ void Sequencer_set_callbacks(Sequencer *seq, callback_uint8 sequence_emit,
   seq->sequence_finished = sequence_finished;
 }
 
-bool Sequencer_has_data(Sequencer *seq) { return seq->rec_len > 0; }
+bool Sequencer_has_data(Sequencer *seq) { return seq->rec_len > 1; }
 
 // Sequencer_add adds a key and step to the sequencer.
 // The start of the sequence is always 0 and the last item of the sequence
