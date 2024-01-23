@@ -111,7 +111,7 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("v0.0.8");
+  printStringWithDelay("v0.0.9");
 
   while (1) {
     // TODO: check timing of this?
@@ -186,6 +186,9 @@ void input_handling() {
         } else if (key_on_buttons[FX_PAN + 4]) {
           lfo_pan_step =
               Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
+        } else if (key_on_buttons[FX_SCRATCH + 4]) {
+          scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
+          scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
         }
       } else {
         if (button_is_pressed(KEY_A)) {
