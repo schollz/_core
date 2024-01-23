@@ -150,6 +150,19 @@ void fx_sequencer_emit(uint8_t key) {
 
 void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
 
+void bass_sequencer_emit(uint8_t key) {
+  printf("[bass_sequencer_emit] key %d\n", key);
+#ifdef INCLUDE_SINEBASS
+  if (key < 16) {
+    WaveBass_note_on(wavebass, key);
+  } else if (key < 32) {
+    WaveBass_release(wavebass);
+  }
+#endif
+}
+
+void bass_sequencer_stop() { printf("[bass_sequencer_stop] stop\n"); }
+
 void savefile_do_load() {
   if (savefile_has_data[savefile_current]) {
     SaveFile_load(sf, &sync_using_sdcard, savefile_current);
@@ -167,6 +180,10 @@ void savefile_do_load() {
     for (uint8_t j = 0; j < 16; j++) {
       Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
                               fx_sequencer_stop);
+    }
+    for (uint8_t j = 0; j < 16; j++) {
+      Sequencer_set_callbacks(sf->sequencers[2][j], bass_sequencer_emit,
+                              bass_sequencer_stop);
     }
   }
 }
@@ -281,6 +298,10 @@ void sdcard_startup() {
   for (uint8_t j = 0; j < 16; j++) {
     Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
                             fx_sequencer_stop);
+  }
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[2][j], bass_sequencer_emit,
+                            bass_sequencer_stop);
   }
   // sync_using_sdcard = false;
   // SaveFile_save(sf, &sync_using_sdcard);
