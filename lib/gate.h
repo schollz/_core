@@ -29,7 +29,8 @@
 #include "utils.h"
 
 typedef struct Gate {
-  uint32_t threshold;
+  uint32_t threshold : 31;
+  uint32_t active : 1;
   uint32_t counter;
   uint32_t blocks_per_second;
   float bpm;
@@ -50,11 +51,15 @@ Gate *Gate_create(uint32_t blocks_per_second, float bpm) {
   gate->blocks_per_second = blocks_per_second;
   gate->setpoint = GATE_MAX;
   gate->bpm = bpm;
+  gate->active = true;
   Gate_reset(gate);
   return gate;
 }
 
 void Gate_update(Gate *gate, float bpm) {
+  if (!gate->active) {
+    return;
+  }
   if (gate->counter < gate->threshold) {
     if (gate->bpm != bpm) {
       gate->bpm = bpm;
@@ -70,12 +75,16 @@ void Gate_set_amount(Gate *gate, float setpoint) {
 }
 
 bool Gate_is_up(Gate *gate) {
+  if (!gate->active) {
+    return false;
+  }
   if (gate->setpoint >= GATE_MAX) {
     return false;
   }
   return gate->counter >= gate->threshold;
 }
 
+void Gate_set_active(Gate *gate, bool active) { gate->active = active; }
 void Gate_destroy(Gate *gate) { free(gate); }
 
 #endif /* GATE_LIB */

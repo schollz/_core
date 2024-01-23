@@ -67,10 +67,8 @@ void i2s_callback_func() {
 
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
-  if (sync_using_sdcard || !fil_is_open ||
-      (gate_active && gate_counter >= gate_threshold) || audio_mute ||
-      button_mute || reduce_cpu_usage > 0 ||
-      (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
+  if (sync_using_sdcard || !fil_is_open || audio_mute || button_mute ||
+      reduce_cpu_usage > 0 || (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate)) {
     envelope_pitch_val = envelope_pitch_val_new;
 
@@ -130,9 +128,6 @@ void i2s_callback_func() {
     Delay_process(delay, samples, buffer->max_sample_count, 0);
 
     give_audio_buffer(ap, buffer);
-    // if (!gate_active && fil_is_open && !audio_mute) {
-    //   printf("[i2s_callback_func] sync_using_sdcard being used\n");
-    // }
 
     // audio muted flag to ensure a fade in occurs when
     // unmuted
