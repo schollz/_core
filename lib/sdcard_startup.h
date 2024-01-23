@@ -59,7 +59,6 @@ void update_fx(uint8_t fx_num) {
       Delay_setActive(delay, sf->fx_active[fx_num]);
       break;
     case FX_TIGHTEN:
-      printf("FX_TIGHTEN\n");
       if (sf->fx_active[fx_num]) {
         Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
       } else {
@@ -125,6 +124,7 @@ void update_fx(uint8_t fx_num) {
       scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
       break;
     case FX_TIMESTRETCH:
+      Gate_set_active(audio_gate, !sf->fx_active[FX_TIMESTRETCH]);
       if (sf->fx_active[FX_TIMESTRETCH]) {
         sel_variation_next = 1;
       } else {
