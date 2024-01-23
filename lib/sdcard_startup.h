@@ -150,6 +150,19 @@ void fx_sequencer_emit(uint8_t key) {
 
 void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
 
+void bass_sequencer_emit(uint8_t key) {
+  printf("[bass_sequencer_emit] key %d\n", key);
+  if (key < 16) {
+    sf->fx_active[key] = true;
+    update_fx(key);
+  } else if (key < 32) {
+    sf->fx_active[key - 16] = false;
+    update_fx(key - 16);
+  }
+}
+
+void bass_sequencer_stop() { printf("[bass_sequencer_stop] stop\n"); }
+
 void savefile_do_load() {
   if (savefile_has_data[savefile_current]) {
     SaveFile_load(sf, &sync_using_sdcard, savefile_current);
