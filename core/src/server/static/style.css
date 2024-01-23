@@ -562,3 +562,45 @@ a {
 .cookie-consent-button:hover {
     background-color: var(--highlight-color);
 }
+
+.ear {
+    top: 1.5em;
+    position: absolute;
+    /* or fixed if you want it to always be visible */
+    background: var(--header-footer-background);
+    color: white;
+    font-weight: bold;
+    padding-left: 3em;
+    padding-right: 3em;
+    padding-top: .5em;
+    padding-bottom: .5em;
+    border: 0;
+    margin: 0;
+    height: auto;
+    z-index: 999999999;
+    text-align: left;
+}
+
+.rightear {
+    right: -4em;
+    float: right;
+    transform: rotate(45deg);
+    width: 4em;
+}
+
+.leftear {
+    left: -4em;
+    float: left;
+    transform: rotate(-45deg);
+    width: 4em;
+}
+
+.leftear a {
+    position: relative;
+    left: 1.25em;
+}
+
+.rightear a {
+    position: relative;
+    left: -1px;
+}
