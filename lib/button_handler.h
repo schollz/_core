@@ -162,6 +162,11 @@ void button_key_off_any(uint8_t key) {
       if (mode_buttons16 == MODE_BASS) {
         // turn off sinosc
         WaveBass_release(wavebass);
+        if (sequencerhandler[2].recording) {
+          // TODO: rests create a problem with the end of the sequence
+          // Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]], 17,
+          //               bpm_timer_counter);
+        }
       }
 #endif
     } else {
@@ -171,6 +176,11 @@ void button_key_off_any(uint8_t key) {
         for (uint8_t i = 4; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
           if (key_on_buttons[i] > 0) {
             WaveBass_note_on(wavebass, i - 4);
+            if (sequencerhandler[2].recording) {
+              Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]], i - 4,
+                            bpm_timer_counter);
+            }
+
             break;
           }
         }
@@ -187,24 +197,6 @@ void button_key_on_single(uint8_t key) {
   printf("on single %d\n", key);
   if (key < 4) {
     if (key == KEY_A) {
-      uint16_t val = TapTempo_tap(taptempo);
-      if (val > 0) {
-        uint32_t current_time = time_us_32();
-        if (tap_tempo_last == 0) {
-          tap_tempo_last = current_time;
-        }
-        if (current_time - tap_tempo_last < 1000000) {
-          tap_tempo_hits++;
-          if (tap_tempo_hits > 2) {
-            printf("tap bpm -> %d\n", val);
-            sf->bpm_tempo = val;
-            DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
-          }
-        } else {
-          tap_tempo_hits = 0;
-        }
-        tap_tempo_last = current_time;
-      }
     }
   } else if (key >= 4) {
     // 1-16
@@ -234,6 +226,24 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_B) {
       // S+A
       mode_buttons16 = MODE_JUMP;
+      uint16_t val = TapTempo_tap(taptempo);
+      if (val > 0) {
+        uint32_t current_time = time_us_32();
+        if (tap_tempo_last == 0) {
+          tap_tempo_last = current_time;
+        }
+        if (current_time - tap_tempo_last < 1000000) {
+          tap_tempo_hits++;
+          if (tap_tempo_hits > 2) {
+            printf("tap bpm -> %d\n", val);
+            sf->bpm_tempo = val;
+            DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
+          }
+        } else {
+          tap_tempo_hits = 0;
+        }
+        tap_tempo_last = current_time;
+      }
     } else if (key2 == KEY_C) {
       // S+B
       mode_buttons16 = MODE_MASH;
@@ -335,6 +345,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         printf("[button_handler] sequence %d playing off\n", mode_buttons16);
         Sequencer_stop(
             sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
+        if (mode_buttons16 == MODE_BASS) {
+          WaveBass_release(wavebass);
+        }
       }
     } else if (key2 == KEY_D) {
       // B + C
@@ -602,9 +615,13 @@ void button_handler(ButtonMatrix *bm) {
     }
 
 #ifdef INCLUDE_SINEBASS
-    if (mode_buttons16 == MODE_BASS) {
+    if (mode_buttons16 == MODE_BASS && bm->on[i] > 3) {
       printf("updaing sinosc\n");
       WaveBass_note_on(wavebass, bm->on[i] - 4);
+      if (sequencerhandler[2].recording) {
+        Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]], bm->on[i] - 4,
+                      bpm_timer_counter);
+      }
     }
 #endif
 
