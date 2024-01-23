@@ -152,11 +152,13 @@ void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
 
 void bass_sequencer_emit(uint8_t key) {
   printf("[bass_sequencer_emit] key %d\n", key);
+#ifdef INCLUDE_SINEBASS
   if (key < 16) {
     WaveBass_note_on(wavebass, key);
   } else if (key < 32) {
     WaveBass_release(wavebass);
   }
+#endif
 }
 
 void bass_sequencer_stop() { printf("[bass_sequencer_stop] stop\n"); }
