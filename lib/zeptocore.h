@@ -111,7 +111,7 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("v0.0.10");
+  printStringWithDelay("v0.0.12");
 
   while (1) {
     // TODO: check timing of this?

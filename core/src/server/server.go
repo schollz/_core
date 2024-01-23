@@ -150,7 +150,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		serverID = codename.Generate(rng, 0)
 		if strings.Contains(filename, "static/index.html") {
-			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.10"), -1)
+			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.12"), -1)
 			b = bytes.Replace(b, []byte("GENURL1"), []byte(codename.Generate(rng, 0)), -1)
 			b = bytes.Replace(b, []byte("GENURL2"), []byte(names.Random()), -1)
 		}
