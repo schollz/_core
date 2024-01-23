@@ -53,6 +53,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                        ->slice_num -
                    1;
     playback_stopped = false;
+    // restart the sequencers
+    for (uint8_t i = 0; i < 3; i++) {
+      if (sequencerhandler[i].playing) {
+        Sequencer_play(sf->sequencers[i][sf->sequence_sel[i]], true);
+      }
+    }
   }
   if (do_stop_playback) {
     beat_current = 0;
