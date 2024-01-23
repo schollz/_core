@@ -137,7 +137,17 @@ void update_fx(uint8_t fx_num) {
   }
 }
 
-void fx_sequencer_emit(uint8_t key) {}
+void fx_sequencer_emit(uint8_t key) {
+  printf("[fx_sequencer_emit] key %d\n", key);
+  if (key < 16) {
+    sf->fx_active[key] = true;
+    update_fx(key);
+  } else if (key < 32) {
+    sf->fx_active[key - 16] = false;
+    update_fx(key - 16);
+  }
+}
+
 void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
 
 void savefile_do_load() {
@@ -153,6 +163,10 @@ void savefile_do_load() {
     for (uint8_t j = 0; j < 16; j++) {
       Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
                               step_sequencer_stop);
+    }
+    for (uint8_t j = 0; j < 16; j++) {
+      Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
+                              fx_sequencer_stop);
     }
   }
 }
@@ -263,6 +277,10 @@ void sdcard_startup() {
   for (uint8_t j = 0; j < 16; j++) {
     Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
                             step_sequencer_stop);
+  }
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
+                            fx_sequencer_stop);
   }
   // sync_using_sdcard = false;
   // SaveFile_save(sf, &sync_using_sdcard);
