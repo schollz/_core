@@ -137,6 +137,9 @@ void update_fx(uint8_t fx_num) {
   }
 }
 
+void fx_sequencer_emit(uint8_t key) {}
+void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
+
 void savefile_do_load() {
   if (savefile_has_data[savefile_current]) {
     SaveFile_load(sf, &sync_using_sdcard, savefile_current);
