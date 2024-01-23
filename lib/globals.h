@@ -113,9 +113,6 @@ int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
 
-bool gate_active = false;
-bool gate_is_applied = false;
-uint32_t gate_counter = 0;
 uint32_t gate_threshold = 10;
 
 // add variable to keep track of variation
@@ -305,7 +302,6 @@ void do_update_phase_from_beat_current() {
                     .snd[sel_variation]
                     ->slice_stop[slice];
   }
-  gate_counter = 0;
   phase_change = true;
   audio_mute = false;
   Gate_reset(audio_gate);
