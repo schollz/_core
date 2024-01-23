@@ -308,6 +308,7 @@ footer>form>select {
 
 body {
     padding: 2em;
+    padding-top: 4em;
 }
 
 @media screen and (max-width: 768px) {
@@ -569,7 +570,6 @@ a {
     /* or fixed if you want it to always be visible */
     background: var(--header-footer-background);
     color: white;
-    font-weight: bold;
     padding-left: 3em;
     padding-right: 3em;
     padding-top: .5em;
