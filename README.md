@@ -71,9 +71,9 @@ the rest of the buttons (1-16) are just called **H**.
 
 
 - [x] **H** + **H** → JUMP: retrig depending on location
-- [x] **A** + **A** ... → set tempo via tapping
 - [x] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
 - [x] **A** + **B** → JUMP mode
+- [x] **A** + **B** + **B** ... → set tempo via tapping
 - [x] **A** + **C** → MASH mode
 - [x] **A** + **D** → BASS mode
 - [x] **B** → show bank (blinking) + sample (bright)
