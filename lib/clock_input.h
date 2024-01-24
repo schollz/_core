@@ -50,6 +50,11 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_int callback_up,
   ci->callback_start = callback_start;
   ci->filter = FilterExp_create(180);
 
+  // initialize filter to reasonable level (120 bpm)
+  for (uint8_t i = 0; i < 100; i++) {
+    FilterExp_update(ci->filter, 250000);
+  }
+
   gpio_init(gpio);
   gpio_set_dir(gpio, GPIO_IN);
   gpio_pull_down(gpio);
@@ -61,7 +66,7 @@ void ClockInput_update(ClockInput *ci) {
   //   code to verify polarity
   if (clock_pin == 1 && ci->last_state == 0) {
     uint32_t now_time = time_us_32();
-    printf("[clock_input] time diff: %d\n", now_time - ci->last_time);
+    // printf("[clock_input] time diff: %d\n", now_time - ci->last_time);
     if (now_time - ci->last_time < 900000) {
       if (ci->callback_up != NULL) {
         ci->callback_up(FilterExp_update(ci->filter, now_time - ci->last_time));
