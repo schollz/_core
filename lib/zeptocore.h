@@ -65,7 +65,7 @@ void clock_handling_up(int time_diff) {
     return;
   }
   clock_in_diff_2x = time_diff * 2;
-  printf("[zeptocore] clock_handling_up: %d\n", time_diff);
+  // printf("[zeptocore] clock_handling_up: %d\n", time_diff);
   uint16_t bpm_new = 60000000 / (time_diff * 2);
   if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
     sf->bpm_tempo = bpm_new;

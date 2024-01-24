@@ -205,8 +205,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         clock_out_ready = true;
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
-          printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
-                 beat_total);
+          // printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
+          //        beat_total);
           do_update_phase_from_beat_current();
         } else {
           key_jump_debounce--;

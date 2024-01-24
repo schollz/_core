@@ -67,9 +67,10 @@ void ClockInput_update(ClockInput *ci) {
   if (clock_pin == 1 && ci->last_state == 0) {
     uint32_t now_time = time_us_32();
     // printf("[clock_input] time diff: %d\n", now_time - ci->last_time);
-    if (now_time - ci->last_time < 900000) {
+    int32_t time_diff = now_time - ci->last_time;
+    if (time_diff < 900000 && time_diff > 1000) {
       if (ci->callback_up != NULL) {
-        ci->callback_up(FilterExp_update(ci->filter, now_time - ci->last_time));
+        ci->callback_up(FilterExp_update(ci->filter, time_diff));
       }
     } else {
       if (ci->callback_start != NULL) {
