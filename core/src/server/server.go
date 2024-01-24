@@ -17,6 +17,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lucasepe/codename"
+	cp "github.com/otiai10/copy"
 	"github.com/schollz/_core/core/src/names"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/pack"
@@ -329,6 +330,64 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			if err != nil {
 				log.Error(err)
 			}
+		} else if message.Action == "copyworkspace" {
+			// copy the workspace into the new place
+			log.Infof("copying %s to %s", message.Place, message.Message)
+			messagePlace := message.Place
+			message.Place = strings.TrimPrefix(message.Place, "/")
+			if len(message.Place) > 0 {
+				if _, err = os.Stat(path.Join(StorageFolder, message.Place)); os.IsNotExist(err) {
+					message.Error = fmt.Sprintf("folder %s does not exist", message.Place)
+					log.Error(message.Error)
+				} else {
+					if _, err = os.Stat(path.Join(StorageFolder, message.Message)); os.IsNotExist(err) {
+						err = cp.Copy(path.Join(StorageFolder, message.Place), path.Join(StorageFolder, message.Message))
+						if err != nil {
+							message.Error = err.Error()
+							log.Error(message.Error)
+						} else {
+							message.Success = true
+							// go through every file in the new storage and change the names
+							err = filepath.Walk(path.Join(StorageFolder, message.Message), func(pathName string, info os.FileInfo, err error) error {
+								if strings.HasSuffix(pathName, ".json") {
+									log.Infof("changing %s", pathName)
+								}
+								b, _ := os.ReadFile(pathName)
+								b = bytes.Replace(b, []byte(path.Join(StorageFolder, message.Place)), []byte(path.Join(StorageFolder, message.Message)), -1)
+								os.WriteFile(pathName, b, 0777)
+								return nil
+							})
+							// update the states
+							var previousState []byte
+							err = keystore.View(func(tx *bolt.Tx) error {
+								b := tx.Bucket([]byte("states"))
+								previousState = b.Get([]byte(messagePlace))
+								if previousState == nil {
+									return fmt.Errorf("no state for %s", message.Place)
+								}
+								return nil
+							})
+							if err != nil {
+								log.Error(err)
+							} else {
+								err = keystore.Update(func(tx *bolt.Tx) error {
+									b := tx.Bucket([]byte("states"))
+									return b.Put([]byte("/"+message.Message), previousState)
+								})
+								if err != nil {
+									log.Error(err)
+								}
+
+							}
+						}
+					} else {
+						message.Error = fmt.Sprintf("folder %s already exists", message.Message)
+						log.Error(message.Error)
+					}
+
+				}
+			}
+			c.WriteJSON(message)
 		} else if message.Action == "getstate" {
 			// return message.State based for message.Place
 			err = keystore.View(func(tx *bolt.Tx) error {
