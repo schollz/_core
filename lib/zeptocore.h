@@ -61,13 +61,19 @@ void clear_debouncers() {
 }
 
 void clock_handling_up(int time_diff) {
-  sf->bpm_tempo = 60000000 / (time_diff * 2);
+  printf("[zeptocore] clock_handling_up: %d\n", time_diff);
+  uint16_t bpm_new = 60000000 / (time_diff * 2);
+  if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
+    sf->bpm_tempo = bpm_new;
+  }
   clock_in_ready = true;
 }
 
 void clock_handling_down(int time_diff) {
   printf("[zeptocore] clock_handling_down: %d\n", time_diff);
 }
+
+void clock_handling_start() { printf("[zeptocore] clock_handling_start\n"); }
 
 void input_handling() {
   printf("core1 running!\n");
@@ -95,8 +101,9 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput = ClockInput_create(
-      CLOCK_INPUT_GPIO, clock_handling_up, clock_handling_down);
+  ClockInput *clockinput =
+      ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+                        clock_handling_down, clock_handling_start);
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};

@@ -346,7 +346,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         Sequencer_stop(
             sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
         if (mode_buttons16 == MODE_BASS) {
+#ifdef INCLUDE_SINEBASS
           WaveBass_release(wavebass);
+#endif
         }
       }
     } else if (key2 == KEY_D) {
