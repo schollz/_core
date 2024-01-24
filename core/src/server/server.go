@@ -340,6 +340,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		} else if message.Action == "copyworkspace" {
 			// copy the workspace into the new place
 			log.Infof("copying %s to %s", message.Place, message.Message)
+			message.Place = strings.ToLower(message.Place)
 			messagePlace := message.Place
 			message.Place = strings.TrimPrefix(message.Place, "/")
 			if len(message.Place) > 0 {
