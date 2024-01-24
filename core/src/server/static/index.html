@@ -36,24 +36,26 @@
             <form method="dialog">
                 <p>
                     <label>
-                        Favorite animal:
+                        Copy {{title}} -> /
                         <input type="text" id="dialogtext" required />
                     </label>
                 </p>
                 <div>
-                    <input type="submit" id="js-close" value="Novalidate close" formnovalidate />
+                    <input type="submit" id="js-close" value="Make copy" formnovalidate
+                        style="font-family: inherit; padding:0.5em;" />
                 </div>
             </form>
         </dialog>
 
         <header>
-            <a href="/"><img src="/static/apple-icon.png"
+            <a href=" /"><img src="/static/apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
-                    :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a></h1>
-            &nbsp; <a href="#" id="show-dialog"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" class="feather feather-copy">
+                    :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a>
+            </h1>
+            &nbsp; <a href="#" id="show-dialog" v-if="!isMain"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg></a>
@@ -105,7 +107,8 @@
                     <p>
                         Use this website to allocate audio files onto the <a href="https://zeptocore.com">zeptocore</a>
                         or ectocore. There is no
-                        login nessecary. To get started, simply type in a name that you can remember and press
+                        login nessecary. To get started, simply type in a name that you can remember and
+                        press
                         enter:
                         <input v-on:keyup.enter="newURL">
 
@@ -115,7 +118,8 @@
                             href="/GENURL2">GENURL2</a>.
                     </p>
                     <p>
-                        <em>Note:</em> Instead of using this tool online, you can download it and use it locally for <a
+                        <em>Note:</em> Instead of using this tool online, you can download it and use it
+                        locally for <a
                             href="https://github.com/schollz/_core/releases/download/v0.0.13/core_windows.exe">Windows</a>
                         or <a
                             href="https://github.com/schollz/_core/releases/download/v0.0.13/core_linux_amd64">Linux</a>.
@@ -127,46 +131,58 @@
                         <p><strong>Last Updated:</strong> January 22nd, 2024</p>
 
                         <h2>Understanding Cookies</h2>
-                        <p>A cookie is a small text file that our website places on your computer or device when you
+                        <p>A cookie is a small text file that our website places on your computer or device
+                            when you
                             visit.
-                            Cookies are widely used to make websites work or to work more efficiently, as well as to
+                            Cookies are widely used to make websites work or to work more efficiently, as
+                            well as to
                             provide
                             information to the site owners.</p>
 
                         <h2>Use of Cookies on Our Website</h2>
-                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This means
+                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This
+                            means
                             that
                             the
-                            cookies are essential to help you move around our website and use its features, such as
-                            accessing secure areas of the site. Without these cookies, some services you have asked
+                            cookies are essential to help you move around our website and use its features,
+                            such as
+                            accessing secure areas of the site. Without these cookies, some services you
+                            have asked
                             for,
                             like navigation between pages, cannot be provided.</p>
 
                         <h2>Your Consent</h2>
-                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its terms.
+                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its
+                            terms.
                             When
                             you
-                            visit tool.zeptocore.com for the first time, a cookie consent banner will appear,
+                            visit tool.zeptocore.com for the first time, a cookie consent banner will
+                            appear,
                             allowing
                             you
                             to give explicit consent to this policy.</p>
 
                         <h2>Managing Cookies</h2>
-                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are already
+                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are
+                            already
                             on
                             your
-                            computer, and you can set most browsers to prevent them from being placed. However, if
+                            computer, and you can set most browsers to prevent them from being placed.
+                            However, if
                             you
                             do
-                            this, you may have to manually adjust some preferences every time you visit a site, and
+                            this, you may have to manually adjust some preferences every time you visit a
+                            site, and
                             some
                             services and functionalities may not work.</p>
 
                         <h2>Changes to the Cookie Policy</h2>
-                        <p>We may update our Cookie Policy from time to time. We encourage visitors to frequently
+                        <p>We may update our Cookie Policy from time to time. We encourage visitors to
+                            frequently
                             check
                             this
-                            page for any changes. Your continued use of our site after any change in this Cookie
+                            page for any changes. Your continued use of our site after any change in this
+                            Cookie
                             Policy
                             will
                             constitute your acceptance of such change.</p>
@@ -269,7 +285,8 @@
                         <input type="checkbox" id="tempomatch"
                             v-model="banks[selectedBank].files[selectedFile].TempoMatch" @click="updateTempomatch">
                         <label for="tempomatch">Tempo matching: <span
-                                v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm changes
+                                v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm
+                                changes
                                 speed)</span>
                             <span v-else>off</span></label>
                     </p>
@@ -287,15 +304,18 @@
                             <input type="range" min="10" max="1000" value="10" />
                         </p>
                         <p>
-                            <button @click="deleteRegion" style="margin-left:0;">Delete selected region</button>
-                            <button @click="deleteAllRegions" style="margin-left:0;">Delete all regions</button>
+                            <button @click="deleteRegion" style="margin-left:0;">Delete selected
+                                region</button>
+                            <button @click="deleteAllRegions" style="margin-left:0;">Delete all
+                                regions</button>
                         </p>
                         <p>
                             <label>
                                 Number of regions: <input id="onsetSlices" type="number" min="1" max="128" value=16
                                     style="width:3em;" />
                             </label>
-                            <button @click="createRegionsEvenly" style="margin-left:0;">Create evenly</button>
+                            <button @click="createRegionsEvenly" style="margin-left:0;">Create
+                                evenly</button>
                             <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
                                 transients</button>
                         </p>
