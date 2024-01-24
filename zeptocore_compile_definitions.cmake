@@ -69,5 +69,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # basics 
     # INCLUDE_KEYBOARD=1
     # INCLUDE_RGBLED=1
-    INCLUDE_SINEBASS=1
+    # INCLUDE_SINEBASS=1
 )
