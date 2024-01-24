@@ -61,19 +61,41 @@ void clear_debouncers() {
 }
 
 void clock_handling_up(int time_diff) {
+  if (time_diff < 100) {
+    return;
+  }
+  clock_in_diff_2x = time_diff * 2;
   printf("[zeptocore] clock_handling_up: %d\n", time_diff);
   uint16_t bpm_new = 60000000 / (time_diff * 2);
   if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
     sf->bpm_tempo = bpm_new;
   }
-  clock_in_ready = true;
+  if (clock_in_activator < 3) {
+    clock_in_activator++;
+  } else {
+    clock_in_do = true;
+    clock_in_last_time = time_us_32();
+    clock_in_beat_total++;
+    clock_in_ready = true;
+  }
 }
 
 void clock_handling_down(int time_diff) {
-  printf("[zeptocore] clock_handling_down: %d\n", time_diff);
+  // printf("[zeptocore] clock_handling_down: %d\n", time_diff);
 }
 
-void clock_handling_start() { printf("[zeptocore] clock_handling_start\n"); }
+void clock_handling_start() {
+  printf("[zeptocore] clock_handling_start\n");
+  if (clock_in_activator < 3) {
+    clock_in_activator++;
+  } else {
+    clock_in_do = true;
+    clock_in_last_time = time_us_32();
+    clock_in_beat_total = 0;
+    clock_in_ready = true;
+    do_restart_playback = true;
+  }
+}
 
 void input_handling() {
   printf("core1 running!\n");

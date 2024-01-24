@@ -69,7 +69,8 @@ void i2s_callback_func() {
 
   if (sync_using_sdcard || !fil_is_open || audio_mute || button_mute ||
       reduce_cpu_usage > 0 || (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
-      envelope_volume_val < 0.001 || Gate_is_up(audio_gate)) {
+      envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
+      (clock_in_do && (startTime - clock_in_last_time) > clock_in_diff_2x)) {
     envelope_pitch_val = envelope_pitch_val_new;
 
     // continue to update the gate
@@ -133,6 +134,10 @@ void i2s_callback_func() {
     // unmuted
     audio_was_muted = true;
     return;
+  }
+
+  if (playback_restarted) {
+    audio_was_muted = false;
   }
 
   Gate_update(audio_gate, sf->bpm_tempo);
@@ -267,6 +272,7 @@ void i2s_callback_func() {
                                                      ->slice_current];
     const int32_t sample_stop =
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size;
+
     switch (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
                 .snd[sel_variation]
