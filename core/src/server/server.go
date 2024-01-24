@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -194,6 +195,12 @@ type Message struct {
 	Place      string         `json:"place"`
 }
 
+func isValidWorkspace(s string) bool {
+	// Define a regular expression for alphanumeric characters
+	regex := regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+	return regex.MatchString(s) && !strings.Contains(s, " ")
+}
+
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	query := r.URL.Query()
 	log.Tracef("query: %+v", query)
@@ -336,55 +343,59 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			messagePlace := message.Place
 			message.Place = strings.TrimPrefix(message.Place, "/")
 			if len(message.Place) > 0 {
-				if _, err = os.Stat(path.Join(StorageFolder, message.Place)); os.IsNotExist(err) {
-					message.Error = fmt.Sprintf("folder %s does not exist", message.Place)
+				if !isValidWorkspace(message.Place) {
+					message.Error = fmt.Sprintf("invalid workspace name: %s - no spaces allowed", message.Message)
 					log.Error(message.Error)
 				} else {
-					if _, err = os.Stat(path.Join(StorageFolder, message.Message)); os.IsNotExist(err) {
-						err = cp.Copy(path.Join(StorageFolder, message.Place), path.Join(StorageFolder, message.Message))
-						if err != nil {
-							message.Error = err.Error()
-							log.Error(message.Error)
-						} else {
-							message.Success = true
-							// go through every file in the new storage and change the names
-							err = filepath.Walk(path.Join(StorageFolder, message.Message), func(pathName string, info os.FileInfo, err error) error {
-								if strings.HasSuffix(pathName, ".json") {
-									log.Infof("changing %s", pathName)
-								}
-								b, _ := os.ReadFile(pathName)
-								b = bytes.Replace(b, []byte(path.Join(StorageFolder, message.Place)), []byte(path.Join(StorageFolder, message.Message)), -1)
-								os.WriteFile(pathName, b, 0777)
-								return nil
-							})
-							// update the states
-							var previousState []byte
-							err = keystore.View(func(tx *bolt.Tx) error {
-								b := tx.Bucket([]byte("states"))
-								previousState = b.Get([]byte(messagePlace))
-								if previousState == nil {
-									return fmt.Errorf("no state for %s", message.Place)
-								}
-								return nil
-							})
+					if _, err = os.Stat(path.Join(StorageFolder, message.Place)); os.IsNotExist(err) {
+						message.Error = fmt.Sprintf("folder %s does not exist", message.Place)
+						log.Error(message.Error)
+					} else {
+						if _, err = os.Stat(path.Join(StorageFolder, message.Message)); os.IsNotExist(err) {
+							err = cp.Copy(path.Join(StorageFolder, message.Place), path.Join(StorageFolder, message.Message))
 							if err != nil {
-								log.Error(err)
+								message.Error = err.Error()
+								log.Error(message.Error)
 							} else {
-								err = keystore.Update(func(tx *bolt.Tx) error {
+								message.Success = true
+								// go through every file in the new storage and change the names
+								err = filepath.Walk(path.Join(StorageFolder, message.Message), func(pathName string, info os.FileInfo, err error) error {
+									if strings.HasSuffix(pathName, ".json") {
+										log.Infof("changing %s", pathName)
+									}
+									b, _ := os.ReadFile(pathName)
+									b = bytes.Replace(b, []byte(path.Join(StorageFolder, message.Place)), []byte(path.Join(StorageFolder, message.Message)), -1)
+									os.WriteFile(pathName, b, 0777)
+									return nil
+								})
+								// update the states
+								var previousState []byte
+								err = keystore.View(func(tx *bolt.Tx) error {
 									b := tx.Bucket([]byte("states"))
-									return b.Put([]byte("/"+message.Message), previousState)
+									previousState = b.Get([]byte(messagePlace))
+									if previousState == nil {
+										return fmt.Errorf("no state for %s", message.Place)
+									}
+									return nil
 								})
 								if err != nil {
 									log.Error(err)
+								} else {
+									err = keystore.Update(func(tx *bolt.Tx) error {
+										b := tx.Bucket([]byte("states"))
+										return b.Put([]byte("/"+message.Message), previousState)
+									})
+									if err != nil {
+										log.Error(err)
+									}
+
 								}
-
 							}
+						} else {
+							message.Error = fmt.Sprintf("folder %s already exists", message.Message)
+							log.Error(message.Error)
 						}
-					} else {
-						message.Error = fmt.Sprintf("folder %s already exists", message.Message)
-						log.Error(message.Error)
 					}
-
 				}
 			}
 			c.WriteJSON(message)
