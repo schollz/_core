@@ -32,14 +32,35 @@
 
     <div id="fadeCircle"></div>
     <div id="app" v-cloak>
+        <dialog id="dialog">
+            <form method="dialog">
+                <p>
+                    <label>
+                        Favorite animal:
+                        <input type="text" id="dialogtext" required />
+                    </label>
+                </p>
+                <div>
+                    <input type="submit" id="js-close" value="Novalidate close" formnovalidate />
+                </div>
+            </form>
+        </dialog>
+
         <header>
             <a href="/"><img src="/static/apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a></h1>
+            &nbsp; <a href="#" id="show-dialog"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" class="feather feather-copy">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg></a>
             <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" class="hideIfMobile"
                 id="floater">firmware
                 VERSION_CURRENT</a>
+
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
         <main>
@@ -315,6 +336,7 @@
                         <button type="submit" v-else-if="diskUsage>0">Download .zip to load onto SD card ({{
                             formatBytes(diskUsage)
                             }})</button>
+
                     </div>
                 </div>
             </form>
@@ -336,6 +358,7 @@
 
     <script src="/static/humanize-duration.min.js"></script>
     <script src="/static/vue.js"></script>
+
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
         window.WaveSurf = WaveSurferG;
@@ -353,6 +376,22 @@
                 localStorage.setItem('cookieConsent', 'true');
                 document.getElementById('cookieConsentContainer').style.display = 'none';
             };
+            document.getElementById("show-dialog").addEventListener("click", () => {
+                document.getElementById("dialog").showModal();
+            });
+
+            document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("dialog").close();
+                console.log('closed');
+                if (socket != null && document.getElementById("dialogtext").value != "") {
+                    socket.send(JSON.stringify({
+                        action: "copyworkspace",
+                        place: window.location.pathname,
+                        message: document.getElementById("dialogtext").value,
+                    }));
+                }
+            });
         };
     </script>
 </body>

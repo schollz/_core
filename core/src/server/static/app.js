@@ -16,7 +16,6 @@ var hasSavedToCookie = false;
 
 
 
-
 function formatBytes(bytes, decimals) {
     if (bytes == 0) return '0 Bytes';
     var k = 1024,
@@ -135,6 +134,13 @@ const socketMessageListener = (e) => {
         }
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
+    } else if (data.action == "copyworkspace") {
+        if (data.error != "") {
+            app.error_message = data.error;
+        } else {
+            window.location = "/" + data.message;
+        }
+        console.log(data);
     } else if (data.action == "slicetype") {
         app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
         if (app.selectedFile != null) {
