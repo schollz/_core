@@ -43,15 +43,13 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   }
   if (do_restart_playback) {
     do_restart_playback = false;
+    playback_restarted = true;
     bpm_timer_counter = -1;
     beat_total = -1;
+    key_jump_debounce = 0;
     dub_step_break = -1;
     retrig_beat_num = 0;
-    beat_current = banks[sel_bank_cur]
-                       ->sample[sel_sample_cur]
-                       .snd[sel_variation]
-                       ->slice_num -
-                   1;
+    beat_current = -1;
     playback_stopped = false;
     // restart the sequencers
     for (uint8_t i = 0; i < 3; i++) {
@@ -182,18 +180,33 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
-        if (beat_current == 0 && !phase_forward) {
-          beat_current = banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[sel_variation]
-                             ->slice_num;
-        } else {
-          beat_current += (phase_forward * 2 - 1);
-        }
         beat_total++;
+        if (clock_in_do) {
+          beat_current = clock_in_beat_total % banks[sel_bank_cur]
+                                                   ->sample[sel_sample_cur]
+                                                   .snd[sel_variation]
+                                                   ->slice_num;
+        } else {
+          if (beat_current == 0 && !phase_forward) {
+            beat_current = banks[sel_bank_cur]
+                               ->sample[sel_sample_cur]
+                               .snd[sel_variation]
+                               ->slice_num;
+          } else {
+            beat_current += (phase_forward * 2 - 1);
+          }
+          if (beat_current < 0) {
+            beat_current += banks[sel_bank_cur]
+                                ->sample[sel_sample_cur]
+                                .snd[sel_variation]
+                                ->slice_num;
+          }
+        }
         clock_out_ready = true;
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
+          printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
+                 beat_total);
           do_update_phase_from_beat_current();
         } else {
           key_jump_debounce--;

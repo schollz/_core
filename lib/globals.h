@@ -124,6 +124,10 @@ bool clock_out_do = false;
 bool clock_out_ready = false;
 bool clock_in_do = false;
 bool clock_in_ready = false;
+uint8_t clock_in_activator = 0;
+uint32_t clock_in_beat_total = 0;
+uint32_t clock_in_diff_2x = 0;
+uint32_t clock_in_last_time = 0;
 
 uint8_t do_update_beat_repeat = 0;
 
@@ -133,6 +137,7 @@ bool savefile_has_data[16];
 bool do_stop_playback = false;
 bool do_restart_playback = true;
 bool playback_stopped = true;
+bool playback_restarted = false;
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif
@@ -282,8 +287,8 @@ WS2812 *ws2812;
 bool repeating_timer_callback_taptempo = false;
 uint8_t key_jump_debounce = 0;
 void do_update_phase_from_beat_current() {
-  // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
-  // beat_current);
+  printf("[do_update_phase_from_beat_current] beat_current: %d\n",
+         beat_current);
   uint16_t slice =
       beat_current %
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
