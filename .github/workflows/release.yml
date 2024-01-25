@@ -26,7 +26,7 @@ jobs:
     - name: Install Pico SDK dependencies
       run: |
         sudo apt update
-        sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
+        sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
         python3 -m pip install numpy matplotlib tqdm icecream
     - name: Checkout pico-sdk
       uses: actions/checkout@v4
@@ -42,6 +42,8 @@ jobs:
         make ectocore
         make core_windows.exe
         make core_linux_amd64
+        make core_macos_aarch64
+        make core_macos_amd64
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
@@ -50,3 +52,5 @@ jobs:
           ectocore.uf2
           core_windows.exe
           core_linux_amd64
+          core_macos_amd64
+          core_macos_aarch64
