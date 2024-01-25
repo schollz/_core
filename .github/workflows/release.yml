@@ -43,6 +43,7 @@ jobs:
     - name: Build UF2s
       run: |
         make zeptocore
+        make zeptocore_nooverclock
         make ectocore
         make core_windows.exe
         make core_linux_amd64
@@ -53,6 +54,7 @@ jobs:
       with:
         files: |
           zeptocore.uf2
+          zeptocore_nooverclock.uf2
           ectocore.uf2
           core_windows.exe
           core_linux_amd64
