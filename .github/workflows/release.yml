@@ -20,7 +20,9 @@ jobs:
       with:
         python-version: '3.11'
     - name: Set up Zig
-      uses: goto-bus-stop/setup-zig@v2
+      uses: goto-bus-stop/setup-zig@v2'
+      with:
+        version: 0.11.0
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
