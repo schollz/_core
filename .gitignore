@@ -197,3 +197,6 @@ core/core_macos
 core_macos
 core_macos_aarch64
 core_macos_amd64
+.out.swp
+log
+out
