@@ -286,11 +286,11 @@ void input_handling() {
 #ifdef INCLUDE_CLOCKINPUT
     // clock input handler
     ClockInput_update(clockinput);
-    if (clock_in_do) {
-      if (ClockInput_time_since(clockinput) > 1000000) {
-        beat_current = 0;
-      }
-    }
+    // if (clock_in_do) {
+    //   if (ClockInput_time_since(clockinput) > 1000000) {
+    //     beat_current = 0;
+    //   }
+    // }
 #endif
 
 #ifdef INCLUDE_KNOBS
