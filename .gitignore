@@ -191,3 +191,9 @@ core_linux_amd64
 soxstatic/
 storage/
 dev/minicom/minicom
+core/MacOSX11.3.sdk.tar.xz
+core/MacOSX11.3.sdk/
+core/core_macos
+core_macos
+core_macos_aarch64
+core_macos_amd64
