@@ -316,6 +316,7 @@ app = new Vue({
         title: window.location.pathname,
         disconnected: false,
         isMain: window.location.pathname == '/',
+        isFaq: false,
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
         selectedFiles: [], // New property to store selected files
