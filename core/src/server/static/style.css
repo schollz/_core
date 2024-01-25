@@ -615,6 +615,11 @@ a {
     cursor: pointer;
 }
 
+/* last .faq details needs more margin bottom */
+.faq details:last-child {
+    margin-bottom: 1.5em;
+}
+
 .faq summary {
     font-weight: 900;
 }
