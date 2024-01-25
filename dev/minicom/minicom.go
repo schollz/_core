@@ -15,12 +15,26 @@ import (
 
 var lostConnection = false
 var lastMessageTime time.Time
+var startConnectionTime time.Time
+var notNotified = true
 
 func main() {
-
+	startConnectionTime = time.Now()
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
+			if (time.Since(startConnectionTime)) > 10*time.Minute && notNotified && time.Since(lastMessageTime) < 5*time.Second {
+				notNotified = false
+				var currentHash string
+				cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
+				if out, err := cmd.Output(); err == nil {
+					currentHash = string(out)
+				}
+
+				http.Post("https://ntfy.sh/qrv3w", "text/plain",
+					strings.NewReader(currentHash+" ok"))
+
+			}
 			if time.Since(lastMessageTime) > 5*time.Second && !lostConnection {
 				log.Info("lost connection")
 				lostConnection = true
@@ -33,7 +47,7 @@ func main() {
 				}
 
 				http.Post("https://ntfy.sh/qrv3w", "text/plain",
-					strings.NewReader(currentHash+" "+time.Now().String()))
+					strings.NewReader(currentHash+" bad"))
 			}
 		}
 
@@ -64,7 +78,8 @@ func listenToMessages() {
 
 	// Create a buffered reader
 	reader := bufio.NewReader(port)
-
+	startConnectionTime = time.Now()
+	notNotified = true
 	// Continuously read and print messages from the serial port
 	for {
 		message, err := reader.ReadString('\n')
