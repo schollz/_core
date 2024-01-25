@@ -97,7 +97,42 @@
 
 
 
-                <div v-if="isMain" class="help-banner"
+                <div v-if="isMain && isFaq" class="help-banner faq"
+                    style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
+                    <h2>FAQ <a href="#" @click.prevent="isFaq=false" style="top: 2px;
+                            position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left">
+                                <polyline points="9 14 4 9 9 4"></polyline>
+                                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                            </svg></a></h2>
+                    <details>
+                        <summary>Can I run this tool on my computer offline?</summary>
+                        <p>Yes! You can download this and use it
+                            locally for <a
+                                href="https://github.com/schollz/_core/releases/download/v0.0.14/core_windows.exe">Windows</a>,
+                            <a href="https://github.com/schollz/_core/releases/download/v0.0.14/core_macos_aarch64">Mac
+                                OS (M1)</a>, <a
+                                href="https://github.com/schollz/_core/releases/download/v0.0.14/core_macos_amd64">Mac
+                                OS (x86_64)</a>,
+                            or <a
+                                href="https://github.com/schollz/_core/releases/download/v0.0.14/core_linux_amd64">Linux</a>.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>My zeptocore suddenly stops and the power is fine, what is happening?</summary>
+                        <p>This is likely an overheating issue, which I've only encountered when using the external
+                            clock. By default, the zeptocore uses <em>overclocking</em> to
+                            get the most effects as possible, but the external clock can increase the heat too much and
+                            causes the zeptocore to shut off. A reliable fix for this is (if you want to use the
+                            clocking) is to <a
+                                href="https://github.com/schollz/_core/releases/download/v0.0.14/zeptocore_nooverclock.uf2">download
+                                the firmware without overclocking</a>.
+                        </p>
+                    </details>
+                </div>
+
+                <div v-if="isMain && !isFaq" class="help-banner"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
@@ -117,6 +152,7 @@
                         <em>or</em> click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
                             href="/GENURL2">GENURL2</a>.
                     </p>
+                    <p>Questions? Try <a href="#" @click.prevent="isFaq=true">the FAQ</a>.</p>
                     <p>
                         <em>Note:</em> Instead of using this tool online, you can download it and use it
                         locally for <a
