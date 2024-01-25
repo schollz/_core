@@ -604,3 +604,21 @@ a {
     position: relative;
     left: -1px;
 }
+
+.faq details {
+    margin-top: 1.5em;
+    border-color: var(--header-footer-background);
+    border-style: solid;
+    box-shadow: rgba(189, 175, 237, 0.667) 12px 12px 2px 1px;
+    background: var(--background-color);
+    padding: 1em;
+    cursor: pointer;
+}
+
+.faq summary {
+    font-weight: 900;
+}
+
+.faq p {
+    margin-bottom: 0;
+}
