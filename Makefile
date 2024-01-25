@@ -141,17 +141,17 @@ core/MacOSX11.3.sdk:
 .PHONY: core_macos_aarch64
 core_macos_aarch64: core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
-	CGO_LDFLAGS="-mmacosx-version-min=${MACOS_MIN_VER} --sysroot ${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
-	CC="zig cc -target aarch64-macos -isysroot ${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
 	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_aarch64
 
 .PHONY: core_macos_amd64
 core_macos_amd64: core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
-	CGO_LDFLAGS="-mmacosx-version-min=${MACOS_MIN_VER} --sysroot ${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
-	CC="zig cc -target x86_64-macos -isysroot ${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
 	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_amd64
 	
 .PHONY: core_linux_amd64
