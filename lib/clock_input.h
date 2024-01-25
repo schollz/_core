@@ -32,6 +32,7 @@ typedef struct ClockInput {
   uint8_t gpio;
   bool last_state;
   uint32_t last_time;
+  uint32_t last_diff;
   FilterExp *filter;
   callback_int callback_up;
   callback_int callback_down;
@@ -49,6 +50,7 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_int callback_up,
   ci->callback_down = callback_down;
   ci->callback_start = callback_start;
   ci->filter = FilterExp_create(180);
+  ci->last_diff = 0;
 
   // initialize filter to reasonable level (120 bpm)
   for (uint8_t i = 0; i < 100; i++) {
@@ -66,9 +68,9 @@ void ClockInput_update(ClockInput *ci) {
   //   code to verify polarity
   if (clock_pin == 1 && ci->last_state == 0) {
     uint32_t now_time = time_us_32();
-    // printf("[clock_input] time diff: %d\n", now_time - ci->last_time);
     int32_t time_diff = now_time - ci->last_time;
-    if (time_diff < 900000 && time_diff > 1000) {
+    printf("[clock_input] time diff: %d\n", time_diff);
+    if (time_diff < 2 * ci->last_diff && time_diff > 1000) {
       if (ci->callback_up != NULL) {
         ci->callback_up(FilterExp_update(ci->filter, time_diff));
       }
@@ -77,18 +79,14 @@ void ClockInput_update(ClockInput *ci) {
         ci->callback_start();
       }
     }
+    ci->last_diff = time_diff;
     ci->last_time = now_time;
   } else if (clock_pin == 0 && ci->last_state == 1) {
     if (ci->callback_down != NULL) {
       ci->callback_down(time_us_32() - ci->last_time);
     }
   }
-
   ci->last_state = clock_pin;
-}
-
-uint32_t ClockInput_time_since(ClockInput *ci) {
-  return time_us_32() - ci->last_time;
 }
 
 #endif
