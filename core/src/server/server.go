@@ -124,7 +124,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Expires", "0")
 
 		filename := r.URL.Path[1:]
-		if filename == "" || !strings.Contains(filename, ".") {
+		if filename == "" || !strings.Contains(filename, ".") || filename == "buy" || filename == "faq" {
 			filename = "static/index.html"
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
@@ -155,6 +155,10 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.14"), -1)
 			b = bytes.Replace(b, []byte("GENURL1"), []byte(codename.Generate(rng, 0)), -1)
 			b = bytes.Replace(b, []byte("GENURL2"), []byte(names.Random()), -1)
+			if r.URL.Path == "/buy" {
+				shopify_data, _ := staticFiles.ReadFile("static/shopify.html")
+				b = bytes.Replace(b, []byte("SHOPIFY_DATA"), shopify_data, 1)
+			}
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
