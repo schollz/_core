@@ -27,7 +27,7 @@
 
 <body>
     <div class="ear leftear"><a href="https://github.com/schollz/_core" target="_blank">source</a></div>
-    <div class="ear rightear"><a href="https://infinitedigits.co/wares/zeptocore/#buy" target="_blank">buy</a></div>
+    <div class="ear rightear"><a href="/buy">buy</a></div>
 
 
     <div id="fadeCircle"></div>
@@ -96,6 +96,28 @@
                 </div>
 
 
+                <div v-if="isMain && isBuy" class="help-banner faq"
+                    style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background); margin-top:4em; margin-bottom:4em;">
+                    <h2>Buy <a href="#" @click.prevent="isBuy=false" style="top: 2px;
+                            position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left">
+                                <polyline points="9 14 4 9 9 4"></polyline>
+                                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                            </svg></a></h2>
+                    SHOPIFY_DATA
+                    <!-- <details>
+                        <summary>My zeptocore suddenly stops and the power is fine, what is happening?</summary>
+                        <p>This is likely an overheating issue, which I've only encountered when using the external
+                            clock. By default, the zeptocore uses <em>overclocking</em> to
+                            get the most effects as possible, but the external clock can increase the heat too much and
+                            causes the zeptocore to shut off. A reliable fix for this is (if you want to use the
+                            clocking) is to <a
+                                href="https://github.com/schollz/_core/releases/download/v0.0.14/zeptocore_nooverclock.uf2">download
+                                the firmware without overclocking</a>.
+                        </p>
+                    </details> -->
+                </div>
 
                 <div v-if="isMain && isFaq" class="help-banner faq"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
@@ -132,7 +154,7 @@
                     </details> -->
                 </div>
 
-                <div v-if="isMain && !isFaq" class="help-banner"
+                <div v-if="isMain && !isFaq && !isBuy" class="help-banner"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
@@ -152,7 +174,7 @@
                         <em>or</em> click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
                             href="/GENURL2">GENURL2</a>.
                     </p>
-                    <h3>Questions asked, <a href="#" @click.prevent="isFaq=true">questions answered here</a>.</h3>
+                    <h3>Questions asked, <a href="/faq">questions answered here</a>.</h3>
 
                     <div v-if="showCookiePolicy">
                         <br>
@@ -426,9 +448,11 @@
                 localStorage.setItem('cookieConsent', 'true');
                 document.getElementById('cookieConsentContainer').style.display = 'none';
             };
-            document.getElementById("show-dialog").addEventListener("click", () => {
-                document.getElementById("dialog").showModal();
-            });
+            if (!app.isMain) {
+                document.getElementById("show-dialog").addEventListener("click", () => {
+                    document.getElementById("dialog").showModal();
+                });
+            }
 
             document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
