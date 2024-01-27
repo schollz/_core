@@ -173,6 +173,9 @@ void input_handling() {
         }
       }
     }
+    if (single_key > -1) {
+      DebounceDigits_clear(debouncer_digits);
+    }
 
     if (debounce_beat_repeat > 0) {
       debounce_beat_repeat--;
@@ -222,7 +225,7 @@ void input_handling() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
-          DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 400);
+          DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
         } else if (button_is_pressed(KEY_B)) {
           gate_threshold = adc *
                            (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
