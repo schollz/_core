@@ -2986,13 +2986,15 @@ const int16_t __in_flash() fuzz_samples[32768] = {
 void Fuzz_process(int16_t *values, uint16_t num_values, uint8_t pre_amp,
                   uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
-    values[i] = util_clamp((values[i] * pre_amp) / 16, -32767, 32767);
+    values[i] = util_clamp((values[i] * linlin(pre_amp, 0, 255, 16, 256)) / 16,
+                           -32767, 32767);
     if (values[i] >= 0) {
       values[i] = fuzz_samples[values[i]];
     } else {
       values[i] = -1 * fuzz_samples[-values[i]];
     }
-    values[i] = util_clamp((values[i] * post_amp) / 256, -32767, 32767);
+    values[i] = util_clamp(
+        (values[i] * linlin(post_amp, 0, 255, 64, 256)) / 256, -32767, 32767);
   }
 }
 #endif
