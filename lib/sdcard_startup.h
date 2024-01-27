@@ -235,54 +235,53 @@ void sdcard_startup() {
              banks[bi]->num_samples);
       banks_with_samples[banks_with_samples_num] = bi;
       banks_with_samples_num++;
-      // for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
-      //   if (bi == 0) {
-      //     printf("[sdcard_startup] printing information\n");
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->size: %d\n",
-      //         bi, si, banks[bi]->sample[si].snd[sel_variation]->size);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->num_channels: %d\n",
-      //         bi, si,
-      //         banks[bi]->sample[si].snd[sel_variation]->num_channels);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->oversampling: %d\n",
-      //         bi, si,
-      //         banks[bi]->sample[si].snd[sel_variation]->oversampling);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->splice_trigger:% d\n
-      //         ", bi, si,
-      //         banks[bi]->sample[si].snd[sel_variation]->splice_trigger);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->play_mode: "
-      //         "% d\n ",
-      //         bi, si, banks[bi]->sample[si].snd[sel_variation]->play_mode);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->bpm: "
-      //         "%d\n",
-      //         bi, si, banks[bi]->sample[si].snd[sel_variation]->bpm);
-      //     printf(
-      //         "[sdcard_startup] "
-      //         "banks[%d]->sample[%d].snd[sel_variation]->slice_num: "
-      //         "% d\n ",
-      //         bi, si, banks[bi]->sample[si].snd[sel_variation]->slice_num);
-      //     printf("slices: \n");
-      //     for (uint8_t i = 0;
-      //          i < banks[bi]->sample[si].snd[sel_variation]->slice_num; i++)
-      //          {
-      //       printf("%d) %d-%d\n", i,
-      //              banks[bi]->sample[si].snd[sel_variation]->slice_start[i],
-      //              banks[bi]->sample[si].snd[sel_variation]->slice_stop[i]);
-      //     }
-      //     printf("\n");
-      //   }
-      // }
+      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
+        if (bi == 1) {
+          // for (uint8_t variation = 0; variation < 2; variation++) {
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->size: %d\n",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->size);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->num_channels: %d\n",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->num_channels);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->oversampling: %d\n",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->oversampling);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->splice_trigger:% "
+          //       "d\n",
+          //       bi, si,
+          //       banks[bi]->sample[si].snd[variation]->splice_trigger);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->play_mode: "
+          //       "% d\n ",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->play_mode);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->bpm: "
+          //       "%d\n",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->bpm);
+          //   printf(
+          //       "[sdcard_startup] "
+          //       "banks[%d]->sample[%d].snd[variation]->slice_num: "
+          //       "% d\n ",
+          //       bi, si, banks[bi]->sample[si].snd[variation]->slice_num);
+          //   printf("slices: \n");
+          //   for (uint8_t i = 0;
+          //        i < banks[bi]->sample[si].snd[variation]->slice_num; i++) {
+          //     printf("%d) %d-%d\n", i,
+          //            banks[bi]->sample[si].snd[variation]->slice_start[i],
+          //            banks[bi]->sample[si].snd[variation]->slice_stop[i]);
+          //   }
+          //   printf("\n");
+          // }
+        }
+      }
     }
   }  // bank loop
 

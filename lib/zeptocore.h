@@ -337,5 +337,50 @@ void input_handling() {
     // check keyboard
     run_keyboard();
 #endif
+
+    // load the new sample if need to
+    if (sel_variation_next != sel_variation) {
+      // these while loops ensure that the audio block is finished
+      while (!sync_using_sdcard) {
+        sleep_us(250);
+      }
+      sleep_ms(1);
+      while (sync_using_sdcard) {
+        sleep_us(250);
+      }
+      // measure the time it takes
+      uint32_t time_start = time_us_32();
+      printf("[zeptocore] loading new sample variation\n");
+      FRESULT fr = f_close(&fil_current);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
+              sel_sample_cur, sel_variation_next);
+      fr = f_open(&fil_current, fil_current_name, FA_READ);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+      phases[0] = round(((float)phases[0] * (float)banks[sel_bank_cur]
+                                                ->sample[sel_sample_cur]
+                                                .snd[sel_variation_next]
+                                                ->size) /
+                        (float)banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[sel_variation]
+                            ->size);
+
+      beat_current = round(((float)beat_current * (float)banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[sel_variation_next]
+                                                      ->slice_num)) /
+                     (float)banks[sel_bank_cur]
+                         ->sample[sel_sample_cur]
+                         .snd[sel_variation]
+                         ->slice_num;
+      sel_variation = sel_variation_next;
+      printf("[zeptocore] loading new sample variation took %d us\n",
+             time_us_32() - time_start);
+    }
   }
 }

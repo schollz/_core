@@ -160,7 +160,7 @@ void i2s_callback_func() {
     //                               ->name);
     phases[0] = round(((float)phases[0] * (float)banks[sel_bank_next]
                                               ->sample[sel_sample_next]
-                                              .snd[sel_variation_next]
+                                              .snd[sel_variation]
                                               ->size) /
                       (float)banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
@@ -179,7 +179,7 @@ void i2s_callback_func() {
     // beat_current);
     beat_current = round(((float)beat_current * (float)banks[sel_bank_next]
                                                     ->sample[sel_sample_next]
-                                                    .snd[sel_variation_next]
+                                                    .snd[sel_variation]
                                                     ->slice_num)) /
                    (float)banks[sel_bank_cur]
                        ->sample[sel_sample_cur]
@@ -192,8 +192,7 @@ void i2s_callback_func() {
   }
   if (fil_current_change) {
     fil_current_change = false;
-    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next ||
-        sel_variation != sel_variation_next) {
+    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
       do_open_file_ready = true;
       do_fade_out = true;
     }
@@ -349,7 +348,6 @@ void i2s_callback_func() {
       // setup the next
       sel_sample_cur = sel_sample_next;
       sel_bank_cur = sel_bank_next;
-      sel_variation = sel_variation_next;
 
       FRESULT fr;
       t0 = time_us_32();
