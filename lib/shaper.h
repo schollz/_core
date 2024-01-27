@@ -4,7 +4,8 @@
 
 void Shaper_expandOver_compressUnder_process(int16_t *values,
                                              uint16_t num_values,
-                                             int16_t threshold) {
+                                             int16_t threshold,
+                                             uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
     if (abs(values[i]) > threshold) {
       if (values[i] < 0) {
@@ -22,12 +23,15 @@ void Shaper_expandOver_compressUnder_process(int16_t *values,
         values[i] = compress_curve_data[abs(values[i]) >> SHAPER_REDUCE];
       }
     }
+    values[i] = util_clamp(
+        (values[i] * linlin(post_amp, 0, 255, 64, 256)) / 256, -32767, 32767);
   }
 }
 
 void Shaper_expandUnder_compressOver_process(int16_t *values,
                                              uint16_t num_values,
-                                             int16_t threshold) {
+                                             int16_t threshold,
+                                             uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
     if (abs(values[i]) > threshold) {
       // compress
@@ -44,6 +48,8 @@ void Shaper_expandUnder_compressOver_process(int16_t *values,
         values[i] = expand_curve_data[abs(values[i]) >> SHAPER_REDUCE];
       }
     }
+    values[i] = util_clamp(
+        (values[i] * linlin(post_amp, 0, 255, 64, 256)) / 256, -32767, 32767);
   }
 }
 
