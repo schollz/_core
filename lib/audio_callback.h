@@ -515,7 +515,7 @@ void i2s_callback_func() {
       // mono
       int16_t *newArray;
       // TODO: use a function pointer that will change the function
-      if (quadratic_resampling) {
+      if (quadratic_resampling || sf->fx_active[FX_SCRATCH]) {
         newArray = array_resample_quadratic_fp(values, samples_to_read,
                                                buffer->max_sample_count);
       } else {
