@@ -113,9 +113,9 @@ the rest of the buttons (1-16) are just called **H**.
 there are 16 effects in four categories - "shape", "time", "space", and "pitch".
 holding an effect and using a knob will change its parameters.
 
-- [x] **1** -> warm (preamp multiplier)
-- [x] **2** -> loss (preamp multiplier, threshold)
-- [x] **3** -> fuzz (preamp multliplier)
+- [x] **1** -> warm (preamp postamp)
+- [x] **2** -> loss (type, threshold, postamp)
+- [x] **3** -> fuzz (preamp postamp)
 - [x] **4** -> crush (frequency, bitdepth)
 - [x] **5** -> reverse 
 - [x] **6** -> stretch
