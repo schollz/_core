@@ -99,6 +99,13 @@ SampleInfo *SampleInfo_load(const char *fname) {
   // internal
   si->slice_current = 0;
 
+  // checks
+  if (si->bpm > 300) {
+    si->bpm = 120;
+  } else if (si->bpm < 30) {
+    si->bpm = 120;
+  }
+
   return si;
 }
 
