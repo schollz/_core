@@ -254,6 +254,13 @@ SampleInfo *SampleInfo_readFromDisk() {
   }
 
   fclose(file);
+
+  // fix any problems
+  if (si->bpm > 300) {
+    si->bpm = 120;
+  } else if (si->bpm < 30) {
+    si->bpm = 120;
+  }
   return si;
 }
 
