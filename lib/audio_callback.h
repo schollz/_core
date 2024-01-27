@@ -489,11 +489,13 @@ void i2s_callback_func() {
     // shaper
     if (sf->fx_active[FX_SHAPER]) {
       if (sf->fx_param[FX_SHAPER][0] > 128) {
-        Shaper_expandUnder_compressOver_process(
-            values, values_len, sf->fx_param[FX_SHAPER][1] << 7);
+        Shaper_expandUnder_compressOver_process(values, values_len,
+                                                sf->fx_param[FX_SHAPER][1] << 5,
+                                                sf->fx_param[FX_SHAPER][2]);
       } else {
-        Shaper_expandOver_compressUnder_process(
-            values, values_len, sf->fx_param[FX_SHAPER][1] << 7);
+        Shaper_expandOver_compressUnder_process(values, values_len,
+                                                sf->fx_param[FX_SHAPER][1] << 5,
+                                                sf->fx_param[FX_SHAPER][2]);
       }
     }
 
