@@ -139,6 +139,7 @@ bool do_stop_playback = false;
 bool do_restart_playback = true;
 bool playback_stopped = true;
 bool playback_restarted = false;
+bool audio_callback_in_mute = false;
 #ifdef INCLUDE_BASS
 Bass *bass;
 #endif

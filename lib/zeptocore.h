@@ -340,11 +340,13 @@ void input_handling() {
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
-      while (!sync_using_sdcard) {
-        sleep_us(250);
-      }
-      while (sync_using_sdcard) {
-        sleep_us(250);
+      if (!audio_callback_in_mute) {
+        while (!sync_using_sdcard) {
+          sleep_us(250);
+        }
+        while (sync_using_sdcard) {
+          sleep_us(250);
+        }
       }
       sync_using_sdcard = true;
       // measure the time it takes
