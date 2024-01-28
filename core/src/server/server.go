@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"html/template"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -152,13 +153,38 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		serverID = codename.Generate(rng, 0)
 		if strings.Contains(filename, "static/index.html") {
-			b = bytes.Replace(b, []byte("VERSION_CURRENT"), []byte("v0.0.16"), -1)
-			b = bytes.Replace(b, []byte("GENURL1"), []byte(codename.Generate(rng, 0)), -1)
-			b = bytes.Replace(b, []byte("GENURL2"), []byte(names.Random()), -1)
-			if r.URL.Path == "/buy" {
-				shopify_data, _ := staticFiles.ReadFile("static/shopify.html")
-				b = bytes.Replace(b, []byte("SHOPIFY_DATA"), shopify_data, 1)
+
+			tmpl, errTemplate := template.New("index").Delims("[[", "]]").Parse(string(b))
+			if errTemplate != nil {
+				log.Errorf("could not parse template %s: %s", filename, errTemplate.Error())
+				return
 			}
+
+			data := struct {
+				IsFaq          bool
+				IsBuy          bool
+				IsMain         bool
+				IsZeptocore    bool
+				IsUpload       bool
+				VersionCurrent string
+				GenURL1        string
+				GenURL2        string
+			}{
+				IsFaq:          r.URL.Path[1:] == "faq",
+				IsBuy:          r.URL.Path[1:] == "buy",
+				IsMain:         r.URL.Path == "/",
+				IsZeptocore:    r.URL.Path == "/zeptocore",
+				VersionCurrent: "v0.0.16",
+				GenURL1:        codename.Generate(rng, 0),
+				GenURL2:        names.Random(),
+			}
+			data.IsUpload = !(data.IsBuy || data.IsFaq || data.IsMain || data.IsZeptocore)
+
+			err = tmpl.Execute(w, data)
+			if err != nil {
+				log.Errorf("could not execute template %s: %s", filename, err.Error())
+			}
+			return
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
