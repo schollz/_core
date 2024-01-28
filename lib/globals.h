@@ -165,8 +165,6 @@ DebounceDigits *debouncer_digits;
 
 MessageSync *messagesync;
 bool sdcard_startup_is_starting = false;
-bool audio_mute = false;
-bool trigger_audio_mute = false;
 bool button_mute = false;
 bool trigger_button_mute = false;
 
@@ -310,7 +308,6 @@ void do_update_phase_from_beat_current() {
                     ->slice_stop[slice];
   }
   phase_change = true;
-  audio_mute = false;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE
   gpio_put(GPIO_TAPTEMPO_LED, repeating_timer_callback_taptempo);
