@@ -118,6 +118,7 @@ uint32_t gate_threshold = 10;
 // add variable to keep track of variation
 uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
+bool sel_variation_fadeout = false;
 
 bool quadratic_resampling = false;
 bool clock_out_do = false;
