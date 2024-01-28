@@ -249,20 +249,18 @@ const socketMessageListener = (e) => {
 };
 const socketOpenListener = (e) => {
     console.log('Connected');
-    if (!app.isMain) {
-        if (disconnectedTimeout != null) {
-            clearTimeout(disconnectedTimeout);
-        }
-        app.disconnected = false;
-        setTimeout(() => {
-            if (socket != null) {
-                socket.send(JSON.stringify({
-                    action: "getstate",
-                    place: window.location.pathname,
-                }));
-            }
-        }, 50);
+    if (disconnectedTimeout != null) {
+        clearTimeout(disconnectedTimeout);
     }
+    app.disconnected = false;
+    setTimeout(() => {
+        if (socket != null) {
+            socket.send(JSON.stringify({
+                action: "getstate",
+                place: window.location.pathname,
+            }));
+        }
+    }, 50);
     try {
         socket.send(JSON.stringify({
             action: "connected"
@@ -315,11 +313,6 @@ app = new Vue({
         resampling: 'linear',
         title: window.location.pathname,
         disconnected: false,
-        isMain: window.location.pathname == '/' ||
-            window.location.pathname == '/faq' || window.location.pathname == '/buy' || window.location.pathname == '/zeptocore',
-        isFaq: window.location.pathname == '/faq',
-        isBuy: window.location.pathname == '/buy',
-        isZeptocore: window.location.pathname == '/zeptocore',
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
         selectedFiles: [], // New property to store selected files
