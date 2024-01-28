@@ -338,19 +338,17 @@ void input_handling() {
     run_keyboard();
 #endif
 
-    // load the new sample if need to
+    // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
-      // these while loops ensure that the audio block is finished
       while (!sync_using_sdcard) {
         sleep_us(250);
       }
-      sleep_ms(1);
       while (sync_using_sdcard) {
         sleep_us(250);
       }
+      sync_using_sdcard = true;
       // measure the time it takes
       uint32_t time_start = time_us_32();
-      printf("[zeptocore] loading new sample variation\n");
       FRESULT fr = f_close(&fil_current);
       if (fr != FR_OK) {
         debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
@@ -379,6 +377,7 @@ void input_handling() {
                          .snd[sel_variation]
                          ->slice_num;
       sel_variation = sel_variation_next;
+      sync_using_sdcard = false;
       printf("[zeptocore] loading new sample variation took %d us\n",
              time_us_32() - time_start);
     }
