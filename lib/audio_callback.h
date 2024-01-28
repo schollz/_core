@@ -68,7 +68,7 @@ void i2s_callback_func() {
 
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
-  if (sync_using_sdcard || !fil_is_open || audio_mute || button_mute ||
+  if (sync_using_sdcard || !fil_is_open || button_mute ||
       reduce_cpu_usage > 0 || (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
       (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
@@ -80,7 +80,6 @@ void i2s_callback_func() {
     if (muted_because_of_sel_variation) {
       if (sel_variation == sel_variation_next) {
         muted_because_of_sel_variation = false;
-        audio_mute = false;
         goto BREAKOUT_OF_MUTE;
       }
     }
@@ -92,9 +91,6 @@ void i2s_callback_func() {
     if (reduce_cpu_usage > 0) {
       // printf("reduce_cpu_usage: %d\n", reduce_cpu_usage);
       reduce_cpu_usage--;
-      if (reduce_cpu_usage == 0) {
-        audio_mute = false;
-      }
     }
     int16_t values[buffer->max_sample_count];
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -713,12 +709,6 @@ BREAKOUT_OF_MUTE:
   give_audio_buffer(ap, buffer);
   give_audio_buffer_time = (time_us_32() - t0);
 
-  if (do_fade_out) {
-    if (!do_open_file_ready) {
-      // printf("[audio_callback] do_fade_out -> audio_mute\n");
-      audio_mute = true;
-    }
-  }
   if (trigger_button_mute) {
     button_mute = true;
     trigger_button_mute = false;
