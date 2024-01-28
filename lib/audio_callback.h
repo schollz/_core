@@ -72,6 +72,9 @@ void i2s_callback_func() {
       reduce_cpu_usage > 0 || (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
       (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
+    audio_was_muted = true;
+    audio_callback_in_mute = true;
+
     envelope_pitch_val = envelope_pitch_val_new;
 
     if (muted_because_of_sel_variation) {
@@ -141,13 +144,15 @@ void i2s_callback_func() {
 
     // audio muted flag to ensure a fade in occurs when
     // unmuted
-    audio_was_muted = true;
     return;
   }
 
 BREAKOUT_OF_MUTE:
+  audio_callback_in_mute = false;
 
   if (playback_restarted) {
+    printf("[audio_callback] playback_restarted\n");
+    playback_restarted = false;
     audio_was_muted = false;
   }
 
@@ -157,6 +162,9 @@ BREAKOUT_OF_MUTE:
   if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD ||
       Gate_is_up(audio_gate) || sel_variation != sel_variation_next) {
     muted_because_of_sel_variation = sel_variation != sel_variation_next;
+    printf("[audio_callback] muted_because_of_sel_variation: %d\n",
+           muted_because_of_sel_variation);
+    printf("[audio_callback] trigger_button_mute: %d\n", trigger_button_mute);
     do_fade_out = true;
   }
 
@@ -338,7 +346,7 @@ BREAKOUT_OF_MUTE:
   }
 
   if (audio_was_muted) {
-    MessageSync_printf(messagesync, "audio unmuted\n");
+    printf("[audio_callback] audio_was_muted, fading in\n");
     audio_was_muted = false;
     do_fade_in = true;
     // if fading in then do not crossfade
@@ -606,8 +614,6 @@ BREAKOUT_OF_MUTE:
               newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
             }
           } else if (do_fade_out) {
-            MessageSync_clear(messagesync);
-            MessageSync_printf(messagesync, "do_fade_out\n");
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
           } else if (do_fade_in) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
