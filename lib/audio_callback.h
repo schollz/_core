@@ -151,7 +151,7 @@ BREAKOUT_OF_MUTE:
   audio_callback_in_mute = false;
 
   if (playback_restarted) {
-    printf("[audio_callback] playback_restarted\n");
+    // printf("[audio_callback] playback_restarted\n");
     playback_restarted = false;
     audio_was_muted = false;
   }
@@ -162,9 +162,10 @@ BREAKOUT_OF_MUTE:
   if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD ||
       Gate_is_up(audio_gate) || sel_variation != sel_variation_next) {
     muted_because_of_sel_variation = sel_variation != sel_variation_next;
-    printf("[audio_callback] muted_because_of_sel_variation: %d\n",
-           muted_because_of_sel_variation);
-    printf("[audio_callback] trigger_button_mute: %d\n", trigger_button_mute);
+    // printf("[audio_callback] muted_because_of_sel_variation: %d\n",
+    //        muted_because_of_sel_variation);
+    // printf("[audio_callback] trigger_button_mute: %d\n",
+    // trigger_button_mute);
     do_fade_out = true;
   }
 
@@ -346,7 +347,7 @@ BREAKOUT_OF_MUTE:
   }
 
   if (audio_was_muted) {
-    printf("[audio_callback] audio_was_muted, fading in\n");
+    // printf("[audio_callback] audio_was_muted, fading in\n");
     audio_was_muted = false;
     do_fade_in = true;
     // if fading in then do not crossfade
@@ -714,7 +715,7 @@ BREAKOUT_OF_MUTE:
 
   if (do_fade_out) {
     if (!do_open_file_ready) {
-      printf("[audio_callback] do_fade_out -> audio_mute\n");
+      // printf("[audio_callback] do_fade_out -> audio_mute\n");
       audio_mute = true;
     }
   }
