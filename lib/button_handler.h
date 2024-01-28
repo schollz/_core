@@ -277,7 +277,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       if (button_mute) {
         printf("[button_handler] button_mute off\n");
         button_mute = false;
-        audio_mute = false;
       } else if (!button_mute) {
         printf("[button_handler] trigger button_mute\n");
         trigger_button_mute = true;
