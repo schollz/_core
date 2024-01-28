@@ -31,7 +31,7 @@ func TestOp1(t *testing.T) {
 	f.SetBPM(120)
 	time.Sleep(500 * time.Millisecond)
 	f.SetOneshot(true)
-	f.SetChannels(2)
+	f.SetChannels(1)
 	time.Sleep(5 * time.Second)
 }
 
@@ -44,6 +44,6 @@ func TestRenoise(t *testing.T) {
 	fmt.Printf("%+v\n", f)
 	time.Sleep(500 * time.Millisecond)
 	f.SetOneshot(false)
-	f.SetChannels(1)
+	f.SetChannels(0)
 	time.Sleep(5 * time.Second)
 }

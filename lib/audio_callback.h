@@ -206,12 +206,14 @@ BREAKOUT_OF_MUTE:
     do_open_file = true;
     do_fade_in = true;
     do_open_file_ready = false;
+    // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
   if (fil_current_change) {
     fil_current_change = false;
     if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
       do_open_file_ready = true;
       do_fade_out = true;
+      // printf("[audio_callback] do_fade_out, readying do_open_file_ready\n");
     }
   }
 

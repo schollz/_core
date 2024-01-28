@@ -126,6 +126,8 @@ uint8_t SampleInfo_getSliceType(SampleInfo *si, uint16_t i) {
   return si->slice_type[i];
 }
 
+uint8_t SampleInfo_getNumChannels(SampleInfo *si) { return si->num_channels; }
+
 int SampleInfo_writeToDisk(SampleInfo *si) {
   FILE *file = fopen("sampleinfo.bin", "wb");
   if (file == NULL) {

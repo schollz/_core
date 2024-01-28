@@ -351,6 +351,17 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			} else {
 				f.SetOneshot(message.Boolean)
 			}
+		} else if message.Action == "setchannels" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				if message.Boolean {
+					f.SetChannels(1) // stereo
+				} else {
+					f.SetChannels(0) // mono
+				}
+			}
 		} else if message.Action == "settempomatch" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {

@@ -336,7 +336,7 @@ app = new Vue({
             for (var i = 0; i < this.banks.length; i++) {
                 // loop through all files in the bank
                 for (var j = 0; j < this.banks[i].files.length; j++) {
-                    total += this.banks[i].files[j].Duration * 44100 * 2 * 10;
+                    total += this.banks[i].files[j].Duration * 44100 * 2 * 10 * (1 + this.banks[i].files[j].Channels);
                 }
             }
             return total;
@@ -551,6 +551,17 @@ app = new Vue({
                     number: this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback,
                 }));
             }, 100);
+        },
+        updateChannels() {
+            setTimeout(() => {
+                // update the server file
+                socket.send(JSON.stringify({
+                    action: "setchannels",
+                    filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                    boolean: this.banks[this.selectedBank].files[this.selectedFile].Channels,
+                }));
+            }, 100);
+
         },
         updateOneshot() {
             setTimeout(() => {
