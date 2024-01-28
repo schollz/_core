@@ -34,6 +34,7 @@ const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
 bool do_open_file_ready = false;
+bool muted_because_of_sel_variation = false;
 
 void update_filter_from_envelope(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
@@ -72,6 +73,14 @@ void i2s_callback_func() {
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
       (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
     envelope_pitch_val = envelope_pitch_val_new;
+
+    if (muted_because_of_sel_variation) {
+      if (sel_variation == sel_variation_next) {
+        muted_because_of_sel_variation = false;
+        audio_mute = false;
+        goto BREAKOUT_OF_MUTE;
+      }
+    }
 
     // continue to update the gate
     Gate_update(audio_gate, sf->bpm_tempo);
@@ -136,6 +145,8 @@ void i2s_callback_func() {
     return;
   }
 
+BREAKOUT_OF_MUTE:
+
   if (playback_restarted) {
     audio_was_muted = false;
   }
@@ -144,7 +155,8 @@ void i2s_callback_func() {
   envelope_pitch_val = envelope_pitch_val_new;
 
   if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD ||
-      Gate_is_up(audio_gate)) {
+      Gate_is_up(audio_gate) || sel_variation != sel_variation_next) {
+    muted_because_of_sel_variation = sel_variation != sel_variation_next;
     do_fade_out = true;
   }
 
@@ -326,11 +338,13 @@ void i2s_callback_func() {
   }
 
   if (audio_was_muted) {
+    MessageSync_printf(messagesync, "audio unmuted\n");
     audio_was_muted = false;
     do_fade_in = true;
     // if fading in then do not crossfade
     do_crossfade = false;
   }
+
   // cpu_usage_flag is written when cpu usage is consistently high
   // in which case it will fade out audio and keep it muted for a little
   // bit to reduce cpu usage
@@ -531,14 +545,8 @@ void i2s_callback_func() {
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
           }
         } else if (do_fade_out) {
-          // if (i == 0) {
-          //   printf("[audio_callback] do_fade_out head: %d\n", head);
-          // }
           newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
         } else if (do_fade_in) {
-          // if (i == 0) {
-          //   printf("[audio_callback] do_fade_in head: %d\n", head);
-          // }
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
         }
 
@@ -591,13 +599,15 @@ void i2s_callback_func() {
             samples[i * 2 + channel] = 0;
           }
 
-          if (do_crossfade) {
-            if (head == 0 && !do_fade_out) {
+          if (do_crossfade && !do_fade_in) {
+            if (head == 0) {
               newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
-            } else if (!do_fade_in) {
+            } else {
               newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
             }
           } else if (do_fade_out) {
+            MessageSync_clear(messagesync);
+            MessageSync_printf(messagesync, "do_fade_out\n");
             newArray[i] = crossfade3_out(newArray[i], i, CROSSFADE3_COS);
           } else if (do_fade_in) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
@@ -698,7 +708,7 @@ void i2s_callback_func() {
 
   if (do_fade_out) {
     if (!do_open_file_ready) {
-      // printf("[audio_callback] do_fade_out -> audio_mute\n");
+      printf("[audio_callback] do_fade_out -> audio_mute\n");
       audio_mute = true;
     }
   }
