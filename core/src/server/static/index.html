@@ -53,15 +53,15 @@
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a>
             </h1>
-            &nbsp; <a href="#" id="show-dialog" v-if="!isMain"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" class="feather feather-copy">
+            &nbsp; <a href="#" id="show-dialog"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" class="feather feather-copy">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg></a>
-            <a href="https://github.com/schollz/_core/releases/VERSION_CURRENT" target="_blank" class="hideIfMobile"
+            <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank" class="hideIfMobile"
                 id="floater">firmware
-                VERSION_CURRENT</a>
+                [[.VersionCurrent]]</a>
 
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
@@ -90,13 +90,15 @@
                             target="_blank">click here to let me know</a>.
                     </p>
                 </div>
-                <div v-if="!isMain && !disconnected">
+                [[ if .IsUpload ]]
+                <div v-if="!disconnected">
                     <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
                     </h2>
                 </div>
+                [[ end ]]
 
-
-                <div v-if="isMain && isBuy" class="help-banner faq"
+                [[ if .IsBuy ]]
+                <div class="help-banner faq"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background); margin-top:4em; margin-bottom:4em;">
                     <h2>Buy <a href="#" @click.prevent="isBuy=false" style="top: 2px;
                             position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -105,7 +107,177 @@
                                 <polyline points="9 14 4 9 9 4"></polyline>
                                 <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
                             </svg></a></h2>
-                    SHOPIFY_DATA
+                    <div id='product-component-1706310126407'></div>
+                    <script type="text/javascript">
+                        /*<![CDATA[*/
+                        (function () {
+                            var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+                            if (window.ShopifyBuy) {
+                                if (window.ShopifyBuy.UI) {
+                                    ShopifyBuyInit();
+                                } else {
+                                    loadScript();
+                                }
+                            } else {
+                                loadScript();
+                            }
+                            function loadScript() {
+                                var script = document.createElement('script');
+                                script.async = true;
+                                script.src = scriptURL;
+                                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(script);
+                                script.onload = ShopifyBuyInit;
+                            }
+                            function ShopifyBuyInit() {
+                                var client = ShopifyBuy.buildClient({
+                                    domain: 'infinitedigits.myshopify.com',
+                                    storefrontAccessToken: '9e045e3ce0fbee0fb64ebbbce133b648',
+                                });
+                                ShopifyBuy.UI.onReady(client).then(function (ui) {
+                                    ui.createComponent('product', {
+                                        id: '8831942492443',
+                                        node: document.getElementById('product-component-1706310126407'),
+                                        moneyFormat: '%24%7B%7Bamount%7D%7D',
+                                        options: {
+                                            "product": {
+                                                "styles": {
+                                                    "product": {
+                                                        "@media (min-width: 601px)": {
+                                                            "max-width": "calc(25% - 20px)",
+                                                            "margin-left": "20px",
+                                                            "margin-bottom": "50px"
+                                                        }
+                                                    },
+                                                    "title": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "button": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "price": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "compareAt": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "unitPrice": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    }
+                                                },
+                                                "contents": {
+                                                    "button": false,
+                                                    "buttonWithQuantity": true
+                                                },
+                                                "text": {
+                                                    "button": "Add to cart"
+                                                },
+                                                "googleFonts": [
+                                                    "Roboto"
+                                                ]
+                                            },
+                                            "productSet": {
+                                                "styles": {
+                                                    "products": {
+                                                        "@media (min-width: 601px)": {
+                                                            "margin-left": "-20px"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "modalProduct": {
+                                                "contents": {
+                                                    "img": false,
+                                                    "imgWithCarousel": true,
+                                                    "button": false,
+                                                    "buttonWithQuantity": true
+                                                },
+                                                "styles": {
+                                                    "product": {
+                                                        "@media (min-width: 601px)": {
+                                                            "max-width": "100%",
+                                                            "margin-left": "0px",
+                                                            "margin-bottom": "0px"
+                                                        }
+                                                    },
+                                                    "button": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "title": {
+                                                        "font-family": "Helvetica Neue, sans-serif",
+                                                        "font-weight": "bold",
+                                                        "font-size": "26px",
+                                                        "color": "#4c4c4c"
+                                                    },
+                                                    "price": {
+                                                        "font-family": "Helvetica Neue, sans-serif",
+                                                        "font-weight": "normal",
+                                                        "font-size": "18px",
+                                                        "color": "#4c4c4c"
+                                                    },
+                                                    "compareAt": {
+                                                        "font-family": "Helvetica Neue, sans-serif",
+                                                        "font-weight": "normal",
+                                                        "font-size": "15.299999999999999px",
+                                                        "color": "#4c4c4c"
+                                                    },
+                                                    "unitPrice": {
+                                                        "font-family": "Helvetica Neue, sans-serif",
+                                                        "font-weight": "normal",
+                                                        "font-size": "15.299999999999999px",
+                                                        "color": "#4c4c4c"
+                                                    }
+                                                },
+                                                "googleFonts": [
+                                                    "Roboto"
+                                                ],
+                                                "text": {
+                                                    "button": "Buy"
+                                                }
+                                            },
+                                            "option": {
+                                                "styles": {
+                                                    "label": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    },
+                                                    "select": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    }
+                                                },
+                                                "googleFonts": [
+                                                    "Roboto"
+                                                ]
+                                            },
+                                            "cart": {
+                                                "styles": {
+                                                    "button": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    }
+                                                },
+                                                "text": {
+                                                    "total": "Subtotal",
+                                                    "button": "Checkout"
+                                                },
+                                                "googleFonts": [
+                                                    "Roboto"
+                                                ]
+                                            },
+                                            "toggle": {
+                                                "styles": {
+                                                    "toggle": {
+                                                        "font-family": "Roboto, sans-serif"
+                                                    }
+                                                },
+                                                "googleFonts": [
+                                                    "Roboto"
+                                                ]
+                                            }
+                                        },
+                                    });
+                                });
+                            }
+                        })();
+                        /*]]>*/
+                    </script>
                     <!-- <details>
                         <summary>My zeptocore suddenly stops and the power is fine, what is happening?</summary>
                         <p>This is likely an overheating issue, which I've only encountered when using the external
@@ -113,16 +285,18 @@
                             get the most effects as possible, but the external clock can increase the heat too much and
                             causes the zeptocore to shut off. A reliable fix for this is (if you want to use the
                             clocking) is to <a
-                                href="https://github.com/schollz/_core/releases/download/v0.0.16/zeptocore_nooverclock.uf2">download
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/zeptocore_nooverclock.uf2">download
                                 the firmware without overclocking</a>.
                         </p>
                     </details> -->
                 </div>
+                [[ end]]
 
 
-                <div v-if="isMain && isZeptocore" class="help-banner faq"
+                [[ if .IsZeptocore ]]
+                <div class="help-banner faq"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background); margin-top:2em; margin-bottom:2em;">
-                    <h2>How do I... <a href="#" @click.prevent="isFaq=false" style="top: 2px;
+                    <h2>How do I... <a href="/" style="top: 2px;
                             position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left">
@@ -153,10 +327,12 @@
                         <p>Hold <strong>B</strong> and then press <strong>D</strong>.</p>
                     </details>
                 </div>
+                [[ end ]]
 
-                <div v-if="isMain && isFaq" class="help-banner faq"
+                [[if .IsFaq]]
+                <div class="help-banner faq"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
-                    <h2>FAQ <a href="#" @click.prevent="isFaq=false" style="top: 2px;
+                    <h2>FAQ <a href="/" style="top: 2px;
                             position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left">
@@ -167,13 +343,14 @@
                         <summary>Can I run this tool on my computer offline?</summary>
                         <p>Yes! You can download this and use it
                             locally for <a
-                                href="https://github.com/schollz/_core/releases/download/v0.0.16/core_windows.exe">Windows</a>,
-                            <a href="https://github.com/schollz/_core/releases/download/v0.0.16/core_macos_aarch64">Mac
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/core_windows.exe">Windows</a>,
+                            <a
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/core_macos_aarch64">Mac
                                 OS (M1)</a>, <a
-                                href="https://github.com/schollz/_core/releases/download/v0.0.16/core_macos_amd64">Mac
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/core_macos_amd64">Mac
                                 OS (x86_64)</a>,
                             or <a
-                                href="https://github.com/schollz/_core/releases/download/v0.0.16/core_linux_amd64">Linux</a>.
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/core_linux_amd64">Linux</a>.
                         </p>
                     </details>
                     <!-- <details>
@@ -183,13 +360,15 @@
                             get the most effects as possible, but the external clock can increase the heat too much and
                             causes the zeptocore to shut off. A reliable fix for this is (if you want to use the
                             clocking) is to <a
-                                href="https://github.com/schollz/_core/releases/download/v0.0.16/zeptocore_nooverclock.uf2">download
+                                href="https://github.com/schollz/_core/releases/download/[[.VersionCurrent]]/zeptocore_nooverclock.uf2">download
                                 the firmware without overclocking</a>.
                         </p>
                     </details> -->
                 </div>
+                [[end]]
 
-                <div v-if="isMain && !isFaq && !isBuy && !isZeptocore" class="help-banner"
+                [[ if .IsMain ]]
+                <div class="help-banner"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
@@ -206,8 +385,9 @@
 
                     </p>
                     <p>
-                        <em>or</em> click one of these randomly generated URLs: <a href="/GENURL1">GENURL1</a>, <a
-                            href="/GENURL2">GENURL2</a>.
+                        <em>or</em> click one of these randomly generated URLs: <a
+                            href="/[[.GenURL1]]">[[.GenURL1]]</a>,
+                        <a href="/[[.GenURL2]]">[[.GenURL2]]</a>.
                     </p>
                     <h3>Questions asked, <a href="/faq">questions answered here</a>.</h3>
 
@@ -286,15 +466,17 @@
                         <br>
                     </div>
                 </div>
+                [[ end ]]
 
-                <div class=" file-uploader" v-if="!disconnected && !isMain">
+                [[ if .IsUpload]]
+                <div class=" file-uploader" v-if="!disconnected">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
                     <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
                         Drop audio files (mp3, wav, flac, xrni, aif) or click to select
                     </div>
                 </div>
-                <div v-if=" (disconnected && !isMain)"
+                <div v-if=" (disconnected)"
                     style="height: 100%; display: flex; align-items: center; justify-content: center;">
                     <svg width="300px" height="300px" viewBox="0 0 187.3 93.7" preserveAspectRatio="xMidYMid meet"
                         style="margin: 0 auto; text-align: center;">
@@ -408,10 +590,13 @@
                         </p>
                     </div>
                 </div>
+
+                [[end ]]
             </div>
         </main>
         <footer>
-            <form id="downloadForm" @submit.prevent="submitForm" v-if="!isMain">
+            [[ if .IsUpload ]]
+            <form id="downloadForm" @submit.prevent="submitForm">
                 <div class="footer-row">
                     <!-- <div class="footer-item">
                         <label for=" oversampling">Oversampling:</label>
@@ -447,6 +632,7 @@
                     </div>
                 </div>
             </form>
+            [[ end ]]
         </footer>
         <div id="cookieConsentContainer" class="cookie-consent-container">
             <div class="content-container">
@@ -483,11 +669,9 @@
                 localStorage.setItem('cookieConsent', 'true');
                 document.getElementById('cookieConsentContainer').style.display = 'none';
             };
-            if (!app.isMain) {
-                document.getElementById("show-dialog").addEventListener("click", () => {
-                    document.getElementById("dialog").showModal();
-                });
-            }
+            document.getElementById("show-dialog").addEventListener("click", () => {
+                document.getElementById("dialog").showModal();
+            });
 
             document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
