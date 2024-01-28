@@ -390,7 +390,6 @@ int main() {
   // sf->fx_active[FX_SHAPER] = true;
 
 #endif
-  // audio_mute = true;
 
   // blocking
   input_handling();
