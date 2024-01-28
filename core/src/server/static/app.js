@@ -315,9 +315,11 @@ app = new Vue({
         resampling: 'linear',
         title: window.location.pathname,
         disconnected: false,
-        isMain: window.location.pathname == '/' || window.location.pathname == '/faq' || window.location.pathname == '/buy',
+        isMain: window.location.pathname == '/' ||
+            window.location.pathname == '/faq' || window.location.pathname == '/buy' || window.location.pathname == '/zeptocore',
         isFaq: window.location.pathname == '/faq',
         isBuy: window.location.pathname == '/buy',
+        isZeptocore: window.location.pathname == '/zeptocore',
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
         selectedFiles: [], // New property to store selected files

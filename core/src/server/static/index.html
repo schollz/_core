@@ -119,6 +119,41 @@
                     </details> -->
                 </div>
 
+
+                <div v-if="isMain && isZeptocore" class="help-banner faq"
+                    style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background); margin-top:2em; margin-bottom:2em;">
+                    <h2>How do I... <a href="#" @click.prevent="isFaq=false" style="top: 2px;
+                            position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left">
+                                <polyline points="9 14 4 9 9 4"></polyline>
+                                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                            </svg></a></h2>
+                    <details>
+                        <summary>Change the volume?</summary>
+                        <p>Press <strong>A</strong> and turn knob <strong>Z</strong>.</p>
+                    </details>
+                    <details>
+                        <summary>Change the tempo?</summary>
+                        <p>Press <strong>A</strong> and turn knob <strong>X</strong>.</p>
+                        <p>Or hold <strong>A</strong> and tap <strong>B</strong> to tap in a tempo.</p>
+                    </details>
+                    <details>
+                        <summary>Change the sample?</summary>
+                        <p>Hold <strong>B</strong> and then press <strong>1-16</strong> to select a bank, and then
+                            (while continuing to hold <strong>B</strong>), press <strong>1-16</strong> to select the
+                            sample.</p>
+                    </details>
+                    <details>
+                        <summary>Mute?</summary>
+                        <p>Hold <strong>B</strong> and then press <strong>C</strong>.</p>
+                    </details>
+                    <details>
+                        <summary>Stop and start playback?</summary>
+                        <p>Hold <strong>B</strong> and then press <strong>D</strong>.</p>
+                    </details>
+                </div>
+
                 <div v-if="isMain && isFaq" class="help-banner faq"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>FAQ <a href="#" @click.prevent="isFaq=false" style="top: 2px;
@@ -154,7 +189,7 @@
                     </details> -->
                 </div>
 
-                <div v-if="isMain && !isFaq && !isBuy" class="help-banner"
+                <div v-if="isMain && !isFaq && !isBuy && !isZeptocore" class="help-banner"
                     style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">

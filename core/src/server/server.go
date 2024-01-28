@@ -124,7 +124,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Expires", "0")
 
 		filename := r.URL.Path[1:]
-		if filename == "" || !strings.Contains(filename, ".") || filename == "buy" || filename == "faq" {
+		if filename == "" || !strings.Contains(filename, ".") || filename == "buy" || filename == "faq" || filename == "zeptocore" {
 			filename = "static/index.html"
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
