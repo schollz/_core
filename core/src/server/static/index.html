@@ -532,6 +532,26 @@
                             Down</button>
                     </span>
                     <p>
+                        <input type="checkbox" id="channels" @click="updateChannels"
+                            v-model="banks[selectedBank].files[selectedFile].Channels">
+                        <label for="channels">Channels: <span
+                                v-if="banks[selectedBank].files[selectedFile].Channels>0">stereo</span>
+                            <span v-else>mono</span></label>
+                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==0"
+                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="#8d7ace" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==1"
+                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="#8d7ace" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
+                            <circle cx="16" cy="12" r="10"></circle>
+                            <circle cx="8" cy="12" r="10"></circle>
+                        </svg>
+                    </p>
+                    <p>
                         <input type="checkbox" id="oneshot" @click="updateOneshot"
                             v-model="banks[selectedBank].files[selectedFile].OneShot">
                         <label for="oneshot">One-shot: <span
@@ -606,13 +626,13 @@
                             <option value="4x">4x</option>
                         </select>
                     </div> -->
-                    <div class="footer-item">
+                    <!-- <div class="footer-item">
                         <label for="stereoMono">&nbsp;Mono/Stereo:</label>
                         <select id="stereoMono" v-model="stereoMono">
                             <option value="stereo">Stereo</option>
                             <option value="mono">Mono</option>
                         </select>
-                    </div>
+                    </div> -->
                     <!-- <div class="footer-item">
                         <label for="resampling">Resampling:</label>
                         <select id="resampling" v-model="resampling">

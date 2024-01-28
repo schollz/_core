@@ -45,11 +45,6 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		oversampling = 4
 	}
 
-	channels := 1
-	if data.StereoMono == "stereo" {
-		channels = 2
-	}
-
 	_, zipFilename = filepath.Split(pathToStorage)
 
 	// create a temporary folder to store the files
@@ -75,7 +70,6 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 				return
 			}
 			f.SetOversampling(oversampling)
-			f.SetChannels(channels)
 		}
 	}
 	time.Sleep(200 * time.Millisecond)
@@ -107,10 +101,10 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 
 	// copy files
 	for i, bank := range data.Banks {
-		log.Tracef("bank %d has %d files", i, len(bank.Files))
 		if len(bank.Files) == 0 {
 			continue
 		}
+		log.Tracef("bank %d has %d files", i, len(bank.Files))
 		bankFolder := path.Join(zipStorage, zipFilename, fmt.Sprintf("bank%d", i))
 		err = os.MkdirAll(bankFolder, 0777)
 		if err != nil {

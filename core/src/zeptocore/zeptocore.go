@@ -37,7 +37,7 @@ type File struct {
 	SliceType     []int     // 0 = normal, 1 = kick
 	TempoMatch    bool
 	OneShot       bool
-	Channels      int // 1 if mono, 2 if stereo
+	Channels      int // 0 if mono, 1 if stereo
 	Oversampling  int // 1, 2, or 4
 	SpliceTrigger int // 0, 16, 32, 48, 64, 80, 96, 112, 128
 	// from audio_callaback.h:
@@ -74,6 +74,14 @@ func Get(pathToOriginal string) (f File, err error) {
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
+	// get the number of channels
+	_, channels, _, _ := sox.Info(pathToOriginal)
+	channels = channels - 1
+	if channels < 0 {
+		channels = 0
+	} else if channels > 1 {
+		channels = 1
+	}
 	// create new file
 	f = File{
 		Filename:      filename,
@@ -83,7 +91,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		debounceRegen: debounce.New(100 * time.Millisecond),
 		OneShot:       false,
 		TempoMatch:    true,
-		Channels:      1,
+		Channels:      channels,
 		Oversampling:  1,
 	}
 	var errSliceDetect error
@@ -217,7 +225,7 @@ func (f File) Regenerate() {
 
 		// create the 0 file (original)
 		fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
-		err := processSound(f.PathToAudio, fname0, f.Channels, f.Oversampling)
+		err := processSound(f.PathToAudio, fname0, f.Channels+1, f.Oversampling)
 		if err != nil {
 			log.Errorf("could not process sound: %s %s", f.PathToAudio, err.Error())
 			return
@@ -231,7 +239,7 @@ func (f File) Regenerate() {
 
 		log.Tracef("slices: %+v", f.SliceStart)
 		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
-		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels, f.Oversampling)
+		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels+1, f.Oversampling)
 		if err != nil {
 			log.Error(err)
 		}
@@ -329,6 +337,11 @@ func (f *File) SetOversampling(oversampling int) {
 }
 
 func (f *File) SetChannels(channels int) {
+	if channels < 0 {
+		channels = 0
+	} else if channels > 1 {
+		channels = 1
+	}
 	different := f.Channels != channels
 	f.Channels = channels
 	go func() {
@@ -424,9 +437,9 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		log.Error(err)
 		return
 	}
-	totalSamples := float64(finfo.Size()-44) / float64(f.Channels) / 2
+	totalSamples := float64(finfo.Size()-44) / float64(f.Channels+1) / 2
 	totalSamples = totalSamples - 22050*2*float64(f.Oversampling)
-	fsize := totalSamples * float64(f.Channels) * 2 // total size excluding padding = totalSamples channels x 2 bytes
+	fsize := totalSamples * float64(f.Channels+1) * 2 // total size excluding padding = totalSamples channels x 2 bytes
 	sliceNum := len(f.SliceStart)
 	if sliceNum == 0 {
 		f.SliceStart = []float64{0.0}
@@ -463,7 +476,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		C.uchar(f.SpliceTrigger),
 		C.uchar(BPMTempoMatch),
 		C.uchar(f.Oversampling-1),
-		C.uchar(f.Channels-1),
+		C.uchar(f.Channels),
 		C.uint(sliceNum),
 		sliceStartPtr,
 		sliceStopPtr,
@@ -494,6 +507,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// for i := range slicesStart {
 	// 	fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
 	// }
+	log.Infof("SampleInfo_getNumChannels: %d", C.SampleInfo_getNumChannels(cStruct2))
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
