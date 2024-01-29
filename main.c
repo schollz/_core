@@ -45,6 +45,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     do_restart_playback = false;
     playback_restarted = true;
     bpm_timer_counter = -1;
+    bpm_timer_counter_last = bpm_timer_counter;
     beat_total = -1;
     key_jump_debounce = 0;
     dub_step_break = -1;
@@ -118,35 +119,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         retrig_first = false;
       }
     }
-    // } else if (dub_step_break > -1) {
-    //   if (bpm_timer_counter % (192 * dub_step_numerator[dub_step_divider] /
-    //                            dub_step_denominator[dub_step_divider]) ==
-    //       0) {
-    //     dub_step_break++;
-    //     if (dub_step_break == dub_step_steps[dub_step_divider]) {
-    //       dub_step_divider++;
-    //       dub_step_break = 0;
-    //       if (dub_step_divider == 5) {
-    //         dub_step_break = -1;
-    //       }
-    //     }
-    //     beat_current = dub_step_beat;
-    //     printf("[dub_step_break] beat_current: %d\n", beat_current);
-    //     // debounce a little bit before going into the mode
-    //     if (dub_step_divider > 0 || dub_step_break > 1) {
-    //       // printf("dub: %d %d %d\n", dub_step_break, dub_step_divider,
-    //       //        bpm_timer_counter);
-    //       do_update_phase_from_beat_current();
-    //       printf("%d %ld\n", phase_new, time_us_32());
-    //     }
-    //   }
-  } else if (toggle_chain_play) {
-    // int8_t beat = Chain_emit(chain, bpm_timer_counter);
-    // if (beat > -1) {
-    //   printf("[toggle_chain_play] beat: %d\n", beat);
-    //   beat_current = beat;
-    //   do_update_phase_from_beat_current();
-    // }
   } else if (sequencerhandler[0].playing &&
              banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
@@ -168,14 +140,54 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
 
+    bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
+                                                       ->sample[sel_sample_cur]
+                                                       .snd[sel_variation]
+                                                       ->splice_trigger)) == 0;
+    if (banks[sel_bank_cur]
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->splice_variable > 0) {
+      // calculate the size of this slice in pulses
+      float num_slices = (float)(banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[sel_variation]
+                                     ->slice_stop[banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[sel_variation]
+                                                      ->slice_current] -
+                                 banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[sel_variation]
+                                     ->slice_start[banks[sel_bank_cur]
+                                                       ->sample[sel_sample_cur]
+                                                       .snd[sel_variation]
+                                                       ->slice_current]);
+      num_slices = round(
+          num_slices /
+          (88200.0 * (banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->num_channels +
+                      1)) *
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm /
+          60.0 * 192.0);
+      do_splice_trigger =
+          (bpm_timer_counter - bpm_timer_counter_last) >= num_slices;
+      if (do_splice_trigger) {
+        printf("do_splice_trigger: %d %2.0f %d %2.0f\n",
+               banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[sel_variation]
+                   ->slice_current,
+               num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
+        bpm_timer_counter_last = bpm_timer_counter;
+      }
+    }
+
     if (sequencerhandler[0].playing) {
       // already done
-    } else if ((clock_in_do && clock_in_ready) ||
-               bpm_timer_counter % (banks[sel_bank_cur]
-                                        ->sample[sel_sample_cur]
-                                        .snd[sel_variation]
-                                        ->splice_trigger) ==
-                   0) {
+    } else if ((clock_in_do && clock_in_ready) || do_splice_trigger) {
       clock_in_ready = false;
       mem_use = false;
       // keep to the beat
