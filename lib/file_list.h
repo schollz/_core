@@ -46,10 +46,7 @@ SampleInfo *SampleInfo_load(const char *fname) {
   si = (SampleInfo *)malloc(sizeof(SampleInfo));
 
   // Size
-  fr = f_read(
-      &fil, si,
-      sizeof(SampleInfo) - (2 * sizeof(int32_t *) - (1 * sizeof(uint8_t *))),
-      &bytes_read);
+  fr = f_read(&fil, si, sizeof(SampleInfo), &bytes_read);
   if (fr != FR_OK) {
     printf("[sampleinfo] %s\n", FRESULT_str(fr));
   }

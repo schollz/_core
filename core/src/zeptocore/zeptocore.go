@@ -352,6 +352,17 @@ func (f *File) SetChannels(channels int) {
 	}()
 }
 
+func (f *File) SetSpliceTrigger(spliceTrigger int) {
+	different := f.SpliceTrigger != spliceTrigger
+	f.SpliceTrigger = spliceTrigger
+	go func() {
+		f.Save()
+		if different {
+			f.Regenerate()
+		}
+	}()
+}
+
 func (f *File) SetOneshot(oneshot bool) {
 	different := f.OneShot != oneshot
 	f.OneShot = oneshot
@@ -455,15 +466,16 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 		slicesType = append(slicesType, byte(f.SliceType[i]))
 	}
-
+	log.Infof("slicesStart: %+v", slicesStart)
+	log.Infof("slicesEnd: %+v", slicesEnd)
 	BPMTempoMatch := uint8(0)
 	if f.TempoMatch {
 		BPMTempoMatch = 1
 	}
 
-	f.SpliceTrigger = 1
+	oneshot := 0
 	if f.OneShot {
-		f.SpliceTrigger = 0
+		oneshot = 1
 	}
 
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
@@ -473,7 +485,8 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		C.uint(fsize),
 		C.uint(f.BPM),
 		C.uchar(f.SplicePlayback),
-		C.uchar(f.SpliceTrigger),
+		C.uchar(oneshot),
+		C.ushort(f.SpliceTrigger),
 		C.uchar(BPMTempoMatch),
 		C.uchar(f.Oversampling-1),
 		C.uchar(f.Channels),
@@ -501,12 +514,13 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	// for i := range slicesStart {
 	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
 	// }
-	// for i := range slicesStart {
-	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
-	// }
-	// for i := range slicesStart {
-	// 	fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
-	// }
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
+	}
+	for i := range slicesStart {
+		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
+	}
+	log.Infof("SampleInfo_getSpliceTrigger: %d", C.SampleInfo_getSpliceTrigger(cStruct2))
 	log.Infof("SampleInfo_getNumChannels: %d", C.SampleInfo_getNumChannels(cStruct2))
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")

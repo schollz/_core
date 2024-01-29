@@ -296,6 +296,7 @@ window.addEventListener('load', (event) => {
 app = new Vue({
     el: '#app',
     data: {
+        slicesPerBeat: 1,
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
         selectedFile: null,
@@ -328,6 +329,7 @@ app = new Vue({
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
+        slicesPerBeat: 'updateSlicesPerBeat',
     },
     computed: {
         diskUsage: function () {
@@ -343,6 +345,16 @@ app = new Vue({
         }
     },
     methods: {
+        updateSlicesPerBeat() {
+            this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger = Math.round(2 * 96 / this.slicesPerBeat);
+            console.log('updateSlicesPerBeat()', this.slicesPerBeat, this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger);
+
+            socket.send(JSON.stringify({
+                action: "setsplicetrigger",
+                filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                number: this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger,
+            }));
+        },
         newURL(evt) {
             var data = evt.target.value;
             window.location.href = window.location.href + data;
@@ -413,6 +425,11 @@ app = new Vue({
                     });
 
                 }
+                const bpm = this.banks[this.selectedBank].files[this.selectedFile].BPM;
+                const lengthPerBeat = 60 / bpm;
+                const lengthPerSliceCurrent = regionDuration;
+                console.log('slices per beat', lengthPerBeat / lengthPerSliceCurrent);
+                app.slicesPerBeat = lengthPerBeat / lengthPerSliceCurrent;
             }
 
         },
