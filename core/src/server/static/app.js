@@ -414,16 +414,16 @@ app = new Vue({
             }
         },
         createRegionsAutomatically() {
-            this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = true;
-            setTimeout(() => {
-                this.updateSpliceVariable();
-            }, 200);
 
             socket.send(JSON.stringify({
                 action: "onsetdetect",
                 filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
                 number: parseInt(document.getElementById("onsetSlices").value),
             }));
+            setTimeout(() => {
+                this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = true;
+                this.updateSpliceVariable();
+            }, 350);
 
         },
         createRegionsEvenly() {

@@ -463,23 +463,25 @@ void button_handler(ButtonMatrix *bm) {
     if (key_pressed_num == 3) {
       if (key_pressed[0] == 8 && key_pressed[1] == 9 && key_pressed[2] == 8) {
         // toggle one shot mode
-        if (!banks[sel_bank_cur]
-                 ->sample[sel_sample_cur]
-                 .snd[sel_variation]
-                 ->one_shot) {
+        if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[sel_variation]
+                ->one_shot) {
+          printf("toggle one shot OFF ");
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->one_shot = true;
+              ->one_shot = false;
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
               ->play_mode = PLAY_NORMAL;
         } else {
+          printf("toggle one shot ON ");
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->one_shot = false;
+              ->one_shot = true;
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
@@ -507,6 +509,16 @@ void button_handler(ButtonMatrix *bm) {
                                       ->sample[sel_sample_cur]
                                       .snd[sel_variation]
                                       ->play_mode);
+      } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
+                 key_pressed[2] == 4) {
+        printf("toggling variable splice\n");
+        banks[sel_bank_cur]
+            ->sample[sel_sample_cur]
+            .snd[sel_variation]
+            ->splice_variable = !banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[sel_variation]
+                                     ->splice_variable;
       }
     } else if (key_pressed_num == 4) {
       if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
