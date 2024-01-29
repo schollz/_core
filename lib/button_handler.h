@@ -463,14 +463,14 @@ void button_handler(ButtonMatrix *bm) {
     if (key_pressed_num == 3) {
       if (key_pressed[0] == 8 && key_pressed[1] == 9 && key_pressed[2] == 8) {
         // toggle one shot mode
-        if (banks[sel_bank_cur]
-                ->sample[sel_sample_cur]
-                .snd[sel_variation]
-                ->splice_trigger == 0) {
+        if (!banks[sel_bank_cur]
+                 ->sample[sel_sample_cur]
+                 .snd[sel_variation]
+                 ->one_shot) {
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->splice_trigger = 1;
+              ->one_shot = true;
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
@@ -479,7 +479,7 @@ void button_handler(ButtonMatrix *bm) {
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]
-              ->splice_trigger = 0;
+              ->one_shot = false;
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[sel_variation]

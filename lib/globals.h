@@ -314,7 +314,16 @@ void do_update_phase_from_beat_current() {
   repeating_timer_callback_taptempo = !repeating_timer_callback_taptempo;
 #endif
 
-  // printf("do_update_phase_from_beat_current: %d\n", phase_new);
+  // printf("[globals] do_update_phase_from_beat_current: %d, %d %d [%d, %d]\n",
+  //        beat_current, slice, phase_new,
+  //        banks[sel_bank_cur]
+  //            ->sample[sel_sample_cur]
+  //            .snd[sel_variation]
+  //            ->slice_start[slice],
+  //        banks[sel_bank_cur]
+  //            ->sample[sel_sample_cur]
+  //            .snd[sel_variation]
+  //            ->slice_stop[slice]);
 }
 
 void key_do_jump(uint8_t beat) {
@@ -326,7 +335,7 @@ void key_do_jump(uint8_t beat) {
                     bpm_timer_counter);
     }
     key_jump_debounce = 1;
-    beat_current = (beat_current / 16) * 16 + beat;
+    beat_current = floor(beat_current / 16) * 16 + beat;
     retrig_pitch = PITCH_VAL_MID;
     do_update_phase_from_beat_current();
   }
