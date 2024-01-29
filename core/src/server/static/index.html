@@ -580,8 +580,10 @@
                             <span v-else>off</span></label>
                     </p>
                     <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
-                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM">
+                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM"
+                            @change.prevent="updateBPM($event)">
                     </p>
+
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p style="display: flex; align-items: center;">
@@ -594,19 +596,37 @@
                         </p>
                         <p>
                             <button @click="deleteRegion" style="margin-left:0;">Delete selected
-                                region</button>
+                                slice</button>
                             <button @click="deleteAllRegions" style="margin-left:0;">Delete all
-                                regions</button>
+                                slices</button>
                         </p>
                         <p>
                             <label>
-                                Number of regions: <input id="onsetSlices" type="number" min="1" max="127" value=16
+                                Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
                                     style="width:3em;" />
                             </label>
                             <button @click="createRegionsEvenly" style="margin-left:0;">Create
                                 evenly</button>
                             <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
                                 transients</button>
+                        </p>
+
+                        <p>
+                            <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
+                                v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
+                            <label for="variablesplices">Variable: <span
+                                    v-if="banks[selectedBank].files[selectedFile].SpliceVariable">on</span>
+                                <span v-else>off</span></label>&nbsp;
+                            <label
+                                v-bind:class="(banks[selectedBank].files[selectedFile].SpliceVariable==true)?'grayed':'not-grayed'">
+                                Pulses per slice <small>(192 ppqn)</small>: <input
+                                    :disabled="banks[selectedBank].files[selectedFile].SpliceVariable==true"
+                                    id="slicesPerBeat" type="number" min="1" step="1" value=1 style="width:4em;"
+                                    v-model="banks[selectedBank].files[selectedFile].SpliceTrigger"
+                                    @change.prevent="updateSlicesPerBeat($event)" />
+                            </label>
+
+
                         </p>
                     </div>
                 </div>
