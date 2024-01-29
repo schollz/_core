@@ -580,7 +580,8 @@
                             <span v-else>off</span></label>
                     </p>
                     <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
-                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM">
+                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM"
+                            @change.prevent="updateBPM($event)">
                     </p>
 
                     <div id="waveform-parent">

@@ -359,6 +359,14 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			} else {
 				f.SetSpliceTrigger(int(message.Number))
 			}
+		} else if message.Action == "setbpm" {
+			log.Infof("setbpm: %+v", message)
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetBPM(int(message.Number))
+			}
 		} else if message.Action == "setsplicevariable" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {

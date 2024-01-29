@@ -534,7 +534,6 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		return
 	}
 	defer C.free(unsafe.Pointer(cStruct2))
-	// fmt.Println("SampleInfo_getBPM", C.SampleInfo_getBPM(cStruct2))
 	// fmt.Println("SampleInfo_getSliceNum", C.SampleInfo_getSliceNum(cStruct2))
 	// for i := range slicesStart {
 	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
@@ -548,6 +547,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	log.Infof("SampleInfo_getSpliceTrigger: %d", C.SampleInfo_getSpliceTrigger(cStruct2))
 	log.Infof("SampleInfo_getSpliceVariable: %d", C.SampleInfo_getSpliceVariable(cStruct2))
 	log.Infof("SampleInfo_getNumChannels: %d", C.SampleInfo_getNumChannels(cStruct2))
+	log.Infof("SampleInfo_getBPM: %d", C.SampleInfo_getBPM(cStruct2))
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
