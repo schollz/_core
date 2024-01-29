@@ -582,6 +582,7 @@
                     <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
                         Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM">
                     </p>
+
                     <div id="waveform-parent">
                         <div id="waveform"></div>
                         <p style="display: flex; align-items: center;">
@@ -594,19 +595,26 @@
                         </p>
                         <p>
                             <button @click="deleteRegion" style="margin-left:0;">Delete selected
-                                region</button>
+                                slice</button>
                             <button @click="deleteAllRegions" style="margin-left:0;">Delete all
-                                regions</button>
+                                slices</button>
                         </p>
                         <p>
                             <label>
-                                Number of regions: <input id="onsetSlices" type="number" min="1" max="127" value=16
+                                Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
                                     style="width:3em;" />
                             </label>
                             <button @click="createRegionsEvenly" style="margin-left:0;">Create
                                 evenly</button>
                             <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
                                 transients</button>
+                        </p>
+
+                        <p>
+                            <label>
+                                Slices per beat: <input id="slicesPerBeat" type="number" min="0.05" max="8" value=1
+                                    style="width:4em;" v-model="slicesPerBeat" />
+                            </label>
                         </p>
                     </div>
                 </div>

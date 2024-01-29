@@ -152,10 +152,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                      ->sample[sel_sample_cur]
                      .snd[sel_variation]
                      ->play_mode != PLAY_NORMAL) {
-  } else if (((banks[sel_bank_cur]
-                       ->sample[sel_sample_cur]
-                       .snd[sel_variation]
-                       ->splice_trigger > 0 &&
+  } else if (((!banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->one_shot &&
                !clock_in_do) ||
               (clock_in_ready && clock_in_do))
              // TODO if splice_trigger is 0, but we are sequencing, then need to
@@ -171,10 +171,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (sequencerhandler[0].playing) {
       // already done
     } else if ((clock_in_do && clock_in_ready) ||
-               bpm_timer_counter % (96 * banks[sel_bank_cur]
-                                             ->sample[sel_sample_cur]
-                                             .snd[sel_variation]
-                                             ->splice_trigger) ==
+               bpm_timer_counter % (banks[sel_bank_cur]
+                                        ->sample[sel_sample_cur]
+                                        .snd[sel_variation]
+                                        ->splice_trigger) ==
                    0) {
       clock_in_ready = false;
       mem_use = false;
