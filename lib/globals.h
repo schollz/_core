@@ -80,6 +80,7 @@ int32_t beat_current = 0;
 int32_t beat_total = 0;
 uint debounce_quantize = 0;
 int64_t bpm_timer_counter = 0;
+int64_t bpm_timer_counter_last = 0;
 uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
 bool retrig_first = false;
@@ -99,6 +100,7 @@ float scratch_lfo_hz = 0.7;
 uint8_t mode_buttons16 = 0;
 bool mode_mute = 0;
 bool mode_play = 0;
+bool mute_because_of_playback_type = false;
 
 SaveFile *sf;
 #ifdef INCLUDE_ZEPTOCORE
@@ -307,6 +309,7 @@ void do_update_phase_from_beat_current() {
                     .snd[sel_variation]
                     ->slice_stop[slice];
   }
+  mute_because_of_playback_type = false;
   phase_change = true;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE
