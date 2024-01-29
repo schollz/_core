@@ -329,7 +329,6 @@ app = new Vue({
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
-        slicesPerBeat: 'updateSlicesPerBeat',
     },
     computed: {
         diskUsage: function () {
@@ -345,15 +344,29 @@ app = new Vue({
         }
     },
     methods: {
-        updateSlicesPerBeat() {
-            this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger = Math.round(2 * 96 / this.slicesPerBeat);
-            console.log('updateSlicesPerBeat()', this.slicesPerBeat, this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger);
+        updateSlicesPerBeat(evt) {
+            if (socket != null) {
+                setTimeout(() => {
+                    socket.send(JSON.stringify({
+                        action: "setsplicetrigger",
+                        filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                        number: parseInt(this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger),
+                    }));
+                }, 100);
+            }
+        },
+        updateSpliceVariable() {
+            console.log("updateSpliceVariable");
 
-            socket.send(JSON.stringify({
-                action: "setsplicetrigger",
-                filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
-                number: this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger,
-            }));
+            setTimeout(() => {
+                // update the server file
+                socket.send(JSON.stringify({
+                    action: "setsplicevariable",
+                    filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                    boolean: this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable,
+                }));
+                this.saveState();
+            }, 100);
         },
         newURL(evt) {
             var data = evt.target.value;
@@ -429,7 +442,7 @@ app = new Vue({
                 const lengthPerBeat = 60 / bpm;
                 const lengthPerSliceCurrent = regionDuration;
                 console.log('slices per beat', lengthPerBeat / lengthPerSliceCurrent);
-                app.slicesPerBeat = lengthPerBeat / lengthPerSliceCurrent;
+                this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger = Math.round((duration / lengthPerBeat) * 192 / numRegions / 24) * 24;
             }
 
         },

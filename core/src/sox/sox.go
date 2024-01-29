@@ -879,7 +879,8 @@ func GetBPM(name string) (beats float64, bpm float64, err error) {
 }
 
 func parseName(name string) (beats float64, bpm float64, err error) {
-	fname := strings.ToLower(name)
+	_, fname := filepath.Split(name)
+	fname = strings.ToLower(fname)
 	rBeats, _ := regexp.Compile(`\w+[beats](\d+)`)
 	rBPM, _ := regexp.Compile(`\w+[bpm]([0-9]+)`)
 	rBPM2 := regexp.MustCompile("[0-9]+")
