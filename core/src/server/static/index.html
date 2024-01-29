@@ -611,10 +611,21 @@
                         </p>
 
                         <p>
-                            <label>
-                                Slices per beat: <input id="slicesPerBeat" type="number" min="0.05" max="8" value=1
-                                    style="width:4em;" v-model="slicesPerBeat" />
+                            <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
+                                v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
+                            <label for="variablesplices">Variable: <span
+                                    v-if="banks[selectedBank].files[selectedFile].SpliceVariable">on</span>
+                                <span v-else>off</span></label>&nbsp;
+                            <label
+                                v-bind:class="(banks[selectedBank].files[selectedFile].SpliceVariable==true)?'grayed':'not-grayed'">
+                                Pulses per slice <small>(192 ppqn)</small>: <input
+                                    :disabled="banks[selectedBank].files[selectedFile].SpliceVariable==true"
+                                    id="slicesPerBeat" type="number" min="1" step="1" value=1 style="width:4em;"
+                                    v-model="banks[selectedBank].files[selectedFile].SpliceTrigger"
+                                    @change.prevent="updateSlicesPerBeat($event)" />
                             </label>
+
+
                         </p>
                     </div>
                 </div>

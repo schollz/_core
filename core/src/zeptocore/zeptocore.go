@@ -27,19 +27,20 @@ import (
 )
 
 type File struct {
-	Filename      string
-	Duration      float64
-	PathToFile    string
-	PathToAudio   string
-	BPM           int
-	SliceStart    []float64 // fractional (0-1)
-	SliceStop     []float64 // fractional (0-1)
-	SliceType     []int     // 0 = normal, 1 = kick
-	TempoMatch    bool
-	OneShot       bool
-	Channels      int // 0 if mono, 1 if stereo
-	Oversampling  int // 1, 2, or 4
-	SpliceTrigger int // 0, 16, 32, 48, 64, 80, 96, 112, 128
+	Filename       string
+	Duration       float64
+	PathToFile     string
+	PathToAudio    string
+	BPM            int
+	SliceStart     []float64 // fractional (0-1)
+	SliceStop      []float64 // fractional (0-1)
+	SliceType      []int     // 0 = normal, 1 = kick
+	TempoMatch     bool
+	OneShot        bool
+	Channels       int  // 0 if mono, 1 if stereo
+	Oversampling   int  // 1, 2, or 4
+	SpliceTrigger  int  // 0, 16, 32, 48, 64, 80, 96, 112, 128
+	SpliceVariable bool // 0,1 (off/on)
 	// from audio_callaback.h:
 	// // starts at splice start and ends at splice stop
 	// #define PLAY_SPLICE_STOP 0
@@ -84,15 +85,16 @@ func Get(pathToOriginal string) (f File, err error) {
 	}
 	// create new file
 	f = File{
-		Filename:      filename,
-		PathToFile:    pathToOriginal,
-		PathToAudio:   pathToOriginal,
-		debounceSave:  debounce.New(100 * time.Millisecond),
-		debounceRegen: debounce.New(100 * time.Millisecond),
-		OneShot:       false,
-		TempoMatch:    true,
-		Channels:      channels,
-		Oversampling:  1,
+		Filename:       filename,
+		PathToFile:     pathToOriginal,
+		PathToAudio:    pathToOriginal,
+		debounceSave:   debounce.New(100 * time.Millisecond),
+		debounceRegen:  debounce.New(100 * time.Millisecond),
+		OneShot:        false,
+		TempoMatch:     true,
+		Channels:       channels,
+		Oversampling:   1,
+		SpliceVariable: false,
 	}
 	var errSliceDetect error
 	errSliceDetect = fmt.Errorf("slice detection failed")
@@ -131,6 +133,7 @@ func Get(pathToOriginal string) (f File, err error) {
 	var bpm float64
 	beats, bpm, err = sox.GetBPM(f.PathToAudio)
 	f.BPM = int(math.Round(bpm))
+	log.Infof("beats: %d", beats)
 	if len(f.SliceStart) == 0 || errSliceDetect != nil {
 		if f.Duration > 2 {
 			// determine programmatically
@@ -153,6 +156,8 @@ func Get(pathToOriginal string) (f File, err error) {
 		}
 	}
 
+	slicesPerBeat := float64(len(f.SliceStart)) / beats
+	f.SpliceTrigger = int(math.Round(2*96/slicesPerBeat*4) / 4)
 	f.SliceType = make([]int, len(f.SliceStart))
 	f.UpdateSliceTypes()
 
@@ -363,6 +368,18 @@ func (f *File) SetSpliceTrigger(spliceTrigger int) {
 	}()
 }
 
+func (f *File) SetSpliceVariable(spliceVariable bool) {
+	log.Tracef("setting splice variable to %d", spliceVariable)
+	different := f.SpliceVariable != spliceVariable
+	f.SpliceVariable = spliceVariable
+	go func() {
+		f.Save()
+		if different {
+			f.Regenerate()
+		}
+	}()
+}
+
 func (f *File) SetOneshot(oneshot bool) {
 	different := f.OneShot != oneshot
 	f.OneShot = oneshot
@@ -478,6 +495,13 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		oneshot = 1
 	}
 
+	splicevariable := 0
+	if f.SpliceVariable {
+		splicevariable = 1
+	}
+
+	log.Infof("spliceTrigger: %d", f.SpliceTrigger)
+	log.Infof("spliceVariable: %d", f.SpliceVariable)
 	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
 	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
 	sliceTypePtr := (*C.schar)(unsafe.Pointer(&slicesType[0]))
@@ -487,6 +511,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		C.uchar(f.SplicePlayback),
 		C.uchar(oneshot),
 		C.ushort(f.SpliceTrigger),
+		C.uchar(splicevariable),
 		C.uchar(BPMTempoMatch),
 		C.uchar(f.Oversampling-1),
 		C.uchar(f.Channels),
@@ -521,6 +546,7 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
 	}
 	log.Infof("SampleInfo_getSpliceTrigger: %d", C.SampleInfo_getSpliceTrigger(cStruct2))
+	log.Infof("SampleInfo_getSpliceVariable: %d", C.SampleInfo_getSpliceVariable(cStruct2))
 	log.Infof("SampleInfo_getNumChannels: %d", C.SampleInfo_getNumChannels(cStruct2))
 
 	err = os.Rename("sampleinfo.bin", fnameIn+".info")
