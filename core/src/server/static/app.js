@@ -344,20 +344,21 @@ app = new Vue({
         }
     },
     methods: {
-        updateSlicesPerBeat(evt) {
+        updateSlicesPerBeat() {
             if (socket != null) {
                 setTimeout(() => {
+                    console.log("updateSlicesPerBeat");
+                    console.log(this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger);
                     socket.send(JSON.stringify({
                         action: "setsplicetrigger",
                         filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
                         number: parseInt(this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger),
                     }));
-                }, 100);
+                }, 150);
             }
         },
         updateSpliceVariable() {
             console.log("updateSpliceVariable");
-
             setTimeout(() => {
                 // update the server file
                 socket.send(JSON.stringify({
@@ -442,7 +443,14 @@ app = new Vue({
                 const lengthPerBeat = 60 / bpm;
                 const lengthPerSliceCurrent = regionDuration;
                 console.log('slices per beat', lengthPerBeat / lengthPerSliceCurrent);
+                this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = false;
                 this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger = Math.round((duration / lengthPerBeat) * 192 / numRegions / 24) * 24;
+                setTimeout(() => {
+                    this.updateSlicesPerBeat();
+                }, 300);
+                setTimeout(() => {
+                    this.updateSpliceVariable();
+                }, 200);
             }
 
         },
@@ -569,6 +577,19 @@ app = new Vue({
                 activeRegion.remove();
                 activeRegion = null;
             }
+        },
+        updateBPM() {
+
+            setTimeout(() => {
+                // convert to number 
+                this.banks[this.selectedBank].files[this.selectedFile].BPM = parseInt(this.banks[this.selectedBank].files[this.selectedFile].BPM);
+                // update the server file
+                socket.send(JSON.stringify({
+                    action: "setbpm",
+                    filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                    number: this.banks[this.selectedBank].files[this.selectedFile].BPM,
+                }));
+            }, 100);
         },
         updateSplicePlayback() {
             setTimeout(() => {
