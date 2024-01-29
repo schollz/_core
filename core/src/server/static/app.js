@@ -414,11 +414,17 @@ app = new Vue({
             }
         },
         createRegionsAutomatically() {
+            this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = true;
+            setTimeout(() => {
+                this.updateSpliceVariable();
+            }, 200);
+
             socket.send(JSON.stringify({
                 action: "onsetdetect",
                 filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
                 number: parseInt(document.getElementById("onsetSlices").value),
             }));
+
         },
         createRegionsEvenly() {
             // create regions evenly
@@ -444,13 +450,13 @@ app = new Vue({
                 const lengthPerSliceCurrent = regionDuration;
                 console.log('slices per beat', lengthPerBeat / lengthPerSliceCurrent);
                 this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = false;
+                setTimeout(() => {
+                    this.updateSpliceVariable();
+                }, 200);
                 this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger = Math.round((duration / lengthPerBeat) * 192 / numRegions / 24) * 24;
                 setTimeout(() => {
                     this.updateSlicesPerBeat();
                 }, 300);
-                setTimeout(() => {
-                    this.updateSpliceVariable();
-                }, 200);
             }
 
         },

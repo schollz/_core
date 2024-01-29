@@ -257,6 +257,11 @@ void sdcard_startup() {
                 bi, si, banks[bi]->sample[si].snd[variation]->splice_trigger);
             printf(
                 "[sdcard_startup] "
+                "banks[%d]->sample[%d].snd[variation]->splice_variable:% "
+                "d\n",
+                bi, si, banks[bi]->sample[si].snd[variation]->splice_variable);
+            printf(
+                "[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->play_mode: "
                 "% d\n ",
                 bi, si, banks[bi]->sample[si].snd[variation]->play_mode);
