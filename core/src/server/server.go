@@ -352,11 +352,19 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				f.SetOneshot(message.Boolean)
 			}
 		} else if message.Action == "setsplicetrigger" {
+			log.Infof("setsplicetrigger: %+v", message)
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetSpliceTrigger(int(message.Number))
+			}
+		} else if message.Action == "setsplicevariable" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetSpliceVariable(message.Boolean)
 			}
 		} else if message.Action == "setchannels" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))

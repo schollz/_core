@@ -627,3 +627,7 @@ a {
 .faq p {
     margin-bottom: 0;
 }
+
+.grayed {
+    color: #999;
+}
