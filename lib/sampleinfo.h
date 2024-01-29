@@ -31,14 +31,16 @@
 
 typedef struct SampleInfo {
   uint32_t size;
-  uint32_t bpm : 9;             // 0-511
-  uint32_t slice_num : 7;       // 0-127
-  uint32_t slice_current : 7;   // 0-127
-  uint32_t play_mode : 3;       // 0-7
-  uint32_t splice_trigger : 3;  // 0-7
-  uint32_t tempo_match : 1;     // 0-1 (off/on)
-  uint32_t oversampling : 1;    // 0-1 (1x or 2x)
-  uint32_t num_channels : 1;    // 0-1 (mono or stereo)
+  uint32_t bpm : 9;            // 0-511
+  uint32_t slice_num : 8;      // 0-127
+  uint32_t slice_current : 8;  // 0-127
+  uint32_t play_mode : 3;      // 0-7
+  uint32_t one_shot : 1;       // 0-1 (off/on)
+  uint32_t tempo_match : 1;    // 0-1 (off/on)
+  uint32_t oversampling : 1;   // 0-1 (1x or 2x)
+  uint32_t num_channels : 1;   // 0-1 (mono or stereo)
+  uint16_t splice_trigger : 15;
+  uint16_t splice_variable : 1;  // 0-1 (off/on)
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
@@ -54,7 +56,8 @@ void SampleInfo_free(SampleInfo *si) {
 }
 
 SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
-                              uint8_t splice_trigger, uint8_t tempo_match,
+                              uint8_t one_shot, uint16_t splice_trigger,
+                              uint8_t splice_variable, uint8_t tempo_match,
                               uint8_t oversampling, uint8_t num_channels,
                               uint32_t slice_num, int32_t *slice_start,
                               int32_t *slice_stop, int8_t *slice_type) {
@@ -69,7 +72,10 @@ SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
   si->slice_num = slice_num;
   si->slice_current = 0;
   si->play_mode = play_mode;
+  si->one_shot = one_shot;
   si->splice_trigger = splice_trigger;
+  fprintf(stderr, "splice_trigger = %d\n", splice_trigger);
+  si->splice_variable = splice_variable;
   si->tempo_match = tempo_match;
   si->oversampling = oversampling;
   si->num_channels = num_channels;
@@ -118,12 +124,20 @@ int32_t SampleInfo_getSliceStop(SampleInfo *si, uint16_t i) {
   return si->slice_stop[i];
 }
 
+uint16_t SampleInfo_getSpliceTrigger(SampleInfo *si) {
+  return si->splice_trigger;
+}
+
 int32_t SampleInfo_getSliceStart(SampleInfo *si, uint16_t i) {
   return si->slice_start[i];
 }
 
 uint8_t SampleInfo_getSliceType(SampleInfo *si, uint16_t i) {
   return si->slice_type[i];
+}
+
+uint8_t SampleInfo_getSpliceVariable(SampleInfo *si) {
+  return si->splice_variable;
 }
 
 uint8_t SampleInfo_getNumChannels(SampleInfo *si) { return si->num_channels; }
