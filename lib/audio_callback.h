@@ -68,8 +68,9 @@ void i2s_callback_func() {
 
   int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
-  if (sync_using_sdcard || !fil_is_open || button_mute ||
-      reduce_cpu_usage > 0 || (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
+  if (mute_because_of_playback_type || sync_using_sdcard || !fil_is_open ||
+      button_mute || reduce_cpu_usage > 0 ||
+      (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
       (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
     audio_was_muted = true;
@@ -308,6 +309,7 @@ BREAKOUT_OF_MUTE:
         if ((phase_forward && (next_phase > splice_stop)) ||
             (!phase_forward && (next_phase < splice_start))) {
           do_fade_out = true;
+          mute_because_of_playback_type = true;
         }
         break;
       case PLAY_SPLICE_LOOP:
@@ -323,6 +325,7 @@ BREAKOUT_OF_MUTE:
         if ((phase_forward && (next_phase > sample_stop)) ||
             (!phase_forward && (next_phase < 0))) {
           do_fade_out = true;
+          mute_because_of_playback_type = true;
         }
         break;
       case PLAY_SAMPLE_LOOP:

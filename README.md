@@ -132,6 +132,7 @@ holding an effect and using a knob will change its parameters.
 
 #### cheat codes
 
+- [x] **1**,**2**,**1** -> toggle variable splice playback
 - [x] **4**,**5**,**4** -> toggle one-shot mode
 - [ ] **7**,**8**,**7** -> toggle play mode
 - [x] **5**, **8**, **7**, **6** -> toggle tempo match mode
