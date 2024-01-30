@@ -69,6 +69,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   }
 
   bpm_timer_counter++;
+  bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
+                                                     ->sample[sel_sample_cur]
+                                                     .snd[sel_variation]
+                                                     ->splice_trigger)) == 0;
+  // trigger clock out if it is going
+  if (do_splice_trigger) {
+    clock_out_ready = true;
+  }
   for (uint8_t i = 0; i < 3; i++) {
     if (sequencerhandler[i].playing) {
       Sequencer_step(sf->sequencers[i][sf->sequence_sel[i]], bpm_timer_counter);
@@ -140,10 +148,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
 
-    bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
-                                                       ->sample[sel_sample_cur]
-                                                       .snd[sel_variation]
-                                                       ->splice_trigger)) == 0;
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
@@ -214,7 +218,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                 ->slice_num;
           }
         }
-        clock_out_ready = true;
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
           // printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
