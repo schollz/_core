@@ -274,7 +274,7 @@ int main() {
 // otherwise clock divider of 1 is fine
 // set_sys_clock_khz(270000, true);
 #ifdef DO_OVERCLOCK
-  set_sys_clock_khz(250000, true);
+  set_sys_clock_khz(200000, true);
 #else
   set_sys_clock_khz(125000, true);
 #endif
