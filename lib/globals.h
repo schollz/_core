@@ -101,6 +101,7 @@ uint8_t mode_buttons16 = 0;
 bool mode_mute = 0;
 bool mode_play = 0;
 bool mute_because_of_playback_type = false;
+bool mode_hands_on_unmute = false;
 
 SaveFile *sf;
 #ifdef INCLUDE_ZEPTOCORE
