@@ -76,6 +76,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // trigger clock out if it is going
   if (do_splice_trigger) {
     clock_out_ready = true;
+    clock_did_activate = true;
   }
   for (uint8_t i = 0; i < 3; i++) {
     if (sequencerhandler[i].playing) {
