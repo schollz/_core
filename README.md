@@ -114,7 +114,7 @@ there are 16 effects in four categories - "shape", "time", "space", and "pitch".
 holding an effect and using a knob will change its parameters.
 
 - [x] **1** -> warm (preamp postamp)
-- [x] **2** -> loss (type, threshold, postamp)
+- [x] **2** -> loss (type+threshold, postamp)
 - [x] **3** -> fuzz (preamp postamp)
 - [x] **4** -> crush (frequency, bitdepth)
 - [x] **5** -> reverse 

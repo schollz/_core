@@ -147,6 +147,30 @@ void input_handling() {
       MessageSync_clear(messagesync);
     }
 
+    // check to see if the probability knobs are activated for the fx
+    if (clock_did_activate) {
+      clock_did_activate = false;
+      printf("[zeptocore] clock_did_activate\n");
+      for (uint8_t i = 0; i < 16; i++) {
+        if (sf->fx_param[i][2] > 0) {
+          if (sf->fx_active[i]) {
+            if (random_integer_in_range(0, 96) <
+                probability_max_values_off[sf->fx_param[i][2] >> 4]) {
+              toggle_fx(i);
+              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+            }
+          } else {
+            if (random_integer_in_range(0, 96) <
+                probability_max_values[sf->fx_param[i][2] >> 4]) {
+              toggle_fx(i);
+              // TODO: also randomize the parameters?
+              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+            }
+          }
+        }
+      }
+    }
+
 #ifdef PRINT_SDCARD_TIMING
     // random stuff
     if (random_integer_in_range(1, 10000) < 10) {
