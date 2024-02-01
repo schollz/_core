@@ -156,6 +156,12 @@ void button_key_off_any(uint8_t key) {
     // 1-16 off
     // TODO: make this an option?
     if (key_total_pressed == 0) {
+      if (mode_hands_on_unmute) {
+        if (!button_mute) {
+          printf("[button_handler] mode_hands_on_unmute -> mute\n");
+          trigger_button_mute = true;
+        }
+      }
       dub_step_break = -1;
       //      key_do_jump(key - 4);
 #ifdef INCLUDE_SINEBASS
@@ -199,6 +205,13 @@ void button_key_on_single(uint8_t key) {
     if (key == KEY_A) {
     }
   } else if (key >= 4) {
+    if (mode_hands_on_unmute) {
+      if (button_mute) {
+        printf("[button_handler] mode_hands_on_unmute unmute\n");
+        button_mute = false;
+        trigger_button_mute = false;
+      }
+    }
     // 1-16
     if (mode_buttons16 == MODE_JUMP) {
       // 1-16 (jump mode)
