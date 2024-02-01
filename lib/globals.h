@@ -193,6 +193,18 @@ a.do({ arg v;
 a.size
 */
 
+// probability_max_values dictates how many out of every note will be activated
+bool clock_did_activate = false;
+const uint8_t probability_max_values[16] = {
+    // 0 = never
+    // 1 = 1/64
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 32, 48,
+};
+const uint8_t probability_max_values_off[16] = {
+    // 0 = never
+    // 1 = 1/64
+    0, 48, 32, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4,
+};
 #define PITCH_VAL_MAX 73
 #define PITCH_VAL_MID 48
 uint8_t pitch_val_index = PITCH_VAL_MID;
