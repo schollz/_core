@@ -248,6 +248,13 @@ table {
   width: 5em;
 }
 
+.leftear {
+  left: -3em;
+  float: left;
+  transform: rotate(-45deg);
+  width: 5em;
+}
+
 .ear {
   top: 1.5em;
   position: fixed;
