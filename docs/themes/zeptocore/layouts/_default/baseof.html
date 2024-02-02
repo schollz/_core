@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
+  dir="{{ or site.Language.LanguageDirection `ltr` }}">
+
+<head>
+  {{ partial "head.html" . }}
+</head>
+
+<body>
+  <div class="ear rightear"><a style="positionleft:6px;" href="javascript:if(window.print)window.print()"><i
+        class="fas fa-print" aria-hidden="true"></i></a></div>
+  <div class="hero">
+    <div class="hero-inner hero-title">
+      <p><strong>zeptocore</strong></p>
+      <p><img src="https://infinitedigits.co/img/zepto3.png" style="height:400px"></p>
+      <p class="hero-small"><a href="#changelog" style="text-decoration: none;color:inherit;">v1.0.1</a></p>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-inner" style="max-width: 800px; width:100%;">
+      <div>
+        <hr class="hrgreen">
+      </div>
+      <div>
+        <hr class="hrgreen">
+      </div>
+      <h1 id="outline">Outline<a href="#outline" class="link-anchor"><i class="fas fa-link" aria-hidden="true"></i></a>
+      </h1>
+      {{ $sections := slice "blurbs" "how-do-i" "combos" }}
+      {{ range $sections }}
+      {{ $sectionPath := . }}
+      {{ $section := site.GetPage (print "/" $sectionPath) }}
+      <div class="section">
+        <h3>{{ $section.Title }}</h3>
+        <p class="list">
+          {{ range $section.RegularPages }}
+          {{ if isset .Params "noshow"}}{{else}}
+          <a class="clade" href="#{{ .Title | anchorize | lower }}">{{ .Title }}</a>
+          {{end}}
+          {{ end }}
+        </p>
+      </div>
+      {{ end }}
+      <div>
+        <hr class="hrgreen">
+      </div>
+      <div>
+        <hr class="hrgreen">
+      </div>
+    </div>
+  </div>
+
+
+
+  <section class="blurbs">
+    <h1>Blurbs</h1>
+    <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
+    {{ $indexPage.Content }} -->
+
+
+    {{ range where .Site.RegularPages "Section" "blurbs" }}
+    <div>
+      {{ .Content }}
+    </div>
+    {{ end }}
+  </section>
+
+  <section class="howdoi">
+    {{ $indexPage := .Site.GetPage "/how-do-i/" }}
+    {{ $indexPage.Content }}
+    {{ range where .Site.RegularPages "Section" "how-do-i" }}
+    <div>
+      {{.Content}}
+      {{ if isset .Params "moreinfo"}}
+      More infomation:<a href="#{{ .Params.moreinfo }}"><i class="fas fa-info-circle" aria-hidden="true"></i></a>
+      {{end}}
+    </div>
+    {{end}}
+  </section>
+
+
+
+
+  <section class="combos">
+    {{ $indexPage := .Site.GetPage "/combos/" }}
+    <div>
+      {{ $indexPage.Content }}
+    </div>
+
+    {{ range where .Site.RegularPages "Section" "combos" }}
+    {{ if isset .Params "noshow"}}{{else}}
+    <div class="box">
+      <div class="boxl">
+        <div class="command-icon">
+          <div>
+            <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+      <div class="boxr">
+        <h2 id="{{ .Title | anchorize }}">{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link"
+              aria-hidden="true"></i></a></h2>
+        <p>
+          Key combo: {{ $length := len .Params.buttons }}
+          {{ range $index, $element := .Params.buttons }}
+          <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+          {{ end }}
+          (<code>{{.Params.mode }}</code> mode)
+        </p>
+        {{ if isset .Params "mode_alt" }}
+        <p>
+          Key combo: {{ $length := len .Params.buttons_alt }}
+          {{ range $index, $element := .Params.buttons_alt }}
+          <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+          {{ end }}
+          (<code>{{.Params.mode_alt }}</code> mode)
+        </p>
+        {{ end }}
+        {{.Content}}
+      </div>
+    </div>
+    {{end}}
+    {{end}}
+  </section>
+
+
+  <section class="combos">
+    <h1 id="quick-reference">Quick reference <a href="#quick-reference"><i class="fas fa-link"
+          aria-hidden="true"></i></a></h1>
+    <table class="pb">
+      <tbody>
+        <tr class="hrw hrt topline">
+          <td class="w25">Combo</td>
+          <td class="w25">Action</td>
+          <td class="w25">Mode</td>
+          <td class="w50">Description</td>
+        </tr>
+
+        {{ $modes := slice "any" "jump" "mash" }}
+        {{ range $modes }}
+        {{ $modeName := . }}
+        {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
+        {{ $combos := where $pages "Section" "combos" }}
+        {{ range $combos }}
+        <tr class="hrw hrt">
+          <td class="w1">
+            {{ $length := len .Params.buttons }}
+            {{ range $index, $element := .Params.buttons }}
+            <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+            {{ end }}
+          </td>
+          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
+          <td class="w3"><code>{{ .Params.mode }}</code></td>
+          <td class="w4">{{ .Params.short | markdownify }}</td>
+        </tr>
+        {{ if isset .Params "mode_alt" }}
+        <tr class="hrw hrt">
+          <td class="w1">
+            {{ $length := len .Params.buttons_alt }}
+            {{ range $index, $element := .Params.buttons_alt }}
+            <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+            {{ end }}
+          </td>
+          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
+          <td class="w3"><code>{{ .Params.mode_alt }}</code></td>
+          <td class="w4">{{ .Params.short | markdownify }}</td>
+        </tr>
+        {{end}}
+        {{end}}
+        {{end}}
+
+      </tbody>
+    </table>
+
+  </section>
+
+  <!-- {{ range where .Site.RegularPages "Section" "combos" }}
+  <li><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a></li>
+  {{ end }} -->
+
+</body>
+
+</html>
