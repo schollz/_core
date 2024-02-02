@@ -70,6 +70,16 @@ a:hover {
   text-decoration: underline;
 }
 
+
+.hero img {
+  width: 100%;
+  height: auto;
+  max-width: 900px;
+  margin: 0 auto;
+  display: block;
+}
+
+
 .hero-title {
   font-size: 2em;
   margin: 0;
@@ -268,8 +278,12 @@ td {
 }
 
 .hrw {
-  border-bottom: 3px var(--highlight-color-darker) solid !important;
   border-top: 3px var(--highlight-color-darker)solid !important;
+}
+
+/* last one has border bottom */
+.hrw:last-child {
+  border-bottom: 3px var(--highlight-color-darker) solid !important;
 }
 
 table {
@@ -279,7 +293,9 @@ table {
   width: 100%;
   margin-left: 1em;
   margin-right: 1em;
+  max-width: 90%;
 }
+
 
 .rightear {
   right: -4em;
@@ -311,6 +327,20 @@ table {
   text-align: left;
 }
 
+
+/* mobile only */
+@media (max-width: 600px) {
+  section>h1 {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0.25em;
+  }
+
+  .fx3,
+  .fx4 {
+    display: none;
+  }
+}
 
 @media print {
 
@@ -347,13 +377,17 @@ table {
   }
 
   .howdoi>div,
-  .blurbs>div {
+  .blurbs>div,
+  .help>div {
     border: none !important;
     box-shadow: none !important;
     break-inside: avoid;
   }
 
-  .ear {
-    display: none;
-  }
+}
+
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
