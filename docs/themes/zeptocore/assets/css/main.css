@@ -330,19 +330,42 @@ table {
 
 /* mobile only */
 @media (max-width: 600px) {
+  .hero2 {
+    position: relative;
+    padding-top: 6em;
+  }
+
+  body {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    margin-left: 0;
+    margin-right: 0;
+    font-size: 0.8rem;
+  }
+
+  .howdoi>div,
+  .blurbs>div,
+  .help>div,
+  .box {
+    border-width: 2px;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 255, .1);
+  }
+
+
   section>h1 {
     padding-top: 0.5em;
     padding-bottom: 0.5em;
     padding-left: 0.25em;
   }
 
+  .w3,
   .fx3,
   .fx4 {
     display: none;
   }
 
   table {
-    padding: 0;
+    padding: -0.5em;
     width: 90%;
     flex: auto;
     margin: auto;
