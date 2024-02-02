@@ -340,6 +340,13 @@ table {
   .fx4 {
     display: none;
   }
+
+  table {
+    padding: 0;
+    width: 90%;
+    flex: auto;
+    margin: auto;
+  }
 }
 
 @media print {
