@@ -588,17 +588,14 @@ a {
     width: 4em;
 }
 
+
 .leftear {
-    left: -4em;
+    left: -3em;
     float: left;
     transform: rotate(-45deg);
-    width: 4em;
+    width: 5em;
 }
 
-.leftear a {
-    position: relative;
-    left: 1.25em;
-}
 
 .rightear a {
     position: relative;
