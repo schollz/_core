@@ -61,6 +61,7 @@ a:hover {
   padding: 0.5em;
   color: #eee;
   text-decoration: none;
+  line-height: 2.5em;
 }
 
 .clade:hover {
@@ -148,7 +149,8 @@ div {
 }
 
 .howdoi>div,
-.blurbs>div {
+.blurbs>div,
+.help>div {
   border-style: solid;
   border-color: #666;
   padding: 1em;
@@ -158,6 +160,24 @@ div {
   border-radius: 1em;
   box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .2);
   margin: 2em 0em;
+}
+
+.faq details>summary {
+  font-weight: 900;
+}
+
+.faq details:last-child {
+  margin-bottom: 1.5em;
+}
+
+.faq details {
+  margin-top: 1.5em;
+  border-color: var(--header-footer-background);
+  border-style: solid;
+  box-shadow: rgba(189, 175, 237, 0.667) 3px 3px 2px 1px;
+  padding: 1em;
+  cursor: pointer;
+  background-color: #fff;
 }
 
 
@@ -216,6 +236,26 @@ section {
 
 .w4 {
   width: 55%;
+}
+
+.fx1 {
+  width: 6%;
+}
+
+.fx2 {
+  width: 15%;
+}
+
+.fx3 {
+  width: 15%;
+}
+
+.fx4 {
+  width: 15%;
+}
+
+.fx5 {
+  width: 49%;
 }
 
 .topline>td {
