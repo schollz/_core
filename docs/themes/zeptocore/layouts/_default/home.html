@@ -1,0 +1,16 @@
+{{ define "main" }}
+
+
+{{ .Content }}
+
+{{ range where .Site.RegularPages "Section" "blurbs" }}
+<li><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a></li>
+{{ end }}
+
+
+{{ range where .Site.RegularPages "Section" "cheatcodes" }}
+<li><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a></li>
+{{ end }}
+
+
+{{ end }}
