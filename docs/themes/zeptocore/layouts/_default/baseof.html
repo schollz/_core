@@ -15,14 +15,14 @@
   <div class="hero">
     <div class="hero-inner hero-title">
       <p><strong>zeptocore</strong></p>
-      <p><img src="https://infinitedigits.co/img/zepto3.png" style="height:400px"></p>
+      <p><img src="https://infinitedigits.co/img/zepto3.png"></p>
       <p class="hero-small"><a href="#changelog" style="text-decoration: none;color:inherit;">v1.0.2</a></p>
     </div>
   </div>
 
   <div class="hero">
     <div class="hero-inner" style="max-width: 800px; width:100%;">
-      <div>
+      <div style="padding-top:4em">
         <hr class="hrgreen">
       </div>
       <div>
@@ -310,7 +310,25 @@
           }
         });
       });
+      // check if mobile
+      window.addEventListener('scroll', function () {
+        if (window.innerWidth < 600) {
+          var earElements = document.querySelectorAll('.rightear, .leftear');
+          if (window.scrollY > 100) { // Adjust this value based on your needs
+            earElements.forEach(function (el) {
+              el.classList.add('fade-out');
+            });
+          } else {
+            earElements.forEach(function (el) {
+              el.classList.remove('fade-out');
+            });
+          }
+        }
+      });
+
     });
+
+
   </script>
 
 </body>
