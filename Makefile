@@ -164,3 +164,6 @@ core_macos_amd64: core/MacOSX11.3.sdk
 core_linux_amd64:
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -v -x -o ../core_linux_amd64
 
+.PHONY: docs
+docs:
+	cd docs && hugo serve -D
