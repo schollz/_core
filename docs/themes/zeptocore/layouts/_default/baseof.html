@@ -246,7 +246,9 @@
               <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
               {{ end }}
             </td>
-            <td class="fx2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
+            <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+              <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
+            </td>
             <td class="fx3">{{ .Params.knobx }}</td>
             <td class="fx4">{{ .Params.knoby }}</td>
             <td class="fx5">{{ .Params.short | markdownify }}</td>
