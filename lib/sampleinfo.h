@@ -32,16 +32,18 @@
 
 typedef struct SampleInfo {
   uint32_t size;
-  uint32_t bpm : 9;            // 0-511
-  uint32_t slice_num : 8;      // 0-255
-  uint32_t slice_current : 8;  // 0-255
-  uint32_t play_mode : 3;      // 0-7
-  uint32_t one_shot : 1;       // 0-1 (off/on)
-  uint32_t tempo_match : 1;    // 0-1 (off/on)
-  uint32_t oversampling : 1;   // 0-1 (1x or 2x)
-  uint32_t num_channels : 1;   // 0-1 (mono or stereo)
+  // flags
+  uint16_t bpm : 9;           // 0-511
+  uint16_t play_mode : 3;     // 0-7
+  uint16_t one_shot : 1;      // 0-1 (off/on)
+  uint16_t tempo_match : 1;   // 0-1 (off/on)
+  uint16_t oversampling : 1;  // 0-1 (1x or 2x)
+  uint16_t num_channels : 1;  // 0-1 (mono or stereo)
+  // splice_info
   uint16_t splice_trigger : 15;
   uint16_t splice_variable : 1;  // 0-1 (off/on)
+  uint8_t slice_num;             // 0-255
+  uint8_t slice_current;         // 0-255
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
@@ -51,7 +53,9 @@ typedef struct SampleInfoPack {
   uint32_t size;
   uint32_t flags;  // Holds bpm, slice_num, slice_current, play_mode, one_shot,
                    // tempo_match, oversampling, and num_channels
-  uint16_t splice_info;  // Holds splice_trigger and splice_variable
+  uint16_t splice_info;   // Holds splice_trigger and splice_variable
+  uint8_t slice_num;      // 0-255
+  uint8_t slice_current;  // 0-255
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
@@ -65,15 +69,15 @@ SampleInfoPack *SampleInfo_Marshal(SampleInfo *self) {
   }
 
   pack->size = self->size;
-  pack->flags = (self->bpm & 0x1FF) | ((uint32_t)self->slice_num << 9) |
-                ((uint32_t)self->slice_current << 17) |
-                ((uint32_t)self->play_mode << 25) |
-                ((uint32_t)self->one_shot << 28) |
-                ((uint32_t)self->tempo_match << 29) |
-                ((uint32_t)self->oversampling << 30) |
-                ((uint32_t)self->num_channels << 31);
+  pack->flags = (self->bpm & 0x1FF) | ((uint16_t)self->play_mode << 9) |
+                ((uint16_t)self->one_shot << 12) |
+                ((uint16_t)self->tempo_match << 13) |
+                ((uint16_t)self->oversampling << 14) |
+                ((uint16_t)self->num_channels << 15);
   pack->splice_info =
       (self->splice_trigger & 0x7FFF) | ((uint16_t)self->splice_variable << 15);
+  pack->slice_num = self->slice_num;
+  pack->slice_current = self->slice_current;
 
   pack->slice_start = malloc(sizeof(int32_t) * self->slice_num);
   if (pack->slice_start == NULL) {
@@ -115,15 +119,16 @@ SampleInfo *SampleInfo_Unmarshal(SampleInfoPack *pack) {
 
   si->size = pack->size;
   si->bpm = pack->flags & 0x1FF;
-  si->slice_num = (pack->flags >> 9) & 0xFF;
-  si->slice_current = (pack->flags >> 17) & 0xFF;
-  si->play_mode = (pack->flags >> 25) & 0x7;
-  si->one_shot = (pack->flags >> 28) & 0x1;
-  si->tempo_match = (pack->flags >> 29) & 0x1;
-  si->oversampling = (pack->flags >> 30) & 0x1;
-  si->num_channels = (pack->flags >> 31) & 0x1;
+  si->play_mode = (pack->flags >> 9) & 0x7;
+  si->one_shot = (pack->flags >> 12) & 0x1;
+  si->tempo_match = (pack->flags >> 13) & 0x1;
+  si->oversampling = (pack->flags >> 14) & 0x1;
+  si->num_channels = (pack->flags >> 15) & 0x1;
+  si->slice_num = pack->slice_num;
+  si->slice_current = pack->slice_current;
   si->splice_trigger = pack->splice_info & 0x7FFF;
   si->splice_variable = (pack->splice_info >> 15) & 0x1;
+
   // copy pointer into new pointer
   si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
   if (si->slice_start == NULL) {
@@ -152,6 +157,139 @@ SampleInfo *SampleInfo_Unmarshal(SampleInfoPack *pack) {
   memcpy(si->slice_type, pack->slice_type, sizeof(int8_t) * si->slice_num);
 
   return si;
+}
+
+void SampleInfoPack_writeToFile(SampleInfoPack *self, const char *filename) {
+  FILE *file = fopen(filename, "wb");
+  if (file == NULL) {
+    perror("Error opening file");
+    return;
+  }
+
+  // Write the struct (excluding the arrays)
+  if (fwrite(
+          self,
+          sizeof(SampleInfoPack) - (2 * sizeof(int32_t *) - sizeof(int8_t *)),
+          1, file) != 1) {
+    perror("Error writing struct to file");
+    fclose(file);
+    return;
+  }
+
+  // Write the array content
+  if (fwrite(self->slice_start, sizeof(int32_t), self->slice_num, file) !=
+      self->slice_num) {
+    perror("Error writing array to file");
+    fclose(file);
+    return;
+  }
+
+  // Write the array content
+  if (fwrite(self->slice_stop, sizeof(int32_t), self->slice_num, file) !=
+      self->slice_num) {
+    perror("Error writing array to file");
+    fclose(file);
+    return;
+  }
+
+  // Write the array content
+  if (fwrite(self->slice_type, sizeof(int8_t), self->slice_num, file) !=
+      self->slice_num) {
+    perror("Error writing array to file");
+    fclose(file);
+    return;
+  }
+
+  fclose(file);
+}
+
+SampleInfoPack *SampleInfoPack_readFromFile(const char *filename) {
+  FILE *file = fopen(filename, "rb");
+  if (file == NULL) {
+    perror("Error opening file");
+    return NULL;
+  }
+
+  SampleInfoPack *pack = (SampleInfoPack *)malloc(sizeof(SampleInfoPack));
+  if (pack == NULL) {
+    perror("Error allocating memory");
+    fclose(file);
+    return NULL;
+  }
+
+  if (fread(pack, 12, 1, file) != 1) {
+    perror("Error reading struct from file");
+    fclose(file);
+    free(pack);
+    return NULL;
+  }
+
+  fprintf(stderr, "pack->slice_num = %d\n", pack->slice_num);
+
+  // Allocate memory for the array
+  pack->slice_start = (int32_t *)malloc(sizeof(int32_t) * pack->slice_num);
+  if (pack->slice_start == NULL) {
+    perror("Error allocating memory for array");
+    fclose(file);
+    free(pack);
+    return NULL;
+  }
+  // Read the array content
+  int bytes_read =
+      fread(pack->slice_start, sizeof(int32_t), pack->slice_num, file);
+  if (bytes_read != pack->slice_num) {
+    fprintf(stderr, "bytes_read = %d\n", bytes_read);
+    perror("Error reading slice_start from file");
+    fclose(file);
+    free(pack->slice_start);
+    free(pack);
+    return NULL;
+  }
+
+  // Allocate memory for the slice_stop array
+  pack->slice_stop = (int32_t *)malloc(sizeof(int32_t) * pack->slice_num);
+  if (pack->slice_stop == NULL) {
+    perror("Error allocating memory for slice_stop array");
+    fclose(file);
+    free(pack->slice_start);
+    free(pack);
+    return NULL;
+  }
+  // Read the slice_stop array content
+  if (fread(pack->slice_stop, sizeof(int32_t), pack->slice_num, file) !=
+      pack->slice_num) {
+    perror("Error reading slice_stop array from file");
+    fclose(file);
+    free(pack->slice_start);
+    free(pack->slice_stop);
+    free(pack);
+    return NULL;
+  }
+
+  // Allocate memory for the slice_type array
+  pack->slice_type = (int8_t *)malloc(sizeof(int8_t) * pack->slice_num);
+  if (pack->slice_type == NULL) {
+    perror("Error allocating memory for slice_stop array");
+    fclose(file);
+    free(pack->slice_start);
+    free(pack->slice_stop);
+    free(pack);
+    return NULL;
+  }
+  // Read the slice_type array content
+  if (fread(pack->slice_type, sizeof(int8_t), pack->slice_num, file) !=
+      pack->slice_num) {
+    perror("Error reading slice_stop array from file");
+    fclose(file);
+    free(pack->slice_start);
+    free(pack->slice_stop);
+    free(pack->slice_type);
+    free(pack);
+    return NULL;
+  }
+
+  fclose(file);
+  return pack;
 }
 
 void SampleInfoPack_free(SampleInfoPack *self) {
