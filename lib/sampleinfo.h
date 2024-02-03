@@ -28,12 +28,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct SampleInfo {
   uint32_t size;
   uint32_t bpm : 9;            // 0-511
-  uint32_t slice_num : 8;      // 0-127
-  uint32_t slice_current : 8;  // 0-127
+  uint32_t slice_num : 8;      // 0-255
+  uint32_t slice_current : 8;  // 0-255
   uint32_t play_mode : 3;      // 0-7
   uint32_t one_shot : 1;       // 0-1 (off/on)
   uint32_t tempo_match : 1;    // 0-1 (off/on)
@@ -46,13 +47,129 @@ typedef struct SampleInfo {
   int8_t *slice_type;
 } SampleInfo;
 
-void SampleInfo_free(SampleInfo *si) {
-  if (si != NULL) {
+typedef struct SampleInfoPack {
+  uint32_t size;
+  uint32_t flags;  // Holds bpm, slice_num, slice_current, play_mode, one_shot,
+                   // tempo_match, oversampling, and num_channels
+  uint16_t splice_info;  // Holds splice_trigger and splice_variable
+  int32_t *slice_start;
+  int32_t *slice_stop;
+  int8_t *slice_type;
+} SampleInfoPack;
+
+SampleInfoPack *SampleInfo_Marshal(SampleInfo *self) {
+  SampleInfoPack *pack = (SampleInfoPack *)malloc(sizeof(SampleInfoPack));
+  if (pack == NULL) {
+    // Handle memory allocation failure if necessary
+    return NULL;
+  }
+
+  pack->size = self->size;
+  pack->flags = (self->bpm & 0x1FF) | ((uint32_t)self->slice_num << 9) |
+                ((uint32_t)self->slice_current << 17) |
+                ((uint32_t)self->play_mode << 25) |
+                ((uint32_t)self->one_shot << 28) |
+                ((uint32_t)self->tempo_match << 29) |
+                ((uint32_t)self->oversampling << 30) |
+                ((uint32_t)self->num_channels << 31);
+  pack->splice_info =
+      (self->splice_trigger & 0x7FFF) | ((uint16_t)self->splice_variable << 15);
+
+  pack->slice_start = malloc(sizeof(int32_t) * self->slice_num);
+  if (pack->slice_start == NULL) {
+    perror("Error allocating memory for array");
+    free(pack);
+    return NULL;
+  }
+  memcpy(pack->slice_start, self->slice_start,
+         sizeof(int32_t) * self->slice_num);
+
+  pack->slice_stop = malloc(sizeof(int32_t) * self->slice_num);
+  if (pack->slice_stop == NULL) {
+    perror("Error allocating memory for array");
+    free(pack->slice_start);
+    free(pack);
+    return NULL;
+  }
+  memcpy(pack->slice_stop, self->slice_stop, sizeof(int32_t) * self->slice_num);
+
+  pack->slice_type = malloc(sizeof(int8_t) * self->slice_num);
+  if (pack->slice_type == NULL) {
+    perror("Error allocating memory for array");
+    free(pack->slice_start);
+    free(pack->slice_stop);
+    free(pack);
+    return NULL;
+  }
+  memcpy(pack->slice_type, self->slice_type, sizeof(int8_t) * self->slice_num);
+
+  return pack;
+}
+
+SampleInfo *SampleInfo_Unmarshal(SampleInfoPack *pack) {
+  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
+  if (si == NULL) {
+    // Handle memory allocation failure if necessary
+    return NULL;
+  }
+
+  si->size = pack->size;
+  si->bpm = pack->flags & 0x1FF;
+  si->slice_num = (pack->flags >> 9) & 0xFF;
+  si->slice_current = (pack->flags >> 17) & 0xFF;
+  si->play_mode = (pack->flags >> 25) & 0x7;
+  si->one_shot = (pack->flags >> 28) & 0x1;
+  si->tempo_match = (pack->flags >> 29) & 0x1;
+  si->oversampling = (pack->flags >> 30) & 0x1;
+  si->num_channels = (pack->flags >> 31) & 0x1;
+  si->splice_trigger = pack->splice_info & 0x7FFF;
+  si->splice_variable = (pack->splice_info >> 15) & 0x1;
+  // copy pointer into new pointer
+  si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_start == NULL) {
+    perror("Error allocating memory for array");
+    free(si);
+    return NULL;
+  }
+  memcpy(si->slice_start, pack->slice_start, sizeof(int32_t) * si->slice_num);
+  si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_stop == NULL) {
+    perror("Error allocating memory for array");
+    free(si->slice_start);
+    free(si);
+    return NULL;
+  }
+  memcpy(si->slice_stop, pack->slice_stop, sizeof(int32_t) * si->slice_num);
+
+  si->slice_type = malloc(sizeof(int8_t) * si->slice_num);
+  if (si->slice_type == NULL) {
+    perror("Error allocating memory for array");
     free(si->slice_start);
     free(si->slice_stop);
-    free(si->slice_type);
+    free(si);
+    return NULL;
   }
-  free(si);
+  memcpy(si->slice_type, pack->slice_type, sizeof(int8_t) * si->slice_num);
+
+  return si;
+}
+
+void SampleInfoPack_free(SampleInfoPack *self) {
+  if (self != NULL) {
+    free(self->slice_start);
+    free(self->slice_stop);
+    free(self->slice_type);
+  }
+  free(self);
+}
+
+void SampleInfo_free(SampleInfo *self) {
+  if (self != NULL) {
+    free(self->slice_start);
+    free(self->slice_stop);
+    free(self->slice_type);
+  }
+  free(self);
 }
 
 SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
