@@ -422,3 +422,10 @@ table {
   opacity: 0;
   transition: opacity 0.5s ease-out;
 }
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+}
