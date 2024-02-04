@@ -279,8 +279,19 @@
   </section>
 
 
+  <footer>
+    <div class="footer-inner">
+      <p>zeptocore v1.0.2</p>
+      <p>© 2023-2024 <a href="https://infinitedigits.co">infinitedigits.co</a></p>
+    </div>
+  </footer>
+
   <script>
     function handleBeforePrint() {
+      // hide the ears
+      document.querySelectorAll('.rightear, .leftear').forEach(function (el) {
+        el.style.display = 'none';
+      });
       document.querySelectorAll('details').forEach(function (detail) {
         detail.setAttribute('data-original-state', detail.open); // Save original state
         detail.open = true; // Open all details elements
