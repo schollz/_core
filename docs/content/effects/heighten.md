@@ -1,7 +1,7 @@
 +++
 title = 'Heighten'
 date = 2024-02-01T12:33:06-08:00
-short = 'Heighten will put peaks and valleys in the audio'
+short = 'Applies tremolo, modulating amplitude with depth, rate'
 buttons = ['10']
 buttons_alt = ['A','10']
 weight = 10
@@ -13,4 +13,4 @@ icon = 'water'
 +++
 
 
-Heighten is a tremelo that lets you add a low-frequency oscillator to the amplitude of the audio signal.
+The Heighten effect introduces a tremolo by applying a low-frequency oscillator to modulate the audio signal's amplitude, creating dynamic peaks and valleys with adjustable rate and depth.

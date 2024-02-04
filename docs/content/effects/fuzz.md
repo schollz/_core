@@ -1,7 +1,7 @@
 +++
 title = 'Fuzz'
 date = 2024-02-01T12:33:06-08:00
-short = 'Fuzz-like distortion'
+short = 'Adds rich fuzz-like distortion, tunable intensity'
 buttons = ['3']
 buttons_alt = ['A','3']
 weight = 3
@@ -12,4 +12,4 @@ knoby = 'postamp'
 icon = 'cat'
 +++
 
-A "loss" effect that emulates a bad radio signal or a badly connected speaker.
+The Fuzz effect adds a rich, fuzz-like distortion to audio, with preamp and postamp knobs to finely tune the intensity before and after the effect is applied.

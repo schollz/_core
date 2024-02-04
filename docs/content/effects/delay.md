@@ -12,4 +12,4 @@ knoby = 'duration'
 icon = 'history'
 +++
 
-This will activate the feedback delay. The knobs will control the amount of feedback and the duration of the delay. There is no limit to feedback, so it can get into overclipping territory at the high end.
+The Delay effect introduces a feedback delay mechanism where the knobs finely adjust feedback intensity and delay duration, allowing for extensive creative flexibility that can extend into overclipping for intense audio textures.
