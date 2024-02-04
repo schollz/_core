@@ -1,7 +1,7 @@
 +++
 title = 'Lower'
 date = 2024-02-01T12:33:06-08:00
-short = 'Lower will toggle filtering out high frequencies'
+short = 'Activates low pass filter, emphasizes lower tones'
 buttons = ['13']
 buttons_alt = ['A','13']
 weight = 13
@@ -13,4 +13,4 @@ icon = 'filter'
 +++
 
 
-Lower will activate a low pass filter that go from the current filter to a lower frequency.
+The Lower effect activates a low pass filter, progressively filtering out high frequencies to emphasize lower tones, with controls for duration and depth of the transition.

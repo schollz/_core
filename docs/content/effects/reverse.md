@@ -1,7 +1,7 @@
 +++
 title = 'Reverse'
 date = 2024-02-01T12:33:06-08:00
-short = 'Reverses the playback and sequencing'
+short = 'Reverses audio playback and sequence direction'
 buttons = ['5']
 buttons_alt = ['A','5']
 weight = 5

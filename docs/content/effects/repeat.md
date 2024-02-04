@@ -1,7 +1,7 @@
 +++
 title = 'Repeat'
 date = 2024-02-01T12:33:06-08:00
-short = 'Repeat has one knob to control the repeat size.'
+short = 'Loops audio at zero-crossings, overtakes original audio'
 buttons = ['8']
 buttons_alt = ['A','8']
 weight = 8
@@ -12,5 +12,4 @@ icon = 'redo-alt'
 +++
 
 
-The repeat will find zero-crossings and loop the last segment of audio that matches best to the requested duration. This is slightly different than the [delay](#delay) because it will overtake the audio instead of add to it. It can go quite fast to audio rate.
-
+The Repeat effect identifies zero-crossings to loop audio segments best matching the requested duration, distinct from delay by overtaking rather than adding to the audio, with speeds reaching up to audio rate.
