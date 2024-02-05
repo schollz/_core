@@ -1,19 +1,22 @@
+export PICO_EXTRAS_PATH ?= $(CURDIR)/pico-extras
+export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
+
 dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	make -C build -j32
 
 zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	make -C build -j32
 	mv build/_core.uf2 zeptocore.uf2
 
 zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	make -C build -j32
 	mv build/_core.uf2 zeptocore_nooverclock.uf2
 
 ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	make -C build -j32
 	mv build/_core.uf2 ectocore.uf2
 
 copyzepto:
@@ -97,8 +100,8 @@ autoload: dobuild bootreset upload
 build: 
 	rm -rf build
 	mkdir build
-	cd build && PICO_EXTRAS_PATH=../pico-extras cmake ..
-	cd build && PICO_EXTRAS_PATH=../pico-extras make -j32
+	cd build && cmake ..
+	make -C build -j32
 	echo "build success"
 
 audio:
