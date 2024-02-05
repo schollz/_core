@@ -75,6 +75,8 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_BEATREPEAT][0] = 45;
   sf->fx_param[FX_TIGHTEN][0] = 215;
   sf->fx_param[FX_SCRATCH][0] = 132;
+  sf->fx_param[FX_FILTER][0] = 0;
+  sf->fx_param[FX_FILTER][1] = 50;
   return sf;
 }
 
