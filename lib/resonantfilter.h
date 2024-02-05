@@ -138,6 +138,11 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   rf->fc = resonantfilter_fc_max - 1;
   rf->passthrough = true;
   rf->passthrough_last = 0;
+  rf->x1_f = 0;
+  rf->x2_f = 0;
+  rf->y1_f = 0;
+  rf->y2_f = 0;
+
   ResonantFilter_reset(rf);
   return rf;
 }
