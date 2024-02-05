@@ -77,6 +77,8 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_SCRATCH][0] = 132;
   sf->fx_param[FX_FILTER][0] = 0;
   sf->fx_param[FX_FILTER][1] = 50;
+  sf->fx_param[FX_PAN][0] = 128;
+  sf->fx_param[FX_PAN][1] = 255;
   return sf;
 }
 
