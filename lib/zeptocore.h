@@ -244,7 +244,18 @@ void input_handling() {
         }
       } else {
         if (button_is_pressed(KEY_A)) {
-          sf->bpm_tempo = adc * 50 / 4096 * 5 + 50;
+          sf->bpm_tempo = round(linlin(adc, 0, 4095,
+                                       (banks[sel_bank_cur]
+                                            ->sample[sel_sample_cur]
+                                            .snd[sel_variation]
+                                            ->bpm /
+                                        2),
+                                       (banks[sel_bank_cur]
+                                            ->sample[sel_sample_cur]
+                                            .snd[sel_variation]
+                                            ->bpm *
+                                        2)));
+          sf->bpm_tempo = util_clamp(sf->bpm_tempo, 30, 300);
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
