@@ -57,7 +57,7 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define FX_SCRATCH 11
 // pitch
 #define FX_FILTER 12
-#define FX_SLOWDOWN 13
+#define FX_REPITCH 13
 #define FX_SPEEDUP 14
 #define FX_TAPE_STOP 15
 
