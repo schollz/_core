@@ -150,7 +150,6 @@ void input_handling() {
     // check to see if the probability knobs are activated for the fx
     if (clock_did_activate) {
       clock_did_activate = false;
-      printf("[zeptocore] clock_did_activate\n");
       for (uint8_t i = 0; i < 16; i++) {
         if (sf->fx_param[i][2] > 0) {
           if (sf->fx_active[i]) {
