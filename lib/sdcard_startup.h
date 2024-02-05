@@ -99,14 +99,20 @@ void update_fx(uint8_t fx_num) {
       }
     case FX_FILTER:
       if (sf->fx_active[FX_FILTER]) {
-        EnvelopeLinearInteger_reset(
-            envelope_filter, BLOCKS_PER_SECOND,
-            EnvelopeLinearInteger_update(envelope_filter, NULL), 5, 1.618);
-      } else {
+        // turn on filter
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL),
-            global_filter_index, 1.618);
+            linlin(sf->fx_param[FX_FILTER][0], 0, 255, 5,
+                   resonantfilter_fc_max),
+            linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
+      } else {
+        // turn off filter
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL),
+            global_filter_index,
+            linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
       }
       break;
     case FX_VOLUME_RAMP:
