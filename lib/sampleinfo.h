@@ -30,20 +30,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct SliceInfo {
+  int32_t start;
+  int32_t stop;
+  int8_t type;
+} SliceInfo;
+
 typedef struct SampleInfo {
   uint32_t size;
   // flags
-  uint16_t bpm : 9;           // 0-511
-  uint16_t play_mode : 3;     // 0-7
-  uint16_t one_shot : 1;      // 0-1 (off/on)
-  uint16_t tempo_match : 1;   // 0-1 (off/on)
-  uint16_t oversampling : 1;  // 0-1 (1x or 2x)
-  uint16_t num_channels : 1;  // 0-1 (mono or stereo)
+  uint32_t bpm : 9;           // 0-511
+  uint32_t play_mode : 3;     // 0-7
+  uint32_t one_shot : 1;      // 0-1 (off/on)
+  uint32_t tempo_match : 1;   // 0-1 (off/on)
+  uint32_t oversampling : 1;  // 0-1 (1x or 2x)
+  uint32_t num_channels : 1;  // 0-1 (mono or stereo)
+  uint32_t version : 7;
+  uint32_t reserved : 9;
   // splice_info
   uint16_t splice_trigger : 15;
   uint16_t splice_variable : 1;  // 0-1 (off/on)
   uint8_t slice_num;             // 0-255
   uint8_t slice_current;         // 0-255
+  // struct of slice_start, slice_stop, and slice_type ?
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
@@ -56,13 +65,17 @@ typedef struct SampleInfoPack {
   uint16_t splice_info;   // Holds splice_trigger and splice_variable
   uint8_t slice_num;      // 0-255
   uint8_t slice_current;  // 0-255
+  // TODO: struct of slice_start, slice_stop, and slice_type ?
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
 } SampleInfoPack;
 
+// consider putting return in arguments?
 SampleInfoPack *SampleInfo_Marshal(SampleInfo *self) {
   SampleInfoPack *pack = (SampleInfoPack *)malloc(sizeof(SampleInfoPack));
+  // TODO: SampleInfo pack;
+
   if (pack == NULL) {
     // Handle memory allocation failure if necessary
     return NULL;
@@ -203,6 +216,7 @@ void SampleInfoPack_writeToFile(SampleInfoPack *self, const char *filename) {
   fclose(file);
 }
 
+// TODO: convert directly to SampleInfo through SampleInfoPack ?
 SampleInfoPack *SampleInfoPack_readFromFile(const char *filename) {
   FILE *file = fopen(filename, "rb");
   if (file == NULL) {
@@ -217,6 +231,9 @@ SampleInfoPack *SampleInfoPack_readFromFile(const char *filename) {
     return NULL;
   }
 
+  // TODO: SampleInfoPack is local
+
+  // reading the header
   if (fread(pack, 12, 1, file) != 1) {
     perror("Error reading struct from file");
     fclose(file);
@@ -225,6 +242,9 @@ SampleInfoPack *SampleInfoPack_readFromFile(const char *filename) {
   }
 
   fprintf(stderr, "pack->slice_num = %d\n", pack->slice_num);
+
+  // TODO:
+  // fread(pack->slice_start, sizeof(slice_struct), pack->slice_num, file);
 
   // Allocate memory for the array
   pack->slice_start = (int32_t *)malloc(sizeof(int32_t) * pack->slice_num);
