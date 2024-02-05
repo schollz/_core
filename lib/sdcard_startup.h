@@ -65,13 +65,17 @@ void update_fx(uint8_t fx_num) {
         Gate_set_amount(audio_gate, 255);
       }
       break;
-    case FX_SLOWDOWN:
+    case FX_REPITCH:
       if (sf->fx_active[fx_num]) {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch), 0.5, 1);
+        Envelope2_reset(
+            envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
+            linlin((float)sf->fx_param[FX_REPITCH][0], 0.0, 255.0, 0.5, 2.0),
+            linlin((float)sf->fx_param[FX_REPITCH][1], 0.0, 255.0, 0.25, 4.0));
       } else {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch), 1.0, 1);
+        Envelope2_reset(
+            envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
+            1.0,
+            linlin((float)sf->fx_param[FX_REPITCH][1], 0.0, 255.0, 0.25, 4.0));
       }
       break;
     case FX_SPEEDUP:
