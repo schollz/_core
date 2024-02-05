@@ -87,20 +87,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
       if (retrig_ready) {
         if (retrig_first) {
-          int r = random_integer_in_range(1, 6);
-          if (r < 2) {
-            retrig_vol = 1;
-          } else if (r == 3) {
-            retrig_vol = 0.5;
-          } else {
-            retrig_vol = 0;
-          }
+          retrig_vol =
+              linlin((float)sf->fx_param[FX_RETRIGGER][0], 0, 255, 0, 1);
           retrig_pitch = PITCH_VAL_MID;
-          if (random_integer_in_range(1, 10) < 2) {
+          if (sf->fx_active[FX_RETRIGGER]) {
+            retrig_pitch_change =
+                linlin(sf->fx_param[FX_RETRIGGER][1], 0, 255, 1, 5);
             if (random_integer_in_range(1, 10) < 5) {
-              retrig_pitch_change = -random_integer_in_range(1, 3);
-            } else {
-              retrig_pitch_change = random_integer_in_range(1, 3);
+              retrig_pitch_change = -1 * retrig_pitch_change;
             }
           } else {
             retrig_pitch_change = 0;
