@@ -287,6 +287,10 @@ float pitch_vals[PITCH_VAL_MAX] = {
     2,
 };
 
+#define MODE_JUMP 0
+#define MODE_MASH 1
+#define MODE_BASS 2
+
 // ignore boundaries
 #define PLAY_NORMAL 0
 // starts at splice start and ends at splice stop
