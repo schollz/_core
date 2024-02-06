@@ -429,3 +429,9 @@ table {
   align-items: center;
   padding: 1em;
 }
+
+
+.list>a {
+  /* stay on one line */
+  white-space: nowrap;
+}
