@@ -29,9 +29,6 @@
 #define KEY_B 1
 #define KEY_C 2
 #define KEY_D 3
-#define MODE_JUMP 0
-#define MODE_MASH 1
-#define MODE_BASS 2
 
 uint8_t key_held_num = 0;
 bool key_held_on = false;
