@@ -63,16 +63,26 @@ int8_t single_step_pressed() {
 }
 
 void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
+  printf("[button_handler] retrigger 3key: %d %d %d\n", key1, key2, key3);
   debounce_quantize = 0;
-  retrig_first = true;
-  retrig_beat_num = key2 + 4;
-  retrig_timer_reset = 96 / key3;
-  float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
-                     (float)(96 * sf->bpm_tempo);
-  retrig_vol_step = 1.0 / ((float)retrig_beat_num);
-  printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
-         retrig_beat_num, retrig_timer_reset, total_time);
-  retrig_ready = true;
+  retrig_vol = 1.0;
+  retrig_pitch = PITCH_VAL_MID;
+  retrig_pitch_change = 0;
+  retrig_beat_num = 0;
+  key3_activated = true;
+  key3_pressed_keys[0] = key1;
+  key3_pressed_keys[1] = key2;
+  key3_pressed_keys[2] = key3;
+
+  // retrig_first = true;
+  // retrig_beat_num = key2 + 4;
+  // retrig_timer_reset = 96 / key3;
+  // float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
+  //                    (float)(96 * sf->bpm_tempo);
+  // retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+  // printf("retrig_beat_num=%d,retrig_timer_reset=%d,total_time=%2.3fs\n",
+  //        retrig_beat_num, retrig_timer_reset, total_time);
+  // retrig_ready = true;
 }
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
@@ -152,6 +162,9 @@ void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 // triggers on ANY key off, used for 1-16 off's
 void button_key_off_any(uint8_t key) {
   printf("off any %d\n", key);
+  if (key_total_pressed < 3) {
+    key3_activated = false;
+  }
   if (key > 3) {
     // 1-16 off
     // TODO: make this an option?

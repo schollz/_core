@@ -197,6 +197,26 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                    ->sample[sel_sample_cur]
                                                    .snd[sel_variation]
                                                    ->slice_num;
+        } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
+          uint8_t lo = key3_pressed_keys[0] - 4;
+          uint8_t hi = key3_pressed_keys[1] - 4;
+          if (lo > hi) {
+            uint8_t tmp = lo;
+            lo = hi;
+            hi = tmp;
+            beat_current--;
+          } else {
+            beat_current++;
+          }
+          if (beat_current > hi) {
+            beat_current = lo;
+          } else if (beat_current < lo) {
+            beat_current = hi;
+          }
+          beat_current = beat_current % banks[sel_bank_cur]
+                                            ->sample[sel_sample_cur]
+                                            .snd[sel_variation]
+                                            ->slice_num;
         } else {
           if (beat_current == 0 && !phase_forward) {
             beat_current = banks[sel_bank_cur]
