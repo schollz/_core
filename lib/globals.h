@@ -103,6 +103,9 @@ bool mode_play = 0;
 bool mute_because_of_playback_type = false;
 bool mode_hands_on_unmute = false;
 
+bool key3_activated = false;
+uint8_t key3_pressed_keys[3] = {0, 0, 0};
+
 SaveFile *sf;
 #ifdef INCLUDE_ZEPTOCORE
 LEDS *leds;
