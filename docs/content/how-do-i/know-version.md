@@ -1,6 +1,7 @@
 +++
 title = 'How do I know which version I have?'
 date = 2024-02-01T12:33:06-08:00
+weight = 50
 +++
 
 ## How do I know which version I have?

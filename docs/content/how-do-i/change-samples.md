@@ -1,6 +1,7 @@
 +++
 title = 'How do I change samples?'
 date = 2024-02-01T12:33:06-08:00
+weight = 10
 +++
 
 ## How do I change samples?
