@@ -12,3 +12,5 @@ mode = 'any'
 
 
 There are three possible modes: [jump](#jump-mode), [mash](#mash-mode), and [bass](#bass-mode). 
+
+In the `JUMP` mode, pressing in the **1-16** will jump slices, create little loops, or do retriggers.
