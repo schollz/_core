@@ -237,6 +237,7 @@ void sdcard_startup() {
     //     }
     //     LEDS_render(leds);
     // #endif
+
     char dirname[10];
     sprintf(dirname, "bank%d\0", bi);
     banks[bi] = list_files(dirname);
