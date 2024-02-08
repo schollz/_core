@@ -888,6 +888,12 @@ void button_handler(ButtonMatrix *bm) {
   } else {
     if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
       if (key_total_pressed > 0) {
+        // illuminate which banks have samples
+        for (uint8_t i = 0; i < 16; i++) {
+          if (banks_with_samples[i] > 0) {
+            LEDS_set(leds, i + 4, LED_DIM);
+          }
+        }
         LEDS_set(leds, sel_bank_next + 4, 2);
         LEDS_set(leds, sel_sample_next + 4, 3);
         LEDS_render(leds);
