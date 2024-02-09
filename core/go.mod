@@ -6,6 +6,7 @@ require (
 	github.com/bep/debounce v1.2.1
 	github.com/gorilla/websocket v1.5.1
 	github.com/lucasepe/codename v0.2.0
+	github.com/mpiannucci/peakdetect v0.0.0-20160920143128-9526111f1fb9
 	github.com/otiai10/copy v1.14.0
 	github.com/schollz/logger v1.2.0
 	github.com/stretchr/testify v1.8.4
