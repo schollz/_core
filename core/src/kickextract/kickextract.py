@@ -69,7 +69,8 @@ def analyze(fname):
         legend.append(str(i + 1))
         y = gather2(f"output{i+1:03}.wav")
         x = np.arange(len(y))
-        ys.append(np.sum(y[:204]))
+        # ys.append(np.sum(y[:204]))
+        ys.append(np.sum(y[250:300]))
         ic(ys)
         if doplot:
             plt.plot(x, y)
@@ -86,6 +87,8 @@ def analyze(fname):
     with open(fname + ".json", "w") as f:
         f.write(json.dumps(list(kick)))
 
+    print(ys)
+
     if doplot:
         plt.legend(legend, loc="upper right")
         plt.savefig("test.png")
@@ -98,8 +101,6 @@ def analyze(fname):
 @click.option("--folder", help="folder to analyze", required=True)
 def hello(folder):
     for fname in tqdm(list(glob.glob(folder + "/*.flac"))):
-        if "slow" in fname:
-            continue
         try:
             analyze(fname)
         except Exception as e:
