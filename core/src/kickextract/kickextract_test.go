@@ -5,7 +5,7 @@ import (
 )
 
 func TestKickExtract(t *testing.T) {
-	filename := "amen_5c2d11c8_beats16_bpm170.flac"
+	filename := "../../../lib/audio/amen_5c2d11c8_beats16_bpm170.flac"
 	slice_start := make([]float64, 16)
 	slice_end := make([]float64, 16)
 	for i := 0; i < 16; i++ {
