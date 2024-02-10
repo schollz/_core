@@ -45,6 +45,7 @@ jobs:
         make zeptocore
         make zeptocore_nooverclock
         make ectocore
+        make boardcore
         make core_windows.exe
         make core_linux_amd64
         make core_macos_aarch64
@@ -56,6 +57,7 @@ jobs:
           zeptocore.uf2
           zeptocore_nooverclock.uf2
           ectocore.uf2
+          boardcore.uf2
           core_windows.exe
           core_linux_amd64
           core_macos_amd64
