@@ -137,7 +137,7 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zz1.1.1");
+  printStringWithDelay("zz1.2.0");
 
   while (1) {
     // TODO: check timing of this?
