@@ -16,12 +16,14 @@ typedef struct WaveOsc {
   uint8_t fade_len[2];
   uint16_t fade_pos[2];
   uint16_t fade_posi[2];
+  const int32_t *wavetable_arr;
 } WaveOsc;
 
 WaveOsc *WaveOsc_malloc(uint8_t wave, uint8_t quiet, uint8_t attack,
                         uint8_t decay) {
   WaveOsc *self = malloc(sizeof(WaveOsc));
   self->wave = wave;
+  self->wavetable_arr = wavetable_data(wave);
   self->quiet = quiet;
   self->phase = 0;
   self->limit = wavetable_len(wave);
@@ -46,7 +48,7 @@ int32_t WaveOsc_next(WaveOsc *self) {
   if (self->phase >= self->limit) {
     self->phase = 0;
   }
-  int32_t val = wavetable_sample(self->wave, self->phase) >> self->quiet;
+  int32_t val = self->wavetable_arr[self->phase] >> self->quiet;
   // TODO: if quiet is changed, update it when the val is 0
   for (uint8_t i = 0; i < 2; i++) {
     if (self->fade_on[i]) {

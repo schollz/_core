@@ -62,6 +62,13 @@ for i in range(wavetable_max):
 print("    default: return 0;")
 print("  }")
 print("}")
+print("const int32_t* wavetable_data(uint8_t wave) {")
+print("  switch (wave) {")
+for i in range(wavetable_max):
+    print("    case %d:" % i)
+    print(f"return wavetable{i};")
+print("  }")
+print("}")
 print("int32_t wavetable_sample(uint8_t wave, uint16_t index) {")
 print("  switch (wave) {")
 for i in range(wavetable_max):
