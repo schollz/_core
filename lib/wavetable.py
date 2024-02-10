@@ -39,7 +39,7 @@ def lcm(a, b):
 
 
 total_bytes = 0
-wavetable_max = 36
+wavetable_max = 16 + 16 + 20
 print("#ifndef LIB_WAVETABLE_DATA_H")
 print("#define LIB_WAVETABLE_DATA_H 1")
 print("#define WAVETABLE_MAX " + str(wavetable_max))
