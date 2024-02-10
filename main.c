@@ -232,6 +232,65 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                 .snd[sel_variation]
                                 ->slice_num;
           }
+          if (only_play_kicks) {
+            // check if beat_current is a kick, if not try to find one
+            for (uint16_t i = 0; i < banks[sel_bank_cur]
+                                         ->sample[sel_sample_cur]
+                                         .snd[sel_variation]
+                                         ->slice_num;
+                 i++) {
+              uint16_t j = beat_current + i;
+              if (j > banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_num) {
+                j -= banks[sel_bank_cur]
+                         ->sample[sel_sample_cur]
+                         .snd[sel_variation]
+                         ->slice_num;
+              }
+              if (banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_type[j] == 1 ||
+                  banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_type[j] == 3) {
+                beat_current = j;
+                break;
+              }
+            }
+          } else if (only_play_snares) {
+            // check if beat_current is a kick, if not try to find one
+            for (uint16_t i = 0; i < banks[sel_bank_cur]
+                                         ->sample[sel_sample_cur]
+                                         .snd[sel_variation]
+                                         ->slice_num;
+                 i++) {
+              uint16_t j = beat_current + i;
+              if (j > banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_num) {
+                j -= banks[sel_bank_cur]
+                         ->sample[sel_sample_cur]
+                         .snd[sel_variation]
+                         ->slice_num;
+              }
+              if (banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_type[j] == 2 ||
+                  banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[sel_variation]
+                          ->slice_type[j] == 3) {
+                beat_current = j;
+                break;
+              }
+            }
+          }
         }
         // printf("beat_current: %d\n", beat_current);
         if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
