@@ -39,7 +39,7 @@ def lcm(a, b):
 
 
 total_bytes = 0
-wavetable_max = 36
+wavetable_max = 16 + 16 + 20
 print("#ifndef LIB_WAVETABLE_DATA_H")
 print("#define LIB_WAVETABLE_DATA_H 1")
 print("#define WAVETABLE_MAX " + str(wavetable_max))
@@ -62,55 +62,12 @@ for i in range(wavetable_max):
 print("    default: return 0;")
 print("  }")
 print("}")
-print("int32_t wavetable_sample(uint8_t wave, uint16_t index) {")
+print("const int32_t* wavetable_data(uint8_t wave) {")
 print("  switch (wave) {")
 for i in range(wavetable_max):
     print("    case %d:" % i)
-    print(f"return wavetable{i}[index];")
-    # print(f"if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
-    # print(f"else if (index<{wavetable_len[i]}) {{return wavetable{i}[index];}}")
-    # print(
-    #     f"else if (index<{2*wavetable_len[i]}) {{return wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]})];}}"
-    # )
-    # print(
-    #     f"else if (index<{3*wavetable_len[i]}) {{return -1*wavetable{i}[(index-{wavetable_len[i]*2})];}}"
-    # )
-    # print(
-    #     f"else {{return -1*wavetable{i}[{wavetable_len[i]-1}-(index-{wavetable_len[i]*3})];}}"
-    # )
-    print("break;")
-print("    default: return 0;")
+    print(f"return wavetable{i};")
 print("  }")
 print("}")
 
-# print("#define WAVETABLE_TOTAL_BYTES " + str(total_bytes))
-
-# print(
-#     """
-# int32_t *wavetable_samples;
-# void init_wavetables() {
-#     wavetable_samples = (int32_t *)malloc(WAVETABLE_TOTAL_BYTES);
-#     """
-# )
-# j = 0
-# for i in range(wavetable_max):
-#     print(
-#         "    memcpy(wavetable_samples + %d, wavetable%d, wavetable_len(%d) * sizeof(int32_t));"
-#         % (j, i, i)
-#     )
-#     j += wavetable_len[i]
-# print(
-#     """
-# }
-# """
-# )
-# print("static int32_t wavetable_sample2(uint8_t wave, uint16_t index) {")
-# print("  switch (wave) {")
-# j = 0
-# for i in range(wavetable_max):
-#     print("    case %d: return wavetable_samples[index + %d];" % (i, j))
-#     j += wavetable_len[i]
-# print("    default: return 0;")
-# print("  }")
-# print("}")
 print("#endif")
