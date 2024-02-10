@@ -5,6 +5,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SDCARD_CD_GPIO=21 # not used...
 
     # utilize core1 for audio to avoid dropouts
+    SDCARD_CMD_GPIO=11
+    SDCARD_D0_GPIO=12 
+    AUDIO_CLK_GPIO=16 
+    AUDIO_DIN_GPIO=18
+    INCLUDE_FILTER=1
+    INCLUDE_BOARDCORE=1
     CORE1_PROCESS_I2S_CALLBACK=1 
     DO_OVERCLOCK=1
 
