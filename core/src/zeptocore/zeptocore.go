@@ -17,7 +17,7 @@ import (
 	"unsafe"
 
 	"github.com/bep/debounce"
-	"github.com/schollz/_core/core/src/kickextract"
+	"github.com/schollz/_core/core/src/drumextract"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/op1"
 	"github.com/schollz/_core/core/src/renoise"
@@ -306,14 +306,20 @@ func (f *File) SetSplicePlayback(playback int) {
 
 func (f *File) UpdateSliceTypes() {
 	// calculate the splice type
-	kicks, err := kickextract.KickExtract(f.PathToFile, f.SliceStart, f.SliceStop)
+	kicks, snares, err := drumextract.DrumExtract(f.PathToFile, f.SliceStart, f.SliceStop)
 	if err != nil {
 		log.Error(err)
 	}
 	f.SliceType = make([]int, len(kicks))
 	for i := range kicks {
-		if kicks[i] {
+		if kicks[i] && snares[i] {
+			f.SliceType[i] = 3
+		} else if kicks[i] {
 			f.SliceType[i] = 1
+		} else if snares[i] {
+			f.SliceType[i] = 2
+		} else {
+			f.SliceType[i] = 0
 		}
 	}
 	log.Tracef("slice types: %+v", f.SliceType)
