@@ -1,7 +1,7 @@
 +++
 title = 'Retrigger'
 date = 2024-02-01T12:33:06-08:00
-short = 'retrig speed depends on location'
+short = 'Creates retrig ramp, speed depends on second press'
 buttons = ['1-16','1-16']
 weight = 12
 mode = 'jump'

@@ -1,7 +1,7 @@
 +++
 title = 'Start/Stop'
 date = 2024-02-01T12:33:06-08:00
-short = 'retrig speed depends on location'
+short = 'Toggles the playback to start or stop'
 buttons = ['B','D']
 weight = 20
 mode = 'any'
