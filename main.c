@@ -321,10 +321,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 
 #ifdef INCLUDE_ZEPTOCORE
 #include "lib/zeptocore.h"
-#else
+#endif
 #ifdef INCLUDE_ECTOCORE
 #include "lib/ectocore.h"
 #endif
+#ifdef INCLUDE_BOARDCORE
+#include "lib/boardcore.h"
 #endif
 
 int main() {
