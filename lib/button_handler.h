@@ -191,10 +191,15 @@ void button_key_off_any(uint8_t key) {
         // find which key is on
         for (uint8_t i = 4; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
           if (key_on_buttons[i] > 0) {
-            WaveBass_note_on(wavebass, i - 4);
+            uint8_t octave = 0;
+            if (key_on_buttons[0] > 0) {
+              octave = 12;
+            }
+
+            WaveBass_note_on(wavebass, octave + i - 4);
             if (sequencerhandler[2].recording) {
-              Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]], i - 4,
-                            bpm_timer_counter);
+              Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
+                            octave + i - 4, bpm_timer_counter);
             }
 
             break;
@@ -673,11 +678,15 @@ void button_handler(ButtonMatrix *bm) {
 
 #ifdef INCLUDE_SINEBASS
     if (mode_buttons16 == MODE_BASS && bm->on[i] > 3) {
-      printf("updaing sinosc\n");
-      WaveBass_note_on(wavebass, bm->on[i] - 4);
+      uint8_t octave = 0;
+      if (key_on_buttons[0] > 0) {
+        octave = 12;
+      }
+      printf("playing note: %d\n", octave + bm->on[i] - 4);
+      WaveBass_note_on(wavebass, octave + bm->on[i] - 4);
       if (sequencerhandler[2].recording) {
-        Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]], bm->on[i] - 4,
-                      bpm_timer_counter);
+        Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
+                      octave + bm->on[i] - 4, bpm_timer_counter);
       }
     }
 #endif
