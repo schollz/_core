@@ -544,8 +544,17 @@ void button_handler(ButtonMatrix *bm) {
                                      ->splice_variable;
       }
     } else if (key_pressed_num == 4) {
-      if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
-          key_pressed[2] == 13 && key_pressed[3] == 14) {
+      if (key_pressed[0] == 7 && key_pressed[1] == 10 && key_pressed[2] == 13 &&
+          key_pressed[3] == 16) {
+        printf("combo: 7 10 13 16!!!\n");
+        only_play_kicks = !only_play_kicks;
+        printf("only_play_kicks: %d\n", only_play_kicks);
+      } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
+                 key_pressed[2] == 10 && key_pressed[3] == 6) {
+        only_play_snares = !only_play_snares;
+        printf("only_play_snares: %d\n", only_play_snares);
+      } else if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
+                 key_pressed[2] == 13 && key_pressed[3] == 14) {
         quadratic_resampling = !quadratic_resampling;
         if (quadratic_resampling) {
           printf("combo: change resampling to quadratic\n");
