@@ -628,3 +628,9 @@ a {
 .grayed {
     color: #999;
 }
+
+
+.selected_on {
+    padding-top: 1.5em !important;
+    padding-bottom: 1.5em !important;
+}
