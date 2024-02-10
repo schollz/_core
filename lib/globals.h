@@ -94,6 +94,9 @@ int32_t scratch_lfo_val = 0;
 float scratch_lfo_hz = 0.7;
 #define SCRATCH_LFO_1_HZ 9340
 
+bool only_play_kicks = false;
+bool only_play_snares = false;
+
 // buttons
 // mode toggles
 //   mode  ==0  ==1
