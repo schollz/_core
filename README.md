@@ -155,6 +155,51 @@ holding an effect and using a knob will change its parameters.
 
 # building image
 
+## mac os x
+
+First install homebrew:
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+
+You will need to add Homebrew to your PATH. Do so by running the following two commands:
+
+```
+which brew
+```
+
+will tell you which path your brew is on. then
+
+```
+echo 'eval "$([path to homebrew from command above] shellenv)"' >> /Users/USERNAME/.zprofile (remembering to substitute your username)
+eval "$(/opt/homebrew/bin/brew shellenv)"
+```
+
+Now you can install the toolchain:
+
+```
+brew install cmake python
+brew tap ArmMbed/homebrew-formulae
+brew install gcc-arm-embedded
+```
+
+Now clone the repo and install the Pico SDK
+
+```
+git clone https://github.com/schollz/_core
+cd _core
+export PICO_SDK_PATH==$(pwd)/pico-sdk
+git clone -b master https://github.com/raspberrypi/pico-sdk.git
+cd pico-sdk &&  git submodule update --init && cd ..
+```
+
+Now you should be able to build zeptocore:
+
+```
+make clean zeptocore
+```
+
 ## windows
 
 Install WSL 2
@@ -196,7 +241,7 @@ Do a build:
 make clean zeptocore
 ```
 
-(replace '`zeptocore`' with '`ectocore`' if you are building the latter)
+(replace '`zeptocore`' with '`ectocore` or '`boardcore`'' if you are building the latter)
 
 # building upload tool
 
