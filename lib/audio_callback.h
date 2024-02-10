@@ -713,6 +713,13 @@ BREAKOUT_OF_MUTE:
     }
   }
 
+#ifdef INCLUDE_ECTOCORE
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    samples[i * 2 + 0] *= -1;
+    samples[i * 2 + 1] *= -1;
+  }
+#endif
+
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);
