@@ -189,7 +189,7 @@ Now clone the repo and install the Pico SDK
 ```
 git clone https://github.com/schollz/_core
 cd _core
-export PICO_SDK_PATH==$(pwd)/pico-sdk
+export PICO_SDK_PATH=$(pwd)/pico-sdk
 git clone -b master https://github.com/raspberrypi/pico-sdk.git
 cd pico-sdk &&  git submodule update --init && cd ..
 ```
@@ -233,7 +233,7 @@ git clone https://github.com/schollz/_core
 cd _core
 git clone https://github.com/raspberrypi/pico-sdk
 cd pico-sdk &&  git submodule update --init && cd ..
-export PICO_SDK_PATH==$(pwd)/pico-sdk
+export PICO_SDK_PATH=$(pwd)/pico-sdk
 ```
 
 Do a build:
