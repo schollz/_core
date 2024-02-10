@@ -259,6 +259,34 @@
         </tbody>
       </table>
 
+
+      <table class="pb" style="margin-top:2em;">
+        <tbody>
+          <tr class="hrw hrt topline">
+            <td class="cc1">Cheat code</td>
+            <td class="cc2">Description</td>
+          </tr>
+
+          {{ $modes := slice "any" "jump" "mash" }}
+          {{ range $modes }}
+          {{ $modeName := . }}
+          {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
+          {{ $combos := where $pages "Section" "cheatcode" }}
+          {{ range $combos }}
+          <tr class="hrw hrt">
+            <td class="cc1">
+              {{ $length := len .Params.buttons }}
+              {{ range $index, $element := .Params.buttons }}
+              <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+              {{ end }}
+            </td>
+            <td class="cc2">{{ .Params.short | markdownify }}</td>
+          </tr>
+          {{end}}
+          {{end}}
+
+        </tbody>
+      </table>
   </section>
 
 
