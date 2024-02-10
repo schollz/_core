@@ -75,8 +75,8 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define ATTEN_BREAK 4
 #define ATTEN_AMEN 2
 
-#define GPIO_TAPTEMPO 3
-#define GPIO_TAPTEMPO_LED 4
+#define GPIO_TAPTEMPO 2
+#define GPIO_TAPTEMPO_LED 3
 #endif
 
 #endif
