@@ -86,8 +86,9 @@ void input_handling() {
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
 
   bool btn_taptempo_on = false;
-  sf->vol = 190;
-
+  sf->vol = VOLUME_STEPS;
+  sf->fx_active[FX_SATURATE] = true;
+  Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
   while (1) {
     uint16_t val;
 
