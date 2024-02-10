@@ -1,4 +1,4 @@
-package kickextract
+package drumextract
 
 import (
 	"bytes"
@@ -10,16 +10,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mpiannucci/peakdetect"
 	"github.com/schollz/_core/core/src/sox"
 	log "github.com/schollz/logger"
 )
 
 const NUM_FREQUNCIES = 435
-const KICK_FREQUNCIES = 204
 
-// KickExtract takes the original filename and the fractional slice start/stop points
+var kick_frequencies = [2]int{0, 204}
+var snare_frequencies = [2]int{225, 275}
+
+// DrumExtract takes the original filename and the fractional slice start/stop points
 // and prints out a slice of booleans indicating whether or not there is a kick at each slice
-func KickExtract(fname string, slice_start []float64, slice_end []float64) (kicks []bool, err error) {
+func DrumExtract(fname string, slice_start []float64, slice_end []float64) (kicks []bool, snares []bool, err error) {
 	totalSamplesI, err := sox.NumSamples(fname)
 	if err != nil {
 		return
@@ -27,13 +30,15 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 	totalSamples := float64(totalSamplesI)
 	var numJobs = len(slice_start)
 	kicks = make([]bool, numJobs)
+	snares = make([]bool, numJobs)
 	type job struct {
 		index int
 	}
 	type result struct {
-		index     int
-		kickvalue float64
-		err       error
+		index      int
+		kickvalue  float64
+		snarevalue float64
+		err        error
 	}
 
 	jobs := make(chan job, numJobs)
@@ -115,9 +120,14 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 					}
 
 					// calculate the kick value
-					for i := 0; i < KICK_FREQUNCIES; i++ {
+					for i := kick_frequencies[0]; i < kick_frequencies[1]; i++ {
 						r.kickvalue += dataMean[i]
 					}
+					// calculate the  snare value
+					for i := snare_frequencies[0]; i < snare_frequencies[1]; i++ {
+						r.snarevalue += dataMean[i]
+					}
+
 				}(j0)
 			}
 		}(jobs, results)
@@ -129,9 +139,11 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 	close(jobs)
 
 	kickvalues := make([]float64, numJobs)
+	snarevalues := make([]float64, numJobs)
 	for a := 0; a < numJobs; a++ {
 		r := <-results
 		kickvalues[r.index] = r.kickvalue
+		snarevalues[r.index] = r.snarevalue
 		if r.err != nil {
 			err = r.err
 			log.Errorf("error in job %d: %s", r.index, err.Error())
@@ -139,26 +151,38 @@ func KickExtract(fname string, slice_start []float64, slice_end []float64) (kick
 	}
 
 	// calculate the average kick value
-	kickvalueMean := 0.0
-	for _, v := range kickvalues {
-		kickvalueMean += v
+	weights := make([]float64, len(kickvalues))
+	for i := 0; i < len(weights); i++ {
+		weights[i] = 0
 	}
-	kickvalueMean /= float64(numJobs)
+	kickvalueStd := stddev(kickvalues)
+	snarevalueStd := stddev(snarevalues)
 
-	// calculate the standard deviation
-	kickvalueStd := 0.0
 	for _, v := range kickvalues {
-		kickvalueStd += math.Pow(v-kickvalueMean, 2)
+		fmt.Println(v)
 	}
-	kickvalueStd /= float64(numJobs)
-	kickvalueStd = math.Sqrt(kickvalueStd)
+	for _, v := range snarevalues {
+		fmt.Println(v)
+	}
+	fmt.Println(kickvalueStd)
+	_, _, maxi, _ := peakdetect.PeakDetect(kickvalues[:], kickvalueStd)
+	_, _, smaxi, _ := peakdetect.PeakDetect(snarevalues[:], snarevalueStd)
+	fmt.Println("peaks")
+	for _, v := range maxi {
+		fmt.Println(v)
+	}
+	for _, v := range smaxi {
+		fmt.Println(v + len(kickvalues))
+	}
+	kicks = make([]bool, len(kickvalues))
+	snares = make([]bool, len(snarevalues))
+	for _, v := range maxi {
+		kicks[v] = true
+	}
+	for _, v := range smaxi {
+		snares[v] = true
+	}
 
-	// calculate the kicks
-	for i := 0; i < numJobs; i++ {
-		if kickvalues[i] > kickvalueMean+kickvalueStd {
-			kicks[i] = true
-		}
-	}
 	return
 }
 
@@ -178,4 +202,22 @@ func run(args ...string) (string, string, error) {
 		err = fmt.Errorf("%s%s", outb.String(), errb.String())
 	}
 	return outb.String(), errb.String(), err
+}
+
+func stddev(data []float64) float64 {
+	// calculate mean
+	mean := 0.0
+	for _, v := range data {
+		mean += v
+	}
+	mean /= float64(len(data))
+	// calculate variance
+	variance := 0.0
+	for _, v := range data {
+		variance += (v - mean) * (v - mean)
+	}
+	variance /= float64(len(data))
+	// calculate standard deviation
+	stddev := math.Sqrt(variance)
+	return stddev
 }
