@@ -1,7 +1,7 @@
 +++
 title = 'Mute'
 date = 2024-02-01T12:33:06-08:00
-short = 'retrig speed depends on location'
+short = 'Mutes playback but does not stop playback'
 buttons = ['B','C']
 weight = 21
 mode = 'any'
