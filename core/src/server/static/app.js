@@ -376,6 +376,9 @@ app = new Vue({
         isSelected(fileIndex) {
             return this.selectedFiles.includes(fileIndex);
         },
+        isSelectedAndOpen(fileIndex) {
+            return this.selectedFile === fileIndex;
+        },
         toggleSamplePlayback() {
             if (wsf == null) {
                 return;

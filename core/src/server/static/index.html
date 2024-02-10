@@ -503,7 +503,8 @@
                         selected files</button>
                     <ul>
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
-                            @click="showFileDetails(fileIndex)" :class="{ 'selected': isSelected(fileIndex) }"
+                            @click="showFileDetails(fileIndex)"
+                            :class="{ 'selected': isSelected(fileIndex), 'selected_on':isSelectedAndOpen(fileIndex) }"
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
                             <!-- file movers -->
