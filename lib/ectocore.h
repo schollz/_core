@@ -87,10 +87,9 @@ void input_handling() {
 
   bool btn_taptempo_on = false;
 
-  sf->vol = 200;
-
   while (1) {
     uint16_t val;
+    sf->vol = 200;
 
     if (MessageSync_hasMessage(messagesync)) {
       MessageSync_print(messagesync);
