@@ -86,10 +86,10 @@ void input_handling() {
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
 
   bool btn_taptempo_on = false;
+  sf->vol = 190;
 
   while (1) {
     uint16_t val;
-    sf->vol = 200;
 
     if (MessageSync_hasMessage(messagesync)) {
       MessageSync_print(messagesync);
