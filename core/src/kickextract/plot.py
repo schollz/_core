@@ -20,7 +20,10 @@ def plot_data(data):
             except:
                 continue
         else:
-            points.append(float(line))
+            try:
+                points.append(float(line))
+            except:
+                continue
 
     print(points, peaks)
     # plot the points as a line graph
