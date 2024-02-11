@@ -265,10 +265,6 @@ void input_handling() {
                            (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
                            4096 * 2;
         } else if (button_is_pressed(KEY_C)) {
-          pitch_val_index = adc * PITCH_VAL_MAX / 4096;
-          if (pitch_val_index >= PITCH_VAL_MAX) {
-            pitch_val_index = PITCH_VAL_MAX - 1;
-          }
         } else if (button_is_pressed(KEY_D)) {
         }
       }
@@ -295,6 +291,16 @@ void input_handling() {
         printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
       } else {
         if (button_is_pressed(KEY_A)) {
+          if (adc < 2048 - 200) {
+            pitch_val_index = adc * PITCH_VALUE_MID / (2048 - 200);
+          } else if (adc > 2048 + 200) {
+            adc -= 2048 + 200;
+            pitch_val_index =
+                adc * (PITCH_VAL_MAX - PITCH_VALUE_MID) / (2048 - 200) +
+                PITCH_VALUE_MID;
+          } else {
+            pitch_val_index = PITCH_VALUE_MID;
+          }
         } else if (button_is_pressed(KEY_B)) {
           for (uint8_t channel = 0; channel < 2; channel++) {
             if (adc < 3500) {
