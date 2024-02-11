@@ -95,12 +95,12 @@ the rest of the buttons (1-16) are just called **H**.
 #### combo knobs
 
 - [x] **A** + **X** → tempo
-- [ ] **A** + **Y** → 
+- [ ] **A** + **Y** → pitch
 - [x] **A** + **Z** → volume
 - [ ] **B** + **X** → 
 - [x] **B** + **Y** → filter fc (lowpass/highpass?)
 - [ ] **B** + **Z** → 
-- [ ] **C** + **X** → pitch
+- [ ] **C** + **X** → 
 - [ ] **C** + **Y** → 
 - [x] **C** + **Z** → quantize
 - [ ] **D** + **X** → 
