@@ -1,6 +1,6 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://docs.zeptocore.com/'
 languageCode = 'en-us'
-title = 'zeptocore documentation'
+title = 'zeptocore docs'
 theme = 'zeptocore'
 [markup]
   [markup.goldmark]
