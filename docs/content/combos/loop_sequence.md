@@ -5,7 +5,7 @@ buttons = ['1-16','1-16','1-16']
 short = 'Loop a sequence between first and second press'
 weight = 13
 mode = 'jump'
-icon = 'sync'
+icon = 'repeat'
 +++
 
 
