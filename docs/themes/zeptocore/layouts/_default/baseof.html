@@ -185,7 +185,7 @@
           <td class="w4">Description</td>
         </tr>
 
-        {{ $modes := slice "jump" "mash" "any" }}
+        {{ $modes := slice "jump" "mash" "bass" "any" }}
         {{ range $modes }}
         {{ $modeName := . }}
         {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
@@ -233,7 +233,7 @@
             <td class="fx5">Description</td>
           </tr>
 
-          {{ $modes := slice "any" "jump" "mash" }}
+          {{ $modes := slice "any" "jump" "mash" "bass" }}
           {{ range $modes }}
           {{ $modeName := . }}
           {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}

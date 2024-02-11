@@ -9,7 +9,7 @@ mode = 'mash'
 mode_alt = 'jump'
 knobx = 'rate'
 knoby = 'depth'
-icon = 'sync'
+icon = 'headphones'
 +++
 
 
