@@ -5,12 +5,12 @@ typedef struct DebounceDigits {
   uint16_t duration;
   uint16_t max_duration;
   uint16_t value : 10;
-  uint16_t active : 3;
-  uint16_t num_digits : 3;
-  uint8_t current_digit : 4;
-  uint8_t repeats : 3;
-  uint8_t space : 1;
-  char digits[4];
+  uint16_t active : 6;
+  uint16_t num_digits : 6;
+  uint16_t current_digit : 6;
+  uint16_t repeats : 3;
+  uint16_t space : 1;
+  char digits[16];
 } DebounceDigits;
 
 DebounceDigits *DebounceDigits_malloc() {
@@ -47,6 +47,25 @@ void DebounceDigits_reverseArray(char *array, int length) {
     start++;
     end--;
   }
+}
+
+void DebounceDigits_setText(DebounceDigits *self, char *text,
+                            uint16_t duration) {
+  self->value = 0;
+  self->max_duration = duration;
+  self->duration = duration * 0.1;
+  self->current_digit = 0;
+  self->repeats = 0;
+  self->active = 1;
+  self->space = 1;
+  self->num_digits = strlen(text);
+  if (self->num_digits > 15) {
+    self->num_digits = 15;
+  }
+  for (int i = 0; i < self->num_digits; i++) {
+    self->digits[i] = text[i];
+  }
+  self->digits[self->num_digits] = '\0';
 }
 
 void DebounceDigits_set(DebounceDigits *self, uint16_t number,
