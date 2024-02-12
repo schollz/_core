@@ -554,9 +554,9 @@ void button_handler(ButtonMatrix *bm) {
         sf->stay_in_sync = !sf->stay_in_sync;
         printf("toggling in sync mode: %d\n", sf->stay_in_sync);
         if (sf->stay_in_sync) {
-          DebounceDigits_setText(debouncer_digits, "LOCK ON", 200);
+          DebounceDigits_setText(debouncer_digits, "LOCK OONN", 200);
         } else {
-          DebounceDigits_setText(debouncer_digits, "LOCK OFF", 200);
+          DebounceDigits_setText(debouncer_digits, "LOCK OOFFFF", 200);
         }
       } else if (key_pressed[0] == 7 && key_pressed[1] == 10 &&
                  key_pressed[2] == 13 && key_pressed[3] == 16) {
