@@ -36,6 +36,8 @@ typedef struct SaveFile {
   uint8_t sequence_sel[3];
   bool fx_active[16];
   uint8_t fx_param[16][3];
+  uint8_t stay_in_sync : 1;
+  uint8_t _padding : 7;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -63,6 +65,7 @@ SaveFile *SaveFile_malloc() {
     sf->fx_param[i][1] = 0;
     sf->fx_param[i][2] = 0;
   }
+  sf->stay_in_sync = 0;
   sf->fx_param[FX_SATURATE][0] = 64;
   sf->fx_param[FX_SHAPER][0] = 180;
   sf->fx_param[FX_SHAPER][1] = 28;
