@@ -10,3 +10,5 @@ icon = 'drum-steelpan'
 
 
 Toggling the kick mode will modify the playback sequence so that only sequences with kicks are played.
+
+Kick mode will display `KICKS` if enabled and will display `NORM` when disabled.
