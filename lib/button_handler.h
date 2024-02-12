@@ -549,8 +549,13 @@ void button_handler(ButtonMatrix *bm) {
                                      ->splice_variable;
       }
     } else if (key_pressed_num == 4) {
-      if (key_pressed[0] == 7 && key_pressed[1] == 10 && key_pressed[2] == 13 &&
-          key_pressed[3] == 16) {
+      if (key_pressed[0] == 4 && key_pressed[1] == 5 && key_pressed[2] == 6 &&
+          key_pressed[3] == 7) {
+        sf->stay_in_sync = !sf->stay_in_sync;
+        DebounceDigits_set(debouncer_digits, 1, 200);
+        printf("toggling in sync mode: %d\n", sf->stay_in_sync);
+      } else if (key_pressed[0] == 7 && key_pressed[1] == 10 &&
+                 key_pressed[2] == 13 && key_pressed[3] == 16) {
         printf("combo: 7 10 13 16!!!\n");
         only_play_kicks = !only_play_kicks;
         printf("only_play_kicks: %d\n", only_play_kicks);

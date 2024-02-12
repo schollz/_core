@@ -1,4 +1,4 @@
-# _core
+# `_core`
 
 [![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)](https://github.com/schollz/_core/actions/workflows/build.yml) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
 
@@ -103,8 +103,8 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **C** + **X** → 
 - [ ] **C** + **Y** → 
 - [x] **C** + **Z** → quantize
-- [ ] **D** + **X** → 
-- [ ] **D** + **Y** → 
+- [ ] **D** + **X** → probability of jump
+- [ ] **D** + **Y** → probability of retrigger
 - [ ] **D** + **Z** → 
 - [o] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
 
