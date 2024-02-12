@@ -217,6 +217,18 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                             ->sample[sel_sample_cur]
                                             .snd[sel_variation]
                                             ->slice_num;
+        } else if (sf->stay_in_sync) {
+          beat_current = beat_total % banks[sel_bank_cur]
+                                          ->sample[sel_sample_cur]
+                                          .snd[sel_variation]
+                                          ->slice_num;
+          if (!phase_forward) {
+            beat_current = banks[sel_bank_cur]
+                               ->sample[sel_sample_cur]
+                               .snd[sel_variation]
+                               ->slice_num -
+                           beat_current;
+          }
         } else {
           if (beat_current == 0 && !phase_forward) {
             beat_current = banks[sel_bank_cur]
