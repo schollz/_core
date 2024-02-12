@@ -504,6 +504,7 @@ void button_handler(ButtonMatrix *bm) {
               ->sample[sel_sample_cur]
               .snd[sel_variation]
               ->play_mode = PLAY_NORMAL;
+          DebounceDigits_setText(debouncer_digits, "ONESHOT OOFFF", 200);
         } else {
           printf("toggle one shot ON ");
           banks[sel_bank_cur]
@@ -514,6 +515,7 @@ void button_handler(ButtonMatrix *bm) {
               ->sample[sel_sample_cur]
               .snd[sel_variation]
               ->play_mode = PLAY_SPLICE_STOP;
+          DebounceDigits_setText(debouncer_digits, "ONESHOT OONN", 200);
         }
         printf("combo: 8 9 8!!!\n");
       } else if (key_pressed[0] == 10 && key_pressed[1] == 11 &&
@@ -563,20 +565,32 @@ void button_handler(ButtonMatrix *bm) {
         printf("combo: 7 10 13 16!!!\n");
         only_play_kicks = !only_play_kicks;
         printf("only_play_kicks: %d\n", only_play_kicks);
+        if (only_play_kicks) {
+          DebounceDigits_setText(debouncer_digits, "KICKS", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+        }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 6) {
         only_play_snares = !only_play_snares;
         printf("only_play_snares: %d\n", only_play_snares);
+        if (only_play_snares) {
+          DebounceDigits_setText(debouncer_digits, "SNARES", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+        }
       } else if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
                  key_pressed[2] == 13 && key_pressed[3] == 14) {
         quadratic_resampling = !quadratic_resampling;
         if (quadratic_resampling) {
           printf("combo: change resampling to quadratic\n");
+          DebounceDigits_setText(debouncer_digits, "QUAD", 200);
         } else {
           printf("combo: change resampling to linear\n");
+          DebounceDigits_setText(debouncer_digits, "LINEAR", 200);
         }
-      } else if (key_pressed[0] == 8 && key_pressed[1] == 11 &&
-                 key_pressed[2] == 10 && key_pressed[3] == 9) {
+      } else if (key_pressed[0] == 8 && key_pressed[1] == 9 &&
+                 key_pressed[2] == 10 && key_pressed[3] == 11) {
         banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[sel_variation]
@@ -589,8 +603,10 @@ void button_handler(ButtonMatrix *bm) {
                 .snd[sel_variation]
                 ->tempo_match) {
           printf("combo: enabled to tempo match mode\n");
+          DebounceDigits_setText(debouncer_digits, "MATCH OONN", 200);
         } else {
           printf("combo: disabled tempo match mode\n");
+          DebounceDigits_setText(debouncer_digits, "MATCH OOFFF", 200);
         }
       }
     } else if (key_pressed_num == 8) {
@@ -600,8 +616,10 @@ void button_handler(ButtonMatrix *bm) {
         clock_out_do = true;
         if (clock_out_do) {
           printf("[button_handler]: combo: clock out enabled\n");
+          DebounceDigits_setText(debouncer_digits, "SYNC OONN", 200);
         } else {
           printf("[button_handler]: combo: clock out disabled\n");
+          DebounceDigits_setText(debouncer_digits, "SYNC OOFFF", 200);
         }
       }
     }
