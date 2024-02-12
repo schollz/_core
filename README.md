@@ -95,7 +95,7 @@ the rest of the buttons (1-16) are just called **H**.
 #### combo knobs
 
 - [x] **A** + **X** → tempo
-- [ ] **A** + **Y** → pitch
+- [x] **A** + **Y** → pitch
 - [x] **A** + **Z** → volume
 - [ ] **B** + **X** → 
 - [x] **B** + **Y** → filter fc (lowpass/highpass?)
@@ -141,17 +141,8 @@ holding an effect and using a knob will change its parameters.
 
 #### needs
 
-- pitch
-- gate
-- all probabilities
-- distortion level
-- distortion wet
-- saturation wet
 - probability jump
-- probability reverse
 - probability retrig
-- probability tunnel
-- probability repitch
 
 # building image
 
