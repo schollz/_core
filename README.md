@@ -25,7 +25,7 @@ breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
 
 ![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
 
-
+![boardcore](docs/static/_core_bb.png)
 
 ## zeptocore
 
