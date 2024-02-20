@@ -96,7 +96,14 @@ pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
 	cd pico-extras && git submodule update -i 
 
-upload: dobuild
+minicom:
+	cd dev/minicom && go build -v
+	./dev/minicom/minicom
+
+changebaud:
+	curl localhost:7083 
+
+upload: changebaud dobuild
 	./dev/upload.sh 
 
 bootreset: dobuild
