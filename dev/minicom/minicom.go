@@ -1,97 +1,109 @@
 package main
 
 import (
-	"bufio"
+	"flag"
 	"fmt"
-	"io"
 	"net/http"
-	"os/exec"
 	"strings"
 	"time"
 
-	"github.com/jacobsa/go-serial/serial"
 	log "github.com/schollz/logger"
+	"go.bug.st/serial"
 )
 
-var lostConnection = false
-var lastMessageTime time.Time
-var startConnectionTime time.Time
-var notNotified = true
+var flagLogger string
 
-func main() {
-	startConnectionTime = time.Now()
-	go func() {
-		for {
-			time.Sleep(1 * time.Second)
-			if (time.Since(startConnectionTime)) > 10*time.Minute && notNotified && time.Since(lastMessageTime) < 5*time.Second {
-				notNotified = false
-				var currentHash string
-				cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
-				if out, err := cmd.Output(); err == nil {
-					currentHash = string(out)
-				}
-
-				http.Post("https://ntfy.sh/qrv3w", "text/plain",
-					strings.NewReader(currentHash+" ok"))
-
-			}
-			if time.Since(lastMessageTime) > 5*time.Second && !lostConnection {
-				log.Info("lost connection")
-				lostConnection = true
-				// get current hash using
-				// git rev-parse --short HEAD
-				var currentHash string
-				cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
-				if out, err := cmd.Output(); err == nil {
-					currentHash = string(out)
-				}
-
-				http.Post("https://ntfy.sh/qrv3w", "text/plain",
-					strings.NewReader(currentHash+" bad"))
-			}
-		}
-
-	}()
-	for {
-		listenToMessages()
-		time.Sleep(1 * time.Second)
-	}
+func init() {
+	flag.StringVar(&flagLogger, "logger", "debug", "logger level")
 }
 
-func listenToMessages() {
-	// Serial port options
-	options := serial.OpenOptions{
-		PortName:        "/dev/ttyACM0", // Replace with your port name
-		BaudRate:        115200,
-		DataBits:        8,
-		StopBits:        1,
-		MinimumReadSize: 4,
-	}
+func main() {
+	flag.Parse()
+	log.SetLevel(flagLogger)
+	log.Info("starting minicom")
 
-	// Open the port
-	port, err := serial.Open(options)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer port.Close()
+	baudRateChange := make(chan int)
+	dataChannel := make(chan []byte)
+	stopChannel := make(chan struct{})
+	currentBaudRate := 115200 // Initial baud rate
 
-	// Create a buffered reader
-	reader := bufio.NewReader(port)
-	startConnectionTime = time.Now()
-	notNotified = true
-	// Continuously read and print messages from the serial port
-	for {
-		message, err := reader.ReadString('\n')
-		if err != nil {
-			if err != io.EOF {
-				log.Error(err)
-				return
+	go serialPortReader("/dev/ttyACM0", &currentBaudRate, baudRateChange, dataChannel, stopChannel)
+
+	// Example usage
+	go func() {
+		for data := range dataChannel {
+			dataString := strings.TrimSpace(string(data))
+			if dataString != "" {
+				fmt.Println(dataString)
 			}
-			break
 		}
-		fmt.Print(message)
-		lastMessageTime = time.Now()
-		lostConnection = false
+	}()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("done"))
+		go func() {
+			baudRateChange <- 1200 // New baud rate
+			time.Sleep(5 * time.Second)
+			baudRateChange <- 115200 // New baud rate
+
+		}()
+	})
+
+	log.Debugf("running on port 7083")
+	http.ListenAndServe(":7083", nil)
+}
+
+func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan int, dataChannel chan []byte, stopChannel chan struct{}) {
+	var port serial.Port
+
+	openPort := func(baudRate int) {
+		if port != nil {
+			port.Close()
+			port = nil
+		}
+		mode := &serial.Mode{
+			BaudRate: baudRate,
+		}
+		var errconnect error
+		port, errconnect = serial.Open(portName, mode)
+		if errconnect == nil {
+			log.Debugf("opened port %s at %d", portName, baudRate)
+		}
+	}
+
+	for {
+		select {
+		case <-stopChannel:
+			if port != nil {
+				port.Close()
+			}
+			close(dataChannel)
+			return
+		case newBaudRate := <-baudRateChange:
+			log.Debugf("changing baud rate to %d", newBaudRate)
+			*currentBaudRate = newBaudRate
+			openPort(newBaudRate)
+		default:
+			if port == nil {
+				openPort(*currentBaudRate)
+			}
+			if port == nil {
+				time.Sleep(1 * time.Second)
+				log.Tracef("unable to open port %s", portName)
+				continue
+			}
+
+			buf := make([]byte, 128)
+			port.SetReadTimeout(time.Millisecond * 100) // Set a short timeout for non-blocking read
+			n, err := port.Read(buf)
+			if err != nil {
+				continue // Handle as needed; for now, just retry
+			}
+			if n > 0 {
+				data := make([]byte, n)
+				copy(data, buf[:n])
+				dataChannel <- data
+			}
+		}
 	}
 }
