@@ -45,24 +45,19 @@ func download(downloadURL string) (filename string, err error) {
 	return filename, nil
 }
 
-func DownloadZeptocore() (filename string, err error) {
+func Download(deviceType string) (filename string, err error) {
 	log.Debug("getting latest tag")
-	downloadURL, err := Zeptocore()
+	tagname, err := Tag()
+	if err != nil {
+		return
+	}
+	downloadURL := fmt.Sprintf("https://github.com/schollz/_core/releases/download/%s/%s_%s.uf2", tagname, deviceType, tagname)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	log.Debug("downloading ", downloadURL)
 	filename, err = download(downloadURL)
-	return
-}
-
-func Zeptocore() (downloadURL string, err error) {
-	tagname, err := Tag()
-	if err != nil {
-		return
-	}
-	downloadURL = fmt.Sprintf("https://github.com/schollz/_core/releases/download/%s/zeptocore_%s.uf2", tagname, tagname)
 	return
 }
 

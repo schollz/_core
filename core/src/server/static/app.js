@@ -140,8 +140,10 @@ const socketMessageListener = (e) => {
         }
     } else if (data.action == "devicefound") {
         console.log(data);
-        app.deviceFirmwareUpload = false;
         app.deviceType = data.deviceType;
+        if (data.deviceType != "") {
+            app.deviceFirmwareUpload = false;
+        }
         app.deviceVersion = data.deviceVersion;
         app.latestVersion = data.latestVersion;
     } else if (data.action == "copyworkspace") {
