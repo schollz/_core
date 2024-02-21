@@ -134,8 +134,12 @@ const socketMessageListener = (e) => {
         }
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
+    } else if (data.action == "firmwareuploaded") {
+        app.deviceFirmwareUpload = false;
+        if (!data.success) {
+            app.error_message = data.message;
+        }
     } else if (data.action == "devicefound") {
-        console.log(data);
         app.deviceFound = data.boolean;
     } else if (data.action == "copyworkspace") {
         if (data.error != "") {
