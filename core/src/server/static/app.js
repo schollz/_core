@@ -135,12 +135,12 @@ const socketMessageListener = (e) => {
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
     } else if (data.action == "firmwareuploaded") {
-        app.deviceFirmwareUpload = false;
         if (!data.success) {
             app.error_message = data.message;
         }
     } else if (data.action == "devicefound") {
         console.log(data);
+        app.deviceFirmwareUpload = false;
         app.deviceType = data.deviceType;
         app.deviceVersion = data.deviceVersion;
         app.latestVersion = data.latestVersion;

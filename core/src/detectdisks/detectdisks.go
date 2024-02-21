@@ -22,7 +22,7 @@ func GetUF2Drive() (uf2disk string, err error) {
 			continue
 		}
 
-		if usageStat.Used == 8192 {
+		if usageStat.Used == 8192 || usageStat.Used == 20480 {
 			uf2disk = partition.Mountpoint
 			log.Debug(partition.Mountpoint, " ", usageStat.Total, " ", usageStat.Free, " ", usageStat.Used)
 		} else {
