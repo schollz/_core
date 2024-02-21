@@ -39,12 +39,11 @@ func main() {
 	}
 
 	var chanString chan string
-	var chanBaudRate chan int
+	var chanPrepareUpload chan bool
 	var chanPlugChange chan bool
 
 	if !flagDontConnect {
-		chanString, chanBaudRate, chanPlugChange, err = minicom.Run()
-		_ = chanBaudRate
+		chanString, chanPrepareUpload, chanPlugChange, err = minicom.Run()
 		if err != nil {
 			log.Error(err)
 		}
@@ -58,7 +57,7 @@ func main() {
 		}()
 	}
 
-	err = server.Serve(flagUseFilesOnDisk, flagDontConnect, chanString, chanBaudRate, chanPlugChange)
+	err = server.Serve(flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanPlugChange)
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)
