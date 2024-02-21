@@ -63,7 +63,9 @@
                 </svg></a>
             <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank" class="hideIfMobile"
                 id="floater">firmware
-                [[.VersionCurrent]]</a>
+                [[.VersionCurrent]]</a>&nbsp;
+            <span v-if="deviceFound"><i class="fas fa-upload " aria-hidden="true"></i></span>
+            <span v-else><i class="fas fa-plug " aria-hidden="true"></i></span>
 
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
