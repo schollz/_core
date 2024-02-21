@@ -140,7 +140,10 @@ const socketMessageListener = (e) => {
             app.error_message = data.message;
         }
     } else if (data.action == "devicefound") {
-        app.deviceFound = data.boolean;
+        console.log(data);
+        app.deviceType = data.deviceType;
+        app.deviceVersion = data.deviceVersion;
+        app.latestVersion = data.latestVersion;
     } else if (data.action == "copyworkspace") {
         if (data.error != "") {
             app.error_message = data.error;
@@ -307,7 +310,9 @@ app = new Vue({
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
         selectedFile: null,
-        deviceFound: false,
+        deviceType: "",
+        latestVersion: "",
+        deviceVersion: "",
         deviceFirmwareUpload: false,
         lastSelectedFile: null,
         progressBarWidth: '0px',

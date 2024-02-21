@@ -21,6 +21,10 @@ void input_handling() {
                              103, 104, 106, 107, 98,  110, 109, 44};
     if (c >= 0) {
       printf("Got character %d\n", c);
+      if (c == 118) {
+        printf("version=v1.3.1\n");
+      }
+
       for (int i = 0; i < 16; i++) {
         if (c == key_to_jump[i]) {
           key_do_jump(i);
