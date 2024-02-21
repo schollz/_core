@@ -63,7 +63,10 @@
                 </svg></a>
             <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank" class="hideIfMobile"
                 id="floater">firmware
-                [[.VersionCurrent]]</a>
+                [[.VersionCurrent]]</a>&nbsp;
+            <span v-if="deviceFirmwareUpload"><i class="fas fa-circle" aria-hidden="true"></i></span>
+            <span v-else-if="!deviceFound"><i class="fas fa-plug " aria-hidden="true"></i></span>
+            <span v-else><i @click="uploadFirmare()" class="fas fa-upload clickable" aria-hidden="true"></i></span>
 
         </header>
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
