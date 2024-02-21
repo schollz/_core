@@ -20,9 +20,12 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/lucasepe/codename"
 	cp "github.com/otiai10/copy"
+	"github.com/schollz/_core/core/src/detectdisks"
+	"github.com/schollz/_core/core/src/latestrelease"
 	"github.com/schollz/_core/core/src/names"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/pack"
+	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
 	bolt "go.etcd.io/bbolt"
@@ -40,9 +43,16 @@ var mutex sync.Mutex
 var keystore *bolt.DB
 var serverID string
 var useFilesOnDisk bool
+var isPluggedIn bool
+var chanPrepareUpload chan bool
+var chanPlugChange chan bool
+var chanString chan string
 
-func Serve(useFiles bool) (err error) {
+func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanPlugChangeArg chan bool) (err error) {
 	useFilesOnDisk = useFiles
+	chanPrepareUpload = chanPrepareUploadArg
+	chanPlugChange = chanPlugChangeArg
+	chanString = chanStringArg
 	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
 
@@ -72,6 +82,29 @@ func Serve(useFiles bool) (err error) {
 	})
 	if err != nil {
 		return
+	}
+
+	if !flagDontConnect {
+		go func() {
+			for {
+				select {
+				case isPluggedIn = <-chanPlugChange:
+					log.Tracef("isPluggedIn: %v", isPluggedIn)
+					mutex.Lock()
+					for _, c := range connections {
+						c.WriteJSON(Message{
+							Action:  "devicefound",
+							Boolean: isPluggedIn,
+						})
+					}
+					mutex.Unlock()
+				case s := <-chanString:
+					log.Tracef("minicom: %s", s)
+				}
+
+			}
+		}()
+
 	}
 
 	connections = make(map[string]*websocket.Conn)
@@ -288,10 +321,48 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Success:  true,
 				})
 			}
+		} else if message.Action == "uploadfirmware" {
+			log.Debug("uploading firmware")
+			chanPrepareUpload <- true
+			uf2disk := ""
+			for i := 0; i < 10; i++ {
+				time.Sleep(1 * time.Second)
+				uf2disk, err = detectdisks.GetUF2Drive()
+				if err == nil {
+					break
+				}
+			}
+			if uf2disk != "" {
+				log.Debug("found disk")
+				// zeptocore.UploadFirmware(uf2disk)
+				var downloadedUF2 string
+				downloadedUF2, err = latestrelease.DownloadZeptocore()
+				if err != nil {
+					log.Error(err)
+				} else {
+					// copy the file to the disk
+					destinationFile := path.Join(uf2disk, "firmware.uf2")
+					log.Debugf("copying file to disk: %s->%s", downloadedUF2, destinationFile)
+					err = utils.CopyFile(downloadedUF2, destinationFile)
+					if err != nil {
+						log.Error(err)
+					} else {
+						log.Debug("copied file to disk")
+					}
+				}
+			} else {
+				log.Error("could not find disk")
+
+			}
+
 		} else if message.Action == "connected" {
 			c.WriteJSON(Message{
 				Action:  "connected",
 				Message: serverID,
+			})
+			c.WriteJSON(Message{
+				Action:  "devicefound",
+				Boolean: isPluggedIn,
 			})
 		} else if message.Action == "mergefiles" {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
