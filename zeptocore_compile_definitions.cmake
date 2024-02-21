@@ -70,4 +70,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # INCLUDE_KEYBOARD=1
     # INCLUDE_RGBLED=1
     INCLUDE_SINEBASS=1
+
+    USBD_PID=0x1836
 )

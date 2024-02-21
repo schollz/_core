@@ -3,6 +3,7 @@ package detectdevice
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 
 	"go.bug.st/serial/enumerator"
@@ -18,11 +19,10 @@ func TestDetectDevice(t *testing.T) {
 		return
 	}
 	for _, port := range ports {
-		fmt.Printf("Found port: %s\n", port.Name)
-		fmt.Printf("   IsUSB      %v\n", port.IsUSB)
-		if port.IsUSB {
-			fmt.Printf("   USB ID     %s:%s\n", port.VID, port.PID)
-			fmt.Printf("   USB serial %s\n", port.SerialNumber)
+		id := strings.ToUpper(port.VID) + ":" + strings.ToUpper(port.PID)
+		if id == COREID {
+			fmt.Println("Found Core:", port.Name)
 		}
+		fmt.Println(id, port.Name)
 	}
 }

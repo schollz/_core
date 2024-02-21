@@ -40,8 +40,9 @@ var mutex sync.Mutex
 var keystore *bolt.DB
 var serverID string
 var useFilesOnDisk bool
+var isPluggedIn bool
 
-func Serve(useFiles bool) (err error) {
+func Serve(useFiles bool, flagDontConnect bool, chanString chan string, chanBaudRate chan int, chanPlugChange chan bool) (err error) {
 	useFilesOnDisk = useFiles
 	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
@@ -72,6 +73,31 @@ func Serve(useFiles bool) (err error) {
 	})
 	if err != nil {
 		return
+	}
+
+	if !flagDontConnect {
+		go func() {
+			for {
+				select {
+				case baudRate := <-chanBaudRate:
+					log.Tracef("baudRate: %d", baudRate)
+				case isPluggedIn = <-chanPlugChange:
+					log.Tracef("isPluggedIn: %v", isPluggedIn)
+					mutex.Lock()
+					for _, c := range connections {
+						c.WriteJSON(Message{
+							Action:  "devicefound",
+							Boolean: isPluggedIn,
+						})
+					}
+					mutex.Unlock()
+				case s := <-chanString:
+					log.Tracef("minicom: %s", s)
+				}
+
+			}
+		}()
+
 	}
 
 	connections = make(map[string]*websocket.Conn)
@@ -292,6 +318,10 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			c.WriteJSON(Message{
 				Action:  "connected",
 				Message: serverID,
+			})
+			c.WriteJSON(Message{
+				Action:  "devicefound",
+				Boolean: isPluggedIn,
 			})
 		} else if message.Action == "mergefiles" {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
