@@ -304,6 +304,7 @@ app = new Vue({
         selectedBank: 0,
         selectedFile: null,
         deviceFound: false,
+        deviceFirmwareUpload: false,
         lastSelectedFile: null,
         progressBarWidth: '0px',
         oversampling: '1x', // Default to '1x'
@@ -348,6 +349,13 @@ app = new Vue({
         }
     },
     methods: {
+        uploadFirmare() {
+            console.log("uploading firmware");
+            this.deviceFirmwareUpload = true;
+            socket.send(JSON.stringify({
+                action: "uploadfirmware",
+            }));
+        },
         updateSlicesPerBeat() {
             if (socket != null) {
                 setTimeout(() => {
