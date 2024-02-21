@@ -138,14 +138,16 @@ const socketMessageListener = (e) => {
         if (!data.success) {
             app.error_message = data.message;
         }
+    } else if (data.action == "firmwareprogress") {
+        app.deviceFirmwareUpload = data.deviceFirmwareUpload;
     } else if (data.action == "devicefound") {
         console.log(data);
-        app.deviceType = data.deviceType;
         if (data.deviceType != "") {
-            app.deviceFirmwareUpload = false;
+            app.deviceFirmwareUpload = "";
+            app.deviceType = data.deviceType;
+            app.deviceVersion = data.deviceVersion;
+            app.latestVersion = data.latestVersion;
         }
-        app.deviceVersion = data.deviceVersion;
-        app.latestVersion = data.latestVersion;
     } else if (data.action == "copyworkspace") {
         if (data.error != "") {
             app.error_message = data.error;
@@ -315,7 +317,7 @@ app = new Vue({
         deviceType: "",
         latestVersion: "",
         deviceVersion: "",
-        deviceFirmwareUpload: false,
+        deviceFirmwareUpload: "",
         lastSelectedFile: null,
         progressBarWidth: '0px',
         oversampling: '1x', // Default to '1x'
