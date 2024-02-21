@@ -68,6 +68,8 @@ func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan
 		port, errconnect = serial.Open(portName, mode)
 		if errconnect == nil {
 			log.Debugf("opened port %s at %d", portName, baudRate)
+			// send a message to the port
+			port.Write([]byte("v"))
 		}
 	}
 
