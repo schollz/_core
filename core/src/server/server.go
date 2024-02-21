@@ -45,13 +45,16 @@ var serverID string
 var useFilesOnDisk bool
 var isPluggedIn bool
 var chanPrepareUpload chan bool
-var chanPlugChange chan bool
+var chanDeviceType chan string
 var chanString chan string
+var latestTag string
+var deviceVersion string
+var deviceType string
 
-func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanPlugChangeArg chan bool) (err error) {
+func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
 	useFilesOnDisk = useFiles
 	chanPrepareUpload = chanPrepareUploadArg
-	chanPlugChange = chanPlugChangeArg
+	chanDeviceType = chanDeviceTypeArg
 	chanString = chanStringArg
 	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
@@ -88,17 +91,36 @@ func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanP
 		go func() {
 			for {
 				select {
-				case isPluggedIn = <-chanPlugChange:
-					log.Tracef("isPluggedIn: %v", isPluggedIn)
+				case deviceType = <-chanDeviceType:
+					log.Debugf("deviceType: %v", deviceType)
 					mutex.Lock()
 					for _, c := range connections {
 						c.WriteJSON(Message{
-							Action:  "devicefound",
-							Boolean: isPluggedIn,
+							Action:        "devicefound",
+							DeviceType:    deviceType,
+							DeviceVersion: deviceVersion,
+							LatestVersion: latestTag,
 						})
 					}
 					mutex.Unlock()
 				case s := <-chanString:
+					s = strings.TrimSpace(s)
+					log.Debugf("minicom: %s", s)
+					if strings.HasPrefix(s, "version=") {
+						deviceVersion = strings.TrimPrefix(s, "version=")
+						log.Debugf("device version: %s", deviceVersion)
+
+						mutex.Lock()
+						for _, c := range connections {
+							c.WriteJSON(Message{
+								Action:        "devicefound",
+								DeviceType:    deviceType,
+								DeviceVersion: deviceVersion,
+								LatestVersion: latestTag,
+							})
+						}
+						mutex.Unlock()
+					}
 					log.Tracef("minicom: %s", s)
 				}
 
@@ -106,6 +128,11 @@ func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanP
 		}()
 
 	}
+
+	go func() {
+		latestTag, _ = latestrelease.Tag()
+		log.Debugf("latest tag: %s", latestTag)
+	}()
 
 	connections = make(map[string]*websocket.Conn)
 	log.Debugf("listening on :%d", Port)
@@ -126,7 +153,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	log.Debugf("%v %v %v %s\n", r.RemoteAddr, r.Method, r.URL.Path, time.Since(t))
+	log.Tracef("%v %v %v %s\n", r.RemoteAddr, r.Method, r.URL.Path, time.Since(t))
 }
 
 func handle(w http.ResponseWriter, r *http.Request) (err error) {
@@ -207,7 +234,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsBuy:          r.URL.Path[1:] == "buy",
 				IsMain:         r.URL.Path == "/",
 				IsZeptocore:    r.URL.Path == "/zeptocore",
-				VersionCurrent: "v1.3.0",
+				VersionCurrent: "v1.3.1",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 			}
@@ -242,20 +269,23 @@ func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
-	Action     string         `json:"action"`
-	Message    string         `json:"message"`
-	Boolean    bool           `json:"boolean"`
-	Number     int64          `json:"number"`
-	Error      string         `json:"error"`
-	Success    bool           `json:"success"`
-	Filename   string         `json:"filename"`
-	Filenames  []string       `json:"filenames"`
-	File       zeptocore.File `json:"file"`
-	SliceStart []float64      `json:"sliceStart"`
-	SliceStop  []float64      `json:"sliceStop"`
-	SliceType  []int          `json:"sliceType"`
-	State      string         `json:"state"`
-	Place      string         `json:"place"`
+	Action        string         `json:"action"`
+	Message       string         `json:"message"`
+	Boolean       bool           `json:"boolean"`
+	Number        int64          `json:"number"`
+	Error         string         `json:"error"`
+	Success       bool           `json:"success"`
+	Filename      string         `json:"filename"`
+	Filenames     []string       `json:"filenames"`
+	File          zeptocore.File `json:"file"`
+	SliceStart    []float64      `json:"sliceStart"`
+	SliceStop     []float64      `json:"sliceStop"`
+	SliceType     []int          `json:"sliceType"`
+	State         string         `json:"state"`
+	Place         string         `json:"place"`
+	DeviceType    string         `json:"deviceType"`
+	DeviceVersion string         `json:"deviceVersion"`
+	LatestVersion string         `json:"latestVersion"`
 }
 
 func isValidWorkspace(s string) bool {
@@ -359,6 +389,10 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				log.Error("could not find disk")
 				message = "could not find disk"
 			}
+			if !success {
+				message = "could not upload firmware: " + message
+				message += ". please try unplugging and replugging the device and try again."
+			}
 			c.WriteJSON(Message{
 				Action:  "firmwareuploaded",
 				Success: success,
@@ -370,8 +404,10 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				Message: serverID,
 			})
 			c.WriteJSON(Message{
-				Action:  "devicefound",
-				Boolean: isPluggedIn,
+				Action:        "devicefound",
+				DeviceType:    deviceType,
+				DeviceVersion: deviceVersion,
+				LatestVersion: latestTag,
 			})
 		} else if message.Action == "mergefiles" {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
@@ -556,7 +592,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				return nil
 			})
 			if err != nil {
-				log.Error(err)
+				log.Trace(err)
 			} else {
 				c.WriteJSON(message)
 			}
