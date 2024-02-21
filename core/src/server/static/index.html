@@ -61,21 +61,35 @@
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg></a>
-            <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank" class="hideIfMobile"
-                id="floater">firmware
-                [[.VersionCurrent]]</a>&nbsp;
-            <span v-if="deviceFirmwareUpload"><i class="fas fa-circle" aria-hidden="true"></i></span>
-            <span v-else-if="!deviceFound"></span>
-            <span v-else>
+            <span class="hideIfMobile" id="floater">
 
-                <svg width="16px" height="16px" viewBox="0 0 4 4" version="1.1" xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
-                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-                    <path
-                        d="M0.08,2.75c0.335,1.355 2.996,1.031 3.229,0.748c0.809,-0.988 0.451,-2.249 -0.568,-2.981c-1.35,-0.825 -2.4,-0.535 -2.609,0.933c-0,0 -0.121,1.024 -0.052,1.3Zm1.449,-2.158c0.092,-0.16 0.462,-0.119 0.826,0.091c0.363,0.21 0.583,0.51 0.491,0.669c-0.092,0.16 -0.462,0.119 -0.826,-0.09c-0.363,-0.21 -0.583,-0.51 -0.491,-0.67Zm-0.948,1.698c-0.183,-0.021 -0.293,-0.376 -0.245,-0.793c0.048,-0.417 0.235,-0.739 0.418,-0.718c0.184,0.021 0.294,0.377 0.246,0.794c-0.048,0.417 -0.236,0.738 -0.419,0.717Z"
-                        style="fill:#fff;" />
-                </svg>
-                <i @click="uploadFirmare()" class="fas fa-upload clickable" aria-hidden="true"></i>
+
+                <span v-if="deviceType==''">
+                    <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank">firmware
+                        [[.VersionCurrent]]</a>
+                </span>
+                <span v-else-if="deviceFirmwareUpload"><i class="fas fa-circle" aria-hidden="true"></i> uploading
+                    ...</span>
+                <span v-else-if="deviceType==''"></span>
+                <span v-else>
+                    {{deviceType}} {{deviceVersion}}
+                    <span v-if="deviceVersion!=latestVersion">-> {{latestVersion}}</span>
+                    <span @click="uploadFirmare()" class="clickable">
+                        <span v-if="deviceType=='ectocore'">
+                            <svg width="24px" height="24px" viewBox="0 0 4 4"
+                                style="position: relative; top: 4px; left: 8px;" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                                <path
+                                    d="M0.08,2.75c0.335,1.355 2.996,1.031 3.229,0.748c0.809,-0.988 0.451,-2.249 -0.568,-2.981c-1.35,-0.825 -2.4,-0.535 -2.609,0.933c-0,0 -0.121,1.024 -0.052,1.3Zm1.449,-2.158c0.092,-0.16 0.462,-0.119 0.826,0.091c0.363,0.21 0.583,0.51 0.491,0.669c-0.092,0.16 -0.462,0.119 -0.826,-0.09c-0.363,-0.21 -0.583,-0.51 -0.491,-0.67Zm-0.948,1.698c-0.183,-0.021 -0.293,-0.376 -0.245,-0.793c0.048,-0.417 0.235,-0.739 0.418,-0.718c0.184,0.021 0.294,0.377 0.246,0.794c-0.048,0.417 -0.236,0.738 -0.419,0.717Z"
+                                    style="fill:#fff;" />
+                            </svg>
+                        </span>
+                        <i class="fas fa-upload" aria-hidden="true"></i>
+
+                    </span>
+                </span>
             </span>
 
         </header>

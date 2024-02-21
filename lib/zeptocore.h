@@ -140,14 +140,14 @@ void input_handling() {
   printStringWithDelay("zz1.3.0");
 
   // print to screen
-  printf("version=v1.3.0\n");
+  printf("version=v1.3.1\n");
 
   while (1) {
     // check for input
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v1.3.0\n");
+        printf("version=v1.3.1\n");
       }
     }
     // TODO: check timing of this?

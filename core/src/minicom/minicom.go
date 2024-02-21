@@ -10,7 +10,9 @@ import (
 	"go.bug.st/serial"
 )
 
-const COREID = "2E8A:1836"
+const ZEPTOCOREID = "2E8A:1836"
+const ECTOCOREID = "2E8A:1837"
+const BOARDCOREID = "2E8A:1838"
 
 var hasPort = false
 
@@ -19,14 +21,12 @@ func FoundPort() bool {
 }
 
 // Run starts minicom and return a channel with string messages and channel for interrupting baudRateChange
-func Run() (chan string, chan bool, chan bool, error) {
+func Run() (chan string, chan bool, chan string, error) {
 	prepareUpload := make(chan bool)
 	dataChannel := make(chan []byte)
-	chanPlugChange := make(chan bool)
+	chanDeviceType := make(chan string)
 	stopChannel := make(chan struct{})
 	returnString := make(chan string)
-
-	go serialPortReader(prepareUpload, dataChannel, stopChannel, chanPlugChange)
 
 	// Example usage
 	go func() {
@@ -38,11 +38,16 @@ func Run() (chan string, chan bool, chan bool, error) {
 		}
 	}()
 
-	return returnString, prepareUpload, chanPlugChange, nil
+	go func() {
+		time.Sleep(2 * time.Second)
+		serialPortReader(prepareUpload, dataChannel, stopChannel, chanDeviceType)
+	}()
+
+	return returnString, prepareUpload, chanDeviceType, nil
 
 }
 
-func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChannel chan struct{}, chanPlugChange chan bool) {
+func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChannel chan struct{}, chanDeviceType chan string) {
 	var port serial.Port
 
 	openPort := func(baudRate int) {
@@ -56,7 +61,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			log.Error(err)
 			if hasPort {
 				hasPort = false
-				chanPlugChange <- hasPort
+				chanDeviceType <- ""
 			}
 			return
 		}
@@ -64,18 +69,26 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			log.Error("no ports found")
 			if hasPort {
 				hasPort = false
-				chanPlugChange <- hasPort
+				chanDeviceType <- ""
 			}
 			return
 		}
 		portName := ""
+		deviceType := ""
 		for _, port := range ports {
 			id := strings.ToUpper(port.VID) + ":" + strings.ToUpper(port.PID)
 			if id == ":" {
 				continue
 			}
 			log.Tracef("found port %s with id %s", port.Name, id)
-			if id == COREID {
+			if id == ZEPTOCOREID || id == ECTOCOREID || id == BOARDCOREID {
+				if id == ZEPTOCOREID {
+					deviceType = "zeptocore"
+				} else if id == ECTOCOREID {
+					deviceType = "ectocore"
+				} else if id == BOARDCOREID {
+					deviceType = "boardcore"
+				}
 				log.Tracef("found port %s", port.Name)
 				portName = port.Name
 				break
@@ -85,7 +98,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			log.Trace("no port found")
 			if hasPort {
 				hasPort = false
-				chanPlugChange <- hasPort
+				chanDeviceType <- ""
 			}
 			return
 		}
@@ -97,9 +110,11 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 		port, errconnect = serial.Open(portName, mode)
 		if errconnect == nil {
 			log.Debugf("opened port %s at %d", portName, baudRate)
+			// send a message to the port
+			port.Write([]byte("v"))
 			if !hasPort {
 				hasPort = true
-				chanPlugChange <- hasPort
+				chanDeviceType <- deviceType
 			}
 		}
 	}
