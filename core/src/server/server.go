@@ -269,23 +269,24 @@ func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
 var upgrader = websocket.Upgrader{} // use default options
 
 type Message struct {
-	Action        string         `json:"action"`
-	Message       string         `json:"message"`
-	Boolean       bool           `json:"boolean"`
-	Number        int64          `json:"number"`
-	Error         string         `json:"error"`
-	Success       bool           `json:"success"`
-	Filename      string         `json:"filename"`
-	Filenames     []string       `json:"filenames"`
-	File          zeptocore.File `json:"file"`
-	SliceStart    []float64      `json:"sliceStart"`
-	SliceStop     []float64      `json:"sliceStop"`
-	SliceType     []int          `json:"sliceType"`
-	State         string         `json:"state"`
-	Place         string         `json:"place"`
-	DeviceType    string         `json:"deviceType"`
-	DeviceVersion string         `json:"deviceVersion"`
-	LatestVersion string         `json:"latestVersion"`
+	Action               string         `json:"action"`
+	Message              string         `json:"message"`
+	Boolean              bool           `json:"boolean"`
+	Number               int64          `json:"number"`
+	Error                string         `json:"error"`
+	Success              bool           `json:"success"`
+	Filename             string         `json:"filename"`
+	Filenames            []string       `json:"filenames"`
+	File                 zeptocore.File `json:"file"`
+	SliceStart           []float64      `json:"sliceStart"`
+	SliceStop            []float64      `json:"sliceStop"`
+	SliceType            []int          `json:"sliceType"`
+	State                string         `json:"state"`
+	Place                string         `json:"place"`
+	DeviceType           string         `json:"deviceType"`
+	DeviceVersion        string         `json:"deviceVersion"`
+	DeviceFirmwareUpload string         `json:"deviceFirmwareUpload"`
+	LatestVersion        string         `json:"latestVersion"`
 }
 
 func isValidWorkspace(s string) bool {
@@ -355,6 +356,11 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			var success bool
 			var message string
 			log.Debug("uploading firmware")
+
+			c.WriteJSON(Message{
+				Action:               "firmwareprogress",
+				DeviceFirmwareUpload: "uploading",
+			})
 			chanPrepareUpload <- true
 			uf2disk := ""
 			for i := 0; i < 10; i++ {
@@ -365,8 +371,12 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 			}
 			if uf2disk != "" {
+				c.WriteJSON(Message{
+					Action:               "firmwareprogress",
+					DeviceFirmwareUpload: "download latest",
+				})
+
 				log.Debug("found disk")
-				// zeptocore.UploadFirmware(uf2disk)
 				var downloadedUF2 string
 				downloadedUF2, err = latestrelease.Download(deviceType)
 				if err != nil {
@@ -375,6 +385,10 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				} else {
 					// copy the file to the disk
 					destinationFile := path.Join(uf2disk, "firmware.uf2")
+					c.WriteJSON(Message{
+						Action:               "firmwareprogress",
+						DeviceFirmwareUpload: "copying to " + uf2disk,
+					})
 					log.Debugf("copying file to disk: %s->%s", downloadedUF2, destinationFile)
 					err = utils.CopyFile(downloadedUF2, destinationFile)
 					if err != nil {
@@ -392,6 +406,11 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			if !success {
 				message = "could not upload firmware: " + message
 				message += ". please try unplugging and replugging the device and try again."
+			} else {
+				c.WriteJSON(Message{
+					Action:               "firmwareprogress",
+					DeviceFirmwareUpload: "reloading",
+				})
 			}
 			c.WriteJSON(Message{
 				Action:  "firmwareuploaded",

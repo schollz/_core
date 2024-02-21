@@ -68,7 +68,8 @@
                     <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank">firmware
                         [[.VersionCurrent]]</a>
                 </span>
-                <span v-else-if="deviceFirmwareUpload"><i class="fas fa-circle" aria-hidden="true"></i> uploading
+                <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
+                    {{deviceFirmwareUpload}}
                     ...</span>
                 <span v-else-if="deviceType==''"></span>
                 <span v-else>
