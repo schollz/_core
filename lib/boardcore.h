@@ -22,7 +22,7 @@ void input_handling() {
     if (c >= 0) {
       printf("Got character %d\n", c);
       if (c == 118) {
-        printf("version=v1.3.0\n");
+        printf("version=v1.3.1\n");
       }
 
       for (int i = 0; i < 16; i++) {
