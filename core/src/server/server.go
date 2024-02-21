@@ -368,7 +368,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				log.Debug("found disk")
 				// zeptocore.UploadFirmware(uf2disk)
 				var downloadedUF2 string
-				downloadedUF2, err = latestrelease.DownloadZeptocore()
+				downloadedUF2, err = latestrelease.Download(deviceType)
 				if err != nil {
 					message = err.Error()
 					log.Error(err)
