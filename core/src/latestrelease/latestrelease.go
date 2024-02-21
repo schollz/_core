@@ -58,7 +58,7 @@ func DownloadZeptocore() (filename string, err error) {
 }
 
 func Zeptocore() (downloadURL string, err error) {
-	tagname, err := get()
+	tagname, err := Tag()
 	if err != nil {
 		return
 	}
@@ -66,7 +66,7 @@ func Zeptocore() (downloadURL string, err error) {
 	return
 }
 
-func get() (tagName string, err error) {
+func Tag() (tagName string, err error) {
 	ctx := context.Background()
 
 	client := github.NewClient(nil)

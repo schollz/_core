@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -40,24 +39,16 @@ func main() {
 
 	var chanString chan string
 	var chanPrepareUpload chan bool
-	var chanPlugChange chan bool
+	var chanDeviceType chan string
 
 	if !flagDontConnect {
-		chanString, chanPrepareUpload, chanPlugChange, err = minicom.Run()
+		chanString, chanPrepareUpload, chanDeviceType, err = minicom.Run()
 		if err != nil {
 			log.Error(err)
 		}
-		go func() {
-			for {
-				select {
-				case s := <-chanString:
-					fmt.Println(s)
-				}
-			}
-		}()
 	}
 
-	err = server.Serve(flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanPlugChange)
+	err = server.Serve(flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)
