@@ -134,6 +134,9 @@ const socketMessageListener = (e) => {
         }
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
+    } else if (data.action == "devicefound") {
+        console.log(data);
+        app.deviceFound = data.boolean;
     } else if (data.action == "copyworkspace") {
         if (data.error != "") {
             app.error_message = data.error;
@@ -300,6 +303,7 @@ app = new Vue({
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
         selectedFile: null,
+        deviceFound: false,
         lastSelectedFile: null,
         progressBarWidth: '0px',
         oversampling: '1x', // Default to '1x'
