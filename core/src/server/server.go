@@ -322,6 +322,8 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				})
 			}
 		} else if message.Action == "uploadfirmware" {
+			var success bool
+			var message string
 			log.Debug("uploading firmware")
 			chanPrepareUpload <- true
 			uf2disk := ""
@@ -338,6 +340,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				var downloadedUF2 string
 				downloadedUF2, err = latestrelease.DownloadZeptocore()
 				if err != nil {
+					message = err.Error()
 					log.Error(err)
 				} else {
 					// copy the file to the disk
@@ -345,17 +348,22 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					log.Debugf("copying file to disk: %s->%s", downloadedUF2, destinationFile)
 					err = utils.CopyFile(downloadedUF2, destinationFile)
 					if err != nil {
+						message = err.Error()
 						log.Error(err)
 					} else {
 						log.Debug("copied file to disk")
-						// TODO: send back message to the web server that it was successful
+						success = true
 					}
 				}
 			} else {
 				log.Error("could not find disk")
-
+				message = "could not find disk"
 			}
-
+			c.WriteJSON(Message{
+				Action:  "firmwareuploaded",
+				Success: success,
+				Message: message,
+			})
 		} else if message.Action == "connected" {
 			c.WriteJSON(Message{
 				Action:  "connected",
