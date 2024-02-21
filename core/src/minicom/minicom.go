@@ -1,6 +1,7 @@
 package minicom
 
 import (
+	"bytes"
 	"strings"
 	"time"
 
@@ -66,7 +67,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			return
 		}
 		if len(ports) == 0 {
-			log.Error("no ports found")
+			log.Trace("no ports found")
 			if hasPort {
 				hasPort = false
 				chanDeviceType <- ""
@@ -119,6 +120,9 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 		}
 	}
 
+	// Initialize a buffer to accumulate data outside the loop if not already done.
+	var accumulatedData []byte
+
 	for {
 		select {
 		case <-stopChannel:
@@ -148,7 +152,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 				continue
 			}
 
-			buf := make([]byte, 128)
+			buf := make([]byte, 1024*4)
 			port.SetReadTimeout(time.Millisecond * 100) // Set a short timeout for non-blocking read
 			n, err := port.Read(buf)
 			if err != nil {
@@ -156,9 +160,18 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 				continue
 			}
 			if n > 0 {
-				data := make([]byte, n)
-				copy(data, buf[:n])
-				dataChannel <- data
+				// Append read data to the accumulated buffer.
+				accumulatedData = append(accumulatedData, buf[:n]...)
+
+				// Check if accumulatedData contains a newline.
+				if i := bytes.IndexByte(accumulatedData, '\n'); i >= 0 {
+					// Split at the newline; send the first part to dataChannel.
+					dataToSend := accumulatedData[:i]
+					dataChannel <- dataToSend
+
+					// Keep the remaining data for the next read cycle.
+					accumulatedData = accumulatedData[i+1:]
+				}
 			}
 		}
 	}

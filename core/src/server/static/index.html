@@ -75,6 +75,9 @@
                     {{deviceType}} {{deviceVersion}}
                     <span v-if="deviceVersion!=latestVersion">-> {{latestVersion}}</span>
                     <span @click="uploadFirmare()" class="clickable">
+                        <span v-if="deviceType=='zeptocore'">
+                            <i class="fas fa-z" aria-hidden="true"></i>
+                        </span>
                         <span v-if="deviceType=='ectocore'">
                             <svg width="24px" height="24px" viewBox="0 0 4 4"
                                 style="position: relative; top: 4px; left: 8px;" version="1.1"
