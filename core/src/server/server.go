@@ -348,6 +348,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 						log.Error(err)
 					} else {
 						log.Debug("copied file to disk")
+						// TODO: send back message to the web server that it was successful
 					}
 				}
 			} else {
