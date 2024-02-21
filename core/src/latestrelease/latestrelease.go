@@ -46,10 +46,13 @@ func download(downloadURL string) (filename string, err error) {
 }
 
 func DownloadZeptocore() (filename string, err error) {
+	log.Debug("getting latest tag")
 	downloadURL, err := Zeptocore()
 	if err != nil {
+		log.Error(err)
 		return
 	}
+	log.Debug("downloading ", downloadURL)
 	filename, err = download(downloadURL)
 	return
 }

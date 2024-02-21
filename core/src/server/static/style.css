@@ -588,6 +588,10 @@ a {
     width: 4em;
 }
 
+.clickable {
+    cursor: pointer;
+
+}
 
 .leftear {
     left: -3em;

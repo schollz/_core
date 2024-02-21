@@ -19,15 +19,14 @@ func FoundPort() bool {
 }
 
 // Run starts minicom and return a channel with string messages and channel for interrupting baudRateChange
-func Run() (chan string, chan int, chan bool, error) {
-	baudRateChange := make(chan int)
+func Run() (chan string, chan bool, chan bool, error) {
+	prepareUpload := make(chan bool)
 	dataChannel := make(chan []byte)
 	chanPlugChange := make(chan bool)
 	stopChannel := make(chan struct{})
 	returnString := make(chan string)
-	currentBaudRate := 115200 // Initial baud rate
 
-	go serialPortReader(&currentBaudRate, baudRateChange, dataChannel, stopChannel, chanPlugChange)
+	go serialPortReader(prepareUpload, dataChannel, stopChannel, chanPlugChange)
 
 	// Example usage
 	go func() {
@@ -39,11 +38,11 @@ func Run() (chan string, chan int, chan bool, error) {
 		}
 	}()
 
-	return returnString, baudRateChange, chanPlugChange, nil
+	return returnString, prepareUpload, chanPlugChange, nil
 
 }
 
-func serialPortReader(currentBaudRate *int, baudRateChange chan int, dataChannel chan []byte, stopChannel chan struct{}, chanPlugChange chan bool) {
+func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChannel chan struct{}, chanPlugChange chan bool) {
 	var port serial.Port
 
 	openPort := func(baudRate int) {
@@ -113,16 +112,23 @@ func serialPortReader(currentBaudRate *int, baudRateChange chan int, dataChannel
 			}
 			close(dataChannel)
 			return
-		case newBaudRate := <-baudRateChange:
-			log.Debugf("changing baud rate to %d", newBaudRate)
-			*currentBaudRate = newBaudRate
-			openPort(newBaudRate)
+		case <-prepareUpload:
+			log.Debug("preparing upload")
+			log.Debugf("opening port at 1200")
+			openPort(1200)
+			time.Sleep(1 * time.Second)
+			if port != nil {
+				port.Close()
+				port = nil
+			}
+			time.Sleep(4 * time.Second)
+			openPort(115200)
 		default:
 			if port == nil {
-				openPort(*currentBaudRate)
+				openPort(115200)
 			}
 			if port == nil {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(250 * time.Millisecond)
 				log.Tracef("unable to open port")
 				continue
 			}
