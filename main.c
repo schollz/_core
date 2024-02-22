@@ -88,18 +88,19 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
       if (retrig_ready) {
         if (retrig_first) {
-          retrig_vol =
-              linlin((float)sf->fx_param[FX_RETRIGGER][0], 0, 255, 0, 1);
+          // retrig_vol =
+          //     linlin((float)sf->fx_param[FX_RETRIGGER][0], 0, 255, 0, 1);
+          retrig_vol = 0.5;
           retrig_pitch = PITCH_VAL_MID;
-          if (sf->fx_active[FX_RETRIGGER]) {
-            retrig_pitch_change =
-                linlin(sf->fx_param[FX_RETRIGGER][1], 0, 255, 1, 5);
-            if (random_integer_in_range(1, 10) < 5) {
-              retrig_pitch_change = -1 * retrig_pitch_change;
-            }
-          } else {
-            retrig_pitch_change = 0;
-          }
+          // if (sf->fx_active[FX_RETRIGGER]) {
+          //   retrig_pitch_change =
+          //       linlin(sf->fx_param[FX_RETRIGGER][1], 0, 255, 1, 5);
+          //   if (random_integer_in_range(1, 10) < 5) {
+          //     retrig_pitch_change = -1 * retrig_pitch_change;
+          //   }
+          // } else {
+          //   retrig_pitch_change = 0;
+          // }
         }
         retrig_beat_num--;
         if (retrig_beat_num == 0) {
@@ -411,6 +412,9 @@ int main() {
   delay = Delay_malloc();
   Delay_setActive(delay, false);
   Delay_setDuration(delay, 8018);
+
+  combfilter = Comb_malloc();
+  Comb_setActive(combfilter, false, 10, 10);
 
   // initialize saturation
   saturation = Saturation_malloc();

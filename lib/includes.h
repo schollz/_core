@@ -68,6 +68,8 @@
 #include "saturation.h"
 #include "shaper.h"
 //
+#include "random.h"
+//
 #include "array_resample.h"
 #include "audio_pool.h"
 #ifdef INCLUDE_BASS
@@ -80,6 +82,7 @@
 #include "buttonmatrix3.h"
 #include "charlieplex.h"
 #include "clock_input.h"
+#include "comb.h"
 #include "debounce.h"
 #include "delay.h"
 #include "envelope2_fp.h"
@@ -97,7 +100,6 @@
 #include "ledtext.h"
 #endif
 #include "noise.h"
-#include "random.h"
 #include "resonantfilter.h"
 #include "sdcard.h"
 #ifdef INCLUDE_SINEBASS
