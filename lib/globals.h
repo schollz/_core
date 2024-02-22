@@ -189,7 +189,6 @@ int32_t lfo_tremelo_val = 0;
 int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 
 #define ENVELOPE_PITCH_THRESHOLD 0.01
-bool fx_tape_stop_active = false;
 
 uint16_t global_filter_index = resonantfilter_fc_max;
 
