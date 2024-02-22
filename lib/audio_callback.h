@@ -691,6 +691,9 @@ BREAKOUT_OF_MUTE:
   Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
+  // apply comb
+  Comb_process(combfilter, samples, buffer->max_sample_count);
+
 #ifdef INCLUDE_SINEBASS
   // apply bass
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
