@@ -608,6 +608,17 @@ void button_handler(ButtonMatrix *bm) {
           printf("combo: disabled tempo match mode\n");
           DebounceDigits_setText(debouncer_digits, "MATCH OOFFF", 200);
         }
+
+      } else if (key_pressed[0] == 12 && key_pressed[1] == 13 &&
+                 key_pressed[2] == 14 && key_pressed[3] == 15) {
+        do_retrig_pitch_changes = !do_retrig_pitch_changes;
+        printf("combo: enabled to pitch retrig mode: %d\n",
+               do_retrig_pitch_changes);
+        if (do_retrig_pitch_changes) {
+          DebounceDigits_setText(debouncer_digits, "PIT OONN", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "PIT OOFF", 200);
+        }
       }
     } else if (key_pressed_num == 8) {
       if (key_pressed[0] == 16 && key_pressed[1] == 12 && key_pressed[2] == 8 &&
