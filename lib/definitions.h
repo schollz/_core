@@ -58,7 +58,8 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 // pitch
 #define FX_FILTER 12
 #define FX_REPITCH 13
-#define FX_RETRIGGER 14
+#define FX_RETRIGGER 19  // deactivated
+#define FX_COMB 14
 #define FX_TAPE_STOP 15
 #define FX_SPEEDUP 20
 
