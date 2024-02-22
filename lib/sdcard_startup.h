@@ -98,8 +98,10 @@ void update_fx(uint8_t fx_num) {
                         Envelope2_update(envelope_pitch),
                         ENVELOPE_PITCH_THRESHOLD / 2, 2.7);
       } else {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch), 1.0, 1.9);
+        Envelope2_reset(
+            envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
+            linlin((float)sf->fx_param[FX_REPITCH][0], 0.0, 255.0, 0.5, 2.0),
+            1.9);
       }
       break;
     case FX_FUZZ:
