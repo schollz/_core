@@ -75,6 +75,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                      ->splice_trigger)) == 0;
   // trigger clock out if it is going
   if (do_splice_trigger) {
+    beat_total++;
     clock_out_ready = true;
     clock_did_activate = true;
   }
@@ -191,7 +192,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
-        beat_total++;
         if (clock_in_do) {
           beat_current = clock_in_beat_total % banks[sel_bank_cur]
                                                    ->sample[sel_sample_cur]
