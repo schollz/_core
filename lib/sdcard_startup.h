@@ -47,6 +47,11 @@ void update_fx(uint8_t fx_num) {
     case FX_SATURATE:
       Saturation_setActive(saturation, sf->fx_active[fx_num]);
       break;
+    case FX_COMB:
+      printf("[update_fx] comb: %d\n", sf->fx_active[fx_num]);
+      Comb_setActive(combfilter, sf->fx_active[fx_num],
+                     sf->fx_param[FX_COMB][0], sf->fx_param[FX_COMB][1]);
+      break;
     case FX_BEATREPEAT:
       if (sf->fx_active[fx_num]) {
         BeatRepeat_repeat(beatrepeat,

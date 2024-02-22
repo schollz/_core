@@ -2,9 +2,9 @@
 title = 'Reverse'
 date = 2024-02-01T12:33:06-08:00
 short = 'Reverses audio playback and sequence direction'
-buttons = ['5']
-buttons_alt = ['A','5']
-weight = 5
+buttons = ['15']
+buttons_alt = ['A','15']
+weight = 15
 mode = 'mash'
 mode_alt = 'jump'
 icon = 'undo-alt'
