@@ -76,6 +76,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // trigger clock out if it is going
   if (do_splice_trigger) {
     beat_total++;
+    Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
   }
@@ -88,19 +89,18 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     if (bpm_timer_counter % retrig_timer_reset == 0) {
       if (retrig_ready) {
         if (retrig_first) {
-          // retrig_vol =
-          //     linlin((float)sf->fx_param[FX_RETRIGGER][0], 0, 255, 0, 1);
-          retrig_vol = 0.5;
+          // generate random value between 0 and 1
+          retrig_vol = (float)random_integer_in_range(50, 100) / 100;
           retrig_pitch = PITCH_VAL_MID;
-          // if (sf->fx_active[FX_RETRIGGER]) {
-          //   retrig_pitch_change =
-          //       linlin(sf->fx_param[FX_RETRIGGER][1], 0, 255, 1, 5);
-          //   if (random_integer_in_range(1, 10) < 5) {
-          //     retrig_pitch_change = -1 * retrig_pitch_change;
-          //   }
-          // } else {
-          //   retrig_pitch_change = 0;
-          // }
+          if (do_retrig_pitch_changes) {
+            retrig_pitch_change =
+                round((float)random_integer_in_range(100, 500) / 100);
+            if (random_integer_in_range(1, 10) < 5) {
+              retrig_pitch_change = -1 * retrig_pitch_change;
+            }
+          } else {
+            retrig_pitch_change = 0;
+          }
         }
         retrig_beat_num--;
         if (retrig_beat_num == 0) {
