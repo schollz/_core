@@ -73,7 +73,7 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
             q16_16_multiply(self->feedback[ch],
                             self->ringbuffer[ch][index_delay]);
         samples[ii * 2 + ch] =
-            (int64_t)self->ringbuffer[ch][self->index] * 3 / 5;
+            (int64_t)self->ringbuffer[ch][self->index] * 6 / 11;
       }
     }
     self->index++;
@@ -84,7 +84,7 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
 }
 
 #define FEEDBACK_MAXSPREAD 3267
-#define FEEDBACK_MID (Q16_16_1 - (2 * 3267))
+#define FEEDBACK_MID ((Q16_16_1 - 1000) - (2 * 3267))
 #define DURATION_MAXSPREAD ((COMB_RINGBUFFER_SIZE - 100) / 2)
 #define DURATION_MID (COMB_RINGBUFFER_SIZE / 2)
 
