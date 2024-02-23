@@ -9,7 +9,7 @@ mode = 'mash'
 mode_alt = 'jump'
 knobx = 'duration'
 knoby = 'depth'
-icon = 'keyboard'
+icon = 'music'
 +++
 
 

@@ -131,6 +131,7 @@ void input_handling() {
   int adc_debounce[3] = {0, 0, 0};
   const int adc_threshold = 200;
   const int adc_debounce_max = 250;
+  uint16_t adc_startup = 2550;
   // TODO add debounce for the adc detection
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
@@ -145,6 +146,11 @@ void input_handling() {
   printf("version=v1.5.0\n");
 
   while (1) {
+    // if in startup deduct
+    if (adc_startup > 0) {
+      adc_startup--;
+    }
+
     // check for input
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
@@ -234,7 +240,7 @@ void input_handling() {
     if (abs(adc_last[0] - adc) > adc_threshold) {
       adc_debounce[0] = adc_debounce_max;
     }
-    if (adc_debounce[0] > 0) {
+    if (adc_debounce[0]) {
       adc_last[0] = adc;
       adc_debounce[0]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
@@ -257,8 +263,10 @@ void input_handling() {
         } else if (key_on_buttons[FX_SCRATCH + 4]) {
           scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
           scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
+        } else if (key_on_buttons[FX_EXPAND + 4]) {
+          update_reverb();
         }
-      } else {
+      } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
           sf->bpm_tempo = round(linlin(adc, 0, 4095,
                                        (banks[sel_bank_cur]
@@ -309,7 +317,10 @@ void input_handling() {
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
-      } else {
+        if (key_on_buttons[FX_EXPAND + 4]) {
+          update_reverb();
+        }
+      } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
           if (adc < 2048 - 200) {
             pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
@@ -361,7 +372,7 @@ void input_handling() {
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
-      } else {
+      } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
           new_vol = adc * VOLUME_STEPS / 4096;
           // new_vol = 100;
