@@ -96,12 +96,23 @@ void update_fx(uint8_t fx_num) {
       if (sf->fx_active[FX_TAPE_STOP]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                         Envelope2_update(envelope_pitch),
-                        ENVELOPE_PITCH_THRESHOLD / 2, 2.7);
+                        ENVELOPE_PITCH_THRESHOLD / 2,
+                        linlin((float)sf->fx_param[FX_TAPE_STOP][0], 0.0, 255.0,
+                               0.15, 6.0));
       } else {
-        Envelope2_reset(
-            envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
-            linlin((float)sf->fx_param[FX_REPITCH][0], 0.0, 255.0, 0.5, 2.0),
-            1.9);
+        if (sf->fx_active[FX_REPITCH]) {
+          Envelope2_reset(
+              envelope_pitch, BLOCKS_PER_SECOND,
+              Envelope2_update(envelope_pitch),
+              linlin((float)sf->fx_param[FX_REPITCH][0], 0.0, 255.0, 0.5, 2.0),
+              linlin((float)sf->fx_param[FX_TAPE_STOP][1], 0.0, 255.0, 0.15,
+                     6.0));
+        } else {
+          Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+                          Envelope2_update(envelope_pitch), 1.0,
+                          linlin((float)sf->fx_param[FX_TAPE_STOP][1], 0.0,
+                                 255.0, 0.15, 6.0));
+        }
       }
       break;
     case FX_FUZZ:

@@ -88,6 +88,8 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_REPITCH][1] = 100;
   sf->fx_param[FX_COMB][0] = 10;
   sf->fx_param[FX_COMB][1] = 10;
+  sf->fx_param[FX_TAPE_STOP][0] = 70;
+  sf->fx_param[FX_TAPE_STOP][1] = 45;
   return sf;
 }
 
