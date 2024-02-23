@@ -147,24 +147,34 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   return rf;
 }
 
+#define CROSSFADE_FILTER 8
+#define CROSSFADE_FILTER_WAIT 4
+
 int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
   if (rf->passthrough) {
-    rf->passthrough_last = 0;
     return in;
   }
-  int32_t x = in;
-  int32_t y = q16_16_multiply(rf->b0, x) + q16_16_multiply(rf->b1, rf->x1_f) +
+  int32_t y = q16_16_multiply(rf->b0, in) + q16_16_multiply(rf->b1, rf->x1_f) +
               q16_16_multiply(rf->b2, rf->x2_f) -
               q16_16_multiply(rf->a1, rf->y1_f) -
               q16_16_multiply(rf->a2, rf->y2_f);
 
   rf->x2_f = rf->x1_f;
-  rf->x1_f = x;
+  rf->x1_f = in;
   rf->y2_f = rf->y1_f;
   rf->y1_f = y;
-  if (rf->passthrough_last < 20) {
+  if (rf->passthrough_last < CROSSFADE_FILTER) {
     rf->passthrough_last++;
-    return in;
+    if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
+      return in;
+    } else {
+      return ((q16_16_fp_to_int32(y) *
+               (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
+              (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
+                (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
+               in)) /
+             (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
+    }
   }
   return q16_16_fp_to_int32(y);
 }
