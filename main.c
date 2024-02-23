@@ -413,9 +413,6 @@ int main() {
   Delay_setActive(delay, false);
   Delay_setDuration(delay, 8018);
 
-  // initialize freeverb
-  FV_Reverb_init(&freeverb);
-
   combfilter = Comb_malloc();
   Comb_setActive(combfilter, false, 10, 10);
 

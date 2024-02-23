@@ -182,7 +182,9 @@ bool button_mute = false;
 bool trigger_button_mute = false;
 
 // reverb
-FV_Reverb freeverb;
+FV_Reverb *freeverb;
+bool freeverb_ready = false;
+bool freeverb_inuse = false;
 
 // lfos
 int32_t lfo_pan_val = 0;
