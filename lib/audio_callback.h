@@ -638,13 +638,6 @@ BREAKOUT_OF_MUTE:
     for (uint8_t channel = 0; channel < 2; channel++) {
       samples[i * 2 + channel] =
           ResonantFilter_update(resFilter[channel], samples[i * 2 + channel]);
-      if (banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->num_channels == 2) {
-        samples[i * 2 + 1] = samples[i * 2 + 0];
-        break;
-      }
     }
   }
 #endif
