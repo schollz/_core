@@ -94,6 +94,8 @@ void clock_handling_start() {
   }
 }
 
+uint16_t probability_of_random_jump = 0;
+
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
@@ -191,6 +193,10 @@ void input_handling() {
     }
 #endif
 
+    if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
+      do_random_jump = true;
+    }
+
     adc_select_input(2);
 
     // check if a single button is held
@@ -276,6 +282,10 @@ void input_handling() {
                            4096 * 2;
         } else if (button_is_pressed(KEY_C)) {
         } else if (button_is_pressed(KEY_D)) {
+          probability_of_random_jump = adc;
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
+                            adc * 255 / 4096, 100);
         }
       }
     }
