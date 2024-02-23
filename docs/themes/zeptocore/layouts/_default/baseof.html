@@ -223,41 +223,48 @@
         {{end}}
 
       </tbody>
-      <table class="pb" style="margin-top:2em;">
-        <tbody>
-          <tr class="hrw hrt topline">
-            <td class="fx1">Key</td>
-            <td class="fx2">Effect</td>
-            <td class="fx3">Knob X</td>
-            <td class="fx4">Knob Y</td>
-            <td class="fx5">Description</td>
-          </tr>
+    </table>
 
-          {{ $modes := slice "any" "jump" "mash" "bass" }}
-          {{ range $modes }}
-          {{ $modeName := . }}
-          {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
-          {{ $combos := where $pages "Section" "effects" }}
-          {{ range $combos }}
-          <tr class="hrw hrt">
-            <td class="fx1">
-              {{ $length := len .Params.buttons }}
-              {{ range $index, $element := .Params.buttons }}
-              <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
-              {{ end }}
-            </td>
-            <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
-              <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
-            </td>
-            <td class="fx3">{{ .Params.knobx }}</td>
-            <td class="fx4">{{ .Params.knoby }}</td>
-            <td class="fx5">{{ .Params.short | markdownify }}</td>
-          </tr>
-          {{end}}
-          {{end}}
+    <h1>Effect reference</h1>
 
-        </tbody>
-      </table>
+    <img src="/img/effects.png" class="centerimage">
+
+    <!-- center image -->
+    <table class="pb" style="margin-top:2em;">
+      <tbody>
+        <tr class="hrw hrt topline">
+          <td class="fx1">Key</td>
+          <td class="fx2">Effect</td>
+          <td class="fx3">Knob X</td>
+          <td class="fx4">Knob Y</td>
+          <td class="fx5">Description</td>
+        </tr>
+
+        {{ $modes := slice "any" "jump" "mash" "bass" }}
+        {{ range $modes }}
+        {{ $modeName := . }}
+        {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
+        {{ $combos := where $pages "Section" "effects" }}
+        {{ range $combos }}
+        <tr class="hrw hrt">
+          <td class="fx1">
+            {{ $length := len .Params.buttons }}
+            {{ range $index, $element := .Params.buttons }}
+            <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+            {{ end }}
+          </td>
+          <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+            <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
+          </td>
+          <td class="fx3">{{ .Params.knobx }}</td>
+          <td class="fx4">{{ .Params.knoby }}</td>
+          <td class="fx5">{{ .Params.short | markdownify }}</td>
+        </tr>
+        {{end}}
+        {{end}}
+
+      </tbody>
+    </table>
 
   </section>
 
