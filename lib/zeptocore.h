@@ -194,7 +194,6 @@ void input_handling() {
 #endif
 
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
-      printf("random jump!\n");
       do_random_jump = true;
     }
 
