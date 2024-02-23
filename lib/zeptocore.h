@@ -131,7 +131,7 @@ void input_handling() {
   int adc_debounce[3] = {0, 0, 0};
   const int adc_threshold = 200;
   const int adc_debounce_max = 250;
-  uint16_t adc_startup = 2550;
+  uint16_t adc_startup = 300;
   // TODO add debounce for the adc detection
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
@@ -144,6 +144,18 @@ void input_handling() {
 
   // print to screen
   printf("version=v1.5.0\n");
+
+  // initialize the resonsant filter
+  global_filter_index = 12;
+  for (uint8_t channel = 0; channel < 2; channel++) {
+    ResonantFilter_setFilterType(resFilter[channel], 0);
+    ResonantFilter_setFc(resFilter[channel], global_filter_index);
+  }
+  global_filter_index = resonantfilter_fc_max;
+  for (uint8_t channel = 0; channel < 2; channel++) {
+    ResonantFilter_setFilterType(resFilter[channel], 0);
+    ResonantFilter_setFc(resFilter[channel], global_filter_index);
+  }
 
   while (1) {
     // if in startup deduct
