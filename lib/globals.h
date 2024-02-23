@@ -181,6 +181,9 @@ bool sdcard_startup_is_starting = false;
 bool button_mute = false;
 bool trigger_button_mute = false;
 
+// reverb
+FV_Reverb freeverb;
+
 // lfos
 int32_t lfo_pan_val = 0;
 // TODO: make the lfo pan step adjustable?
