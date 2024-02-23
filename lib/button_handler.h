@@ -805,27 +805,6 @@ void button_handler(ButtonMatrix *bm) {
     return;
   }
 
-  // show the current save file is pressed
-  if (key_pressed_num > 0 && key_on_buttons[KEY_D]) {
-    LEDS_set(leds, KEY_D, LED_BRIGHT);
-    for (uint8_t i = 0; i < 16; i++) {
-      if (savefile_has_data[i]) {
-        if (savefile_current == i) {
-          LEDS_set(leds, i + 4, LED_BRIGHT);
-        } else {
-          LEDS_set(leds, i + 4, LED_DIM);
-        }
-      } else {
-        if (savefile_current == i) {
-          LEDS_set(leds, i + 4, LED_BLINK);
-        } else {
-          LEDS_set(leds, i + 4, 0);
-        }
-      }
-    }
-    LEDS_render(leds);
-    return;
-  }
   // check debouncers
   if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR])) {
     // show an LED bar
@@ -862,6 +841,30 @@ void button_handler(ButtonMatrix *bm) {
     for (uint8_t i = 0;
          i < linlin_uint8_t(
                  DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1]),
+                 10, 240, 0, 32);
+         i++) {
+      if (led_bar_brightness[i]) {
+        LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+      } else {
+        LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(
+                 debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1])) {
+    // show an LED bar
+    const uint8_t led_bar_ordering[32] = {
+
+        18, 11, 8, 4, 16, 7, 13, 19, 10, 5, 14, 15, 17, 12, 6,  9,
+        13, 14, 6, 9, 16, 8, 18, 12, 11, 7, 10, 17, 15, 5,  19, 4};
+    const bool led_bar_brightness[32] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    };
+    for (uint8_t i = 0;
+         i < linlin_uint8_t(
+                 DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1]),
                  10, 240, 0, 32);
          i++) {
       if (led_bar_brightness[i]) {
@@ -937,6 +940,26 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
       } else {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  } else if (key_pressed_num > 0 && key_on_buttons[KEY_D]) {
+    // show the current save file is pressed
+    LEDS_set(leds, KEY_D, LED_BRIGHT);
+    for (uint8_t i = 0; i < 16; i++) {
+      if (savefile_has_data[i]) {
+        if (savefile_current == i) {
+          LEDS_set(leds, i + 4, LED_BRIGHT);
+        } else {
+          LEDS_set(leds, i + 4, LED_DIM);
+        }
+      } else {
+        if (savefile_current == i) {
+          LEDS_set(leds, i + 4, LED_BLINK);
+        } else {
+          LEDS_set(leds, i + 4, 0);
+        }
       }
     }
     LEDS_render(leds);

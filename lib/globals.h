@@ -169,7 +169,8 @@ Saturation *saturation;
 #define DEBOUNCE_UINT8_LED_SPIRAL1 1
 #define DEBOUNCE_UINT8_LED_WALL 2
 #define DEBOUNCE_UINT8_LED_DIAGONAL 3
-#define DEBOUNCE_UINT8_NUM 4
+#define DEBOUNCE_UINT8_LED_RANDOM1 4
+#define DEBOUNCE_UINT8_NUM 5
 DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
 #ifdef INCLUDE_ZEPTOCORE
 DebounceDigits *debouncer_digits;
@@ -313,9 +314,15 @@ WS2812 *ws2812;
 
 bool repeating_timer_callback_taptempo = false;
 uint8_t key_jump_debounce = 0;
+bool do_random_jump = false;
+
 void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
   //        beat_current);
+  if (do_random_jump) {
+    beat_current = random_integer_in_range(0, 15);
+    do_random_jump = false;
+  }
   uint16_t slice =
       beat_current %
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
