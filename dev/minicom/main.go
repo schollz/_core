@@ -90,7 +90,7 @@ func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan
 				openPort(*currentBaudRate)
 			}
 			if port == nil {
-				time.Sleep(1 * time.Second)
+				time.Sleep(100 * time.Millisecond)
 				log.Tracef("unable to open port %s", portName)
 				continue
 			}
