@@ -82,8 +82,10 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_FILTER][1] = 50;
   sf->fx_param[FX_PAN][0] = 128;
   sf->fx_param[FX_PAN][1] = 255;
-  sf->fx_param[FX_TREMELO][0] = 128;
-  sf->fx_param[FX_TREMELO][1] = 255;
+  // sf->fx_param[FX_TREMELO][0] = 128;
+  // sf->fx_param[FX_TREMELO][1] = 255;
+  sf->fx_param[FX_EXPAND][0] = 240;
+  sf->fx_param[FX_EXPAND][1] = 212;
   sf->fx_param[FX_REPITCH][0] = 0;
   sf->fx_param[FX_REPITCH][1] = 100;
   sf->fx_param[FX_COMB][0] = 10;

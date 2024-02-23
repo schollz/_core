@@ -89,6 +89,7 @@
 #include "envelope_linear_integer.h"
 #include "file_list.h"
 #include "filterexp.h"
+#include "freeverb_fp.h"
 #include "gate.h"
 #include "messagesync.h"
 #include "sequencehandler.h"

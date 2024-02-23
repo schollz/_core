@@ -691,6 +691,14 @@ BREAKOUT_OF_MUTE:
   Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
+  // apply reverb
+
+  if (sf->fx_active[FX_EXPAND]) {
+    if (freeverb != NULL) {
+      FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
+    }
+  }
+
   // apply comb
   Comb_process(combfilter, samples, buffer->max_sample_count);
 

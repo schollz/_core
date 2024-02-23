@@ -39,6 +39,23 @@ void check_setup_files() {
   f_closedir(&dj);
 }
 
+void update_reverb() {
+  uint8_t val = sf->fx_param[FX_EXPAND][0];
+  if (val < 85) {
+    FV_Reverb_set_roomsize(freeverb, val * Q16_16_1 / 85);
+    FV_Reverb_set_damp(freeverb, Q16_16_1 - (val * Q16_16_1 / 85));
+  } else if (val < 170) {
+    val = val - 85;
+    FV_Reverb_set_roomsize(freeverb, Q16_16_1 - (val * Q16_16_1 / 85));
+    FV_Reverb_set_damp(freeverb, val * Q16_16_1 / 85);
+  } else {
+    val = val - 170;
+    FV_Reverb_set_roomsize(freeverb, val * Q16_16_1 / 85);
+    FV_Reverb_set_damp(freeverb, val * Q16_16_1 / 85);
+  }
+  FV_Reverb_set_wet(freeverb, sf->fx_param[FX_EXPAND][1] * Q16_16_1 / 255);
+}
+
 void update_fx(uint8_t fx_num) {
   switch (fx_num) {
     case FX_REVERSE:
@@ -62,6 +79,11 @@ void update_fx(uint8_t fx_num) {
       break;
     case FX_DELAY:
       Delay_setActive(delay, sf->fx_active[fx_num]);
+      break;
+    case FX_EXPAND:
+      if (sf->fx_active[fx_num]) {
+        update_reverb();
+      }
       break;
     case FX_TIGHTEN:
       if (sf->fx_active[fx_num]) {
@@ -342,7 +364,11 @@ void sdcard_startup() {
   // SaveFile_load(sf);
   // SaveFile_test_sequencer(sf);
 
-  // sleep_ms(1000);
+  // allocate as much space as possible for the reverb
+  freeverb = FV_Reverb_malloc(FV_INITIALROOM, FV_INITIALDAMP, FV_INITIALWET,
+                              FV_INITIALDRY);
+
+  sleep_ms(1000);
 
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
