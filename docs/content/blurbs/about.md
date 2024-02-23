@@ -6,19 +6,20 @@ weight = 1
 
 # About 
 
-The zeptocore is a small handheld device with some specs:
+The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld device for playing with samples, featuring:
 
-- mono or stereo playback of 16-bit (internal 32-bit) audio files @ 44.1 kHz sampling rate
-- sd-card storage for audio + data
+- stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
+- sd-card storage for up to 8 gigabytes of samples
 - recall up to 256 audio files (16 banks of 16 tracks)
-- digital low-pass and high-pass filter
-- basic single-cycle wavetable synthesizer
+- includes 16 different 32-bit effects (saturate, fuzz, delay, reverb, etc...)
+- single-cycle wavetable synthesizer
 - realtime sequencer with optional quantization
-- low-latency (<10 ms)
 
 ### goals
 
-the goal of this project is to produce a device that achieves compelling music without learning, though learning is rewarded.
+1. *open-source* matters. you should be able to change this device today or years from now.
+2. learning is not curved, though learning is rewarded. the device should be fun without reading a manual, but reading the manual only adds to the fun.
+3. time is yours. by default, the device should not enforce "quantization" and leave it to the user to make their own timings.
 
 ### non-goals
 
