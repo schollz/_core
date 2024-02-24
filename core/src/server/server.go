@@ -36,6 +36,9 @@ import (
 //go:embed static/*
 var staticFiles embed.FS
 
+//go:embed docs/*
+var docsFiles embed.FS
+
 var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
@@ -173,6 +176,17 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return handleWebsocket(w, r)
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
+	} else if strings.HasPrefix(r.URL.Path, "/docs") {
+		if r.URL.Path == "/docs" {
+			r.URL.Path = "/docs/index.html"
+		}
+		var b []byte
+		b, err = docsFiles.ReadFile(strings.TrimPrefix(r.URL.Path, "/"))
+		if err != nil {
+			return
+		}
+		w.Write(b)
+		return
 	} else {
 		// TODO: add caching
 		// add caching
@@ -183,6 +197,10 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Cache-Control", "proxy-revalidate")
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("Expires", "0")
+
+		if strings.HasPrefix(r.URL.Path, "/tool") {
+			r.URL.Path = "/" + strings.TrimPrefix(r.URL.Path, "/tool")
+		}
 
 		filename := r.URL.Path[1:]
 		if filename == "" || !strings.Contains(filename, ".") || filename == "buy" || filename == "faq" || filename == "zeptocore" {
@@ -198,7 +216,13 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				filename = path.Join("src/server/", filename)
 				b, err = os.ReadFile(filename)
 			} else {
+				log.Debug("trying files")
+				log.Debug(filename)
 				b, err = staticFiles.ReadFile(filename)
+				if err != nil {
+
+					b, err = docsFiles.ReadFile(path.Join("docs", filename))
+				}
 			}
 		}
 		if err != nil {
