@@ -1,5 +1,5 @@
 +++
-title = 'What SD card can I use?'
+title = 'Which SD card can I use?'
 date = 2024-02-01T12:33:06-08:00
 weight = 10
 +++
