@@ -649,6 +649,11 @@ app = new Vue({
 
         },
         updateOneshot() {
+            if (document.getElementById("oneshot").checked) {
+                this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback = 1;
+            } else {
+                this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback = 0;
+            }
             setTimeout(() => {
                 // update the server file
                 socket.send(JSON.stringify({
