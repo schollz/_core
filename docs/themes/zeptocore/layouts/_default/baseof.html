@@ -205,10 +205,10 @@
     <table class=" pb">
       <tbody>
         <tr class="hrw hrt topline">
-          <td class="w1">Combo</td>
           <td class="w2">Action</td>
-          <td class="w3">Mode</td>
+          <td class="w1">Combo</td>
           <td class="w4">Description</td>
+          <td class="w3">Mode</td>
         </tr>
 
         {{ $modes := slice "jump" "mash" "bass" "any" }}
@@ -218,31 +218,31 @@
         {{ $combos := where $pages "Section" "combos" }}
         {{ range $combos }}
         <tr class="hrw hrt">
+          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
           <td class="w1">
             {{ $length := len .Params.buttons }}
             {{ range $index, $element := .Params.buttons }}
             <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
             {{ end }}
           </td>
-          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
-          <td class="w3"><code>{{ .Params.mode }}</code></td>
           <td class="w4">{{ .Params.short | markdownify }}</td>
+          <td class="w3"><code>{{ .Params.mode }}</code></td>
         </tr>
         {{ if isset .Params "mode_alt" }}
         <tr class="hrw hrt">
+          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
           <td class="w1">
             {{ $length := len .Params.buttons_alt }}
             {{ range $index, $element := .Params.buttons_alt }}
             <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
             {{ end }}
           </td>
-          <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
-          <td class="w3"><code>{{ .Params.mode_alt }}</code></td>
           {{ if isset .Params "short_alt" }}
           <td class="w4">{{ .Params.short_alt | markdownify }}</td>
           {{else}}
           <td class="w4">{{ .Params.short | markdownify }}</td>
           {{end}}
+          <td class="w3"><code>{{ .Params.mode_alt }}</code></td>
         </tr>
         {{end}}
         {{end}}
@@ -258,8 +258,8 @@
     <table class="pb" style="margin-top:2em;">
       <tbody>
         <tr class="hrw hrt topline">
-          <td class="fx1">Key</td>
           <td class="fx2">Effect</td>
+          <td class="fx1">Key</td>
           <td class="fx3">Knob X</td>
           <td class="fx4">Knob Y</td>
           <td class="fx5">Description</td>
@@ -272,14 +272,14 @@
         {{ $combos := where $pages "Section" "effects" }}
         {{ range $combos }}
         <tr class="hrw hrt">
+          <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+            <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
+          </td>
           <td class="fx1">
             {{ $length := len .Params.buttons }}
             {{ range $index, $element := .Params.buttons }}
             <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
             {{ end }}
-          </td>
-          <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
-            <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
           </td>
           <td class="fx3">{{ .Params.knobx }}</td>
           <td class="fx4">{{ .Params.knoby }}</td>
