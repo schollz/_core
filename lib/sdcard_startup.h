@@ -385,6 +385,7 @@ void sdcard_startup() {
            FRESULT_str(fr));
   }
   sf->vol = 180;
+  sf->pitch_val_index = PITCH_VAL_MID;
   phase_new = 0;
   phase_change = true;
   sync_using_sdcard = false;
