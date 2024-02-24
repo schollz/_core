@@ -221,7 +221,6 @@ const uint8_t probability_max_values_off[16] = {
 };
 #define PITCH_VAL_MAX 73
 #define PITCH_VAL_MID 48
-uint8_t pitch_val_index = PITCH_VAL_MID;
 float pitch_vals[PITCH_VAL_MAX] = {
     0.25,
     0.25732555916084,

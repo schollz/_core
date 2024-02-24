@@ -88,6 +88,8 @@ void input_handling() {
   bool btn_taptempo_on = false;
   sf->vol = VOLUME_STEPS;
   sf->fx_active[FX_SATURATE] = true;
+  sf->pitch_val_index = PITCH_VAL_MID;
+
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
   while (1) {
     uint16_t val;
