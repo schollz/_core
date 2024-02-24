@@ -595,9 +595,9 @@
                         <label for="spliceplayback">One-shot mode:</label>
                         <select id="spliceplayback" @click="updateSplicePlayback"
                             v-model="banks[selectedBank].files[selectedFile].SplicePlayback">
-                            <option value=0>normal</option>
-                            <option value=1>stop at end of splice</option>
-                            <option value=2>loop back at end of splice</option>
+                            <option value=0>play-through</option>
+                            <option value=1>stop at end of slice</option>
+                            <option value=2>loop back at end of slice</option>
                             <option value=3>stop at end of sample</option>
                             <option value=4>loop back at end of sample</option>
                         </select>
