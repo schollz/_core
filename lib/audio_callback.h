@@ -250,7 +250,7 @@ BREAKOUT_OF_MUTE:
           ->tempo_match) {
     samples_to_read =
         round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
-              pitch_vals[pitch_val_index] * scratch_pitch *
+              pitch_vals[sf->pitch_val_index] * scratch_pitch *
               pitch_vals[retrig_pitch]) *
         (banks[sel_bank_cur]
              ->sample[sel_sample_cur]
@@ -259,14 +259,15 @@ BREAKOUT_OF_MUTE:
          1) /
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
   } else {
-    samples_to_read = round((float)buffer->max_sample_count *
-                            envelope_pitch_val * pitch_vals[pitch_val_index] *
-                            scratch_pitch * pitch_vals[retrig_pitch]) *
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[sel_variation]
-                           ->oversampling +
-                       1);
+    samples_to_read =
+        round((float)buffer->max_sample_count * envelope_pitch_val *
+              pitch_vals[sf->pitch_val_index] * scratch_pitch *
+              pitch_vals[retrig_pitch]) *
+        (banks[sel_bank_cur]
+             ->sample[sel_sample_cur]
+             .snd[sel_variation]
+             ->oversampling +
+         1);
   }
 
   uint32_t values_len = samples_to_read * (banks[sel_bank_cur]

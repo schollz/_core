@@ -335,14 +335,14 @@ void input_handling() {
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
           if (adc < 2048 - 200) {
-            pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
+            sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
           } else if (adc > 2048 + 200) {
             adc -= 2048 + 200;
-            pitch_val_index =
+            sf->pitch_val_index =
                 adc * (PITCH_VAL_MAX - PITCH_VAL_MID) / (2048 - 200) +
                 PITCH_VAL_MID;
           } else {
-            pitch_val_index = PITCH_VAL_MID;
+            sf->pitch_val_index = PITCH_VAL_MID;
           }
         } else if (button_is_pressed(KEY_B)) {
           for (uint8_t channel = 0; channel < 2; channel++) {
