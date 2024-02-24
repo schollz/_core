@@ -36,8 +36,9 @@ typedef struct SaveFile {
   uint8_t sequence_sel[3];
   bool fx_active[16];
   uint8_t fx_param[16][3];
-  uint8_t stay_in_sync : 1;
-  uint8_t _padding : 7;
+  uint64_t stay_in_sync : 1;
+  uint64_t pitch_val_index : 7;
+  uint64_t _padding : 56;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -92,6 +93,7 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_COMB][1] = 10;
   sf->fx_param[FX_TAPE_STOP][0] = 70;
   sf->fx_param[FX_TAPE_STOP][1] = 45;
+  sf->pitch_val_index = 48;
   return sf;
 }
 
