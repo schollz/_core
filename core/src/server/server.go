@@ -216,8 +216,6 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				filename = path.Join("src/server/", filename)
 				b, err = os.ReadFile(filename)
 			} else {
-				log.Debug("trying files")
-				log.Debug(filename)
 				b, err = staticFiles.ReadFile(filename)
 				if err != nil {
 
