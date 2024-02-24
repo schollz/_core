@@ -5,6 +5,29 @@
 
 this is the source code for *_core* music devices that utilize the rp2040. 
 
+there are a few versions of the "*_core*" devices that utilize this firmware:
+
+## boardcore
+
+breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
+
+- [WeAct Raspberry Pi Pico (others should work too)](https://www.aliexpress.us/item/3256803521775546.html?gatewayAdapt=glo2usa4itemAdapt) ($2.50)
+- [pcm5102](https://www.amazon.com/Comimark-Interface-PCM5102-GY-PCM5102-Raspberry/dp/B07W97D2YC/) ($9)
+- [sdio sd card](https://www.adafruit.com/product/4682) ($3.50)
+
+![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
+
+![boardcore](docs/static/_core_bb.png)
+
+## zeptocore
+
+hand-held version (see [demo](https://www.instagram.com/p/C1PFLGDvB9I/)).
+
+<center>
+<img src="https://github.com/schollz/_core/assets/6550035/05e2b34b-efbc-47d1-8ba0-605ad723f85c" width=40%>
+</center>
+
+
 ### zeptocore spec (draft)
 
 knobs: X, Y, Z
