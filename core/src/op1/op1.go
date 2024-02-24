@@ -28,13 +28,17 @@ func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, 
 		return
 	}
 	lastStart := -1
+
 	for i, _ := range op1.Start {
-		start := int(math.Round(float64(op1.Start[i]) / 4058))
+		start := int(math.Round(float64(op1.Start[i])/4058)) - 441
+		if start < 0 {
+			start = 0
+		}
 		if start == lastStart {
 			continue
 		}
 		lastStart = start
-		end := int(math.Round(float64(op1.End[i])/4058)) - 40
+		end := int(math.Round(float64(op1.End[i])/4058)) - 800
 		if end > start {
 			spliceStart = append(spliceStart, float64(start)/float64(numSamples))
 			spliceEnd = append(spliceEnd, float64(end)/float64(numSamples))
