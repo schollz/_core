@@ -137,6 +137,13 @@ void i2s_callback_func() {
     // apply delay
     Delay_process(delay, samples, buffer->max_sample_count, 0);
 
+    // apply reverb
+    if (sf->fx_active[FX_EXPAND]) {
+      if (freeverb != NULL) {
+        FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
+      }
+    }
+
     give_audio_buffer(ap, buffer);
 
     // audio muted flag to ensure a fade in occurs when
@@ -685,7 +692,6 @@ BREAKOUT_OF_MUTE:
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
   // apply reverb
-
   if (sf->fx_active[FX_EXPAND]) {
     if (freeverb != NULL) {
       FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
