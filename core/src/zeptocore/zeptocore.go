@@ -75,14 +75,6 @@ func Get(pathToOriginal string) (f File, err error) {
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
-	// get the number of channels
-	_, channels, _, _ := sox.Info(pathToOriginal)
-	channels = channels - 1
-	if channels < 0 {
-		channels = 0
-	} else if channels > 1 {
-		channels = 1
-	}
 	// create new file
 	f = File{
 		Filename:       filename,
@@ -92,7 +84,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		debounceRegen:  debounce.New(100 * time.Millisecond),
 		OneShot:        false,
 		TempoMatch:     true,
-		Channels:       channels,
+		Channels:       0,
 		Oversampling:   1,
 		SpliceVariable: false,
 	}
@@ -122,6 +114,17 @@ func Get(pathToOriginal string) (f File, err error) {
 			}
 		}
 	}
+
+	// get the number of channels
+	_, channels, _, _ := sox.Info(f.PathToAudio)
+	channels = channels - 1
+	if channels < 0 {
+		channels = 0
+	} else if channels > 1 {
+		channels = 1
+	}
+	f.Channels = channels
+
 	// determine the duration
 	log.Tracef("determining the duration of %s", f.PathToAudio)
 	f.Duration, err = sox.Length(f.PathToAudio)
@@ -224,7 +227,7 @@ func (f File) Regenerate() {
 
 		log.Tracef("regenerating %s", f.PathToFile)
 		// get the folder of the original flie
-		folder, filename := filepath.Split(f.PathToFile)
+		folder, filename := filepath.Split(f.PathToAudio)
 		// remove extension from file name
 		filenameWithouExt := filename[:len(filename)-len(filepath.Ext(filename))]
 
@@ -306,7 +309,7 @@ func (f *File) SetSplicePlayback(playback int) {
 
 func (f *File) UpdateSliceTypes() {
 	// calculate the splice type
-	kicks, snares, err := drumextract.DrumExtract(f.PathToFile, f.SliceStart, f.SliceStop)
+	kicks, snares, err := drumextract.DrumExtract(f.PathToAudio, f.SliceStart, f.SliceStop)
 	if err != nil {
 		log.Error(err)
 	}
