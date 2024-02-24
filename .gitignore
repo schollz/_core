@@ -207,3 +207,4 @@ docs/public/
 pico-sdk/
 boardcore.uf2
 core/zeptocore_v1.3.0.uf2
+core/src/server/docs/
