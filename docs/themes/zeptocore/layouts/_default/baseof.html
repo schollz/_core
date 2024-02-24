@@ -45,7 +45,11 @@
         </p>
       </div>
       {{ end }}
-      <h3><a href="#reference" class="clade">Reference</a></h3>
+      <div class="section">
+        <h3>Reference</h3>
+        <p class="list"> <a href="#combo-list" class="clade">Combos</a> <a href="#effect-list" class="clade">Effects</a>
+        </p>
+      </div>
       <div>
         <hr class="hrgreen">
       </div>
@@ -174,9 +178,28 @@
     {{end}}
   </section>
 
+
+
+
+  <section class="help faq">
+    <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
+    {{ $indexPage.Content }} -->
+
+
+    <h1 id="help">Help<a href="#help"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
+    {{ range where .Site.RegularPages "Section" "help" }}
+    <details id="{{ .Title | anchorize }}">
+      <summary>{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a>
+      </summary>
+      {{ .Content }}
+    </details>
+    {{ end }}
+  </section>
+
   <section class="reference">
     <h1 id="reference">Reference <a href="#reference"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
-    <table class="pb">
+    <h2 id="combo-list" style="padding-left:0.75em;">Combo list</h2>
+    <table class=" pb">
       <tbody>
         <tr class="hrw hrt topline">
           <td class="w1">Combo</td>
@@ -225,11 +248,10 @@
       </tbody>
     </table>
 
-    <h1>Effect reference</h1>
+
 
     <img src="/img/effects.png" class="centerimage">
-
-    <!-- center image -->
+    <h2 id="effect-list" style="padding-left:0.75em;">Effect list</h2>
     <table class="pb" style="margin-top:2em;">
       <tbody>
         <tr class="hrw hrt topline">
@@ -269,21 +291,6 @@
   </section>
 
 
-
-  <section class="help faq">
-    <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
-    {{ $indexPage.Content }} -->
-
-
-    <h1 id="help">Help<a href="#help"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
-    {{ range where .Site.RegularPages "Section" "help" }}
-    <details id="{{ .Title | anchorize }}">
-      <summary>{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a>
-      </summary>
-      {{ .Content }}
-    </details>
-    {{ end }}
-  </section>
 
 
   <footer>

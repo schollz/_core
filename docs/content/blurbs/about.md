@@ -10,7 +10,7 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 
 - stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
 - sd-card storage for up to 8 gigabytes of samples
-- recall up to 256 audio files (16 banks of 16 tracks)
+- recalls up to 256 audio files (16 banks of 16 tracks)
 - includes 16 different 32-bit effects (saturate, fuzz, delay, reverb, etc...)
 - single-cycle wavetable synthesizer
 - realtime sequencer with optional quantization
