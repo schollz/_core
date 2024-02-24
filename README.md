@@ -109,12 +109,9 @@ holding an effect and using a knob will change its parameters.
 - [x] **9**,**12**,**10**,**11** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
 
-#### needs
 
-- probability jump
-- probability retrig
 
-# building image
+# firmware development
 
 ## mac os x
 
@@ -205,7 +202,7 @@ make clean zeptocore
 
 (replace '`zeptocore`' with '`ectocore` or '`boardcore`'' if you are building the latter)
 
-# building upload tool
+# upload tool development
 
 ## windows
 
@@ -234,6 +231,12 @@ Now the upload tool can be run by typing
 
 ```
 ./core.exe
+```
+
+# docs development
+
+```
+make docs
 ```
 
 # license
