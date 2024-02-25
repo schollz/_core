@@ -30,7 +30,7 @@
       </div>
       <h1 id="outline">Outline<a href="#outline" class="link-anchor"><i class="fas fa-link" aria-hidden="true"></i></a>
       </h1>
-      {{ $sections := slice "blurbs" "how-do-i" "combos" "effects" "help" }}
+      {{ $sections := slice "blurbs" "how-do-i" "combos" "effects" "questions" }}
       {{ range $sections }}
       {{ $sectionPath := . }}
       {{ $section := site.GetPage (print "/" $sectionPath) }}
@@ -186,8 +186,8 @@
     {{ $indexPage.Content }} -->
 
 
-    <h1 id="help">Help<a href="#help"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
-    {{ range where .Site.RegularPages "Section" "help" }}
+    <h1 id="help">Questions<a href="#questions"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
+    {{ range where .Site.RegularPages "Section" "questions" }}
     <details id="{{ .Title | anchorize }}">
       <summary>{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a>
       </summary>
