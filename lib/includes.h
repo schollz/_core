@@ -91,6 +91,7 @@
 #include "filterexp.h"
 #include "freeverb_fp.h"
 #include "gate.h"
+#include "knob_change.h"
 #include "messagesync.h"
 #include "sequencehandler.h"
 #include "taptempo.h"
