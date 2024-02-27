@@ -25,7 +25,7 @@
 /* spec
 - [ ] knob_break: wacky effects
 - [ ] knob_amen: slice based effects
-- [ ] knob_sample: switch sample
+- [x] knob_sample: switch sample
 - [ ] knob_break_atten:
 - [ ] knob_amen_atten:
 - [ ] btn_bank: switch banks
@@ -233,14 +233,15 @@ void input_handling() {
       gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
 
-    // input detection
-    val = MCP3208_read(mcp3208, MCP_KNOB_BREAK, false);
+    // sample selection
+    val = MCP3208_read(mcp3208, MCP_KNOB_SAMPLE, false);
     val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
     if (val != sel_sample_cur) {
       sel_sample_next = val;
       fil_current_change = true;
       printf("[ectocore] switch sample %d\n", val);
     }
+
     sleep_ms(1);
   }
 }
