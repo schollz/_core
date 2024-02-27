@@ -355,7 +355,9 @@ void do_update_phase_from_beat_current() {
   phase_change = true;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE
-  gpio_put(GPIO_LED_TAPTEMPO, repeating_timer_callback_taptempo);
+  if (gpio_get(GPIO_BTN_TAPTEMPO)) {
+    gpio_put(GPIO_LED_TAPTEMPO, repeating_timer_callback_taptempo);
+  }
   repeating_timer_callback_taptempo = !repeating_timer_callback_taptempo;
 #endif
 
