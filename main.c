@@ -73,6 +73,20 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                      ->sample[sel_sample_cur]
                                                      .snd[sel_variation]
                                                      ->splice_trigger)) == 0;
+// ectocore clocking
+#ifdef INCLUDE_ECTOCORE
+  if (bpm_timer_counter %
+          ectocore_clock_out_divisions[ectocore_clock_selected_division] ==
+      0) {
+    gpio_put(GPIO_CLOCK_OUT, 1);
+  } else if (bpm_timer_counter %
+                 ectocore_clock_out_divisions
+                     [ectocore_clock_selected_division] /
+                 2 ==
+             0) {
+    gpio_put(GPIO_CLOCK_OUT, 0);
+  }
+#endif
   // trigger clock out if it is going
   if (do_splice_trigger) {
     beat_total++;
