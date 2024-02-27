@@ -327,7 +327,6 @@ uint8_t ectocore_clock_selected_division = 0;
 WS2812 *ws2812;
 #endif
 
-bool repeating_timer_callback_taptempo = false;
 uint8_t key_jump_debounce = 0;
 bool do_random_jump = false;
 
@@ -360,10 +359,7 @@ void do_update_phase_from_beat_current() {
   phase_change = true;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE
-  if (gpio_get(GPIO_BTN_TAPTEMPO)) {
-    gpio_put(GPIO_LED_TAPTEMPO, repeating_timer_callback_taptempo);
-  }
-  repeating_timer_callback_taptempo = !repeating_timer_callback_taptempo;
+  gpio_put(GPIO_LED_TAPTEMPO, slice % 2 == 0);
 #endif
 
   // printf("[globals] do_update_phase_from_beat_current: %d, %d %d [%d, %d]\n",
