@@ -82,6 +82,10 @@ void input_handling() {
   gpio_init(GPIO_TAPTEMPO_LED);
   gpio_set_dir(GPIO_TAPTEMPO_LED, GPIO_OUT);
   gpio_put(GPIO_TAPTEMPO_LED, 1);
+  gpio_init(GPIO_TRIGOUT);
+  gpio_set_dir(GPIO_TRIGOUT, GPIO_OUT);
+  gpio_init(GPIO_INPUTDETECT);
+  gpio_set_dir(GPIO_INPUTDETECT, GPIO_OUT);
 
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
 
@@ -89,11 +93,88 @@ void input_handling() {
   sf->vol = VOLUME_STEPS;
   sf->fx_active[FX_SATURATE] = true;
   sf->pitch_val_index = PITCH_VAL_MID;
-
+  uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
+
+  uint16_t debounce_input_detection = 0;
+
   while (1) {
     uint16_t val;
 
+    if (debounce_input_detection > 0) {
+      debounce_input_detection--;
+    } else {
+      // input detection
+      int16_t val;
+      uint8_t length_signal = 9;
+      uint8_t magic_signal[9] = {0, 1, 1, 1, 0, 1, 0, 1, 1};
+      uint8_t response_signal[3][9] = {
+          {0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0},
+      };
+      uint8_t cv_signals[3] = {CV_AMEN, CV_BREAK, CV_SAMPLE};
+
+      for (uint8_t i = 0; i < length_signal; i++) {
+        gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
+        sleep_us(2);
+        for (uint8_t j = 0; j < 3; j++) {
+          val = MCP3208_read(mcp3208, cv_signals[j], false);
+          if (val > 700) {
+            response_signal[j][i] = 1;
+          }
+        }
+      }
+      bool is_signal[3] = {true, true, true};
+      for (uint8_t j = 0; j < 3; j++) {
+        for (uint8_t i = 0; i < length_signal; i++) {
+          if (response_signal[j][i] != magic_signal[i]) {
+            is_signal[j] = false;
+            break;
+          }
+        }
+      }
+      for (uint8_t j = 0; j < 3; j++) {
+        if (j == 0) {
+          cv_amen_plugged = is_signal[j];
+        } else if (j == 1) {
+          cv_break_plugged = is_signal[j];
+        } else if (j == 2) {
+          cv_sample_plugged = is_signal[j];
+        }
+      }
+      debounce_input_detection = 100;
+    }
+
+    if (clock_out_ready) {
+      clock_out_ready = false;
+      uint16_t j = beat_current;
+      while (j > banks[sel_bank_cur]
+                     ->sample[sel_sample_cur]
+                     .snd[sel_variation]
+                     ->slice_num) {
+        j -= banks[sel_bank_cur]
+                 ->sample[sel_sample_cur]
+                 .snd[sel_variation]
+                 ->slice_num;
+      }
+      if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[sel_variation]
+                  ->slice_type[j] == 1 ||
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[sel_variation]
+                  ->slice_type[j] == 3) {
+        gpio_put(GPIO_TRIGOUT, 1);
+        debounce_trig = 100;
+      }
+    } else if (debounce_trig > 0) {
+      debounce_trig--;
+      if (debounce_trig == 0) {
+        gpio_put(GPIO_TRIGOUT, 0);
+      }
+    }
     // check for input
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
@@ -131,7 +212,8 @@ void input_handling() {
       gpio_put(GPIO_TAPTEMPO_LED, 1);
     }
 
-    val = MCP3208_read(mcp3208, KNOB_SAMPLE, false);
+    // input detection
+    val = MCP3208_read(mcp3208, CV_AMEN, false);
     val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
     if (val != sel_sample_cur) {
       sel_sample_next = val;
