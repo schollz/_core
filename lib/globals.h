@@ -316,6 +316,11 @@ float pitch_vals[PITCH_VAL_MAX] = {
 bool cv_amen_plugged = false;
 bool cv_break_plugged = false;
 bool cv_sample_plugged = false;
+#define ECTOCORE_CLOCK_NUM_DIVISIONS 7
+const uint16_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
+    192, 192 * 2, 192 / 2, 192 * 4, 192 / 4, 192 * 8, 192 / 8,
+};
+uint8_t ectocore_clock_selected_division = 0;
 #endif
 
 #ifdef INCLUDE_RGBLED

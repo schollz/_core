@@ -79,6 +79,7 @@
 #include "WS2812.h"
 #endif
 #include "beatrepeat.h"
+#include "button_change.h"
 #include "buttonmatrix3.h"
 #include "charlieplex.h"
 #include "clock_input.h"

@@ -30,7 +30,7 @@
 - [ ] knob_amen_atten:
 - [ ] btn_bank: switch banks
 - [ ] btn_mode: changes trigger output mode
-- [ ] btn_mult: sets clock division
+- [x] btn_mult: sets clock division
 - [x] btn_bank + knob_sample: switch bank
 - [ ] btn_tap: sets tempo (3+ presses)
 - [x] btn_tap + knob_break: volume / loss / overdrive
@@ -89,17 +89,6 @@ void input_handling() {
     sleep_ms(10);
   }
 
-  const uint8_t gpio_btns[4] = {
-      GPIO_BTN_MODE,
-      GPIO_BTN_MULT,
-      GPIO_BTN_BANK,
-      GPIO_BTN_TAPTEMPO,
-  };
-  for (uint8_t i = 0; i < 4; i++) {
-    gpio_init(gpio_btns[i]);
-    gpio_set_dir(gpio_btns[i], GPIO_IN);
-    gpio_pull_up(gpio_btns[i]);
-  }
   gpio_init(GPIO_LED_TAPTEMPO);
   gpio_set_dir(GPIO_LED_TAPTEMPO, GPIO_OUT);
   gpio_put(GPIO_LED_TAPTEMPO, 1);
@@ -107,6 +96,8 @@ void input_handling() {
   gpio_set_dir(GPIO_TRIG_OUT, GPIO_OUT);
   gpio_init(GPIO_INPUTDETECT);
   gpio_set_dir(GPIO_INPUTDETECT, GPIO_OUT);
+  gpio_init(GPIO_CLOCK_OUT);
+  gpio_set_dir(GPIO_CLOCK_OUT, GPIO_OUT);
 
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
 
@@ -129,6 +120,21 @@ void input_handling() {
   KnobChange *knob_change[KNOB_NUM];
   for (uint8_t i = 0; i < KNOB_NUM; i++) {
     knob_change[i] = KnobChange_malloc();
+  }
+
+#define BUTTON_NUM 4
+  const uint8_t gpio_btns[BUTTON_NUM] = {
+      GPIO_BTN_MODE,
+      GPIO_BTN_MULT,
+      GPIO_BTN_BANK,
+      GPIO_BTN_TAPTEMPO,
+  };
+  ButtonChange *button_change[BUTTON_NUM];
+  for (uint8_t i = 0; i < BUTTON_NUM; i++) {
+    gpio_init(gpio_btns[i]);
+    gpio_set_dir(gpio_btns[i], GPIO_IN);
+    gpio_pull_up(gpio_btns[i]);
+    button_change[i] = ButtonChange_malloc();
   }
 
   while (1) {
@@ -302,14 +308,29 @@ void input_handling() {
       }
     }
 
-    // // bank selection
-    // val = MCP3208_read(mcp3208, MCP_KNOB_BANK, false);
-    // val = (val * BANK_NUM) / 1024;
-    // if (val != sel_bank_cur) {
-    //   sel_bank_next = val;
-    //   printf("[ectocore] switch bank %d\n", val);
-    //
-    // }
+    // button selection
+    for (uint8_t i = 0; i < BUTTON_NUM; i++) {
+      val = ButtonChange_update(button_change[i], gpio_get(gpio_btns[i]));
+      if (val < 0) {
+        continue;
+      }
+      val = 1 - val;
+      if (gpio_btns[i] == GPIO_BTN_MODE) {
+        printf("[ectocore] btn_mode %d\n", val);
+      } else if (gpio_btns[i] == GPIO_BTN_BANK) {
+        printf("[ectocore] btn_bank %d\n", val);
+      } else if (gpio_btns[i] == GPIO_BTN_MULT) {
+        printf("[ectocore] btn_mult %d\n", val);
+        if (val == 1) {
+          if (ectocore_clock_selected_division <
+              ECTOCORE_CLOCK_NUM_DIVISIONS - 1) {
+            ectocore_clock_selected_division++;
+          } else {
+            ectocore_clock_selected_division = 0;
+          }
+        }
+      }
+    }
 
     sleep_ms(1);
   }
