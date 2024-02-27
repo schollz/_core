@@ -33,7 +33,7 @@
 - [ ] btn_mult: sets clock division
 - [x] btn_bank + knob_sample: switch bank
 - [ ] btn_tap: sets tempo (3+ presses)
-- [ ] btn_tap + knob_break: volume / loss / overdrive
+- [x] btn_tap + knob_break: volume / loss / overdrive
 - [ ] btn_tap + btn_bank: mute
 - [ ] amen_cv:
 - [ ] break_cv:
@@ -250,7 +250,7 @@ void input_handling() {
       if (val < 0) {
         continue;
       }
-      if (knob_gpio[i] = MCP_KNOB_SAMPLE) {
+      if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0) {
           // bank selection
           printf("[ectocore] switch bank %d\n", val);
@@ -274,6 +274,29 @@ void input_handling() {
             sel_sample_next = val;
             fil_current_change = true;
             printf("[ectocore] switch sample %d\n", val);
+          }
+        }
+      } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
+        printf("[ectocore] knob_break %d\n", val);
+        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
+          // change volume
+          if (val < 412) {
+            sf->vol = val * VOLUME_STEPS / 412;
+            sf->fx_active[FX_FUZZ] = 0;
+            sf->fx_active[FX_SATURATE] = 0;
+          } else if (val > 700 && val <= 850) {
+            sf->vol = VOLUME_STEPS;
+            sf->fx_active[FX_FUZZ] = 0;
+            sf->fx_active[FX_SATURATE] = 1;
+          } else if (val > 850) {
+            sf->vol = VOLUME_STEPS;
+            sf->fx_active[FX_SATURATE] = 0;
+            sf->fx_active[FX_FUZZ] = 1;
+            sf->fx_param[FX_FUZZ][0] = (val - 850) * 255 / (1024 - 850);
+          } else {
+            sf->vol = VOLUME_STEPS;
+            sf->fx_active[FX_FUZZ] = 0;
+            sf->fx_active[FX_SATURATE] = 0;
           }
         }
       }
