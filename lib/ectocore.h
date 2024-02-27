@@ -76,14 +76,22 @@ void input_handling() {
     sleep_ms(10);
   }
 
-  gpio_init(GPIO_TAPTEMPO);
-  gpio_set_dir(GPIO_TAPTEMPO, GPIO_IN);
-  gpio_pull_up(GPIO_TAPTEMPO);
-  gpio_init(GPIO_TAPTEMPO_LED);
-  gpio_set_dir(GPIO_TAPTEMPO_LED, GPIO_OUT);
-  gpio_put(GPIO_TAPTEMPO_LED, 1);
-  gpio_init(GPIO_TRIGOUT);
-  gpio_set_dir(GPIO_TRIGOUT, GPIO_OUT);
+  const uint8_t gpio_btns[4] = {
+      GPIO_BTN_MODE,
+      GPIO_BTN_MULT,
+      GPIO_BTN_BANK,
+      GPIO_BTN_TAPTEMPO,
+  };
+  for (uint8_t i = 0; i < 4; i++) {
+    gpio_init(gpio_btns[i]);
+    gpio_set_dir(gpio_btns[i], GPIO_IN);
+    gpio_pull_up(gpio_btns[i]);
+  }
+  gpio_init(GPIO_LED_TAPTEMPO);
+  gpio_set_dir(GPIO_LED_TAPTEMPO, GPIO_OUT);
+  gpio_put(GPIO_LED_TAPTEMPO, 1);
+  gpio_init(GPIO_TRIG_OUT);
+  gpio_set_dir(GPIO_TRIG_OUT, GPIO_OUT);
   gpio_init(GPIO_INPUTDETECT);
   gpio_set_dir(GPIO_INPUTDETECT, GPIO_OUT);
 
@@ -113,7 +121,7 @@ void input_handling() {
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
       };
-      uint8_t cv_signals[3] = {CV_AMEN, CV_BREAK, CV_SAMPLE};
+      uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
 
       for (uint8_t i = 0; i < length_signal; i++) {
         gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
@@ -166,13 +174,13 @@ void input_handling() {
                   ->sample[sel_sample_cur]
                   .snd[sel_variation]
                   ->slice_type[j] == 3) {
-        gpio_put(GPIO_TRIGOUT, 1);
+        gpio_put(GPIO_TRIG_OUT, 1);
         debounce_trig = 100;
       }
     } else if (debounce_trig > 0) {
       debounce_trig--;
       if (debounce_trig == 0) {
-        gpio_put(GPIO_TRIGOUT, 0);
+        gpio_put(GPIO_TRIG_OUT, 0);
       }
     }
     // check for input
@@ -199,21 +207,21 @@ void input_handling() {
     }
 #endif
 
-    if (gpio_get(GPIO_TAPTEMPO) == 0 && !btn_taptempo_on) {
+    if (gpio_get(GPIO_BTN_TAPTEMPO) == 0 && !btn_taptempo_on) {
       btn_taptempo_on = true;
-      gpio_put(GPIO_TAPTEMPO_LED, 0);
+      gpio_put(GPIO_LED_TAPTEMPO, 0);
       val = TapTempo_tap(taptempo);
       if (val > 0) {
         printf("[ectocore] tap bpm -> %d\n", val);
         sf->bpm_tempo = val;
       }
-    } else if (gpio_get(GPIO_TAPTEMPO) == 1 && btn_taptempo_on) {
+    } else if (gpio_get(GPIO_BTN_TAPTEMPO) == 1 && btn_taptempo_on) {
       btn_taptempo_on = false;
-      gpio_put(GPIO_TAPTEMPO_LED, 1);
+      gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
 
     // input detection
-    val = MCP3208_read(mcp3208, CV_AMEN, false);
+    val = MCP3208_read(mcp3208, MCP_KNOB_BREAK, false);
     val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
     if (val != sel_sample_cur) {
       sel_sample_next = val;

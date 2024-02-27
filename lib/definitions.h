@@ -70,21 +70,4 @@ static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 #define LED_BRIGHT 2
 #define LED_BLINK 3
 
-#ifdef INCLUDE_ECTOCORE
-
-#define KNOB_AMEN 0
-#define ATTEN_AMEN 1
-#define CV_AMEN 2
-#define KNOB_BREAK 3
-#define ATTEN_BREAK 4
-#define CV_BREAK 5
-#define KNOB_SAMPLE 6
-#define CV_SAMPLE 7
-
-#define GPIO_TAPTEMPO 2
-#define GPIO_TAPTEMPO_LED 3
-#define GPIO_TRIGOUT 18
-#define GPIO_INPUTDETECT 16
-#endif
-
 #endif
