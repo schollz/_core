@@ -31,7 +31,7 @@
 - [ ] btn_bank: switch banks
 - [ ] btn_mode: changes trigger output mode
 - [ ] btn_mult: sets clock division
-- [ ] btn_bank + knob_sample: switch bank
+- [x] btn_bank + knob_sample: switch bank
 - [ ] btn_tap: sets tempo (3+ presses)
 - [ ] btn_tap + knob_break: volume / loss / overdrive
 - [ ] btn_tap + btn_bank: mute
@@ -118,9 +118,21 @@ void input_handling() {
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
   uint16_t debounce_input_detection = 0;
+  uint8_t magic_signal[9] = {0, 1, 1, 1, 0, 1, 0, 1, 1};
+
+  // update the knobs
+#define KNOB_NUM 5
+  uint8_t knob_gpio[KNOB_NUM] = {
+      MCP_KNOB_BREAK, MCP_ATTEN_BREAK, MCP_KNOB_AMEN,
+      MCP_ATTEN_AMEN, MCP_KNOB_SAMPLE,
+  };
+  KnobChange *knob_change[KNOB_NUM];
+  for (uint8_t i = 0; i < KNOB_NUM; i++) {
+    knob_change[i] = KnobChange_malloc();
+  }
 
   while (1) {
-    uint16_t val;
+    int16_t val;
 
     if (debounce_input_detection > 0) {
       debounce_input_detection--;
@@ -128,7 +140,6 @@ void input_handling() {
       // input detection
       int16_t val;
       uint8_t length_signal = 9;
-      uint8_t magic_signal[9] = {0, 1, 1, 1, 0, 1, 0, 1, 1};
       uint8_t response_signal[3][9] = {
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -233,14 +244,49 @@ void input_handling() {
       gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
 
-    // sample selection
-    val = MCP3208_read(mcp3208, MCP_KNOB_SAMPLE, false);
-    val = (val * (banks[sel_bank_next]->num_samples)) / 1024;
-    if (val != sel_sample_cur) {
-      sel_sample_next = val;
-      fil_current_change = true;
-      printf("[ectocore] switch sample %d\n", val);
+    for (uint8_t i = 0; i < KNOB_NUM; i++) {
+      val = KnobChange_update(knob_change[i],
+                              MCP3208_read(mcp3208, knob_gpio[i], false));
+      if (val < 0) {
+        continue;
+      }
+      if (knob_gpio[i] = MCP_KNOB_SAMPLE) {
+        if (gpio_get(GPIO_BTN_BANK) == 0) {
+          // bank selection
+          printf("[ectocore] switch bank %d\n", val);
+          val = (val * banks_with_samples_num) / 1024;
+          uint8_t bank_num = 0;
+          for (uint8_t j = 0; j < banks_with_samples_num; j++) {
+            if (banks[j]->num_samples > 0) {
+              if (bank_num == val) {
+                sel_bank_next = j;
+                printf("[ectocore] switch bank %d\n", val);
+                break;
+              }
+              bank_num++;
+            }
+          }
+        } else {
+          // sample selection
+          printf("[ectocore] switch sample %d\n", val);
+          val = (val * banks[sel_bank_next]->num_samples) / 1024;
+          if (val != sel_sample_cur) {
+            sel_sample_next = val;
+            fil_current_change = true;
+            printf("[ectocore] switch sample %d\n", val);
+          }
+        }
+      }
     }
+
+    // // bank selection
+    // val = MCP3208_read(mcp3208, MCP_KNOB_BANK, false);
+    // val = (val * BANK_NUM) / 1024;
+    // if (val != sel_bank_cur) {
+    //   sel_bank_next = val;
+    //   printf("[ectocore] switch bank %d\n", val);
+    //
+    // }
 
     sleep_ms(1);
   }
