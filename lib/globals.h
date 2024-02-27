@@ -312,6 +312,12 @@ float pitch_vals[PITCH_VAL_MAX] = {
 // starts at splice start and returns to start when reaching sample boundary
 #define PLAY_SAMPLE_LOOP 4
 
+#ifdef INCLUDE_ECTOCORE
+bool cv_amen_plugged = false;
+bool cv_break_plugged = false;
+bool cv_sample_plugged = false;
+#endif
+
 #ifdef INCLUDE_RGBLED
 WS2812 *ws2812;
 #endif
