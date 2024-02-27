@@ -14,6 +14,26 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
     DO_OVERCLOCK=1
+    
+    # pin definitions
+    MCP_KNOB_AMEN=0
+    MCP_ATTEN_AMEN=1
+    MCP_CV_AMEN=2
+    MCP_KNOB_BREAK=3
+    MCP_ATTEN_BREAK=4
+    MCP_CV_BREAK=5
+    MCP_KNOB_SAMPLE=6
+    MCP_CV_SAMPLE=7
+    GPIO_BTN_MODE=1
+    GPIO_BTN_MULT=2
+    GPIO_BTN_BANK=20
+    GPIO_BTN_TAPTEMPO=3
+    GPIO_LED_TAPTEMPO=4
+    GPIO_INPUTDETECT=16
+    GPIO_CLOCK_IN=17
+    GPIO_CLOCK_OUT=19
+    GPIO_TRIG_OUT=18
+
 
     # debug printing
     # PRINT_AUDIO_USAGE=1
