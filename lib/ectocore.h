@@ -23,9 +23,22 @@
 // See http://creativecommons.org/licenses/MIT/ for more information.
 
 /* spec
-Amen is for slice based effects (how many slices and how often it jumps)
-Break would be the wacky effects (filtering, reversing, etc.)
-Sample selects currently playing sample from the current bank
+- [ ] knob_break: wacky effects
+- [ ] knob_amen: slice based effects
+- [ ] knob_sample: switch sample
+- [ ] knob_break_atten:
+- [ ] knob_amen_atten:
+- [ ] btn_bank: switch banks
+- [ ] btn_mode: changes trigger output mode
+- [ ] btn_mult: sets clock division
+- [ ] btn_bank + knob_sample: switch bank
+- [ ] btn_tap: sets tempo (3+ presses)
+- [ ] btn_tap + knob_break: volume / loss / overdrive
+- [ ] btn_tap + btn_bank: mute
+- [ ] amen_cv:
+- [ ] break_cv:
+- [ ] sample_cv:
+- [ ] clk_in:
 */
 
 #include "mcp3208.h"
