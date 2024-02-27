@@ -116,6 +116,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         }
         if (retrig_pitch > 0 && retrig_pitch < PITCH_VAL_MAX - 1) {
           retrig_pitch += retrig_pitch_change;
+          if (retrig_pitch < 0) {
+            retrig_pitch = 0;
+          } else if (retrig_pitch > PITCH_VAL_MAX - 1) {
+            retrig_pitch = PITCH_VAL_MAX - 1;
+          }
         }
         if (fil_is_open && debounce_quantize == 0) {
           do_update_phase_from_beat_current();
