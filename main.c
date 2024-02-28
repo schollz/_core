@@ -76,13 +76,21 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
   if (bpm_timer_counter %
-          ectocore_clock_out_divisions[ectocore_clock_selected_division] ==
+          (banks[sel_bank_cur]
+               ->sample[sel_sample_cur]
+               .snd[sel_variation]
+               ->splice_trigger *
+           ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+           8) ==
       0) {
     gpio_put(GPIO_CLOCK_OUT, 1);
-  } else if (bpm_timer_counter %
-                 ectocore_clock_out_divisions
-                     [ectocore_clock_selected_division] /
-                 2 ==
+  } else if (bpm_timer_counter % (banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[sel_variation]
+                                      ->splice_trigger *
+                                  ectocore_clock_out_divisions
+                                      [ectocore_clock_selected_division] /
+                                  8 / 2) ==
              0) {
     gpio_put(GPIO_CLOCK_OUT, 0);
   }
