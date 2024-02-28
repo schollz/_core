@@ -137,6 +137,20 @@ void input_handling() {
     button_change[i] = ButtonChange_malloc();
   }
 
+#define MODE_NUM 4
+  const uint8_t mode_gpio_led[MODE_NUM] = {
+      GPIO_LED_MODE1,
+      GPIO_LED_MODE2,
+      GPIO_LED_MODE3,
+      GPIO_LED_MODE4,
+  };
+  for (uint8_t i = 0; i < MODE_NUM; i++) {
+    gpio_init(mode_gpio_led[i]);
+    gpio_set_dir(mode_gpio_led[i], GPIO_OUT);
+    gpio_put(mode_gpio_led[i], 0);
+  }
+  gpio_put(mode_gpio_led[ectocore_trigger_mode], 1);
+
   while (1) {
     int16_t val;
 
@@ -196,16 +210,36 @@ void input_handling() {
                  .snd[sel_variation]
                  ->slice_num;
       }
-      if (banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[sel_variation]
-                  ->slice_type[j] == 1 ||
-          banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[sel_variation]
-                  ->slice_type[j] == 3) {
-        gpio_put(GPIO_TRIG_OUT, 1);
-        debounce_trig = 100;
+      if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
+        if (banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_type[j] == 1 ||
+            banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_type[j] == 3) {
+          gpio_put(GPIO_TRIG_OUT, 1);
+          debounce_trig = 100;
+        }
+      } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
+        if (banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_type[j] == 2 ||
+            banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[sel_variation]
+                    ->slice_type[j] == 3) {
+          gpio_put(GPIO_TRIG_OUT, 1);
+          debounce_trig = 100;
+        }
+      } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
+      } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
+        if (random_integer_in_range(1, 100) < 20) {
+          gpio_put(GPIO_TRIG_OUT, 1);
+          debounce_trig = 100;
+        }
       }
     } else if (debounce_trig > 0) {
       debounce_trig--;
@@ -266,7 +300,12 @@ void input_handling() {
             if (banks[j]->num_samples > 0) {
               if (bank_num == val) {
                 sel_bank_next = j;
-                printf("[ectocore] switch bank %d\n", val);
+                if (sel_bank_next != sel_bank_cur) {
+                  sel_sample_next =
+                      sel_sample_cur % banks[sel_bank_next]->num_samples;
+                  fil_current_change = true;
+                  printf("[ectocore] switch bank %d\n", val);
+                }
                 break;
               }
               bank_num++;
@@ -317,6 +356,17 @@ void input_handling() {
       val = 1 - val;
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
+        if (val == 1) {
+          if (ectocore_trigger_mode < MODE_NUM - 1) {
+            ectocore_trigger_mode++;
+          } else {
+            ectocore_trigger_mode = 0;
+          }
+          for (uint8_t j = 0; j < MODE_NUM; j++) {
+            gpio_put(mode_gpio_led[j], 0);
+          }
+          gpio_put(mode_gpio_led[ectocore_trigger_mode], 1);
+        }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         printf("[ectocore] btn_bank %d\n", val);
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
@@ -331,7 +381,5 @@ void input_handling() {
         }
       }
     }
-
-    sleep_ms(1);
   }
 }

@@ -313,6 +313,11 @@ float pitch_vals[PITCH_VAL_MAX] = {
 #define PLAY_SAMPLE_LOOP 4
 
 #ifdef INCLUDE_ECTOCORE
+#define TRIGGER_MODE_KICK 0
+#define TRIGGER_MODE_SNARE 1
+#define TRIGGER_MODE_HH 2
+#define TRIGGER_MODE_RANDOM 3
+uint8_t ectocore_trigger_mode = 0;
 bool cv_amen_plugged = false;
 bool cv_break_plugged = false;
 bool cv_sample_plugged = false;
