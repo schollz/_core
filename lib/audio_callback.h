@@ -269,6 +269,9 @@ BREAKOUT_OF_MUTE:
              ->oversampling +
          1);
   }
+  if (samples_to_read < 11) {
+    samples_to_read = 11;
+  }
 
   uint32_t values_len = samples_to_read * (banks[sel_bank_cur]
                                                ->sample[sel_sample_cur]
