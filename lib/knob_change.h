@@ -44,7 +44,7 @@ void KnobChange_free(KnobChange *self) { free(self); }
 int16_t KnobChange_update(KnobChange *self, int16_t val) {
   if (self->last == -1) {
     self->last = val;
-    return -1;
+    return val;
   }
   if (self->debounce > 0) {
     self->debounce--;
