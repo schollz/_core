@@ -97,6 +97,9 @@
 #include "messagesync.h"
 #include "sequencehandler.h"
 #include "taptempo.h"
+#ifdef INCLUDE_ECTOCORE
+#include "ectocore_easing.h"
+#endif
 #ifdef INCLUDE_ZEPTOCORE
 #include "debounce_digits.h"
 #include "led_text_5x4.h"
