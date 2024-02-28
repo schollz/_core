@@ -32,9 +32,9 @@
 - [ ] btn_mode: changes trigger output mode
 - [x] btn_mult: sets clock division
 - [x] btn_bank + knob_sample: switch bank
-- [ ] btn_tap: sets tempo (3+ presses)
+- [x] btn_tap: sets tempo (3+ presses)
 - [x] btn_tap + knob_break: volume / loss / overdrive
-- [ ] btn_tap + btn_bank: mute
+- [ ] btn_tap + btn_bank: mute or start/stop?
 - [ ] amen_cv:
 - [ ] break_cv:
 - [ ] sample_cv:

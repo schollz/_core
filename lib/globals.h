@@ -317,8 +317,8 @@ bool cv_amen_plugged = false;
 bool cv_break_plugged = false;
 bool cv_sample_plugged = false;
 #define ECTOCORE_CLOCK_NUM_DIVISIONS 7
-const uint16_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
-    192, 192 * 2, 192 / 2, 192 * 4, 192 / 4, 192 * 8, 192 / 8,
+const uint8_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
+    8, 8 * 2, 8 / 2, 8 * 4, 8 / 4, 8 * 8, 8 / 8,
 };
 uint8_t ectocore_clock_selected_division = 0;
 #endif
