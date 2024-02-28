@@ -86,6 +86,7 @@
 #include "comb.h"
 #include "debounce.h"
 #include "delay.h"
+#include "dust.h"
 #include "envelope2_fp.h"
 #include "envelope_linear_integer.h"
 #include "file_list.h"
