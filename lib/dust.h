@@ -34,6 +34,16 @@ typedef struct Dust {
   callback_void emit;
 } Dust;
 
+Dust* Dust_malloc() {
+  Dust* self = (Dust*)malloc(sizeof(Dust));
+  self->last_time = 0;
+  self->next_firing = 0;
+  self->duration = 0;
+  self->active = 0;
+  self->emit = NULL;
+  return self;
+}
+
 void Dust_update(Dust* self) {
   if (!self->active) {
     return;
@@ -49,6 +59,15 @@ void Dust_update(Dust* self) {
       self->emit();
     }
   }
+}
+
+// Dust_setDuration sets in milliseconds
+void Dust_setDuration(Dust* self, uint32_t duration) {
+  self->active = 1;
+  self->duration = duration * 1000;
+  self->last_time = time_us_32();
+  self->next_firing =
+      self->last_time + random_integer_in_range(0, 2 * self->duration);
 }
 
 // Dust_setFrequency sets in milliHz
