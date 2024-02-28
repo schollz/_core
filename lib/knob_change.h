@@ -24,7 +24,7 @@
 
 #ifndef KNOB_CHANGE_LIB
 #define KNOB_CHANGE_LIB 1
-#define KNOB_CHANGE_THRESH 10
+#define KNOB_CHANGE_THRESH 3
 #define KNOB_CHANGE_DEBOUNCE 100
 
 typedef struct KnobChange {
