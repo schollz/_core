@@ -24,7 +24,9 @@
 
 /* spec
 - [ ] knob_break: wacky effects
+- [x] knob_break -> 0: mute/unmute playback
 - [ ] knob_amen: slice based effects
+- [x] knob_amen -> 0: stop/start playback
 - [x] knob_sample: switch sample
 - [ ] knob_break_atten:
 - [ ] knob_amen_atten:
@@ -343,7 +345,26 @@ void input_handling() {
             sf->fx_active[FX_FUZZ] = 0;
             sf->fx_active[FX_SATURATE] = 0;
           }
+        } else {
+          if (val < 10 && !button_mute) {
+            trigger_button_mute = true;
+          } else if (val >= 10 && button_mute) {
+            button_mute = false;
+          }
         }
+      } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
+        printf("[ectocore] knob_amen %d\n", val);
+        if (val < 10 && !playback_stopped) {
+          if (!button_mute) trigger_button_mute = true;
+          do_stop_playback = true;
+        } else if (val > 10 && playback_stopped) {
+          do_restart_playback = true;
+          button_mute = false;
+        }
+      } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
+        printf("[ectocore] knob_break_atten %d\n", val);
+      } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
+        printf("[ectocore] knob_amen_atten %d\n", val);
       }
     }
 
