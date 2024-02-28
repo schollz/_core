@@ -109,6 +109,7 @@ void input_handling() {
   sf->vol = VOLUME_STEPS;
   sf->fx_active[FX_SATURATE] = true;
   sf->pitch_val_index = PITCH_VAL_MID;
+  sf->stay_in_sync = true;
   uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
@@ -164,8 +165,16 @@ void input_handling() {
   Dust_setCallback(dust[0], dust_1);
   Dust_setDuration(dust[0], 1000 * 8);
 
+  uint16_t probability_of_random_jump = 0;
+
   while (1) {
     int16_t val;
+
+    // update random jumping
+    if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
+      printf("random jump\n");
+      do_random_jump = true;
+    }
 
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
@@ -376,6 +385,10 @@ void input_handling() {
         } else if (val > 10 && playback_stopped) {
           do_restart_playback = true;
           button_mute = false;
+        } else {
+          if (val > 700) {
+            probability_of_random_jump = (val - 700) * (val - 700) / 100;
+          }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
         printf("[ectocore] knob_break_atten %d\n", val);
