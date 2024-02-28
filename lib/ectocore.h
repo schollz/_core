@@ -376,6 +376,14 @@ void input_handling() {
           } else if (val >= 10 && button_mute) {
             button_mute = false;
           }
+          uint8_t u8val = val * 255 / 1024;
+          global_filter_index =
+              ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
+          printf("[ectocore] global_filter_index: %d\n", global_filter_index);
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          }
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         printf("[ectocore] knob_amen %d\n", val);
