@@ -45,6 +45,8 @@
 
 #include "mcp3208.h"
 
+void dust_1() { printf("dust_1\n"); }
+
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   debounce_quantize = 0;
   retrig_first = true;
@@ -153,8 +155,22 @@ void input_handling() {
   }
   gpio_put(mode_gpio_led[ectocore_trigger_mode], 1);
 
+// create random dust timers
+#define DUST_NUM 4
+  Dust *dust[DUST_NUM];
+  for (uint8_t i = 0; i < DUST_NUM; i++) {
+    dust[i] = Dust_malloc();
+  }
+  Dust_setCallback(dust[0], dust_1);
+  Dust_setDuration(dust[0], 1000 * 8);
+
   while (1) {
     int16_t val;
+
+    // update dusts
+    for (uint8_t i = 0; i < DUST_NUM; i++) {
+      Dust_update(dust[i]);
+    }
 
     if (debounce_input_detection > 0) {
       debounce_input_detection--;
