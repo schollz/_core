@@ -15,7 +15,7 @@ breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
 - [pcm5102](https://www.amazon.com/Comimark-Interface-PCM5102-GY-PCM5102-Raspberry/dp/B07W97D2YC/) ($9)
 - [sdio sd card](https://www.adafruit.com/product/4682) ($3.50)
 
-![PXL_20231225_060210016-removebg-preview](https://raw.githubusercontent.com/schollz/_core/main/docs/static/_core_bb.png)
+![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
 
 ![boardcore](docs/static/_core_bb.png)
 
