@@ -8,6 +8,7 @@ typedef struct WaveBass {
   WaveSyn *osc[WAVETABLEBASS_MAX];
   uint8_t note;
   uint16_t change_count;
+  uint16_t volume;
 } WaveBass;
 
 WaveBass *WaveBass_malloc() {
@@ -17,6 +18,7 @@ WaveBass *WaveBass_malloc() {
   }
   self->note = 0;
   self->change_count = 5000;
+  self->volume = 4096 / 2;
   return self;
 }
 
@@ -25,6 +27,13 @@ void WaveBass_free(WaveBass *self) {
     WaveSyn_free(self->osc[i]);
   }
   free(self);
+}
+
+void WaveBass_set_volume(WaveBass *self, uint16_t volume) {
+  if (volume > 4096) {
+    volume = 4096;
+  }
+  self->volume = volume;
 }
 
 void WaveBass_note_on(WaveBass *self, uint8_t note) {
@@ -56,7 +65,7 @@ int32_t WaveBass_next(WaveBass *self) {
     }
     self->change_count++;
   }
-  return val / WAVETABLEBASS_MAX;
+  return (val << 4) * self->volume / WAVETABLEBASS_MAX;
 }
 
 #endif
