@@ -406,6 +406,10 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
+          // set the bass volume
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+                            adc * 255 / 4096, 200);
+          WaveBass_set_volume(wavebass, adc);
         }
       }
     }

@@ -50,10 +50,10 @@ for i in range(wavetable_max):
     # if i == 0:
     #     plot_wavetable(mtof(note), 44100)
     wavetable_len.append(len(s))
-    print("const int32_t wavetable%d[%d] = {" % (i, len(s)))
+    print("const int16_t wavetable%d[%d] = {" % (i, len(s)))
     for j in range(len(s)):
-        print("  %d," % round(s[j] * 1073741823))  # 32767 2147483647
-        total_bytes += 4
+        print("  %d," % round(s[j] * 32700))  # 32767 2147483647
+        total_bytes += 2
     print("};")
 print("uint16_t wavetable_len(uint8_t wave) {")
 print("  switch (wave) {")
@@ -62,7 +62,7 @@ for i in range(wavetable_max):
 print("    default: return 0;")
 print("  }")
 print("}")
-print("const int32_t* wavetable_data(uint8_t wave) {")
+print("const int16_t* wavetable_data(uint8_t wave) {")
 print("  switch (wave) {")
 for i in range(wavetable_max):
     print("    case %d:" % i)
