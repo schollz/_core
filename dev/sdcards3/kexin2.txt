@@ -1,0 +1,1236 @@
+cd dev/minicom && go build -v
+./dev/minicom/minicom
+[0;37m[info]	[0m2024/02/28 14:52:31 starting minicom
+[0;36m[debug]	[0m14:52:31 main.go:52: running on port 7083
+[0;36m[debug]	[0m14:52:31 main.go:70: opened port /dev/ttyACM0 at 115200
+version=v1.6.5
+sdcard19.0 327 856 1 1
+key_do_jump 1
+key_do_jump 9
+sdcard19.5 179 856 1 1
+sdcard19.0 179 856 1 1
+key_do_jump 6
+key_do_jump 9
+sdcard19.4 356 856 1 1
+sdcard19.0 324 856 2 1
+key_do_jump 2
+sdcard19.2 344 856 1 1
+key_do_jump 14
+key_do_jump 11
+sdcard19.4 326 856 2 0
+sdcard19.0 325 856 1 1
+sdcard19.1 343 856 2 2
+sdcard18.9 326 856 1 1
+sdcard18.9 327 856 1 1
+key_do_jump 12
+sdcard19.0 361 856 1 1
+key_do_jump 1
+key_do_jump 1
+sdcard19.2 180 856 2 1
+sdcard19.0 188 856 2 0
+sdcard19.1 180 856 2 0
+key_do_jump 6
+sdcard19.2 329 856 2 1
+key_do_jump 5
+key_do_jump 13
+sdcard19.4 328 856 0 1
+sdcard19.0 326 856 2 1
+key_do_jump 13
+sdcard19.2 328 856 1 0
+sdcard19.0 327 856 1 1
+key_do_jump 13
+sdcard19.4 334 856 0 1
+sdcard19.1 335 856 1 0
+key_do_jump 2
+key_do_jump 12
+sdcard19.4 180 856 2 1
+key_do_jump 4
+sdcard19.2 178 856 2 1
+key_do_jump 0
+sdcard19.2 326 856 1 1
+sdcard19.0 325 856 0 0
+sdcard18.9 331 856 2 0
+sdcard19.0 327 856 1 1
+key_do_jump 1
+sdcard19.1 329 856 2 0
+sdcard18.8 354 856 1 1
+key_do_jump 9
+key_do_jump 0
+key_do_jump 9
+sdcard19.5 326 856 1 1
+key_do_jump 8
+sdcard19.1 324 856 1 1
+key_do_jump 1
+sdcard18.9 330 856 1 1
+key_do_jump 8
+sdcard19.2 361 856 2 1
+sdcard18.8 328 856 1 1
+key_do_jump 10
+sdcard19.2 327 856 2 1
+sdcard19.0 341 856 1 1
+key_do_jump 12
+sdcard19.2 361 856 1 0
+sdcard19.1 326 856 1 1
+key_do_jump 12
+sdcard19.3 344 856 1 2
+key_do_jump 3
+key_do_jump 10
+sdcard19.5 178 856 1 1
+sdcard19.0 180 856 2 1
+key_do_jump 0
+sdcard19.2 325 856 2 0
+sdcard19.0 325 856 1 0
+key_do_jump 10
+sdcard19.3 180 856 1 1
+sdcard19.2 326 856 1 0
+key_do_jump 4
+sdcard19.2 325 856 2 0
+key_do_jump 3
+sdcard19.2 330 856 0 1
+sdcard19.0 333 856 2 1
+sdcard18.9 339 856 1 1
+sdcard18.9 327 856 2 1
+sdcard18.9 326 856 1 1
+sdcard19.0 327 856 1 1
+key_do_jump 9
+key_do_jump 1
+sdcard19.4 374 856 2 0
+key_do_jump 1
+key_do_jump 8
+sdcard19.2 329 856 1 1
+key_do_jump 2
+sdcard19.0 380 856 1 1
+sdcard18.7 328 856 1 1
+key_do_jump 7
+key_do_jump 11
+key_do_jump 6
+sdcard19.8 328 856 1 1
+key_do_jump 8
+sdcard19.2 328 856 1 1
+key_do_jump 14
+sdcard19.3 183 856 0 0
+key_do_jump 7
+key_do_jump 4
+sdcard19.5 325 856 1 0
+key_do_jump 6
+sdcard19.2 183 856 0 0
+key_do_jump 7
+sdcard19.1 327 856 2 0
+sdcard19.0 326 856 1 1
+key_do_jump 8
+sdcard19.2 181 856 1 0
+sdcard19.0 181 856 1 1
+sdcard19.0 178 856 1 1
+sdcard18.9 176 856 1 0
+sdcard19.0 178 856 1 1
+sdcard18.9 197 856 1 1
+key_do_jump 13
+key_do_jump 2
+key_do_jump 5
+sdcard19.9 364 856 2 0
+key_do_jump 5
+key_do_jump 2
+sdcard19.4 909 856 3 2
+sdcard18.9 331 856 0 0
+sdcard18.9 329 856 1 1
+key_do_jump 9
+sdcard19.2 326 856 0 0
+sdcard18.9 337 856 1 1
+key_do_jump 12
+sdcard18.9 333 856 2 1
+sdcard18.7 329 856 2 1
+sdcard18.8 329 856 1 1
+sdcard19.0 327 856 1 1
+sdcard19.0 328 856 1 1
+sdcard19.1 330 856 1 0
+key_do_jump 6
+sdcard19.6 329 856 1 1
+key_do_jump 0
+key_do_jump 9
+sdcard19.5 326 856 1 1
+key_do_jump 4
+sdcard19.3 327 856 1 1
+sdcard19.1 361 856 1 1
+sdcard19.0 326 856 2 1
+key_do_jump 12
+key_do_jump 3
+key_do_jump 14
+sdcard19.6 177 856 1 1
+sdcard19.0 197 856 1 1
+key_do_jump 5
+sdcard19.2 328 856 1 1
+sdcard19.0 334 856 0 0
+key_do_jump 6
+key_do_jump 13
+sdcard19.4 180 856 1 1
+key_do_jump 9
+key_do_jump 9
+sdcard19.3 325 856 2 0
+key_do_jump 12
+sdcard19.1 178 856 1 1
+key_do_jump 11
+sdcard19.1 327 856 1 1
+key_do_jump 2
+sdcard19.3 860 856 2 3
+sdcard18.9 326 856 1 0
+sdcard19.0 324 856 1 1
+key_do_jump 2
+sdcard19.0 333 856 1 1
+key_do_jump 13
+sdcard19.0 358 856 2 1
+key_do_jump 4
+sdcard19.0 334 856 1 0
+sdcard19.1 326 856 1 0
+sdcard19.0 359 856 1 0
+sdcard19.0 328 856 0 0
+sdcard19.0 324 856 2 1
+sdcard19.1 359 856 2 1
+key_do_jump 4
+key_do_jump 7
+sdcard19.4 332 856 2 1
+sdcard19.2 177 856 0 0
+sdcard19.0 178 856 1 2
+key_do_jump 12
+key_do_jump 11
+sdcard19.4 180 856 0 0
+sdcard19.0 179 856 1 0
+key_do_jump 5
+sdcard19.2 331 856 2 0
+sdcard18.9 330 856 1 1
+key_do_jump 9
+sdcard19.2 323 856 1 1
+sdcard19.0 329 856 1 1
+sdcard18.9 323 856 2 1
+sdcard18.9 326 856 1 1
+sdcard18.9 349 856 1 1
+sdcard18.9 329 856 1 1
+key_do_jump 9
+sdcard19.2 180 856 2 1
+key_do_jump 4
+sdcard19.0 368 856 2 0
+sdcard18.8 327 856 2 0
+sdcard18.9 330 856 1 1
+key_do_jump 3
+key_do_jump 7
+sdcard19.5 179 856 2 1
+key_do_jump 7
+sdcard19.1 327 856 2 0
+sdcard19.0 346 856 2 1
+sdcard19.1 330 856 1 1
+sdcard19.0 326 856 1 0
+key_do_jump 10
+key_do_jump 13
+sdcard19.6 339 856 1 1
+sdcard19.0 341 856 1 1
+sdcard19.0 326 856 2 0
+key_do_jump 12
+sdcard19.2 325 856 1 1
+sdcard19.3 328 856 1 1
+sdcard19.0 327 856 0 0
+key_do_jump 0
+key_do_jump 1
+sdcard19.4 180 856 1 1
+sdcard19.0 179 856 1 1
+key_do_jump 9
+sdcard19.1 185 856 1 1
+sdcard19.0 179 856 2 0
+sdcard18.9 178 856 1 0
+key_do_jump 8
+sdcard19.0 325 856 1 1
+sdcard18.9 329 856 1 2
+sdcard18.9 326 856 0 0
+key_do_jump 10
+sdcard19.0 179 856 1 0
+key_do_jump 8
+sdcard19.0 361 856 1 2
+key_do_jump 5
+key_do_jump 4
+sdcard19.5 188 856 2 1
+key_do_jump 9
+sdcard19.3 349 856 1 1
+sdcard19.0 329 856 2 0
+sdcard19.0 329 856 1 1
+key_do_jump 7
+key_do_jump 5
+sdcard19.2 362 856 2 0
+sdcard19.2 196 856 1 1
+key_do_jump 11
+sdcard19.2 178 856 1 1
+key_do_jump 8
+sdcard19.3 200 856 1 1
+sdcard19.0 180 856 2 0
+sdcard19.0 180 856 1 0
+sdcard19.0 180 856 2 1
+key_do_jump 3
+sdcard19.2 326 856 1 1
+key_do_jump 3
+sdcard19.2 326 856 1 1
+key_do_jump 11
+key_do_jump 10
+key_do_jump 3
+sdcard19.6 331 856 1 1
+sdcard19.0 328 856 1 0
+key_do_jump 13
+key_do_jump 8
+sdcard19.3 208 856 1 1
+key_do_jump 6
+key_do_jump 13
+sdcard19.3 329 856 2 1
+key_do_jump 7
+sdcard19.2 326 856 2 1
+sdcard19.0 327 856 1 1
+key_do_jump 2
+key_do_jump 12
+sdcard19.2 361 856 1 1
+sdcard18.8 346 856 1 0
+key_do_jump 8
+sdcard18.9 338 856 2 1
+key_do_jump 6
+sdcard19.1 332 856 1 1
+sdcard19.1 329 856 1 1
+key_do_jump 3
+key_do_jump 8
+key_do_jump 2
+sdcard19.8 327 856 2 1
+sdcard19.2 178 856 1 1
+key_do_jump 4
+key_do_jump 11
+sdcard19.5 180 856 2 0
+sdcard19.1 189 856 1 2
+sdcard19.0 182 856 0 1
+sdcard19.0 177 856 1 1
+key_do_jump 4
+sdcard19.2 179 856 1 0
+sdcard19.0 180 856 2 1
+key_do_jump 5
+sdcard19.2 351 856 0 1
+key_do_jump 12
+sdcard19.2 359 856 1 1
+key_do_jump 5
+key_do_jump 0
+sdcard19.3 326 856 2 1
+sdcard18.9 335 856 1 1
+sdcard19.0 358 856 2 0
+key_do_jump 9
+sdcard19.3 326 856 2 1
+sdcard18.9 328 856 2 1
+key_do_jump 10
+key_do_jump 10
+sdcard19.4 360 856 1 0
+key_do_jump 12
+sdcard19.2 335 856 1 1
+key_do_jump 11
+sdcard19.0 329 856 1 1
+key_do_jump 8
+sdcard19.0 335 856 1 1
+key_do_jump 2
+sdcard18.9 179 856 2 1
+sdcard19.0 180 856 1 0
+key_do_jump 0
+key_do_jump 0
+sdcard19.5 329 856 0 1
+sdcard19.0 326 856 1 1
+sdcard19.1 327 856 1 1
+key_do_jump 13
+sdcard19.2 178 856 1 0
+key_do_jump 0
+key_do_jump 11
+sdcard19.4 355 856 1 1
+sdcard19.2 181 856 1 1
+key_do_jump 3
+sdcard19.2 180 856 1 1
+key_do_jump 7
+sdcard19.3 178 856 2 0
+key_do_jump 0
+sdcard19.2 363 856 2 1
+sdcard19.0 330 856 1 0
+key_do_jump 7
+sdcard19.2 368 856 2 0
+key_do_jump 6
+key_do_jump 12
+sdcard19.3 179 856 1 1
+key_do_jump 11
+key_do_jump 2
+sdcard19.4 180 856 2 1
+sdcard19.0 181 856 1 1
+key_do_jump 1
+sdcard19.1 327 856 1 1
+sdcard18.9 327 856 2 0
+sdcard18.9 328 856 1 1
+sdcard19.1 181 856 2 1
+sdcard18.8 177 856 1 1
+key_do_jump 10
+key_do_jump 11
+sdcard19.2 334 856 2 1
+sdcard18.8 364 856 2 1
+sdcard19.1 327 856 1 1
+sdcard19.1 326 856 1 1
+key_do_jump 8
+key_do_jump 7
+sdcard19.4 184 856 0 1
+sdcard19.0 181 856 1 1
+sdcard19.0 179 856 2 1
+sdcard19.0 174 856 1 1
+sdcard19.0 206 856 1 1
+sdcard19.0 180 856 2 1
+key_do_jump 8
+key_do_jump 7
+sdcard19.6 350 856 2 1
+sdcard19.0 351 856 1 1
+key_do_jump 3
+sdcard19.1 193 856 2 1
+sdcard19.0 187 856 1 0
+key_do_jump 0
+sdcard19.2 328 856 2 0
+sdcard19.0 324 856 1 1
+key_do_jump 11
+key_do_jump 7
+sdcard19.5 330 856 1 0
+sdcard18.9 329 856 1 1
+sdcard18.9 327 856 1 1
+sdcard18.9 353 856 2 1
+sdcard18.9 329 856 0 1
+key_do_jump 0
+sdcard19.0 180 856 2 0
+key_do_jump 5
+sdcard19.0 327 856 1 1
+sdcard19.1 330 856 1 1
+sdcard19.0 326 856 1 1
+sdcard19.0 328 856 1 0
+key_do_jump 13
+sdcard19.3 328 856 1 0
+sdcard19.1 334 856 2 1
+sdcard19.0 328 856 1 1
+sdcard19.1 327 856 2 0
+sdcard19.1 327 856 1 1
+key_do_jump 7
+sdcard19.2 327 856 2 1
+sdcard19.0 326 856 1 1
+key_do_jump 9
+sdcard19.3 325 856 2 1
+sdcard19.0 326 856 1 1
+key_do_jump 7
+sdcard19.3 179 856 1 0
+sdcard19.0 178 856 2 1
+sdcard18.9 176 856 1 1
+key_do_jump 6
+sdcard19.2 327 856 2 1
+key_do_jump 14
+sdcard19.1 179 856 2 0
+key_do_jump 3
+sdcard19.1 324 856 1 0
+key_do_jump 1
+sdcard19.2 330 856 1 0
+sdcard18.8 328 856 1 1
+sdcard18.8 326 856 2 0
+sdcard18.8 334 856 1 1
+sdcard18.8 332 856 0 0
+key_do_jump 6
+sdcard19.3 356 856 1 1
+sdcard19.0 340 856 1 1
+key_do_jump 11
+sdcard19.5 328 856 1 1
+key_do_jump 5
+key_do_jump 12
+sdcard19.5 328 856 1 1
+key_do_jump 12
+key_do_jump 9
+sdcard19.4 328 856 1 1
+key_do_jump 6
+sdcard19.2 344 856 1 1
+sdcard19.0 329 856 1 1
+sdcard19.0 326 856 2 1
+key_do_jump 2
+sdcard19.2 350 856 2 0
+key_do_jump 13
+sdcard19.1 181 856 0 1
+sdcard19.0 181 856 2 0
+key_do_jump 11
+sdcard19.2 351 856 1 0
+sdcard18.9 328 856 1 1
+sdcard19.0 326 856 2 0
+sdcard19.1 327 856 0 1
+sdcard18.9 326 856 1 1
+key_do_jump 0
+sdcard19.1 332 856 1 0
+key_do_jump 8
+sdcard19.1 177 856 0 1
+sdcard18.8 176 856 1 0
+sdcard18.7 181 856 2 1
+sdcard18.8 179 856 1 1
+sdcard19.0 188 856 1 1
+sdcard19.0 178 856 0 1
+sdcard19.0 178 856 1 1
+sdcard19.2 335 856 1 1
+key_do_jump 6
+sdcard19.2 204 856 2 1
+key_do_jump 1
+sdcard19.4 330 856 1 1
+key_do_jump 6
+sdcard19.2 343 856 2 1
+sdcard19.1 362 856 1 1
+sdcard19.0 361 856 1 1
+sdcard19.0 327 856 1 1
+sdcard19.0 325 856 2 0
+sdcard19.0 329 856 2 0
+key_do_jump 12
+sdcard19.2 742 856 3 1
+sdcard19.0 179 856 1 1
+key_do_jump 0
+key_do_jump 5
+sdcard19.4 340 856 2 1
+key_do_jump 2
+sdcard19.1 177 856 2 1
+sdcard18.9 179 856 2 0
+sdcard18.9 187 856 2 1
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard5.7 132186 856 3 1
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard2.2 37585 856 4 2
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard1.2 31318 856 2 8
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard1.1 30840 856 2 6
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard1.0 30535 856 3 6
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard1.0 30067 856 2 6
+Core0 -> Core1 FIFO Full
+Core0 -> Core1 FIFO Full
+sdcard0.9 29381 856 3 6
+sdcard20.1 175 856 1 1
+key_do_jump 2
+sdcard19.1 361 856 1 1
+sdcard18.8 356 856 0 1
+sdcard18.8 339 856 1 0
+sdcard18.7 325 856 1 0
+sdcard18.9 328 856 2 0
+sdcard18.9 322 856 0 1
+sdcard19.0 346 856 1 1
+key_do_jump 3
+sdcard19.2 173 856 2 1
+sdcard19.0 178 856 1 0
+key_do_jump 14
+sdcard19.2 176 856 0 1
+sdcard19.2 323 856 1 1
+sdcard19.0 319 856 1 1
+key_do_jump 14
+sdcard19.2 325 856 1 0
+sdcard18.9 322 856 1 0
+sdcard19.0 339 856 1 1
+key_do_jump 12
+key_do_jump 11
+sdcard19.3 332 856 1 1
+key_do_jump 5
+key_do_jump 9
+sdcard19.4 324 856 1 0
+key_do_jump 4
+sdcard19.2 337 856 1 1
+sdcard18.9 354 856 2 1
+sdcard18.8 322 856 1 0
+key_do_jump 10
+key_do_jump 13
+sdcard19.3 325 856 1 1
+sdcard18.9 322 856 2 1
+sdcard18.9 337 856 3 1
+sdcard18.9 176 856 2 1
+sdcard18.7 177 856 1 0
+sdcard18.7 178 856 1 1
+sdcard19.0 178 856 2 1
+key_do_jump 0
+sdcard19.1 323 856 1 1
+key_do_jump 9
+key_do_jump 13
+sdcard19.4 207 856 2 1
+sdcard19.0 180 856 2 0
+sdcard19.0 178 856 1 1
+key_do_jump 13
+key_do_jump 3
+sdcard19.3 328 856 1 1
+sdcard19.0 324 856 1 0
+sdcard18.9 322 856 2 0
+sdcard19.0 321 856 1 1
+key_do_jump 11
+sdcard19.4 331 856 1 1
+sdcard18.9 323 856 1 0
+sdcard18.9 321 856 1 0
+sdcard18.9 325 856 2 1
+sdcard18.9 319 856 1 1
+key_do_jump 13
+sdcard19.0 177 856 1 1
+key_do_jump 3
+sdcard19.0 323 856 1 1
+key_do_jump 4
+sdcard19.1 344 856 2 1
+sdcard18.9 358 856 1 1
+key_do_jump 10
+key_do_jump 5
+sdcard19.3 327 856 1 1
+key_do_jump 11
+sdcard19.0 330 856 1 0
+sdcard18.7 325 856 1 1
+sdcard18.7 360 856 1 0
+key_do_jump 3
+sdcard19.4 324 856 2 1
+key_do_jump 11
+sdcard19.2 329 856 3 2
+sdcard19.0 322 856 1 1
+sdcard19.0 321 856 1 1
+sdcard19.0 356 856 1 1
+key_do_jump 5
+key_do_jump 9
+sdcard19.4 322 856 1 1
+sdcard19.0 321 856 1 1
+sdcard19.0 330 856 1 1
+sdcard18.9 323 856 1 1
+sdcard19.0 323 856 1 1
+key_do_jump 2
+key_do_jump 1
+sdcard19.3 325 856 1 0
+key_do_jump 4
+sdcard19.1 178 856 1 1
+sdcard19.2 361 856 2 0
+key_do_jump 1
+key_do_jump 6
+sdcard19.3 179 856 2 1
+sdcard18.8 175 856 1 0
+sdcard18.8 181 856 1 1
+sdcard18.9 185 856 1 1
+sdcard18.9 186 856 2 0
+key_do_jump 7
+sdcard19.0 332 856 1 1
+key_do_jump 4
+sdcard19.0 320 856 1 1
+sdcard18.7 326 856 1 0
+sdcard18.8 328 856 1 0
+sdcard19.0 327 856 2 0
+sdcard19.0 329 856 2 1
+sdcard19.2 323 856 2 0
+key_do_jump 9
+sdcard19.1 179 856 2 1
+sdcard19.0 179 856 2 0
+sdcard18.9 176 856 2 1
+key_do_jump 13
+sdcard19.1 338 856 1 0
+sdcard19.0 325 856 1 0
+key_do_jump 8
+key_do_jump 8
+sdcard19.3 176 856 2 1
+key_do_jump 9
+sdcard19.3 324 856 0 1
+key_do_jump 5
+sdcard19.1 177 856 1 1
+key_do_jump 5
+sdcard19.2 324 856 1 0
+sdcard18.8 324 856 1 1
+sdcard18.9 323 856 1 1
+key_do_jump 10
+sdcard19.1 180 856 2 1
+key_do_jump 9
+key_do_jump 6
+sdcard19.5 178 856 1 1
+key_do_jump 8
+sdcard19.1 325 856 1 1
+sdcard18.8 323 856 1 0
+sdcard18.8 335 856 2 1
+key_do_jump 0
+key_do_jump 12
+sdcard19.1 326 856 1 1
+sdcard18.7 325 856 2 0
+sdcard18.9 333 856 1 1
+key_do_jump 5
+sdcard19.2 179 856 1 1
+sdcard18.9 178 856 1 0
+sdcard19.0 179 856 1 1
+sdcard19.0 178 856 2 1
+sdcard18.9 177 856 1 1
+key_do_jump 6
+sdcard19.4 330 856 1 0
+key_do_jump 3
+sdcard19.1 180 856 1 1
+sdcard18.9 177 856 1 1
+sdcard19.0 177 856 1 1
+sdcard18.9 177 856 1 1
+sdcard19.0 194 856 0 2
+key_do_jump 6
+sdcard19.1 332 856 2 0
+key_do_jump 5
+sdcard19.2 178 856 1 1
+sdcard18.8 177 856 1 1
+sdcard18.9 178 856 1 1
+sdcard18.8 175 856 1 0
+sdcard18.8 175 856 2 1
+sdcard19.1 338 856 2 0
+key_do_jump 7
+key_do_jump 13
+sdcard19.2 348 856 2 2
+sdcard18.7 362 856 2 0
+sdcard18.7 326 856 1 1
+key_do_jump 3
+sdcard19.2 178 856 0 0
+key_do_jump 12
+sdcard19.2 325 856 2 1
+sdcard19.0 344 856 2 0
+key_do_jump 4
+sdcard19.2 323 856 1 0
+sdcard19.0 323 856 1 1
+key_do_jump 3
+sdcard19.2 324 856 1 0
+sdcard19.0 331 856 1 1
+key_do_jump 5
+key_do_jump 4
+sdcard19.4 321 856 1 1
+sdcard19.0 342 856 1 1
+key_do_jump 14
+sdcard19.4 333 856 1 1
+key_do_jump 2
+sdcard19.1 323 856 1 1
+sdcard19.0 322 856 1 0
+sdcard18.8 327 856 1 1
+key_do_jump 6
+sdcard19.1 823 856 2 2
+sdcard18.9 175 856 1 1
+sdcard18.9 178 856 2 1
+sdcard18.9 178 856 1 1
+sdcard18.8 179 856 1 1
+sdcard18.9 184 856 1 0
+key_do_jump 10
+sdcard19.0 326 856 1 1
+sdcard18.8 355 856 0 1
+key_do_jump 8
+key_do_jump 5
+sdcard19.4 327 856 1 0
+sdcard19.1 321 856 2 1
+key_do_jump 1
+sdcard19.2 897 856 3 2
+sdcard19.0 325 856 1 1
+key_do_jump 8
+key_do_jump 8
+key_do_jump 0
+sdcard19.6 323 856 1 0
+sdcard19.0 329 856 1 0
+key_do_jump 2
+sdcard19.2 321 856 2 1
+key_do_jump 12
+sdcard19.2 177 856 1 0
+sdcard19.0 179 856 1 0
+sdcard19.0 175 856 1 1
+sdcard19.0 179 856 1 0
+sdcard19.0 179 856 1 1
+sdcard18.8 176 856 2 1
+sdcard19.1 175 856 1 1
+sdcard18.9 180 856 1 1
+sdcard18.9 179 856 1 1
+key_do_jump 2
+sdcard19.0 179 856 1 1
+sdcard18.9 175 856 2 1
+sdcard18.8 177 856 1 0
+sdcard18.9 175 856 1 1
+sdcard18.7 176 856 1 1
+key_do_jump 8
+key_do_jump 13
+sdcard19.2 324 856 0 0
+sdcard18.8 332 856 2 1
+sdcard19.0 326 856 1 1
+key_do_jump 4
+key_do_jump 2
+key_do_jump 3
+sdcard19.5 178 856 0 1
+key_do_jump 8
+sdcard19.4 321 856 1 1
+key_do_jump 13
+sdcard19.2 326 856 1 1
+sdcard19.0 332 856 0 1
+sdcard18.9 337 856 0 1
+sdcard19.0 323 856 1 0
+sdcard19.0 322 856 2 2
+key_do_jump 8
+sdcard19.1 175 856 1 1
+sdcard19.0 178 856 1 1
+sdcard19.0 176 856 1 0
+key_do_jump 13
+sdcard19.1 321 856 1 1
+sdcard18.9 323 856 1 0
+key_do_jump 11
+key_do_jump 7
+sdcard19.3 327 856 1 0
+sdcard19.0 330 856 1 1
+key_do_jump 12
+key_do_jump 2
+sdcard19.3 324 856 1 0
+sdcard18.8 351 856 2 1
+sdcard18.8 359 856 2 1
+sdcard18.8 338 856 1 0
+sdcard18.7 322 856 1 1
+sdcard18.7 326 856 1 0
+sdcard18.8 323 856 1 1
+key_do_jump 13
+sdcard19.3 177 856 1 1
+sdcard18.9 178 856 1 1
+key_do_jump 14
+sdcard19.2 322 856 1 1
+sdcard18.9 321 856 2 1
+sdcard19.0 325 856 1 1
+sdcard19.2 322 856 1 1
+key_do_jump 2
+sdcard19.1 323 856 1 0
+key_do_jump 12
+sdcard19.2 325 856 0 0
+sdcard18.8 321 856 2 1
+sdcard19.0 321 856 1 0
+key_do_jump 1
+sdcard19.1 178 856 1 0
+key_do_jump 2
+sdcard19.2 324 856 1 1
+sdcard19.0 324 856 1 1
+sdcard18.9 353 856 1 0
+sdcard18.8 360 856 1 1
+key_do_jump 0
+sdcard19.0 178 856 1 1
+key_do_jump 10
+key_do_jump 8
+sdcard19.3 350 856 1 1
+key_do_jump 6
+key_do_jump 2
+sdcard19.5 327 856 1 1
+key_do_jump 6
+sdcard19.0 324 856 1 0
+sdcard18.7 323 856 1 0
+key_do_jump 9
+sdcard19.0 728 856 3 2
+sdcard18.8 182 856 1 1
+sdcard19.0 177 856 1 0
+sdcard18.9 176 856 1 1
+key_do_jump 10
+sdcard19.2 325 856 1 1
+sdcard19.0 325 856 2 1
+key_do_jump 11
+sdcard19.2 323 856 1 0
+sdcard19.0 345 856 2 0
+sdcard18.8 338 856 1 1
+key_do_jump 13
+sdcard19.2 177 856 0 1
+key_do_jump 14
+sdcard19.3 177 856 0 1
+key_do_jump 9
+sdcard19.2 176 856 1 1
+sdcard19.0 176 856 1 1
+key_do_jump 14
+sdcard19.2 377 856 2 1
+key_do_jump 11
+sdcard19.2 324 856 1 1
+sdcard18.9 353 856 2 0
+key_do_jump 14
+key_do_jump 11
+sdcard19.2 320 856 0 0
+key_do_jump 6
+sdcard19.1 179 856 1 1
+key_do_jump 11
+sdcard19.1 178 856 1 1
+sdcard18.8 180 856 1 0
+sdcard18.8 176 856 1 0
+key_do_jump 10
+key_do_jump 7
+key_do_jump 0
+key_do_jump 14
+sdcard19.6 325 856 2 1
+key_do_jump 8
+sdcard19.2 180 856 1 1
+sdcard18.9 183 856 2 1
+sdcard19.0 176 856 1 1
+sdcard19.0 180 856 1 0
+sdcard19.0 177 856 1 1
+key_do_jump 11
+sdcard19.2 322 856 2 1
+sdcard19.0 332 856 1 1
+sdcard19.0 319 856 1 1
+key_do_jump 4
+sdcard19.3 326 856 2 0
+sdcard18.9 328 856 1 0
+sdcard19.0 336 856 2 1
+key_do_jump 7
+sdcard19.1 324 856 1 1
+key_do_jump 8
+sdcard19.3 178 856 1 1
+sdcard18.8 176 856 1 0
+sdcard18.9 177 856 1 1
+sdcard18.8 176 856 2 3
+key_do_jump 11
+key_do_jump 10
+sdcard19.3 179 856 1 1
+key_do_jump 8
+sdcard19.1 327 856 2 1
+sdcard18.8 325 856 1 1
+key_do_jump 5
+sdcard19.1 321 856 2 0
+sdcard18.7 322 856 1 1
+key_do_jump 9
+sdcard19.0 337 856 2 0
+key_do_jump 10
+key_do_jump 3
+sdcard19.1 332 856 0 1
+key_do_jump 8
+sdcard19.2 177 856 2 1
+key_do_jump 3
+key_do_jump 7
+sdcard19.5 364 856 2 0
+key_do_jump 7
+sdcard19.2 326 856 1 0
+sdcard19.0 352 856 1 1
+key_do_jump 5
+sdcard19.2 176 856 1 1
+sdcard18.9 177 856 2 2
+sdcard19.0 180 856 0 0
+sdcard18.9 175 856 0 1
+sdcard18.9 176 856 2 1
+sdcard19.0 178 856 2 1
+sdcard19.0 177 856 1 0
+key_do_jump 5
+key_do_jump 12
+key_do_jump 11
+sdcard19.5 178 856 2 1
+key_do_jump 5
+sdcard19.2 330 856 1 1
+sdcard18.9 346 856 2 0
+key_do_jump 7
+sdcard19.3 176 856 1 0
+key_do_jump 4
+sdcard19.1 176 856 1 1
+sdcard18.8 197 856 2 0
+key_do_jump 11
+sdcard19.0 175 856 2 0
+key_do_jump 2
+sdcard19.2 334 856 2 0
+key_do_jump 8
+sdcard19.0 323 856 1 1
+sdcard18.8 339 856 1 0
+sdcard18.7 349 856 2 0
+key_do_jump 7
+sdcard19.2 322 856 1 0
+key_do_jump 6
+sdcard19.2 324 856 1 1
+sdcard19.0 321 856 0 1
+sdcard19.0 325 856 1 1
+sdcard19.1 342 856 2 1
+key_do_jump 10
+sdcard19.2 340 856 2 1
+sdcard19.0 325 856 1 1
+key_do_jump 8
+sdcard19.2 181 856 1 0
+key_do_jump 9
+sdcard19.2 323 856 1 0
+key_do_jump 7
+key_do_jump 0
+sdcard19.4 352 856 1 1
+key_do_jump 12
+sdcard19.2 327 856 1 0
+sdcard19.0 323 856 1 0
+sdcard18.9 324 856 0 1
+sdcard18.9 361 856 1 0
+sdcard18.8 325 856 1 1
+sdcard18.8 341 856 0 1
+sdcard19.1 326 856 2 0
+sdcard19.1 326 856 1 1
+key_do_jump 8
+sdcard19.1 336 856 0 1
+sdcard18.7 352 856 1 0
+sdcard18.8 353 856 1 1
+key_do_jump 5
+sdcard18.9 339 856 1 1
+sdcard19.0 320 856 2 2
+sdcard18.9 324 856 2 1
+sdcard19.0 333 856 2 0
+key_do_jump 8
+key_do_jump 10
+key_do_jump 0
+sdcard19.6 322 856 1 1
+key_do_jump 3
+sdcard19.1 327 856 1 1
+sdcard18.9 322 856 1 0
+sdcard18.9 333 856 1 1
+sdcard19.2 327 856 1 0
+key_do_jump 13
+key_do_jump 12
+sdcard19.4 323 856 2 1
+sdcard18.9 324 856 0 1
+key_do_jump 13
+sdcard19.1 356 856 1 1
+key_do_jump 4
+sdcard19.2 886 856 3 2
+sdcard18.8 330 856 1 0
+key_do_jump 1
+sdcard19.1 323 856 2 0
+sdcard18.9 324 856 1 1
+key_do_jump 11
+sdcard19.0 324 856 2 1
+sdcard18.8 322 856 1 0
+sdcard18.8 325 856 2 0
+sdcard18.8 324 856 2 1
+key_do_jump 14
+sdcard18.9 324 856 1 1
+sdcard19.0 326 856 1 1
+sdcard18.8 332 856 1 0
+sdcard19.1 326 856 1 1
+key_do_jump 1
+sdcard19.2 323 856 0 1
+sdcard19.0 363 856 1 1
+sdcard19.0 324 856 1 1
+sdcard19.0 323 856 2 1
+sdcard19.0 324 856 1 1
+sdcard19.0 324 856 2 1
+key_do_jump 10
+key_do_jump 1
+key_do_jump 12
+key_do_jump 7
+sdcard19.8 176 856 1 1
+key_do_jump 14
+key_do_jump 8
+sdcard19.4 321 856 2 1
+key_do_jump 0
+key_do_jump 2
+sdcard19.4 321 856 2 0
+key_do_jump 2
+key_do_jump 1
+sdcard19.5 325 856 1 1
+sdcard18.9 362 856 2 0
+sdcard18.8 324 856 1 1
+sdcard18.9 334 856 1 1
+sdcard18.8 323 856 1 1
+sdcard18.9 325 856 2 1
+sdcard18.8 323 856 1 1
+key_do_jump 6
+sdcard19.1 179 856 1 1
+key_do_jump 3
+key_do_jump 9
+sdcard19.3 323 856 0 1
+sdcard18.7 323 856 1 1
+key_do_jump 10
+sdcard19.0 355 856 1 0
+sdcard18.8 338 856 2 1
+sdcard19.2 323 856 1 1
+sdcard19.0 325 856 1 0
+key_do_jump 3
+sdcard19.2 335 856 2 1
+sdcard19.0 324 856 2 1
+sdcard19.0 320 856 1 1
+key_do_jump 0
+sdcard19.1 326 856 2 0
+key_do_jump 12
+sdcard19.2 179 856 1 0
+sdcard18.9 180 856 2 0
+sdcard18.9 179 856 1 0
+sdcard19.0 179 856 1 1
+key_do_jump 2
+key_do_jump 11
+sdcard19.4 322 856 2 0
+key_do_jump 13
+sdcard19.2 177 856 1 1
+sdcard18.9 178 856 1 1
+key_do_jump 2
+key_do_jump 12
+sdcard19.6 610 856 3 1
+sdcard18.9 178 856 1 1
+sdcard18.8 175 856 1 1
+sdcard18.9 178 856 0 0
+key_do_jump 9
+key_do_jump 2
+sdcard19.3 324 856 2 0
+sdcard18.8 328 856 1 1
+sdcard18.7 341 856 2 0
+sdcard18.8 331 856 2 0
+sdcard18.9 341 856 1 1
+sdcard19.0 325 856 1 1
+sdcard18.9 321 856 1 1
+sdcard19.0 325 856 0 1
+key_do_jump 8
+key_do_jump 6
+sdcard19.6 177 856 1 1
+key_do_jump 6
+sdcard19.1 177 856 1 1
+sdcard19.0 177 856 1 1
+key_do_jump 11
+sdcard19.2 324 856 1 1
+sdcard19.0 323 856 1 1
+sdcard18.9 321 856 1 0
+key_do_jump 8
+sdcard19.2 323 856 1 1
+sdcard18.8 327 856 1 0
+sdcard18.9 352 856 2 0
+key_do_jump 6
+sdcard19.0 323 856 0 0
+sdcard18.9 345 856 1 1
+sdcard18.8 324 856 1 1
+key_do_jump 2
+sdcard19.0 324 856 2 1
+sdcard19.1 177 856 1 0
+key_do_jump 11
+key_do_jump 7
+key_do_jump 6
+sdcard19.5 176 856 1 1
+key_do_jump 1
+sdcard19.0 175 856 1 0
+sdcard18.8 193 856 1 1
+key_do_jump 1
+sdcard19.0 185 856 1 1
+key_do_jump 11
+sdcard19.1 176 856 2 1
+sdcard19.0 176 856 2 0
+key_do_jump 11
+sdcard19.2 376 856 2 0
+key_do_jump 12
+sdcard19.3 326 856 1 0
+sdcard19.1 323 856 1 1
+key_do_jump 5
+key_do_jump 2
+key_do_jump 4
+sdcard19.5 178 856 1 1
+sdcard18.9 184 856 2 1
+key_do_jump 11
+sdcard19.4 189 856 2 0
+sdcard19.0 177 856 2 1
+sdcard19.0 178 856 1 1
+sdcard18.9 176 856 2 1
+key_do_jump 12
+sdcard19.2 324 856 1 0
+sdcard18.9 323 856 1 0
+sdcard18.8 330 856 1 0
+sdcard18.8 326 856 2 0
+sdcard18.8 322 856 1 1
+sdcard18.8 323 856 2 1
+sdcard19.0 323 856 1 1
+sdcard18.9 335 856 1 1
+sdcard18.9 328 856 1 1
+key_do_jump 9
+sdcard18.9 322 856 2 1
+sdcard18.7 326 856 1 1
+key_do_jump 13
+sdcard19.2 178 856 1 1
+key_do_jump 2
+sdcard19.2 325 856 1 1
+key_do_jump 0
+sdcard19.2 178 856 1 1
+sdcard19.1 176 856 2 1
+key_do_jump 3
+key_do_jump 5
+sdcard19.5 324 856 1 0
+key_do_jump 11
+sdcard19.2 322 856 1 0
+sdcard19.0 355 856 1 1
+key_do_jump 6
+sdcard19.2 338 856 1 1
+key_do_jump 1
+key_do_jump 13
+sdcard19.2 323 856 1 1
+key_do_jump 2
+key_do_jump 5
+sdcard19.4 333 856 1 0
+key_do_jump 7
+sdcard19.3 333 856 2 1
+sdcard19.0 322 856 1 1
+key_do_jump 9
+sdcard19.1 323 856 1 1
+sdcard18.9 322 856 1 1
+sdcard18.9 325 856 2 1
+key_do_jump 5
+sdcard19.1 175 856 1 1
+sdcard18.8 177 856 1 1
+key_do_jump 2
+sdcard19.1 354 856 0 1
+sdcard18.8 345 856 2 1
+key_do_jump 3
+key_do_jump 3
+sdcard19.1 325 856 2 1
+sdcard18.7 331 856 2 1
+key_do_jump 3
+sdcard18.9 176 856 1 1
+key_do_jump 12
+key_do_jump 6
+sdcard19.6 323 856 1 1
+key_do_jump 14
+sdcard19.2 360 856 2 1
+sdcard19.0 323 856 1 0
+sdcard19.0 325 856 1 1
+key_do_jump 4
+sdcard19.1 176 856 1 1
+sdcard19.0 178 856 2 1
+sdcard19.0 178 856 1 1
+key_do_jump 5
+sdcard19.3 323 856 3 1
+key_do_jump 1
+key_do_jump 14
+sdcard19.4 338 856 2 1
+key_do_jump 2
+sdcard19.2 176 856 2 1
+key_do_jump 7
+key_do_jump 9
+sdcard19.3 329 856 2 1
+sdcard18.9 348 856 1 0
+sdcard19.0 787 856 3 2
+sdcard19.0 179 856 1 0
+key_do_jump 4
+sdcard19.1 322 856 1 0
+key_do_jump 7
+sdcard19.0 180 856 1 1
+key_do_jump 14
+key_do_jump 11
+key_do_jump 2
+sdcard19.5 333 856 1 0
+sdcard18.9 325 856 1 1
+key_do_jump 3
+sdcard19.0 180 856 1 1
+sdcard18.8 177 856 2 0
+key_do_jump 10
+sdcard19.0 324 856 2 1
+key_do_jump 7
+sdcard18.9 323 856 0 0
+sdcard19.1 335 856 2 0
+sdcard18.9 335 856 1 1
+sdcard19.0 325 856 0 1
+key_do_jump 12
+sdcard19.4 330 856 1 1
+sdcard18.9 336 856 2 1
+sdcard19.0 326 856 1 0
+key_do_jump 1
+sdcard19.2 322 856 2 1
+sdcard19.1 325 856 1 1
+sdcard19.0 357 856 1 1
+key_do_jump 11
+key_do_jump 14
+sdcard19.4 324 856 2 0
+sdcard18.8 326 856 1 1
+key_do_jump 8
+sdcard19.1 324 856 1 1
+sdcard18.9 322 856 0 1
+sdcard18.8 325 856 0 1
+key_do_jump 10
+key_do_jump 9
+sdcard19.3 174 856 1 1
+key_do_jump 4
+sdcard19.3 323 856 1 1
+sdcard18.8 321 856 0 1
+key_do_jump 0
+sdcard19.1 178 856 1 1
+key_do_jump 12
+sdcard19.0 325 856 1 1
+sdcard18.7 351 856 0 0
+key_do_jump 14
+sdcard18.9 177 856 1 1
+sdcard18.8 190 856 1 1
+key_do_jump 6
+key_do_jump 0
+sdcard19.4 322 856 2 1
+key_do_jump 14
+sdcard19.3 325 856 2 1
+key_do_jump 11
+sdcard19.2 320 856 2 1
+key_do_jump 11
+key_do_jump 7
+sdcard19.5 321 856 1 3
