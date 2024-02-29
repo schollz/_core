@@ -624,7 +624,7 @@ void button_handler(ButtonMatrix *bm) {
       if (key_pressed[0] == 16 && key_pressed[1] == 12 && key_pressed[2] == 8 &&
           key_pressed[3] == 4 && key_pressed[4] == 18 && key_pressed[5] == 14 &&
           key_pressed[6] == 10 && key_pressed[7] == 6) {
-        clock_out_do = true;
+        clock_out_do = !clock_out_do;
         if (clock_out_do) {
           printf("[button_handler]: combo: clock out enabled\n");
           DebounceDigits_setText(debouncer_digits, "SYNC OONN", 200);
