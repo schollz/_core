@@ -95,6 +95,7 @@ void clock_handling_start() {
 }
 
 uint16_t probability_of_random_jump = 0;
+uint16_t probability_of_random_retrig = 0;
 
 void input_handling() {
   printf("core1 running!\n");
@@ -214,6 +215,11 @@ void input_handling() {
 
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
       do_random_jump = true;
+    }
+    if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
+      do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
+      go_retrigger_2key(random_integer_in_range(0, 15),
+                        random_integer_in_range(0, 15));
     }
 
     adc_select_input(2);
@@ -362,6 +368,10 @@ void input_handling() {
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
         } else if (button_is_pressed(KEY_D)) {
+          probability_of_random_retrig = adc;
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                            adc * 255 / 4096, 100);
         }
       }
     }
