@@ -74,7 +74,7 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **C** + **Y** → 
 - [x] **C** + **Z** → quantize
 - [x] **D** + **X** → probability of jump
-- [ ] **D** + **Y** → probability of retrigger
+- [x] **D** + **Y** → probability of retrigger
 - [x] **D** + **Z** → bass volume
 - [o] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
 
