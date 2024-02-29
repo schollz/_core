@@ -876,6 +876,29 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
+                 debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2])) {
+    // show an LED bar
+    const uint8_t led_bar_ordering[32] = {
+        7,  16, 18, 14, 11, 5,  9, 12, 13, 15, 6,  4,  10, 8, 19, 17,
+        18, 8,  7,  10, 9,  14, 6, 19, 11, 12, 16, 15, 17, 5, 4,  13};
+    const bool led_bar_brightness[32] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    };
+    for (uint8_t i = 0;
+         i < linlin_uint8_t(
+                 DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2]),
+                 10, 240, 0, 32);
+         i++) {
+      if (led_bar_brightness[i]) {
+        LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+      } else {
+        LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL])) {
     // show an LED bar
     const uint8_t led_bar_ordering[32] = {
