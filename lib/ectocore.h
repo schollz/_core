@@ -166,7 +166,7 @@ void input_handling() {
   Dust_setDuration(dust[0], 1000 * 8);
 
   uint16_t probability_of_random_jump = 0;
-
+  uint16_t probability_of_random_retrig = 0;
   while (1) {
     int16_t val;
 
@@ -174,6 +174,12 @@ void input_handling() {
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
       printf("random jump\n");
       do_random_jump = true;
+    }
+    if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
+      printf("random retrigger\n");
+      do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
+      go_retrigger_2key(random_integer_in_range(0, 15),
+                        random_integer_in_range(0, 15));
     }
 
     // update dusts
@@ -383,6 +389,10 @@ void input_handling() {
           for (uint8_t channel = 0; channel < 2; channel++) {
             ResonantFilter_setFilterType(resFilter[channel], 0);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          }
+
+          if (val > 700) {
+            probability_of_random_retrig = (val - 700) * (val - 700) / 500;
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
