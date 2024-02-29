@@ -1,3 +1,4 @@
+// https://schollz.com/easing/
 
 const uint8_t ectocore_easing_filter[256] = {
     9,   14,  17,  19,  22,  24,  28,  30,  35,  40,  42,  44,  52,  55,  58,
