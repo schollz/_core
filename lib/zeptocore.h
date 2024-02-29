@@ -207,7 +207,8 @@ void input_handling() {
       key_do_jump(random_integer_in_range(0, 15));
     } else if (random_integer_in_range(1, 10000) < 5) {
       // printf("random retrigger\n");
-      go_retrigger_2key(1, 1);
+      go_retrigger_2key(random_integer_in_range(0, 15),
+                        random_integer_in_range(0, 15));
     }
 #endif
 
