@@ -16,7 +16,7 @@ typedef struct WaveOsc {
   uint8_t fade_len[2];
   uint16_t fade_pos[2];
   uint16_t fade_posi[2];
-  const int32_t *wavetable_arr;
+  const int16_t *wavetable_arr;
 } WaveOsc;
 
 WaveOsc *WaveOsc_malloc(uint8_t wave, uint8_t quiet, uint8_t attack,

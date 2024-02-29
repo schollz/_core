@@ -227,8 +227,8 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
   if (num_combs <= 0 || num_allpasses <= 0) {
     return NULL;
   }
-  // printf("[FV_Reverb_malloc] num_combs: %d, num_allpasses: %d\n",
-  // num_combs,num_allpasses);
+  printf("[FV_Reverb_malloc] num_combs: %d, num_allpasses: %d\n", num_combs,
+         num_allpasses);
 
   FV_Reverb *self = (FV_Reverb *)malloc(sizeof(FV_Reverb));
   if (self == NULL) {
