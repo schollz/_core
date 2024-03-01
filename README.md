@@ -5,11 +5,7 @@
 
 this is the monorepo for *_core* music devices that utilize the rp2040. it includes these pieces - the *firmware* (the brains of the device) and the *[tool](https://zeptocore.com/tool)* (the program or website that can upload samples tot he device).
 
-# firmware
-
-the firmware is the device-specific firmware.
-
-## uploading
+## firmware uploading
 
 follow these instructions to upload the latest firmware to your device.
 
@@ -131,16 +127,11 @@ make clean zeptocore
 </details>
 
 
-
-# tool
-
-the tool is a program that can be used in the cloud (at [zeptocore.com/tool](https://zeptocore.com/tool)) or downloaded and used locally. this tool is for aiding the uploading of the new files to the *_core* devices and it also contains [the docs](https://zeptocore.com/docs).
-
-## cloud-based
+## cloud-based tool
 
 to use the tool without installing anything, just go to [zeptocore.com/tool](https://zeptocore.com/tool).
 
-## installing locally
+## installing tool locally
 
 
 <details><summary>windows</summary>
@@ -190,7 +181,7 @@ once downloaded, run it from the terminal.
 </details>
 
 
-## development 
+## tool development 
 
 <details><summary>windows</summary>
 
