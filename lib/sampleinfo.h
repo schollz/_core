@@ -72,6 +72,120 @@ void SampleInfo_free(SampleInfo *si) {
 
 #ifndef NOSDCARD
 // sdcard version
+SampleInfo *SampleInfo_load(const char *fname) {
+  FIL fil;
+  FRESULT fr;
+  fr = f_open(&fil, fname, FA_READ);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
+  unsigned int bytes_read;
+
+  SampleInfoPack *sip = (SampleInfoPack *)malloc(SAMPLEINFOPACK_SIZE);
+  if (sip == NULL) {
+    perror("Error allocating memory");
+    f_close(&fil);
+    return NULL;
+  }
+
+  // read from sample pack
+  fr = f_read(&fil, sip, SAMPLEINFOPACK_SIZE, &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    return NULL;
+  }
+
+  // create SampleInfo from SampleInfoPack
+  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
+  if (si == NULL) {
+    perror("Error allocating memory");
+    f_close(&fil);
+    free(sip);
+    return NULL;
+  }
+
+  si->size = sip->size;
+  si->bpm = sip->flags & 0x1FF;
+  si->play_mode = (sip->flags >> 9) & 0x7;
+  si->one_shot = (sip->flags >> 12) & 0x1;
+  si->tempo_match = (sip->flags >> 13) & 0x1;
+  si->oversampling = (sip->flags >> 14) & 0x1;
+  si->num_channels = (sip->flags >> 15) & 0x1;
+  si->version = (sip->flags >> 16) & 0x7F;
+  si->reserved = (sip->flags >> 23) & 0x1FF;
+  si->splice_trigger = sip->splice_info & 0x7FFF;
+  si->splice_variable = (sip->splice_info >> 15) & 0x1;
+  si->slice_num = sip->slice_num;
+  si->slice_current = 0;
+
+  // load in arrays
+  si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_start == NULL) {
+    perror("Error allocating memory for array");
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+  fr = f_read(&fil, si->slice_start, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+
+  si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
+  if (si->slice_stop == NULL) {
+    perror("Error allocating memory for array");
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+  fr = f_read(&fil, si->slice_stop, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+
+  si->slice_type = malloc(sizeof(int8_t) * si->slice_num);
+  if (si->slice_type == NULL) {
+    perror("Error allocating memory for array");
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+  fr =
+      f_read(&fil, si->slice_type, sizeof(int8_t) * si->slice_num, &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
+  }
+
+  f_close(&fil);
+  free(sip);
+
+  // initialize variables
+  if (si->bpm < 30) {
+    si->bpm = 30;
+  } else if (si->bpm > 300) {
+    si->bpm = 300;
+  }
+  return si;
+}
 #endif
 
 #ifdef NOSDCARD
