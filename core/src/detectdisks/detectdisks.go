@@ -2,6 +2,7 @@ package detectdisks
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/schollz/logger"
 	"github.com/shirou/gopsutil/disk"
@@ -22,7 +23,7 @@ func GetUF2Drive() (uf2disk string, err error) {
 			continue
 		}
 
-		if usageStat.Used == 8192 || usageStat.Used == 20480 {
+		if usageStat.Used == 8192 || usageStat.Used == 20480 || strings.Contains(partition.Mountpoint, "RPI-RP2") {
 			uf2disk = partition.Mountpoint
 			log.Debug(partition.Mountpoint, " ", usageStat.Total, " ", usageStat.Free, " ", usageStat.Used)
 		} else {
