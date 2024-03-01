@@ -3,142 +3,54 @@
 [![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)](https://github.com/schollz/_core/actions/workflows/build.yml) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
 
 
-this is the source code for *_core* music devices that utilize the rp2040. 
+this is the monorepo for *_core* music devices that utilize the rp2040. it includes these pieces - the *firmware* and the *[tool](https://zeptocore.com/tool)*.
 
-# install
+# firmware
 
-## macOS
+the firmware is the device-specific firmware.
 
-to install the `_core` tool on macOS, first open a terminal.
+## uploading
 
-then, if you are on an Intel-based mac install with:
+follow these instructions to upload the latest firmware to your device.
+
+### button reset
+
+plug in a USB-C cable to the device and hold the `BOOTSEL` button (near the USB-C jack). while holding the `BOOTSEL` button, press the `NRST` button (also near the USB-C jack). after a few seconds a new drive should appear on your computer with a name like `RPI-RP2`.
+
+download [one of the latest releases](https://github.com/schollz/_core/releases/latest) for zeptocore, boardcore, or ectocore and drag and drop it on the the `RPI-RP2` drive that appeared. wait a few more seconds and the drive will disappear and the device will turn on automatically.
+
+
+### tool uploader
+
+if you installed the tool locally, you can simply run the tool and click in the top right to upload a new firmware, while the device is plugged in.
+
+## firmware development
+
+follow these instructions if you want to develop the firmware yourself and create custom images.
+
+
+<details><summary>windows</summary>
+
+Install WSL 2
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.1/core_macos_amd64_v2.0.1 > core_macos
+$ wsl --set-default-version 2
+$ wsl --install Ubuntu
 ```
 
-or, if you are on a M1/M2-based mac install with:
+Then restart computer and run 
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.1/core_macos_aarch64_v2.0.1 > core_macos
+$ wsl --install
 ```
 
-then to run, do:
+That should start your system. Then you can follow the Linux directions.
 
-```
-chmod +x core_macos && ./core_macos
-```
-
-# devices
-there are a few versions of the "*_core*" devices that utilize this firmware:
-
-## boardcore
-
-breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
-
-- [WeAct Raspberry Pi Pico (others should work too)](https://www.aliexpress.us/item/3256803521775546.html?gatewayAdapt=glo2usa4itemAdapt) ($2.50)
-- [pcm5102](https://www.amazon.com/Comimark-Interface-PCM5102-GY-PCM5102-Raspberry/dp/B07W97D2YC/) ($9)
-- [sdio sd card](https://www.adafruit.com/product/4682) ($3.50)
-
-![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
-
-![boardcore](docs/static/_core_bb.png)
-
-## zeptocore
-
-hand-held version (see [demo](https://www.instagram.com/p/C1PFLGDvB9I/)).
-
-<center>
-<img src="https://github.com/schollz/_core/assets/6550035/05e2b34b-efbc-47d1-8ba0-605ad723f85c" width=40%>
-</center>
+</details>
 
 
-### zeptocore spec (draft)
+<details><summary>macos</summary>
 
-knobs: X, Y, Z
-
-top buttons are **A**, **B**, **C**, and **D**.
-
-the rest of the buttons (1-16) are just called **H**.
-
-
-#### combo buttons
-
-
-- [x] **H** + **H** → JUMP: retrig depending on location
-- [x] **A** + **H** → JUMP: do fx (toggle), MASH/BASS: do jump
-- [x] **A** + **B** → JUMP mode
-- [x] **A** + **B** + **B** ... → set tempo via tapping
-- [x] **A** + **C** → MASH mode
-- [x] **A** + **D** → BASS mode
-- [x] **B** → show bank (blinking) + sample (bright)
-- [x] **B** + **H** + **H** → select bank (1st) + sample (2nd)
-- [x] **B** + **C** → start/stop
-- [x] **B** + **D** → mute
-- [x] **C** → display which sequence is selected (bright)
-- [x] **C** + **H** → select sequence (led dim or bright = used, led off or blinking = unused) 
-- [x] **C** + **H** + **H** + **H** ... → chains sequences together, though the first selected must be empty
-- [x] **C** + **B** → toggle play sequence
-- [x] **C** + **D** → toggle record sequence
-- [x] **C** + **D**, **C** + **D** → erase current sequence
-- [x] **D** → shows current slot (blinking / bright) and slots with data (dim)
-- [x] **D** + **H** → select save slot
-- [x] **D** + **B** load from save slot
-- [x] **D** + **C** → save into save slot
-
-
-#### combo knobs
-
-- [x] **A** + **X** → tempo
-- [x] **A** + **Y** → pitch
-- [x] **A** + **Z** → volume
-- [ ] **B** + **X** → 
-- [x] **B** + **Y** → filter fc (lowpass/highpass?)
-- [ ] **B** + **Z** → 
-- [ ] **C** + **X** → 
-- [ ] **C** + **Y** → 
-- [x] **C** + **Z** → quantize
-- [x] **D** + **X** → probability of jump
-- [x] **D** + **Y** → probability of retrigger
-- [x] **D** + **Z** → bass volume
-- [o] **H** + **X/Y/Z** -> in MASH mode this edits the parameters of the effect
-
-#### effects 
-
-there are 16 effects in four categories - "shape", "time", "space", and "pitch".
-holding an effect and using a knob will change its parameters.
-
-- [x] **1** -> warm (preamp postamp)
-- [x] **2** -> loss (type+threshold, postamp)
-- [x] **3** -> fuzz (preamp postamp)
-- [x] **4** -> crush (frequency, bitdepth)
-- [x] **5** -> stretch
-- [x] **6** -> delay (delay feedback, delay length)
-- [x] **7** -> comb
-- [x] **8** -> repeat (repeat length)
-- [x] **9** -> tighten (gate amount)
-- [x] **10** -> expand (intensity, wet/dry)
-- [x] **11** -> circulate (pan speed, depth)
-- [x] **12** -> scratch (scratch speed)
-- [x] **13** -> lower (depth)
-- [x] **14** -> slower (duration, depth)
-- [x] **15** -> reverse
-- [x] **16** -> stop (duration)
-
-#### cheat codes
-
-- [x] **1**,**2**,**1** -> toggle variable splice playback
-- [x] **4**,**5**,**4** -> toggle one-shot mode
-- [ ] **6**,**7**,**6** -> toggle play mode
-- [x] **5**, **8**, **7**, **6** -> toggle tempo match mode
-- [x] **9**,**12**,**10**,**11** -> change resampling (linear or quadratic)
-- [ ] ?? -> toggle sync mode?
-
-
-
-# firmware development
-
-## mac os x
 
 First install homebrew:
 
@@ -183,30 +95,19 @@ Now you should be able to build zeptocore:
 make clean zeptocore
 ```
 
-## windows
+</details>
 
-Install WSL 2
-
-```
-$ wsl --set-default-version 2
-$ wsl --install Ubuntu
-```
-
-Then restart computer and run 
-
-```
-$ wsl --install
-```
-
-That should start your system. Then you can follow the Linux directions:
-
-## linux
+<details><summary>linux</summary>
 
 Install the pre-requisites:
 
 ```
-sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib git python3 g++
-sudo -H python3 -m pip install numpy matplotlib tqdm icecream librosa click
+sudo apt install cmake gcc-arm-none-eabi \
+    libnewlib-arm-none-eabi \
+    libstdc++-arm-none-eabi-newlib \
+    git python3 g++
+sudo -H python3 -m pip install numpy \
+    matplotlib tqdm icecream librosa click
 ```
 
 Clone this repo and install the Pico SDK:
@@ -227,9 +128,71 @@ make clean zeptocore
 
 (replace '`zeptocore`' with '`ectocore` or '`boardcore`'' if you are building the latter)
 
-# upload tool development
+</details>
 
-## windows
+
+
+# tool
+
+the tool is a program that can be used in the cloud (at [zeptocore.com/tool](https://zeptocore.com/tool)) or downloaded and used locally. this tool is for aiding the uploading of the new files to the *_core* devices and it also contains [the docs](https://zeptocore.com/docs).
+
+## cloud-based
+
+to use the tool without installing anything, just go to [zeptocore.com/tool](https://zeptocore.com/tool).
+
+## installing locally
+
+
+<details><summary>windows</summary>
+
+goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_windows_v2.0.1.exe`.
+
+once downloaded, double click on the `.exe` file to run it.
+
+</details>
+
+
+
+<details><summary>macos</summary>
+
+to install the `_core` tool on macOS, first open a terminal.
+
+then, if you are on an Intel-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v2.0.1/core_macos_amd64_v2.0.1 > core_macos
+```
+
+or, if you are on a M1/M2-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v2.0.1/core_macos_aarch64_v2.0.1 > core_macos
+```
+
+then to run, do:
+
+```
+chmod +x core_macos && ./core_macos
+```
+
+
+</details>
+
+
+
+<details><summary>linux</summary>
+
+goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_linux_amd64_v2.0.1`. 
+
+once downloaded, run it from the terminal.
+
+
+</details>
+
+
+## development 
+
+<details><summary>windows</summary>
 
 First [install Scoop](https://scoop.sh/), open PowerShell terminal and type:
 
@@ -258,11 +221,53 @@ Now the upload tool can be run by typing
 ./core.exe
 ```
 
-# docs development
+</details>
+
+
+
+<details><summary>linux</summary>
+
+after cloning this repository go into the `core` folder.
+
+make sure Go is installed and then install `air`:
 
 ```
-make docs
+> go install github.com/cosmtrek/air@latest
 ```
+
+now just run 
+
+```
+> air
+```
+
+and the website will live-reload when developing.
+
+</details>
+
+# devices
+there are a few versions of the "*_core*" devices that utilize this firmware:
+
+## boardcore
+
+breadboard version (see [demo](https://www.instagram.com/p/CvzdZTYtV8H/)).
+
+- [WeAct Raspberry Pi Pico (others should work too)](https://www.aliexpress.us/item/3256803521775546.html?gatewayAdapt=glo2usa4itemAdapt) ($2.50)
+- [pcm5102](https://www.amazon.com/Comimark-Interface-PCM5102-GY-PCM5102-Raspberry/dp/B07W97D2YC/) ($9)
+- [sdio sd card](https://www.adafruit.com/product/4682) ($3.50)
+
+![PXL_20231225_060210016-removebg-preview](https://github.com/schollz/_core/assets/6550035/a33e5fcb-b052-48ba-ab71-0d95d77dea5c)
+
+![boardcore](docs/static/_core_bb.png)
+
+## zeptocore
+
+hand-held version (see [demo](https://www.instagram.com/p/C1PFLGDvB9I/)).
+
+<center>
+<img src="https://github.com/schollz/_core/assets/6550035/05e2b34b-efbc-47d1-8ba0-605ad723f85c" width=40%>
+</center>
+
 
 # license
 
