@@ -6,7 +6,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	filename, err := DownloadZeptocore()
+	filename, err := Tag()
 	if err != nil {
 		t.Error(err)
 	}
