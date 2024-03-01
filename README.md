@@ -5,6 +5,31 @@
 
 this is the source code for *_core* music devices that utilize the rp2040. 
 
+# install
+
+## macOS
+
+to install the `_core` tool on macOS, first open a terminal.
+
+then, if you are on an Intel-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v2.0.0/core_macos_amd64_v2.0.0 > core_macos
+```
+
+or, if you are on a M1/M2-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v2.0.0/core_macos_aarch64_v2.0.0 > core_macos
+```
+
+then to run, do:
+
+```
+chmod +x core_macos && ./core_macos
+```
+
+# devices
 there are a few versions of the "*_core*" devices that utilize this firmware:
 
 ## boardcore
