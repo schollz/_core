@@ -259,7 +259,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsBuy:          r.URL.Path[1:] == "buy",
 				IsMain:         r.URL.Path == "/",
 				IsZeptocore:    r.URL.Path == "/zeptocore",
-				VersionCurrent: "v2.0.0",
+				VersionCurrent: "v2.0.1",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 			}
