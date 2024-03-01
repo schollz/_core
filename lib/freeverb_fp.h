@@ -42,9 +42,7 @@ void FV_AllPass_set_feedback(FV_AllPass *self, int32_t feedback) {
 FV_AllPass *FV_AllPass_malloc(int bufsize, int32_t feedback) {
   FV_AllPass *self = (FV_AllPass *)malloc(sizeof(FV_AllPass));
   self->buffer = (int32_t *)malloc(bufsize * sizeof(int32_t));
-  for (int i = 0; i < bufsize; i++) {
-    self->buffer[i] = 0;
-  }
+  memset(self->buffer, 0, bufsize * sizeof(int32_t));
   self->bufsize = bufsize;
   self->bufidx = 0;
   self->feedback = feedback;
@@ -61,18 +59,12 @@ void FV_AllPass_free(FV_AllPass *self) {
   free(self);
 }
 
-int32_t FV_AllPass_process(FV_AllPass *self, int32_t input) {
-  int32_t output;
+static inline int32_t FV_AllPass_process(FV_AllPass *self, int32_t input) {
   int32_t bufout;
-
   bufout = self->buffer[self->bufidx];
-
-  output = -input + bufout;
   self->buffer[self->bufidx] = input + q16_16_multiply(bufout, self->feedback);
-
   if (++(self->bufidx) >= self->bufsize) self->bufidx = 0;
-
-  return output;
+  return -input + bufout;
 }
 
 /* all pass filter */
@@ -103,9 +95,7 @@ FV_Comb *FV_Comb_malloc(int bufsize, int32_t feedback, int32_t damp) {
   self->damp2 = Q16_16_1 - damp;
   self->bufidx = 0;
   self->buffer = (int32_t *)malloc(bufsize * sizeof(int32_t));
-  for (int i = 0; i < bufsize; i++) {
-    self->buffer[i] = 0;
-  }
+  memset(self->buffer, 0, bufsize * sizeof(int32_t));
   self->bufsize = bufsize;
   return self;
 }
