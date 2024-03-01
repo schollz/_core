@@ -35,6 +35,7 @@ const uint8_t cpu_usage_limit_threshold = 150;
 bool audio_was_muted = false;
 bool do_open_file_ready = false;
 bool muted_because_of_sel_variation = false;
+bool first_loop_ever = true;
 
 void update_filter_from_envelope(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
@@ -73,6 +74,7 @@ void i2s_callback_func() {
       (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
       (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
+    first_loop_ever = true;
     audio_was_muted = true;
     audio_callback_in_mute = true;
 
@@ -698,7 +700,17 @@ BREAKOUT_OF_MUTE:
   // apply reverb
   if (sf->fx_active[FX_EXPAND]) {
     if (freeverb != NULL) {
+      if (first_loop_ever) {
+        // time this process
+        t0 = time_us_32();
+      }
       FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
+
+      if (first_loop_ever) {
+        MessageSync_printf(messagesync, "freeverb : %ld us\n",
+                           (time_us_32() - t0));
+        first_loop_ever = false;
+      }
     }
   }
 
