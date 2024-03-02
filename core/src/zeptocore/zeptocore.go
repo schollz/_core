@@ -1,10 +1,5 @@
 package zeptocore
 
-/*
-#cgo CFLAGS: -I.
-#include "../../../lib/sampleinfo.h"
-*/
-import "C"
 import (
 	"encoding/json"
 	"fmt"
@@ -14,7 +9,6 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/bep/debounce"
 	"github.com/schollz/_core/core/src/drumextract"
@@ -464,100 +458,5 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 		log.Error(err)
 		return
 	}
-	return
-}
-
-func (f File) updateInfo(fnameIn string) (err error) {
-	// determine the size
-	finfo, err := os.Stat(fnameIn)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	totalSamples := float64(finfo.Size()-44) / float64(f.Channels+1) / 2
-	totalSamples = totalSamples - 22050*2*float64(f.Oversampling)
-	fsize := totalSamples * float64(f.Channels+1) * 2 // total size excluding padding = totalSamples channels x 2 bytes
-	sliceNum := len(f.SliceStart)
-	if sliceNum == 0 {
-		f.SliceStart = []float64{0.0}
-		f.SliceStop = []float64{1.0}
-		f.SliceType = []int{0}
-		sliceNum = 1
-	}
-	slicesStart := []int32{}
-	slicesEnd := []int32{}
-	slicesType := []byte{}
-	for i, _ := range f.SliceStart {
-		slicesStart = append(slicesStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
-		slicesEnd = append(slicesEnd, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
-		slicesType = append(slicesType, byte(f.SliceType[i]))
-	}
-	log.Infof("slicesStart: %+v", slicesStart)
-	log.Infof("slicesEnd: %+v", slicesEnd)
-	BPMTempoMatch := uint8(0)
-	if f.TempoMatch {
-		BPMTempoMatch = 1
-	}
-
-	oneshot := 0
-	if f.OneShot {
-		oneshot = 1
-	}
-
-	splicevariable := 0
-	if f.SpliceVariable {
-		splicevariable = 1
-	}
-
-	log.Infof("spliceTrigger: %d", f.SpliceTrigger)
-	log.Infof("spliceVariable: %d", f.SpliceVariable)
-	sliceStartPtr := (*C.int)(unsafe.Pointer(&slicesStart[0]))
-	sliceStopPtr := (*C.int)(unsafe.Pointer(&slicesEnd[0]))
-	sliceTypePtr := (*C.schar)(unsafe.Pointer(&slicesType[0]))
-	cStruct := C.SampleInfo_malloc(
-		C.uint(fsize),
-		C.uint(f.BPM),
-		C.uchar(f.SplicePlayback),
-		C.uchar(oneshot),
-		C.ushort(f.SpliceTrigger),
-		C.uchar(splicevariable),
-		C.uchar(BPMTempoMatch),
-		C.uchar(f.Oversampling-1),
-		C.uchar(f.Channels),
-		C.uint(sliceNum),
-		sliceStartPtr,
-		sliceStopPtr,
-		sliceTypePtr,
-	)
-	defer C.SampleInfo_free(cStruct)
-
-	ret := C.SampleInfo_writeToDisk(cStruct)
-	if ret != 0 {
-		err = fmt.Errorf("Failed to write struct to file")
-		return
-	}
-
-	cStruct2 := C.SampleInfo_readFromDisk()
-	if cStruct2 == nil {
-		fmt.Println("Failed to read struct from file")
-		return
-	}
-	defer C.free(unsafe.Pointer(cStruct2))
-	// fmt.Println("SampleInfo_getSliceNum", C.SampleInfo_getSliceNum(cStruct2))
-	// for i := range slicesStart {
-	// 	fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
-	// }
-	for i := range slicesStart {
-		fmt.Println("SampleInfo_getSliceStart", i, C.SampleInfo_getSliceStart(cStruct2, C.ushort(i)))
-	}
-	for i := range slicesStart {
-		fmt.Println("SampleInfo_getSliceType", i, C.SampleInfo_getSliceType(cStruct2, C.ushort(i)))
-	}
-	log.Infof("SampleInfo_getSpliceTrigger: %d", C.SampleInfo_getSpliceTrigger(cStruct2))
-	log.Infof("SampleInfo_getSpliceVariable: %d", C.SampleInfo_getSpliceVariable(cStruct2))
-	log.Infof("SampleInfo_getNumChannels: %d", C.SampleInfo_getNumChannels(cStruct2))
-	log.Infof("SampleInfo_getBPM: %d", C.SampleInfo_getBPM(cStruct2))
-
-	err = os.Rename("sampleinfo.bin", fnameIn+".info")
 	return
 }

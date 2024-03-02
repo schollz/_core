@@ -31,20 +31,35 @@
 
 typedef struct SampleInfo {
   uint32_t size;
-  uint32_t bpm : 9;            // 0-511
-  uint32_t slice_num : 8;      // 0-127
-  uint32_t slice_current : 8;  // 0-127
-  uint32_t play_mode : 3;      // 0-7
-  uint32_t one_shot : 1;       // 0-1 (off/on)
-  uint32_t tempo_match : 1;    // 0-1 (off/on)
-  uint32_t oversampling : 1;   // 0-1 (1x or 2x)
-  uint32_t num_channels : 1;   // 0-1 (mono or stereo)
+  uint32_t bpm : 9;           // 0-511
+  uint32_t play_mode : 3;     // 0-7
+  uint32_t one_shot : 1;      // 0-1 (off/on)
+  uint32_t tempo_match : 1;   // 0-1 (off/on)
+  uint32_t oversampling : 1;  // 0-1 (1x or 2x)
+  uint32_t num_channels : 1;  // 0-1 (mono or stereo)
+  uint32_t version : 7;
+  uint32_t reserved : 9;
+  // slice info
   uint16_t splice_trigger : 15;
   uint16_t splice_variable : 1;  // 0-1 (off/on)
+  uint8_t slice_num;             // 0-255
+  uint8_t slice_current;         // 0-255
+  // slice structs
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
 } SampleInfo;
+
+typedef struct SampleInfoPack {
+  uint32_t size;
+  uint32_t
+      flags;  // Holds bpm, slice_num, slice_current, play_mode, one_shot,
+              // tempo_match, oversampling, num_channels, version and reserved
+  uint16_t splice_info;  // Holds splice_trigger and splice_variable
+  uint8_t slice_num;     // 0-255
+} SampleInfoPack;
+
+#define SAMPLEINFOPACK_SIZE (4 + 4 + 2 + 1)
 
 void SampleInfo_free(SampleInfo *si) {
   if (si != NULL) {
@@ -55,140 +70,126 @@ void SampleInfo_free(SampleInfo *si) {
   free(si);
 }
 
-SampleInfo *SampleInfo_malloc(uint32_t size, uint32_t bpm, uint8_t play_mode,
-                              uint8_t one_shot, uint16_t splice_trigger,
-                              uint8_t splice_variable, uint8_t tempo_match,
-                              uint8_t oversampling, uint8_t num_channels,
-                              uint32_t slice_num, int32_t *slice_start,
-                              int32_t *slice_stop, int8_t *slice_type) {
-  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
-  if (si == NULL) {
-    perror("Error allocating memory for struct");
+#ifndef NOSDCARD
+// sdcard version
+SampleInfo *SampleInfo_load(const char *fname) {
+  FIL fil;
+  FRESULT fr;
+  fr = f_open(&fil, fname, FA_READ);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+  }
+  unsigned int bytes_read;
+
+  SampleInfoPack *sip = (SampleInfoPack *)malloc(SAMPLEINFOPACK_SIZE);
+  if (sip == NULL) {
+    perror("Error allocating memory");
+    f_close(&fil);
     return NULL;
   }
-  fprintf(stderr, "sizeof(SampleInfo) = %lu\n", sizeof(SampleInfo));
-  si->size = size;
-  si->bpm = bpm;
-  si->slice_num = slice_num;
-  si->slice_current = 0;
-  si->play_mode = play_mode;
-  si->one_shot = one_shot;
-  si->splice_trigger = splice_trigger;
-  fprintf(stderr, "splice_trigger = %d\n", splice_trigger);
-  si->splice_variable = splice_variable;
-  si->tempo_match = tempo_match;
-  si->oversampling = oversampling;
-  si->num_channels = num_channels;
 
+  // read from sample pack
+  fr = f_read(&fil, sip, SAMPLEINFOPACK_SIZE, &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    return NULL;
+  }
+
+  // create SampleInfo from SampleInfoPack
+  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
+  if (si == NULL) {
+    perror("Error allocating memory");
+    f_close(&fil);
+    free(sip);
+    return NULL;
+  }
+
+  si->size = sip->size;
+  si->bpm = sip->flags & 0x1FF;
+  si->play_mode = (sip->flags >> 9) & 0x7;
+  si->one_shot = (sip->flags >> 12) & 0x1;
+  si->tempo_match = (sip->flags >> 13) & 0x1;
+  si->oversampling = (sip->flags >> 14) & 0x1;
+  si->num_channels = (sip->flags >> 15) & 0x1;
+  si->version = (sip->flags >> 16) & 0x7F;
+  si->reserved = (sip->flags >> 23) & 0x1FF;
+  si->splice_trigger = sip->splice_info & 0x7FFF;
+  si->splice_variable = (sip->splice_info >> 15) & 0x1;
+  si->slice_num = sip->slice_num;
+  si->slice_current = 0;
+
+  // load in arrays
   si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
   if (si->slice_start == NULL) {
     perror("Error allocating memory for array");
-    free(si);
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
     return NULL;
   }
-  for (int i = 0; i < si->slice_num; i++) {
-    si->slice_start[i] = slice_start[i];
+  fr = f_read(&fil, si->slice_start, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
   }
 
   si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
   if (si->slice_stop == NULL) {
     perror("Error allocating memory for array");
-    free(si->slice_start);
-    free(si);
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
     return NULL;
   }
-  for (int i = 0; i < si->slice_num; i++) {
-    si->slice_stop[i] = slice_stop[i];
+  fr = f_read(&fil, si->slice_stop, sizeof(int32_t) * si->slice_num,
+              &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
   }
 
   si->slice_type = malloc(sizeof(int8_t) * si->slice_num);
   if (si->slice_type == NULL) {
     perror("Error allocating memory for array");
-    free(si->slice_start);
-    free(si->slice_stop);
-    free(si);
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
     return NULL;
   }
-  for (int i = 0; i < si->slice_num; i++) {
-    si->slice_type[i] = slice_type[i];
+  fr =
+      f_read(&fil, si->slice_type, sizeof(int8_t) * si->slice_num, &bytes_read);
+  if (fr != FR_OK) {
+    printf("[sampleinfo] %s\n", FRESULT_str(fr));
+    f_close(&fil);
+    free(sip);
+    SampleInfo_free(si);
+    return NULL;
   }
 
+  f_close(&fil);
+  free(sip);
+
+  // initialize variables
+  if (si->bpm < 30) {
+    si->bpm = 30;
+  } else if (si->bpm > 300) {
+    si->bpm = 300;
+  }
   return si;
 }
+#endif
 
-uint16_t SampleInfo_getBPM(SampleInfo *si) { return si->bpm; }
-
-uint16_t SampleInfo_getSliceNum(SampleInfo *si) { return si->slice_num; }
-
-int32_t SampleInfo_getSliceStop(SampleInfo *si, uint16_t i) {
-  return si->slice_stop[i];
-}
-
-uint16_t SampleInfo_getSpliceTrigger(SampleInfo *si) {
-  return si->splice_trigger;
-}
-
-int32_t SampleInfo_getSliceStart(SampleInfo *si, uint16_t i) {
-  return si->slice_start[i];
-}
-
-uint8_t SampleInfo_getSliceType(SampleInfo *si, uint16_t i) {
-  return si->slice_type[i];
-}
-
-uint8_t SampleInfo_getSpliceVariable(SampleInfo *si) {
-  return si->splice_variable;
-}
-
-uint8_t SampleInfo_getNumChannels(SampleInfo *si) { return si->num_channels; }
-
-int SampleInfo_writeToDisk(SampleInfo *si) {
-  FILE *file = fopen("sampleinfo.bin", "wb");
-  if (file == NULL) {
-    perror("Error opening file");
-    SampleInfo_free(si);
-    return -1;
-  }
-
-  // Write the struct (excluding the arrays)
-  if (fwrite(si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)), 1, file) != 1) {
-    perror("Error writing struct to file");
-    fclose(file);
-    SampleInfo_free(si);
-    return -1;
-  }
-
-  // Write the array content
-  if (fwrite(si->slice_start, sizeof(int32_t), si->slice_num, file) !=
-      si->slice_num) {
-    perror("Error writing array to file");
-    fclose(file);
-    SampleInfo_free(si);
-    return -1;
-  }
-
-  // Write the array content
-  if (fwrite(si->slice_stop, sizeof(int32_t), si->slice_num, file) !=
-      si->slice_num) {
-    perror("Error writing array to file");
-    fclose(file);
-    SampleInfo_free(si);
-    return -1;
-  }
-
-  // Write the array content
-  if (fwrite(si->slice_type, sizeof(int8_t), si->slice_num, file) !=
-      si->slice_num) {
-    perror("Error writing array to file");
-    fclose(file);
-    SampleInfo_free(si);
-    return -1;
-  }
-
-  fclose(file);
-  return 0;
-}
-
+#ifdef NOSDCARD
+// disk version (for testing)
 SampleInfo *SampleInfo_readFromDisk() {
   FILE *file = fopen("sampleinfo.bin", "rb");
   if (file == NULL) {
@@ -196,88 +197,127 @@ SampleInfo *SampleInfo_readFromDisk() {
     return NULL;
   }
 
-  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
-  if (si == NULL) {
+  SampleInfoPack *sip = (SampleInfoPack *)malloc(SAMPLEINFOPACK_SIZE);
+  if (sip == NULL) {
     perror("Error allocating memory");
     fclose(file);
     return NULL;
   }
 
-  if (fread(si, sizeof(SampleInfo) - (2 * sizeof(int32_t *)), 1, file) != 1) {
+  if (fread(sip, SAMPLEINFOPACK_SIZE, 1, file) != 1) {
     perror("Error reading struct from file");
     fclose(file);
-    SampleInfo_free(si);
+    free(sip);
     return NULL;
   }
 
-  // Allocate memory for the array
-  si->slice_start = (int32_t *)malloc(sizeof(int32_t) * si->slice_num);
+  // create SampleInfo from SampleInfoPack
+  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
+  if (si == NULL) {
+    perror("Error allocating memory");
+    fclose(file);
+    free(sip);
+    return NULL;
+  }
+
+  si->size = sip->size;
+  si->bpm = sip->flags & 0x1FF;
+  si->play_mode = (sip->flags >> 9) & 0x7;
+  si->one_shot = (sip->flags >> 12) & 0x1;
+  si->tempo_match = (sip->flags >> 13) & 0x1;
+  si->oversampling = (sip->flags >> 14) & 0x1;
+  si->num_channels = (sip->flags >> 15) & 0x1;
+  si->version = (sip->flags >> 16) & 0x7F;
+  si->reserved = (sip->flags >> 23) & 0x1FF;
+  si->splice_trigger = sip->splice_info & 0x7FFF;
+  si->splice_variable = (sip->splice_info >> 15) & 0x1;
+  si->slice_num = sip->slice_num;
+  si->slice_current = 0;
+
+  printf("size: %d\n", si->size);
+  printf("bpm: %d\n", si->bpm);
+  printf("play_mode: %d\n", si->play_mode);
+  printf("one_shot: %d\n", si->one_shot);
+  printf("tempo_match: %d\n", si->tempo_match);
+  printf("oversampling: %d\n", si->oversampling);
+  printf("num_channels: %d\n", si->num_channels);
+  printf("version: %d\n", si->version);
+  printf("reserved: %d\n", si->reserved);
+  printf("splice_trigger: %d\n", si->splice_trigger);
+  printf("splice_variable: %d\n", si->splice_variable);
+  printf("slice_num: %d\n", si->slice_num);
+
+  // read from the file to collect the arrays
+  // read in the slice_start
+  si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
   if (si->slice_start == NULL) {
     perror("Error allocating memory for array");
     fclose(file);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
   }
-  // Read the array content
   if (fread(si->slice_start, sizeof(int32_t), si->slice_num, file) !=
       si->slice_num) {
-    perror("Error reading array from file");
+    perror("Error reading slice_start from file");
     fclose(file);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
+  }
+  for (int i = 0; i < si->slice_num; i++) {
+    printf("slice_start[%d]: %d\n", i, si->slice_start[i]);
   }
 
-  // Allocate memory for the slice_stop array
-  si->slice_stop = (int32_t *)malloc(sizeof(int32_t) * si->slice_num);
+  // read in the slice_stop
+  si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
   if (si->slice_stop == NULL) {
-    perror("Error allocating memory for slice_stop array");
+    perror("Error allocating memory for array");
     fclose(file);
-    free(si->slice_start);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
   }
-  // Read the slice_stop array content
   if (fread(si->slice_stop, sizeof(int32_t), si->slice_num, file) !=
       si->slice_num) {
-    perror("Error reading slice_stop array from file");
+    perror("Error reading slice_stop from file");
     fclose(file);
-    free(si->slice_start);
-    free(si->slice_stop);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
   }
 
-  // Allocate memory for the slice_type array
-  si->slice_type = (int8_t *)malloc(sizeof(int8_t) * si->slice_num);
+  // read in the slice_type
+  si->slice_type = malloc(sizeof(int8_t) * si->slice_num);
   if (si->slice_type == NULL) {
-    perror("Error allocating memory for slice_stop array");
+    perror("Error allocating memory for array");
     fclose(file);
-    free(si->slice_start);
-    free(si->slice_stop);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
   }
-  // Read the slice_type array content
   if (fread(si->slice_type, sizeof(int8_t), si->slice_num, file) !=
       si->slice_num) {
-    perror("Error reading slice_stop array from file");
+    perror("Error reading slice_type from file");
     fclose(file);
-    free(si->slice_start);
-    free(si->slice_stop);
-    free(si->slice_type);
+    free(sip);
     SampleInfo_free(si);
     return NULL;
   }
 
   fclose(file);
 
-  // fix any problems
-  if (si->bpm > 300) {
-    si->bpm = 120;
-  } else if (si->bpm < 30) {
-    si->bpm = 120;
+  // free the SampleInfoPack
+  free(sip);
+
+  // initialize variables
+  if (si->bpm < 30) {
+    si->bpm = 30;
+  } else if (si->bpm > 300) {
+    si->bpm = 300;
   }
   return si;
 }
+#endif
 
 #endif
