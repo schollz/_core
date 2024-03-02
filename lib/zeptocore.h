@@ -411,8 +411,9 @@ void input_handling() {
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                              64, 96, 144, 192, 192};
           printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
-          Sequencer_quantize(sf->sequencers[mode_buttons16][0],
-                             quantizations[adc * 9 / 4096]);
+          Sequencer_quantize(
+              sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
+              quantizations[adc * 9 / 4096]);
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
