@@ -91,7 +91,7 @@
 #include "envelope_linear_integer.h"
 #include "file_list.h"
 #include "filterexp.h"
-#include "freeverb_fp.h"
+#include "freeverb_fp_mono.h"
 #include "gate.h"
 #include "knob_change.h"
 #include "messagesync.h"
