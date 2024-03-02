@@ -181,7 +181,12 @@ core_macos_amd64: docsbuild core/MacOSX11.3.sdk
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
 	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_amd64
-	
+
+.PHONY: core_macos_amd642
+core_macos_amd642: docsbuild
+	cd core && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 \
+	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_amd642
+
 .PHONY: core_linux_amd64
 core_linux_amd64: docsbuild
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -v -x -o ../core_linux_amd64
