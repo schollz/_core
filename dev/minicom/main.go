@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
 	"time"
 
@@ -27,7 +29,16 @@ func main() {
 	stopChannel := make(chan struct{})
 	currentBaudRate := 115200 // Initial baud rate
 
-	go serialPortReader("/dev/ttyACM0", &currentBaudRate, baudRateChange, dataChannel, stopChannel)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for sig := range c {
+			fmt.Println(sig)
+			fmt.Println("exiting")
+		}
+	}()
+
+	go serialPortReader(&currentBaudRate, baudRateChange, dataChannel, stopChannel)
 
 	// Example usage
 	go func() {
@@ -53,7 +64,7 @@ func main() {
 	http.ListenAndServe(":7083", nil)
 }
 
-func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan int, dataChannel chan []byte, stopChannel chan struct{}) {
+func serialPortReader(currentBaudRate *int, baudRateChange chan int, dataChannel chan []byte, stopChannel chan struct{}) {
 	var port serial.Port
 
 	openPort := func(baudRate int) {
@@ -65,11 +76,15 @@ func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan
 			BaudRate: baudRate,
 		}
 		var errconnect error
-		port, errconnect = serial.Open(portName, mode)
-		if errconnect == nil {
-			log.Debugf("opened port %s at %d", portName, baudRate)
-			// send a message to the port
-			port.Write([]byte("v"))
+		for portNum := 0; portNum < 3; portNum++ {
+			portName := fmt.Sprintf("/dev/ttyACM%d", portNum)
+			port, errconnect = serial.Open(portName, mode)
+			if errconnect == nil {
+				log.Debugf("opened port %s at %d", portName, baudRate)
+				// send a message to the port
+				port.Write([]byte("v"))
+				break
+			}
 		}
 	}
 
@@ -91,7 +106,7 @@ func serialPortReader(portName string, currentBaudRate *int, baudRateChange chan
 			}
 			if port == nil {
 				time.Sleep(100 * time.Millisecond)
-				log.Tracef("unable to open port %s", portName)
+				log.Tracef("unable to open port")
 				continue
 			}
 

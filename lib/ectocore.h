@@ -43,6 +43,7 @@
 - [ ] clk_in:
 */
 
+#include "clockhandling.h"
 #include "mcp3208.h"
 
 void dust_1() { printf("dust_1\n"); }
@@ -165,10 +166,24 @@ void input_handling() {
   Dust_setCallback(dust[0], dust_1);
   Dust_setDuration(dust[0], 1000 * 8);
 
+  // create clock
+  ClockInput *clockinput =
+      ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
+                        clock_handling_start);
+
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
   while (1) {
     int16_t val;
+
+    // clock input handler
+    ClockInput_update(clockinput);
+    if (clock_in_do) {
+      if (ClockInput_timeSinceLast(clockinput) > 1000000) {
+        printf("clock input timeout\n");
+        clock_in_do = false;
+      }
+    }
 
     // update random jumping
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
