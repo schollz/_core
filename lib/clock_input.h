@@ -63,6 +63,10 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_int callback_up,
   return ci;
 }
 
+int32_t ClockInput_timeSinceLast(ClockInput *ci) {
+  return time_us_32() - ci->last_time;
+}
+
 void ClockInput_update(ClockInput *ci) {
   uint8_t clock_pin = 1 - gpio_get(ci->gpio);
   //   code to verify polarity
