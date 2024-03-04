@@ -168,6 +168,7 @@ void input_handling() {
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
   while (1) {
+    sf->bpm_tempo = 90;
     int16_t val;
 
     // update random jumping

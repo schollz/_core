@@ -552,13 +552,8 @@ BREAKOUT_OF_MUTE:
       // mono
       int16_t *newArray;
       // TODO: use a function pointer that will change the function
-      if (quadratic_resampling || sf->fx_active[FX_SCRATCH]) {
-        newArray = array_resample_quadratic_fp(values, samples_to_read,
-                                               buffer->max_sample_count);
-      } else {
-        newArray = array_resample_linear(values, samples_to_read,
-                                         buffer->max_sample_count);
-      }
+      newArray = array_resample_quadratic_fp(values, samples_to_read,
+                                             buffer->max_sample_count);
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade && !do_fade_in) {
