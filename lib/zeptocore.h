@@ -21,6 +21,8 @@
 // THE SOFTWARE.
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
+#include "clockhandling.h"
+
 void printStringWithDelay(char *str) {
   int len = strlen(str);
   for (int i = 0; i < len; i++) {
@@ -58,40 +60,6 @@ void clear_debouncers() {
     DebounceUint8_clear(debouncer_uint8[i]);
   }
   DebounceDigits_clear(debouncer_digits);
-}
-
-void clock_handling_up(int time_diff) {
-  // printf("[zeptocore] clock_handling_up: %d\n", time_diff);
-  clock_in_diff_2x = time_diff * 2;
-  uint16_t bpm_new = 60000000 / (time_diff * 2);
-  if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
-    sf->bpm_tempo = bpm_new;
-  }
-  if (clock_in_activator < 3) {
-    clock_in_activator++;
-  } else {
-    clock_in_do = true;
-    clock_in_last_time = time_us_32();
-    clock_in_beat_total++;
-    clock_in_ready = true;
-  }
-}
-
-void clock_handling_down(int time_diff) {
-  // printf("[zeptocore] clock_handling_down: %d\n", time_diff);
-}
-
-void clock_handling_start() {
-  printf("[zeptocore] clock_handling_start\n");
-  if (clock_in_activator < 3) {
-    clock_in_activator++;
-  } else {
-    clock_in_do = true;
-    clock_in_last_time = time_us_32();
-    clock_in_beat_total = 0;
-    clock_in_ready = true;
-    do_restart_playback = true;
-  }
 }
 
 uint16_t probability_of_random_jump = 0;

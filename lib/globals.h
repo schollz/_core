@@ -137,7 +137,7 @@ bool clock_out_ready = false;
 bool clock_in_do = false;
 bool clock_in_ready = false;
 uint8_t clock_in_activator = 0;
-uint32_t clock_in_beat_total = 0;
+int32_t clock_in_beat_total = 0;
 uint32_t clock_in_diff_2x = 0;
 uint32_t clock_in_last_time = 0;
 
