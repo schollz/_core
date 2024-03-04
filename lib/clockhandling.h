@@ -2,7 +2,7 @@
 bool playback_was_stopped_clock = false;
 
 void clock_handling_up(int time_diff) {
-  printf("[clockhandling] clock_handling_up: %d\n", time_diff);
+  // printf("[clockhandling] clock_handling_up: %d\n", time_diff);
   clock_in_diff_2x = time_diff * 2;
   uint16_t bpm_new = 60000000 / (time_diff * 2);
   if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
@@ -30,7 +30,7 @@ void clock_handling_down(int time_diff) {
 }
 
 void clock_handling_start() {
-  printf("[clockhandling] clock_handling_start\n");
+  // printf("[clockhandling] clock_handling_start\n");
   if (clock_in_activator < 3) {
     clock_in_activator++;
   } else {
