@@ -41,8 +41,8 @@ the rest of the buttons (1-16) are just called **H**.
 - [ ] **B** + **X** → 
 - [x] **B** + **Y** → filter fc (lowpass/highpass?)
 - [ ] **B** + **Z** → 
-- [ ] **C** + **X** → 
-- [ ] **C** + **Y** → 
+- [x] **C** + **X** → change bank
+- [x] **C** + **Y** → change sample
 - [x] **C** + **Z** → quantize
 - [x] **D** + **X** → probability of jump
 - [x] **D** + **Y** → probability of retrigger
