@@ -201,7 +201,7 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
                             int32_t dry) {
   int8_t num_allpasses = 3;
   int8_t num_combs = 4;
-  for (int i = 0; i <= 4; i++) {
+  for (int i = 0; i <= 6; i++) {
     num_combs = i;
     int heap_size = FV_Reverb_heap_size(num_combs, num_allpasses);
     printf("[FV_Reverb_malloc] heap_size: %d (%d combs, %d allpasses)\n",
@@ -210,6 +210,8 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
       break;
     }
   }
+  num_combs--;
+  num_combs--;
   if (num_combs <= 0 || num_allpasses <= 0) {
     return NULL;
   }
