@@ -136,7 +136,7 @@ to use the tool without installing anything, just go to [zeptocore.com/tool](htt
 
 <details><summary>windows</summary>
 
-goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_windows_v2.0.3.exe`.
+goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_windows_v2.0.4.exe`.
 
 once downloaded, double click on the `.exe` file to run it.
 
@@ -151,13 +151,13 @@ to install the `_core` tool on macOS, first open a terminal.
 then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.3/core_macos_amd64_v2.0.3 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.0.4/core_macos_amd64_v2.0.4 > core_macos
 ```
 
 or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.3/core_macos_aarch64_v2.0.3 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.0.4/core_macos_aarch64_v2.0.4 > core_macos
 ```
 
 then to run, do:
@@ -173,7 +173,7 @@ chmod +x core_macos && ./core_macos
 
 <details><summary>linux</summary>
 
-goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_linux_amd64_v2.0.3`. 
+goto the [latest release](https://github.com/schollz/_core/releases/latest) and download `core_linux_amd64_v2.0.4`. 
 
 once downloaded, run it from the terminal.
 
