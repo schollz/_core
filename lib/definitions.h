@@ -38,6 +38,9 @@ static int PHASE_DIVISOR = 4;
 
 static const uint32_t PIN_DCDC_PSM_CTRL = 23;
 
+#define FILEZERO 0
+static const int8_t sel_variation_scale[2] = {1, 8};
+
 // shape
 #define FX_SATURATE 0
 #define FX_SHAPER 1

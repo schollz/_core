@@ -71,14 +71,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   bpm_timer_counter++;
   bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
                                                      ->sample[sel_sample_cur]
-                                                     .snd[sel_variation]
+                                                     .snd[FILEZERO]
                                                      ->splice_trigger)) == 0;
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
   if (bpm_timer_counter %
           (banks[sel_bank_cur]
                ->sample[sel_sample_cur]
-               .snd[sel_variation]
+               .snd[FILEZERO]
                ->splice_trigger *
            ectocore_clock_out_divisions[ectocore_clock_selected_division] /
            8) ==
@@ -86,7 +86,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     gpio_put(GPIO_CLOCK_OUT, 1);
   } else if (bpm_timer_counter % (banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
+                                      .snd[FILEZERO]
                                       ->splice_trigger *
                                   ectocore_clock_out_divisions
                                       [ectocore_clock_selected_division] /
@@ -154,11 +154,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   } else if (sequencerhandler[0].playing &&
              banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
-                     .snd[sel_variation]
+                     .snd[FILEZERO]
                      ->play_mode != PLAY_NORMAL) {
   } else if (((!banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
+                    .snd[FILEZERO]
                     ->one_shot &&
                !clock_in_do) ||
               (clock_in_ready && clock_in_do))
@@ -174,39 +174,39 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
-            .snd[sel_variation]
+            .snd[FILEZERO]
             ->splice_variable > 0) {
       // calculate the size of this slice in pulses
       float num_slices = (float)(banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
+                                     .snd[FILEZERO]
                                      ->slice_stop[banks[sel_bank_cur]
                                                       ->sample[sel_sample_cur]
-                                                      .snd[sel_variation]
+                                                      .snd[FILEZERO]
                                                       ->slice_current] -
                                  banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
+                                     .snd[FILEZERO]
                                      ->slice_start[banks[sel_bank_cur]
                                                        ->sample[sel_sample_cur]
-                                                       .snd[sel_variation]
+                                                       .snd[FILEZERO]
                                                        ->slice_current]);
-      num_slices = round(
-          num_slices /
-          (88200.0 * (banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[sel_variation]
-                          ->num_channels +
-                      1)) *
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm /
-          60.0 * 192.0);
+      num_slices =
+          round(num_slices /
+                (88200.0 * (banks[sel_bank_cur]
+                                ->sample[sel_sample_cur]
+                                .snd[FILEZERO]
+                                ->num_channels +
+                            1)) *
+                banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
+                60.0 * 192.0);
       do_splice_trigger =
           (bpm_timer_counter - bpm_timer_counter_last) >= num_slices;
       if (do_splice_trigger) {
         printf("do_splice_trigger: %d %2.0f %d %2.0f\n",
                banks[sel_bank_cur]
                    ->sample[sel_sample_cur]
-                   .snd[sel_variation]
+                   .snd[FILEZERO]
                    ->slice_current,
                num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
         bpm_timer_counter_last = bpm_timer_counter;
@@ -223,7 +223,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         if (clock_in_do) {
           beat_current = clock_in_beat_total % banks[sel_bank_cur]
                                                    ->sample[sel_sample_cur]
-                                                   .snd[sel_variation]
+                                                   .snd[FILEZERO]
                                                    ->slice_num;
         } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
           uint8_t lo = key3_pressed_keys[0] - 4;
@@ -243,17 +243,17 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           }
           beat_current = beat_current % banks[sel_bank_cur]
                                             ->sample[sel_sample_cur]
-                                            .snd[sel_variation]
+                                            .snd[FILEZERO]
                                             ->slice_num;
         } else if (sf->stay_in_sync) {
           beat_current = beat_total % banks[sel_bank_cur]
                                           ->sample[sel_sample_cur]
-                                          .snd[sel_variation]
+                                          .snd[FILEZERO]
                                           ->slice_num;
           if (!phase_forward) {
             beat_current = banks[sel_bank_cur]
                                ->sample[sel_sample_cur]
-                               .snd[sel_variation]
+                               .snd[FILEZERO]
                                ->slice_num -
                            beat_current;
           }
@@ -261,7 +261,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           if (beat_current == 0 && !phase_forward) {
             beat_current = banks[sel_bank_cur]
                                ->sample[sel_sample_cur]
-                               .snd[sel_variation]
+                               .snd[FILEZERO]
                                ->slice_num;
           } else {
             beat_current += (phase_forward * 2 - 1);
@@ -269,33 +269,33 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           if (beat_current < 0) {
             beat_current += banks[sel_bank_cur]
                                 ->sample[sel_sample_cur]
-                                .snd[sel_variation]
+                                .snd[FILEZERO]
                                 ->slice_num;
           }
           if (only_play_kicks) {
             // check if beat_current is a kick, if not try to find one
             for (uint16_t i = 0; i < banks[sel_bank_cur]
                                          ->sample[sel_sample_cur]
-                                         .snd[sel_variation]
+                                         .snd[FILEZERO]
                                          ->slice_num;
                  i++) {
               uint16_t j = beat_current + i;
               if (j > banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_num) {
                 j -= banks[sel_bank_cur]
                          ->sample[sel_sample_cur]
-                         .snd[sel_variation]
+                         .snd[FILEZERO]
                          ->slice_num;
               }
               if (banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_type[j] == 1 ||
                   banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_type[j] == 3) {
                 beat_current = j;
                 break;
@@ -305,26 +305,26 @@ bool repeating_timer_callback(struct repeating_timer *t) {
             // check if beat_current is a kick, if not try to find one
             for (uint16_t i = 0; i < banks[sel_bank_cur]
                                          ->sample[sel_sample_cur]
-                                         .snd[sel_variation]
+                                         .snd[FILEZERO]
                                          ->slice_num;
                  i++) {
               uint16_t j = beat_current + i;
               if (j > banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_num) {
                 j -= banks[sel_bank_cur]
                          ->sample[sel_sample_cur]
-                         .snd[sel_variation]
+                         .snd[FILEZERO]
                          ->slice_num;
               }
               if (banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_type[j] == 2 ||
                   banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
-                          .snd[sel_variation]
+                          .snd[FILEZERO]
                           ->slice_type[j] == 3) {
                 beat_current = j;
                 break;
