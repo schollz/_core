@@ -345,21 +345,21 @@ void do_update_phase_from_beat_current() {
   }
   uint16_t slice =
       beat_current %
-      banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->slice_num;
-  banks[sel_bank_cur]
-      ->sample[sel_sample_cur]
-      .snd[sel_variation]
-      ->slice_current = slice;
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
+  banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
+      slice;
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
-                    ->slice_start[slice];
+                    .snd[FILEZERO]
+                    ->slice_start[slice] *
+                sel_variation_scale[sel_variation];
   } else {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
-                    ->slice_stop[slice];
+                    .snd[FILEZERO]
+                    ->slice_stop[slice] *
+                sel_variation_scale[sel_variation];
   }
   mute_because_of_playback_type = false;
   phase_change = true;
@@ -372,11 +372,11 @@ void do_update_phase_from_beat_current() {
   //        beat_current, slice, phase_new,
   //        banks[sel_bank_cur]
   //            ->sample[sel_sample_cur]
-  //            .snd[sel_variation]
+  //            .snd[FILEZERO]
   //            ->slice_start[slice],
   //        banks[sel_bank_cur]
   //            ->sample[sel_sample_cur]
-  //            .snd[sel_variation]
+  //            .snd[FILEZERO]
   //            ->slice_stop[slice]);
 }
 

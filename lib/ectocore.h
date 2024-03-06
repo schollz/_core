@@ -251,21 +251,21 @@ void input_handling() {
       uint16_t j = beat_current;
       while (j > banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
-                     .snd[sel_variation]
+                     .snd[FILEZERO]
                      ->slice_num) {
         j -= banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
-                 .snd[sel_variation]
+                 .snd[FILEZERO]
                  ->slice_num;
       }
       if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
         if (banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
+                    .snd[FILEZERO]
                     ->slice_type[j] == 1 ||
             banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
+                    .snd[FILEZERO]
                     ->slice_type[j] == 3) {
           gpio_put(GPIO_TRIG_OUT, 1);
           debounce_trig = 100;
@@ -273,11 +273,11 @@ void input_handling() {
       } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
         if (banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
+                    .snd[FILEZERO]
                     ->slice_type[j] == 2 ||
             banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
-                    .snd[sel_variation]
+                    .snd[FILEZERO]
                     ->slice_type[j] == 3) {
           gpio_put(GPIO_TRIG_OUT, 1);
           debounce_trig = 100;
@@ -299,7 +299,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.0.3\n");
+        printf("version=v2.0.4\n");
       }
     }
 

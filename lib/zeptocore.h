@@ -109,10 +109,10 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zv2.0.3");
+  printStringWithDelay("zv2.0.4");
 
   // print to screen
-  printf("version=v2.0.3\n");
+  printf("version=v2.0.4\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -136,7 +136,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.0.3\n");
+        printf("version=v2.0.4\n");
       }
     }
     // TODO: check timing of this?
@@ -255,17 +255,12 @@ void input_handling() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
-          sf->bpm_tempo = round(linlin(adc, 0, 4095,
-                                       (banks[sel_bank_cur]
-                                            ->sample[sel_sample_cur]
-                                            .snd[sel_variation]
-                                            ->bpm /
-                                        2),
-                                       (banks[sel_bank_cur]
-                                            ->sample[sel_sample_cur]
-                                            .snd[sel_variation]
-                                            ->bpm *
-                                        2)));
+          sf->bpm_tempo = round(linlin(
+              adc, 0, 4095,
+              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
+               2),
+              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm *
+               2)));
           sf->bpm_tempo = util_clamp(sf->bpm_tempo, 30, 300);
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
@@ -428,23 +423,13 @@ void input_handling() {
       if (fr != FR_OK) {
         debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
       }
-      phases[0] = round(((float)phases[0] * (float)banks[sel_bank_cur]
-                                                ->sample[sel_sample_cur]
-                                                .snd[sel_variation_next]
-                                                ->size) /
-                        (float)banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->size);
 
-      beat_current = round(((float)beat_current * (float)banks[sel_bank_cur]
-                                                      ->sample[sel_sample_cur]
-                                                      .snd[sel_variation_next]
-                                                      ->slice_num)) /
-                     (float)banks[sel_bank_cur]
-                         ->sample[sel_sample_cur]
-                         .snd[sel_variation]
-                         ->slice_num;
+      // TODO: fix this
+      // if sel_variation_next == 0
+      phases[0] = round(
+          ((float)phases[0] * (float)sel_variation_scale[sel_variation_next]) /
+          (float)sel_variation_scale[sel_variation]);
+
       sel_variation = sel_variation_next;
       sync_using_sdcard = false;
       printf("[zeptocore] loading new sample variation took %d us\n",
