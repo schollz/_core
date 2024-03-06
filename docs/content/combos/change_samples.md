@@ -12,3 +12,5 @@ mode = 'any'
 
 
 To change samples you can hold **B** and press **1-16** to select a bank, and then - while still holding **B** - press another **1-16** to select the sample. The current sample will be instantly faded out (within 10 ms) and the next sample will load at the position that the current sample is playing at.
+
+You can also use the knobs to change samples - **C** + **X** will change banks or **C** + **Y** will change samples in the current bank.
