@@ -185,14 +185,15 @@ BREAKOUT_OF_MUTE:
     //                               ->sample[sel_sample_next]
     //                               .snd[sel_variation_next]
     //                               ->name);
-    phases[0] = round(((float)phases[0] * (float)banks[sel_bank_next]
-                                              ->sample[sel_sample_next]
-                                              .snd[sel_variation]
-                                              ->size) /
-                      (float)banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[sel_variation]
-                          ->size);
+    phases[0] = round(
+        ((float)phases[0] *
+         (float)banks[sel_bank_next]
+             ->sample[sel_sample_next]
+             .snd[FILEZERO]
+             ->size *
+         sel_variation_scale[sel_variation]) /
+        (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size *
+        sel_variation_scale[sel_variation]);
 
     // printf("[audio_callback] phase[0] -> phase_new: %d*%d/%d -> %d\n",
     // phases[0],
@@ -200,17 +201,17 @@ BREAKOUT_OF_MUTE:
     //            ->sample[sel_sample_next]
     //            .snd[sel_variation_next]
     //            ->size,
-    //        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size,
+    //        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size,
     //        phase_new);
     // printf("[audio_callback] beat_current -> new beat_current: %d",
     // beat_current);
     beat_current = round(((float)beat_current * (float)banks[sel_bank_next]
                                                     ->sample[sel_sample_next]
-                                                    .snd[sel_variation]
+                                                    .snd[FILEZERO]
                                                     ->slice_num)) /
                    (float)banks[sel_bank_cur]
                        ->sample[sel_sample_cur]
-                       .snd[sel_variation]
+                       .snd[FILEZERO]
                        ->slice_num;
     // printf(" -> %d\n", beat_current);
     do_open_file = true;
@@ -246,20 +247,17 @@ BREAKOUT_OF_MUTE:
   // check if tempo matching is activated, if not then don't change
   // based on bpm
   uint32_t samples_to_read;
-  if (banks[sel_bank_cur]
-          ->sample[sel_sample_cur]
-          .snd[sel_variation]
-          ->tempo_match) {
+  if (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->tempo_match) {
     samples_to_read =
         round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
               pitch_vals[sf->pitch_val_index] * scratch_pitch *
               pitch_vals[retrig_pitch]) *
         (banks[sel_bank_cur]
              ->sample[sel_sample_cur]
-             .snd[sel_variation]
+             .snd[FILEZERO]
              ->oversampling +
          1) /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->bpm;
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
   } else {
     samples_to_read =
         round((float)buffer->max_sample_count * envelope_pitch_val *
@@ -267,7 +265,7 @@ BREAKOUT_OF_MUTE:
               pitch_vals[retrig_pitch]) *
         (banks[sel_bank_cur]
              ->sample[sel_sample_cur]
-             .snd[sel_variation]
+             .snd[FILEZERO]
              ->oversampling +
          1);
   }
@@ -275,11 +273,10 @@ BREAKOUT_OF_MUTE:
     samples_to_read = 11;
   }
 
-  uint32_t values_len = samples_to_read * (banks[sel_bank_cur]
-                                               ->sample[sel_sample_cur]
-                                               .snd[sel_variation]
-                                               ->num_channels +
-                                           1);
+  uint32_t values_len =
+      samples_to_read *
+      (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
+       1);
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
   uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
@@ -290,25 +287,24 @@ BREAKOUT_OF_MUTE:
         phases[0] + values_to_read * (phase_forward * 2 - 1);
     const int32_t splice_start = banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
+                                     .snd[FILEZERO]
                                      ->slice_start[banks[sel_bank_cur]
                                                        ->sample[sel_sample_cur]
-                                                       .snd[sel_variation]
+                                                       .snd[FILEZERO]
                                                        ->slice_current];
     const int32_t splice_stop = banks[sel_bank_cur]
                                     ->sample[sel_sample_cur]
-                                    .snd[sel_variation]
+                                    .snd[FILEZERO]
                                     ->slice_stop[banks[sel_bank_cur]
                                                      ->sample[sel_sample_cur]
-                                                     .snd[sel_variation]
+                                                     .snd[FILEZERO]
                                                      ->slice_current];
     const int32_t sample_stop =
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[sel_variation]->size;
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size *
+        sel_variation_scale[sel_variation];
 
-    switch (banks[sel_bank_cur]
-                ->sample[sel_sample_cur]
-                .snd[sel_variation]
-                ->play_mode) {
+    switch (
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode) {
       case PLAY_NORMAL:
         if (phase_forward && phases[0] > sample_stop) {
           phase_change = true;
@@ -417,12 +413,12 @@ BREAKOUT_OF_MUTE:
                   WAV_HEADER +
                       ((banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
-                            .snd[sel_variation]
+                            .snd[FILEZERO]
                             ->num_channels +
                         1) *
                        (banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
-                            .snd[sel_variation]
+                            .snd[FILEZERO]
                             ->oversampling +
                         1) *
                        44100) +
@@ -460,12 +456,12 @@ BREAKOUT_OF_MUTE:
       f_lseek(&fil_current, WAV_HEADER +
                                 ((banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
+                                      .snd[FILEZERO]
                                       ->num_channels +
                                   1) *
                                  (banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
+                                      .snd[FILEZERO]
                                       ->oversampling +
                                   1) *
                                  44100) +
@@ -488,12 +484,12 @@ BREAKOUT_OF_MUTE:
                          WAV_HEADER +
                              ((banks[sel_bank_cur]
                                    ->sample[sel_sample_cur]
-                                   .snd[sel_variation]
+                                   .snd[FILEZERO]
                                    ->num_channels +
                                1) *
                               (banks[sel_bank_cur]
                                    ->sample[sel_sample_cur]
-                                   .snd[sel_variation]
+                                   .snd[FILEZERO]
                                    ->oversampling +
                                1) *
                               44100) +
@@ -547,7 +543,7 @@ BREAKOUT_OF_MUTE:
 
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
-            .snd[sel_variation]
+            .snd[FILEZERO]
             ->num_channels == 0) {
       // mono
       int16_t *newArray;
@@ -596,7 +592,7 @@ BREAKOUT_OF_MUTE:
       free(newArray);
     } else if (banks[sel_bank_cur]
                    ->sample[sel_sample_cur]
-                   .snd[sel_variation]
+                   .snd[FILEZERO]
                    ->num_channels == 1) {
       // stereo
       for (uint8_t channel = 0; channel < 2; channel++) {

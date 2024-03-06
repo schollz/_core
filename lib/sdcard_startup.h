@@ -363,14 +363,19 @@ void sdcard_startup() {
   // SaveFile_test_sequencer(sf);
   // SaveFile_load(sf);
   // SaveFile_test_sequencer(sf);
-  sleep_ms(1000);
+  // sleep_ms(3000);
+
+  uint32_t total_heap = getTotalHeap();
+  uint32_t used_heap = total_heap - getFreeHeap();
+  printf("memory usage: %2.1f%% (%ld/%ld)\n",
+         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
 
   // allocate as much space as possible for the reverb
   freeverb = FV_Reverb_malloc(FV_INITIALROOM, FV_INITIALDAMP, FV_INITIALWET,
                               FV_INITIALDRY);
 
-  uint32_t total_heap = getTotalHeap();
-  uint32_t used_heap = total_heap - getFreeHeap();
+  total_heap = getTotalHeap();
+  used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
          (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
 

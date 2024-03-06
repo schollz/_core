@@ -313,10 +313,10 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // // toggle one-shot vs classic
       // banks[sel_bank_cur]
       //     ->sample[sel_sample_cur]
-      //     .snd[sel_variation]
+      //     .snd[FILEZERO]
       //     ->play_mode = (banks[sel_bank_cur]
       //                        ->sample[sel_sample_cur]
-      //                        .snd[sel_variation]
+      //                        .snd[FILEZERO]
       //                        ->play_mode +
       //                    1) %
       //                   3;
@@ -493,28 +493,20 @@ void button_handler(ButtonMatrix *bm) {
         // toggle one shot mode
         if (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
-                .snd[sel_variation]
+                .snd[FILEZERO]
                 ->one_shot) {
           printf("toggle one shot OFF ");
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->one_shot = false;
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->play_mode = PLAY_NORMAL;
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
+              false;
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
+              PLAY_NORMAL;
           DebounceDigits_setText(debouncer_digits, "ONESHOT OOFFF", 200);
         } else {
           printf("toggle one shot ON ");
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->one_shot = true;
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->play_mode = PLAY_SPLICE_STOP;
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
+              true;
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
+              PLAY_SPLICE_STOP;
           DebounceDigits_setText(debouncer_digits, "ONESHOT OONN", 200);
         }
         printf("combo: 8 9 8!!!\n");
@@ -523,31 +515,29 @@ void button_handler(ButtonMatrix *bm) {
         printf("combo: 10 11 10!!!\n");
         if (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
-                .snd[sel_variation]
+                .snd[FILEZERO]
                 ->play_mode < PLAY_SAMPLE_LOOP) {
           banks[sel_bank_cur]
               ->sample[sel_sample_cur]
-              .snd[sel_variation]
+              .snd[FILEZERO]
               ->play_mode++;
         } else {
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[sel_variation]
-              ->play_mode = 0;
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
+              0;
         }
         printf("play_mode: %d\n", banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
-                                      .snd[sel_variation]
+                                      .snd[FILEZERO]
                                       ->play_mode);
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 4) {
         printf("toggling variable splice\n");
         banks[sel_bank_cur]
             ->sample[sel_sample_cur]
-            .snd[sel_variation]
+            .snd[FILEZERO]
             ->splice_variable = !banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
-                                     .snd[sel_variation]
+                                     .snd[FILEZERO]
                                      ->splice_variable;
       }
     } else if (key_pressed_num == 4) {
@@ -591,16 +581,14 @@ void button_handler(ButtonMatrix *bm) {
         }
       } else if (key_pressed[0] == 8 && key_pressed[1] == 9 &&
                  key_pressed[2] == 10 && key_pressed[3] == 11) {
-        banks[sel_bank_cur]
-            ->sample[sel_sample_cur]
-            .snd[sel_variation]
-            ->tempo_match = !banks[sel_bank_cur]
-                                 ->sample[sel_sample_cur]
-                                 .snd[sel_variation]
-                                 ->tempo_match;
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->tempo_match =
+            !banks[sel_bank_cur]
+                 ->sample[sel_sample_cur]
+                 .snd[FILEZERO]
+                 ->tempo_match;
         if (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
-                .snd[sel_variation]
+                .snd[FILEZERO]
                 ->tempo_match) {
           printf("combo: enabled to tempo match mode\n");
           DebounceDigits_setText(debouncer_digits, "MATCH OONN", 200);
@@ -1033,20 +1021,19 @@ void button_handler(ButtonMatrix *bm) {
       if (sel_variation == 0) {
         LEDS_set(leds, beat_current % 16 + 4, LED_DIM);
       } else {
-        LEDS_set(leds,
-                 linlin(phases[0], 0,
-                        banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->size,
-                        0,
-                        banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[sel_variation]
-                            ->slice_num) %
-                         16 +
-                     4,
-                 LED_DIM);
+        LEDS_set(
+            leds,
+            linlin(
+                phases[0], 0,
+                banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size,
+                0,
+                banks[sel_bank_cur]
+                    ->sample[sel_sample_cur]
+                    .snd[FILEZERO]
+                    ->slice_num) %
+                    16 +
+                4,
+            LED_DIM);
       }
     }
     if (mode_buttons16 == MODE_MASH ||

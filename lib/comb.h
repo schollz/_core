@@ -24,7 +24,7 @@
 
 #ifndef COMB_LIB
 #define COMB_LIB 1
-#define COMB_RINGBUFFER_SIZE 2200  // samples
+#define COMB_RINGBUFFER_SIZE 2000  // samples
 #include "fixedpoint.h"
 //
 #include "crossfade3.h"
