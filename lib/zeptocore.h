@@ -109,10 +109,10 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zv2.0.4");
+  printStringWithDelay("zv2.0.5");
 
   // print to screen
-  printf("version=v2.0.4\n");
+  printf("version=v2.0.5\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -136,7 +136,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.0.4\n");
+        printf("version=v2.0.5\n");
       }
     }
     // TODO: check timing of this?
@@ -271,6 +271,11 @@ void input_handling() {
                            (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
                            4096 * 2;
         } else if (button_is_pressed(KEY_C)) {
+          // change bank
+          sel_bank_next =
+              banks_with_samples[adc * banks_with_samples_num / 4096];
+          sel_sample_next = sel_sample_cur % banks[sel_bank_next]->num_samples;
+          fil_current_change = true;
         } else if (button_is_pressed(KEY_D)) {
           probability_of_random_jump = adc;
           clear_debouncers();
@@ -330,6 +335,9 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
+          // change sample
+          sel_sample_next = adc * banks[sel_bank_cur]->num_samples / 4096;
+          fil_current_change = true;
         } else if (button_is_pressed(KEY_D)) {
           probability_of_random_retrig = adc;
           clear_debouncers();
