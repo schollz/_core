@@ -66,7 +66,7 @@ void midi_timing() {
 int main() {
   stdio_init_all();
 
-  sleep_ms(1500);  // Wait for the circuit to settle
+  sleep_ms(4500);  // Wait for the circuit to settle
   printf("clock freq: %2.3f\n", (float)clock_get_hz(clk_sys));
 
   Onewiremidi *om;
