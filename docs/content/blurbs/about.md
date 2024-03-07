@@ -17,7 +17,7 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 
 ### goals
 
-1. *open-source* matters. you should be able to change this device today or years from now.
+1. *open-source* matters. [the source code](https://github.com/schollz_core) is publicly available so that anyone can change this device today or years from now.
 2. learning is not curved, though learning is rewarded. the device should be fun without reading a manual, but reading the manual only adds to the fun.
 3. time is yours. by default, the device should not enforce "quantization" and leave it to the user to make their own timings.
 
