@@ -176,11 +176,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return handleWebsocket(w, r)
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
-	} else if strings.HasPrefix(r.URL.Path, "/docs") || strings.HasPrefix(r.URL.Path, "/guide") {
-		if strings.HasPrefix(r.URL.Path, "/guide") {
-			r.URL.Path = "/docs" + strings.TrimPrefix(r.URL.Path, "/guide")
-		}
-		if r.URL.Path == "/docs" {
+	} else if strings.HasPrefix(r.URL.Path, "/docs") || strings.HasPrefix(r.URL.Path, "/guide") || r.URL.Path == "/" {
+		if r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" || r.URL.Path == "/" {
 			r.URL.Path = "/docs/index.html"
 		}
 		var b []byte
