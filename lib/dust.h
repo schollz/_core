@@ -1,5 +1,5 @@
 
-// Copyright 2023 Zack Scholl.
+// Copyright 2023-2024 Zack Scholl.
 //
 // Author: Zack Scholl (zack.scholl@gmail.com)
 //
