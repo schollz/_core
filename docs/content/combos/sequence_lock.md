@@ -8,6 +8,4 @@ mode = 'any'
 icon = 'lock'
 +++
 
-Sequence lock mode, when activated, will lock the sequence to a global clock so that manipulations to the sequence (i.e. via jumping) will jump back so that it goes back to the beat that it should be if no manipulations happened.
-
-Sequence lock mode will display `LOCK ON` if enabled and will display `LOCK OFF` when disabled.
+Sequence lock mode, when activated, will lock the sequence to a global clock so that manipulations to the sequence (i.e. via jumping) will jump back so that it goes back to the beat that it should be if no manipulations happened. Sequence lock mode will display `LOCK ON` if enabled and will display `LOCK OFF` when disabled. The sequence lock is `ON` by default.
