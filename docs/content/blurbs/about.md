@@ -11,26 +11,29 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 - stereo playback of 16-bit audio files @ 44.1 kHz sampling rate
 - sd-card storage for up to 8 gigabytes of samples
 - recalls up to 256 audio files (16 banks of 16 tracks)
-- includes 16 different 32-bit effects (saturate, fuzz, delay, reverb, etc...)
+- 16 different [effects](#effect-list) (saturate, fuzz, delay, reverb, etc...)
 - single-cycle wavetable synthesizer
 - realtime sequencer with optional quantization
+- clock sync in (or midi sync with [ittybittymidi](https://ittybittymidi.com))
+- optional clock [sync out](#sync-out)
+- tiny built-in speaker
+- powered by two AAA batteries or USB-C
 
 ### goals
 
-1. *open-source* matters. [the source code](https://github.com/schollz_core) is publicly available so that anyone can change this device today or years from now.
-2. learning is not curved, though learning is rewarded. the device should be fun without reading a manual, but reading the manual only adds to the fun.
-3. time is yours. by default, the device should not enforce "quantization" and leave it to the user to make their own timings.
+1. **open-source**. [the source code](https://github.com/schollz_core) is publicly available so that anyone can change this device today or years from now.
+2. **low learning curve**. the device should be fun without reading a manual, but reading the manual only adds to the fun.
+3. **unquantized**. by default, the sequencer does not enforce "quantization" and leave it to the user to make their own timings.
 
 ### non-goals
 
-a non-goal for this project is to be emulate a specific musical device. 
+1. **similarity**. I do not intend this device to be like something else. some of the decisions are highly opinionated, but since it is completly [open-source](https://github.com/schollz/_core) you could change the device to your heart's conent.
+2. **audio synthesis**. the CPU is already pretty taxes with the current system, and synthesis requires way more cycles to sound good in my opinion.
+3. **polyphony**. this device only supports two voices: a monophonic sample voice and a monophonic bass voice. these voices are smooth crossfaded, but the CPU limits having more polyphony (consider having more devices synced together instead!).
 
-a non-goal for this project is audio synthesis. though I may change my mind about this.
+### friends
 
-
-### similar devices
-
-if you like this device, you might also like:
+if you like this device, you might also like these other small devices made by friends:
 
 - [joydrums](https://www.yzhkinstruments.com/download), as if a beat pad and a loop pedal had a baby.
 - [bitty](https://www.curioussoundobjects.com/), an Arduino-compatible device that makes making music fun.

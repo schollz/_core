@@ -1,0 +1,19 @@
++++
+title = 'boardcore'
+date = 2024-02-01T12:32:51-08:00
+weight = 3
++++
+
+# boardcore
+
+this is a breadboard variant of the zeptocore. it has most of the same functionality, but instead of using the buttons on the handheld device, you can use your keyboard and a computer terminal. this version requires some knowledge with breadboarding, but it is great if you want to develop your own ideas based on the firmware.
+
+you can purchase the components directly [from my store](#buy) or you can buy them from Amazon.
+
+- [WeAct Raspberry Pi Pico (others should work too)](https://www.aliexpress.us/item/3256803521775546.html?gatewayAdapt=glo2usa4itemAdapt) ($2.50)
+- [pcm5102](https://www.amazon.com/Comimark-Interface-PCM5102-GY-PCM5102-Raspberry/dp/B07W97D2YC/) ($9)
+- [sdio sd card](https://www.adafruit.com/product/4682) ($3.50)
+
+ (_note:_ if you purchase components from me, I am able to provide reasonable amounts of support to help with your project).
+
+<img src="/_core_bb.png" style="width:90%; text-align:center; margin:auto; margin:2em;">
