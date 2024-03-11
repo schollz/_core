@@ -14,7 +14,6 @@ zeptocore comes in multiple colors. also instead of the handheld piece of hardwa
 </div>
 
 <script type="text/javascript">
-/*<![CDATA[*/
 (function () {
   var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
   if (window.ShopifyBuy) {
@@ -182,6 +181,5 @@ zeptocore comes in multiple colors. also instead of the handheld piece of hardwa
     });
   }
 })();
-/*]]>*/
 </script>
 
