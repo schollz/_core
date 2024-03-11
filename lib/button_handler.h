@@ -599,10 +599,10 @@ void button_handler(ButtonMatrix *bm) {
 
       } else if (key_pressed[0] == 12 && key_pressed[1] == 13 &&
                  key_pressed[2] == 14 && key_pressed[3] == 15) {
-        do_retrig_pitch_changes = !do_retrig_pitch_changes;
+        sf->do_retrig_pitch_changes = !sf->do_retrig_pitch_changes;
         printf("combo: enabled to pitch retrig mode: %d\n",
-               do_retrig_pitch_changes);
-        if (do_retrig_pitch_changes) {
+               sf->do_retrig_pitch_changes);
+        if (sf->do_retrig_pitch_changes) {
           DebounceDigits_setText(debouncer_digits, "PIT OONN", 200);
         } else {
           DebounceDigits_setText(debouncer_digits, "PIT OOFF", 200);

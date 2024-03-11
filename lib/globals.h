@@ -90,7 +90,6 @@ float retrig_vol = 1.0;
 float retrig_vol_step = 0;
 uint8_t retrig_pitch = 48;
 int8_t retrig_pitch_change = 0;
-bool do_retrig_pitch_changes = false;
 int32_t scratch_lfo_inc = 0;
 int32_t scratch_lfo_val = 0;
 float scratch_lfo_hz = 0.7;
