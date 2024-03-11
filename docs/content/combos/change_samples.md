@@ -3,7 +3,7 @@ title = 'Change samples'
 date = 2024-02-01T12:33:06-08:00
 short = 'The first **1-16** loads the bank, and then the next is the sample'
 buttons = ['B','1-16','1-16']
-weight = 5
+weight = 20
 icon = 'folder-open'
 mode = 'any'
 +++

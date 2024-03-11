@@ -3,7 +3,7 @@ title = 'Volume'
 date = 2024-02-01T12:33:06-08:00
 short = 'Change volume'
 buttons = ['A','Knob Z']
-weight = 4
+weight = 8
 icon = 'volume-up'
 mode = 'any'
 +++

@@ -3,7 +3,7 @@ title = 'Start/Stop'
 date = 2024-02-01T12:33:06-08:00
 short = 'Toggles the playback to start or stop'
 buttons = ['B','D']
-weight = 20
+weight = 22
 mode = 'any'
 icon = 'play'
 +++
