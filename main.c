@@ -114,7 +114,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           // generate random value between 0 and 1
           retrig_vol = (float)random_integer_in_range(50, 100) / 100;
           retrig_pitch = PITCH_VAL_MID;
-          if (do_retrig_pitch_changes) {
+          if (sf->do_retrig_pitch_changes &&
+              random_integer_in_range(1, 100) < 70) {
             retrig_pitch_change =
                 round((float)random_integer_in_range(100, 500) / 100);
             if (random_integer_in_range(1, 10) < 5) {
