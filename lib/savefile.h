@@ -38,7 +38,8 @@ typedef struct SaveFile {
   uint8_t fx_param[16][3];
   uint64_t stay_in_sync : 1;
   uint64_t pitch_val_index : 7;
-  uint64_t _padding : 56;
+  uint64_t do_retrig_pitch_changes : 1;
+  uint64_t _padding : 55;
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -66,7 +67,8 @@ SaveFile *SaveFile_malloc() {
     sf->fx_param[i][1] = 0;
     sf->fx_param[i][2] = 0;
   }
-  sf->stay_in_sync = 0;
+  sf->do_retrig_pitch_changes = 1;
+  sf->stay_in_sync = 1;  // default to staying in sync
   sf->fx_param[FX_SATURATE][0] = 64;
   sf->fx_param[FX_SHAPER][0] = 180;
   sf->fx_param[FX_SHAPER][1] = 28;

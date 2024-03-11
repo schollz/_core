@@ -185,7 +185,7 @@ void input_handling() {
       do_random_jump = true;
     }
     if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
-      do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
+      sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
       go_retrigger_2key(random_integer_in_range(0, 15),
                         random_integer_in_range(0, 15));
     }
