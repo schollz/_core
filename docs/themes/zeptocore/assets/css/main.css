@@ -461,3 +461,65 @@ table {
   width: 100%;
   padding-bottom: 1em;
 }
+
+
+pre {
+  text-transform: none;
+  margin-bottom: 20px;
+  vertical-align: text-bottom;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+  padding: 1em;
+  text-shadow: none;
+  background: #f5f7f9;
+}
+
+
+pre>code {
+  text-transform: none;
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  word-break: normal;
+  font-variant: normal;
+  color: #000;
+}
+
+pre code {
+  text-transform: none;
+  background-color: transparent;
+  border: 0;
+  display: inline;
+  line-height: inherit;
+  margin: 0;
+  max-width: auto;
+  overflow: visible;
+  padding: 0;
+  word-wrap: normal;
+  font-size: 1.0rem;
+}
+
+pre {
+  text-transform: none;
+  word-wrap: normal;
+  border-radius: 3px;
+  line-height: 1.45;
+  overflow: auto;
+  padding: 16px;
+  font-variant: normal;
+}
+
+summary {
+  padding-left: 0.25em;
+  padding-bottom: 0.25em;
+  cursor: pointer;
+}
+
+pre {
+  background-color: inherit !important;
+}
