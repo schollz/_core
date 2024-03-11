@@ -213,3 +213,5 @@ core/src/server/docs/
 lib/test/sampleinfo/sampleinfo.bin
 dev/starting_samples/
 dev/zeptocore_v2.0.6.uf2
+core/.hugo_build.lock
+core/public/
