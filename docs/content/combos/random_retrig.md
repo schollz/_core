@@ -3,7 +3,7 @@ title = 'Random retrig'
 date = 2024-02-01T12:33:06-08:00
 short = 'Change probability of random retrig'
 buttons = ['D','Knob Y']
-weight = 302
+weight = 43
 icon = 'dice'
 mode = 'any'
 +++

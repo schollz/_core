@@ -3,7 +3,7 @@ title = 'Random jump'
 date = 2024-02-01T12:33:06-08:00
 short = 'Change probability of random jump'
 buttons = ['D','Knob X']
-weight = 301
+weight = 41
 icon = 'dice'
 mode = 'any'
 +++
