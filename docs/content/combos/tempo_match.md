@@ -12,3 +12,5 @@ Tempo matching is where the speed of the playback of a sample is multiplied in o
 
 Tempo match mode will display `MATCH ON` if enabled and will display `MATCH OFF` when disabled.
 
+This can be set using the [tool](/tool) on a file basis.
+
