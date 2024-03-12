@@ -20,7 +20,7 @@ The process for uploading samples is about as easy as transfering a file onto an
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.0.7/core_windows_amd64_v2.0.7)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.0.7/core_windows_v2.0.7.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
