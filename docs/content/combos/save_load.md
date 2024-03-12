@@ -4,7 +4,7 @@ date = 2024-02-01T12:31:06-08:00
 short = 'Load from current save slot'
 buttons = ['D','B']
 weight = 37
-icon = 'finger'
+icon = 'folder-open'
 mode = 'any'
 +++
 
