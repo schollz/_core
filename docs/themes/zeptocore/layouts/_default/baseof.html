@@ -97,7 +97,7 @@
     <div style="max-width:420px; margin:auto;">
       {{ $indexPage.Content }}
 
-      <div id="signup" style="">
+      <div id=" signup" style="">
         <div id="mc_embed_signup">
           <form
             action="https://schollz.us21.list-manage.com/subscribe/post?u=6f305d82cde1a96e67a3c0577&amp;id=8f5c3ddc01&amp;f_id=0009ace1f0"
@@ -106,7 +106,8 @@
             <div id="mc_embed_signup_scroll">
               <br>
               <p>If "Out of Stock", subscribe to receive an email when it is available:</p>
-              <div class="mc-field-group"><label for="mce-EMAIL" style="font-size:1em;font-weight:900;">Email Address:
+              <div class="mc-field-group"><label for="mce-EMAIL" style="font-size:1em;font-weight:900;">Email
+                  Address:
                 </label><input type="email" name="EMAIL" class="required email" id="mce-EMAIL" required="" value=""
                   style="padding:0.5em; font-size:1em; font-family: 'Roboto Mono', monospace;  margin-right:1em;"><input
                   type="submit" name="subscribe" id="mc-embedded-subscribe" class="button" value="Subscribe"
@@ -161,8 +162,12 @@
         </div>
       </div>
       <div class="boxr">
-        <h2 id="{{ .Title | anchorize }}">{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link"
-              aria-hidden="true"></i></a></h2>
+        <h2 id="{{ .Title | anchorize }}">{{ .Title }}<span style="float:right;opacity: 50%;"><a
+              href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a><a
+              href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+              target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+            </a></span></h2>
+
         <p>
           Key combo: {{ $length := len .Params.buttons }}
           {{ range $index, $element := .Params.buttons }}
@@ -204,8 +209,11 @@
         </div>
       </div>
       <div class="boxr">
-        <h2 id="{{ .Title | anchorize }}">{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link"
-              aria-hidden="true"></i></a></h2>
+        <h2 id="{{ .Title | anchorize }}">{{ .Title }}<span style="float:right;opacity: 50%;"><a
+              href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a><a
+              href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+              target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+            </a></span></h2>
         <p>
           Key combo: {{ $length := len .Params.buttons }}
           {{ range $index, $element := .Params.buttons }}
@@ -244,9 +252,14 @@
     <h1 id="help">Questions<a href="#questions"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
     {{ range where .Site.RegularPages "Section" "questions" }}
     <details id="{{ .Title | anchorize }}">
-      <summary>{{ .Title }}<a href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a>
+      <summary>{{ .Title }}<span style="float:right;"><a href="#{{ .Title | anchorize }}"><i class="fas fa-link"
+              aria-hidden="true"></i></a><a
+            href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+            target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+          </a></span>
       </summary>
       {{ .Content }}
+
     </details>
     {{ end }}
   </section>
