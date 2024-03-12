@@ -4,7 +4,7 @@ date = 2024-02-01T12:31:06-08:00
 short = 'Select sequence slot for current mode'
 buttons = ['C','1-16']
 weight = 28
-icon = 'play'
+icon = 'list-ol'
 mode = 'any'
 +++
 

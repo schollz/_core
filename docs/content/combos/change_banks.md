@@ -4,7 +4,7 @@ date = 2024-02-01T12:33:06-08:00
 short = 'Change banks with a knob'
 buttons = ['C','Knob X']
 weight = 31
-icon = 'gear'
+icon = 'piggy-bank'
 mode = 'any'
 +++
 
