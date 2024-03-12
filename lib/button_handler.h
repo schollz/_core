@@ -195,13 +195,20 @@ void button_key_off_any(uint8_t key) {
             if (key_on_buttons[0] > 0) {
               octave = 12;
             }
-
-            WaveBass_note_on(wavebass, octave + i - 4);
-            if (sequencerhandler[2].recording) {
-              Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
-                            octave + i - 4, bpm_timer_counter);
+            // make sure none of the B, C, or D buttons are held down
+            bool all_off = true;
+            for (uint8_t i = 1; i < 4; i++) {
+              if (key_on_buttons[i] > 0) {
+                all_off = false;
+              }
             }
-
+            if (all_off) {
+              WaveBass_note_on(wavebass, octave + i - 4);
+              if (sequencerhandler[2].recording) {
+                Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
+                              octave + i - 4, bpm_timer_counter);
+              }
+            }
             break;
           }
         }
@@ -708,11 +715,20 @@ void button_handler(ButtonMatrix *bm) {
       if (key_on_buttons[0] > 0) {
         octave = 12;
       }
-      printf("playing note: %d\n", octave + bm->on[i] - 4);
-      WaveBass_note_on(wavebass, octave + bm->on[i] - 4);
-      if (sequencerhandler[2].recording) {
-        Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
-                      octave + bm->on[i] - 4, bpm_timer_counter);
+      // make sure none of the B, C, or D buttons are held down
+      bool all_off = true;
+      for (uint8_t i = 1; i < 4; i++) {
+        if (key_on_buttons[i] > 0) {
+          all_off = false;
+        }
+      }
+      if (all_off) {
+        printf("playing note: %d\n", octave + bm->on[i] - 4);
+        WaveBass_note_on(wavebass, octave + bm->on[i] - 4);
+        if (sequencerhandler[2].recording) {
+          Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
+                        octave + bm->on[i] - 4, bpm_timer_counter);
+        }
       }
     }
 #endif
