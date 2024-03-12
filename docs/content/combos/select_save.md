@@ -4,7 +4,7 @@ date = 2024-02-01T12:31:06-08:00
 short = 'Select save slot'
 buttons = ['D','1-16']
 weight = 36
-icon = 'finger'
+icon = 'hand-pointer'
 mode = 'any'
 +++
 
