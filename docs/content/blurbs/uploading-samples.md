@@ -9,7 +9,7 @@ weight = 13
 The process for uploading samples is about as easy as transfering a file onto an SD card. However, since the samples need to be processed to make them 44.1 kHz / 16-bit, you will need a tool to process the samples before transfering them to the SD card. You can either use the tool online or download it to your computer to use it locally.
 
 
-### Use tool online: **[zeptocore v2.0.7](/tool)**
+### Use tool online: **[zeptocore v2.0.8](/tool)**
 
 
 <p style="text-align:center">
@@ -20,7 +20,7 @@ The process for uploading samples is about as easy as transfering a file onto an
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.0.7/core_windows_v2.0.7.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.0.8/core_windows_v2.0.8.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -34,13 +34,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.7/core_macos_amd64_v2.0.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.0.8/core_macos_amd64_v2.0.8 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.0.7/core_macos_aarch64_v2.0.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.0.8/core_macos_aarch64_v2.0.8 > core_macos
 ```
 
 Then to run, do:
@@ -56,7 +56,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.0.7/core_linux_amd64_v2.0.7)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.0.8/core_linux_amd64_v2.0.8)**
 
 After downloading, run it directly from the terminal.
 
