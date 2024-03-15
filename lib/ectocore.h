@@ -49,6 +49,9 @@
 void dust_1() { printf("dust_1\n"); }
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
+  if (retrig_vol != 1.0) {
+    return;
+  }
   debounce_quantize = 0;
   retrig_first = true;
   retrig_beat_num = random_integer_in_range(8, 24);
@@ -456,6 +459,9 @@ void input_handling() {
           // TODO: change the filter cutoff!
           global_filter_index = val * (resonantfilter_fc_max) / 1024;
           printf("[ectocore] global_filter_index: %d\n", global_filter_index);
+          if (val > 960) {
+            global_filter_index = resonantfilter_fc_max;
+          }
           for (uint8_t channel = 0; channel < 2; channel++) {
             ResonantFilter_setFilterType(resFilter[channel], 0);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
