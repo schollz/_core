@@ -120,7 +120,11 @@ void input_handling() {
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
   uint16_t debounce_input_detection = 0;
-  uint8_t magic_signal[9] = {0, 1, 1, 1, 0, 1, 0, 1, 1};
+  uint8_t magic_signal[3][10] = {
+      {0, 1, 1, 0, 1, 1, 0, 1, 0, 0},
+      {0, 0, 1, 0, 1, 1, 0, 0, 1, 1},
+      {1, 0, 0, 1, 0, 1, 0, 1, 1, 1},
+  };
 
   // update the knobs
 #define KNOB_NUM 5
@@ -212,18 +216,19 @@ void input_handling() {
       debounce_input_detection--;
     } else {
       // input detection
+      bool found_change = false;
       int16_t val_input;
       uint8_t length_signal = 9;
-      uint8_t response_signal[3][9] = {
-          {0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0},
+      uint8_t response_signal[3][10] = {
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       };
 
-      for (uint8_t i = 0; i < length_signal; i++) {
-        gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
-        sleep_us(2);
-        for (uint8_t j = 0; j < 3; j++) {
+      for (uint8_t j = 0; j < 3; j++) {
+        for (uint8_t i = 0; i < length_signal; i++) {
+          gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
+          sleep_us(3);
           val_input = MCP3208_read(mcp3208, cv_signals[j], false);
           if (val_input > 700) {
             response_signal[j][i] = 1;
@@ -233,21 +238,30 @@ void input_handling() {
       bool is_signal[3] = {true, true, true};
       for (uint8_t j = 0; j < 3; j++) {
         for (uint8_t i = 0; i < length_signal; i++) {
-          if (response_signal[j][i] != magic_signal[i]) {
+          if (response_signal[j][i] != magic_signal[j][i]) {
             is_signal[j] = false;
             break;
           }
         }
       }
       for (uint8_t j = 0; j < 3; j++) {
+        if (found_change) {
+          continue;
+        }
         if (!is_signal[j] && !cv_plugged[j]) {
           printf("[ectocore] cv_%d plugged\n", j);
+          found_change = true;
         } else if (is_signal[j] && cv_plugged[j]) {
           printf("[ectocore] cv_%d unplugged\n", j);
+          found_change = true;
         }
         cv_plugged[j] = !is_signal[j];
       }
       debounce_input_detection = 100;
+      if (found_change) {
+        // increase the debouncing
+        debounce_input_detection = 3000;
+      }
     }
 
     // update the cv for each channel
