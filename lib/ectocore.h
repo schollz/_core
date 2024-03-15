@@ -173,6 +173,7 @@ void input_handling() {
 
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
+
   while (1) {
     int16_t val;
 
@@ -213,7 +214,6 @@ void input_handling() {
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
       };
-      uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
 
       for (uint8_t i = 0; i < length_signal; i++) {
         gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
@@ -235,15 +235,22 @@ void input_handling() {
         }
       }
       for (uint8_t j = 0; j < 3; j++) {
-        if (j == 0) {
-          cv_amen_plugged = is_signal[j];
-        } else if (j == 1) {
-          cv_break_plugged = is_signal[j];
-        } else if (j == 2) {
-          cv_sample_plugged = is_signal[j];
+        if (!is_signal[j] && !cv_plugged[j]) {
+          printf("[ectocore] cv_%d plugged\n", j);
+        } else if (is_signal[j] && cv_plugged[j]) {
+          printf("[ectocore] cv_%d unplugged\n", j);
         }
+        cv_plugged[j] = !is_signal[j];
       }
       debounce_input_detection = 100;
+    }
+
+    // update the cv for each channel
+    for (uint8_t i = 0; i < 3; i++) {
+      if (cv_plugged[i]) {
+        val = MCP3208_read(mcp3208, cv_signals[i], false);
+        printf("[ectocore] cv_%d %d\n", i, val);
+      }
     }
 
     if (clock_out_ready) {
