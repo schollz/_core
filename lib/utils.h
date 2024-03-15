@@ -36,8 +36,9 @@ typedef void (*callback_void)();
 
 #define util_clamp(x, a, b) ((x) > (b) ? (b) : ((x) < (a) ? (a) : (x)))
 
-#define linlin(x, xmin, xmax, ymin, ymax) \
-  util_clamp((ymin + (x - xmin) * (ymax - ymin) / (xmax - xmin)), ymin, ymax)
+#define linlin(x, xmin, xmax, ymin, ymax)                                 \
+  util_clamp((ymin + (x - xmin) * (ymax - ymin) / (xmax - xmin)), (ymin), \
+             (ymax))
 
 // multiplies and clips the output
 void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,

@@ -49,6 +49,9 @@
 void dust_1() { printf("dust_1\n"); }
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
+  if (retrig_vol != 1.0) {
+    return;
+  }
   debounce_quantize = 0;
   retrig_first = true;
   retrig_beat_num = random_integer_in_range(8, 24);
@@ -173,6 +176,7 @@ void input_handling() {
 
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
+
   while (1) {
     int16_t val;
 
@@ -206,21 +210,20 @@ void input_handling() {
       debounce_input_detection--;
     } else {
       // input detection
-      int16_t val;
+      int16_t val_input;
       uint8_t length_signal = 9;
       uint8_t response_signal[3][9] = {
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
       };
-      uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
 
       for (uint8_t i = 0; i < length_signal; i++) {
         gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
         sleep_us(2);
         for (uint8_t j = 0; j < 3; j++) {
-          val = MCP3208_read(mcp3208, cv_signals[j], false);
-          if (val > 700) {
+          val_input = MCP3208_read(mcp3208, cv_signals[j], false);
+          if (val_input > 700) {
             response_signal[j][i] = 1;
           }
         }
@@ -235,15 +238,54 @@ void input_handling() {
         }
       }
       for (uint8_t j = 0; j < 3; j++) {
-        if (j == 0) {
-          cv_amen_plugged = is_signal[j];
-        } else if (j == 1) {
-          cv_break_plugged = is_signal[j];
-        } else if (j == 2) {
-          cv_sample_plugged = is_signal[j];
+        if (!is_signal[j] && !cv_plugged[j]) {
+          printf("[ectocore] cv_%d plugged\n", j);
+        } else if (is_signal[j] && cv_plugged[j]) {
+          printf("[ectocore] cv_%d unplugged\n", j);
         }
+        cv_plugged[j] = !is_signal[j];
       }
       debounce_input_detection = 100;
+    }
+
+    // update the cv for each channel
+    for (uint8_t i = 0; i < 3; i++) {
+      if (cv_plugged[i]) {
+        // firist figure out CV values
+        val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
+        if (i < 3) {
+          // read in the attenuator
+          int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
+          if (val_attenuate > 520) {
+            // linear interpolation
+            val = val * (val_attenuate - 520) / (1024 - 520);
+            cv_values[i] = val;
+          } else if (val_attenuate < 500) {
+            // TODO: add random noise
+            cv_values[i] = val;
+          }
+        } else {
+          cv_values[i] = val;
+        }
+        // then do something based on the CV value
+        if (i == CV_AMEN) {
+          // change the position base on the CV value
+          cv_beat_current_override = linlin(cv_values[i], -512, 512, 0,
+                                            banks[sel_bank_cur]
+                                                ->sample[sel_sample_cur]
+                                                .snd[FILEZERO]
+                                                ->slice_num);
+        } else if (i == CV_BREAK) {
+          // TODO: not sure
+        } else if (i == CV_SAMPLE) {
+          // change the sample based on the cv value
+          sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
+                                   banks[sel_bank_cur]->num_samples);
+          if (sel_sample_next != sel_sample_cur) {
+            fil_current_change = true;
+          }
+        }
+      }
     }
 
     if (clock_out_ready) {
@@ -398,13 +440,14 @@ void input_handling() {
             button_mute = false;
           }
           uint8_t u8val = val * 255 / 1024;
-          global_filter_index =
-              ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
-          printf("[ectocore] global_filter_index: %d\n", global_filter_index);
-          for (uint8_t channel = 0; channel < 2; channel++) {
-            ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel], global_filter_index);
-          }
+          // global_filter_index =
+          //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
+          // printf("[ectocore] global_filter_index: %d\n",
+          // global_filter_index); for (uint8_t channel = 0; channel < 2;
+          // channel++) {
+          //   ResonantFilter_setFilterType(resFilter[channel], 0);
+          //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          // }
 
           if (val > 700) {
             probability_of_random_retrig = (val - 700) * (val - 700) / 500;
@@ -412,15 +455,28 @@ void input_handling() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         printf("[ectocore] knob_amen %d\n", val);
-        if (val < 10 && !playback_stopped) {
-          if (!button_mute) trigger_button_mute = true;
-          do_stop_playback = true;
-        } else if (val > 10 && playback_stopped) {
-          do_restart_playback = true;
-          button_mute = false;
+        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
+          // TODO: change the filter cutoff!
+          global_filter_index = val * (resonantfilter_fc_max) / 1024;
+          printf("[ectocore] global_filter_index: %d\n", global_filter_index);
+          if (val > 960) {
+            global_filter_index = resonantfilter_fc_max;
+          }
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          }
         } else {
-          if (val > 700) {
-            probability_of_random_jump = (val - 700) * (val - 700) / 100;
+          if (val < 10 && !playback_stopped) {
+            if (!button_mute) trigger_button_mute = true;
+            do_stop_playback = true;
+          } else if (val > 10 && playback_stopped) {
+            do_restart_playback = true;
+            button_mute = false;
+          } else {
+            if (val > 700) {
+              probability_of_random_jump = (val - 700) * (val - 700) / 100;
+            }
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
