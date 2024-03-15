@@ -405,13 +405,14 @@ void input_handling() {
             button_mute = false;
           }
           uint8_t u8val = val * 255 / 1024;
-          global_filter_index =
-              ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
-          printf("[ectocore] global_filter_index: %d\n", global_filter_index);
-          for (uint8_t channel = 0; channel < 2; channel++) {
-            ResonantFilter_setFilterType(resFilter[channel], 0);
-            ResonantFilter_setFc(resFilter[channel], global_filter_index);
-          }
+          // global_filter_index =
+          //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
+          // printf("[ectocore] global_filter_index: %d\n",
+          // global_filter_index); for (uint8_t channel = 0; channel < 2;
+          // channel++) {
+          //   ResonantFilter_setFilterType(resFilter[channel], 0);
+          //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          // }
 
           if (val > 700) {
             probability_of_random_retrig = (val - 700) * (val - 700) / 500;
@@ -419,15 +420,25 @@ void input_handling() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         printf("[ectocore] knob_amen %d\n", val);
-        if (val < 10 && !playback_stopped) {
-          if (!button_mute) trigger_button_mute = true;
-          do_stop_playback = true;
-        } else if (val > 10 && playback_stopped) {
-          do_restart_playback = true;
-          button_mute = false;
+        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
+          // TODO: change the filter cutoff!
+          global_filter_index = val * (resonantfilter_fc_max) / 1024;
+          printf("[ectocore] global_filter_index: %d\n", global_filter_index);
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          }
         } else {
-          if (val > 700) {
-            probability_of_random_jump = (val - 700) * (val - 700) / 100;
+          if (val < 10 && !playback_stopped) {
+            if (!button_mute) trigger_button_mute = true;
+            do_stop_playback = true;
+          } else if (val > 10 && playback_stopped) {
+            do_restart_playback = true;
+            button_mute = false;
+          } else {
+            if (val > 700) {
+              probability_of_random_jump = (val - 700) * (val - 700) / 100;
+            }
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
