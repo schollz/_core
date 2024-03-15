@@ -276,6 +276,11 @@ void input_handling() {
           // TODO: not sure
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
+          sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
+                                   banks[sel_bank_cur]->num_samples);
+          if (sel_sample_next != sel_sample_cur) {
+            fil_current_change = true;
+          }
         }
       }
     }
