@@ -207,7 +207,7 @@ void input_handling() {
       debounce_input_detection--;
     } else {
       // input detection
-      int16_t val;
+      int16_t val_input;
       uint8_t length_signal = 9;
       uint8_t response_signal[3][9] = {
           {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -219,8 +219,8 @@ void input_handling() {
         gpio_put(GPIO_INPUTDETECT, magic_signal[i]);
         sleep_us(2);
         for (uint8_t j = 0; j < 3; j++) {
-          val = MCP3208_read(mcp3208, cv_signals[j], false);
-          if (val > 700) {
+          val_input = MCP3208_read(mcp3208, cv_signals[j], false);
+          if (val_input > 700) {
             response_signal[j][i] = 1;
           }
         }
@@ -248,8 +248,35 @@ void input_handling() {
     // update the cv for each channel
     for (uint8_t i = 0; i < 3; i++) {
       if (cv_plugged[i]) {
-        val = MCP3208_read(mcp3208, cv_signals[i], false);
-        printf("[ectocore] cv_%d %d\n", i, val);
+        // firist figure out CV values
+        val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
+        if (i < 3) {
+          // read in the attenuator
+          int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
+          if (val_attenuate > 520) {
+            // linear interpolation
+            val = val * (val_attenuate - 520) / (1024 - 520);
+            cv_values[i] = val;
+          } else if (val_attenuate < 500) {
+            // TODO: add random noise
+            cv_values[i] = val;
+          }
+        } else {
+          cv_values[i] = val;
+        }
+        // then do something based on the CV value
+        if (i == CV_AMEN) {
+          // change the position base on the CV value
+          cv_beat_current_override = linlin(cv_values[i], -512, 512, 0,
+                                            banks[sel_bank_cur]
+                                                ->sample[sel_sample_cur]
+                                                .snd[FILEZERO]
+                                                ->slice_num);
+        } else if (i == CV_BREAK) {
+          // TODO: not sure
+        } else if (i == CV_SAMPLE) {
+          // change the sample based on the cv value
+        }
       }
     }
 
