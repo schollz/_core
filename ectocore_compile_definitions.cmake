@@ -10,7 +10,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_CLK_GPIO=21 # LCK=17
     AUDIO_DIN_GPIO=23
     INCLUDE_ECTOCORE=1
-    # INCLUDE_FILTER=1
+    INCLUDE_FILTER=1
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
