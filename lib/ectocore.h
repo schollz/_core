@@ -46,7 +46,9 @@
 #include "clockhandling.h"
 #include "mcp3208.h"
 
-void dust_1() { printf("dust_1\n"); }
+void dust_1() {
+  // printf("[ectocore] dust_1\n");
+}
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   if (retrig_vol != 1.0) {
@@ -191,11 +193,11 @@ void input_handling() {
 
     // update random jumping
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
-      printf("random jump\n");
+      // printf("[ectocore] random jump\n");
       do_random_jump = true;
     }
     if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
-      printf("random retrigger\n");
+      // printf("[ecotocre] random retrigger\n");
       sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
       go_retrigger_2key(random_integer_in_range(0, 15),
                         random_integer_in_range(0, 15));
