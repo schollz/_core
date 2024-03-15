@@ -318,9 +318,9 @@ float pitch_vals[PITCH_VAL_MAX] = {
 #define TRIGGER_MODE_HH 2
 #define TRIGGER_MODE_RANDOM 3
 uint8_t ectocore_trigger_mode = 0;
-bool cv_amen_plugged = false;
-bool cv_break_plugged = false;
-bool cv_sample_plugged = false;
+uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
+bool cv_plugged[3] = {false, false, false};
+
 #define ECTOCORE_CLOCK_NUM_DIVISIONS 7
 const uint8_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
     8, 8 * 2, 8 / 2, 8 * 4, 8 / 4, 8 * 8, 8 / 8,
