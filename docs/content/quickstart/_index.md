@@ -8,7 +8,7 @@ short = 'the main'
 
 ### on & off
 
-First switch the top right switch "up" to turn on the device. The device should, by default, be loaded with several samples. A sample should start immediately playing. You can jump around in the sample by pressing any of the `1-16` keys. Try retriggering smaples by pressing and holding a `1-16` key and then pressing a different `1-16` key.
+First switch the top right switch "up" to turn on the device. The device should, by default, be loaded with several samples. A sample should start immediately playing. You can jump around in the sample by pressing any of the `1-16` keys. Try retriggering samples by pressing and holding a `1-16` key and then pressing a different `1-16` key.
 
 ### volume & tempo
 
@@ -24,7 +24,7 @@ The device starts up in `JUMP` mode. When pressing `1-16` you are jumping sample
 
 ## effect parameters & probabilities
 
-Each effect has up to two parameters that can be edited, and each effect also has a probability. To modify the effect parameters, first go into `MASH` mode (`A` + `C`). Now, in `MASH` mode, hold down the effect you want to edit. For example, hold down `2` to edit the `LOSS` effect. While holding down the effect, turn `Knob X` or `Knob Y` to change the parameters for that effect. You can find more informatoin about each parameter in the effect reference below. For example, [loss](#loss) has "loss type" and "loss amount" that can be edited. For each effect, `Knob Z` will raise the probability that the given effect will toggle randomly.
+Each effect has up to two parameters that can be edited, and each effect also has a probability. To modify the effect parameters, first go into `MASH` mode (`A` + `C`). Now, in `MASH` mode, hold down the effect you want to edit. For example, hold down `2` to edit the `LOSS` effect. While holding down the effect, turn `Knob X` or `Knob Y` to change the parameters for that effect. You can find more information about each parameter in the effect reference below. For example, [loss](#loss) has "loss type" and "loss amount" that can be edited. For each effect, `Knob Z` will raise the probability that the given effect will toggle randomly.
 
 ## adding samples & updating firmware
 
