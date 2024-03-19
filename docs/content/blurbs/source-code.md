@@ -14,7 +14,7 @@ There are periodically new firmwares with updated effects or improved performanc
 
 Plug in a USB-C cable to the device and hold the `BOOTSEL` button (near the USB-C jack). while holding the `BOOTSEL` button, press the `NRST` button (also near the USB-C jack). after a few seconds a new drive should appear on your computer with a name like `RPI-RP2`.
 
-Drag and drop the downloaded **zeptocore_v2.0.8.uf2** file onto the the `RPI-RP2` drive that appeared. Wait a few seconds and the drive will disappear and the device will turn on automatically. Congratulations, you have updated your zeptocore to the latest version. (_Note:_ If using [boardcore](#boardcore) you can follow the same instructions, but make sure to download the latest [boardcore_v2.0.8.uf2](https://github.com/schollz/_core/releases/download/v2.0.8/boardcore_v2.0.8.uf2)).
+Drag and drop the downloaded **zeptocore_v2.0.8.uf2** file onto the `RPI-RP2` drive that appeared. Wait a few seconds and the drive will disappear and the device will turn on automatically. Congratulations, you have updated your zeptocore to the latest version. (_Note:_ If using [boardcore](#boardcore) you can follow the same instructions, but make sure to download the latest [boardcore_v2.0.8.uf2](https://github.com/schollz/_core/releases/download/v2.0.8/boardcore_v2.0.8.uf2)).
 
 
 ### Tool uploader

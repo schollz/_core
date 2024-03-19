@@ -27,7 +27,7 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 
 ### non-goals
 
-1. **similarity**. I do not intend this device to be like something else. some of the decisions are highly opinionated, but since it is completly [open-source](https://github.com/schollz/_core) you could change the device to your heart's conent.
+1. **similarity**. I do not intend this device to be like something else. some of the decisions are highly opinionated, but since it is completely [open-source](https://github.com/schollz/_core) you could change the device to your heart's content.
 2. **audio synthesis**. the CPU is already pretty taxes with the current system, and synthesis requires way more cycles to sound good in my opinion.
 3. **polyphony**. this device only supports two voices: a monophonic sample voice and a monophonic bass voice. these voices are smooth crossfaded, but the CPU limits having more polyphony (consider having more devices synced together instead!).
 
