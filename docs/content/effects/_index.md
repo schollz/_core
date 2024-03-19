@@ -7,7 +7,7 @@ short = 'the main'
 
 # Effects
 
-Every effect can be set with **Knob Z** to change the probability of occurence from *none* (fully counter-clockwise) to *often* (fully clockwise).
+Every effect can be set with **Knob Z** to change the probability of occurrence from *none* (fully counter-clockwise) to *often* (fully clockwise).
 
 See the [quick reference](#quick-reference) for the short form of this information.
 
