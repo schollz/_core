@@ -43,10 +43,17 @@ Or, if you are on a M1/M2-based mac install with:
 curl -L https://github.com/schollz/_core/releases/download/v2.0.8/core_macos_aarch64_v2.0.8 > core_macos
 ```
 
-Then to run, do:
+Then to enable the program do:
 
 ```
-chmod +x core_macos && ./core_macos
+chmod +x core_macos 
+xattrc -c core_macos
+```
+
+Now to run, you can just type
+
+```
+./core_macos
 ```
 
 A window should pop up in the browser with the offline version of the tool.
