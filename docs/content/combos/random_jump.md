@@ -9,6 +9,6 @@ mode = 'any'
 +++
 
 
-Change the probility of random jumping, increasing it by turning the knob CW.
+Change the probability of random jumping, increasing it by turning the knob CW.
 
 If you want to keep the sequence locked, you can use [the sequence lock combo](/#sequence-lock).
