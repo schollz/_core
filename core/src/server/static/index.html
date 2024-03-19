@@ -526,6 +526,12 @@
                 <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
                     <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length > 0"
                         style="margin-left: 0.5rem;">Remove all</button>
+                    <button @click="selectBankAll"
+                        v-if="banks[selectedBank].files.length > 0 && selectedFiles.length==0"
+                        style="margin-left: 0.0rem;">Select all</button>
+                    <button @click="selectBankNone"
+                        v-if="banks[selectedBank].files.length > 0 && selectedFiles.length>0"
+                        style="margin-left: 0.0rem;">Select none</button>
                     <!-- <button @click="clearSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Clear
                         selected</button> -->
                     <button @click="removeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Remove
