@@ -560,6 +560,15 @@ app = new Vue({
             this.banks[this.selectedBank].lastSelectedFile = null;
             this.selectedFile = null;
         },
+        selectBankAll() {
+            this.selectedFiles = [];
+            for (var i = 0; i < this.banks[this.selectedBank].files.length; i++) {
+                this.selectedFiles.push(i);
+            }
+        },
+        selectBankNone() {
+            this.selectedFiles = [];
+        },
         clearSelectedFiles() {
             // for each index of the seleced files, remove from the current bank
             for (var i = 0; i < this.selectedFiles.length; i++) {
