@@ -501,10 +501,12 @@
                 [[ end ]]
 
                 [[ if .IsUpload]]
-                <div class=" file-uploader" v-if="!disconnected">
+                <div class=" file-uploader" v-if="!disconnected"
+                    v-bind:class="{ 'height75' : banks[selectedBank].files.length === 0}">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
-                    <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput">
+                    <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput"
+                        v-bind:class="{ 'height100' : banks[selectedBank].files.length === 0}">
                         Drop audio files (mp3, wav, flac, xrni, aif) or click to select
                     </div>
                 </div>
