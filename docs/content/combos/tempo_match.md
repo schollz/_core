@@ -1,7 +1,7 @@
 +++
 title = 'Tempo match'
 date = 2024-02-01T12:33:06-08:00
-short = 'Toggle tempo matchinging mode'
+short = 'Toggle tempo matching mode'
 buttons = ['5','6','7','8']
 weight = 101
 mode = 'any'
