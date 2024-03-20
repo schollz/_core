@@ -16,7 +16,7 @@ Change the [volume](#volume) by holding the `A` key (top left key) and turning `
 
 ### banks & samples
 
-There are 16 banks of samples, and each bank can hold 16 samples. You are currently in the first bank and the first sample. To change to a different bank and different sample you can do this button combo: first hold `A` and then, while holding `A`, press `1-16` to select a bank. Continue to hold the `A` key and now press another button `1-16` to select the sample.
+There are 16 banks of samples, and each bank can hold 16 samples. You are currently in the first bank and the first sample. To change to a different bank and different sample you can do this button combo: first hold `B` and then, while holding `B`, press `1-16` to select a bank. Continue to hold the `B` key and now press another button `1-16` to select the sample.
 
 ## effects & modes
 
