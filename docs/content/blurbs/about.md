@@ -21,7 +21,7 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 
 ### goals
 
-1. **open-source**. [the source code](https://github.com/schollz_core) is publicly available so that anyone can change this device today or years from now.
+1. **open-source**. [the source code](https://github.com/schollz/_core) is publicly available so that anyone can change this device today or years from now.
 2. **low learning curve**. the device should be fun without reading a manual, but reading the manual only adds to the fun.
 3. **unquantized**. by default, the sequencer does not enforce "quantization" and leave it to the user to make their own timings.
 
