@@ -139,11 +139,19 @@ bool SaveFile_load(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
     printf("[SaveFile] no save file, skipping ");
   } else {
     unsigned int bytes_read;
-    if (f_read(&fil, sf, sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16),
-               &bytes_read)) {
+    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read)) {
       printf("[SaveFile] problem reading save file");
     } else {
       printf("[SaveFile] bpm_tempo = %d\n", sf->bpm_tempo);
+    }
+    // read sequencers
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 16; j++) {
+        if (f_read(&fil, sf->sequencers[i][j], sizeof(Sequencer),
+                   &bytes_read)) {
+          printf("[SaveFile] problem reading sequencer %d %d\n", i, j);
+        }
+      }
     }
   }
   f_close(&fil);
@@ -168,12 +176,23 @@ bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
     *sync_sd_card = false;
     return false;
   }
+  unsigned int total_bytes_written;
   unsigned int bw;
-  if (f_write(&file, sf, sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16),
-              &bw)) {
+  if (f_write(&file, sf, sizeof(SaveFile), &bw)) {
     printf("[SaveFile] problem writing save\n");
   }
-  printf("[SaveFile] wrote %d bytes\n", bw);
+  total_bytes_written = bw;
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 16; j++) {
+      if (f_write(&file, sf->sequencers[i][j], sizeof(Sequencer), &bw)) {
+        printf("[SaveFile] problem writing sequencer %d %d\n", i, j);
+      } else {
+        total_bytes_written += bw;
+      }
+    }
+  }
+  printf("[SaveFile] wrote %d bytes\n", total_bytes_written);
   f_close(&file);
   *sync_sd_card = false;
   return true;
