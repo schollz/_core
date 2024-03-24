@@ -630,23 +630,23 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
 
-    // B + H + H...
-    // chain: select sequences to chain together
-    if (key_pressed[0] == KEY_C) {
-      uint8_t *links = malloc(sizeof(uint8_t) * (key_pressed_num - 1));
-      uint16_t count = 0;
-      for (uint8_t i = 0; i < key_pressed_num; i++) {
-        if (key_pressed[i] - 4 >= 0) {
-          links[count] = key_pressed[i] - 4;
-          count++;
-        }
-      }
-      if (count > 0) {
-        // toggle_chain_rec = false;
-        // Chain_link(chain, links, count);
-      }
-      free(links);
-    }
+    // // B + H + H...
+    // // chain: select sequences to chain together
+    // if (key_pressed[0] == KEY_C) {
+    //   uint8_t *links = malloc(sizeof(uint8_t) * (key_pressed_num - 1));
+    //   uint16_t count = 0;
+    //   for (uint8_t i = 0; i < key_pressed_num; i++) {
+    //     if (key_pressed[i] - 4 >= 0) {
+    //       links[count] = key_pressed[i] - 4;
+    //       count++;
+    //     }
+    //   }
+    //   if (count > 0) {
+    //     // toggle_chain_rec = false;
+    //     // Chain_link(chain, links, count);
+    //   }
+    //   free(links);
+    // }
     key_timer = 0;
     key_pressed_num = 0;
   }
