@@ -8,4 +8,4 @@ mode = 'any'
 icon = 'play'
 +++
 
-This key combo will mute the audio and stop playback. Pressing it again will restart the audio from the first beat. If you just need to mute, you can use the [mute](#mute) combo.
+This key combination will mute the audio and stop playback. Pressing it again will restart the audio from the first beat. If you only need to mute the audio without stopping playback, you can use the [mute](#mute) key combination.

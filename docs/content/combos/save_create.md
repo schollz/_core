@@ -8,4 +8,4 @@ icon = 'save'
 mode = 'any'
 +++
 
-Saves the current settings into the selected slot.
+Save the current settings into the selected slot.
