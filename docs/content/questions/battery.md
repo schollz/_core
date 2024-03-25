@@ -4,4 +4,4 @@ date = 2024-02-01T12:33:06-08:00
 weight = 1
 +++
 
-Sorry! Sometimes the battery gets low and strange things happen. First, try changing both batteries to fresh ones, and then see if it works by powering with USB-C. I also recommend using good alkaline batteries instead of carbon zinc batteries - alkaline batteries hold voltage better than carbon zinc and are less likely to cause trouble when used over time.
+I apologize for any inconvenience. When encountering issues due to low battery levels, I recommend first replacing both batteries with fresh ones. Try powering the device using USB-C to check if it resolves the issue. I also suggest using high-quality alkaline batteries instead of carbon zinc ones, as alkaline batteries maintain voltage better over time and are less likely to cause operational problems.
