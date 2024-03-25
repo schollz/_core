@@ -292,7 +292,6 @@
             {{ range $index, $element := .Params.buttons }}
             <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
             {{ end }}
-            ({{.Params.weight}})
           </td>
           <td class="w4">{{ .Params.short | markdownify }}</td>
           <td class="w3"><code>{{ .Params.mode }}</code></td>
