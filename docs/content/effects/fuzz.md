@@ -12,4 +12,4 @@ knoby = 'postamp'
 icon = 'cat'
 +++
 
-The Fuzz effect adds a rich, fuzz-like distortion to audio, with preamp and postamp knobs to finely tune the intensity before and after the effect is applied.
+The Fuzz effect adds a rich, fuzz-like distortion to audio. It includes preamp and postamp knobs for finely tuning the intensity before and after the effect is applied.

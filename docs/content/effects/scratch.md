@@ -12,4 +12,4 @@ icon = 'compact-disc'
 +++
 
 
-The Scratch effect simulates a record scratch by rapidly changing the playback speed, with a rate knob to adjust the frequency of speed alterations.
+The Scratch effect replicates a record scratch by rapidly altering the playback speed, and includes a rate knob to adjust the frequency of speed changes.

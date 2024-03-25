@@ -12,4 +12,4 @@ knoby = 'frequency'
 icon = 'wave-square'
 +++
 
-The Bitcrush effect aggressively degrades audio fidelity by reducing bit depth to 2 bits and sampling frequency to 4 kHz, mimicking the characteristics of early digital audio gear.
+The Bitcrush effect aggressively degrades audio fidelity by reducing the bit depth to 2 bits and sampling frequency to 4 kHz. This mimics the characteristics of early digital audio gear.

@@ -12,3 +12,5 @@ knoby = 'right spread'
 icon = 'brush'
 +++
 
+
+The comb filter introduces a very short delay to the audio chain, creating a metallic resonating sound when activated.

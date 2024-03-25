@@ -12,4 +12,4 @@ icon = 'tape'
 +++
 
 
-The Tapestop effect gradually decreases the pitch and halts audio playback, simulating the sound of a tape machine being stopped, with a control for adjusting the duration of the effect.
+The Tapestop effect simulates the sound of a tape machine being stopped by gradually decreasing the pitch and halting audio playback. It includes a control for adjusting the duration of the effect.
