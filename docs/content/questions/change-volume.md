@@ -6,4 +6,4 @@ weight = 2
 
 
 
-Hold **A** and turn **Knob Z** to change the volume. [More info](#volume).
+To adjust the volume, hold **A** and turn **Knob Z**. For additional details, refer to [this section](#volume).

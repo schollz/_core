@@ -4,7 +4,7 @@ date = 2024-02-01T12:33:06-08:00
 weight = 41
 +++
 
-The schematics are open-source - please feel free to use the schematics to alter the device to your own whims. If you are producing boards based on my schematic, please try to support me financially so I can continue to generate devices. 
+The schematics are open-source - you are welcome to utilize them to customize the device according to your preferences. If you intend to produce boards based on my schematics, I kindly ask for your financial support to help sustain the development of future devices.
 
 <center>
 <a href="/pdf/Schematic_zeptocore-v28_2024-03-24.pdf"><img src="/img/Schematic_zeptocore-v28_2024-03-24.png" style="width:100%"></a>
