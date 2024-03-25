@@ -6,7 +6,7 @@ weight = 13
 
 # Uploading samples
 
-The process for uploading samples is about as easy as transferring a file onto an SD card. However, since the samples need to be processed to make them 44.1 kHz / 16-bit, you will need a tool to process the samples before transferring them to the SD card. You can either use the tool online or download it to your computer to use it locally.
+Uploading samples is a straightforward process similar to transferring a file onto an SD card. However, as the samples need to be processed to meet the specifications of 44.1 kHz / 16-bit, you will require a tool for this preprocessing step before transferring the samples to the SD card. This tool can be accessed online or downloaded to your computer for local use.
 
 
 ### Use tool online: **[zeptocore v2.0.9](/tool)**
