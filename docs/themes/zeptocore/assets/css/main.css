@@ -524,3 +524,41 @@ summary {
 pre {
   background-color: inherit !important;
 }
+
+
+/* min width 600 px */
+.sticky-menu {
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .sticky-item {
+    padding-bottom: 0.25em;
+  }
+
+  .sticky-item>a {
+    background-color: inherit;
+  }
+
+  .sticky-item>a:hover {
+    background-color: var(--banks-background);
+  }
+
+  .sticky-menu {
+    position: fixed;
+    top: 26%;
+    left: 2em;
+    width: 10em;
+    padding: 20px;
+    overflow-y: auto;
+    display: block;
+    border-style: solid;
+    border-color: #666;
+    padding: 1em;
+    background: #fff;
+    border-radius: 1em;
+    box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .2);
+    margin: 2em 0em;
+
+  }
+}
