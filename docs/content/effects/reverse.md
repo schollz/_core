@@ -10,4 +10,4 @@ mode_alt = 'jump'
 icon = 'undo-alt'
 +++
 
-This will reverse the audio and reduce the direction of the sequence so that it plays in backwards. If using the sequence it will only reverse the audio.
+This will reverse the audio and change the playback direction of the sequence to play it in reverse. If you are using the sequence, it will only reverse the audio.

@@ -12,4 +12,7 @@ icon = 'vector-square'
 +++
 
 
-The Tighten effect employs a gate to truncate the audio towards the end of a step, as determined by the duration setting, effectively clipping the ends to create a tighter sound profile.
+The Tighten effect uses a gate to cut off the audio towards the end of a step, based on the duration setting. This clipping of the ends helps create a more defined and tighter sound profile. 
+
+The gate effect is a tool used in audio engineering to control the volume level of a signal. It works by allowing or blocking the passage of audio based on a set threshold. This can help eliminate unwanted noise or shape the dynamics of a sound.
+

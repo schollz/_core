@@ -12,4 +12,4 @@ knoby = 'loss amount'
 icon = 'radio'
 +++
 
-The Loss effect simulates the analog imperfections of a worn tape or faulty radio transmission, offering controls for type and amount of degradation to achieve vintage or distressed audio textures.
+The Loss effect simulates the analog imperfections of a worn tape or faulty radio transmission. It provides controls for adjusting the type and amount of degradation, allowing you to achieve vintage or distressed audio textures.

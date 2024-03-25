@@ -10,4 +10,4 @@ mode_alt = 'jump'
 icon = 'hourglass-half'
 +++
 
-The Timestretch effect dramatically slows audio playback by approximately 8x without altering its pitch.
+The Timestretch effect significantly slows down audio playback by a factor of approximately 8x without changing its pitch.
