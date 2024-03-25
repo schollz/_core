@@ -6,20 +6,26 @@ weight = 12
 
 # Uploading firmware
 
-There are periodically new firmwares with updated effects or improved performance. If you have the tool installed, you can connect your device to your computer and automatically flash it. Otherwise, you can download the latest release directly using this link:
+Periodically, new firmwares are released with updated effects or improved performance. If you have the tool installed, you can connect your device to your computer and automatically update the firmware. You can also download the latest release directly from this link: [link to latest release].
 
 ### Latest firmware: **[zeptocore v2.0.9](https://github.com/schollz/_core/releases/download/v2.0.9/zeptocore_v2.0.9.uf2)**
 
 
+To update your zeptocore to the latest version, follow these steps:
 
-Plug in a USB-C cable to the device and hold the `BOOTSEL` button (near the USB-C jack). while holding the `BOOTSEL` button, press the `NRST` button (also near the USB-C jack). after a few seconds a new drive should appear on your computer with a name like `RPI-RP2`.
+1. Connect a USB-C cable to the device and hold the `BOOTSEL` button (located near the USB-C jack).
+2. While holding the `BOOTSEL` button, press the `NRST` button (also near the USB-C jack).
+3. After a few seconds, a new drive named `RPI-RP2` should appear on your computer.
+4. Drag and drop the downloaded **zeptocore_v2.0.9.uf2** file onto the `RPI-RP2` drive.
+5. Wait momentarily for the drive to disappear, indicating the update is complete, and the device will turn on automatically.
 
-Drag and drop the downloaded **zeptocore_v2.0.9.uf2** file onto the `RPI-RP2` drive that appeared. Wait a few seconds and the drive will disappear and the device will turn on automatically. Congratulations, you have updated your zeptocore to the latest version. (_Note:_ If using [boardcore](#boardcore) you can follow the same instructions, but make sure to download the latest [boardcore_v2.0.9.uf2](https://github.com/schollz/_core/releases/download/v2.0.9/boardcore_v2.0.9.uf2)).
+Congratulations, your zeptocore has been successfully updated to the latest version. 
 
+(_Note:_ If using [boardcore](#boardcore), follow the same instructions but ensure you download the latest [boardcore_v2.0.9.uf2](https://github.com/schollz/_core/releases/download/v2.0.9/boardcore_v2.0.9.uf2)).
 
 ### Tool uploader
 
-If you installed the tool locally, you can simply run the tool and click in the top right to upload a new firmware, while the device is plugged in. Download the tool for your operating system from the [latest releases](https://github.com/schollz/_core/releases/latest).
+If you have installed the tool on your computer, launch the tool and click on the top right to upload a new firmware while the device is connected. Download the tool compatible with your operating system from the [latest releases](https://github.com/schollz/_core/releases/latest).
 
 ## Firmware development
 
