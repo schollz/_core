@@ -8,28 +8,29 @@ short = 'the main'
 
 ### on & off
 
-First switch the top right switch "up" to turn on the device. The device should, by default, be loaded with several samples. A sample should start immediately playing. You can jump around in the sample by pressing any of the `1-16` keys. Try retriggering samples by pressing and holding a `1-16` key and then pressing a different `1-16` key.
+To power on the device, toggle the switch on the top right to the "up" position. The device comes pre-loaded with several samples. A sample will start playing automatically. Navigate through the samples by pressing any of the `1-16` keys. Experiment with retriggering samples by pressing and holding one `1-16` key and then pressing a different `1-16` key.
 
 ### volume & tempo
 
-Change the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` (the knob on the righthand side). Similarly, change the [tempo](#tempo) by holding the `A` key and then turning `Knob Y`.
+Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` located on the right-hand side. Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob Y`.
 
 ### banks & samples
 
-There are 16 banks of samples, and each bank can hold 16 samples. You are currently in the first bank and the first sample. To change to a different bank and different sample you can do this button combo: first hold `B` and then, while holding `B`, press `1-16` to select a bank. Continue to hold the `B` key and now press another button `1-16` to select the sample.
+There are 16 banks of samples, with each bank capable of holding 16 samples. By default, you are in the first bank and the first sample. To switch to a different bank and select a different sample, follow these steps: first, hold `B`, then while holding `B`, press `1-16` to choose a bank. Keep the `B` key pressed and then press another `1-16` button to select a sample within that bank.
 
 ## effects & modes
 
-The device starts up in `JUMP` mode. When pressing `1-16` you are jumping samples. But you can also toggle effects by holding `A` and then pressing `1-16` to toggle that effect. There are [16 different effects](#effect-list). If you don't want to hold down the `A` key each time, you can enter the `MASH` mode which lets you mash effect toggles. Enter the `MASH` mode by holding down `A` and then pressing `C`. Now you can toggle effects just by pressing `1-16`, without holding any keys. Hold `A` and press `B` to go back to the `JUMP` mode behavior.
+The device powers up in `JUMP` mode, where pressing `1-16` allows you to navigate through samples. In addition to sample jumping, you can toggle effects by holding `A` and then pressing `1-16` to activate the selected effect. There are [16 different effects](#effect-list) to choose from. If you prefer not to hold down the `A` key for each effect selection, you can switch to `MASH` mode. To enter `MASH` mode, hold `A` and press `C`. In this mode, you can toggle effects simply by pressing `1-16`, without the need to hold any keys. To return to the default `JUMP` mode behavior, hold `A` and press `B`.
 
 ## effect parameters & probabilities
 
-Each effect has up to two parameters that can be edited, and each effect also has a probability. To modify the effect parameters, first go into `MASH` mode (`A` + `C`). Now, in `MASH` mode, hold down the effect you want to edit. For example, hold down `2` to edit the `LOSS` effect. While holding down the effect, turn `Knob X` or `Knob Y` to change the parameters for that effect. You can find more information about each parameter in the effect reference below. For example, [loss](#loss) has "loss type" and "loss amount" that can be edited. For each effect, `Knob Z` will raise the probability that the given effect will toggle randomly.
+Each effect can be customized with up to two parameters and features a probability setting. To adjust the effect parameters, enter `MASH` mode by pressing (`A` + `C`). While in `MASH` mode, press and hold the effect you wish to edit. For instance, hold down `2` to modify the `LOSS` effect. While holding the effect, use `Knob X` or `Knob Y` to tweak the parameters for that effect. Detailed information about each parameter can be found in the effect reference section below. For example, [loss](#loss) allows adjustments to "loss type" and "loss amount." To modify the likelihood of the effect occurring randomly, use `Knob Z`.
+
 
 ## adding samples & updating firmware
 
-Turn off the device and take out the microSD card. You can upload samples directly to the SD card, though the samples need to be pre-processed. You can use [the online tool](/tool) to process your samples, or [download the tool](#uploading-samples) to use it offline. Updating the firmware is straightforward - you can download a new release and upload it via a USB-C cable. Follow [these instructions for uploading firmwares](#uploading-firmware) to upload to a new firmware.
+To add samples, power off the device and remove the microSD card. Samples must be pre-processed before uploading them directly to the SD card. You can utilize [the online tool](/tool) for sample processing or opt to [download the tool](#uploading-samples) for offline use. Updating the firmware is simple - download a new release and upload it using a USB-C cable. Follow the provided [instructions for uploading firmware](#uploading-firmware) to complete the process and install the new firmware.
 
 ## everything else
 
-For pretty much everything else, consult this guide or just use the [handy reference guide](#reference) which has all the button combinations and effect list at a glance.
+For any additional information, refer to this guide or utilize the [handy reference guide](#reference) which provides quick access to button combinations and the effect list for easy reference.

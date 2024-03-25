@@ -4,4 +4,4 @@ date = 2024-02-01T12:33:06-08:00
 weight = 5
 +++
 
-You can start and stop easily by holding **B** and then pressing **D**. If playing, it will stop, and if stopped it will start playing at the beginning. More info on [this section](#startstop).
+You can easily start and stop by holding **B** and then pressing **D**. If the audio is playing, it will stop, and if it's already stopped, it will start playing from the beginning. Additional details can be found in [this section](#startstop).

@@ -5,4 +5,4 @@ weight = 50
 +++
 
 
-You can briefly see the current version when you turn on the device and the "Z" will flash along with a version number, like "1", "0", "0" which would stand for version 1.0.0.
+When you power on the device, you can quickly check the current version by observing the flashing "Z" along with a version number such as "1.0.0," indicating version 1.0.0.
