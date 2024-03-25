@@ -8,4 +8,4 @@ icon = 'stream'
 mode = 'any'
 +++
 
-If a sequence is recorded into this slot, then this button will toggle playback for the sequence. If recording, then the recording is ended.
+If a sequence is recorded in this slot, this button will toggle playback for the sequence. If recording, pressing this button will end the recording.

@@ -9,13 +9,13 @@ mode = 'any'
 +++
 
 
-Sequences can be arbitrarily combined into "chains" of sequences. Sequence chains are permanently saved as new sequences which can be later recalled or further chained into new sequences.
+Sequences can be combined into "chains" of sequences, which are saved as new sequences that can be recalled or further chained into new sequences.
 
-To create a sequence chain follow these steps:
+To create a sequence chain, follow these steps:
 
-1. Hold down the `C` key (the sequence selector). While holding down the `C` key you will see lit buttons where sequences are stored and unlit buttons where there is no sequence.
-2. *While holding down the `C` key*, press an unlit button where there is no sequence stored. This is the sequence slot where the new chain sequence will be stored.
-3. *While continuing to hold down the `C` key*, press any lit buttons that has a sequence, in any order or sequence. This is the sequence chain.
-4. Finally, let go of the `C` key and your sequence will automatically be generated and saved in the slot you chose in #2.
+1. Press and hold the `C` key (the sequence selector). Lit buttons indicate where sequences are stored, while unlit buttons signify empty slots.
+2. *While holding down the `C` key*, press an unlit button to select the sequence slot where the new chain sequence will be stored.
+3. *While still holding down the `C` key*, press the lit buttons with existing sequences in any order to create the sequence chain.
+4. Release the `C` key, and the sequence chain will be automatically generated and saved in the slot chosen in step #2.
 
-If you do not have any free slots you cannot chain sequences. In these cases, you can delete a sequence by [selecting it](#select-sequence) (`C` + `1-16`) and then [deleting it](#record-sequence) (`C` + `D`).
+If there are no free slots available, you cannot create sequence chains. In such cases, you can delete a sequence by [selecting it](#select-sequence) (`C` + `1-16`) and then [deleting it](#record-sequence) (`C` + `D`).

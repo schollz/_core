@@ -8,7 +8,6 @@ mode = 'any'
 icon = 'crosshairs'
 +++
 
-The [zeptocore tool](https://tool.zeptocore.com) can be used to set the one-shot mode of each sample. However, on the device, you can use this combo to toggle one-shot mode on and off. In one-shot mode, the sample will stop when reaching the end of the sample (in default playback mode, see more in [Play mode](#change-play-mode)).
+The [Zeptocore tool](https://tool.zeptocore.com) can be utilized to configure the one-shot mode for each sample. On the device, you can use this combination to toggle the one-shot mode on and off. When in one-shot mode, the sample will stop playing upon reaching the end of the sample (as opposed to default playback mode, detailed further in [Play mode](#change-play-mode)).
 
-One-shot mode will display `ONESHOT ON` if enabled and will display `ONESHOT OFF` when disabled.
-
+One-shot mode will show `ONESHOT ON` when enabled and `ONESHOT OFF` when disabled.

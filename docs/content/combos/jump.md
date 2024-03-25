@@ -10,4 +10,4 @@ mode_alt = 'mash'
 icon = 'frog'
 +++
 
-In `jump` mode pressing any of the 16 keys will "jump" the sample between slices. The slice position depends on what is set from the [zeptocore tool](https://tool.zeptocore.com). The zeptocore will instantly crossfade from the current position to the beginning of the slice that is jumped to.
+In `jump` mode, pressing any of the 16 keys will "jump" the sample between slices. The slice position depends on what is set in the [Zeptocore tool](https://tool.zeptocore.com). The Zeptocore will instantly crossfade from the current position to the beginning of the slice that is jumped to.

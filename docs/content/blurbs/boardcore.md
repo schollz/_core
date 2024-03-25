@@ -6,7 +6,7 @@ weight = 3
 
 # boardcore
 
-this is a breadboard variant of the zeptocore. it has most of the same functionality, but instead of using the buttons on the handheld device, you can use your keyboard and a computer terminal. this version requires some knowledge with breadboarding, but it is great if you want to develop your own ideas based on the firmware.
+This is a breadboard variant of the Zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard and a computer terminal. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware.
 
 you can purchase the components directly [from my store](#buy) or you can buy them from Amazon.
 

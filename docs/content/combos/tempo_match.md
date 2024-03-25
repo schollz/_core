@@ -8,9 +8,8 @@ mode = 'any'
 icon = 'user-friends'
 +++
 
-Tempo matching is where the speed of the playback of a sample is multiplied in order to match the ratio between the BPM of the sample (set in the [tool](https://tool.zeptocore.com)) and the BPM of the current tempo in the zeptocore. Normally this is set per-sample when loading samples on the zeptocore, but it can also be set on the fly.
+Tempo matching involves adjusting the playback speed of a sample by a multiplier to align with the ratio between the sample's BPM (set in the [tool](https://tool.zeptocore.com)) and the BPM of the current tempo in Zeptocore. Typically, this adjustment is configured per sample when loading samples onto Zeptocore, but it can also be adjusted on the fly.
 
-Tempo match mode will display `MATCH ON` if enabled and will display `MATCH OFF` when disabled.
+When enabled, the Tempo Match mode will show `MATCH ON`, and when disabled, it will display `MATCH OFF`.
 
-This can be set using the [tool](/tool) on a file basis.
-
+This setting can be customized on a file-by-file basis using the [tool](/tool).

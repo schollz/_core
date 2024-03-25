@@ -8,6 +8,6 @@ mode = 'any'
 icon = 'drum'
 +++
 
-Toggling the snare mode will modify the playback sequence so that only sequences with snares are played.
+Switching to snare mode will adjust the playback sequence to only play sequences containing snares.
 
-Snare mode will display `SNARES` if enabled and will display `NORM` when disabled.
+When enabled, the Snare mode will show `SNARES`, and when disabled, it will display `NORM`.

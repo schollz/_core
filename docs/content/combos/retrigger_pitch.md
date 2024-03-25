@@ -8,4 +8,4 @@ mode = 'any'
 icon = 'sync'
 +++
 
-When this effect is active, it will cause the retriggering to pitch up/down the audio randomly.
+When this effect is active, it will cause the retriggering to pitch up or down the audio randomly.
