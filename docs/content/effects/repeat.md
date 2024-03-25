@@ -12,4 +12,4 @@ icon = 'redo-alt'
 +++
 
 
-The Repeat effect identifies zero-crossings to loop audio segments best matching the requested duration, distinct from delay by overtaking rather than adding to the audio, with speeds reaching up to audio rate.
+The Repeat effect uses zero-crossings to loop audio segments that best match the requested duration. This effect is distinct from delay as it overtakes the audio rather than adding to it, allowing for speeds up to the audio rate.

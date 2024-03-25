@@ -12,4 +12,4 @@ knoby = 'duration'
 icon = 'history'
 +++
 
-The Delay effect introduces a feedback delay mechanism where the knobs finely adjust feedback intensity and delay duration, allowing for extensive creative flexibility that can extend into overclipping for intense audio textures.
+The Delay effect introduces a feedback delay mechanism where the knobs can finely adjust feedback intensity and delay duration. This feature allows for extensive creative flexibility, which can extend into overclipping for intense audio textures.

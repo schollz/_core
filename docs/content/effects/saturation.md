@@ -11,4 +11,6 @@ knobx = 'preamp'
 icon = 'sun'
 +++
 
-The *Saturation* effect enriches the audio by adding warmth and depth through a double sine wave technique, enhancing the overall texture and loudness without distortion.
+The *Saturation* effect enriches audio by adding warmth and depth using a double sine wave technique. This enhances the overall texture and loudness without introducing distortion.
+
+

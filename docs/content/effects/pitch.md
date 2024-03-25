@@ -13,3 +13,4 @@ icon = 'music'
 +++
 
 
+This effect will alter the pitch without affecting the tempo, allowing beats to be split or doubled when the speed is halved or doubled, respectively.

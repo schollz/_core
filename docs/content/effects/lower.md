@@ -13,4 +13,4 @@ icon = 'filter'
 +++
 
 
-The Lower effect activates a low pass filter, progressively filtering out high frequencies to emphasize lower tones, with controls for duration and depth of the transition.
+The Lower effect activates a low-pass filter, gradually filtering out high frequencies to emphasize lower tones. It offers controls for adjusting the duration and depth of the transition.
