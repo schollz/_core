@@ -8,7 +8,6 @@ mode = 'any'
 icon = 'rss'
 +++
 
-The sync out will allow the zeptocore to output a sync signal in the left channel of the output. This signal channel can be used with external gear that take in a clock pulse.
+The Sync Out feature enables Zeptocore to output a sync signal through the left channel of the output. This signal channel can be utilized with external equipment that accepts a clock pulse.
 
-Sync out mode will display `SYNC ON` if enabled and will display `SYNC OFF` when disabled.
-
+When enabled, the Sync Out mode will show `SYNC ON`, and when disabled, it will display `SYNC OFF`.

@@ -8,4 +8,4 @@ icon = 'hand-pointer'
 mode = 'any'
 +++
 
-Choose any one of the 16 slots (1-16) to store a save of the current state.
+Select any one of the 16 slots (1-16) to store a saved copy of the current state.

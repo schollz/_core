@@ -11,10 +11,10 @@ mode_alt = 'any'
 icon = 'tachometer-alt'
 +++
 
-The Tempo feature offers dual methods for precision tempo control. 
+The Tempo feature offers dual methods for precision tempo control.
 
-First, you can adjust dynamically by holding **A** and rotating **Knob X**—with mid-knob representing original BPM, full clockwise for double speed, and full counter-clockwise for half speed. 
+First, you can adjust dynamically by holding **A** and rotating **Knob X**—with the middle position representing the original BPM, turning fully clockwise for double speed, and turning fully counter-clockwise for half speed.
 
-Second, you can hold **A** and tap **B** to tap in the tempo, ranging from 30 to 300 BPM. 
+Secondly, you can hold **A** and tap **B** to manually tap in the tempo, which ranges from 30 to 300 BPM.
 
-In both methods, the newly set tempo is momentarily displayed, allowing for immediate visual confirmation of adjustments, ensuring users can effortlessly sync their audio to the desired pace.
+In both methods, the newly set tempo is briefly displayed, providing immediate visual confirmation of adjustments. This feature ensures that users can easily synchronize their audio to the desired pace.

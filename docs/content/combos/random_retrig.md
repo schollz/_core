@@ -9,6 +9,6 @@ mode = 'any'
 +++
 
 
-Change the probability of random retrigging, increasing it by turning the knob CW.
+Adjust the probability of random retrigging by increasing it when turning the knob clockwise.
 
-If you want to keep the sequence locked, you can use [the sequence lock combo](/#sequence-lock).
+If you wish to maintain sequence lock, you can utilize [the sequence lock combination](/#sequence-lock).

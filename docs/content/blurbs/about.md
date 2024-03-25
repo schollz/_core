@@ -19,17 +19,17 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 - tiny built-in speaker
 - powered by two AAA batteries or USB-C
 
-### goals
+### Goals
 
-1. **open-source**. [the source code](https://github.com/schollz/_core) is publicly available so that anyone can change this device today or years from now.
-2. **low learning curve**. the device should be fun without reading a manual, but reading the manual only adds to the fun.
-3. **unquantized**. by default, the sequencer does not enforce "quantization" and leave it to the user to make their own timings.
+1. **Open-source**: The source code is publicly available at [https://github.com/schollz/_core](https://github.com/schollz/_core), allowing anyone to modify this device today or in the future.
+2. **Low learning curve**: The device should be enjoyable without the need to read a manual, although reading the manual can enhance the experience.
+3. **Unquantized**: By default, the sequencer does not enforce 4/4 time signatures.
 
-### non-goals
+### Non-Goals
 
-1. **similarity**. I do not intend this device to be like something else. some of the decisions are highly opinionated, but since it is completely [open-source](https://github.com/schollz/_core) you could change the device to your heart's content.
-2. **audio synthesis**. the CPU is already pretty taxes with the current system, and synthesis requires way more cycles to sound good in my opinion.
-3. **polyphony**. this device only supports two voices: a monophonic sample voice and a monophonic bass voice. these voices are smooth crossfaded, but the CPU limits having more polyphony (consider having more devices synced together instead!).
+1. **Similarity**: The intention is not for this device to resemble anything else. Some decisions are highly opinionated, but since it is completely open-source, you can modify the device as you wish.
+2. **Audio synthesis**: The CPU is already quite taxed by the current system, and I believe that synthesis requires significantly more cycles to sound good.
+3. **Polyphony**: This device only supports two voices—a monophonic sample voice and a monophonic bass voice. These voices are smoothly crossfaded, but the CPU limits the possibility of having more polyphony. (Consider syncing more devices together instead!)
 
 ### friends
 

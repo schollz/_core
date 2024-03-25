@@ -8,4 +8,4 @@ icon = 'folder-open'
 mode = 'any'
 +++
 
-Loads the settings from the current save slot.
+Load the settings from the current saved slot.
