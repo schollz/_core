@@ -5,6 +5,7 @@
   --highlight-color: #c3b8e6;
   --highlight-color-darker: #afa2db;
   --hover-color: #d2cde9;
+  --hover-color-light: #d2cde944;
   --other-color: #6d51c9;
 }
 
@@ -37,13 +38,13 @@ h2 {
 a {
   color: #111;
   text-decoration: underline;
-  padding: 0.25em 0;
+  padding: 0.35em;
+  border-radius: 1em;
+  background: var(--hover-color-light);
 }
 
 a:hover {
   background-color: var(--hover-color);
-  padding: 0.25em 0;
-  border-radius: 0.2em;
 }
 
 [id]::before {
