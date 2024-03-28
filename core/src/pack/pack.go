@@ -75,7 +75,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	time.Sleep(200 * time.Millisecond)
 
 	// wait until all the files are processed
-	for i := 0; i < 300; i++ {
+	for i := 0; i < 3000; i++ {
 		time.Sleep(100 * time.Millisecond)
 		if !zeptocore.IsBusy() {
 			break

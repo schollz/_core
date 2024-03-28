@@ -188,6 +188,10 @@ void update_fx(uint8_t fx_num) {
 }
 
 void fx_sequencer_emit(uint8_t key) {
+#ifdef INCLUDE_MIDI
+  // midi out
+  MidiOut_on(midiout[4], key, 127);
+#endif
   printf("[fx_sequencer_emit] key %d\n", key);
   if (key < 16) {
     sf->fx_active[key] = true;
@@ -201,6 +205,10 @@ void fx_sequencer_emit(uint8_t key) {
 void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
 
 void bass_sequencer_emit(uint8_t key) {
+#ifdef INCLUDE_MIDI
+  // midi out
+  MidiOut_on(midiout[5], key, 127);
+#endif
   printf("[bass_sequencer_emit] key %d\n", key);
 #ifdef INCLUDE_SINEBASS
   if (key < 16) {

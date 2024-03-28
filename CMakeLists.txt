@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
     main.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/hw_config.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/pcg_basic.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/usb_descriptors.c
 )
 
 
@@ -46,6 +47,8 @@ target_link_libraries(${PROJECT_NAME}
     hardware_adc
     hardware_pio
     hardware_i2c
+    tinyusb_device
+    tinyusb_board
 )
 
 # target_compile_options(command_line PUBLIC -Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
@@ -57,10 +60,8 @@ add_compile_definitions(USE_PRINTF)
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
 
-# Enable usb output, disable uart output
-pico_enable_stdio_usb(${PROJECT_NAME} 1)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
+target_include_directories(${PROJECT_NAME} PRIVATE  ${CMAKE_CURRENT_LIST_DIR})
 
 include(target_compile_definitions.cmake)
 
