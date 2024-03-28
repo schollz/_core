@@ -25,6 +25,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_INPUTHANDLING=1
     INCLUDE_FILTER=1
     INCLUDE_ZEPTOCORE=1
+    INCLUDE_MIDI=1
 
     # # black
     # SDCARD_CMD_GPIO=2
@@ -73,3 +74,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     USBD_PID=0x1836
 )
+
+
+pico_enable_stdio_usb(${PROJECT_NAME} 0)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)

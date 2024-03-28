@@ -81,6 +81,14 @@ void input_handling() {
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 #endif
 
+  // initialize the midi
+  for (uint8_t i = 0; i < 3; i++) {
+    midiout[i] = MidiOut_malloc(i, false);
+  }
+  for (uint8_t i = 3; i < MIDIOUTS; i++) {
+    midiout[i] = MidiOut_malloc(i, true);
+  }
+
   printf("entering while loop\n");
 
   uint pressed2 = 0;
@@ -109,10 +117,10 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zv2.0.9");
+  printStringWithDelay("zv2.1.0");
 
   // print to screen
-  printf("version=v2.0.9\n");
+  printf("version=v2.1.0\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -125,8 +133,11 @@ void input_handling() {
     ResonantFilter_setFilterType(resFilter[channel], 0);
     ResonantFilter_setFc(resFilter[channel], global_filter_index);
   }
+  tusb_init();
 
   while (1) {
+    tud_task();
+
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
@@ -136,7 +147,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.0.9\n");
+        printf("version=v2.1.0\n");
       }
     }
     // TODO: check timing of this?

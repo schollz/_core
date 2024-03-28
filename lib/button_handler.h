@@ -694,6 +694,11 @@ void button_handler(ButtonMatrix *bm) {
 
     if (bm->off[i] < 4) {
       do_update_top = true;
+    } else {
+#ifdef INCLUDE_MIDI
+      // send out midi notes
+      MidiOut_off(midiout[mode_buttons16], bm->off[i] - 4);
+#endif
     }
   }
 
@@ -747,6 +752,11 @@ void button_handler(ButtonMatrix *bm) {
     if (bm->on[i] < 4) {
       do_update_top = true;
     } else {
+#ifdef INCLUDE_MIDI
+      // send out midi notes
+      MidiOut_on(midiout[mode_buttons16], bm->on[i] - 4, 127);
+#endif
+
       // if 3 are pressed, do retrig
       if (key_total_pressed == 3) {
         uint16_t *indexes =
