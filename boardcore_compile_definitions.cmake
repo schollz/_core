@@ -34,3 +34,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     USBD_PID=0x1838
 )
+
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
