@@ -38,9 +38,14 @@
 #include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
 #include "pico/audio_i2s.h"
+#include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "pico/types.h"
+//
+#include "bsp/board.h"
+#include "tusb.h"
+
 //
 #include "definitions.h"
 //
@@ -105,6 +110,9 @@
 #include "led_text_5x4.h"
 #include "leds2.h"
 #include "ledtext.h"
+#endif
+#ifdef INCLUDE_MIDI
+#include "midi_out.h"
 #endif
 #include "noise.h"
 #include "resonantfilter.h"

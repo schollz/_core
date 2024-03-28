@@ -81,6 +81,14 @@ void input_handling() {
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 #endif
 
+  // initialize the midi
+  for (uint8_t i = 0; i < 3; i++) {
+    midiout[i] = MidiOut_malloc(i, false);
+  }
+  for (uint8_t i = 3; i < MIDIOUTS; i++) {
+    midiout[i] = MidiOut_malloc(i, true);
+  }
+
   printf("entering while loop\n");
 
   uint pressed2 = 0;
@@ -125,8 +133,11 @@ void input_handling() {
     ResonantFilter_setFilterType(resFilter[channel], 0);
     ResonantFilter_setFc(resFilter[channel], global_filter_index);
   }
+  tusb_init();
 
   while (1) {
+    tud_task();
+
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
