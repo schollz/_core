@@ -11,3 +11,4 @@ more information: [zeptocore.com](https://zeptocore.com)
 
 - Apache License 2.0 for no-OS-FatFS (Copyright 2021 Carl John Kugler III)
 - MIT license for the SdFat library (Copyright (c) 2011-2022 Bill Greiman)
+- MIT license for the USB library (Copyright (c) 2019 Ha Thach)
