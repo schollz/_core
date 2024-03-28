@@ -116,6 +116,11 @@ LEDS *leds;
 LEDText *ledtext;
 #endif
 
+#ifdef INCLUDE_MIDI
+#define MIDIOUTS 6
+MidiOut *midiout[6];
+#endif
+
 bool toggle_chain_play = false;
 bool toggle_chain_rec = false;
 
@@ -400,7 +405,13 @@ void key_do_jump(uint8_t beat) {
   }
 }
 
-void step_sequencer_emit(uint8_t key) { key_do_jump(key); }
+void step_sequencer_emit(uint8_t key) {
+#ifdef INCLUDE_MIDI
+  // midi out
+  MidiOut_on(midiout[3], key, 127);
+#endif
+  key_do_jump(key);
+}
 void step_sequencer_stop() { printf("stop\n"); }
 
 #endif
