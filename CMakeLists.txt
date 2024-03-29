@@ -58,8 +58,6 @@ add_compile_definitions(USE_PRINTF)
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
 
-target_include_directories(${PROJECT_NAME} PRIVATE  ${CMAKE_CURRENT_LIST_DIR})
-
 include(target_compile_definitions.cmake)
 
 pico_add_extra_outputs(${PROJECT_NAME})
