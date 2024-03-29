@@ -100,7 +100,7 @@ func serialPortReader(currentBaudRate *int, baudRateChange chan int, dataChannel
 				buf := make([]byte, 128)
 				n, err := port.Read(buf)
 				if err != nil {
-					log.Tracef("unable to read")
+					log.Debug("connection lost")
 					port.Close()
 					port = nil
 				} else {
