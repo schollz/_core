@@ -47,8 +47,6 @@ target_link_libraries(${PROJECT_NAME}
     hardware_adc
     hardware_pio
     hardware_i2c
-    tinyusb_device
-    tinyusb_board
 )
 
 # target_compile_options(command_line PUBLIC -Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
@@ -59,7 +57,6 @@ target_link_libraries(${PROJECT_NAME}
 add_compile_definitions(USE_PRINTF)
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
-
 
 target_include_directories(${PROJECT_NAME} PRIVATE  ${CMAKE_CURRENT_LIST_DIR})
 
