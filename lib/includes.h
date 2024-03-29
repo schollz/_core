@@ -43,8 +43,10 @@
 #include "pico/stdlib.h"
 #include "pico/types.h"
 //
+#ifdef INCLUDE_MIDI
 #include "bsp/board.h"
 #include "tusb.h"
+#endif
 
 //
 #include "definitions.h"

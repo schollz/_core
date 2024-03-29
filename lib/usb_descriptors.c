@@ -23,6 +23,8 @@
  *
  */
 
+#ifdef INCLUDE_MIDI
+
 #include "tusb.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save
@@ -166,3 +168,5 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 
   return _desc_str;
 }
+
+#endif  // INCLUDE_MIDI
