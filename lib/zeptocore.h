@@ -135,10 +135,14 @@ void input_handling() {
     ResonantFilter_setFilterType(resFilter[channel], 0);
     ResonantFilter_setFc(resFilter[channel], global_filter_index);
   }
+#ifdef INCLUDE_MIDI
   tusb_init();
+#endif
 
   while (1) {
+#ifdef INCLUDE_MIDI
     tud_task();
+#endif
 
     // if in startup deduct
     if (adc_startup > 0) {
