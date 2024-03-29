@@ -35,6 +35,7 @@ func main() {
 		for sig := range c {
 			fmt.Println(sig)
 			fmt.Println("exiting")
+			os.Exit(1)
 		}
 	}()
 
@@ -81,15 +82,33 @@ func serialPortReader(currentBaudRate *int, baudRateChange chan int, dataChannel
 			port, errconnect = serial.Open(portName, mode)
 			if errconnect == nil {
 				log.Debugf("opened port %s at %d", portName, baudRate)
-				// send a message to the port
-				port.Write([]byte("v"))
 				break
 			}
 		}
 	}
 
+	// create one second periodic timer
+	timer := time.NewTicker(2 * time.Second)
+
 	for {
 		select {
+		case <-timer.C:
+			if port != nil {
+				log.Tracef("sending v")
+				port.Write([]byte("v"))
+				port.SetReadTimeout(time.Millisecond * 100) // Set a short timeout for non-blocking read
+				buf := make([]byte, 128)
+				n, err := port.Read(buf)
+				if err != nil {
+					log.Tracef("unable to read")
+					port.Close()
+					port = nil
+				} else {
+					data := make([]byte, n)
+					copy(data, buf[:n])
+					log.Tracef("read %s", string(data))
+				}
+			}
 		case <-stopChannel:
 			if port != nil {
 				port.Close()
