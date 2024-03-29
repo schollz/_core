@@ -81,6 +81,7 @@ void input_handling() {
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 #endif
 
+#ifdef INCLUDE_MIDI
   // initialize the midi
   for (uint8_t i = 0; i < 3; i++) {
     midiout[i] = MidiOut_malloc(i, false);
@@ -88,6 +89,7 @@ void input_handling() {
   for (uint8_t i = 3; i < MIDIOUTS; i++) {
     midiout[i] = MidiOut_malloc(i, true);
   }
+#endif
 
   printf("entering while loop\n");
 
