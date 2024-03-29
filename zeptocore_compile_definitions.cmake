@@ -25,7 +25,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_INPUTHANDLING=1
     INCLUDE_FILTER=1
     INCLUDE_ZEPTOCORE=1
-    INCLUDE_MIDI=1
+    # INCLUDE_MIDI=1
 
     # # black
     # SDCARD_CMD_GPIO=2
@@ -75,6 +75,16 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     USBD_PID=0x1836
 )
 
+# # uncomment these lines to include midi
+# target_link_libraries(${PROJECT_NAME} 
+#     tinyusb_device
+#     tinyusb_board
+# )
+# pico_enable_stdio_usb(${PROJECT_NAME} 0)
+# pico_enable_stdio_uart(${PROJECT_NAME} 1)
+# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
+# uncomment these lines to have normal USB
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
+
