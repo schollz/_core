@@ -326,6 +326,7 @@ void input_handling() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+          int16_t adc_original = adc;
           if (adc < 2048 - 200) {
             sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
           } else if (adc > 2048 + 200) {
@@ -336,6 +337,9 @@ void input_handling() {
           } else {
             sf->pitch_val_index = PITCH_VAL_MID;
           }
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
+                            adc_original * 255 / 4096, 250);
         } else if (button_is_pressed(KEY_B)) {
           for (uint8_t channel = 0; channel < 2; channel++) {
             if (adc < 3500) {

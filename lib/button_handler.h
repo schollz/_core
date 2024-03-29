@@ -913,6 +913,55 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
+                 debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE])) {
+    uint8_t val =
+        DebounceUint8_get(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE]);
+    if (val < 128 - 5) {
+      uint8_t led_bar_ordering[12] = {
+          8, 13, 18, 17, 12, 16, 8, 13, 18, 17, 12, 16,
+      };
+      bool led_bar_brightness[12] = {
+          0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+      };
+      for (uint8_t i = 0; i < linlin_uint8_t((128 - 5) - val, 0, 115, 0, 11);
+           i++) {
+        if (led_bar_brightness[i]) {
+          LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+        } else {
+          LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+        }
+      }
+      LEDS_set(leds, 4, LED_DIM);
+      LEDS_set(leds, 9, LED_DIM);
+      LEDS_set(leds, 14, LED_DIM);
+      LEDS_set(leds, 19, LED_DIM);
+    } else if (val > 128 + 5) {
+      uint8_t led_bar_ordering[12] = {
+          5, 10, 15, 6, 11, 7, 5, 10, 15, 6, 11, 7,
+      };
+      bool led_bar_brightness[12] = {
+          0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+      };
+      for (uint8_t i = 0; i < linlin_uint8_t(val, 128 + 5, 240, 0, 11); i++) {
+        if (led_bar_brightness[i]) {
+          LEDS_set(leds, led_bar_ordering[i], LED_BRIGHT);
+        } else {
+          LEDS_set(leds, led_bar_ordering[i], LED_DIM);
+        }
+      }
+      LEDS_set(leds, 4, LED_DIM);
+      LEDS_set(leds, 9, LED_DIM);
+      LEDS_set(leds, 14, LED_DIM);
+      LEDS_set(leds, 19, LED_DIM);
+    } else {
+      LEDS_set(leds, 4, LED_BRIGHT);
+      LEDS_set(leds, 9, LED_BRIGHT);
+      LEDS_set(leds, 14, LED_BRIGHT);
+      LEDS_set(leds, 19, LED_BRIGHT);
+    }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL])) {
     // show an LED bar
     const uint8_t led_bar_ordering[32] = {
