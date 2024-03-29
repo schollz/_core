@@ -9,7 +9,7 @@ weight = 13
 Uploading samples is a straightforward process similar to transferring a file onto an SD card. However, as the samples need to be processed to meet the specifications of 44.1 kHz / 16-bit, you will require a tool for this preprocessing step before transferring the samples to the SD card. This tool can be accessed online or downloaded to your computer for local use.
 
 
-### Use tool online: **[zeptocore v2.1.0](/tool)**
+### Use tool online: **[zeptocore v2.1.1](/tool)**
 
 
 <p style="text-align:center">
@@ -20,7 +20,7 @@ Uploading samples is a straightforward process similar to transferring a file on
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.1.0/core_windows_v2.1.0.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.1.1/core_windows_v2.1.1.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -34,13 +34,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.1.0/core_macos_amd64_v2.1.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.1.1/core_macos_amd64_v2.1.1 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.1.0/core_macos_aarch64_v2.1.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.1.1/core_macos_aarch64_v2.1.1 > core_macos
 ```
 
 Then to enable the program do:
@@ -63,7 +63,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.1.0/core_linux_amd64_v2.1.0)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.1.1/core_linux_amd64_v2.1.1)**
 
 After downloading, run it directly from the terminal.
 
