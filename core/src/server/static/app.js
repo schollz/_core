@@ -15,6 +15,124 @@ const wavecolor = '#3919a1';
 var hasSavedToCookie = false;
 
 
+function GetLatestReleaseInfo() {
+    fetch("https://zeptocore.com/get_info")
+        .then(response => response.json())
+        .then(json => {
+            app.latestVersion = json.version;
+            console.log(`[GetLatestReleaseInfo] Latest version: ${app.latestVersion}`)
+        })
+        .catch(error => console.error('Error fetching release:', error));
+}
+
+var inputMidiDevice = null;
+var outputMidiDevice = null;
+var checkMidiInterval = null;
+
+function midiStartup() {
+    app.midiIsSetup = true;
+    midiGetVersion();
+}
+function listMidiPorts() {
+    if (!navigator.requestMIDIAccess) {
+        console.log('Web MIDI API is not supported in this browser.');
+        return;
+    }
+
+    navigator.requestMIDIAccess({ sysex: true }) // Enable Sysex messages
+        .then(midiAccess => {
+            midiAccess.inputs.forEach(input => {
+                if (input.name.toLowerCase().includes("zeptocore")) {
+                    inputMidiDevice = input; // Ensure global scope if needed
+                    console.log(`Selected input MIDI device: ${input.name}`);
+                    setupMidiInputListener();
+                    if (outputMidiDevice) {
+                        midiStartup();
+                    }
+                }
+            });
+
+            midiAccess.outputs.forEach(output => {
+                if (output.name.toLowerCase().includes("zeptocore")) {
+                    outputMidiDevice = output; // Ensure global scope if needed
+                    console.log(`Selected output MIDI device: ${output.name}`);
+                    if (inputMidiDevice) {
+                        midiStartup();
+                    }
+                }
+            });
+
+        })
+        .catch(error => {
+            console.error('Error accessing MIDI devices:', error);
+        });
+}
+
+function addToMidiConsole(message) {
+    var consoleElement = document.getElementById('consoleprint');
+    var scrollableElement = document.getElementById('scrollable-content');
+
+    // Check if the scrollbar is at the bottom before adding new content
+    var isScrolledToBottom = scrollableElement.scrollHeight - scrollableElement.clientHeight <= scrollableElement.scrollTop + 1; // +1 for rounding tolerance
+
+    consoleElement.innerHTML += `<br>${message}`;
+
+    // If it was at the bottom, scroll to the new bottom
+    if (isScrolledToBottom) {
+        scrollableElement.scrollTop = scrollableElement.scrollHeight;
+    }
+}
+
+function setupMidiInputListener() {
+    if (window.inputMidiDevice) {
+        window.inputMidiDevice.onmidimessage = (midiMessage) => {
+            // check if sysex
+            if (midiMessage.data[0] == 0xf0) {
+                // convert the sysex to string 
+                var sysex = "";
+                for (var i = 1; i < midiMessage.data.length - 1; i++) {
+                    sysex += String.fromCharCode(midiMessage.data[i]);
+                }
+                addToMidiConsole(sysex);
+                // see if it starts with verion=
+                if (sysex.startsWith("version=")) {
+                    console.log(sysex);
+                    app.deviceVersion = sysex.split("=")[1];
+                    console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
+                }
+            } else {
+                console.log('MIDI message received:', midiMessage.data);
+                addToMidiConsole(midiMessage.data);
+
+            }
+        };
+        // receive SySex messages
+        window.inputMidiDevice.onstatechange = (event) => {
+            console.log('MIDI device state changed:', event.port.name, event.port.state);
+            if (event.port.state === 'disconnected') {
+                inputMidiDevice = null;
+                app.midiIsSetup = false;
+            }
+        };
+    }
+}
+
+function midiGetVersion() {
+    sendToOutputMidiDevice([0xB0, 1, 0]);
+}
+
+function midiResetDevice() {
+    sendToOutputMidiDevice([0xB0, 0, 0]);
+}
+
+function sendToOutputMidiDevice(data) {
+    if (window.outputMidiDevice && data) {
+        console.log("sending ", data);
+        window.outputMidiDevice.send(data);
+    }
+}
+
+// sendToOutputMidiDevice([0x90, 60, 100]); // Example MIDI note-on message
 
 function formatBytes(bytes, decimals) {
     if (bytes == 0) return '0 Bytes';
@@ -310,6 +428,7 @@ window.addEventListener('load', (event) => {
 app = new Vue({
     el: '#app',
     data: {
+        midiIsSetup: false,
         slicesPerBeat: 1,
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
@@ -328,6 +447,7 @@ app = new Vue({
         showCookiePolicy: false,
         processing: false,
         error_message: "",
+        regular_message: "",
         uploading: false,
         resampling: 'linear',
         title: window.location.pathname,
@@ -349,6 +469,7 @@ app = new Vue({
         selectedFile: 'saveLastSelected',
     },
     computed: {
+
         diskUsage: function () {
             // loop through all banks
             var total = 0;
@@ -362,6 +483,12 @@ app = new Vue({
         }
     },
     methods: {
+        resetDevice() {
+            midiResetDevice();
+            this.regular_message = "zeptocore is resetting now.<br>";
+            this.regular_message += "A new drive will appear in a few seconds.<br>"
+            this.regular_message += `Download this firmware to the new drive: <a href='https://github.com/schollz/_core/releases/download/${app.latestVersion}/zeptocore_${app.latestVersion}.uf2'>${app.latestVersion}</a>`;
+        },
         uploadFirmare() {
             console.log("uploading firmware");
             this.deviceFirmwareUpload = true;
@@ -1000,4 +1127,21 @@ window.addEventListener('load', (event) => {
     window.addEventListener('resize', () => {
         app.isMobile = window.innerWidth < 768;
     });
+
+    // get latest release info
+    GetLatestReleaseInfo();
+
+    // disable if on firefox
+    if (navigator.userAgent.indexOf("Firefox") != -1) {
+        console.log("Firefox is not supported for MIDI, please use Chrome or Safari.");
+    } else {
+        listMidiPorts();
+        checkMidiInterval = setInterval(() => {
+            if (!app.midiIsSetup) {
+                listMidiPorts();
+            }
+        }, 250);
+
+    }
+
 });

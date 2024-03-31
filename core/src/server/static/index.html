@@ -24,6 +24,8 @@
     <meta name="theme-color" content="#f0f4ff">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/all.min.css">
+    <link rel="stylesheet" href="/static/jquery-ui.css">
+
 </head>
 
 <body>
@@ -34,6 +36,15 @@
 
     <div id="fadeCircle"></div>
     <div id="app" v-cloak>
+        <div id="dialog2" title="zeptocore console">
+            <div id="scrollable-content" style="overflow-y:auto;">
+                <p id="consoleprint"></p>
+            </div>
+        </div>
+
+
+
+
         <dialog id="dialog">
             <form method="dialog">
                 <p>
@@ -60,12 +71,20 @@
                     stroke-linejoin="round" class="feather feather-copy">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg></a>
+                </svg></a> &nbsp; <a href="#" id="opener" v-show="midiIsSetup">
+                <i class="fas fa-terminal" aria-hidden="true"></i>
+            </a>
             <span class="hideIfMobile" id="floater">
 
-
-                <span v-if="deviceType==''">
-                    <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank">firmware
+                <span v-if="midiIsSetup==true">
+                    {{deviceVersion}}
+                    <span v-if="deviceVersion!=latestVersion">-> {{latestVersion}}</span>
+                    <span class="clickable" @click="resetDevice()">
+                        <i class="fas fa-upload" aria-hidden="true"></i>
+                    </span>
+                </span>
+                <span v-else-if="deviceType==''">
+                    <a href=" https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank">firmware
                         [[.VersionCurrent]]</a>
                 </span>
                 <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
@@ -122,6 +141,11 @@
                             :href="'https://github.com/schollz/_core/issues/new?title=' + error_message + '&body=' + window.location.pathname"
                             target="_blank">click here to let me know</a>.
                     </p>
+                </div>
+                <div class="help-message" v-if="regular_message" style="line-height:2;">
+                    <!-- show little x -->
+                    <i class="fas fa-times" @click="regular_message=''" style="float:right; cursor: pointer;"></i>
+                    <p v-html="regular_message"></p>
                 </div>
                 [[ if .IsUpload ]]
                 <div v-if="!disconnected">
@@ -732,6 +756,8 @@
 
     <script src="/static/humanize-duration.min.js"></script>
     <script src="/static/vue.js"></script>
+    <script src="/static/jquery-3.6.0.js"></script>
+    <script src="/static/jquery-ui.js"></script>
 
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
@@ -740,6 +766,48 @@
     </script>
     <script src="/static/app.js"></script>
     <script>
+        $(function () {
+            $("#dialog2").dialog({
+                autoOpen: false,
+                resizable: true,
+                width: 350,
+                height: 240, // Initial height
+                open: function () {
+                    var consoleElement = $('#consoleprint');
+                    var scrollableElement = $('#scrollable-content');
+                    var headerHeight = $(this).find(".ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 20; // Adjust based on your dialog's styling
+
+                    // Clear the console when the dialog opens
+                    consoleElement.html('');
+
+                    // Initial max-height setup for scrollable content
+                    var maxContentHeight = $(this).outerHeight() - headerHeight - paddingAndBorderAdjustment;
+                    scrollableElement.css('max-height', maxContentHeight + 'px');
+                },
+                resize: function (event, ui) {
+                    var dialogHeight = ui.size.height;
+                    var headerHeight = $("#dialog2 .ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 60; // Adjust this value based on your dialog's padding and border
+
+                    // Set the max-height of the scrollable content during resize
+                    var maxContentHeight = dialogHeight - headerHeight - paddingAndBorderAdjustment;
+                    $('#scrollable-content').css('max-height', maxContentHeight + 'px');
+                },
+                show: {
+                    effect: "fade",
+                    duration: 200
+                },
+                hide: {
+                    effect: "fade",
+                    duration: 200
+                }
+            });
+
+            $("#opener").on("click", function () {
+                $("#dialog2").dialog("open");
+            });
+        });
         window.onload = function () {
             let consent = localStorage.getItem('cookieConsent');
             if (!consent) {

@@ -114,14 +114,40 @@ Make sure Go is installed and then install *air*:
 > go install github.com/cosmtrek/air@latest
 ```
 
-Now you can bulid the tool using the following:
+Now you can build the tool using the following:
 
 ```
 > git clone https://github.com/schollz/_core
 > cd _core/core
-> air
+> go build
 ```
 
-And the website will live-reload when developing.
+For development, you will need to have a SSL certificate installed on localhost, otherwise the MIDI won't work.
+
+To get a local SSL server that redirects to the core server, follow these instructions. First install mkcert:
+
+```
+sudo apt install libnss3-tools
+git clone https://github.com/FiloSottile/mkcert && cd mkcert
+go build -ldflags "-X main.Version=$(git describe --tags)"
+go install -v
+mkcert -install
+mkcert localhost
+```
+
+Then install and run `local-ssl-proxy`:
+
+```
+npm install -g local-ssl-proxy
+local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 8000 --target 8101
+```
+
+Now you can run the `core` software:
+
+```
+cd core && air
+```
+
+And now the server can be accessed at `https://localhost:8000`.
 
 </details>
