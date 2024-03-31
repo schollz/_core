@@ -58,6 +58,9 @@ void send_midi_note_on(uint8_t note, uint8_t velocity) {
 }
 
 int printf_sysex(const char* format, ...) {
+  if (!tud_ready()) {
+    return 0;
+  }
   va_list args;
   va_start(args, format);
   int text_length = vsnprintf(NULL, 0, format, args);
@@ -95,4 +98,5 @@ void midi_comm_task() {
   }
 }
 
+#define printf printf_sysex
 #endif
