@@ -16,11 +16,10 @@ var hasSavedToCookie = false;
 
 
 function GetLatestReleaseInfo() {
-    fetch("https://api.github.com/repos/schollz/_core/tags")
+    fetch("https://zeptocore.com/get_info")
         .then(response => response.json())
         .then(json => {
-            var release = json[0];
-            console.log(release);
+            console.log(json);
             // app.latestVersion = release.;
         })
         .catch(error => console.error('Error fetching release:', error));
