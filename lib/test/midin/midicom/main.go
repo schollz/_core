@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/rakyll/portmidi"
@@ -60,18 +59,18 @@ func main() {
 			time.Sleep(100 * time.Microsecond)
 		}
 	}()
-	out, err := portmidi.NewOutputStream(portmidi.DeviceID(outputNum), 1024, 0)
-	if err != nil {
-		log.Error(err)
-	}
-	for i := 0; i < 3; i++ {
-		// generate random note between 0 and 127
-		note := rand.Intn(126)
-		velocity := rand.Intn(126)
-		log.Debugf("writing note %d with velocity %d", note, velocity)
-		out.WriteShort(0x90, int64(note), int64(velocity))
-		time.Sleep(1 * time.Second)
-	}
-	out.WriteShort(0x80, 0, 0)
-	time.Sleep(3 * time.Second)
+	// out, err := portmidi.NewOutputStream(portmidi.DeviceID(outputNum), 1024, 0)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// for i := 0; i < 5; i++ {
+	// 	// generate random note between 0 and 127
+	// 	note := rand.Intn(126)
+	// 	velocity := rand.Intn(126)
+	// 	log.Debugf("writing note %d with velocity %d", note, velocity)
+	// 	out.WriteShort(0x90, int64(note), int64(velocity))
+	// 	time.Sleep(1 * time.Second)
+	// }
+	// out.WriteShort(0x80, 0, 0)
+	time.Sleep(300 * time.Second)
 }

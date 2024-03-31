@@ -103,7 +103,7 @@ minicom:
 changebaud:
 	curl localhost:7083 
 
-upload: changebaud dobuild
+upload: dobuild
 	./dev/upload.sh 
 
 bootreset: dobuild
