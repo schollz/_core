@@ -217,3 +217,12 @@ core/.hugo_build.lock
 core/public/
 docs/content/blurbs/chat_2024_03_25_09_01_41.md
 docs/content/blurbs/chat_2024_03_25_09_01_42.md
+dev/starting_samples2.tar
+dev/starting_samples2/
+lib/test/CMakeLists.txt
+lib/test/Makefile
+lib/test/main.c
+lib/test/midin/
+lib/test/pico_extras_import.cmake
+lib/test/pico_sdk_import.cmake
+lib/test/upload.sh
