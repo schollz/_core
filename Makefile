@@ -103,7 +103,10 @@ minicom:
 changebaud:
 	curl localhost:7083 
 
-upload: dobuild
+resetpico2:
+	-amidi -p $$(amidi -l | grep zeptocore | awk '{print $$2}') -S "B00000"
+
+upload: resetpico2 dobuild
 	./dev/upload.sh 
 
 bootreset: dobuild
