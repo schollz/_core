@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -172,6 +173,10 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		} else {
 			return handleUpload(w, r)
 		}
+	} else if r.URL.Path == "/get_info" {
+		b, _ := json.Marshal(map[string]string{"version": "v2.1.1"})
+		w.Write(b)
+		return nil
 	} else if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
 	} else if r.URL.Path == "/favicon.ico" {
