@@ -99,10 +99,6 @@ function setupMidiInputListener() {
                     console.log(sysex);
                     app.deviceVersion = sysex.split("=")[1];
                     console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
-                    app.regular_message = `zeptocore ${app.deviceVersion} is connected.<br>`;
-                    setTimeout(() => {
-                        app.regular_message = "";
-                    }, 1000);
                 }
             } else {
                 console.log('MIDI message received:', midiMessage.data);
@@ -1135,11 +1131,17 @@ window.addEventListener('load', (event) => {
     // get latest release info
     GetLatestReleaseInfo();
 
-    listMidiPorts();
-    checkMidiInterval = setInterval(() => {
-        if (!app.midiIsSetup) {
-            listMidiPorts();
-        }
-    }, 250);
+    // disable if on firefox
+    if (navigator.userAgent.indexOf("Firefox") != -1) {
+        console.log("Firefox is not supported for MIDI, please use Chrome or Safari.");
+    } else {
+        listMidiPorts();
+        checkMidiInterval = setInterval(() => {
+            if (!app.midiIsSetup) {
+                listMidiPorts();
+            }
+        }, 250);
+
+    }
 
 });
