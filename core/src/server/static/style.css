@@ -650,10 +650,20 @@ a {
     padding-bottom: 1.5em !important;
 }
 
+
 .height75 {
     height: 74%;
 }
 
 .height100 {
+    height: 100%;
+}
+
+
+.drop-area {
+    max-height: 80%;
+}
+
+.file-uploader {
     height: 100%;
 }

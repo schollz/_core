@@ -101,9 +101,7 @@ function setupMidiInputListener() {
                     console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
                 }
             } else {
-                console.log('MIDI message received:', midiMessage.data);
                 addToMidiConsole(midiMessage.data);
-
             }
         };
         // receive SySex messages

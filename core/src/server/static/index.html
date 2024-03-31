@@ -784,6 +784,7 @@
                     // Initial max-height setup for scrollable content
                     var maxContentHeight = $(this).outerHeight() - headerHeight - paddingAndBorderAdjustment;
                     scrollableElement.css('max-height', maxContentHeight + 'px');
+                    midiGetVersion();
                 },
                 resize: function (event, ui) {
                     var dialogHeight = ui.size.height;
