@@ -68,9 +68,12 @@ void midi_comm_task() {
     uint8_t note = midi_buffer[1];
     uint8_t velocity = midi_buffer[2];
     if (note == 0 && velocity == 0 && status == 0x80) {
+      send_text_as_sysex("command=reset");
+      sleep_ms(10);
       reset_usb_boot(0, 0);
+    } else if (note == 1 && velocity == 1 && status == 0x81) {
+      send_text_as_sysex("version=v2.1.1");
     }
-    send_text_as_sysex("hello, world");
   }
 }
 
