@@ -98,9 +98,11 @@ function setupMidiInputListener() {
                 if (sysex.startsWith("version=")) {
                     console.log(sysex);
                     app.deviceVersion = sysex.split("=")[1];
-                    // DEBUGGING
-                    app.deviceVersion = "v2.1.0";
                     console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
+                    app.regular_message = `zeptocore ${app.deviceVersion} is connected.<br>`;
+                    setTimeout(() => {
+                        app.regular_message = "";
+                    }, 1000);
                 }
             } else {
                 console.log('MIDI message received:', midiMessage.data);
@@ -449,7 +451,7 @@ app = new Vue({
         showCookiePolicy: false,
         processing: false,
         error_message: "",
-        regular_message: "hello, world",
+        regular_message: "",
         uploading: false,
         resampling: 'linear',
         title: window.location.pathname,
