@@ -90,7 +90,7 @@ void midi_comm_task() {
       sleep_ms(10);
       reset_usb_boot(0, 0);
     } else if (status == 176 && channel == 0 && note == 1) {
-      send_text_as_sysex("version=v2.1.1");
+      send_text_as_sysex("version=v2.1.2");
     } else {
       printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
                    note, velocity);
