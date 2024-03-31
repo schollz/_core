@@ -54,6 +54,17 @@ body {
     margin: auto;
 }
 
+#dialog2,
+.ui-dialog-title {
+    font-family: 'MonaspaceKrypton', monospace;
+
+}
+
+#dialog2 {
+    font-size: 0.7rem;
+}
+
+
 #app {
     display: flex;
     flex-direction: column;
