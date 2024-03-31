@@ -80,6 +80,14 @@ function setupMidiInputListener() {
     }
 }
 
+function midiGetVersion() {
+    sendToOutputMidiDevice([0xB0, 1, 0]);
+}
+
+function midiResetDevice() {
+    sendToOutputMidiDevice([0xB0, 0, 0]);
+}
+
 function sendToOutputMidiDevice(data) {
     if (window.outputMidiDevice && data) {
         console.log("sending ", data);
