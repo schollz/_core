@@ -55,7 +55,18 @@ function setupMidiInputListener() {
                 for (var i = 1; i < midiMessage.data.length - 1; i++) {
                     sysex += String.fromCharCode(midiMessage.data[i]);
                 }
-                console.log(sysex);
+                var consoleElement = document.getElementById('consoleprint');
+                var scrollableElement = document.getElementById('scrollable-content');
+
+                // Check if the scrollbar is at the bottom before adding new content
+                var isScrolledToBottom = scrollableElement.scrollHeight - scrollableElement.clientHeight <= scrollableElement.scrollTop + 1; // +1 for rounding tolerance
+
+                consoleElement.innerHTML += `<br>${sysex}`;
+
+                // If it was at the bottom, scroll to the new bottom
+                if (isScrolledToBottom) {
+                    scrollableElement.scrollTop = scrollableElement.scrollHeight;
+                }
 
             } else {
                 console.log('MIDI message received:', midiMessage.data);
