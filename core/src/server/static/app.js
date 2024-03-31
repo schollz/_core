@@ -19,16 +19,15 @@ function GetLatestReleaseInfo() {
     fetch("https://zeptocore.com/get_info")
         .then(response => response.json())
         .then(json => {
-            console.log(json);
-            // app.latestVersion = release.;
+            app.latestVersion = json.version;
+            console.log(`[GetLatestReleaseInfo] Latest version: ${app.latestVersion}`)
         })
         .catch(error => console.error('Error fetching release:', error));
 }
 
 var inputMidiDevice = null;
 var outputMidiDevice = null;
-
-
+var checkMidiInterval = null;
 
 function midiStartup() {
     app.midiIsSetup = true;
@@ -69,6 +68,21 @@ function listMidiPorts() {
         });
 }
 
+function addToMidiConsole(message) {
+    var consoleElement = document.getElementById('consoleprint');
+    var scrollableElement = document.getElementById('scrollable-content');
+
+    // Check if the scrollbar is at the bottom before adding new content
+    var isScrolledToBottom = scrollableElement.scrollHeight - scrollableElement.clientHeight <= scrollableElement.scrollTop + 1; // +1 for rounding tolerance
+
+    consoleElement.innerHTML += `<br>${message}`;
+
+    // If it was at the bottom, scroll to the new bottom
+    if (isScrolledToBottom) {
+        scrollableElement.scrollTop = scrollableElement.scrollHeight;
+    }
+}
+
 function setupMidiInputListener() {
     if (window.inputMidiDevice) {
         window.inputMidiDevice.onmidimessage = (midiMessage) => {
@@ -79,31 +93,28 @@ function setupMidiInputListener() {
                 for (var i = 1; i < midiMessage.data.length - 1; i++) {
                     sysex += String.fromCharCode(midiMessage.data[i]);
                 }
-                var consoleElement = document.getElementById('consoleprint');
-                var scrollableElement = document.getElementById('scrollable-content');
-
-                // Check if the scrollbar is at the bottom before adding new content
-                var isScrolledToBottom = scrollableElement.scrollHeight - scrollableElement.clientHeight <= scrollableElement.scrollTop + 1; // +1 for rounding tolerance
-
-                consoleElement.innerHTML += `<br>${sysex}`;
-
-                // If it was at the bottom, scroll to the new bottom
-                if (isScrolledToBottom) {
-                    scrollableElement.scrollTop = scrollableElement.scrollHeight;
-                }
+                addToMidiConsole(sysex);
                 // see if it starts with verion=
                 if (sysex.startsWith("version=")) {
                     console.log(sysex);
-                    // app.deviceVersion = sysex.split("=")[1];
+                    app.deviceVersion = sysex.split("=")[1];
+                    // DEBUGGING
+                    app.deviceVersion = "v2.1.0";
+                    console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
                 }
             } else {
                 console.log('MIDI message received:', midiMessage.data);
+                addToMidiConsole(midiMessage.data);
 
             }
         };
         // receive SySex messages
         window.inputMidiDevice.onstatechange = (event) => {
             console.log('MIDI device state changed:', event.port.name, event.port.state);
+            if (event.port.state === 'disconnected') {
+                inputMidiDevice = null;
+                app.midiIsSetup = false;
+            }
         };
     }
 }
@@ -438,6 +449,7 @@ app = new Vue({
         showCookiePolicy: false,
         processing: false,
         error_message: "",
+        regular_message: "hello, world",
         uploading: false,
         resampling: 'linear',
         title: window.location.pathname,
@@ -473,6 +485,12 @@ app = new Vue({
         }
     },
     methods: {
+        resetDevice() {
+            midiResetDevice();
+            this.regular_message = "zeptocore is resetting now.<br>";
+            this.regular_message += "A new drive will appear in a few seconds.<br>"
+            this.regular_message += `Download this firmware to the new drive: <a href='https://github.com/schollz/_core/releases/download/${app.latestVersion}/zeptocore_${app.latestVersion}.uf2'>${app.latestVersion}</a>`;
+        },
         uploadFirmare() {
             console.log("uploading firmware");
             this.deviceFirmwareUpload = true;
@@ -1116,4 +1134,10 @@ window.addEventListener('load', (event) => {
     GetLatestReleaseInfo();
 
     listMidiPorts();
+    checkMidiInterval = setInterval(() => {
+        if (!app.midiIsSetup) {
+            listMidiPorts();
+        }
+    }, 250);
+
 });
