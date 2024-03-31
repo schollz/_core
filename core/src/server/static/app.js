@@ -15,8 +15,26 @@ const wavecolor = '#3919a1';
 var hasSavedToCookie = false;
 
 
-let inputMidiDevice = null;
-let outputMidiDevice = null;
+function GetLatestReleaseInfo() {
+    fetch("https://api.github.com/repos/schollz/_core/tags")
+        .then(response => response.json())
+        .then(json => {
+            var release = json[0];
+            console.log(release);
+            // app.latestVersion = release.;
+        })
+        .catch(error => console.error('Error fetching release:', error));
+}
+
+var inputMidiDevice = null;
+var outputMidiDevice = null;
+
+
+
+function midiStartup() {
+    app.midiIsSetup = true;
+    midiGetVersion();
+}
 function listMidiPorts() {
     if (!navigator.requestMIDIAccess) {
         console.log('Web MIDI API is not supported in this browser.');
@@ -27,18 +45,25 @@ function listMidiPorts() {
         .then(midiAccess => {
             midiAccess.inputs.forEach(input => {
                 if (input.name.toLowerCase().includes("zeptocore")) {
-                    window.inputMidiDevice = input; // Ensure global scope if needed
+                    inputMidiDevice = input; // Ensure global scope if needed
                     console.log(`Selected input MIDI device: ${input.name}`);
                     setupMidiInputListener();
+                    if (outputMidiDevice) {
+                        midiStartup();
+                    }
                 }
             });
 
             midiAccess.outputs.forEach(output => {
                 if (output.name.toLowerCase().includes("zeptocore")) {
-                    window.outputMidiDevice = output; // Ensure global scope if needed
+                    outputMidiDevice = output; // Ensure global scope if needed
                     console.log(`Selected output MIDI device: ${output.name}`);
+                    if (inputMidiDevice) {
+                        midiStartup();
+                    }
                 }
             });
+
         })
         .catch(error => {
             console.error('Error accessing MIDI devices:', error);
@@ -67,7 +92,11 @@ function setupMidiInputListener() {
                 if (isScrolledToBottom) {
                     scrollableElement.scrollTop = scrollableElement.scrollHeight;
                 }
-
+                // see if it starts with verion=
+                if (sysex.startsWith("version=")) {
+                    console.log(sysex);
+                    // app.deviceVersion = sysex.split("=")[1];
+                }
             } else {
                 console.log('MIDI message received:', midiMessage.data);
 
@@ -391,6 +420,7 @@ window.addEventListener('load', (event) => {
 app = new Vue({
     el: '#app',
     data: {
+        midiIsSetup: false,
         slicesPerBeat: 1,
         banks: Array.from({ length: 16 }, () => ({ files: [], lastSelectedFile: null })), // Add the lastSelectedFile property
         selectedBank: 0,
@@ -430,6 +460,7 @@ app = new Vue({
         selectedFile: 'saveLastSelected',
     },
     computed: {
+
         diskUsage: function () {
             // loop through all banks
             var total = 0;
@@ -1081,6 +1112,9 @@ window.addEventListener('load', (event) => {
     window.addEventListener('resize', () => {
         app.isMobile = window.innerWidth < 768;
     });
+
+    // get latest release info
+    GetLatestReleaseInfo();
 
     listMidiPorts();
 });
