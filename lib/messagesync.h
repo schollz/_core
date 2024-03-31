@@ -62,6 +62,9 @@ void MessageSync_printf(MessageSync *self, const char *text, ...) {
 void MessageSync_print(MessageSync *self) {
   if (self->length > 0) {
     fwrite(self->buffer, sizeof(char), self->length, stdout);
+#ifdef INCLUDE_MIDI
+    send_buffer_as_sysex(self->buffer, self->length);
+#endif
   }
 }
 
