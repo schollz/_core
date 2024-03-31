@@ -24,6 +24,8 @@
     <meta name="theme-color" content="#f0f4ff">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/all.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
 </head>
 
 <body>
@@ -34,6 +36,15 @@
 
     <div id="fadeCircle"></div>
     <div id="app" v-cloak>
+        <div id="dialog2" title="zeptocore console">
+            <div id="scrollable-content" style="overflow-y:auto;">
+                <p id="consoleprint"></p>
+            </div>
+        </div>
+
+
+
+
         <dialog id="dialog">
             <form method="dialog">
                 <p>
@@ -60,7 +71,9 @@
                     stroke-linejoin="round" class="feather feather-copy">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg></a>
+                </svg></a> &nbsp; <a href="#" id="opener">
+                <i class="fas fa-terminal" aria-hidden="true"></i>
+            </a>
             <span class="hideIfMobile" id="floater">
 
 
@@ -732,6 +745,8 @@
 
     <script src="/static/humanize-duration.min.js"></script>
     <script src="/static/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
@@ -740,6 +755,48 @@
     </script>
     <script src="/static/app.js"></script>
     <script>
+        $(function () {
+            $("#dialog2").dialog({
+                autoOpen: false,
+                resizable: true,
+                width: 350,
+                height: 240, // Initial height
+                open: function () {
+                    var consoleElement = $('#consoleprint');
+                    var scrollableElement = $('#scrollable-content');
+                    var headerHeight = $(this).find(".ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 20; // Adjust based on your dialog's styling
+
+                    // Clear the console when the dialog opens
+                    consoleElement.html('');
+
+                    // Initial max-height setup for scrollable content
+                    var maxContentHeight = $(this).outerHeight() - headerHeight - paddingAndBorderAdjustment;
+                    scrollableElement.css('max-height', maxContentHeight + 'px');
+                },
+                resize: function (event, ui) {
+                    var dialogHeight = ui.size.height;
+                    var headerHeight = $("#dialog2 .ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 60; // Adjust this value based on your dialog's padding and border
+
+                    // Set the max-height of the scrollable content during resize
+                    var maxContentHeight = dialogHeight - headerHeight - paddingAndBorderAdjustment;
+                    $('#scrollable-content').css('max-height', maxContentHeight + 'px');
+                },
+                show: {
+                    effect: "blind",
+                    duration: 100
+                },
+                hide: {
+                    effect: "explode",
+                    duration: 100
+                }
+            });
+
+            $("#opener").on("click", function () {
+                $("#dialog2").dialog("open");
+            });
+        });
         window.onload = function () {
             let consent = localStorage.getItem('cookieConsent');
             if (!consent) {
