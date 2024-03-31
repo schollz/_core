@@ -57,26 +57,6 @@ void send_midi_note_on(uint8_t note, uint8_t velocity) {
   }
 }
 
-void midi_comm_task() {
-  // Read a MIDI message from the USB MIDI stream
-  uint32_t bytes_read = read_midi_message(midi_buffer, sizeof(midi_buffer));
-  if (bytes_read == 3) {
-    // Extract the status byte and MIDI channel
-    uint8_t status = midi_buffer[0] & 0xF0;
-
-    // Extract the note number and velocity
-    uint8_t note = midi_buffer[1];
-    uint8_t velocity = midi_buffer[2];
-    if (note == 0 && velocity == 0 && status == 0x80) {
-      send_text_as_sysex("command=reset");
-      sleep_ms(10);
-      reset_usb_boot(0, 0);
-    } else if (note == 1 && velocity == 1 && status == 0x81) {
-      send_text_as_sysex("version=v2.1.1");
-    }
-  }
-}
-
 int printf_sysex(const char* format, ...) {
   va_list args;
   va_start(args, format);
@@ -89,6 +69,30 @@ int printf_sysex(const char* format, ...) {
   va_end(args);
 
   return send_text_as_sysex(text);
+}
+
+void midi_comm_task() {
+  // Read a MIDI message from the USB MIDI stream
+  uint32_t bytes_read = read_midi_message(midi_buffer, sizeof(midi_buffer));
+  if (bytes_read == 3) {
+    // Extract the status byte and MIDI channel
+    uint8_t status = midi_buffer[0] & 0xF0;
+    uint8_t channel = midi_buffer[0] & 0x0F;
+
+    // Extract the note number and velocity
+    uint8_t note = midi_buffer[1];
+    uint8_t velocity = midi_buffer[2];
+    if (status == 176 && channel == 0 && note == 0) {
+      send_text_as_sysex("command=reset");
+      sleep_ms(10);
+      reset_usb_boot(0, 0);
+    } else if (status == 176 && channel == 0 && note == 1) {
+      send_text_as_sysex("version=v2.1.1");
+    } else {
+      printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
+                   note, velocity);
+    }
+  }
 }
 
 #endif
