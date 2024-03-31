@@ -15,6 +15,68 @@ const wavecolor = '#3919a1';
 var hasSavedToCookie = false;
 
 
+let inputMidiDevice = null;
+let outputMidiDevice = null;
+function listMidiPorts() {
+    if (!navigator.requestMIDIAccess) {
+        console.log('Web MIDI API is not supported in this browser.');
+        return;
+    }
+
+    navigator.requestMIDIAccess({ sysex: true }) // Enable Sysex messages
+        .then(midiAccess => {
+            midiAccess.inputs.forEach(input => {
+                if (input.name.toLowerCase().includes("zeptocore")) {
+                    window.inputMidiDevice = input; // Ensure global scope if needed
+                    console.log(`Selected input MIDI device: ${input.name}`);
+                    setupMidiInputListener();
+                }
+            });
+
+            midiAccess.outputs.forEach(output => {
+                if (output.name.toLowerCase().includes("zeptocore")) {
+                    window.outputMidiDevice = output; // Ensure global scope if needed
+                    console.log(`Selected output MIDI device: ${output.name}`);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error accessing MIDI devices:', error);
+        });
+}
+
+function setupMidiInputListener() {
+    if (window.inputMidiDevice) {
+        window.inputMidiDevice.onmidimessage = (midiMessage) => {
+            // check if sysex
+            if (midiMessage.data[0] == 0xf0) {
+                // convert the sysex to string 
+                var sysex = "";
+                for (var i = 1; i < midiMessage.data.length - 1; i++) {
+                    sysex += String.fromCharCode(midiMessage.data[i]);
+                }
+                console.log(sysex);
+
+            } else {
+                console.log('MIDI message received:', midiMessage.data);
+
+            }
+        };
+        // receive SySex messages
+        window.inputMidiDevice.onstatechange = (event) => {
+            console.log('MIDI device state changed:', event.port.name, event.port.state);
+        };
+    }
+}
+
+function sendToOutputMidiDevice(data) {
+    if (window.outputMidiDevice && data) {
+        console.log("sending ", data);
+        window.outputMidiDevice.send(data);
+    }
+}
+
+// sendToOutputMidiDevice([0x90, 60, 100]); // Example MIDI note-on message
 
 function formatBytes(bytes, decimals) {
     if (bytes == 0) return '0 Bytes';
@@ -1000,4 +1062,6 @@ window.addEventListener('load', (event) => {
     window.addEventListener('resize', () => {
         app.isMobile = window.innerWidth < 768;
     });
+
+    listMidiPorts();
 });
