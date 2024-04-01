@@ -5,7 +5,7 @@ weight = 1
 noshow = 1
 +++
 
-# Buy5
+# Buy6
 
 zeptocore comes in multiple colors. instead of the handheld piece of hardware, you can buy just the breadboard components from me to use a stripped down [boardcore version](#boardcore).
 
