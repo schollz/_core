@@ -100,6 +100,10 @@ minicom:
 	cd dev/minicom && go build -v
 	./dev/minicom/minicom
 
+midicom:
+	cd dev/midicom && go build -v
+	./dev/midicom/midicom
+	
 changebaud:
 	curl localhost:7083 
 
