@@ -226,3 +226,5 @@ lib/test/midin/
 lib/test/pico_extras_import.cmake
 lib/test/pico_sdk_import.cmake
 lib/test/upload.sh
+dev/midicom/midicom
+dev/upload
