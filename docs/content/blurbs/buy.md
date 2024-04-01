@@ -7,7 +7,9 @@ noshow = 1
 
 # Buy 
 
-zeptocore comes in multiple colors. also instead of the handheld piece of hardware, you can buy just the breadboard components from me to use a stripped down [boardcore version](#boardcore).
+## versions
+
+zeptocore comes in multiple colors. instead of the handheld piece of hardware, you can buy just the breadboard components from me to use a stripped down [boardcore version](#boardcore).
 
 <div id="buyzepto" style="margin: auto; max-width: 300px;">
 <div id='product-component-1709939625158'></div>
