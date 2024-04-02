@@ -64,8 +64,8 @@ func Get(pathToOriginal string) (f File, err error) {
 	}
 	if f.Load() == nil {
 		log.Debugf("loaded %s from disk", pathToOriginal)
-		f.debounceSave = debounce.New(400 * time.Millisecond)
-		f.debounceRegen = debounce.New(400 * time.Millisecond)
+		f.debounceSave = debounce.New(321 * time.Millisecond)
+		f.debounceRegen = debounce.New(321 * time.Millisecond)
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
@@ -74,8 +74,8 @@ func Get(pathToOriginal string) (f File, err error) {
 		Filename:       filename,
 		PathToFile:     pathToOriginal,
 		PathToAudio:    pathToOriginal,
-		debounceSave:   debounce.New(400 * time.Millisecond),
-		debounceRegen:  debounce.New(400 * time.Millisecond),
+		debounceSave:   debounce.New(321 * time.Millisecond),
+		debounceRegen:  debounce.New(321 * time.Millisecond),
 		OneShot:        false,
 		TempoMatch:     true,
 		Channels:       0,
