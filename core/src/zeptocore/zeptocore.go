@@ -64,8 +64,8 @@ func Get(pathToOriginal string) (f File, err error) {
 	}
 	if f.Load() == nil {
 		log.Debugf("loaded %s from disk", pathToOriginal)
-		f.debounceSave = debounce.New(100 * time.Millisecond)
-		f.debounceRegen = debounce.New(100 * time.Millisecond)
+		f.debounceSave = debounce.New(400 * time.Millisecond)
+		f.debounceRegen = debounce.New(400 * time.Millisecond)
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
@@ -74,8 +74,8 @@ func Get(pathToOriginal string) (f File, err error) {
 		Filename:       filename,
 		PathToFile:     pathToOriginal,
 		PathToAudio:    pathToOriginal,
-		debounceSave:   debounce.New(100 * time.Millisecond),
-		debounceRegen:  debounce.New(100 * time.Millisecond),
+		debounceSave:   debounce.New(400 * time.Millisecond),
+		debounceRegen:  debounce.New(400 * time.Millisecond),
 		OneShot:        false,
 		TempoMatch:     true,
 		Channels:       0,
@@ -183,6 +183,24 @@ func Get(pathToOriginal string) (f File, err error) {
 	return
 }
 
+func (f File) SaveNoDebounce() (err error) {
+	log.Tracef("writing %s.json", f.PathToFile)
+	fi, err := os.Create(fmt.Sprintf("%s.json", f.PathToFile))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer fi.Close()
+
+	log.Debugf("saving %s\n\n%+v\n\n", f.PathToFile, f)
+
+	err = json.NewEncoder(fi).Encode(f)
+	if err != nil {
+		log.Error(err)
+	}
+	return
+}
+
 func (f File) Save() (err error) {
 	fu := func() {
 		log.Tracef("writing %s.json", f.PathToFile)
@@ -192,6 +210,8 @@ func (f File) Save() (err error) {
 			return
 		}
 		defer fi.Close()
+
+		log.Debugf("saving %s\n\n%+v\n\n", f.PathToFile, f)
 
 		err = json.NewEncoder(fi).Encode(f)
 		if err != nil {
@@ -283,18 +303,26 @@ func (f *File) Load() (err error) {
 }
 
 func (f *File) SetBPM(bpm int) {
+	mu.Lock()
+	defer mu.Unlock()
+	different := f.BPM != bpm
 	f.BPM = bpm
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
-		f.Regenerate()
+		if different {
+			f.Regenerate()
+		}
 	}()
 }
 
 func (f *File) SetSplicePlayback(playback int) {
+	mu.Lock()
+	defer mu.Unlock()
 	different := f.SplicePlayback != playback
 	f.SplicePlayback = playback
+	log.Debugf("SetSplicePlayback %d", playback)
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		if different {
 			f.Regenerate()
 		}
@@ -323,21 +351,25 @@ func (f *File) UpdateSliceTypes() {
 }
 
 func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) (sliceType []int) {
+	mu.Lock()
+	defer mu.Unlock()
 	f.SliceStart = sliceStart
 	f.SliceStop = sliceEnd
 	f.UpdateSliceTypes()
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		f.Regenerate()
 	}()
 	return f.SliceType
 }
 
 func (f *File) SetOversampling(oversampling int) {
+	mu.Lock()
+	defer mu.Unlock()
 	different := f.Oversampling != oversampling
 	f.Oversampling = oversampling
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		if different {
 			f.Regenerate()
 		}
@@ -361,10 +393,12 @@ func (f *File) SetChannels(channels int) {
 }
 
 func (f *File) SetSpliceTrigger(spliceTrigger int) {
+	mu.Lock()
+	defer mu.Unlock()
 	different := f.SpliceTrigger != spliceTrigger
 	f.SpliceTrigger = spliceTrigger
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		if different {
 			f.Regenerate()
 		}
@@ -372,11 +406,13 @@ func (f *File) SetSpliceTrigger(spliceTrigger int) {
 }
 
 func (f *File) SetSpliceVariable(spliceVariable bool) {
+	mu.Lock()
+	defer mu.Unlock()
 	log.Tracef("setting splice variable to %d", spliceVariable)
 	different := f.SpliceVariable != spliceVariable
 	f.SpliceVariable = spliceVariable
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		if different {
 			f.Regenerate()
 		}
@@ -384,21 +420,23 @@ func (f *File) SetSpliceVariable(spliceVariable bool) {
 }
 
 func (f *File) SetOneshot(oneshot bool) {
-	different := f.OneShot != oneshot
+	mu.Lock()
+	defer mu.Unlock()
 	f.OneShot = oneshot
+	log.Debugf("SetOneshot %v", oneshot)
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
-		if different {
-			f.Regenerate()
-		}
+		f.Regenerate()
 	}()
 }
 
 func (f *File) SetTempoMatch(TempoMatch bool) {
+	mu.Lock()
+	defer mu.Unlock()
 	different := f.TempoMatch != TempoMatch
 	f.TempoMatch = TempoMatch
+	f.SaveNoDebounce()
 	go func() {
-		f.Save()
 		if different {
 			f.Regenerate()
 		}
