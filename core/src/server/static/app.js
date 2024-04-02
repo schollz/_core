@@ -769,7 +769,7 @@ app = new Vue({
                     filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
                     number: this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback,
                 }));
-            }, 100);
+            }, 200);
         },
         updateChannels() {
             setTimeout(() => {
@@ -788,6 +788,7 @@ app = new Vue({
             } else {
                 this.banks[this.selectedBank].files[this.selectedFile].SplicePlayback = 0;
             }
+            this.updateSplicePlayback();
             setTimeout(() => {
                 // update the server file
                 socket.send(JSON.stringify({
