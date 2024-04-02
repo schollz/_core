@@ -28,8 +28,15 @@ func Merge(fnames []string, fnameout string) (err error) {
 		for _, v := range f.SliceStop {
 			metadata.SliceStop = append(metadata.SliceStop, totalTime+v*f.Duration)
 		}
-		filesToMerge[i] = f.PathToAudio
-		totalTime += f.Duration
+		// append silence
+		silenceDuration := 0.1
+		filesToMerge[i], err = sox.SilenceAppend(f.PathToAudio, silenceDuration)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		defer os.Remove(filesToMerge[i])
+		totalTime += (f.Duration + silenceDuration)
 	}
 
 	for i, v := range metadata.SliceStart {
