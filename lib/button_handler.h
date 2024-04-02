@@ -507,14 +507,14 @@ void button_handler(ButtonMatrix *bm) {
               false;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               PLAY_NORMAL;
-          DebounceDigits_setText(debouncer_digits, "ONESHOT OOFFF", 200);
+          DebounceDigits_setText(debouncer_digits, "ONESHOT OFF", 200);
         } else {
           printf("toggle one shot ON ");
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
               true;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               PLAY_SPLICE_STOP;
-          DebounceDigits_setText(debouncer_digits, "ONESHOT OONN", 200);
+          DebounceDigits_setText(debouncer_digits, "ONESHOT ON", 200);
         }
         printf("combo: 8 9 8!!!\n");
       } else if (key_pressed[0] == 10 && key_pressed[1] == 11 &&

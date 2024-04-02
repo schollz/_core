@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 	"os"
+	"strings"
 
 	log "github.com/schollz/logger"
 )
@@ -174,6 +175,10 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		sampleinfo.SliceStart = append(sampleinfo.SliceStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
 		sampleinfo.SliceStop = append(sampleinfo.SliceStop, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 		sampleinfo.SliceType = append(sampleinfo.SliceType, int8(f.SliceType[i]))
+	}
+
+	if strings.HasSuffix(fnameIn, "0.wav") {
+		log.Debugf("writing sample info %s to %+v", fnameIn, sampleinfo)
 	}
 
 	sampleinfoPack := SampleInfoMarshal(sampleinfo)
