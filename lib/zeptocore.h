@@ -142,7 +142,7 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task();
+    midi_comm_task(NULL);
 #endif
 
     // if in startup deduct
