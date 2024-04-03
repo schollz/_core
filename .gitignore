@@ -228,3 +228,6 @@ lib/test/pico_sdk_import.cmake
 lib/test/upload.sh
 dev/midicom/midicom
 dev/upload
+dev/midipage/blah
+localhost-key.pem
+localhost.pem

@@ -22,6 +22,7 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "clockhandling.h"
+#include "midi_comm_callback.h"
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -142,7 +143,7 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task();
+    midi_comm_task(midi_comm_callback_fn);
 #endif
 
     // if in startup deduct
