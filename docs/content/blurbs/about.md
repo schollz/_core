@@ -35,7 +35,14 @@ The zeptocore is an *[open-source](https://github.com/schollz/_core)* handheld d
 
 if you like this device, you might also like these other small devices made by friends:
 
-- [joydrums](https://www.yzhkinstruments.com/download), as if a beat pad and a loop pedal had a baby.
-- [bitty](https://www.curioussoundobjects.com/), an Arduino-compatible device that makes making music fun.
-- [hss2020](http://gieskes.nl/instruments/?file=HSS2020), a trimmed down version of the hard soft synth that fits in the hands.
-- [phantasmal force](https://www.tindie.com/products/distropolis/phantasmal-force-micro-midi-controller/), a micro midi controller.
+- Distropolis Goods  <a href="https://www.instagram.com/distropolis/"><i class="fa-brands fa-instagram"></i></a>
+  - [prismatic spray](https://www.tindie.com/products/distropolis/prismatic-spray-bytebeat-adventure-synth/) - a bytebeat adventure synth
+  - [phantasmal force](https://www.tindie.com/products/distropolis/phantasmal-force-micro-midi-controller/) - a micro midi controller.
+- Curious Sound Objects  <a href="https://www.instagram.com/curioussoundobjects/"><i class="fa-brands fa-instagram"></i></a>
+  - [bitty](https://www.curioussoundobjects.com/) - an Arduino-compatible device that makes making music fun.
+- Denki Oto   <a href="https://www.instagram.com/curioussoundobjects/"><i class="fa-brands fa-instagram"></i></a>
+  - [OMX-27](https://denki-oto.weebly.com/store/p59/omx27-kit.html#/) - a compact MIDI controllers and sequencer
+- yzhk instruments  <a href="https://www.instagram.com/joydrums_official/"><i class="fa-brands fa-instagram"></i></a>
+  - [joydrums](https://www.yzhkinstruments.com/download) - as if a beat pad and a loop pedal had a baby.
+- Gieskes <a href="https://www.instagram.com/gijsgieskes/"><i class="fa-brands fa-instagram"></i></a>
+  - [hss2020](http://gieskes.nl/instruments/?file=HSS2020) - a trimmed down version of the hard soft synth that fits in the hands.

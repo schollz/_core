@@ -6,7 +6,11 @@ weight = 13
 
 # Uploading samples
 
-Uploading samples is a straightforward process similar to transferring a file onto an SD card. However, as the samples need to be processed to meet the specifications of 44.1 kHz / 16-bit, you will require a tool for this preprocessing step before transferring the samples to the SD card. This tool can be accessed online or downloaded to your computer for local use.
+Uploading samples is a straightforward process similar to transferring a file onto an SD card. However, as the samples need to be processed to meet the specifications of 44.1 kHz / 16-bit. 
+
+The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
+
+Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card.
 
 
 ### Use tool online: **[zeptocore v2.2.0](/tool)**
