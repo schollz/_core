@@ -80,7 +80,6 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
-
     <script>
         var total_slices = 0;
         var time_received_total_slices = 0;
@@ -211,10 +210,11 @@
                     // Input setup
                     const inputs = midiAccess.inputs.values();
                     for (let input of inputs) {
-                        if (input.name.includes("boardcore")) {
+                        console.log(input.name);
+                        if (input.name.includes("boardcore") || input.name.includes("zeptocore")) {
                             window.inputMidiDevice = input;
                             setupMidiInputListener();
-                            console.log("boardcore input device ready for SysEx messages");
+                            console.log("input device connected");
                             break;
                         }
                     }
@@ -222,9 +222,10 @@
                     // Output setup
                     const outputs = midiAccess.outputs.values();
                     for (let output of outputs) {
-                        if (output.name.includes("boardcore")) {
+                        console.log(output.name);
+                        if (output.name.includes("boardcore") || output.name.includes("zeptocore")) {
                             window.boardcoreDevice = output;
-                            console.log("boardcore output device connected");
+                            console.log("output device connected");
                             // show modal
                             modal.style.display = "block";
                             break;
@@ -241,19 +242,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupMidi();
 
-            // set interval that sends note 57 every second
-            setInterval(() => {
-                window.boardcoreDevice.send([0x90, 57, 127]);
-            }, 500);
-            setInterval(() => {
-                let current_time = Date.now();
-                if (current_time - time_received_total_slices > 1200) {
-                    console.log("midi disconnected");
-                    // turn off modal
-                    modal.style.display = "none";
-                    setupMidi();
-                }
-            }, 600);
+            // // set interval that sends note 57 every second
+            // setInterval(() => {
+            //     window.boardcoreDevice.send([0x90, 57, 127]);
+            // }, 500);
+            // setInterval(() => {
+            //     let current_time = Date.now();
+            //     if (current_time - time_received_total_slices > 1200) {
+            //         console.log("midi disconnected");
+            //         // turn off modal
+            //         modal.style.display = "none";
+            //         setupMidi();
+            //     }
+            // }, 600);
 
             // Listen for keypress events
             document.addEventListener('keypress', (e) => {
