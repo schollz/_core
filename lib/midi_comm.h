@@ -74,7 +74,9 @@ int printf_sysex(const char* format, ...) {
   return send_text_as_sysex(text);
 }
 
-void midi_comm_task() {
+typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
+
+void midi_comm_task(midi_comm_callback callback) {
   // Read a MIDI message from the USB MIDI stream
   uint32_t bytes_read = read_midi_message(midi_buffer, sizeof(midi_buffer));
   if (bytes_read == 3) {
@@ -91,9 +93,9 @@ void midi_comm_task() {
       reset_usb_boot(0, 0);
     } else if (status == 176 && channel == 0 && note == 1) {
       send_text_as_sysex("version=v2.1.3");
-    } else {
-      printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
-                   note, velocity);
+    }
+    if (callback != NULL) {
+      callback(status, channel, note, velocity);
     }
   }
 }
