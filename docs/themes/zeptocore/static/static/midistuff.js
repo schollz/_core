@@ -161,30 +161,33 @@ function setupMidi() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupMidi();
+    // if chrome and on desktop
+    if (window.chrome && window.chrome.app) {
+        setupMidi();
 
-    // get bank,sample,tempo
-    setInterval(() => {
-        window.boardcoreDevice.send([0x89, 4, 0]);
-    }, 213);
-    // get slice info
-    setInterval(() => {
-        window.boardcoreDevice.send([0x89, 3, 0]);
-    }, 517);
-    setInterval(() => {
-        let current_time = Date.now();
-        if (current_time - time_received_total_slices > 2000) {
-            console.log("reconnecting", current_time - time_received_total_slices);
-            modal.style.display = "none";
-            setupMidi();
-        }
-    }, 673);
+        // get bank,sample,tempo
+        setInterval(() => {
+            window.boardcoreDevice.send([0x89, 4, 0]);
+        }, 213);
+        // get slice info
+        setInterval(() => {
+            window.boardcoreDevice.send([0x89, 3, 0]);
+        }, 517);
+        setInterval(() => {
+            let current_time = Date.now();
+            if (current_time - time_received_total_slices > 2000) {
+                console.log("reconnecting", current_time - time_received_total_slices);
+                modal.style.display = "none";
+                setupMidi();
+            }
+        }, 673);
 
-    // Listen for keypress events
-    document.addEventListener('keypress', (e) => {
-        console.log(e.key.charCodeAt(0));
-        window.boardcoreDevice.send([0x89, e.key.charCodeAt(0), 1]);
-    });
+        // Listen for keypress events
+        document.addEventListener('keypress', (e) => {
+            console.log(e.key.charCodeAt(0));
+            window.boardcoreDevice.send([0x89, e.key.charCodeAt(0), 1]);
+        });
+    }
 
     // relabel keys
 
