@@ -1,5 +1,8 @@
 void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
                            uint8_t velocity) {
+  if (velocity != 11) {
+    return;
+  }
   // printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
   // note,
   //              velocity);
