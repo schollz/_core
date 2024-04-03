@@ -168,7 +168,7 @@
 
             // Listen for keypress events
             document.addEventListener('keypress', (e) => {
-                window.boardcoreDevice.send([0x90, e.key.charCodeAt(0), 127]);
+                window.boardcoreDevice.send([0x90, e.key.charCodeAt(0), 11]);
             });
 
             // relabel keys
