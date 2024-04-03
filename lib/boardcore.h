@@ -18,6 +18,11 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
         update_fx(i);
       }
     }
+    if (c == 57) {
+      printf_sysex(
+          "slices=%d",
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
+    }
   }
 }
 
