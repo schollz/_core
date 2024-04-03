@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI Controller</title>
+    <script>
+
+        function addToMidiConsole(message) {
+            console.log('MIDI message:', message);
+        }
+
+        function setupMidiInputListener() {
+            if (window.inputMidiDevice) {
+                window.inputMidiDevice.onmidimessage = (midiMessage) => {
+                    // check if sysex
+                    if (midiMessage.data[0] == 0xf0) {
+                        // convert the sysex to string 
+                        var sysex = "";
+                        for (var i = 1; i < midiMessage.data.length - 1; i++) {
+                            sysex += String.fromCharCode(midiMessage.data[i]);
+                        }
+                        addToMidiConsole(sysex);
+                        // see if it starts with version=
+                        if (sysex.startsWith("version=")) {
+                            console.log(sysex);
+                            app.deviceVersion = sysex.split("=")[1];
+                            console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`);
+                        }
+                    } else {
+                        addToMidiConsole(midiMessage.data);
+                    }
+                };
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            navigator.requestMIDIAccess({ sysex: true })
+                .then((midiAccess) => {
+                    // Input setup
+                    const inputs = midiAccess.inputs.values();
+                    for (let input of inputs) {
+                        if (input.name.includes("boardcore")) {
+                            window.inputMidiDevice = input;
+                            setupMidiInputListener();
+                            console.log("boardcore input device ready for SysEx messages");
+                            break;
+                        }
+                    }
+
+                    // Output setup
+                    const outputs = midiAccess.outputs.values();
+                    for (let output of outputs) {
+                        if (output.name.includes("boardcore")) {
+                            window.boardcoreDevice = output;
+                            console.log("boardcore output device connected");
+                            break;
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error("Could not access MIDI devices.", error);
+                });
+
+            // Listen for keypress events
+            document.addEventListener('keypress', (e) => {
+                window.boardcoreDevice.send([0x90, e.key.charCodeAt(0), 127]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>MIDI Controller</h1>
+    <p>Press '1' to send MIDI note 32 to the boardcore device.</p>
+</body>
+
+</html>

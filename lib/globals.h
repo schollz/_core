@@ -351,6 +351,7 @@ void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
   //        beat_current);
   // printf_sysex("[global] beat_current: %d\n", beat_current);
+
   if (do_random_jump) {
     beat_current = random_integer_in_range(0, 15);
     do_random_jump = false;
@@ -360,6 +361,9 @@ void do_update_phase_from_beat_current() {
       banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
+#ifdef INCLUDE_BOARDCORE
+  printf_sysex("slice=%d", slice);
+#endif
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
