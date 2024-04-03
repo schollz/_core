@@ -57,6 +57,9 @@ void update_reverb() {
 }
 
 void update_fx(uint8_t fx_num) {
+#ifdef INCLUDE_BOARDCORE
+  printf_sysex("fx=%d,%d", fx_num, sf->fx_active[fx_num]);
+#endif
   switch (fx_num) {
     case FX_REVERSE:
       phase_forward = !sf->fx_active[fx_num];
