@@ -158,7 +158,11 @@ void input_handling() {
         printf("version=v2.1.3\n");
       }
     }
-    // TODO: check timing of this?
+
+#ifdef BTN_COL_START
+    // button handler
+    button_handler(bm);
+#endif
 
     if (MessageSync_hasMessage(messagesync)) {
       MessageSync_print(messagesync);
@@ -376,6 +380,11 @@ void input_handling() {
     ClockInput_update(clockinput);
 #endif
 
+#ifdef BTN_COL_START
+    // button handler
+    button_handler(bm);
+#endif
+
 #ifdef INCLUDE_KNOBS
     // knob Z
     adc_select_input(0);
@@ -425,6 +434,11 @@ void input_handling() {
     LEDText_update(ledtext, leds);
     // TODO: redundant code?
     LEDS_render(leds);
+
+#ifdef BTN_COL_START
+    // button handler
+    button_handler(bm);
+#endif
 
 #ifdef INCLUDE_KEYBOARD
     // check keyboard
