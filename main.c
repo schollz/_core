@@ -398,7 +398,11 @@ int main() {
 // otherwise clock divider of 1 is fine
 // set_sys_clock_khz(270000, true);
 #ifdef DO_OVERCLOCK
+#ifdef INCLUDE_BOARDCORE
+  set_sys_clock_khz(150000, true);
+#else
   set_sys_clock_khz(225000, true);
+#endif
 #else
   set_sys_clock_khz(125000, true);
 #endif
