@@ -55,7 +55,7 @@ def main():
                 print(f"Drive {device_path} mounted at {mount_point}")
                 time.sleep(1)
                 try:
-                    copy_folder(mount_point, "starting_samples/")
+                    copy_folder(mount_point, "starting_samples2/")
                 except:
                     pass
                 unmount_drive(mount_point)
