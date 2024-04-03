@@ -14,6 +14,53 @@
             max-width: 800px;
             margin: 0 auto;
         }
+
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 1;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0);
+            /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            max-width: 900px;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -21,8 +68,16 @@
 
     <h1>boardcore</h1>
     <p>press something</p>
+    <button id="myBtn">Open Modal</button>
 
-    <div class="simple-keyboard"></div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="simple-keyboard"></div>
+        </div>
+    </div>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
 
@@ -33,6 +88,33 @@
             97, 115, 100, 102, 122, 120, 99, 118];
         var fx_to_jump = [53, 54, 55, 56, 116, 121, 117, 105,
             103, 104, 106, 107, 98, 110, 109, 44];
+
+
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on the button, open the modal
+        btn.onclick = function () {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
 
 
         const Keyboard = window.SimpleKeyboard.default;
@@ -143,9 +225,13 @@
                         if (output.name.includes("boardcore")) {
                             window.boardcoreDevice = output;
                             console.log("boardcore output device connected");
+                            // show modal
+                            modal.style.display = "block";
                             break;
                         }
                     }
+
+
                 })
                 .catch((error) => {
                     console.error("Could not access MIDI devices.", error);
@@ -158,13 +244,16 @@
             // set interval that sends note 57 every second
             setInterval(() => {
                 window.boardcoreDevice.send([0x90, 57, 127]);
-            }, 1000);
+            }, 500);
             setInterval(() => {
                 let current_time = Date.now();
-                if (current_time - time_received_total_slices > 2000) {
+                if (current_time - time_received_total_slices > 1200) {
                     console.log("midi disconnected");
+                    // turn off modal
+                    modal.style.display = "none";
+                    setupMidi();
                 }
-            }, 1000);
+            }, 600);
 
             // Listen for keypress events
             document.addEventListener('keypress', (e) => {
