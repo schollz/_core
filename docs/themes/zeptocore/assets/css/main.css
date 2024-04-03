@@ -627,3 +627,15 @@ pre {
   text-decoration: none;
   cursor: pointer;
 }
+
+.modal-info {
+  max-width: 800px;
+  padding-left: 50px;
+  display: block;
+  white-space: nowrap;
+}
+
+
+.modal-info>[id]::before {
+  display: inherit;
+}
