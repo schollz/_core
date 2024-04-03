@@ -1,3 +1,4 @@
+#include "lib/midi_comm_callback.h"
 
 void input_handling() {
   // flash bad signs
@@ -6,33 +7,55 @@ void input_handling() {
     sleep_ms(10);
   }
 
+#ifdef INCLUDE_MIDI
+  tusb_init();
+#endif
+
   while (1) {
-    uint16_t val;
+#ifdef INCLUDE_MIDI
+    tud_task();
+    midi_comm_task(midi_comm_callback_fn);
+#endif
 
     if (MessageSync_hasMessage(messagesync)) {
       MessageSync_print(messagesync);
       MessageSync_clear(messagesync);
     }
 
-    int c = getchar_timeout_us(100);
-    uint8_t key_to_jump[16] = {49, 50,  51,  52,  113, 119, 101, 114,
-                               97, 115, 100, 102, 122, 120, 99,  118};
-    uint8_t key_to_fx[16] = {53,  54,  55,  56,  116, 121, 117, 105,
-                             103, 104, 106, 107, 98,  110, 109, 44};
-    if (c >= 0) {
-      printf("Got character %d\n", c);
-      if (c == 118) {
-        printf("version=v2.1.3\n");
-      }
-
-      for (int i = 0; i < 16; i++) {
-        if (c == key_to_jump[i]) {
-          key_do_jump(i);
-        } else if (c == key_to_fx[i]) {
-          sf->fx_active[i] = !sf->fx_active[i];
-          update_fx(i);
+    // load the new sample if variation changed
+    if (sel_variation_next != sel_variation) {
+      if (!audio_callback_in_mute) {
+        while (!sync_using_sdcard) {
+          sleep_us(250);
+        }
+        while (sync_using_sdcard) {
+          sleep_us(250);
         }
       }
+      sync_using_sdcard = true;
+      // measure the time it takes
+      uint32_t time_start = time_us_32();
+      FRESULT fr = f_close(&fil_current);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
+              sel_sample_cur, sel_variation_next);
+      fr = f_open(&fil_current, fil_current_name, FA_READ);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+
+      // TODO: fix this
+      // if sel_variation_next == 0
+      phases[0] = round(
+          ((float)phases[0] * (float)sel_variation_scale[sel_variation_next]) /
+          (float)sel_variation_scale[sel_variation]);
+
+      sel_variation = sel_variation_next;
+      sync_using_sdcard = false;
+      printf("[zeptocore] loading new sample variation took %d us\n",
+             time_us_32() - time_start);
     }
   }
 }
