@@ -7,11 +7,7 @@ noshow = 1
 
 # Buy
 
-there are two versions of zeptocore.
-
-the main version is the small board with buttons and lights.
-
-an alternative versoin (the `boardcore`) is just the breadboard components from me to use a stripped down [boardcore version](#boardcore).
+select the color below for your zeptocore:
 
 <div id="buyzepto" style="margin: auto; max-width: 300px;">
 <div id='product-component-1709939625158'></div>
