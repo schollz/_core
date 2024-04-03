@@ -83,7 +83,6 @@ function setupMidiInputListener() {
                 }
                 // see if it starts with version=
                 if (sysex.startsWith("version=")) {
-                    console.log(sysex);
                     app.deviceVersion = sysex.split("=")[1];
                     console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`);
                 } else if (sysex.startsWith("slices=")) {
@@ -97,6 +96,18 @@ function setupMidiInputListener() {
                     // determine letter for that keyboard number
                     let letter = String.fromCharCode(key_slice);
                     activateKey(letter);
+                } else if (sysex.startsWith("info=")) {
+                    let info = sysex.split("=")[1];
+                    let bank = parseInt(info.split(",")[0]);
+                    let sample = parseInt(info.split(",")[1]);
+                    let tempo = parseInt(info.split(",")[2]);
+                    let volume = parseInt(info.split(",")[3]);
+                    let do_retrigger = parseInt(info.split(",")[4]);
+                    document.getElementById("keyboard-tempo").innerHTML = `${tempo} bpm`;
+                    document.getElementById("keyboard-bank").innerHTML = `bank ${bank + 1}`;
+                    document.getElementById("keyboard-sample").innerHTML = `sample ${sample + 1}`;
+                    document.getElementById("keyboard-volume").innerHTML = `volume ${volume}`;
+                    toggleKey(".", do_retrigger == 1);
                 } else if (sysex.startsWith("fx=")) {
                     // format fx=0,1
                     let fx = sysex.split("=")[1];
@@ -152,20 +163,27 @@ function setupMidi() {
 document.addEventListener('DOMContentLoaded', () => {
     setupMidi();
 
+    // get bank,sample,tempo
     setInterval(() => {
-        window.boardcoreDevice.send([0x90, 57, 11]);
-    }, 500);
+        window.boardcoreDevice.send([0x89, 4, 0]);
+    }, 213);
+    // get slice info
+    setInterval(() => {
+        window.boardcoreDevice.send([0x89, 3, 0]);
+    }, 517);
     setInterval(() => {
         let current_time = Date.now();
-        if (current_time - time_received_total_slices > 1200) {
+        if (current_time - time_received_total_slices > 2000) {
+            console.log("reconnecting", current_time - time_received_total_slices);
             modal.style.display = "none";
             setupMidi();
         }
-    }, 600);
+    }, 673);
 
     // Listen for keypress events
     document.addEventListener('keypress', (e) => {
-        window.boardcoreDevice.send([0x90, e.key.charCodeAt(0), 11]);
+        console.log(e.key.charCodeAt(0));
+        window.boardcoreDevice.send([0x89, e.key.charCodeAt(0), 1]);
     });
 
     // relabel keys
@@ -199,5 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector(`[data-skbtn="x"]`).innerHTML = '14';
     document.querySelector(`[data-skbtn="c"]`).innerHTML = '15';
     document.querySelector(`[data-skbtn="v"]`).innerHTML = '16';
+
+    document.querySelector(`[data-skbtn="]"]`).innerHTML = '<i class="fas fa-volume-up"></i>';
+    document.querySelector(`[data-skbtn="["]`).innerHTML = '<i class="fas fa-volume-down"></i>';
+
+    document.querySelector(`[data-skbtn="="]`).innerHTML = '<i class="fas fa-fast-forward"></i>';
+    document.querySelector(`[data-skbtn="-"]`).innerHTML = '<i class="fas fa-fast-backward"></i>';
+    document.querySelector(`[data-skbtn="'"]`).innerHTML = '<i class="fas fa-bank"></i>';
+    document.querySelector(`[data-skbtn="/"]`).innerHTML = '<i class="fas fa-list"></i>';
+    document.querySelector(`[data-skbtn="."]`).innerHTML = '<i class="fas fa-sync"></i>';
 
 });
