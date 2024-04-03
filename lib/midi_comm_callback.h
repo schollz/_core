@@ -1,0 +1,31 @@
+void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
+                           uint8_t velocity) {
+  if (velocity != 11) {
+    return;
+  }
+  midi_input_activated = true;
+  // printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
+  // note,
+  //              velocity);
+
+  int c = note;
+  uint8_t key_to_jump[16] = {49, 50,  51,  52,  113, 119, 101, 114,
+                             97, 115, 100, 102, 122, 120, 99,  118};
+  uint8_t key_to_fx[16] = {53,  54,  55,  56,  116, 121, 117, 105,
+                           103, 104, 106, 107, 98,  110, 109, 44};
+  if (c >= 0) {
+    for (int i = 0; i < 16; i++) {
+      if (c == key_to_jump[i]) {
+        key_do_jump(i);
+      } else if (c == key_to_fx[i]) {
+        sf->fx_active[i] = !sf->fx_active[i];
+        update_fx(i);
+      }
+    }
+    if (c == 57) {
+      printf_sysex(
+          "slices=%d",
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
+    }
+  }
+}
