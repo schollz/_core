@@ -92,7 +92,7 @@ void midi_comm_task(midi_comm_callback callback) {
       sleep_ms(10);
       reset_usb_boot(0, 0);
     } else if (status == 176 && channel == 0 && note == 1) {
-      send_text_as_sysex("version=v2.1.3");
+      send_text_as_sysex("version=v2.2.0");
     }
     if (callback != NULL) {
       callback(status, channel, note, velocity);
