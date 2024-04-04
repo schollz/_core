@@ -64,6 +64,15 @@ void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
   debounce_quantize = 0;
   retrig_vol = 1.0;
   retrig_pitch = PITCH_VAL_MID;
+  // reset filter
+  if (global_filter_index != retrig_filter_original &&
+      retrig_filter_original > 0) {
+    global_filter_index = retrig_filter_original;
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    }
+    retrig_filter_original = 0;
+  }
   retrig_pitch_change = 0;
   retrig_beat_num = 0;
   key3_activated = true;
