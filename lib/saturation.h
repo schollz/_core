@@ -36,7 +36,7 @@ void Saturation_process(Saturation *self, int16_t *samples,
       samples[ii] = q16_16_fp_to_int16(
           q16_16_multiply(
               Q16_16_1 - crossfade3_line[self->crossfade_in],
-              q16_16_int16_to_fp(transfer_doublesine(samples[ii]))) +
+              q16_16_int16_to_fp(transfer_doublesine(samples[ii]) * 3 / 4)) +
           q16_16_multiply(crossfade3_line[self->crossfade_in],
                           q16_16_int16_to_fp(samples[ii])));
       self->crossfade_in++;
@@ -47,7 +47,7 @@ void Saturation_process(Saturation *self, int16_t *samples,
       samples[ii] = q16_16_fp_to_int16(
           q16_16_multiply(
               crossfade3_line[self->crossfade_out],
-              q16_16_int16_to_fp(transfer_doublesine(samples[ii]))) +
+              q16_16_int16_to_fp(transfer_doublesine(samples[ii]) * 3 / 4)) +
           q16_16_multiply(Q16_16_1 - crossfade3_line[self->crossfade_out],
                           q16_16_int16_to_fp(samples[ii])));
       self->crossfade_out++;
@@ -55,7 +55,7 @@ void Saturation_process(Saturation *self, int16_t *samples,
         self->on = false;
       }
     } else if (self->on) {
-      samples[ii] = transfer_doublesine(samples[ii]);
+      samples[ii] = transfer_doublesine(samples[ii]) * 3 / 4;
     }
   }
 }
