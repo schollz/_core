@@ -103,10 +103,18 @@ function setupMidiInputListener() {
                     let tempo = parseInt(info.split(",")[2]);
                     let volume = parseInt(info.split(",")[3]);
                     let do_retrigger = parseInt(info.split(",")[4]);
+                    let playback_stopped = parseInt(info.split(",")[5]);
+                    let button_mute = parseInt(info.split(",")[6]);
                     document.getElementById("keyboard-tempo").innerHTML = `${tempo} bpm`;
                     document.getElementById("keyboard-bank").innerHTML = `bank ${bank + 1}`;
                     document.getElementById("keyboard-sample").innerHTML = `sample ${sample + 1}`;
                     document.getElementById("keyboard-volume").innerHTML = `volume ${volume}`;
+                    if (playback_stopped == 1) {
+                        document.querySelector(`[data-skbtn="p"]`).innerHTML = '<i class="fas fa-play"></i>';
+                    } else {
+                        document.querySelector(`[data-skbtn="p"]`).innerHTML = '<i class="fas fa-pause"></i>';
+                    }
+                    toggleKey(";", button_mute == 1);
                     toggleKey(".", do_retrigger == 1);
                 } else if (sysex.startsWith("fx=")) {
                     // format fx=0,1
@@ -229,5 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector(`[data-skbtn="'"]`).innerHTML = '<i class="fas fa-bank"></i>';
     document.querySelector(`[data-skbtn="/"]`).innerHTML = '<i class="fas fa-list"></i>';
     document.querySelector(`[data-skbtn="."]`).innerHTML = '<i class="fas fa-sync"></i>';
+    document.querySelector(`[data-skbtn="p"]`).innerHTML = '<i class="fas fa-play"></i>';
+    document.querySelector(`[data-skbtn=";"]`).innerHTML = '<i class="fas fa-volume-mute"></i>';
 
 });
