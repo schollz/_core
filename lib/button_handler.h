@@ -88,12 +88,12 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   };
   debounce_quantize = 0;
   retrig_first = true;
-  retrig_beat_num = random_integer_in_range(8, 24);
+  retrig_beat_num = random_integer_in_range(4, 18) * 2;
   retrig_timer_reset = retrig_times[key2 - 4];
   // 96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
   float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                      (float)(96 * sf->bpm_tempo);
-  if (total_time > 5.0f) {
+  if (total_time > 7.0f) {
     total_time = total_time / 2;
     retrig_timer_reset = retrig_timer_reset / 2;
   }
