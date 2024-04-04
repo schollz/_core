@@ -2993,8 +2993,8 @@ void Fuzz_process(int16_t *values, uint16_t num_values, uint8_t pre_amp,
     } else {
       values[i] = -1 * fuzz_samples[-values[i]];
     }
-    values[i] = util_clamp(
-        (values[i] * linlin(post_amp, 0, 255, 64, 256)) / 256, -32767, 32767);
+    values[i] = util_clamp((values[i] * linlin(post_amp, 0, 255, 2, 256)) / 256,
+                           -32767, 32767);
   }
 }
 #endif

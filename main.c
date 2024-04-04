@@ -125,7 +125,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
             retrig_pitch_change = 0;
           }
           retrig_filter_change = 0;
-          if (random_integer_in_range(1, 100) < 40) {
+          if (random_integer_in_range(1, 100) < 35) {
             // create filter ramp
             if (retrig_filter_original == 0) {
               retrig_filter_original = global_filter_index;

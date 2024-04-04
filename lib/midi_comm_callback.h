@@ -46,6 +46,22 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
       }
       fil_current_change = true;
       return;
+    } else if (note == 112) {
+      // stop/play
+      if (playback_stopped) {
+        do_restart_playback = true;
+        button_mute = false;
+      } else {
+        if (!button_mute) trigger_button_mute = true;
+        do_stop_playback = true;
+      }
+    } else if (note == 59) {
+      if (button_mute) {
+        button_mute = false;
+        trigger_button_mute = false;
+      } else {
+        trigger_button_mute = true;
+      }
     }
     int c = note;
     uint8_t key_to_jump[16] = {49, 50,  51,  52,  113, 119, 101, 114,
@@ -74,8 +90,9 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
           "slices=%d",
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
     } else if (note == 4) {
-      printf_sysex("info=%d,%d,%d,%d,%d", sel_bank_cur, sel_sample_cur,
-                   sf->bpm_tempo, sf->vol, midi_comm_callback_do_retrigger);
+      printf_sysex("info=%d,%d,%d,%d,%d,%d,%d", sel_bank_cur, sel_sample_cur,
+                   sf->bpm_tempo, sf->vol, midi_comm_callback_do_retrigger,
+                   playback_stopped, button_mute);
     }
   }
 }
