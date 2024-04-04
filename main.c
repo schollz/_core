@@ -124,17 +124,48 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           } else {
             retrig_pitch_change = 0;
           }
+          retrig_filter_change = 0;
+          if (random_integer_in_range(1, 100) < 30) {
+            // create filter ramp
+            if (retrig_filter_original == 0) {
+              retrig_filter_original = global_filter_index;
+            }
+            global_filter_index =
+                random_integer_in_range(1, global_filter_index / 2);
+            retrig_filter_change =
+                (retrig_filter_original - global_filter_index) /
+                retrig_beat_num;
+          }
         }
         retrig_beat_num--;
         if (retrig_beat_num == 0) {
           retrig_ready = false;
           retrig_vol = 1.0;
           retrig_pitch = PITCH_VAL_MID;
+          // reset filter
+          if (global_filter_index != retrig_filter_original &&
+              retrig_filter_original > 0) {
+            global_filter_index = retrig_filter_original;
+            for (uint8_t channel = 0; channel < 2; channel++) {
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            }
+            retrig_filter_original = 0;
+          }
         }
         if (retrig_vol < 1.0) {
           retrig_vol += retrig_vol_step;
           if (retrig_vol > 1.0) {
             retrig_vol = 1.0;
+          }
+        }
+        if (global_filter_index < retrig_filter_original) {
+          global_filter_index += retrig_filter_change;
+          if (global_filter_index > retrig_filter_original) {
+            global_filter_index = retrig_filter_original;
+          }
+          for (uint8_t channel = 0; channel < 2; channel++) {
+            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
           }
         }
         if (retrig_pitch > 0 && retrig_pitch < PITCH_VAL_MAX - 1) {
@@ -172,6 +203,15 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     retrig_vol = 1.0;
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
+    // reset filter
+    if (global_filter_index != retrig_filter_original &&
+        retrig_filter_original > 0) {
+      global_filter_index = retrig_filter_original;
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        ResonantFilter_setFc(resFilter[channel], global_filter_index);
+      }
+      retrig_filter_original = 0;
+    }
 
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
