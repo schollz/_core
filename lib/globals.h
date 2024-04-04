@@ -412,6 +412,15 @@ void key_do_jump(uint8_t beat) {
     key_jump_debounce = 1;
     beat_current = floor(beat_current / 16) * 16 + beat;
     retrig_pitch = PITCH_VAL_MID;
+    // reset filter
+    if (global_filter_index != retrig_filter_original &&
+        retrig_filter_original > 0) {
+      global_filter_index = retrig_filter_original;
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        ResonantFilter_setFc(resFilter[channel], global_filter_index);
+      }
+      retrig_filter_original = 0;
+    }
     do_update_phase_from_beat_current();
   }
 }
