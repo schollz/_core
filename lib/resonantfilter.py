@@ -60,7 +60,7 @@ def design_filter(fc, fs, db, q, filter_type):
 # for each note, generate a filter
 # produce a multidimensional array, indexed by q and frequency
 # for C-code generation
-qs = [0.707]
+qs = [1.5]
 notes = list(range(44, 128))
 filter_types = ["FILTER_LOWPASS", "FILTER_HIGHPASS"]
 filter_types = ["FILTER_LOWPASS"]
