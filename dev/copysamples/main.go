@@ -237,7 +237,6 @@ func reformatFilesystem(partition Filesystem) (err error) {
 	)
 	// copy the files
 	for i := range sourceFiles {
-		pb.Add(1)
 		folderName, _ := path.Split(destFiles[i])
 		// check if the folder exists
 		if _, err = os.Stat(folderName); os.IsNotExist(err) {
