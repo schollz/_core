@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -16,9 +17,15 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-var mountingName = "ZEPTOCORE"
-var sourceFolder = "../starting_samples2"
-var userName = "zns"
+var argMountingName string
+var argSourceFolder string
+var argUserName string
+
+func init() {
+	flag.StringVar(&argMountingName, "name", "ZEPTOCORE", "the name of the drive to mount as")
+	flag.StringVar(&argSourceFolder, "src", "../starting_samples2", "the folder to copy to the drive")
+	flag.StringVar(&argUserName, "user", "zns", "the user name to give permissions to the drive")
+}
 
 func lsblk() (lines []string, err error) {
 	cmd := exec.Command("lsblk", "-P")
@@ -153,10 +160,10 @@ func reformatFilesystem(partition Filesystem) (err error) {
 		return
 	}
 
-	destinationFolder := fmt.Sprintf("/media/%s/%s", userName, mountingName)
+	destinationFolder := fmt.Sprintf("/media/%s/%s", argUserName, argMountingName)
 	// unmount the drive
 	// sudo umount /dev/sdd1
-	log.Infof("unmounting %s", partition.Name)
+	fmt.Printf("%s: unmounting...", destinationFolder)
 	cmd := exec.Command("sudo", "umount", "/dev/"+partition.Name)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -165,8 +172,8 @@ func reformatFilesystem(partition Filesystem) (err error) {
 	}
 
 	// format the drive
-	log.Infof("formatting %s", partition.Name)
-	cmd = exec.Command("sudo", "mkfs.vfat", "-n", mountingName, "/dev/"+partition.Name)
+	fmt.Print("formatting...")
+	cmd = exec.Command("sudo", "mkfs.vfat", "-n", argMountingName, "/dev/"+partition.Name)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Error(err)
@@ -175,7 +182,7 @@ func reformatFilesystem(partition Filesystem) (err error) {
 	log.Debugf("formatting: %s", out)
 
 	// create mount folder
-	log.Infof("mounting %s", partition.Name)
+	fmt.Print("mounting...")
 	cmd = exec.Command("sudo", "mkdir", "-p", destinationFolder)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
@@ -201,13 +208,12 @@ func reformatFilesystem(partition Filesystem) (err error) {
 
 	// collect the files
 	// copy every file in folder to mounted drive
-	log.Infof("copyfiles to %s", destinationFolder)
-
+	fmt.Println("copying...")
 	totalBytes := int64(0)
 	// get a list of all files in the source folder by walking through it, recursively
 	sourceFiles := []string{}
 	destFiles := []string{}
-	err = filepath.Walk(sourceFolder,
+	err = filepath.Walk(argSourceFolder,
 		func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -216,7 +222,7 @@ func reformatFilesystem(partition Filesystem) (err error) {
 				return nil
 			}
 			sourceFiles = append(sourceFiles, p)
-			destFiles = append(destFiles, path.Join(destinationFolder, strings.TrimPrefix(p, sourceFolder)))
+			destFiles = append(destFiles, path.Join(destinationFolder, strings.TrimPrefix(p, argSourceFolder)))
 			totalBytes += info.Size()
 			return nil
 		})
@@ -225,7 +231,10 @@ func reformatFilesystem(partition Filesystem) (err error) {
 		return
 	}
 
-	pb := progressbar.DefaultBytes(totalBytes)
+	pb := progressbar.NewOptions64(totalBytes,
+		progressbar.OptionClearOnFinish(),
+		progressbar.OptionShowBytes(true),
+	)
 	// copy the files
 	for i := range sourceFiles {
 		pb.Add(1)
@@ -252,14 +261,14 @@ func reformatFilesystem(partition Filesystem) (err error) {
 	time.Sleep(1 * time.Second)
 
 	// umount the drive
-	log.Infof("unmounting %s", partition.Name)
+	fmt.Print("\n....unmounting...")
 	cmd = exec.Command("sudo", "umount", "/dev/"+partition.Name)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Error(err)
 	}
 
-	log.Infof("done")
+	fmt.Println("done.")
 	return
 }
 
@@ -276,7 +285,7 @@ func run() (err error) {
 		case partition := <-systemAdd:
 			if !ignoreMounting {
 				ignoreMounting = true
-				log.Infof("found new partition %s", partition.Name)
+				log.Debugf("found new partition %s", partition.Name)
 				go func() {
 					time.Sleep(1 * time.Second)
 					err = reformatFilesystem(partition)
@@ -292,5 +301,12 @@ func run() (err error) {
 }
 
 func main() {
+	flag.Parse()
+
+	// check if the source folder exists
+	if _, err := os.Stat(argSourceFolder); os.IsNotExist(err) {
+		log.Error("source folder does not exist")
+		return
+	}
 	run()
 }
