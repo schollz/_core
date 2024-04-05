@@ -9,12 +9,21 @@ import pyudev
 
 def mount_drive(device_path, mount_point):
     os.makedirs(mount_point, exist_ok=True)
-    subprocess.run(["sudo", "mount", device_path, mount_point])
+    subprocess.run(
+        ["sudo", "mount", device_path, mount_point],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def unmount_drive(mount_point):
-    subprocess.run(["sudo", "umount", mount_point])
-    os.rmdir(mount_point)
+    subprocess.run(
+        ["sudo", "umount", mount_point],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def write_file(mount_point):
@@ -33,6 +42,13 @@ def copytree_with_progress(src, dst):
                 os.makedirs(os.path.dirname(dst_file), exist_ok=True)
                 # copy file using subprocess
                 subprocess.run(["cp", src_file, dst_file])
+                # check the hash of the destination file
+                hash_src = subprocess.run(["md5sum", src_file], stdout=subprocess.PIPE)
+                hash_dst = subprocess.run(["md5sum", dst_file], stdout=subprocess.PIPE)
+                md5_src, _ = hash_src.stdout.decode().split()
+                md5_dst, _ = hash_dst.stdout.decode().split()
+                if md5_src != md5_dst:
+                    raise Exception(f"Error copying {src_file} to {dst_file}")
                 pbar.update(1)
 
 
@@ -54,10 +70,16 @@ def main():
                 mount_drive(device_path, mount_point)
                 print(f"Drive {device_path} mounted at {mount_point}")
                 time.sleep(1)
+                # remove bank folders
+                for i in range(16):
+                    folder = f"{mount_point}/bank{i}"
+                    if os.path.exists(folder):
+                        print(f"Removing folder {folder}")
+                        shutil.rmtree(folder)
                 try:
                     copy_folder(mount_point, "starting_samples2/")
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error: {e}")
                 time.sleep(2)
                 unmount_drive(mount_point)
                 print(f"Drive {device_path} unmounted")
