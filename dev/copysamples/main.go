@@ -6,11 +6,13 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	log "github.com/schollz/logger"
@@ -273,14 +275,21 @@ func reformatFilesystem(partition Filesystem) (err error) {
 
 func run() (err error) {
 	log.SetLevel("info")
+	fmt.Println("ready")
 
 	systemAdd := make(chan Filesystem)
 	go watchFilesystem(systemAdd)
 
 	ignoreMounting := false
 
+	ctrlc := make(chan os.Signal, 1)
+	signal.Notify(ctrlc, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGINT)
+
 	for {
 		select {
+		case <-ctrlc:
+			fmt.Println("goodbye")
+			os.Exit(0)
 		case partition := <-systemAdd:
 			if !ignoreMounting {
 				ignoreMounting = true
