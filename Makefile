@@ -96,6 +96,10 @@ pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
 	cd pico-extras && git submodule update -i 
 
+copysamples:
+	cd dev/copysamples && go build -v 
+	sudo ./dev/copysamples/copysamples -src dev/starting_samples2
+
 minicom:
 	cd dev/minicom && go build -v
 	./dev/minicom/minicom
