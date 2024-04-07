@@ -39,9 +39,14 @@
     </div>
   </div>
 
+  <div class="sticky-banner">
+    <a href="https://github.com/schollz/_core/releases/download/v2.2.1/zeptocore_v2.2.1.uf2">click here to download the
+      latest zeptocore firmware v2.2.1.</a>
+  </div>
+
 
   <!-- make a sticky menu on the left side -->
-  <div class="sticky-menu">
+  <div class="sticky-menu fade-out">
     <div style=" display: flex;
     justify-content: center;
     align-items: center;">
@@ -467,20 +472,39 @@
       });
       // check if mobile
       window.addEventListener('scroll', function () {
-        if (window.innerWidth < 600) {
+        if (window.innerWidth < 6000) {  // Check if this condition is necessary for your case
           var earElements = document.querySelectorAll('.rightear, .leftear');
+          var menuElements = document.querySelectorAll('.sticky-menu');
+
+          var banner = document.querySelector('.sticky-banner');
+
+          if (window.scrollY > 50) {
+            banner.style.bottom = `-${banner.offsetHeight}px`;
+          } else {
+            banner.style.bottom = '0';
+          }
+
           if (window.scrollY > 100) { // Adjust this value based on your needs
             earElements.forEach(function (el) {
               el.classList.add('fade-out');
+              el.classList.remove('fade-in');
+            });
+            menuElements.forEach(function (el) {
+              el.classList.add('fade-in');
+              el.classList.remove('fade-out');
             });
           } else {
             earElements.forEach(function (el) {
+              el.classList.add('fade-in');
               el.classList.remove('fade-out');
+            });
+            menuElements.forEach(function (el) {
+              el.classList.add('fade-out');
+              el.classList.remove('fade-in');
             });
           }
         }
       });
-
     });
 
 
