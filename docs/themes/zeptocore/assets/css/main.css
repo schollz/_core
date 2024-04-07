@@ -683,3 +683,7 @@ pre {
 .modal-info>[id]::before {
   display: inherit;
 }
+
+.sticky-menu a {
+  text-decoration: none;
+}
