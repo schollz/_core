@@ -84,34 +84,6 @@
   </div>
 
 
-  <div id="signup"
-    style="border-style: solid; border-color: #777; padding:1em; margin:1em; padding-top:0em; background: #fff; border-radius:1em;box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .2); margin-top:2em; margin-bottom:2em;">
-    <div id="mc_embed_signup">
-      <form
-        action="https://schollz.us21.list-manage.com/subscribe/post?u=6f305d82cde1a96e67a3c0577&amp;id=8f5c3ddc01&amp;f_id=0009ace1f0"
-        method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_self"
-        novalidate="">
-        <div id="mc_embed_signup_scroll">
-          <h3>Sign up to receive an email when <span style="color:rgba(0, 0, 255, 0.6);weight:900;">zeptocore</span> is
-            ready to buy:</h3>
-          <div class="mc-field-group"><label for="mce-EMAIL" style="font-size:1em;font-weight:900;">Email Address:
-            </label><input type="email" name="EMAIL" class="required email" id="mce-EMAIL" required="" value=""
-              style="padding:0.5em; font-size:1em; font-family: 'Roboto Mono', monospace;  margin-right:1em;"><input
-              type="submit" name="subscribe" id="mc-embedded-subscribe" class="button" value="Subscribe"
-              style="font-family: 'Roboto Mono', monospace;padding:0.6em;"></div>
-          <div class="mc-field-group" style="display:none;"><label for="mce-ZEPTOCORE">WARES </label><input type="text"
-              name="ZEPTOCORE" class=" text" id="mce-ZEPTOCORE" value="zeptocore"></div>
-          <div id="mce-responses" class="clear">
-            <div class="response" id="mce-error-response" style="display: none;"></div>
-            <div class="response" id="mce-success-response" style="display: none;"></div>
-          </div>
-          <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text"
-              name="b_6f305d82cde1a96e67a3c0577_8f5c3ddc01" tabindex="-1" value=""></div>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <div class="hero2">
     <div class="hero-inner" style="max-width: 800px; width:100%;">
       <div style="padding-top:4em">
@@ -157,37 +129,9 @@
     <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
     {{ $indexPage.Content }} -->
 
-    {{ $indexPage := .Site.GetPage "/blurbs/buy" }}
+    {{ $indexPage := .Site.GetPage "/blurbs/signup" }}
     <div style="max-width:420px; margin:auto;">
       {{ $indexPage.Content }}
-
-      <div id=" signup" style="">
-        <div id="mc_embed_signup">
-          <form
-            action="https://schollz.us21.list-manage.com/subscribe/post?u=6f305d82cde1a96e67a3c0577&amp;id=8f5c3ddc01&amp;f_id=0009ace1f0"
-            method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate"
-            target="_self" novalidate="">
-            <div id="mc_embed_signup_scroll">
-              <br>
-              <p>If "Out of Stock", subscribe to receive an email when it is available:</p>
-              <div class="mc-field-group"><label for="mce-EMAIL" style="font-size:1em;font-weight:900;">Email
-                  Address:
-                </label><input type="email" name="EMAIL" class="required email" id="mce-EMAIL" required="" value=""
-                  style="padding:0.5em; font-size:1em; font-family: 'Roboto Mono', monospace;  margin-right:1em;"><input
-                  type="submit" name="subscribe" id="mc-embedded-subscribe" class="button" value="Subscribe"
-                  style="font-family: 'Roboto Mono', monospace;padding:0.6em;"></div>
-              <div class="mc-field-group" style="display:none;"><label for="mce-ZEPTOCORE">WARES </label><input
-                  type="text" name="ZEPTOCORE" class=" text" id="mce-ZEPTOCORE" value="zeptocore"></div>
-              <div id="mce-responses" class="clear">
-                <div class="response" id="mce-error-response" style="display: none;"></div>
-                <div class="response" id="mce-success-response" style="display: none;"></div>
-              </div>
-              <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text"
-                  name="b_6f305d82cde1a96e67a3c0577_8f5c3ddc01" tabindex="-1" value=""></div>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
 
     {{ range where .Site.RegularPages "Section" "blurbs" }}
