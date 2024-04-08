@@ -192,7 +192,7 @@ div {
 .blurbs>div,
 .help>div {
   border-style: solid;
-  border-color: #666;
+  border-color: rgb(0, 0, 255, 0.3);
   padding: 1em;
   padding-top: 1em;
   padding-top: 0em;
@@ -617,7 +617,7 @@ pre {
     padding: 20px;
     overflow-y: auto;
     border-style: solid;
-    border-color: #666;
+    border-color: rgb(0, 0, 255, 0.3);
     padding: 1em;
     background: #fff;
     border-radius: 1em;
