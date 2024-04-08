@@ -128,7 +128,7 @@ char const* string_desc_arr[] = {
     (const char[]){0x09, 0x04},  // 0: is supported language is English (0x0409)
     "Raspberry Pi",              // 1: Manufacturer
 #ifdef INCLUDE_BOARDCORE
-    "boardcore",  // 2: Product
+    "zeptoboard",  // 2: Product
 #endif
 #ifdef INCLUDE_ZEPTOCORE
     "zeptocore",  // 2: Product

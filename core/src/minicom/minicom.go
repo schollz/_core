@@ -88,7 +88,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 				} else if id == ECTOCOREID {
 					deviceType = "ectocore"
 				} else if id == BOARDCOREID {
-					deviceType = "boardcore"
+					deviceType = "zeptoboard"
 				}
 				log.Tracef("found port %s", port.Name)
 				portName = port.Name
