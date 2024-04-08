@@ -109,16 +109,14 @@
 
 
   <div class="hero2">
-    <div class="hero-inner" style="max-width: 800px; width:100%;">
+    <div class="hero-inner2" style="max-width: 800px; width:100%;">
       <div style="padding-top:4em">
         <hr class="hrgreen">
       </div>
-      <div>
+      <div id="outline">
         <hr class="hrgreen">
       </div>
-      <h1 id="outline">Outline<a href="#outline" class="link-anchor"><i class="fas fa-link" aria-hidden="true"></i></a>
-      </h1>
-      {{ $sections := slice "blurbs" "quickstart" "combos" "effects" "questions" }}
+      {{ $sections := slice "blurbs" "combos" "effects" "questions" }}
       {{ range $sections }}
       {{ $sectionPath := . }}
       {{ $section := site.GetPage (print "/" $sectionPath) }}
@@ -134,7 +132,7 @@
       </div>
       {{ end }}
       <div class="section">
-        <h3>Reference</h3>
+        <h3><a href="">Reference</a></h3>
         <p class="list"> <a href="#combo-list" class="clade">Combos</a> <a href="#effect-list" class="clade">Effects</a>
         </p>
       </div>
@@ -149,30 +147,19 @@
 
 
 
+  {{ range where .Site.RegularPages "Section" "blurbs" }}
+  {{ if isset .Params "noshow"}}{{else}}
   <section class="blurbs">
     <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
     {{ $indexPage.Content }} -->
 
-    {{ $indexPage := .Site.GetPage "/blurbs/signup" }}
-    <div style="max-width:420px; margin:auto;">
-      {{ $indexPage.Content }}
-    </div>
-
-    {{ range where .Site.RegularPages "Section" "blurbs" }}
-    {{ if isset .Params "noshow"}}{{else}}
     <div>
       {{ .Content }}
     </div>
-    {{ end }}
-    {{ end }}
   </section>
+  {{ end }}
+  {{ end }}
 
-  <section class="quickstart">
-    {{ $indexPage := .Site.GetPage "/quickstart/" }}
-    <div class="box">
-      {{ $indexPage.Content }}
-    </div>
-  </section>
 
 
 
