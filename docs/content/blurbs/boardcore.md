@@ -1,12 +1,12 @@
 +++
-title = 'Boardcore'
+title = 'zeptoboard'
 date = 2024-02-01T12:32:51-08:00
 weight = 3
 +++
 
-# boardcore
+# zeptoboard
 
-This is a breadboard variant of the Zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard and a computer terminal. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware.
+zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard and a midi interface (this website). This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware.
 
 you can purchase the components directly [from my store](#buy) or you can buy them from Amazon.
 

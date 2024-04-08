@@ -21,7 +21,7 @@ To update your zeptocore to the latest version, follow these steps:
 
 Congratulations, your zeptocore has been successfully updated to the latest version. 
 
-(_Note:_ If using [boardcore](#boardcore), follow the same instructions but ensure you download the latest [boardcore_v2.2.1.uf2](https://github.com/schollz/_core/releases/download/v2.2.1/boardcore_v2.2.1.uf2)).
+(_Note:_ If using [zeptoboard](#zeptoboard), follow the same instructions but ensure you download the latest [zeptoboard_v2.2.1.uf2](https://github.com/schollz/_core/releases/download/v2.2.1/zeptoboard_v2.2.1.uf2)).
 
 ### Tool uploader
 
@@ -129,6 +129,6 @@ Do a build:
 make clean zeptocore
 ```
 
-(replace 'zeptocore' with 'ectocore' or 'boardcore' if you are building a different image)
+(replace 'zeptocore' with 'ectocore' or 'zeptoboard' if you are building a different image)
 
 </details>

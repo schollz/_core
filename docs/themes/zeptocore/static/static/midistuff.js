@@ -140,7 +140,7 @@ function setupMidi() {
             const inputs = midiAccess.inputs.values();
             for (let input of inputs) {
                 console.log(input.name);
-                if (input.name.includes("boardcore") || input.name.includes("zeptocore")) {
+                if (input.name.includes("zeptoboard") || input.name.includes("zeptocore")) {
                     window.inputMidiDevice = input;
                     setupMidiInputListener();
                     console.log("input device connected");
@@ -152,8 +152,8 @@ function setupMidi() {
             const outputs = midiAccess.outputs.values();
             for (let output of outputs) {
                 console.log(output.name);
-                if (output.name.includes("boardcore") || output.name.includes("zeptocore")) {
-                    window.boardcoreDevice = output;
+                if (output.name.includes("zeptoboard") || output.name.includes("zeptocore")) {
+                    window.zeptoboardDevice = output;
                     console.log("output device connected");
                     // show modal
                     modal.style.display = "block";
@@ -175,11 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // get bank,sample,tempo
         setInterval(() => {
-            window.boardcoreDevice.send([0x89, 4, 0]);
+            window.zeptoboardDevice.send([0x89, 4, 0]);
         }, 213);
         // get slice info
         setInterval(() => {
-            window.boardcoreDevice.send([0x89, 3, 0]);
+            window.zeptoboardDevice.send([0x89, 3, 0]);
         }, 517);
         setInterval(() => {
             let current_time = Date.now();
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for keypress events
         document.addEventListener('keypress', (e) => {
             console.log(e.key.charCodeAt(0));
-            window.boardcoreDevice.send([0x89, e.key.charCodeAt(0), 1]);
+            window.zeptoboardDevice.send([0x89, e.key.charCodeAt(0), 1]);
         });
     }
 
