@@ -59,16 +59,15 @@ a:hover {
 .clade {
   font-style: normal;
   border-radius: 4px;
-  background: #222;
-  padding: 0.5em;
-  color: #eee;
+  background: var(--banks-background);
+  padding: 0.4em;
+  color: #222;
   text-decoration: none;
-  line-height: 2.5em;
+  line-height: 2.3em;
 }
 
 .clade:hover {
-  background: #333;
-  padding: 0.5em;
+  background: var(--highlight-color);
   text-decoration: underline;
 }
 
@@ -111,8 +110,28 @@ a:hover {
 
 }
 
-.hero-inner {
+.hero-inner2 {
+  text-align: justify;
+}
+
+.hero-inner2 h3 {
   text-align: center;
+}
+
+.hero-inner2 h3 a {
+  padding: 0;
+  background-color: inherit;
+  text-decoration: none;
+  background-color: var(--header-footer-background);
+  color: #fff;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  font-size: 1.5rem;
+}
+
+.hero-inner h3 a:hover {
+  background-color: #3f3f3f;
+  text-decoration: underline;
 }
 
 
