@@ -66,7 +66,7 @@
 
 <body>
 
-    <h1>boardcore</h1>
+    <h1>zeptoboard</h1>
     <p>press something</p>
     <button id="myBtn">Open Modal</button>
 
@@ -211,7 +211,7 @@
                     const inputs = midiAccess.inputs.values();
                     for (let input of inputs) {
                         console.log(input.name);
-                        if (input.name.includes("boardcore") || input.name.includes("zeptocore")) {
+                        if (input.name.includes("zeptoboard") || input.name.includes("zeptocore")) {
                             window.inputMidiDevice = input;
                             setupMidiInputListener();
                             console.log("input device connected");
@@ -223,8 +223,8 @@
                     const outputs = midiAccess.outputs.values();
                     for (let output of outputs) {
                         console.log(output.name);
-                        if (output.name.includes("boardcore") || output.name.includes("zeptocore")) {
-                            window.boardcoreDevice = output;
+                        if (output.name.includes("zeptoboard") || output.name.includes("zeptocore")) {
+                            window.zeptoboardDevice = output;
                             console.log("output device connected");
                             // show modal
                             modal.style.display = "block";
@@ -244,7 +244,7 @@
 
             // // set interval that sends note 57 every second
             // setInterval(() => {
-            //     window.boardcoreDevice.send([0x90, 57, 127]);
+            //     window.zeptoboardDevice.send([0x90, 57, 127]);
             // }, 500);
             // setInterval(() => {
             //     let current_time = Date.now();
@@ -258,7 +258,7 @@
 
             // Listen for keypress events
             document.addEventListener('keypress', (e) => {
-                window.boardcoreDevice.send([0x90, e.key.charCodeAt(0), 11]);
+                window.zeptoboardDevice.send([0x90, e.key.charCodeAt(0), 11]);
             });
 
             // relabel keys

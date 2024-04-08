@@ -414,7 +414,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 #include "lib/ectocore.h"
 #endif
 #ifdef INCLUDE_BOARDCORE
-#include "lib/boardcore.h"
+#include "lib/zeptoboard.h"
 #endif
 
 int main() {

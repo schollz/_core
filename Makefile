@@ -4,9 +4,9 @@ export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
 dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	make -C build -j32
 
-boardcore: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	make -C build -j32
-	mv build/_core.uf2 boardcore.uf2
+	mv build/_core.uf2 zeptoboard.uf2
 
 zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
@@ -30,7 +30,7 @@ copyecto:
 	cp ectocore_compile_definitions.cmake target_compile_definitions.cmake
 
 copyboard:
-	cp boardcore_compile_definitions.cmake target_compile_definitions.cmake
+	cp zeptoboard_compile_definitions.cmake target_compile_definitions.cmake
 
 envs:
 	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
@@ -112,7 +112,7 @@ changebaud:
 	curl localhost:7083 
 
 resetpico2:
-	-amidi -p $$(amidi -l | grep 'zeptocore\|boardcore' | awk '{print $$2}') -S "B00000"
+	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard' | awk '{print $$2}') -S "B00000"
 
 upload: resetpico2 dobuild
 	./dev/upload.sh 
