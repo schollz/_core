@@ -15,6 +15,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/wav"
 	log "github.com/schollz/logger"
 	"github.com/schollz/progressbar/v3"
 )
@@ -270,6 +272,9 @@ func reformatFilesystem(partition Filesystem) (err error) {
 	}
 
 	fmt.Println("done.")
+	go func() {
+		playBeep()
+	}()
 	return
 }
 
@@ -308,9 +313,27 @@ func run() (err error) {
 	}
 }
 
+func playBeep() (err error) {
+	f, err := os.Open("pop.wav")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	streamer, format, err := wav.Decode(f)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	speaker.Play(streamer)
+	time.Sleep(1 * time.Second)
+	streamer.Close()
+	speaker.Close()
+	return
+}
 func main() {
 	flag.Parse()
-
 	// check if the source folder exists
 	if _, err := os.Stat(argSourceFolder); os.IsNotExist(err) {
 		log.Error("source folder does not exist")
