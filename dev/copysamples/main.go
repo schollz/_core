@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"io"
@@ -15,20 +16,23 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gopxl/beep/speaker"
-	"github.com/gopxl/beep/wav"
 	log "github.com/schollz/logger"
 	"github.com/schollz/progressbar/v3"
 )
 
+//go:embed pop.wav
+var popWav []byte
+
 var argMountingName string
 var argSourceFolder string
 var argUserName string
+var argLogger string
 
 func init() {
 	flag.StringVar(&argMountingName, "name", "ZEPTOCORE", "the name of the drive to mount as")
 	flag.StringVar(&argSourceFolder, "src", "../starting_samples2", "the folder to copy to the drive")
 	flag.StringVar(&argUserName, "user", "zns", "the user name to give permissions to the drive")
+	flag.StringVar(&argLogger, "log", "info", "the log level")
 }
 
 func lsblk() (lines []string, err error) {
@@ -294,6 +298,7 @@ func run() (err error) {
 		select {
 		case <-ctrlc:
 			fmt.Println("goodbye")
+			os.Remove("pop_.wav")
 			os.Exit(0)
 		case partition := <-systemAdd:
 			if !ignoreMounting {
@@ -314,26 +319,30 @@ func run() (err error) {
 }
 
 func playBeep() (err error) {
-	f, err := os.Open("pop.wav")
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	// use play to play pop_.wav
 
-	streamer, format, err := wav.Decode(f)
+	cmd := exec.Command("play", "pop_.wav")
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Error(err)
-		return
 	}
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	speaker.Play(streamer)
+	log.Debugf("play: %s", out)
 	time.Sleep(1 * time.Second)
-	streamer.Close()
-	speaker.Close()
 	return
 }
+
 func main() {
 	flag.Parse()
+	log.SetLevel(argLogger)
+
+	// create pop_.wav
+	err := os.WriteFile("pop_.wav", popWav, 0644)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	playBeep()
+
 	// check if the source folder exists
 	if _, err := os.Stat(argSourceFolder); os.IsNotExist(err) {
 		log.Error("source folder does not exist")

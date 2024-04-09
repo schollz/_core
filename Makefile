@@ -98,7 +98,7 @@ pico-extras:
 
 copysamples:
 	cd dev/copysamples && go build -v 
-	sudo ./dev/copysamples/copysamples -src dev/starting_samples2
+	sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples2
 
 minicom:
 	cd dev/minicom && go build -v
