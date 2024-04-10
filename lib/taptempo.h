@@ -91,7 +91,12 @@ uint16_t TapTempo_tap(TapTempo *self) {
       sum += self->taps[i];
     }
   }
+  // round to the nearest 2 or 5
   milliseconds = round(60000.0 / ((float)sum / count));
+  if (milliseconds % 10 == 3 || milliseconds % 10 == 7 ||
+      milliseconds % 10 == 1 || milliseconds % 10 == 9) {
+    milliseconds = round(30000.0 / ((float)sum / count)) * 2;
+  }
   if (milliseconds > 300) {
     milliseconds = 300;
   } else if (milliseconds < 30) {
