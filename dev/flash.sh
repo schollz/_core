@@ -1,5 +1,5 @@
 #!/bin/bash
-
+curl -L https://github.com/schollz/_core/releases/download/v2.2.1/zeptocore_v2.2.1.uf2 > zeptocore_v2.2.1.uf2
 while true
 do
 if mount | grep RPI-RP2 > /dev/null; then
