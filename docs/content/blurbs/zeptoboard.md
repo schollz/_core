@@ -16,4 +16,6 @@ you can purchase the components directly [from my store](#buy) or you can buy th
 
  (_note:_ if you purchase components from me, I am able to provide reasonable amounts of support to help with your project).
 
-<img src="/_core_bb.png" style="width:90%; text-align:center; margin:auto; margin:2em;">
+<p style="text-align:center;">
+<img src="/_core_bb.png" style="width:90%; text-align:center; margin:auto 0; padding:1em; max-width:500px;">
+</p>
