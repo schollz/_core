@@ -295,10 +295,20 @@ void input_handling() {
                            4096 * 2;
         } else if (button_is_pressed(KEY_C)) {
           // change bank
-          sel_bank_next =
+          uint8_t bank_next_possible =
               banks_with_samples[adc * banks_with_samples_num / 4096];
-          sel_sample_next = sel_sample_cur % banks[sel_bank_next]->num_samples;
-          fil_current_change = true;
+          uint8_t sample_next_possible =
+              sel_sample_cur % banks[bank_next_possible]->num_samples;
+          if (bank_next_possible != sel_bank_cur &&
+              banks[bank_next_possible]->num_samples > 0 &&
+              !banks[bank_next_possible]
+                   ->sample[sample_next_possible]
+                   .snd[FILEZERO]
+                   ->one_shot) {
+            sel_bank_next = bank_next_possible;
+            sel_sample_next = sample_next_possible;
+            fil_current_change = true;
+          }
         } else if (button_is_pressed(KEY_D)) {
           probability_of_random_jump = adc;
           clear_debouncers();
@@ -363,8 +373,21 @@ void input_handling() {
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
           // change sample
-          sel_sample_next = adc * banks[sel_bank_cur]->num_samples / 4096;
-          fil_current_change = true;
+
+          // change bank
+          uint8_t bank_next_possible = sel_bank_cur;
+          uint8_t sample_next_possible =
+              adc * banks[sel_bank_cur]->num_samples / 4096;
+          if (sample_next_possible != sel_sample_cur &&
+              banks[bank_next_possible]->num_samples > 0 &&
+              !banks[bank_next_possible]
+                   ->sample[sample_next_possible]
+                   .snd[FILEZERO]
+                   ->one_shot) {
+            sel_bank_next = bank_next_possible;
+            sel_sample_next = sample_next_possible;
+            fil_current_change = true;
+          }
         } else if (button_is_pressed(KEY_D)) {
           probability_of_random_retrig = adc;
           clear_debouncers();
