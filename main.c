@@ -109,8 +109,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           // deactivate tunneling
           tunneling_is_on = false;
           sel_sample_next = tunneling_original_sample;
-          printf("%d, tunneling off: %d -> %d\n", probability_of_random_tunnel,
-                 sel_sample_cur, sel_sample_next);
+          // printf("%d, tunneling off: %d -> %d\n",
+          // probability_of_random_tunnel,
+          //        sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       } else {
@@ -120,8 +121,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           tunneling_original_sample = sel_sample_cur;
           sel_sample_next =
               random_integer_in_range(0, 15) % banks[sel_bank_cur]->num_samples;
-          printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
-                 sel_sample_cur, sel_sample_next);
+          // printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
+          //        sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       }
