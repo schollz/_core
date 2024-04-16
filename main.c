@@ -101,6 +101,32 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
+    // check if need to do tunneling
+    // avoid tunneling if we are in a timestretched variation
+    if (sel_variation == 0) {
+      if (tunneling_is_on) {
+        if (random_integer_in_range(1, 1000) > probability_of_random_tunnel) {
+          // deactivate tunneling
+          tunneling_is_on = false;
+          sel_sample_next = tunneling_original_sample;
+          // printf("%d, tunneling off: %d -> %d\n",
+          // probability_of_random_tunnel,
+          //        sel_sample_cur, sel_sample_next);
+          fil_current_change = true;
+        }
+      } else {
+        if (random_integer_in_range(1, 1000) < probability_of_random_tunnel) {
+          // activate tunneling
+          tunneling_is_on = true;
+          tunneling_original_sample = sel_sample_cur;
+          sel_sample_next =
+              random_integer_in_range(0, 15) % banks[sel_bank_cur]->num_samples;
+          // printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
+          //        sel_sample_cur, sel_sample_next);
+          fil_current_change = true;
+        }
+      }
+    }
   }
   for (uint8_t i = 0; i < 3; i++) {
     if (sequencerhandler[i].playing) {
@@ -244,12 +270,12 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       do_splice_trigger =
           (bpm_timer_counter - bpm_timer_counter_last) >= num_slices;
       if (do_splice_trigger) {
-        printf("do_splice_trigger: %d %2.0f %d %2.0f\n",
-               banks[sel_bank_cur]
-                   ->sample[sel_sample_cur]
-                   .snd[FILEZERO]
-                   ->slice_current,
-               num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
+        // printf("do_splice_trigger: %d %2.0f %d %2.0f\n",
+        //        banks[sel_bank_cur]
+        //            ->sample[sel_sample_cur]
+        //            .snd[FILEZERO]
+        //            ->slice_current,
+        //        num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
         bpm_timer_counter_last = bpm_timer_counter;
       }
     }
