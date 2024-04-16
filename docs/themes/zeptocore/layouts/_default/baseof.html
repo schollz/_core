@@ -197,6 +197,7 @@
           {{ range $index, $element := .Params.buttons }}
           <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
           {{ end }}
+
           from <code>{{.Params.mode }}</code> mode
         </p>
         {{ if isset .Params "mode_alt" }}

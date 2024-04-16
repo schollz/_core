@@ -63,9 +63,6 @@ void clear_debouncers() {
   DebounceDigits_clear(debouncer_digits);
 }
 
-uint16_t probability_of_random_jump = 0;
-uint16_t probability_of_random_retrig = 0;
-
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
@@ -290,9 +287,6 @@ void input_handling() {
                             adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
         } else if (button_is_pressed(KEY_B)) {
-          gate_threshold = adc *
-                           (30 * (44100 / SAMPLES_PER_BUFFER) / sf->bpm_tempo) /
-                           4096 * 2;
         } else if (button_is_pressed(KEY_C)) {
           // change bank
           uint8_t bank_next_possible =
@@ -433,6 +427,10 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
+          // set the bass volume
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+                            adc * 255 / 4096, 200);
+          WaveBass_set_volume(wavebass, adc);
         } else if (button_is_pressed(KEY_C)) {
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                              64, 96, 144, 192, 192};
@@ -443,10 +441,13 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
-          // set the bass volume
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
-                            adc * 255 / 4096, 200);
-          WaveBass_set_volume(wavebass, adc);
+          probability_of_random_tunnel = adc * 1000 / 4096;
+          if (probability_of_random_tunnel < 100) {
+            probability_of_random_tunnel = 0;
+          }
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                            adc * 255 / 4096, 100);
         }
       }
     }
