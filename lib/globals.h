@@ -100,6 +100,13 @@ float scratch_lfo_hz = 0.7;
 bool only_play_kicks = false;
 bool only_play_snares = false;
 
+// random things
+uint16_t probability_of_random_jump = 0;
+uint16_t probability_of_random_retrig = 0;
+uint16_t probability_of_random_tunnel = 0;
+uint8_t tunneling_original_sample = 0;
+bool tunneling_is_on = false;
+
 // buttons
 // mode toggles
 //   mode  ==0  ==1
@@ -130,8 +137,6 @@ bool toggle_chain_rec = false;
 int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
-
-uint32_t gate_threshold = 10;
 
 // add variable to keep track of variation
 uint8_t sel_variation = 0;
