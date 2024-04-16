@@ -356,6 +356,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       } else {
         sel_bank_next = sel_bank_select;
         sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
+        tunneling_original_sample = sel_sample_next;
         printf("sel_bank_next: %d\n", sel_bank_next);
         printf("sel_sample_next: %d\n", sel_sample_next);
         fil_current_change = true;
