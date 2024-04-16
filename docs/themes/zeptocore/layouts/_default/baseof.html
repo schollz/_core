@@ -197,6 +197,7 @@
           {{ range $index, $element := .Params.buttons }}
           <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
           {{ end }}
+
           from <code>{{.Params.mode }}</code> mode
         </p>
         {{ if isset .Params "mode_alt" }}
@@ -318,7 +319,7 @@
             {{ end }}
           </td>
           <td class="w4">{{ .Params.short | markdownify }}</td>
-          <td class="w3"><code>{{ .Params.mode }}</code></td>
+          <td class="w3"><code>{{ .Params.mode }} ({{.Params.weight}})</code></td>
         </tr>
         {{ if isset .Params "mode_alt" }}
         <tr class="hrw hrt">
