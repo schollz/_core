@@ -10,8 +10,7 @@ Uploading samples is a straightforward process similar to transferring a file on
 
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
-Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card.
-
+Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card. Stock samples include amen break remixes and incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks.
 
 ### Use tool online: **[zeptocore v2.2.1](/tool)**
 
