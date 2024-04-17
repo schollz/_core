@@ -7,10 +7,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/bep/debounce"
+	"github.com/dhowden/tag"
 	"github.com/schollz/_core/core/src/drumextract"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/op1"
@@ -81,6 +83,7 @@ func Get(pathToOriginal string) (f File, err error) {
 		Channels:       0,
 		Oversampling:   1,
 		SpliceVariable: false,
+		SpliceTrigger:  96,
 	}
 	var errSliceDetect error
 	errSliceDetect = fmt.Errorf("slice detection failed")
@@ -107,6 +110,48 @@ func Get(pathToOriginal string) (f File, err error) {
 				f.SliceStop = metad.SliceStop
 			}
 		}
+	} else if filepath.Ext(f.Filename) == ".ogg" {
+		// try to collect start/stop information from artist/album
+		fopen, err := os.Open(f.PathToAudio)
+		if err != nil {
+			log.Error(err)
+		}
+		metadata, err := tag.ReadFrom(fopen) // Read metadata from the file
+		if err != nil {
+			log.Error(err)
+		}
+		if strings.Contains(metadata.Comment(), "oneshot") {
+			f.OneShot = true
+			f.SplicePlayback = 1
+			f.TempoMatch = false
+			f.BPM = 120
+		}
+		spliceStartBytes := []byte(metadata.Artist())
+		spliceStopBytes := []byte(metadata.Album())
+		duration, _ := sox.Length(f.PathToAudio)
+		log.Debugf("spliceStartBytes: %s", spliceStartBytes)
+		log.Debugf("spliceStopBytes: %s", spliceStopBytes)
+		if len(spliceStartBytes) > 0 && len(spliceStopBytes) > 0 {
+			err = json.Unmarshal(spliceStartBytes, &f.SliceStart)
+			if err != nil {
+				log.Error(err)
+			}
+			err = json.Unmarshal(spliceStopBytes, &f.SliceStop)
+			if err != nil {
+				log.Error(err)
+			}
+			for i := range f.SliceStart {
+				f.SliceStart[i] = f.SliceStart[i] / duration
+			}
+			for i := range f.SliceStop {
+				f.SliceStop[i] = f.SliceStop[i] / duration
+			}
+		}
+		fopen.Close()
+		if len(f.SliceStart) > 0 {
+			errSliceDetect = nil
+		}
+
 	}
 
 	// get the number of channels
