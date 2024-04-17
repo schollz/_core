@@ -6,10 +6,11 @@ weight = 12
 
 # Uploading firmware
 
-Periodically, new firmwares are released with updated effects or improved performance. If you have the tool installed, you can connect your device to your computer and automatically update the firmware. You can also download the latest release directly from this link: [link to latest release].
+Periodically, new firmwares are released with updated effects or improved performance. If you have the tool installed, you can connect your device to your computer and automatically update the firmware. You can also download the latest release directly from this link:
 
 ### Latest firmware: **[zeptocore v2.3.1](https://github.com/schollz/_core/releases/download/v2.3.1/zeptocore_v2.3.1.uf2)**
 
+## Instructions
 
 To update your zeptocore to the latest version, follow these steps:
 
@@ -18,6 +19,11 @@ To update your zeptocore to the latest version, follow these steps:
 3. After a few seconds, a new drive named `RPI-RP2` should appear on your computer.
 4. Drag and drop the downloaded **zeptocore_v2.3.1.uf2** file onto the `RPI-RP2` drive.
 5. Wait momentarily for the drive to disappear, indicating the update is complete, and the device will turn on automatically.
+
+
+<p style="max-width:80%; margin: auto;">
+<img src="/img/button.gif" style="width:100%;">
+</p>
 
 Congratulations, your zeptocore has been successfully updated to the latest version. 
 
