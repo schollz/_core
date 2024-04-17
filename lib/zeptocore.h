@@ -275,6 +275,10 @@ void input_handling() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 3, adc * 127 / 4096);
+#endif
           sf->bpm_tempo = round(linlin(
               adc, 0, 4095,
               (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
@@ -287,7 +291,16 @@ void input_handling() {
                             adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
         } else if (button_is_pressed(KEY_B)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 6, adc * 127 / 4096);
+#endif
+
         } else if (button_is_pressed(KEY_C)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 9, adc * 127 / 4096);
+#endif
           // change bank
           uint8_t bank_next_possible =
               banks_with_samples[adc * banks_with_samples_num / 4096];
@@ -304,10 +317,19 @@ void input_handling() {
             fil_current_change = true;
           }
         } else if (button_is_pressed(KEY_D)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 12, adc * 127 / 4096);
+#endif
           probability_of_random_jump = adc;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
                             adc * 255 / 4096, 100);
+        } else {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 0, adc * 127 / 4096);
+#endif
         }
       }
     }
@@ -336,6 +358,11 @@ void input_handling() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 4, adc * 127 / 4096);
+#endif
+
           int16_t adc_original = adc;
           if (adc < 2048 - 200) {
             sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
@@ -351,6 +378,10 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
                             adc_original * 255 / 4096, 250);
         } else if (button_is_pressed(KEY_B)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 7, adc * 127 / 4096);
+#endif
           for (uint8_t channel = 0; channel < 2; channel++) {
             if (adc < 3500) {
               global_filter_index = adc * (resonantfilter_fc_max) / 3500;
@@ -366,6 +397,11 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 10, adc * 127 / 4096);
+#endif
+
           // change sample
 
           // change bank
@@ -383,10 +419,19 @@ void input_handling() {
             fil_current_change = true;
           }
         } else if (button_is_pressed(KEY_D)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 13, adc * 127 / 4096);
+#endif
           probability_of_random_retrig = adc;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
+        } else {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 1, adc * 127 / 4096);
+#endif
         }
       }
     }
@@ -417,6 +462,10 @@ void input_handling() {
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 5, adc * 127 / 4096);
+#endif
           new_vol = adc * VOLUME_STEPS / 4096;
           // new_vol = 100;
           if (new_vol != sf->vol) {
@@ -427,11 +476,20 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 8, adc * 127 / 4096);
+#endif
           // set the bass volume
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
           WaveBass_set_volume(wavebass, adc);
         } else if (button_is_pressed(KEY_C)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 11, adc * 127 / 4096);
+#endif
+
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                              64, 96, 144, 192, 192};
           printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
@@ -441,6 +499,10 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 14, adc * 127 / 4096);
+#endif
           probability_of_random_tunnel = adc * 1000 / 4096;
           if (probability_of_random_tunnel < 100) {
             probability_of_random_tunnel = 0;
@@ -448,6 +510,11 @@ void input_handling() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
+        } else {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], 2, adc * 127 / 4096);
+#endif
         }
       }
     }
