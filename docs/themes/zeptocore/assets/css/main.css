@@ -655,6 +655,31 @@ pre {
   /* Black w/ opacity */
 }
 
+.modal2ish {
+  opacity: 0;
+  /* Hidden by default */
+  position: fixed;
+  /* Stay in place */
+  z-index: 1;
+  /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%;
+  /* Full width */
+  height: 100%;
+  /* Full height */
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0);
+  /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Black w/ opacity */
+  transition: opacity 0.5s;
+  border: rgb(0, 0, 255, 0.3) solid 1px;
+}
+
+
+
 /* Modal Content/Box */
 .modal-content {
   background-color: var(--background-color-lighter);
@@ -663,9 +688,11 @@ pre {
   padding: 20px;
   padding-bottom: 60px;
   border-radius: 20px;
-  border: 1px solid #888;
+  border: rgb(0, 0, 255, 0.3) solid 3px;
   max-width: 900px;
 }
+
+
 
 .hg-theme-default {
   background-color: var(--banks-background);
@@ -705,4 +732,41 @@ pre {
 
 .sticky-menu a {
   text-decoration: none;
+}
+
+
+.modal-content2 {
+  background-color: var(--highlight-color-darker);
+  margin: 15% auto;
+  /* 15% from the top and centered */
+  padding: 20px;
+  padding-bottom: 60px;
+  border-radius: 20px;
+  max-width: 800px;
+  color: #fff;
+  border: var(--hover-color-light) solid 3px;
+}
+
+.modal-content2 a {
+  color: #fff;
+  background-color: inherit;
+}
+
+.modal-content2 a:hover {
+  font-weight: 900;
+}
+
+
+.close2 {
+  color: #fff;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close2:hover,
+.close2:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
