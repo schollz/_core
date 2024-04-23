@@ -109,9 +109,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           // deactivate tunneling
           tunneling_is_on = false;
           sel_sample_next = tunneling_original_sample;
-          // printf("%d, tunneling off: %d -> %d\n",
-          // probability_of_random_tunnel,
-          //        sel_sample_cur, sel_sample_next);
+          printf("%d, tunneling off: %d -> %d\n", probability_of_random_tunnel,
+                 sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       } else {
@@ -121,8 +120,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
           tunneling_original_sample = sel_sample_cur;
           sel_sample_next =
               random_integer_in_range(0, 15) % banks[sel_bank_cur]->num_samples;
-          // printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
-          //        sel_sample_cur, sel_sample_next);
+          printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
+                 sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       }
@@ -403,7 +402,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         if (cv_beat_current_override > 0) {
           beat_current = cv_beat_current_override;
           cv_beat_current_override = -1;
-          // printf("[main] cv_beat_current_override: %d\n", beat_current);
+          printf("[main] cv_beat_current_override: %d\n", beat_current);
         }
 #endif
         // printf("beat_current: %d\n", beat_current);
@@ -472,7 +471,7 @@ int main() {
 #else
   set_sys_clock_khz(125000, true);
 #endif
-  sleep_ms(100);
+  sleep_ms(200);
 
   // DCDC PSM control
   // 0: PFM mode (best efficiency)

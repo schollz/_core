@@ -45,6 +45,9 @@
 
 #include "clockhandling.h"
 #include "mcp3208.h"
+#ifdef INCLUDE_MIDI
+#include "midi_comm_callback.h"
+#endif
 
 void dust_1() {
   // printf("[ectocore] dust_1\n");
@@ -183,7 +186,15 @@ void input_handling() {
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
 
+#ifdef INCLUDE_MIDI
+  tusb_init();
+#endif
+
   while (1) {
+#ifdef INCLUDE_MIDI
+    tud_task();
+    midi_comm_task(midi_comm_callback_fn);
+#endif
     int16_t val;
 
     // clock input handler
@@ -197,11 +208,11 @@ void input_handling() {
 
     // update random jumping
     if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
-      // printf("[ectocore] random jump\n");
+      printf("[ectocore] random jump\n");
       do_random_jump = true;
     }
     if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
-      // printf("[ecotocre] random retrigger\n");
+      printf("[ecotocre] random retrigger\n");
       sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
       go_retrigger_2key(random_integer_in_range(0, 15),
                         random_integer_in_range(0, 15));
@@ -256,6 +267,8 @@ void input_handling() {
           found_change = true;
         }
         cv_plugged[j] = !is_signal[j];
+        // TODO: fix this
+        cv_plugged[j] = false;
       }
       debounce_input_detection = 100;
       if (found_change) {

@@ -133,6 +133,9 @@ char const* string_desc_arr[] = {
 #ifdef INCLUDE_ZEPTOCORE
     "zeptocore",  // 2: Product
 #endif
+#ifdef INCLUDE_ECTOCORE
+    "ectocore",  // 2: Product
+#endif
     "123456",  // 3: Serials, should use chip ID
 };
 
