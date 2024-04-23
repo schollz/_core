@@ -27,7 +27,7 @@ func parseSysExToString(sysex []byte) (string, error) {
 var isConnected = false
 
 func isAvailable() bool {
-	return strings.Contains(midi.GetInPorts().String(), "zeptocore")
+	return strings.Contains(midi.GetInPorts().String(), "core")
 }
 
 func doConnection() (stop func(), err error) {
@@ -39,7 +39,7 @@ func doConnection() (stop func(), err error) {
 	}
 	for _, in := range ins {
 		log.Debugf("found input: '%s'", in.String())
-		if strings.HasPrefix(in.String(), "zeptocore") {
+		if strings.Contains(in.String(), "core") {
 			midiInput = in
 			break
 		}
