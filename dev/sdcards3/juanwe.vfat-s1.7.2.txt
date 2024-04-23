@@ -1,0 +1,387 @@
+cd dev/midicom && go build -v
+./dev/midicom/midicom
+[0;36m[debug]	[0m11:20:37 midicom.go:41: found input: 'Midi Through:Midi Through Port-0 14:0'
+[0;36m[debug]	[0m11:20:37 midicom.go:41: found input: 'zeptocore:zeptocore MIDI 1 36:0'
+[0;36m[debug]	[0m11:20:37 midicom.go:106: connected
+sdcard21.7 401 856 2 1
+sdcard21.5 417 856 1 3
+sdcard22.3 405 856 2 2
+sdcard22.3 224 856 1 2
+key_do_jump 10
+sdcard22.0 402 856 1 1
+sdcard21.6 226 856 2 2
+sdcard22.1 456 856 1 2
+key_do_jump 3
+sdcard22.3 277 856 1 3
+sdcard21.8 412 856 1 2
+sdcard22.3 405 856 1 2
+sdcard23.1 243 856 1 1
+sdcard22.2 777 856 1 2
+sdcard22.5 411 856 1 1
+sdcard21.6 227 856 1 2
+sdcard22.2 407 856 1 0
+sdcard21.7 224 856 1 3
+sdcard22.0 412 856 1 2
+sdcard22.2 228 856 1 1
+sdcard22.5 423 856 1 2
+sdcard22.6 432 856 2 2
+sdcard22.5 228 856 2 1
+sdcard22.1 402 856 1 1
+sdcard21.8 404 856 1 2
+sdcard21.8 404 856 2 2
+sdcard21.7 405 856 1 1
+sdcard22.2 453 718 0 4
+sdcard20.3 464 718 1 1
+sdcard20.2 243 718 1 3
+sdcard20.3 273 718 1 0
+sdcard28.8 418 856 1 1
+sdcard32.5 226 856 1 1
+sdcard32.7 411 856 0 2
+sdcard23.0 226 856 1 1
+sdcard21.6 402 856 1 1
+sdcard21.5 422 856 1 1
+sdcard20.8 448 856 1 2
+sdcard20.9 425 856 1 1
+sdcard20.9 406 856 1 1
+key_do_jump 11
+sdcard21.2 435 856 0 1
+sdcard20.7 403 856 1 3
+sdcard20.7 403 856 1 0
+sdcard20.9 410 856 0 2
+sdcard20.8 455 856 1 1
+sdcard20.8 407 856 1 5
+sdcard21.3 429 830 1 1
+key_do_jump 10
+sdcard21.3 404 856 2 1
+key_do_jump 1
+key_do_jump 11
+sdcard21.5 246 856 2 2
+sdcard20.9 224 856 1 2
+sdcard20.9 228 856 2 1
+sdcard20.8 229 856 1 2
+sdcard20.8 240 856 1 0
+key_do_jump 3
+sdcard21.0 223 856 2 2
+key_do_jump 3
+sdcard21.2 407 856 2 3
+sdcard21.0 408 856 1 2
+sdcard20.9 403 856 1 3
+sdcard20.8 399 856 2 2
+sdcard21.1 225 830 2 0
+sdcard21.0 460 830 1 2
+sdcard20.9 402 830 1 1
+sdcard20.8 222 830 1 1
+sdcard20.9 236 830 1 2
+sdcard20.9 423 830 1 1
+sdcard20.9 402 830 1 1
+sdcard20.8 222 830 2 3
+sdcard20.9 247 830 1 0
+sdcard21.2 458 830 1 2
+sdcard20.8 251 830 1 1
+sdcard20.9 249 830 1 2
+sdcard21.1 225 808 1 1
+sdcard20.6 227 808 1 2
+key_do_jump 5
+sdcard21.1 404 856 1 1
+sdcard20.8 404 856 2 2
+key_do_jump 1
+sdcard21.0 422 856 1 0
+sdcard20.7 407 856 1 1
+sdcard21.4 414 856 1 1
+sdcard24.7 428 856 0 2
+sdcard22.1 822 856 1 0
+sdcard21.9 593 856 1 1
+sdcard21.4 245 856 1 1
+sdcard22.1 228 856 1 3
+key_do_jump 11
+sdcard21.9 235 856 0 1
+sdcard22.3 2437 856 2 0
+key_do_jump 10
+sdcard21.8 243 856 1 2
+sdcard22.3 401 856 2 3
+sdcard22.5 430 856 0 1
+sdcard22.1 226 856 2 2
+sdcard23.0 405 856 1 1
+sdcard21.4 410 856 1 2
+sdcard22.0 404 856 2 1
+sdcard21.8 414 856 1 3
+key_do_jump 1
+sdcard22.3 2400 856 2 3
+sdcard22.0 409 856 1 3
+sdcard21.9 227 856 1 0
+sdcard22.6 407 856 1 3
+sdcard22.7 409 856 1 1
+key_do_jump 1
+sdcard22.3 412 856 1 2
+sdcard21.5 421 856 2 1
+sdcard21.8 226 856 2 1
+sdcard21.9 409 856 1 1
+sdcard22.1 236 856 1 4
+sdcard21.8 426 856 1 1
+sdcard22.3 431 856 2 1
+sdcard22.8 226 856 1 1
+sdcard22.2 422 856 1 2
+sdcard23.2 225 856 1 1
+sdcard21.9 242 856 1 2
+sdcard22.2 403 856 2 3
+sdcard21.8 242 856 1 3
+sdcard22.0 414 856 2 2
+sdcard22.2 230 856 0 3
+sdcard22.3 404 856 1 2
+sdcard22.5 419 856 1 3
+sdcard22.5 228 856 2 1
+sdcard22.7 428 856 1 2
+sdcard21.9 402 856 1 1
+sdcard21.6 404 856 1 2
+sdcard21.6 406 856 1 1
+sdcard22.0 410 856 1 2
+sdcard21.8 423 856 2 2
+sdcard21.7 399 856 1 1
+sdcard22.4 407 856 1 1
+sdcard22.5 437 856 2 1
+key_do_jump 8
+sdcard22.7 227 856 1 2
+key_do_jump 5
+sdcard23.2 417 856 2 3
+sdcard21.6 403 856 1 1
+sdcard21.9 233 856 0 1
+key_do_jump 9
+sdcard22.4 1964 856 2 3
+key_do_jump 14
+sdcard21.5 226 856 1 3
+sdcard22.3 2726 856 2 2
+sdcard22.4 226 856 1 2
+sdcard22.0 417 856 1 2
+sdcard23.1 451 856 2 3
+key_do_jump 9
+sdcard22.2 226 856 2 1
+sdcard22.2 397 856 2 1
+sdcard21.6 400 856 0 1
+sdcard21.9 423 856 1 3
+sdcard22.0 420 856 1 2
+sdcard22.0 706 856 0 2
+key_do_jump 5
+sdcard22.1 432 856 1 1
+sdcard22.2 223 856 1 2
+sdcard22.6 404 856 1 1
+sdcard22.2 407 856 1 1
+sdcard22.5 595 856 0 1
+sdcard21.8 398 856 1 2
+sdcard22.1 229 856 1 2
+sdcard21.7 437 856 1 2
+sdcard22.0 635 856 1 1
+sdcard22.3 421 856 1 2
+sdcard5.0 59981 856 2 4
+sdcard2.2 37813 856 3 6
+sdcard2.1 37355 856 3 5
+sdcard2.3 38314 856 3 6
+sdcard2.3 38327 856 2 6
+sdcard2.1 37072 856 4 5
+sdcard2.2 36921 856 3 8
+sdcard1.8 35267 856 3 10
+sdcard1.8 35613 856 4 6
+sdcard1.6 34336 856 3 5
+sdcard0.8 28613 856 3 7
+key_do_jump 14
+sdcard21.8 371 856 2 2
+sdcard22.3 561 856 1 1
+sdcard22.0 358 856 2 1
+sdcard21.2 375 856 1 1
+key_do_jump 10
+sdcard21.5 354 856 1 2
+sdcard21.3 358 856 1 1
+sdcard21.8 360 856 1 1
+sdcard21.5 358 856 1 1
+sdcard22.0 203 856 1 3
+sdcard22.1 360 856 1 2
+sdcard22.3 568 856 2 2
+sdcard22.3 381 856 1 2
+sdcard21.2 355 856 0 1
+sdcard21.3 202 856 1 2
+sdcard21.6 367 856 1 2
+sdcard21.5 206 856 1 1
+key_do_jump 12
+sdcard21.6 371 856 1 2
+key_do_jump 12
+sdcard22.2 381 856 0 1
+sdcard21.7 209 856 1 1
+sdcard22.7 3398 856 1 2
+sdcard21.8 204 856 1 2
+sdcard21.0 202 856 1 2
+key_do_jump 9
+sdcard21.8 754 856 0 1
+sdcard21.2 206 856 1 1
+sdcard21.8 351 856 1 2
+sdcard21.7 202 856 2 1
+sdcard22.0 361 856 0 2
+sdcard21.9 359 856 1 1
+sdcard22.3 3176 856 1 2
+sdcard21.7 358 856 1 3
+sdcard35.5 358 856 1 1
+sdcard21.6 357 856 1 1
+sdcard21.4 356 856 1 6
+sdcard21.7 358 856 2 2
+sdcard21.4 371 856 1 1
+sdcard22.1 365 856 1 2
+sdcard21.5 357 856 1 3
+key_do_jump 11
+sdcard21.9 361 856 1 2
+sdcard22.1 378 856 1 1
+sdcard21.4 359 856 1 2
+sdcard21.5 205 856 2 2
+sdcard21.1 203 856 1 1
+sdcard21.7 204 856 2 2
+sdcard21.4 217 856 1 1
+sdcard21.9 210 856 1 2
+sdcard21.9 238 856 1 1
+sdcard22.5 3124 856 2 2
+sdcard21.8 363 856 1 2
+sdcard22.3 202 856 1 2
+sdcard21.8 357 856 0 2
+sdcard20.9 357 856 1 2
+sdcard20.4 362 856 1 1
+sdcard20.6 214 808 0 2
+sdcard20.2 201 808 1 1
+sdcard20.2 206 808 1 2
+sdcard20.2 206 808 1 2
+sdcard20.2 202 808 1 3
+sdcard20.2 203 808 1 0
+sdcard20.2 204 808 2 1
+sdcard20.1 204 808 1 1
+sdcard20.5 229 808 1 2
+sdcard20.2 210 808 1 1
+sdcard20.3 223 808 1 3
+sdcard20.2 205 808 1 1
+key_do_jump 8
+sdcard20.9 206 856 1 3
+sdcard20.4 206 856 1 1
+sdcard20.5 255 856 1 2
+sdcard20.5 204 856 2 1
+sdcard20.4 215 856 1 3
+sdcard20.4 201 856 1 1
+key_do_jump 7
+sdcard20.8 360 856 2 1
+sdcard20.4 359 856 1 2
+sdcard20.4 357 856 1 3
+sdcard20.4 399 856 2 2
+sdcard20.5 359 856 0 1
+sdcard20.5 394 856 1 2
+sdcard20.8 732 856 1 1
+sdcard20.4 376 856 2 2
+sdcard20.5 357 856 1 2
+sdcard20.4 391 856 2 4
+sdcard20.5 385 856 1 2
+sdcard20.5 361 856 2 1
+sdcard20.4 358 856 1 2
+sdcard20.7 380 856 1 2
+sdcard20.4 358 856 1 4
+key_do_jump 5
+sdcard20.8 357 856 1 1
+sdcard20.5 352 856 1 1
+sdcard20.4 373 856 1 2
+sdcard20.8 204 856 0 2
+sdcard20.4 205 856 1 1
+sdcard20.5 201 856 3 1
+sdcard20.4 201 856 2 2
+sdcard20.4 202 856 2 1
+sdcard20.4 203 856 1 1
+sdcard20.5 204 856 1 1
+sdcard20.4 205 856 0 1
+sdcard20.7 358 856 1 3
+sdcard25.0 523 1712 1 0
+sdcard24.7 362 856 1 1
+sdcard20.9 200 856 1 1
+sdcard20.4 210 856 0 3
+sdcard20.4 203 856 1 1
+sdcard20.5 204 856 1 2
+sdcard20.5 215 856 1 1
+sdcard20.4 207 856 1 2
+sdcard21.2 376 932 1 1
+sdcard20.8 358 932 1 1
+sdcard20.8 355 932 1 1
+sdcard20.8 378 932 1 2
+sdcard20.7 375 932 1 2
+sdcard21.1 362 932 1 1
+sdcard21.4 385 1018 2 1
+sdcard21.2 375 1018 1 2
+sdcard21.1 376 1018 0 1
+sdcard26.1 1810 214 1 1
+sdcard23.5 203 856 1 2
+sdcard21.6 356 856 1 2
+sdcard21.5 202 480 1 2
+sdcard20.0 14 240 1 1
+key_do_jump 2
+sdcard20.4 203 856 1 1
+sdcard22.1 2976 856 2 3
+sdcard21.8 390 856 2 2
+sdcard21.8 357 856 1 1
+sdcard22.2 379 856 1 1
+sdcard21.3 360 856 1 1
+sdcard21.6 371 856 2 1
+sdcard25.0 358 856 1 1
+key_do_jump 6
+sdcard21.8 371 856 2 1
+sdcard21.8 361 856 1 3
+sdcard22.1 386 856 2 2
+sdcard22.1 203 856 1 2
+sdcard22.2 372 856 1 1
+sdcard27.6 353 856 2 2
+sdcard21.3 203 856 1 2
+key_do_jump 9
+sdcard21.5 381 856 1 2
+sdcard21.3 207 856 1 2
+sdcard22.1 358 856 1 2
+sdcard21.5 201 856 1 2
+sdcard22.3 395 856 1 2
+key_do_jump 0
+sdcard21.9 362 856 1 1
+sdcard21.9 198 856 2 2
+key_do_jump 11
+sdcard22.0 356 856 1 2
+sdcard21.2 356 856 1 1
+sdcard21.5 359 856 1 2
+sdcard21.5 358 856 1 2
+sdcard21.5 373 856 2 1
+sdcard21.4 361 856 2 1
+sdcard22.0 213 856 1 2
+sdcard21.7 361 856 2 2
+sdcard22.1 371 856 1 2
+sdcard22.4 356 856 0 1
+sdcard21.1 378 856 1 2
+sdcard21.5 206 856 1 2
+sdcard21.3 370 856 1 2
+sdcard21.8 209 856 1 2
+sdcard21.5 358 856 1 2
+sdcard22.0 361 856 0 2
+sdcard22.0 203 856 1 2
+sdcard21.7 358 856 2 1
+sdcard22.7 225 856 1 1
+key_do_jump 5
+sdcard21.5 356 856 1 3
+sdcard21.4 386 856 2 1
+key_do_jump 7
+sdcard21.2 368 856 2 1
+sdcard21.7 392 856 1 2
+sdcard21.4 371 856 1 2
+sdcard22.2 377 856 1 1
+sdcard21.6 359 856 1 1
+sdcard22.1 204 856 1 1
+sdcard22.3 358 856 1 2
+sdcard21.8 361 856 1 1
+sdcard21.4 359 856 1 0
+sdcard21.1 384 856 2 0
+sdcard21.9 356 856 1 2
+sdcard21.4 362 856 1 2
+sdcard21.8 366 856 1 2
+sdcard21.9 367 856 1 2
+key_do_jump 1
+sdcard21.7 426 856 1 2
+sdcard22.3 202 856 1 1
+sdcard21.8 356 856 1 3
+sdcard21.8 358 856 2 1
+sdcard21.4 201 856 1 2
+sdcard21.4 356 856 2 1
+sdcard21.4 207 856 0 2
+sdcard21.9 359 856 1 2
+sdcard23.3 2496 604 1 3
+sdcard32.0 3066 856 1 2

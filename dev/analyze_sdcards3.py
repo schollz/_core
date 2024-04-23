@@ -13,6 +13,8 @@ import matplotlib.patches as patches
 def get_numbers(fname):
     cpu = []
     sd = []
+    current_sd = 0
+    last_sd = 0
     with open(fname, "r") as f:
         # Read each line in the file
         for line in f:
@@ -26,7 +28,11 @@ def get_numbers(fname):
 
             try:
                 cpu.append(float(words[0]))
-                sd.append(float(words[1]) / float(words[2]))
+                current_sd = float(words[1]) / float(words[2])
+                if last_sd < 10:
+                    sd.append(current_sd)
+                print(last_sd)
+                last_sd = current_sd
             except:
                 continue
     cpu = np.array(cpu)
@@ -47,8 +53,11 @@ for fname in fnames:
     _, sd = get_numbers(fname)
     medians.append(np.median(sd))
 
-# Sort filenames based on the median values
-fnames = [x for _, x in sorted(zip(medians, fnames))]
+# # Sort filenames based on the median values
+# fnames = [x for _, x in sorted(zip(medians, fnames))]
+
+# sort filenames based on filename
+fnames = sorted(fnames)
 
 cpu_timings = []
 sd_timings = []
@@ -62,9 +71,18 @@ for fname in fnames:
 
     # Assuming the image has the same name but with a .jpg extension
     image_path = fname.replace(".txt", ".png")
+    # check if image_path exists
+    if not glob.glob(image_path):
+        image_path = fname.split(".")[0] + ".png"
+
     images.append(getImage(image_path))
     # Extracting the file name without the extension for labels
     file_label = fname.split("/")[-1].replace(".txt", "")
+    # find proprotion of sd timings > 10
+    proportion = len(sd[np.where(sd > 10)]) / (len(sd))
+    proportion_per_min = proportion / 0.5 * 60
+    if proportion_per_min > 0:
+        file_label = f"{file_label}\n{1/proportion_per_min:.2f}"
     file_labels.append(file_label)
 
 # Create a separate figure for SD card timings

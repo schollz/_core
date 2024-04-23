@@ -163,7 +163,8 @@ func copyFileContents(src, dst string, pb *progressbar.ProgressBar) (err error) 
 
 func reformatFilesystem(partition Filesystem) (err error) {
 	// first check the size
-	if partition.Size < 28 || partition.Size > 32 {
+	log.Tracef("size: %f", partition.Size)
+	if !((partition.Size > 28 && partition.Size < 32) || (partition.Size > 58 && partition.Size < 63)) {
 		err = fmt.Errorf("size is not correct")
 		return
 	}
@@ -181,7 +182,7 @@ func reformatFilesystem(partition Filesystem) (err error) {
 
 	// format the drive
 	fmt.Print("formatting...")
-	cmd = exec.Command("sudo", "mkfs.vfat", "-n", argMountingName, "/dev/"+partition.Name)
+	cmd = exec.Command("sudo", "mkfs.vfat", "-n", argMountingName,"/dev/"+partition.Name)
 	out, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Error(err)
