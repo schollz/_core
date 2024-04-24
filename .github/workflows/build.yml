@@ -13,13 +13,13 @@ jobs:
 
     steps:
     - name: Checkout project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.1.3
     - name: Setup Hugo
-      uses: peaceiris/actions-hugo@v2
+      uses: peaceiris/actions-hugo@v3.0.0
       with:
-        hugo-version: '0.123.3'
+        hugo-version: '0.125.3'
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.1.0
       with:
         python-version: '3.11'
     - name: Set up Zig
@@ -27,14 +27,14 @@ jobs:
       with:
         version: '0.12.0'
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5.0.0
     - name: Install Pico SDK dependencies
       run: |
         sudo apt update
         sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
         python3 -m pip install numpy matplotlib tqdm icecream
     - name: Checkout pico-sdk
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.1.3
       with:
         repository: raspberrypi/pico-sdk
         path: pico-sdk
