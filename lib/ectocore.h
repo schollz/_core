@@ -189,6 +189,16 @@ void input_handling() {
   uint16_t probability_of_random_jump = 0;
   uint16_t probability_of_random_retrig = 0;
 
+  WS2812 *ws2812;
+  ws2812 = WS2812_new(7, pio0, 2);
+  // random colors
+  for (uint8_t i = 0; i < 18; i++) {
+    WS2812_fill(ws2812, i, random_integer_in_range(0, 255),
+                random_integer_in_range(0, 255),
+                random_integer_in_range(0, 255));
+  }
+  WS2812_show(ws2812);
+
 #ifdef INCLUDE_MIDI
   tusb_init();
 #endif

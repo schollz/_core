@@ -560,7 +560,7 @@ int main() {
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);
   sleep_ms(1);
-  WS2812_fill(ws2812, 0, 0, 0);
+  WS2812_fill(ws2812, 0, 0, 0, 0);
   sleep_ms(1);
   WS2812_show(ws2812);
   // for (uint8_t i = 0; i < 255; i++) {

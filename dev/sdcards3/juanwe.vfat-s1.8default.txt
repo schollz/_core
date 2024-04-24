@@ -1820,3 +1820,183 @@ combo: 11 9 7 11 4 10
 key_do_jump 10
 sdcard24.5 211 678 1 0
 [0;36m[debug]	[0m11:57:20 midicom.go:97: disconnected
+[0;36m[debug]	[0m14:35:36 midicom.go:41: found input: 'Midi Through:Midi Through Port-0 14:0'
+[0;36m[debug]	[0m14:35:36 midicom.go:41: found input: 'zeptocore:zeptocore MIDI 1 36:0'
+[0;36m[debug]	[0m14:35:36 midicom.go:106: connected
+on single 10
+key_do_jump 6
+dub_step_beat: 6
+[0;36m[debug]	[0m14:35:36 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:35:37 midicom.go:62: note_off=Gb0, ch=0
+on single 8
+key_do_jump 4
+dub_step_beat: 4
+[0;36m[debug]	[0m14:35:37 midicom.go:60: note_on=E0, ch=0, vel=127
+on 8+6
+[0;36m[debug]	[0m14:35:37 midicom.go:60: note_on=D0, ch=0, vel=127
+off any 6
+off 8+6
+[0;36m[debug]	[0m14:35:37 midicom.go:62: note_off=D0, ch=0
+off any 8
+off held 8
+[0;36m[debug]	[0m14:35:37 midicom.go:62: note_off=E0, ch=0
+combo: 10 8 6 
+on single 10
+key_do_jump 6
+dub_step_beat: 6
+[0;36m[debug]	[0m14:35:37 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:35:38 midicom.go:62: note_off=Gb0, ch=0
+on single 9
+key_do_jump 5
+dub_step_beat: 5
+[0;36m[debug]	[0m14:35:38 midicom.go:60: note_on=F0, ch=0, vel=127
+off any 9
+off held 9
+[0;36m[debug]	[0m14:35:38 midicom.go:62: note_off=F0, ch=0
+on single 14
+key_do_jump 10
+dub_step_beat: 10
+[0;36m[debug]	[0m14:35:38 midicom.go:60: note_on=Bb0, ch=0, vel=127
+off any 14
+off held 14
+[0;36m[debug]	[0m14:35:38 midicom.go:62: note_off=Bb0, ch=0
+on single 4
+key_do_jump 0
+dub_step_beat: 0
+[0;36m[debug]	[0m14:35:38 midicom.go:60: note_on=C0, ch=0, vel=127
+on 4+6
+[0;36m[debug]	[0m14:35:38 midicom.go:60: note_on=D0, ch=0, vel=127
+off any 6
+off 4+6
+[0;36m[debug]	[0m14:35:38 midicom.go:62: note_off=D0, ch=0
+off any 4
+off held 4
+[0;36m[debug]	[0m14:35:39 midicom.go:62: note_off=C0, ch=0
+combo: 10 9 14 4 6 
+on single 13
+key_do_jump 9
+dub_step_beat: 25
+[0;36m[debug]	[0m14:35:39 midicom.go:60: note_on=A0, ch=0, vel=127
+on 13+7
+[0;36m[debug]	[0m14:35:39 midicom.go:60: note_on=Eb0, ch=0, vel=127
+off any 7
+off 13+7
+[0;36m[debug]	[0m14:35:39 midicom.go:62: note_off=Eb0, ch=0
+off any 13
+off held 13
+[0;36m[debug]	[0m14:35:39 midicom.go:62: note_off=A0, ch=0
+on single 11
+key_do_jump 7
+dub_step_beat: 23
+[0;36m[debug]	[0m14:35:40 midicom.go:60: note_on=G0, ch=0, vel=127
+off any 11
+off held 11
+[0;36m[debug]	[0m14:35:40 midicom.go:62: note_off=G0, ch=0
+on single 12
+key_do_jump 8
+dub_step_beat: 24
+[0;36m[debug]	[0m14:35:40 midicom.go:60: note_on=Ab0, ch=0, vel=127
+off any 12
+off held 12
+[0;36m[debug]	[0m14:35:40 midicom.go:62: note_off=Ab0, ch=0
+on single 10
+key_do_jump 6
+dub_step_beat: 22
+[0;36m[debug]	[0m14:35:40 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:35:40 midicom.go:62: note_off=Gb0, ch=0
+on single 8
+key_do_jump 4
+dub_step_beat: 20
+[0;36m[debug]	[0m14:35:40 midicom.go:60: note_on=E0, ch=0, vel=127
+off any 8
+off held 8
+[0;36m[debug]	[0m14:35:40 midicom.go:62: note_off=E0, ch=0
+on single 6
+key_do_jump 2
+dub_step_beat: 18
+[0;36m[debug]	[0m14:35:40 midicom.go:60: note_on=D0, ch=0, vel=127
+off any 6
+off held 6
+[0;36m[debug]	[0m14:35:41 midicom.go:62: note_off=D0, ch=0
+combo: 13 7 11 12 10 8 6 
+on single 4
+key_do_jump 0
+dub_step_beat: 0
+[0;36m[debug]	[0m14:35:41 midicom.go:60: note_on=C0, ch=0, vel=127
+off any 4
+off held 4
+[0;36m[debug]	[0m14:35:41 midicom.go:62: note_off=C0, ch=0
+on single 4
+key_do_jump 0
+dub_step_beat: 0
+[0;36m[debug]	[0m14:35:42 midicom.go:60: note_on=C0, ch=0, vel=127
+off any 4
+off held 4
+[0;36m[debug]	[0m14:35:42 midicom.go:62: note_off=C0, ch=0
+on single 4
+key_do_jump 0
+dub_step_beat: 0
+[0;36m[debug]	[0m14:35:42 midicom.go:60: note_on=C0, ch=0, vel=127
+off any 4
+off held 4
+[0;36m[debug]	[0m14:35:42 midicom.go:62: note_off=C0, ch=0
+combo: 4 4 4 
+on single 9
+key_do_jump 5
+dub_step_beat: 21
+[0;36m[debug]	[0m14:36:38 midicom.go:60: note_on=F0, ch=0, vel=127
+off any 9
+off held 9
+[0;36m[debug]	[0m14:36:38 midicom.go:62: note_off=F0, ch=0
+combo: 9 
+on single 10
+key_do_jump 6
+dub_step_beat: 22
+[0;36m[debug]	[0m14:36:39 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:36:39 midicom.go:62: note_off=Gb0, ch=0
+on single 12
+key_do_jump 8
+dub_step_beat: 24
+[0;36m[debug]	[0m14:36:39 midicom.go:60: note_on=Ab0, ch=0, vel=127
+off any 12
+off held 12
+[0;36m[debug]	[0m14:36:39 midicom.go:62: note_off=Ab0, ch=0
+on single 14
+key_do_jump 10
+dub_step_beat: 26
+[0;36m[debug]	[0m14:36:39 midicom.go:60: note_on=Bb0, ch=0, vel=127
+off any 14
+off held 14
+[0;36m[debug]	[0m14:36:39 midicom.go:62: note_off=Bb0, ch=0
+combo: 10 12 14 
+on single 10
+key_do_jump 6
+dub_step_beat: 6
+[0;36m[debug]	[0m14:37:19 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:37:20 midicom.go:62: note_off=Gb0, ch=0
+on single 8
+key_do_jump 4
+dub_step_beat: 4
+[0;36m[debug]	[0m14:37:20 midicom.go:60: note_on=E0, ch=0, vel=127
+off any 8
+off held 8
+[0;36m[debug]	[0m14:37:20 midicom.go:62: note_off=E0, ch=0
+on single 10
+key_do_jump 6
+dub_step_beat: 6
+[0;36m[debug]	[0m14:37:20 midicom.go:60: note_on=Gb0, ch=0, vel=127
+off any 10
+off held 10
+[0;36m[debug]	[0m14:37:20 midicom.go:62: note_off=Gb0, ch=0
+combo: 10 8 10 
+[0;36m[debug]	[0m14:37:21 midicom.go:97: disconnected

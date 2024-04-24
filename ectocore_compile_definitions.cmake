@@ -12,6 +12,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_ECTOCORE=1
     INCLUDE_FILTER=1
     INCLUDE_MIDI=1
+    INCLUDE_RGBLED=1
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
