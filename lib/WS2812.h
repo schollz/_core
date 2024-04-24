@@ -27,12 +27,14 @@
 
 #include "WS2812.pio.h"
 
+#define NUM_LEDS 18
+
 typedef struct WS2812 {
   uint pin;
   PIO pio;
   uint sm;
   uint8_t bytes[4];
-  uint32_t data;
+  uint32_t data[NUM_LEDS];
 } WS2812;
 
 WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
@@ -41,7 +43,7 @@ WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
   ws->pin = pin;
   ws->pio = pio;
   ws->sm = sm;
-  ws->data = 0;
+  memset(ws->data, 0, sizeof(ws->data));
   ws->bytes[0] = 0;
   ws->bytes[1] = 2;
   ws->bytes[2] = 1;
@@ -52,7 +54,11 @@ WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
   return ws;
 }
 
-void WS2812_fill(WS2812 *ws, uint8_t red, uint8_t green, uint8_t blue) {
+void WS2812_fill(WS2812 *ws, int index, uint8_t red, uint8_t green,
+                 uint8_t blue) {
+  if (index < 0 || index >= NUM_LEDS) {
+    return;  // Safety check to avoid overflow
+  }
   uint32_t rgbw =
       (uint32_t)(blue) << 16 | (uint32_t)(green) << 8 | (uint32_t)(red);
   uint32_t result = 0;
@@ -73,12 +79,14 @@ void WS2812_fill(WS2812 *ws, uint8_t red, uint8_t green, uint8_t blue) {
     }
     result <<= 8;
   }
-  ws->data = result;
+  ws->data[index] = result;  // Store data for the specified LED
   return;
 }
 
 void WS2812_show(WS2812 *ws) {
-  pio_sm_put_blocking(ws->pio, ws->sm, ws->data);
+  for (int i = 0; i < NUM_LEDS; i++) {
+    pio_sm_put_blocking(ws->pio, ws->sm, ws->data[i]);
+  }
   return;
 }
 
