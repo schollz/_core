@@ -26,12 +26,12 @@ for (var i = 0; i < links.length; i++) {
     });
 }
 
-// // if splash=1 cookie not found
-// if (localStorage.getItem('splash') !== '1') {
-//     // show modal after 1 second
-//     setTimeout(function () {
-//         // fade in the modal
-//         modal2.style.opacity = 1;
-//         localStorage.setItem('splash', '1');
-//     }, 100);
-// }
+// if splash=1 cookie not found
+if (localStorage.getItem('splash') !== '2') {
+    // show modal after 1 second
+    setTimeout(function () {
+        // fade in the modal
+        modal2.style.opacity = 1;
+        localStorage.setItem('splash', '1');
+    }, 100);
+}
