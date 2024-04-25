@@ -8,6 +8,7 @@
   --hover-color: #d2cde9;
   --hover-color-light: #d2cde944;
   --other-color: #6d51c9;
+  --other-color-lighter: #6d51c944;
 }
 
 @font-face {
@@ -670,8 +671,6 @@ pre {
   width: 100%;
   overflow: auto;
   transition: opacity 0.5s;
-  border: rgb(0, 0, 255, 0.3) solid 1px;
-  /* center in screen */
   position: fixed;
   top: 50%;
   left: 50%;
@@ -745,6 +744,8 @@ pre {
   max-width: 800px;
   border: var(--highlight-color-darker) solid 3px;
   box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .2);
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .modal-content2 a {
@@ -781,4 +782,42 @@ pre {
   .modal-content2 {
     margin: 2em;
   }
+}
+
+
+[id]::before {
+  height: 3em;
+  margin-top: -3em;
+}
+
+.modal2ish div {
+  max-width: 450px;
+}
+
+.buybutton {
+  margin-top: 1em;
+  background-color: var(--other-color);
+  border-top: 8px double var(--highlight-color);
+  border-bottom: 8px double var(--highlight-color);
+  padding: 0.5em;
+  padding-left: 2em;
+  padding-right: 2em;
+  border-radius: 1em;
+  /* remove border */
+  border: none;
+  cursor: pointer;
+  /* add shadow */
+  box-shadow: 6px 6px 2px 1px rgba(0, 0, 255, .1);
+  font-size: 1em;
+  color: #fff;
+  font-weight: 900;
+  display: none;
+}
+
+.buybutton:hover {
+  background-color: #6d51c9aa;
+}
+
+.buybutton:active {
+  background-color: #7d61d9
 }
