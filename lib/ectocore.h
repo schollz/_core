@@ -49,6 +49,34 @@
 #include "midi_comm_callback.h"
 #endif
 
+void ws2812_wheel_clear(WS2812 *ws2812) {
+  for (uint8_t i = 0; i < 16; i++) {
+    WS2812_fill(ws2812, i, 0, 0, 0);
+  }
+}
+
+void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
+  if (val > 4079) {
+    val = 4079;
+  }
+  int8_t filled = 0;
+  while (val > 255) {
+    val -= 256;
+    filled++;
+  }
+  for (uint8_t i = 0; i < 16; i++) {
+    WS2812_fill(ws2812, i, 0, 0, 0);
+  }
+  for (uint8_t i = 0; i < filled; i++) {
+    WS2812_fill(ws2812, i, r ? 255 : 0, g ? 255 : 0, b ? 255 : 0);
+  }
+  if (val < 10) {
+    val = 0;
+  }
+  WS2812_fill(ws2812, filled, r ? val : 0, g ? val : 0, b ? val : 0);
+  WS2812_show(ws2812);
+}
+
 void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
@@ -457,6 +485,9 @@ void input_handling() {
                       sel_sample_cur % banks[sel_bank_next]->num_samples;
                   fil_current_change = true;
                   printf("[ectocore] switch bank %d\n", val);
+                  ws2812_wheel_clear(ws2812);
+                  WS2812_fill(ws2812, val, 255, 0, 0);
+                  WS2812_show(ws2812);
                 }
                 break;
               }
@@ -467,6 +498,9 @@ void input_handling() {
           // sample selection
           printf("[ectocore] switch sample %d\n", val);
           val = (val * banks[sel_bank_next]->num_samples) / 1024;
+          ws2812_wheel_clear(ws2812);
+          WS2812_fill(ws2812, val, 0, 255, 255);
+          WS2812_show(ws2812);
           if (val != sel_sample_cur) {
             sel_sample_next = val;
             fil_current_change = true;
@@ -475,6 +509,7 @@ void input_handling() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
         printf("[ectocore] knob_break %d\n", val);
+        ws2812_set_wheel(ws2812, val * 4, true, true, false);
         if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
           // change volume
           if (val < 412) {
@@ -496,10 +531,15 @@ void input_handling() {
             sf->fx_active[FX_SATURATE] = 0;
           }
         } else {
-          if (val < 10 && !button_mute) {
+          if (val < 20 && !button_mute) {
             trigger_button_mute = true;
-          } else if (val >= 10 && button_mute) {
+            printf("[ectocore] mute\n");
+            WS2812_fill(ws2812, 17, 0, 0, 255);
+            WS2812_show(ws2812);
+          } else if (val >= 20 && button_mute) {
             button_mute = false;
+            WS2812_fill(ws2812, 17, 0, 255, 0);
+            WS2812_show(ws2812);
           }
           uint8_t u8val = val * 255 / 1024;
           // global_filter_index =
@@ -532,13 +572,19 @@ void input_handling() {
           if (val < 10 && !playback_stopped) {
             if (!button_mute) trigger_button_mute = true;
             do_stop_playback = true;
+            WS2812_fill(ws2812, 17, 255, 0, 0);
+            WS2812_show(ws2812);
           } else if (val > 10 && playback_stopped) {
             do_restart_playback = true;
             button_mute = false;
+            WS2812_fill(ws2812, 17, 0, 255, 0);
+            WS2812_show(ws2812);
           } else {
             if (val > 700) {
               probability_of_random_jump = (val - 700) * (val - 700) / 100;
             }
+            ws2812_set_wheel(ws2812, val * 4, true, false, true);
+            WS2812_show(ws2812);
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
