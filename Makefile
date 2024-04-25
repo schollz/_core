@@ -166,7 +166,7 @@ resetpico:
 	python3 dev/reset_pico.py 
 
 docsbuild:
-	cd docs && hugo
+	cd docs && hugo 
 	rm -rf core/src/server/docs
 	cp -r docs/public core/src/server/docs
 
@@ -205,4 +205,4 @@ core_linux_amd64: docsbuild
 
 .PHONY: docs
 docs:
-	cd docs && hugo serve -D
+	cd docs && hugo serve -D --bind 0.0.0.0

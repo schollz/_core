@@ -43,7 +43,12 @@ if (window.location.href.indexOf("buy") > -1) {
         // fade in the modal
         modal2.style.opacity = 1;
         modal2.style.display = "block";
+        var earElements = document.querySelectorAll('.ear');
+        for (var i = 0; i < earElements.length; i++) {
+            earElements[i].style.display = "none";
+        }
     }, 100);
+    // hide ears
 }
 
 // if (localStorage.getItem('splash') !== '2') {
