@@ -9,12 +9,18 @@ var span2 = document.getElementsByClassName("close2")[0];
 // When the user clicks on <span> (x), close the modal
 span2.onclick = function () {
     modal2.style.opacity = 0;
+    setTimeout(function () {
+        modal2.style.display = "none";
+    }, 1000);
 }
 
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function (event) {
     if (event.target == modal2) {
         modal2.style.opacity = 0;
+        setTimeout(function () {
+            modal2.style.display = "none";
+        }, 1000);
     }
 }
 
@@ -23,11 +29,24 @@ var links = document.querySelectorAll('#myModal2 a');
 for (var i = 0; i < links.length; i++) {
     links[i].addEventListener('click', function () {
         modal2.style.opacity = 0;
+        setTimeout(function () {
+            modal2.style.display = "none";
+        }, 1000);
     });
 }
 
-// // if splash=1 cookie not found
-// if (localStorage.getItem('splash') !== '1') {
+// if splash=1 cookie not found
+// if URL contains "buy"
+if (window.location.href.indexOf("buy") > -1) {
+    // show modal after 1 second
+    setTimeout(function () {
+        // fade in the modal
+        modal2.style.opacity = 1;
+        modal2.style.display = "block";
+    }, 100);
+}
+
+// if (localStorage.getItem('splash') !== '2') {
 //     // show modal after 1 second
 //     setTimeout(function () {
 //         // fade in the modal

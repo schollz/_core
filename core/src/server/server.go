@@ -182,8 +182,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return handleWebsocket(w, r)
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
-	} else if strings.HasPrefix(r.URL.Path, "/docs") || strings.HasPrefix(r.URL.Path, "/guide") || r.URL.Path == "/" {
-		if r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" || r.URL.Path == "/" {
+	} else if strings.HasPrefix(r.URL.Path, "/docs") || strings.Contains(r.URL.Path, "buy") || strings.HasPrefix(r.URL.Path, "/guide") || r.URL.Path == "/" {
+		if strings.Contains(r.URL.Path, "buy") || r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" || r.URL.Path == "/" {
 			r.URL.Path = "/docs/index.html"
 		}
 		var b []byte
@@ -224,7 +224,6 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 			} else {
 				b, err = staticFiles.ReadFile(filename)
 				if err != nil {
-
 					b, err = docsFiles.ReadFile(path.Join("docs", filename))
 				}
 			}
