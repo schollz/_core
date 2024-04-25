@@ -73,6 +73,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_SINEBASS=1
 
     USBD_PID=0x1836
+
+    # DETROITUNDERGROUND=1
 )
 
 # uncomment these lines to include midi
