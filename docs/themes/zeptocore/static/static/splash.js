@@ -47,9 +47,25 @@ if (window.location.href.indexOf("buy") > -1) {
         for (var i = 0; i < earElements.length; i++) {
             earElements[i].style.display = "none";
         }
+        console.log("showing buy button");
+        document.getElementsByClassName("buybutton")[0].style.display = "inline-block";
+        // add listener for buy button
+        document.getElementsByClassName("buybutton")[0].addEventListener('click', function () {
+            // show modal
+            modal2.style.opacity = 1;
+            modal2.style.display = "block";
+            var earElements = document.querySelectorAll('.ear');
+            for (var i = 0; i < earElements.length; i++) {
+                earElements[i].style.display = "none";
+            }
+            document.getElementsByClassName("buybutton")[0].style.display = "inline-block";
+        });
     }, 100);
     // hide ears
+    // show buy button
 }
+
+
 
 // if (localStorage.getItem('splash') !== '2') {
 //     // show modal after 1 second
