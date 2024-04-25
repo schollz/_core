@@ -370,6 +370,13 @@ table {
 
 /* mobile only */
 @media (max-width: 600px) {
+
+
+
+  .notmobile {
+    display: none;
+  }
+
   .hero2 {
     position: relative;
     padding-top: 6em;
@@ -766,4 +773,12 @@ pre {
 
 .nodot li {
   list-style-type: none;
+}
+
+/* mobile only */
+@media (max-width: 600px) {
+
+  .modal-content2 {
+    margin: 2em;
+  }
 }
