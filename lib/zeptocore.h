@@ -22,7 +22,9 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "clockhandling.h"
+#ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
+#endif
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -135,6 +137,12 @@ void input_handling() {
   }
 #ifdef INCLUDE_MIDI
   tusb_init();
+#endif
+
+#ifdef DETROITUNDERGROUND
+  probability_of_random_jump = 800;
+  probability_of_random_retrig = 200;
+  probability_of_random_tunnel = 40;
 #endif
 
   while (1) {

@@ -214,9 +214,6 @@ void input_handling() {
       ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
                         clock_handling_start);
 
-  uint16_t probability_of_random_jump = 0;
-  uint16_t probability_of_random_retrig = 0;
-
   WS2812 *ws2812;
   ws2812 = WS2812_new(7, pio0, 2);
   // random colors
