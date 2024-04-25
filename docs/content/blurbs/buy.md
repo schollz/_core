@@ -7,13 +7,26 @@ noshow = 1
 
 # Buy
 
-select the color below for your zeptocore:
 
 <div id="buyzepto" style="margin: auto; max-width: 300px;">
-<div id='product-component-1709939625158'></div>
+<div id='product-component-1714052698464'></div>
 </div>
 
+<ul class="nodot" style="font-size:0.8rem; text-align:center;">
+<li>Stereo playback of 16-bit audio files @ 44.1 kHz sampling rate</li>
+<li>SD-card storage for up to 32 gigabytes of samples</li>
+<li>Recalls up to 256 audio files (16 banks of 16 tracks)</li>
+<li>16 different effects (saturate, fuzz, delay, reverb, etc…)</li>
+<li>Single-cycle wavetable synthesizer</li>
+<li>Realtime sequencer with optional quantization</li>
+<li>Optional clock sync out</li>
+<li>MIDI (in + out) over USB</li>
+<li>Built-in 8-ohm speaker</li>
+<li>Powered by two AAA batteries or USB-C</li>
+<li>Open-source</li>
+</ul>
 <script type="text/javascript">
+/*<![CDATA[*/
 (function () {
   var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
   if (window.ShopifyBuy) {
@@ -40,7 +53,7 @@ select the color below for your zeptocore:
     ShopifyBuy.UI.onReady(client).then(function (ui) {
       ui.createComponent('product', {
         id: '8831942492443',
-        node: document.getElementById('product-component-1709939625158'),
+        node: document.getElementById('product-component-1714052698464'),
         moneyFormat: '%24%7B%7Bamount%7D%7D',
         options: {
   "product": {
@@ -69,10 +82,6 @@ select the color below for your zeptocore:
       }
     },
     "buttonDestination": "checkout",
-    "contents": {
-      "button": false,
-      "buttonWithQuantity": true
-    },
     "text": {
       "button": "Buy now"
     },
@@ -181,5 +190,5 @@ select the color below for your zeptocore:
     });
   }
 })();
+/*]]>*/
 </script>
-

@@ -656,26 +656,19 @@ pre {
 }
 
 .modal2ish {
+  display: none;
   opacity: 0;
-  /* Hidden by default */
-  position: fixed;
-  /* Stay in place */
   z-index: 1;
-  /* Sit on top */
   left: 0;
-  top: 0;
   width: 100%;
-  /* Full width */
-  height: 100%;
-  /* Full height */
   overflow: auto;
-  /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0);
-  /* Fallback color */
-  background-color: rgba(0, 0, 0, 0.5);
-  /* Black w/ opacity */
   transition: opacity 0.5s;
   border: rgb(0, 0, 255, 0.3) solid 1px;
+  /* center in screen */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 
@@ -736,15 +729,15 @@ pre {
 
 
 .modal-content2 {
-  background-color: var(--highlight-color-darker);
+  background-color: var(--background-color-lighter);
   margin: 15% auto;
   /* 15% from the top and centered */
   padding: 20px;
   padding-bottom: 60px;
   border-radius: 20px;
   max-width: 800px;
-  color: #fff;
-  border: var(--hover-color-light) solid 3px;
+  border: var(--highlight-color-darker) solid 3px;
+  box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .2);
 }
 
 .modal-content2 a {
@@ -758,7 +751,7 @@ pre {
 
 
 .close2 {
-  color: #fff;
+  color: var(--highlight-color-darker);
   float: right;
   font-size: 28px;
   font-weight: bold;
@@ -769,4 +762,8 @@ pre {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.nodot li {
+  list-style-type: none;
 }
