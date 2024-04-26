@@ -52,8 +52,8 @@ a:hover {
 [id]::before {
   content: '';
   display: block;
-  height: 75px;
-  margin-top: -75px;
+  height: 200px;
+  margin-top: -200px;
   visibility: hidden;
 }
 
@@ -86,6 +86,8 @@ a:hover {
   font-size: 2em;
   margin: 0;
   padding: 0;
+  top: -3em;
+  position: relative;
 }
 
 
@@ -564,7 +566,6 @@ pre {
 }
 
 .sticky-banner {
-  display: none;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -576,6 +577,7 @@ pre {
   text-align: center;
   transition: bottom 0.75s;
   /* Smooth transition for sliding down */
+  z-index: 1000;
 }
 
 .sticky-banner>a {
