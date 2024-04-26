@@ -13,7 +13,7 @@ weight = 1
   margin-top: -200px;
   visibility: hidden;"><span>
 
-zeptocore will release on May 10th. 
+zeptocore will release on May 3rd. 
 
 sign up here to receive an email when it releases:
 
