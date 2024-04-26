@@ -759,6 +759,12 @@ BREAKOUT_OF_MUTE:
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
+#ifdef PRINT_AUDIOBLOCKDROPS
+  if (sd_card_total_time > 9000) {
+    MessageSync_printf(messagesync, "sdcard total time: %ld\n",
+                       sd_card_total_time);
+  }
+#endif
   if (cpu_utilizations_i == 64 || sd_card_total_time > 9000 || do_open_file) {
     uint16_t cpu_utilization = 0;
     for (uint8_t i = 0; i < cpu_utilizations_i; i++) {

@@ -408,7 +408,7 @@ void do_update_phase_from_beat_current() {
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
-    printf("key_do_jump %d\n", beat);
+    // printf("key_do_jump %d\n", beat);
     // TODO: [0] should be which sequencer it is on
     if (sequencerhandler[0].recording) {
       Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], beat,

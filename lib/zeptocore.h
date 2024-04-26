@@ -140,9 +140,9 @@ void input_handling() {
 #endif
 
 #ifdef DETROITUNDERGROUND
-  probability_of_random_jump = 800;
-  probability_of_random_retrig = 200;
-  probability_of_random_tunnel = 40;
+  probability_of_random_jump = 950;
+  probability_of_random_retrig = 400;
+  probability_of_random_tunnel = 60;
 #endif
 
   while (1) {
@@ -207,6 +207,18 @@ void input_handling() {
       go_retrigger_2key(random_integer_in_range(0, 15),
                         random_integer_in_range(0, 15));
     }
+#else
+#ifdef PRINT_AUDIOBLOCKDROPS
+    // random stuff
+    if (random_integer_in_range(1, 10000) < 80) {
+      // printf("random retrig\n");
+      key_do_jump(random_integer_in_range(0, 15));
+    } else if (random_integer_in_range(1, 10000) < 5) {
+      // printf("random retrigger\n");
+      go_retrigger_2key(random_integer_in_range(0, 15),
+                        random_integer_in_range(0, 15));
+    }
+#endif
 #endif
 
     if (random_integer_in_range(1, 1000000) < probability_of_random_jump) {
