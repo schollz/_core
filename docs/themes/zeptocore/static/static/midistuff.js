@@ -175,11 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // get bank,sample,tempo
         setInterval(() => {
-            window.zeptoboardDevice.send([0x89, 4, 0]);
+            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, 4, 0]);
         }, 213);
         // get slice info
         setInterval(() => {
-            window.zeptoboardDevice.send([0x89, 3, 0]);
+            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, 3, 0]);
         }, 517);
         setInterval(() => {
             let current_time = Date.now();
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for keypress events
         document.addEventListener('keypress', (e) => {
             console.log(e.key.charCodeAt(0));
-            window.zeptoboardDevice.send([0x89, e.key.charCodeAt(0), 1]);
+            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, e.key.charCodeAt(0), 1]);
         });
     }
 
