@@ -156,6 +156,7 @@ bool SaveFile_load(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   }
   f_close(&fil);
   *sync_sd_card = false;
+
   return true;
 }
 
@@ -168,6 +169,7 @@ bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   FRESULT fr;
   FIL file; /* File object */
   char fname[32];
+
   sprintf(fname, "savefile%d", savefile_index);
   printf("[SaveFile] opening savefile for writing\n");
   fr = f_open(&file, fname, FA_WRITE | FA_CREATE_ALWAYS);
