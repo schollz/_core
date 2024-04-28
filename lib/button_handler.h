@@ -444,6 +444,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // D+C
       // do save
       printf("[button_handler] saving %d to sd card\n", savefile_current);
+      // save the current bank and sample
+      sf->bank = sel_bank_cur;
+      sf->sample = sel_sample_cur;
       SaveFile_save(sf, &sync_using_sdcard, savefile_current);
       // load prevoius file
       printf("[button_handler] loading %s again\n", fil_current_name);

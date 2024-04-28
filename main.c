@@ -546,6 +546,12 @@ int main() {
   // show X in case the files aren't loaded
   // LEDS_show_blinking_z(leds, 2);
 
+  sel_sample_next = 0;
+  sel_variation_next = 0;
+  sel_bank_cur = 0;
+  sel_sample_cur = 0;
+  sel_variation = 0;
+
   // printf("startup!\n");
   sdcard_startup();
 
@@ -582,11 +588,6 @@ int main() {
   // WS2812_show(ws2812);
 #endif
 
-  sel_sample_next = 0;
-  sel_variation_next = 0;
-  sel_bank_cur = 0;
-  sel_sample_cur = 0;
-  sel_variation = 0;
   fil_current_change = true;
 
 #ifdef INCLUDE_ZEPTOCORE
