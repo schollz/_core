@@ -248,6 +248,13 @@ void savefile_do_load() {
       Sequencer_set_callbacks(sf->sequencers[2][j], bass_sequencer_emit,
                               bass_sequencer_stop);
     }
+
+    // load new bank and sample
+    sel_bank_next = sf->bank;
+    sel_sample_next = sf->sample;
+    printf("[SaveFile] loaded bank %d sample %d\n", sel_bank_next,
+           sel_sample_next);
+    fil_current_change = true;
   }
 }
 
