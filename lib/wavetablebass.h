@@ -18,7 +18,7 @@ WaveBass *WaveBass_malloc() {
   }
   self->note = 0;
   self->change_count = 5000;
-  self->volume = 4096 / 2;
+  self->volume = 4096 / 4;
   return self;
 }
 
@@ -54,13 +54,13 @@ int32_t WaveBass_next(WaveBass *self) {
   }
   if (self->change_count < 2000) {
     if (self->change_count == 1) {
-      WaveSyn_new(self->osc[0], self->note + wavetablebass_harmonics[0], 0, 5,
+      WaveSyn_new(self->osc[0], self->note + wavetablebass_harmonics[0], 0, 1,
                   100);
-    } else if (self->change_count == 500) {
-      WaveSyn_new(self->osc[1], self->note + wavetablebass_harmonics[1], 1, 2,
+    } else if (self->change_count == 500 && WAVETABLEBASS_MAX > 1) {
+      WaveSyn_new(self->osc[1], self->note + wavetablebass_harmonics[1], 1, 3,
                   50);
-    } else if (self->change_count == 1000) {
-      WaveSyn_new(self->osc[2], self->note + wavetablebass_harmonics[2], 2, 1,
+    } else if (self->change_count == 1000 && WAVETABLEBASS_MAX > 2) {
+      WaveSyn_new(self->osc[2], self->note + wavetablebass_harmonics[2], 2, 4,
                   25);
     }
     self->change_count++;
