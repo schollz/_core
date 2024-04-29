@@ -34,7 +34,7 @@ void WaveSyn_new(WaveSyn *self, uint8_t wave, uint8_t quiet, uint8_t attack,
   // release all the oscillators
   for (uint8_t i = 0; i < WAVETABLESYN_MAX; i++) {
     if (self->active[i]) {
-      fprintf(stderr, "release %d\n", i);
+      // printf("[wavetablesyn] release %d\n", i);
       WaveOsc_release_fast(self->osc[i]);
     }
   }
