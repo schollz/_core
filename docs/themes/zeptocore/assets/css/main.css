@@ -674,7 +674,7 @@ pre {
   overflow: auto;
   transition: opacity 0.5s;
   position: fixed;
-  top: 50%;
+  top: 46%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
