@@ -292,7 +292,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                    ->sample[sel_sample_cur]
                                                    .snd[FILEZERO]
                                                    ->slice_num;
-          printf("[main] beat_current from clock in: %d\n", beat_current);
+          // printf("[main] beat_current from clock in: %d\n", beat_current);
         } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
           uint8_t lo = key3_pressed_keys[0] - 4;
           uint8_t hi = key3_pressed_keys[1] - 4;
