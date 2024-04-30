@@ -78,6 +78,7 @@
 //
 #include "random.h"
 //
+bool usb_midi_present = false;
 #ifdef INCLUDE_MIDI
 #include "midi_comm.h"
 #include "midi_out.h"
