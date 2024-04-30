@@ -33,9 +33,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
     return true;
   }
-  if (clock_in_do && clock_in_ready) {
-    printf("clock_in_do: %d\n", clock_in_beat_total);
-  }
   if (bpm_last != sf->bpm_tempo) {
     printf("updating bpm timer: %d-> %d\n", bpm_last, sf->bpm_tempo);
     bpm_last = sf->bpm_tempo;

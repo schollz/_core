@@ -109,7 +109,7 @@ void input_handling() {
   if (use_onewiremidi) {
     // setup one wire midi
     onewiremidi =
-        Onewiremidi_new(pio0, 2, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
+        Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
                         midi_start, midi_continue, midi_stop, midi_timing);
   } else {
     clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
@@ -165,6 +165,20 @@ void input_handling() {
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
+      // if (adc_startup == 0) {
+      //   for (int i = 1; i < 2; i++) {
+      //     PIO p = (i == 0) ? pio0 : pio1;
+      //     printf("PIO%d:\n", i);
+      //     for (int sm = 2; sm < 4; sm++) {
+      //       if (pio_sm_is_claimed(p, sm)) {
+      //         printf("  State Machine %d: USED\n", sm);
+      //       } else {
+      //         printf("  State Machine %d: NOT USED\n", sm);
+      //       }
+      //     }
+      //     sleep_ms(1);
+      //   }
+      // }
     }
 
     // check for input

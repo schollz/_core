@@ -146,7 +146,6 @@ void Onewiremidi_receive_(Onewiremidi *self) {
     msg.data[0] = self->previous ^ DATA0_PRESENT;
     msg.data[1] = b;
     self->previous = 0;
-    printf("[onewiremidi] data: %02x %02x\n", msg.data[0], msg.data[1]);
     if (msg.status == MIDI_NOTE_ON) {
       if (self->midi_note_on != NULL) {
         self->midi_note_on(msg.data[0], msg.data[1]);
@@ -164,8 +163,7 @@ void Onewiremidi_receive_(Onewiremidi *self) {
 }
 
 void Onewiremidi_receive(void *self) {
-  for (uint8_t i = 0; i < 8; i++) {
+  for (uint8_t i = 0; i < 3; i++) {
     Onewiremidi_receive_(self);
-    sleep_us(10);
   }
 }
