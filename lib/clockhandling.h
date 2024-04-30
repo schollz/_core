@@ -21,8 +21,10 @@ void clock_handling_up(int time_diff) {
   // printf("[clockhandling] clock_handling_up: %d\n", time_diff);
   clock_in_diff_2x = time_diff * 2;
   uint16_t bpm_new = 60000000 / (time_diff * 2);
-  if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
-    sf->bpm_tempo = bpm_new;
+  if (bpm_new > 60 && bpm_new < 300) {
+    if (sf->bpm_tempo - bpm_new > 2 || bpm_new - sf->bpm_tempo > 2) {
+      sf->bpm_tempo = bpm_new;
+    }
   }
   clock_in_do_update();
 }

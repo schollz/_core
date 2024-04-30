@@ -162,6 +162,24 @@ void input_handling() {
     midi_comm_task(midi_comm_callback_fn);
 #endif
 
+    if (do_switch_between_clock_and_midi) {
+      do_switch_between_clock_and_midi = false;
+      if (use_onewiremidi) {
+        // switch to clock
+        Onewiremidi_destroy(onewiremidi);
+        clockinput =
+            ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+                              clock_handling_down, clock_handling_start);
+      } else {
+        // switch to one wire midi
+        ClockInput_destroy(clockinput);
+        onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on,
+                                      midi_note_off, midi_start, midi_continue,
+                                      midi_stop, midi_timing);
+      }
+      use_onewiremidi = !use_onewiremidi;
+    }
+
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
