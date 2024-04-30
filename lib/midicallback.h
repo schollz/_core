@@ -8,7 +8,7 @@
 #define MIDI_CLOCK_MULTIPLIER 2
 
 uint32_t note_hit[MIDI_MAX_NOTES];
-int midi_bpm_detect[5];
+int midi_bpm_detect[7];
 uint8_t midi_bpm_detect_i = 0;
 bool note_on[MIDI_MAX_NOTES];
 uint32_t midi_last_time = 0;
@@ -80,6 +80,7 @@ int findMedian(int arr[], uint8_t size) {
   qsort(arrCopy, size, sizeof(int), compare_ints);
 
   // Return the middle element from the sorted copy
+
   return arrCopy[size / 2];
 }
 
@@ -105,16 +106,16 @@ void midi_timing() {
           (int)round(1250000.0 * MIDI_CLOCK_MULTIPLIER * MIDI_DELTA_COUNT_MAX /
                      (float)(midi_delta_sum));
       midi_bpm_detect_i++;
-      if (midi_bpm_detect_i == 5) {
+      if (midi_bpm_detect_i == 7) {
         midi_bpm_detect_i = 0;
       }
       // sort midi_bpm_detect
 
-      int bpm_new = findMedian(midi_bpm_detect, 5);
-      if (bpm_new > 60 && bpm_new < 260) {
+      int bpm_new = findMedian(midi_bpm_detect, 7);
+      if (bpm_new > 60 && bpm_new < 260 && bpm_new != sf->bpm_tempo) {
         sf->bpm_tempo = bpm_new;
 #ifdef DEBUG_MIDI
-        printf("[midicallback] midi bpm = %d\n", sf->bpm_tempo);
+        printf("[midicallback] midi bpm = %d\n", bpm_new);
 #endif
       }
       //   if (bpm_input - 7 != bpm_set) {
