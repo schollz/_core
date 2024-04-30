@@ -577,7 +577,7 @@ pre {
   text-align: center;
   transition: bottom 0.75s;
   /* Smooth transition for sliding down */
-  z-index: 1000;
+  z-index: 10;
 }
 
 .sticky-banner>a {
@@ -649,7 +649,7 @@ pre {
   /* Hidden by default */
   position: fixed;
   /* Stay in place */
-  z-index: 1;
+  z-index: 1000;
   /* Sit on top */
   left: 0;
   top: 0;
@@ -668,13 +668,13 @@ pre {
 .modal2ish {
   display: none;
   opacity: 0;
-  z-index: 1;
+  z-index: 1000;
   left: 0;
   width: 100%;
   overflow: auto;
   transition: opacity 0.5s;
   position: fixed;
-  top: 46%;
+  top: 49%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
@@ -788,8 +788,8 @@ pre {
 
 
 [id]::before {
-  height: 3em;
-  margin-top: -3em;
+  height: 0em;
+  margin-top: -0em;
 }
 
 .modal2ish div {
