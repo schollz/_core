@@ -51,6 +51,9 @@ void midi_start() {
   printf("[midicallback] midi start\n");
 #endif
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
+  do_restart_playback = true;
+  button_mute = false;
+  trigger_button_mute = false;
 }
 void midi_continue() {
 #ifdef DEBUG_MIDI
@@ -63,6 +66,8 @@ void midi_stop() {
   printf("[midicallback] midi stop\n");
 #endif
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
+  trigger_button_mute = true;
+  do_stop_playback = true;
 }
 
 // Comparator function for qsort
@@ -91,6 +96,7 @@ void midi_timing() {
 #ifdef DEBUG_MIDI
     printf("[midicallback] midi resetting\n");
 #endif
+    clock_in_beat_total = 0;
   } else if (midi_timing_count %
                  (midi_timing_modulus / MIDI_CLOCK_MULTIPLIER) ==
              0) {
