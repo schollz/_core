@@ -89,6 +89,8 @@ Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
   return self;
 }
 
+void Onewiremidi_destroy(Onewiremidi *self) { free(self); }
+
 uint8_t Onewiremidi_reverse_uint8_t(uint8_t b) {
   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
