@@ -64,7 +64,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     playback_stopped = true;
   }
   if (playback_stopped) {
-    printf("playback_stopped\n");
     return true;
   }
 
