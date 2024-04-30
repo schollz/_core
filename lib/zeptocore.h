@@ -159,7 +159,8 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn);
+    midi_comm_task(midi_comm_callback_fn, midi_start, midi_continue, midi_stop,
+                   midi_timing);
 #endif
 
     if (do_switch_between_clock_and_midi) {
