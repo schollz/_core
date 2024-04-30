@@ -22,6 +22,9 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "clockhandling.h"
+//
+#include "midicallback.h"
+#include "onewiremidi.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -101,9 +104,17 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput =
-      ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
-                        clock_handling_down, clock_handling_start);
+  ClockInput *clockinput;
+  Onewiremidi *onewiremidi;
+  if (use_onewiremidi) {
+    // setup one wire midi
+    onewiremidi =
+        Onewiremidi_new(pio0, 2, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
+                        midi_start, midi_continue, midi_stop, midi_timing);
+  } else {
+    clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+                                   clock_handling_down, clock_handling_start);
+  }
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
@@ -458,8 +469,12 @@ void input_handling() {
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
-    // clock input handler
-    ClockInput_update(clockinput);
+    if (!use_onewiremidi) {
+      // clock input handler
+      ClockInput_update(clockinput);
+    } else {
+      Onewiremidi_receive(onewiremidi);
+    }
 #endif
 
 #ifdef BTN_COL_START
