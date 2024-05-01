@@ -164,7 +164,7 @@ func copyFileContents(src, dst string, pb *progressbar.ProgressBar) (err error) 
 func reformatFilesystem(partition Filesystem) (err error) {
 	// first check the size
 	log.Tracef("size: %f", partition.Size)
-	if !((partition.Size > 28 && partition.Size < 32) || (partition.Size > 58 && partition.Size < 63) || (partition.Size > 7 && partition.Size < 11) || (partition.Size > 14 && partition.Size < 18)) {
+	if partition.Size>100 {
 		err = fmt.Errorf("size is not correct")
 		return
 	}
