@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -11,9 +14,31 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 
 	//_ "gitlab.com/gomidi/midi/v2/drivers/portmididrv" // autoregisters driver
+
 	"gitlab.com/gomidi/midi/v2/drivers"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv"
 )
+
+func sendNotification(message string) (err error) {
+	params := url.Values{}
+	params.Add("magic"+message, ``)
+	body := strings.NewReader(params.Encode())
+
+	req, err := http.NewRequest("POST", "https://duct.schollz.com/notify?pubsub=true", body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+	return
+}
 
 func parseSysExToString(sysex []byte) (string, error) {
 	if len(sysex) < 3 || sysex[0] != 0xF0 || sysex[len(sysex)-1] != 0xF7 {
@@ -49,12 +74,23 @@ func doConnection() (stop func(), err error) {
 		return
 	}
 
+	lastNtfyMessage := time.Now()
+	go func() {
+		time.Sleep(5 * time.Minute)
+		sendNotification("sdcard is good")
+	}()
 	// listen to midi
 	stop, err = midi.ListenTo(midiInput, func(msg midi.Message, timestamps int32) {
 		var bt []byte
 		var ch, key, vel uint8
 		switch {
 		case msg.GetSysEx(&bt):
+			if bytes.Contains(bt, []byte("BLOCKDROP")) {
+				if time.Since(lastNtfyMessage) > 10*time.Second {
+					sendNotification("sdcard is bad")
+					lastNtfyMessage = time.Now()
+				}
+			}
 			fmt.Printf("%s", bt)
 		case msg.GetNoteStart(&ch, &key, &vel):
 			log.Debugf("note_on=%s, ch=%v, vel=%v\n", midi.Note(key), ch, vel)
@@ -69,6 +105,7 @@ func doConnection() (stop func(), err error) {
 		log.Error(err)
 		return
 	}
+
 	isConnected = true
 	return
 }

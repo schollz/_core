@@ -761,8 +761,7 @@ BREAKOUT_OF_MUTE:
 
 #ifdef PRINT_AUDIOBLOCKDROPS
   if (sd_card_total_time > 9000) {
-    MessageSync_printf(messagesync, "sdcard total time: %ld\n",
-                       sd_card_total_time);
+    MessageSync_printf(messagesync, "BLOCKDROP: %ld\n", sd_card_total_time);
   }
 #endif
   if (cpu_utilizations_i == 64 || sd_card_total_time > 9000 || do_open_file) {
