@@ -9,3 +9,9 @@ mode = 'any'
 +++
 
 If a sequence is recorded in this slot, this button will toggle playback for the sequence. If recording, pressing this button will end the recording.
+
+
+<figure class="imgcombo">
+<img src="/img/sequence_play.png">
+<figcaption>Combo for playing a sequence slot.</figcaption>
+</figure>
