@@ -76,10 +76,69 @@ int printf_sysex(const char* format, ...) {
 
 typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 
-void midi_comm_task(midi_comm_callback callback) {
+void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
+                    callback_int midi_note_off, callback_void midi_start,
+                    callback_void midi_continue, callback_void midi_stop,
+                    callback_void midi_timing) {
   // Read a MIDI message from the USB MIDI stream
   uint32_t bytes_read = read_midi_message(midi_buffer, sizeof(midi_buffer));
+  if (bytes_read == 0) {
+    return;
+  }
+  if (midi_buffer[0] == 0xf8) {
+    // timing received
+    usb_midi_present = true;
+    if (midi_timing != NULL) {
+      midi_timing();
+    }
+    return;
+  } else if (midi_buffer[0] == 0xfa) {
+    // start received
+    usb_midi_present = true;
+    if (midi_start != NULL) {
+      midi_start();
+    }
+    return;
+  } else if (midi_buffer[0] == 0xfb) {
+    // continue received
+    usb_midi_present = true;
+    if (midi_continue != NULL) {
+      midi_continue();
+    }
+    return;
+  } else if (midi_buffer[0] == 0xfc) {
+    // stop received
+    usb_midi_present = true;
+    if (midi_stop != NULL) {
+      midi_stop();
+    }
+    return;
+  } else if (midi_buffer[0] == 0x80) {
+    // note off received
+    usb_midi_present = true;
+    if (midi_note_off != NULL) {
+      midi_note_off(midi_buffer[1]);
+    }
+    return;
+  } else if (midi_buffer[0] == 0x90) {
+    // note on received
+    usb_midi_present = true;
+    if (midi_note_on != NULL) {
+      if (bytes_read == 3) {
+        // TODO: for some reason this is not working
+        midi_note_on(midi_buffer[1], midi_buffer[2]);
+      } else {
+        midi_note_on(midi_buffer[1], 0);
+      }
+    }
+    return;
+  }
+  // for (int i = 0; i < bytes_read; i++) {
+  //   printf_sysex("[midi_comm_task] midi_buffer[%d]: %x\n", i,
+  //   midi_buffer[i]);
+  // }
   if (bytes_read == 3) {
+    usb_midi_present = true;
     // Extract the status byte and MIDI channel
     uint8_t status = midi_buffer[0] & 0xF0;
     uint8_t channel = midi_buffer[0] & 0x0F;

@@ -73,7 +73,8 @@ void i2s_callback_func() {
       button_mute || reduce_cpu_usage > 0 ||
       (envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD) ||
       envelope_volume_val < 0.001 || Gate_is_up(audio_gate) ||
-      (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x))) {
+      (clock_in_do && ((startTime - clock_in_last_time) > clock_in_diff_2x) &&
+       !(use_onewiremidi || usb_midi_present))) {
     first_loop_ever = true;
     audio_was_muted = true;
     audio_callback_in_mute = true;
