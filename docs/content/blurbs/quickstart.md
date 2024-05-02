@@ -9,19 +9,68 @@ weight = 3
 
 ### on & off
 
-To power on the device, toggle the switch on the top right to the "up" position. The device comes pre-loaded with several samples. A sample will start playing automatically. Navigate through the samples by pressing any of the `1-16` keys. Experiment with retriggering samples by pressing and holding one `1-16` key and then pressing a different `1-16` key.
+To power on the device, toggle the switch on the top right to the "up" position. The device comes pre-loaded with several samples. A sample will start playing automatically.
+
+<figure class="imgcombo">
+<img src="/img/jump.png">
+<figcaption>Press keys to jump samples.</figcaption>
+</figure>
+
+ Navigate through the samples by pressing any of the `1-16` keys.
+
+<figure class="imgcombo">
+<img src="/img/retrigger.png">
+<figcaption>Hold a key and press to initiate a retrigger.</figcaption>
+</figure>
+
+ Experiment with retriggering samples by pressing and holding one `1-16` key and then pressing a different `1-16` key.
+
+
 
 ### volume & tempo
 
-Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` located on the right-hand side. Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob Y`.
+The `A`, `B`, `C`, and `D` keys are used in combination with the knobs to adjust various settings.
+
+<figure class="imgcombo">
+<img src="/img/volume_turn.png">
+<figcaption>Changing the volume.</figcaption>
+</figure>
+
+Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` located on the right-hand side. 
+
+
+<figure class="imgcombo">
+<img src="/img/tempo_turn.png">
+<figcaption>Changing the tempo.</figcaption>
+</figure>
+
+
+Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob Y`.
+
 
 ### banks & samples
 
-There are 16 banks of samples, with each bank capable of holding 16 samples. By default, you are in the first bank and the first sample. To switch to a different bank and select a different sample, follow these steps: first, hold `B`, then while holding `B`, press `1-16` to choose a bank. Keep the `B` key pressed and then press another `1-16` button to select a sample within that bank.
+There are 16 banks of samples, with each bank capable of holding 16 samples. By default, you are in the first bank and the first sample. 
 
-## effects & modes
+<figure class="imgcombo">
+<img src="/img/change_samples.png">
+<figcaption>Pressing two keys while holding <code>B</code> will select a bank and then sample.</figcaption>
+</figure>
 
-The device powers up in `JUMP` mode, where pressing `1-16` allows you to navigate through samples. In addition to sample jumping, you can toggle effects by holding `A` and then pressing `1-16` to activate the selected effect. There are [16 different effects](#effect-list) to choose from. If you prefer not to hold down the `A` key for each effect selection, you can switch to `MASH` mode. To enter `MASH` mode, hold `A` and press `C`. In this mode, you can toggle effects simply by pressing `1-16`, without the need to hold any keys. To return to the default `JUMP` mode behavior, hold `A` and press `B`.
+
+To switch to a different bank and select a different sample, follow these steps: first, hold `B`, then while holding `B`, press `1-16` to choose a bank. Keep the `B` key pressed and then press another `1-16` button to select a sample within that bank.
+
+## effects
+
+The device powers up in `JUMP` mode, where pressing `1-16` allows you to navigate through samples. When in jump mode you can hold `A` and press any of the `1-16` to activate an effect.
+
+<figure class="imgcombo">
+<img src="/img/jump_effect.png">
+<figcaption>Example of toggling the `fuzz` effect in `JUMP` mode.</figcaption>
+</figure>
+
+
+There are [16 different effects](#effect-list) to choose from. 
 
 ## effect parameters & probabilities
 
