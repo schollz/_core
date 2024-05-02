@@ -139,7 +139,6 @@ function setupMidi() {
             // Input setup
             const inputs = midiAccess.inputs.values();
             for (let input of inputs) {
-                console.log(input.name);
                 if (input.name.includes("zeptoboard") || input.name.includes("zeptocore")) {
                     window.inputMidiDevice = input;
                     setupMidiInputListener();
@@ -151,10 +150,10 @@ function setupMidi() {
             // Output setup
             const outputs = midiAccess.outputs.values();
             for (let output of outputs) {
-                console.log(output.name);
+                // console.log(output.name);
                 if (output.name.includes("zeptoboard") || output.name.includes("zeptocore")) {
                     window.zeptoboardDevice = output;
-                    console.log("output device connected");
+                    // console.log("output device connected");
                     // show modal
                     modal.style.display = "block";
                     break;
@@ -184,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => {
             let current_time = Date.now();
             if (current_time - time_received_total_slices > 2000) {
-                console.log("reconnecting", current_time - time_received_total_slices);
+                // console.log("reconnecting", current_time - time_received_total_slices);
                 modal.style.display = "none";
                 setupMidi();
             }

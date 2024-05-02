@@ -2,193 +2,27 @@
 title = 'Buy'
 date = 2024-02-01T12:32:51-08:00
 weight = 1
-noshow = 1
 +++
 
 # Buy
 
 
-<div id="buyzepto" style="margin: auto; max-width: 300px;">
-<div id='product-component-1714052698464'></div>
+
+<div >
+<div id='product-component-1714659090867' class="product"></div>
+</div>
+<div style="line-height: 1.4;">
+<p style="text-align:center; font-weight:900; margin-bottom:0; margin-top:2em; font-size:1.2em;">a handmade, handheld
+sample player.</p>
+<p style="text-align:center; margin-top:0;font-size:1em;">
+sales ship within 3 business days except
+<br>
+"pre-order expedited" ships
+within 1-2 weeks <br>
+and "pre-order" ships within 3-5 weeks</p>
 </div>
 
-<ul class="nodot" style="font-size:0.8rem; text-align:center;">
-<li>Stereo playback of 16-bit audio files @ 44.1 kHz sampling rate</li>
-<li>SD-card storage for up to 32 gigabytes of samples</li>
-<li>Recalls up to 256 audio files (16 banks of 16 tracks)</li>
-<li>16 different effects (saturate, fuzz, delay, reverb, etc…)</li>
-<li>Single-cycle wavetable synthesizer</li>
-<li>Realtime sequencer with optional quantization</li>
-<li>Optional clock sync out</li>
-<li>MIDI (in + out) over USB</li>
-<li>Built-in 8-ohm speaker</li>
-<li>Powered by two AAA batteries or USB-C</li>
-<li>Open-source</li>
-</ul>
-<script type="text/javascript">
-/*<![CDATA[*/
-(function () {
-  var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
-  if (window.ShopifyBuy) {
-    if (window.ShopifyBuy.UI) {
-      ShopifyBuyInit();
-    } else {
-      loadScript();
-    }
-  } else {
-    loadScript();
-  }
-  function loadScript() {
-    var script = document.createElement('script');
-    script.async = true;
-    script.src = scriptURL;
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(script);
-    script.onload = ShopifyBuyInit;
-  }
-  function ShopifyBuyInit() {
-    var client = ShopifyBuy.buildClient({
-      domain: 'infinitedigits.myshopify.com',
-      storefrontAccessToken: '9e045e3ce0fbee0fb64ebbbce133b648',
-    });
-    ShopifyBuy.UI.onReady(client).then(function (ui) {
-      ui.createComponent('product', {
-        id: '8831942492443',
-        node: document.getElementById('product-component-1714052698464'),
-        moneyFormat: '%24%7B%7Bamount%7D%7D',
-        options: {
-  "product": {
-    "styles": {
-      "product": {
-        "@media (min-width: 601px)": {
-          "max-width": "calc(25% - 20px)",
-          "margin-left": "20px",
-          "margin-bottom": "50px"
-        }
-      },
-      "title": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "button": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "price": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "compareAt": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "unitPrice": {
-        "font-family": "Roboto, sans-serif"
-      }
-    },
-    "buttonDestination": "checkout",
-    "text": {
-      "button": "Buy now"
-    },
-    "googleFonts": [
-      "Roboto"
-    ]
-  },
-  "productSet": {
-    "styles": {
-      "products": {
-        "@media (min-width: 601px)": {
-          "margin-left": "-20px"
-        }
-      }
-    }
-  },
-  "modalProduct": {
-    "contents": {
-      "img": false,
-      "imgWithCarousel": true,
-      "button": false,
-      "buttonWithQuantity": true
-    },
-    "styles": {
-      "product": {
-        "@media (min-width: 601px)": {
-          "max-width": "100%",
-          "margin-left": "0px",
-          "margin-bottom": "0px"
-        }
-      },
-      "button": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "title": {
-        "font-family": "Helvetica Neue, sans-serif",
-        "font-weight": "bold",
-        "font-size": "26px",
-        "color": "#4c4c4c"
-      },
-      "price": {
-        "font-family": "Helvetica Neue, sans-serif",
-        "font-weight": "normal",
-        "font-size": "18px",
-        "color": "#4c4c4c"
-      },
-      "compareAt": {
-        "font-family": "Helvetica Neue, sans-serif",
-        "font-weight": "normal",
-        "font-size": "15.299999999999999px",
-        "color": "#4c4c4c"
-      },
-      "unitPrice": {
-        "font-family": "Helvetica Neue, sans-serif",
-        "font-weight": "normal",
-        "font-size": "15.299999999999999px",
-        "color": "#4c4c4c"
-      }
-    },
-    "googleFonts": [
-      "Roboto"
-    ],
-    "text": {
-      "button": "Add to cart"
-    }
-  },
-  "option": {
-    "styles": {
-      "label": {
-        "font-family": "Roboto, sans-serif"
-      },
-      "select": {
-        "font-family": "Roboto, sans-serif"
-      }
-    },
-    "googleFonts": [
-      "Roboto"
-    ]
-  },
-  "cart": {
-    "styles": {
-      "button": {
-        "font-family": "Roboto, sans-serif"
-      }
-    },
-    "text": {
-      "total": "Subtotal",
-      "button": "Checkout"
-    },
-    "googleFonts": [
-      "Roboto"
-    ]
-  },
-  "toggle": {
-    "styles": {
-      "toggle": {
-        "font-family": "Roboto, sans-serif"
-      }
-    },
-    "googleFonts": [
-      "Roboto"
-    ]
-  }
-},
-      });
-    });
-  }
-})();
-/*]]>*/
-</script>
+
+<p style="font-size:0.9em; text-align:justify;">Stereo playback of 16-bit audio files @ 44.1 kHz sampling rate · SD-card storage for up to 32 gigabytes of samples · Recalls up to 256 audio files (16 banks of 16 tracks) · 16 different effects (saturate, fuzz, delay, reverb, etc…) · Single-cycle wavetable synthesizer · Realtime sequencer with optional quantization · Optional clock sync out · MIDI (in + out) over USB · Built-in 8-ohm speaker · Powered by two AAA batteries or USB-C · Open-source</p>
+
+
