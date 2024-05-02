@@ -817,7 +817,6 @@ pre {
   font-size: 1em;
   color: #fff;
   font-weight: 900;
-  display: none;
 }
 
 .buybutton:hover {
@@ -827,7 +826,6 @@ pre {
 .buybutton:active {
   background-color: #7d61d9
 }
-
 
 figure {
   width: 90%;
@@ -858,4 +856,14 @@ figcaption {
   margin-top: 0.5em;
   /* Adds space between the image and the caption */
   max-width: 300px;
+}
+
+.product {
+  margin: 0 auto;
+  border-style: solid;
+  border-color: rgb(0, 0, 255, 0.05);
+  padding: 1em;
+  background: rgb(0, 0, 255, 0.05);
+  border-radius: 1em;
+  box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .1);
 }
