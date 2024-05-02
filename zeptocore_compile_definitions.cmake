@@ -15,6 +15,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     LED_2_GPIO=19
     LED_3_GPIO=29
     LED_4_GPIO=24
+    LED_TOP_GPIO=25
     CLOCK_INPUT_GPIO=22
     BTN_ROW_START=0
     BTN_COL_START=5

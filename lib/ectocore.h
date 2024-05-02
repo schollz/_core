@@ -231,7 +231,7 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn);
+    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
     int16_t val;
 
@@ -428,7 +428,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.3.4\n");
+        printf("version=v2.4.0\n");
       }
     }
 

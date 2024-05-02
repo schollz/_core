@@ -43,10 +43,6 @@ enum {
   MIDI_STOP = 0xfc,
 };
 
-typedef void (*callback_int_int)(uint8_t, uint8_t);
-typedef void (*callback_int)(uint8_t);
-typedef void (*callback_void)();
-
 typedef struct Onewiremidi {
   PIO pio;
   unsigned char sm;
@@ -93,6 +89,8 @@ Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
   return self;
 }
 
+void Onewiremidi_destroy(Onewiremidi *self) { free(self); }
+
 uint8_t Onewiremidi_reverse_uint8_t(uint8_t b) {
   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
@@ -105,7 +103,7 @@ typedef struct midi_message {
   uint8_t data[2];
 } midi_message;
 
-void Onewiremidi_receive(Onewiremidi *self) {
+void Onewiremidi_receive_(Onewiremidi *self) {
   if (pio_sm_is_rx_fifo_empty(self->pio, self->sm)) {
     return;
   }
@@ -117,6 +115,7 @@ void Onewiremidi_receive(Onewiremidi *self) {
   self->last_time = t;
   uint8_t b = Onewiremidi_reverse_uint8_t(pio_sm_get(self->pio, self->sm));
   b = ~b;
+  // printf("[onewiremidi] received: %02x\n", b);
 
   enum { DATA0_PRESENT = 0x80 };
   midi_message msg = {0};
@@ -163,4 +162,10 @@ void Onewiremidi_receive(Onewiremidi *self) {
   }
 
   return;
+}
+
+void Onewiremidi_receive(void *self) {
+  for (uint8_t i = 0; i < 4; i++) {
+    Onewiremidi_receive_(self);
+  }
 }

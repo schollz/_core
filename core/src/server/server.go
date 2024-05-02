@@ -175,7 +175,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		b, _ := json.Marshal(map[string]string{"version": "v2.3.4"})
+		b, _ := json.Marshal(map[string]string{"version": "v2.4.0"})
 		w.Write(b)
 		return nil
 	} else if r.URL.Path == "/ws" {
@@ -261,7 +261,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsBuy:          r.URL.Path[1:] == "buy",
 				IsMain:         r.URL.Path == "/",
 				IsZeptocore:    r.URL.Path == "/zeptocore",
-				VersionCurrent: "v2.3.4",
+				VersionCurrent: "v2.4.0",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 			}

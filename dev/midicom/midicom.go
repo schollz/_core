@@ -85,13 +85,13 @@ func doConnection() (stop func(), err error) {
 		var ch, key, vel uint8
 		switch {
 		case msg.GetSysEx(&bt):
+			log.Debugf("%s", bt)
 			if bytes.Contains(bt, []byte("BLOCKDROP")) {
-				if time.Since(lastNtfyMessage) > 10*time.Second {
+				if time.Since(lastNtfyMessage) > 1*time.Second {
 					sendNotification("sdcard is bad")
 					lastNtfyMessage = time.Now()
 				}
 			}
-			fmt.Printf("%s", bt)
 		case msg.GetNoteStart(&ch, &key, &vel):
 			log.Debugf("note_on=%s, ch=%v, vel=%v\n", midi.Note(key), ch, vel)
 		case msg.GetNoteEnd(&ch, &key):

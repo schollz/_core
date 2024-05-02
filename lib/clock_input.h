@@ -39,6 +39,8 @@ typedef struct ClockInput {
   callback_void callback_start;
 } ClockInput;
 
+void ClockInput_destroy(ClockInput *ci) { free(ci); }
+
 ClockInput *ClockInput_create(uint8_t gpio, callback_int callback_up,
                               callback_int callback_down,
                               callback_void callback_start) {
