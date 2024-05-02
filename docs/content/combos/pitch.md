@@ -9,4 +9,11 @@ mode = 'any'
 +++
 
 
-Change the pitch by holding **A** and turning **Knob Y**.
+Change the pitch by holding **A** and turning **Knob Y**. Pitch can be changed independent of tempo. 
+
+*Try it:* Interesting effects can be obtained by turning the tempo high and turning the pitch down or vice-versa.
+
+<figure class="imgcombo">
+<img src="/img/pitch_turn.png">
+<figcaption>Changing pitch.</figcaption>
+</figure>

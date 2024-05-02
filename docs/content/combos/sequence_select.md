@@ -8,4 +8,9 @@ icon = 'list-ol'
 mode = 'any'
 +++
 
-Select any one of the 16 slots (1-16) to store a sequence. Each of the three modes (JUMP, MASH, and BASS) has 16 slots available for storing sequences.
+Select any one of the 16 slots (1-16) to store a sequence. Each of the three modes (JUMP, MASH, and BASS) has 16 slots available for storing sequences. This is the first step to record a sequence.
+
+<figure class="imgcombo">
+<img src="/img/sequence_select.png">
+<figcaption>Combo for selecting a sequence slot.</figcaption>
+</figure>
