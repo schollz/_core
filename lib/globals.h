@@ -58,6 +58,12 @@ struct repeating_timer timer;
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
 
+// one wire midi
+bool use_onewiremidi = false;
+
+bool do_switch_between_clock_and_midi = false;
+bool playback_was_stopped_clock = false;
+
 SequencerHandler sequencerhandler[3];
 
 // voice 1 + 2

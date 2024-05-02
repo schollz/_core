@@ -36,7 +36,6 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   if (bpm_last != sf->bpm_tempo) {
     printf("updating bpm timer: %d-> %d\n", bpm_last, sf->bpm_tempo);
     bpm_last = sf->bpm_tempo;
-
     cancel_repeating_timer(&timer);
     add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
                            repeating_timer_callback, NULL, &timer);
@@ -73,6 +72,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                      ->sample[sel_sample_cur]
                                                      .snd[FILEZERO]
                                                      ->splice_trigger)) == 0;
+
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
   if (bpm_timer_counter %
@@ -291,6 +291,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                                    ->sample[sel_sample_cur]
                                                    .snd[FILEZERO]
                                                    ->slice_num;
+          // printf("[main] beat_current from clock in: %d\n", beat_current);
         } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
           uint8_t lo = key3_pressed_keys[0] - 4;
           uint8_t hi = key3_pressed_keys[1] - 4;
