@@ -430,6 +430,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     lfo_tremelo_val -= Q16_16_2PI;
   }
 
+#ifdef LED_TOP_GPIO
+  gpio_put(LED_TOP_GPIO, beat_total % 2 == 0 ? 1 : 0);
+#endif
+
   return true;
 }
 
@@ -480,6 +484,11 @@ int main() {
   gpio_init(PIN_DCDC_PSM_CTRL);
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
+
+#ifdef LED_TOP_GPIO
+  gpio_init(LED_TOP_GPIO);
+  gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
+#endif
 
   ap = init_audio();
 
