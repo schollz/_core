@@ -22,6 +22,9 @@
 //
 // See http://creativecommons.org/licenses/MIT/ for more information.
 #include "clockhandling.h"
+//
+#include "midicallback.h"
+#include "onewiremidi.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -101,9 +104,17 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput =
-      ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
-                        clock_handling_down, clock_handling_start);
+  ClockInput *clockinput;
+  Onewiremidi *onewiremidi;
+  if (use_onewiremidi) {
+    // setup one wire midi
+    onewiremidi =
+        Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
+                        midi_start, midi_continue, midi_stop, midi_timing);
+  } else {
+    clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+                                   clock_handling_down, clock_handling_start);
+  }
 
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
@@ -119,10 +130,10 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zv2.3.4");
+  printStringWithDelay("zv2.4.0");
 
   // print to screen
-  printf("version=v2.3.4\n");
+  printf("version=v2.4.0\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -148,19 +159,53 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn);
+    midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
+                   midi_start, midi_continue, midi_stop, midi_timing);
 #endif
+
+    if (do_switch_between_clock_and_midi) {
+      do_switch_between_clock_and_midi = false;
+      if (use_onewiremidi) {
+        // TODO: switching back doesn't work yet
+        // // switch to clock
+        // Onewiremidi_destroy(onewiremidi);
+        // clockinput =
+        //     ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+        //                       clock_handling_down, clock_handling_start);
+      } else {
+        // switch to one wire midi
+        ClockInput_destroy(clockinput);
+        onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on,
+                                      midi_note_off, midi_start, midi_continue,
+                                      midi_stop, midi_timing);
+      }
+      use_onewiremidi = !use_onewiremidi;
+    }
 
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
+      // if (adc_startup == 0) {
+      //   for (int i = 1; i < 2; i++) {
+      //     PIO p = (i == 0) ? pio0 : pio1;
+      //     printf("PIO%d:\n", i);
+      //     for (int sm = 2; sm < 4; sm++) {
+      //       if (pio_sm_is_claimed(p, sm)) {
+      //         printf("  State Machine %d: USED\n", sm);
+      //       } else {
+      //         printf("  State Machine %d: NOT USED\n", sm);
+      //       }
+      //     }
+      //     sleep_ms(1);
+      //   }
+      // }
     }
 
     // check for input
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.3.4\n");
+        printf("version=v2.4.0\n");
       }
     }
 
@@ -458,8 +503,12 @@ void input_handling() {
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
-    // clock input handler
-    ClockInput_update(clockinput);
+    if (!use_onewiremidi) {
+      // clock input handler
+      ClockInput_update(clockinput);
+    } else {
+      Onewiremidi_receive(onewiremidi);
+    }
 #endif
 
 #ifdef BTN_COL_START
