@@ -1,7 +1,7 @@
 #ifndef LIB_MIDI_CALLBACK_H
 #define LIB_MIDI_CALLBACK_H 1
 
-#define DEBUG_MIDI 1
+// #define DEBUG_MIDI 1
 #define MIDI_MAX_NOTES 128
 #define MIDI_MAX_TIME_ON 10000  // 10 seconds
 #define MIDI_RESET_EVERY_BEAT 16
