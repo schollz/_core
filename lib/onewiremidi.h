@@ -165,7 +165,7 @@ void Onewiremidi_receive_(Onewiremidi *self) {
 }
 
 void Onewiremidi_receive(void *self) {
-  for (uint8_t i = 0; i < 3; i++) {
+  for (uint8_t i = 0; i < 4; i++) {
     Onewiremidi_receive_(self);
   }
 }

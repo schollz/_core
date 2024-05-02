@@ -159,18 +159,19 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, midi_start, midi_continue, midi_stop,
-                   midi_timing);
+    midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
+                   midi_start, midi_continue, midi_stop, midi_timing);
 #endif
 
     if (do_switch_between_clock_and_midi) {
       do_switch_between_clock_and_midi = false;
       if (use_onewiremidi) {
-        // switch to clock
-        Onewiremidi_destroy(onewiremidi);
-        clockinput =
-            ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
-                              clock_handling_down, clock_handling_start);
+        // TODO: switching back doesn't work yet
+        // // switch to clock
+        // Onewiremidi_destroy(onewiremidi);
+        // clockinput =
+        //     ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
+        //                       clock_handling_down, clock_handling_start);
       } else {
         // switch to one wire midi
         ClockInput_destroy(clockinput);

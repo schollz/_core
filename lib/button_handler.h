@@ -561,12 +561,12 @@ void button_handler(ButtonMatrix *bm) {
                                      ->splice_variable;
       }
     } else if (key_pressed_num == 4) {
-      if (key_pressed[0] == 16 && key_pressed[1] == 17 &&
-          key_pressed[2] == 18 && key_pressed[3] == 19) {
+      if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
+          key_pressed[2] == 14 && key_pressed[3] == 19) {
         // switch between MIDI input and CLOCK input
         do_switch_between_clock_and_midi = true;
         if (use_onewiremidi) {
-          DebounceDigits_setText(debouncer_digits, "CLOCK", 200);
+          // DebounceDigits_setText(debouncer_digits, "CLOCK", 200);
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", 200);
         }
