@@ -32,7 +32,10 @@ I created a device called [**the itty bitty midi**](https://ittybittymidi.com) w
 
 *Note*: By default the zeptocore expects clock signals in the `CLOCK` input. You can switch to `MIDI` input by pressing the following combination: `13`+`10`+`11`+`16`.
 
-
+<figure class="imgcombo">
+<img src="/img/combo_midi.png">
+<figcaption>Combo for activating itty bitty midi MIDI input through the CLOCK in</figcaption>
+</figure>
 
 ## Computer keyboard
 
