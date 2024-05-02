@@ -827,3 +827,35 @@ pre {
 .buybutton:active {
   background-color: #7d61d9
 }
+
+
+figure {
+  width: 90%;
+  /* Adjusts the width, giving some margin */
+  display: flex;
+  flex-direction: column;
+  /* Aligns children (img and figcaption) in a column */
+  justify-content: center;
+  align-items: center;
+  /* Centers children horizontally */
+  max-width: 800px;
+}
+
+figure>img {
+  max-width: 800px;
+  /* Ensures the image is not wider than the screen */
+  height: auto;
+  /* Keeps the aspect ratio intact */
+}
+
+figcaption {
+  color: #666;
+  /* Sets the color of the caption text */
+  font-size: 0.8em;
+  /* Adjust the font size as needed */
+  text-align: center;
+  /* Centers the caption text */
+  margin-top: 0.5em;
+  /* Adds space between the image and the caption */
+  max-width: 300px;
+}
