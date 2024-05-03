@@ -78,17 +78,17 @@
 
 
 // wait for page load
-window.addEventListener('load', function () {
-    // goto #buy when clicking buy button
-    document.getElementsByClassName("buybutton")[0].addEventListener('click', function () {
-        console.log("buy button clicked");
-        window.location.href = "#buy";
-    });
-    if (window.location.href.indexOf("buy") > -1) {
-        // scroll to buy section
-        var buy = document.getElementById("buy");
-        buy.scrollIntoView();
-    }
+// window.addEventListener('load', function () {
+//     // goto #buy when clicking buy button
+//     document.getElementsByClassName("buybutton")[0].addEventListener('click', function () {
+//         console.log("buy button clicked");
+//         window.location.href = "#buy";
+//     });
+//     if (window.location.href.indexOf("buy") > -1) {
+//         // scroll to buy section
+//         var buy = document.getElementById("buy");
+//         buy.scrollIntoView();
+//     }
 
-});
+// });
 
