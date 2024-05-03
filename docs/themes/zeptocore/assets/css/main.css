@@ -815,6 +815,8 @@ pre {
   font-size: 1em;
   color: #fff;
   font-weight: 900;
+  text-decoration: none;
+  font-size: 1.2em;
 }
 
 .buybutton:hover {
