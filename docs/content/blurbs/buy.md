@@ -9,7 +9,7 @@ weight = 1
 
 
 <div >
-<div id='product-component-1714659090867' class="product"></div>
+<div id='product-component-1714750914504' class="product"></div>
 </div>
 <div style="line-height: 1.4;">
 <p style="text-align:center; font-weight:900; margin-bottom:0; margin-top:2em; font-size:1.2em;">a handmade, handheld

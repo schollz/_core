@@ -24,7 +24,7 @@
         ShopifyBuy.UI.onReady(client).then(function (ui) {
             ui.createComponent('product', {
                 id: '8831942492443',
-                node: document.getElementById('product-component-1714659090867'),
+                node: document.getElementById('product-component-1714750914504'),
                 moneyFormat: '%24%7B%7Bamount%7D%7D',
                 options: {
                     "product": {
@@ -52,9 +52,8 @@
                                 "font-family": "Roboto, sans-serif"
                             }
                         },
-                        "buttonDestination": "checkout",
                         "text": {
-                            "button": "Buy now"
+                            "button": "Add to cart"
                         },
                         "googleFonts": [
                             "Roboto"
@@ -141,6 +140,9 @@
                         "text": {
                             "total": "Subtotal",
                             "button": "Checkout"
+                        },
+                        "contents": {
+                            "note": true
                         },
                         "googleFonts": [
                             "Roboto"
