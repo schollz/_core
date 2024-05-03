@@ -11,6 +11,12 @@ mode = 'any'
 
 Sequences can be combined into "chains" of sequences, which are saved as new sequences that can be recalled or further chained into new sequences.
 
+<figure class="imgcombo">
+<img src="/img/chain_sequence.png">
+<figcaption>Combo for creating a sequence chain.</figcaption>
+</figure>
+
+
 To create a sequence chain, follow these steps:
 
 1. Press and hold the `C` key (the sequence selector). Lit buttons indicate where sequences are stored, while unlit buttons signify empty slots.
@@ -19,3 +25,5 @@ To create a sequence chain, follow these steps:
 4. Release the `C` key, and the sequence chain will be automatically generated and saved in the slot chosen in step #2.
 
 If there are no free slots available, you cannot create sequence chains. In such cases, you can delete a sequence by [selecting it](#select-sequence) (`C` + `1-16`) and then [deleting it](#record-sequence) (`C` + `D`).
+
+
