@@ -378,6 +378,16 @@
         window.onafterprint = handleAfterPrint;
 
         document.addEventListener('DOMContentLoaded', function () {
+            // add a href link to each figure > img so that clicking the image will open it in a new tab
+            document.querySelectorAll('figure > img').forEach(function (img) {
+                const src = img.getAttribute('src');
+                const a = document.createElement('a');
+                a.setAttribute('href', src);
+                a.setAttribute('target', '_blank');
+                img.parentNode.insertBefore(a, img);
+                a.appendChild(img);
+            });
+
             document.querySelectorAll('a').forEach(function (anchor) {
                 anchor.addEventListener('click', function (e) {
                     const href = anchor.getAttribute('href');
