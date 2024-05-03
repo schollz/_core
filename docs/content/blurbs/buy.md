@@ -23,6 +23,6 @@ and "pre-order" ships within 3-5 weeks</p>
 </div>
 
 
-<p style="font-size:0.9em; text-align:justify;">Stereo playback of 16-bit audio files @ 44.1 kHz sampling rate · SD-card storage for up to 32 gigabytes of samples · Recalls up to 256 audio files (16 banks of 16 tracks) · 16 different effects (saturate, fuzz, delay, reverb, etc…) · Single-cycle wavetable synthesizer · Realtime sequencer with optional quantization · Optional clock sync out · MIDI (in + out) over USB · Built-in 8-ohm speaker · Powered by two AAA batteries or USB-C · Open-source</p>
+<p style="font-size:0.9em; text-align:justify;">Stereo playback of 16-bit audio files @ 44.1 kHz sampling rate · SD-card storage for up to 32 gigabytes of samples · Recalls up to 256 audio files (16 banks of 16 tracks) · 16 different effects (saturate, fuzz, delay, reverb, etc…) · Single-cycle wavetable synthesizer · Realtime sequencer with optional quantization · Optional clock sync out · MIDI (in + out) over USB · Built-in 8-ohm speaker · Powered by two AAA batteries or USB-C · Open-source · Handmade in Seattle</p>
 
 
