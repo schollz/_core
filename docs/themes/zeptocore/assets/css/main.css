@@ -374,11 +374,9 @@ table {
 /* mobile only */
 @media (max-width: 600px) {
 
-
   .hero-title {
-    top: -3em;
+    top: -2em;
   }
-
 
   .notmobile {
     display: none;
@@ -828,22 +826,12 @@ pre {
 }
 
 figure {
-  width: 90%;
-  /* Adjusts the width, giving some margin */
   display: flex;
   flex-direction: column;
-  /* Aligns children (img and figcaption) in a column */
-  justify-content: center;
-  align-items: center;
-  /* Centers children horizontally */
-  max-width: 800px;
 }
 
-figure>img {
-  max-width: 800px;
-  /* Ensures the image is not wider than the screen */
-  height: auto;
-  /* Keeps the aspect ratio intact */
+figure>a>img {
+  width: 100%;
 }
 
 figcaption {
@@ -854,8 +842,6 @@ figcaption {
   text-align: center;
   /* Centers the caption text */
   margin-top: 0.5em;
-  /* Adds space between the image and the caption */
-  max-width: 300px;
 }
 
 .product {
