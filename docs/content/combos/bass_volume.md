@@ -10,3 +10,9 @@ mode = 'any'
 
 
 Turning this knob will adjust the volume of the bass. Turn it clockwise to increase the volume. Please note that high volume levels may cause crackling, depending on the headroom in your samples.
+
+
+<figure class="imgcombo">
+<img src="/img/bass_volume.png">
+<figcaption>Combo for changing the volume of the bass.</figcaption>
+</figure>

@@ -11,3 +11,9 @@ icon = 'frog'
 +++
 
 In `jump` mode, pressing any of the 16 keys will "jump" the sample between slices. The slice position depends on what is set in the [Zeptocore tool](https://tool.zeptocore.com). The Zeptocore will instantly crossfade from the current position to the beginning of the slice that is jumped to.
+
+
+<figure class="imgcombo">
+<img src="/img/jump.png">
+<figcaption>Press any of the 16 keys to jump while in <code>JUMP</code> mode.</figcaption>
+</figure>

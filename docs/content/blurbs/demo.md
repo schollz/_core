@@ -6,4 +6,6 @@ weight = 2
 
 # demo 
 
-{{< youtube AVurAVEAFNo >}}
+this is the zeptocore. a handmade, handheld sample player.
+
+{{< youtube FZ2C9VIMgeI >}}

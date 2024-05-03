@@ -11,3 +11,10 @@ mode = 'any'
 You can change sample in the current bank using this combination
 
 You can also change banks + samples simultaneously using [button presses](/#change-samples).
+
+
+
+<figure class="imgcombo">
+<img src="/img/change_samples2.png">
+<figcaption>Alternatively hold the <code>C</code> key while turning knobs to change bank/sample individually.</figcaption>
+</figure>

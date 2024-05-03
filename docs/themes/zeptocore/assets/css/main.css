@@ -374,11 +374,9 @@ table {
 /* mobile only */
 @media (max-width: 600px) {
 
-
   .hero-title {
-    top: -3em;
+    top: -2em;
   }
-
 
   .notmobile {
     display: none;
@@ -817,7 +815,6 @@ pre {
   font-size: 1em;
   color: #fff;
   font-weight: 900;
-  display: none;
 }
 
 .buybutton:hover {
@@ -828,24 +825,13 @@ pre {
   background-color: #7d61d9
 }
 
-
 figure {
-  width: 90%;
-  /* Adjusts the width, giving some margin */
   display: flex;
   flex-direction: column;
-  /* Aligns children (img and figcaption) in a column */
-  justify-content: center;
-  align-items: center;
-  /* Centers children horizontally */
-  max-width: 800px;
 }
 
-figure>img {
-  max-width: 800px;
-  /* Ensures the image is not wider than the screen */
-  height: auto;
-  /* Keeps the aspect ratio intact */
+figure>a>img {
+  width: 100%;
 }
 
 figcaption {
@@ -856,6 +842,14 @@ figcaption {
   text-align: center;
   /* Centers the caption text */
   margin-top: 0.5em;
-  /* Adds space between the image and the caption */
-  max-width: 300px;
+}
+
+.product {
+  margin: 0 auto;
+  border-style: solid;
+  border-color: rgb(0, 0, 255, 0.05);
+  padding: 1em;
+  background: rgb(0, 0, 255, 0.05);
+  border-radius: 1em;
+  box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .1);
 }
