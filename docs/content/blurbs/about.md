@@ -41,7 +41,7 @@ if you like this device, you might also like these other small devices made by f
 - Curious Sound Objects  <a href="https://www.instagram.com/curioussoundobjects/"><i class="fa-brands fa-instagram"></i></a>
   - [bitty](https://www.curioussoundobjects.com/) - an Arduino-compatible device that makes making music fun.
 - Denki Oto   <a href="https://www.instagram.com/curioussoundobjects/"><i class="fa-brands fa-instagram"></i></a>
-  - [OMX-27](https://denki-oto.weebly.com/store/p59/omx27-kit.html#/) - a compact MIDI controllers and sequencer
+  - [OMX-27](https://www.denki-oto.com/store/p59/omx27-kit.html#/) - a compact MIDI controllers and sequencer
 - yzhk instruments  <a href="https://www.instagram.com/joydrums_official/"><i class="fa-brands fa-instagram"></i></a>
   - [joydrums](https://www.yzhkinstruments.com/download) - as if a beat pad and a loop pedal had a baby.
 - Gieskes <a href="https://www.instagram.com/gijsgieskes/"><i class="fa-brands fa-instagram"></i></a>
