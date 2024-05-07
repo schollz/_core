@@ -570,6 +570,23 @@ void button_handler(ButtonMatrix *bm) {
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", 200);
         }
+      } else if (key_pressed[0] == 9 && key_pressed[1] == 10 &&
+                 key_pressed[2] == 14 && key_pressed[3] == 13) {
+        // toggle random sequence mode
+        if (random_sequence_length == 0) {
+          uint8_t sequence_length = random_integer_in_range(1, 16) * 4;
+          for (uint8_t i = 0; i < sequence_length; i++) {
+            random_sequence_arr[i] = random_integer_in_range(0, 64);
+          }
+          random_sequence_length = sequence_length;
+          // create string with the length
+          char random_sequence_str[10];
+          sprintf(random_sequence_str, "RAND %d", sequence_length);
+          DebounceDigits_setText(debouncer_digits, random_sequence_str, 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          random_sequence_length = 0;
+        }
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 6 && key_pressed[3] == 7) {
         sf->stay_in_sync = !sf->stay_in_sync;
@@ -1129,7 +1146,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     if (mode_buttons16 == MODE_MASH || mode_buttons16 == MODE_JUMP) {
       if (sel_variation == 0) {
-        LEDS_set(leds, beat_current % 16 + 4, LED_DIM);
+        LEDS_set(leds, beat_current_show % 16 + 4, LED_DIM);
       } else {
         LEDS_set(
             leds,
