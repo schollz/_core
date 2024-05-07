@@ -84,6 +84,7 @@ float vol3 = 0;
 float envelope_pitch_val;
 float envelope_wobble_val;
 int32_t beat_current = 0;
+int32_t beat_current_show = 0;
 int32_t beat_total = 0;
 uint debounce_quantize = 0;
 int64_t bpm_timer_counter = 0;
@@ -113,7 +114,7 @@ uint16_t probability_of_random_tunnel = 0;
 uint8_t tunneling_original_sample = 0;
 uint8_t tunneling_is_on = 0;
 uint8_t random_sequence_length = 0;
-uint8_t random_sequence_arr[32];
+uint8_t random_sequence_arr[64];
 
 // buttons
 // mode toggles
@@ -372,9 +373,13 @@ void do_update_phase_from_beat_current() {
     beat_current = random_integer_in_range(0, 15);
     do_random_jump = false;
   }
-  uint16_t slice =
-      beat_current %
-      banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
+  uint16_t slice = beat_current;
+  if (random_sequence_length > 0) {
+    slice = random_sequence_arr[beat_current % random_sequence_length];
+  }
+  slice = slice %
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
+  beat_current_show = slice;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
 #ifdef INCLUDE_MIDI
