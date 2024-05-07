@@ -112,6 +112,8 @@ uint16_t probability_of_random_retrig = 0;
 uint16_t probability_of_random_tunnel = 0;
 uint8_t tunneling_original_sample = 0;
 uint8_t tunneling_is_on = 0;
+uint8_t random_sequence_length = 0;
+uint8_t random_sequence_arr[32];
 
 // buttons
 // mode toggles
