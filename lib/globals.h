@@ -111,7 +111,7 @@ uint16_t probability_of_random_jump = 0;
 uint16_t probability_of_random_retrig = 0;
 uint16_t probability_of_random_tunnel = 0;
 uint8_t tunneling_original_sample = 0;
-bool tunneling_is_on = false;
+uint8_t tunneling_is_on = 0;
 
 // buttons
 // mode toggles

@@ -104,10 +104,17 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     // check if need to do tunneling
     // avoid tunneling if we are in a timestretched variation
     if (sel_variation == 0) {
-      if (tunneling_is_on) {
-        if (random_integer_in_range(1, 1000) > probability_of_random_tunnel) {
+      if (tunneling_is_on > 0) {
+        if (tunneling_is_on < 4 && probability_of_random_tunnel > 750) {
+          tunneling_is_on++;
+        } else if (tunneling_is_on < 3 && probability_of_random_tunnel > 500) {
+          tunneling_is_on++;
+        } else if (tunneling_is_on < 2) {
+          tunneling_is_on++;
+        } else if (random_integer_in_range(1, 1000) >
+                   probability_of_random_tunnel) {
           // deactivate tunneling
-          tunneling_is_on = false;
+          tunneling_is_on = 0;
           sel_sample_next = tunneling_original_sample;
           printf("%d, tunneling off: %d -> %d\n", probability_of_random_tunnel,
                  sel_sample_cur, sel_sample_next);
@@ -116,7 +123,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       } else {
         if (random_integer_in_range(1, 1000) < probability_of_random_tunnel) {
           // activate tunneling
-          tunneling_is_on = true;
+          tunneling_is_on = 1;
           tunneling_original_sample = sel_sample_cur;
           sel_sample_next =
               random_integer_in_range(0, 15) % banks[sel_bank_cur]->num_samples;
@@ -476,7 +483,7 @@ int main() {
 #else
   set_sys_clock_khz(125000, true);
 #endif
-  sleep_ms(200);
+  sleep_ms(75);
 
   // DCDC PSM control
   // 0: PFM mode (best efficiency)
