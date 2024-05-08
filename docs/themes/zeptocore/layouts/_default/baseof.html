@@ -400,6 +400,20 @@
                     }
                 });
             });
+
+
+            // get anchor of page
+            var anchor = window.location.hash;
+            if (anchor) {
+                var element = document.querySelector(anchor);
+                if (element) {
+                    // open the details element
+                    if (element.tagName === 'DETAILS') {
+                        element.open = true;
+                    }
+                }
+            }
+
             // check if mobile
             if (window.innerWidth <= 600) {
                 var earElements = document.querySelectorAll('.rightear, .leftear');
