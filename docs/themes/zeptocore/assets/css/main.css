@@ -855,3 +855,20 @@ figcaption {
   border-radius: 1em;
   box-shadow: 12px 12px 2px 1px rgba(0, 0, 255, .1);
 }
+
+
+
+.compare thead {
+  text-align: left;
+}
+
+/* make columns colored */
+.compare td {
+  padding: 0.25em 0.125em;
+}
+
+
+/* highlight the second column */
+.compare td:nth-child(2) {
+  background-color: var(--background-color);
+}

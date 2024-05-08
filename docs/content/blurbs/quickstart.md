@@ -7,6 +7,7 @@ weight = 3
 
 # Quickstart
 
+
 ### on & off
 
 To power on the device, toggle the switch on the top right to the "up" position. The device comes pre-loaded with several samples. A sample will start playing automatically.
