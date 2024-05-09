@@ -587,6 +587,15 @@ void button_handler(ButtonMatrix *bm) {
           DebounceDigits_setText(debouncer_digits, "NORM", 200);
           random_sequence_length = 0;
         }
+      } else if (key_pressed[0] == 13 && key_pressed[1] == 14 &&
+                 key_pressed[2] == 18 && key_pressed[3] == 17) {
+        // toggle random sequence mode
+        do_retrig_at_end_of_phrase = !do_retrig_at_end_of_phrase;
+        if (do_retrig_at_end_of_phrase) {
+          DebounceDigits_setText(debouncer_digits, "FILL", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+        }
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 6 && key_pressed[3] == 7) {
         sf->stay_in_sync = !sf->stay_in_sync;
