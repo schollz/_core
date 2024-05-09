@@ -163,6 +163,8 @@ uint32_t clock_in_diff_2x = 0;
 uint32_t clock_in_last_time = 0;
 
 uint8_t do_update_beat_repeat = 0;
+uint8_t beat_start_retrig = 0;
+bool do_retrig_at_end_of_phrase = false;
 
 uint8_t savefile_current = 0;
 bool savefile_has_data[16];

@@ -98,6 +98,31 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // trigger clock out if it is going
   if (do_splice_trigger) {
     beat_total++;
+
+    // retriggering at end of a phrase
+    if (do_retrig_at_end_of_phrase) {
+      if (beat_start_retrig == 0) {
+        beat_start_retrig = random_integer_in_range(2, 10);
+      }
+      if ((beat_start_retrig >= 4 &&
+           beat_total % 32 == (32 - beat_start_retrig)) ||
+          (beat_start_retrig < 4 &&
+           beat_total % 16 == (16 - beat_start_retrig)) &&
+              !retrig_ready && !retrig_first) {
+        // do retriggering if beat_current is at the end of 32 beats
+        uint8_t time_multiplier[4] = {1, 2, 4, 8};
+        uint8_t time_multiplier_index = random_integer_in_range(0, 3);
+        debounce_quantize = 0;
+        retrig_first = true;
+        retrig_beat_num =
+            beat_start_retrig * time_multiplier[time_multiplier_index];
+        retrig_timer_reset = 96 / time_multiplier[time_multiplier_index];
+        retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+        retrig_ready = true;
+        beat_start_retrig = 0;
+        do_random_jump = true;
+      }
+    }
     Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
@@ -346,6 +371,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                                 .snd[FILEZERO]
                                 ->slice_num;
           }
+
           if (only_play_kicks) {
             // check if beat_current is a kick, if not try to find one
             for (uint16_t i = 0; i < banks[sel_bank_cur]
