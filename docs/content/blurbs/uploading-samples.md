@@ -12,7 +12,7 @@ The sample tool is required for the sample preprocessing step, before transferri
 
 Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card. Stock samples include amen break remixes and incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks.
 
-### Use tool online: **[zeptocore v2.5.0](/tool)**
+### Use tool online: **[zeptocore v2.6.0](/tool)**
 
 
 <p style="text-align:center">
@@ -23,7 +23,7 @@ Alternatively you can also download [the stock samples](https://infinitedigits.c
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.5.0/core_windows_v2.5.0.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.6.0/core_windows_v2.6.0.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -37,13 +37,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.5.0/core_macos_amd64_v2.5.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.6.0/core_macos_amd64_v2.6.0 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.5.0/core_macos_aarch64_v2.5.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.6.0/core_macos_aarch64_v2.6.0 > core_macos
 ```
 
 Then to enable the program do:
@@ -66,7 +66,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.5.0/core_linux_amd64_v2.5.0)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.6.0/core_linux_amd64_v2.6.0)**
 
 After downloading, run it directly from the terminal.
 
