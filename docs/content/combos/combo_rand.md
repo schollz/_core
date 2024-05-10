@@ -10,6 +10,8 @@ icon = 'dice'
 
 Activating this combo will create a random sequence that will be used in place of the current sequence (whether is from sequencing or normal playback). (*Requires v2.5.+* version of the firmware). [Demo video](https://www.youtube.com/watch?v=TqEQhTOjhSM).
 
+If this is activated with [random fill](#random-fill), then a new sequence will automatically be generated every 32 beats.
+
 <figure class="imgcombo">
 <img src="/img/combo_rand.png">
 <figcaption>Combo for toggling a random sequence.</figcaption>
