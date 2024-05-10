@@ -122,6 +122,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         beat_start_retrig = 0;
         do_random_jump = true;
       }
+      if (beat_total % 32 == 0 && random_sequence_length > 0) {
+        // regenerate the random sequence
+        uint8_t sequence_length = random_integer_in_range(1, 16) * 4;
+        for (uint8_t i = 0; i < sequence_length; i++) {
+          random_sequence_arr[i] = random_integer_in_range(0, 64);
+        }
+        random_sequence_length = sequence_length;
+      }
     }
     Gate_reset(audio_gate);
     clock_out_ready = true;
