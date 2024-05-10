@@ -59,7 +59,7 @@ void midi_continue() {
 #ifdef DEBUG_MIDI
   printf("[midicallback] midi continue (starting)\n");
 #endif
-  midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
+  midi_start();
 }
 void midi_stop() {
 #ifdef DEBUG_MIDI
