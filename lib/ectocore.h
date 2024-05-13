@@ -178,6 +178,7 @@ void input_handling() {
       GPIO_BTN_BANK,
       GPIO_BTN_TAPTEMPO,
   };
+  uint8_t gpio_btn_state[BUTTON_NUM] = {0, 0, 0, 0};
   ButtonChange *button_change[BUTTON_NUM];
   for (uint8_t i = 0; i < BUTTON_NUM; i++) {
     gpio_init(gpio_btns[i]);
@@ -598,6 +599,7 @@ void input_handling() {
         continue;
       }
       val = 1 - val;
+      gpio_btn_state[i] = val;
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
         if (val == 1) {
@@ -623,6 +625,12 @@ void input_handling() {
             ectocore_clock_selected_division = 0;
           }
         }
+      }
+      // check for reset
+      if (gpio_btn_state[GPIO_BTN_BANK] > 0 &&
+          gpio_btn_state[GPIO_BTN_MODE] > 0 &&
+          gpio_btn_state[GPIO_BTN_MULT] > 0) {
+        reset_usb_boot(0, 0);
       }
     }
   }
