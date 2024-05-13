@@ -639,7 +639,11 @@ void input_handling() {
               random_sequence_length = 1;
             }
             if (random_sequence_length > 0) {
-              int16_t new_length = (int16_t)(val - 100) * 64 / (700 - 100);
+              uint8_t sequnece_lengths[11] = {
+                  1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
+              };
+              int16_t new_length = (int16_t)(val - 100) * 11 / (700 - 100);
+              new_length = sequnece_lengths[new_length % 11];
               if (new_length > 2) {
                 // round to the nearest 2
                 new_length = (new_length / 2) * 2;
@@ -647,6 +651,8 @@ void input_handling() {
                 new_length = 1;
               }
               random_sequence_length = new_length;
+              printf("[ectocore] random_sequence_length %d\n",
+                     random_sequence_length);
             }
             do_retrig_at_end_of_phrase = false;
           } else {
