@@ -42,7 +42,7 @@ function listMidiPorts() {
     navigator.requestMIDIAccess({ sysex: true }) // Enable Sysex messages
         .then(midiAccess => {
             midiAccess.inputs.forEach(input => {
-                if (input.name.toLowerCase().includes("zeptocore")) {
+                if (input.name.toLowerCase().includes("zeptocore") || input.name.toLowerCase().includes("ectocore")) {
                     inputMidiDevice = input; // Ensure global scope if needed
                     console.log(`Selected input MIDI device: ${input.name}`);
                     setupMidiInputListener();
@@ -53,7 +53,7 @@ function listMidiPorts() {
             });
 
             midiAccess.outputs.forEach(output => {
-                if (output.name.toLowerCase().includes("zeptocore")) {
+                if (output.name.toLowerCase().includes("zeptocore") || output.name.toLowerCase().includes("ectocore")) {
                     outputMidiDevice = output; // Ensure global scope if needed
                     console.log(`Selected output MIDI device: ${output.name}`);
                     if (inputMidiDevice) {
