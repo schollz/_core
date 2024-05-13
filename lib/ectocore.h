@@ -565,7 +565,7 @@ void input_handling() {
             probability_of_random_retrig = 0;
           }
           if (val > 600) {
-            sf->fx_param[FX_REVERSE][2] = (val - 600) * 80 / (1024 - 600);
+            sf->fx_param[FX_REVERSE][2] = (val - 600) * 100 / (1024 - 600);
           } else {
             sf->fx_param[FX_REVERSE][2] = 0;
           }
@@ -627,28 +627,16 @@ void input_handling() {
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
         if (!cv_plugged[CV_AMEN]) {
-          if (val < 300) {
+          if (val < 100) {
+            // generative mode
             if (random_sequence_length == 0) {
               for (uint8_t i = 0; i < 64; i++) {
                 random_sequence_arr[i] = random_integer_in_range(0, 64);
               }
               random_sequence_length = 1;
-            } else if (random_sequence_arr[1] - random_sequence_arr[0] != 1) {
-              for (uint8_t i = 1; i < 64; i += 2) {
-                random_sequence_arr[i] = (random_sequence_arr[i - 1] + 1) % 64;
-              }
             }
-            if (random_sequence_length > 0) {
-              int16_t new_length = (int16_t)(val) * 64 / 300;
-              if (new_length > 11) {
-                // round to the nearest 2
-                new_length = (new_length / 2) * 2;
-              } else if (new_length < 1) {
-                new_length = 1;
-              }
-              random_sequence_length = new_length;
-            }
-            do_retrig_at_end_of_phrase = false;
+            random_sequence_length = 8;
+            do_retrig_at_end_of_phrase = true;
           } else if (val < 700) {
             if (random_sequence_length == 0) {
               for (uint8_t i = 0; i < 64; i++) {
@@ -657,8 +645,8 @@ void input_handling() {
               random_sequence_length = 1;
             }
             if (random_sequence_length > 0) {
-              int16_t new_length = (int16_t)(val - 300) * 64 / (700 - 300);
-              if (new_length > 11) {
+              int16_t new_length = (int16_t)(val - 100) * 64 / (700 - 100);
+              if (new_length > 2) {
                 // round to the nearest 2
                 new_length = (new_length / 2) * 2;
               } else if (new_length < 1) {
@@ -666,7 +654,7 @@ void input_handling() {
               }
               random_sequence_length = new_length;
             }
-            do_retrig_at_end_of_phrase = true;
+            do_retrig_at_end_of_phrase = false;
           } else {
             random_sequence_length = 0;
             do_retrig_at_end_of_phrase = false;
