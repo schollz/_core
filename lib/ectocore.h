@@ -255,11 +255,6 @@ void input_handling() {
       }
     }
 
-    // update random jumping
-    if (random_integer_in_range(1, 2000000) < probability_of_random_jump) {
-      printf("[ectocore] random jump\n");
-      do_random_jump = true;
-    }
     if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
       printf("[ecotocre] random retrigger\n");
       sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
@@ -539,16 +534,17 @@ void input_handling() {
             sf->fx_active[FX_SATURATE] = 0;
           }
         } else {
-          if (val < 20 && !button_mute) {
-            trigger_button_mute = true;
-            printf("[ectocore] mute\n");
-            WS2812_fill(ws2812, 17, 0, 0, 255);
-            WS2812_show(ws2812);
-          } else if (val >= 20 && button_mute) {
-            button_mute = false;
-            WS2812_fill(ws2812, 17, 0, 255, 0);
-            WS2812_show(ws2812);
-          }
+          // // BREAK MUTE
+          // if (val < 20 && !button_mute) {
+          //   trigger_button_mute = true;
+          //   printf("[ectocore] mute\n");
+          //   WS2812_fill(ws2812, 17, 0, 0, 255);
+          //   WS2812_show(ws2812);
+          // } else if (val >= 20 && button_mute) {
+          //   button_mute = false;
+          //   WS2812_fill(ws2812, 17, 0, 255, 0);
+          //   WS2812_show(ws2812);
+          // }
           uint8_t u8val = val * 255 / 1024;
           // global_filter_index =
           //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
@@ -605,19 +601,17 @@ void input_handling() {
           }
         } else {
           if (val < 10 && !playback_stopped) {
-            if (!button_mute) trigger_button_mute = true;
-            do_stop_playback = true;
-            WS2812_fill(ws2812, 17, 255, 0, 0);
-            WS2812_show(ws2812);
+            // if (!button_mute) trigger_button_mute = true;
+            // do_stop_playback = true;
+            // WS2812_fill(ws2812, 17, 255, 0, 0);
+            // WS2812_show(ws2812);
           } else if (val > 10 && playback_stopped) {
-            do_restart_playback = true;
-            button_mute = false;
-            WS2812_fill(ws2812, 17, 0, 255, 0);
-            WS2812_show(ws2812);
+            // do_restart_playback = true;
+            // button_mute = false;
+            // WS2812_fill(ws2812, 17, 0, 255, 0);
+            // WS2812_show(ws2812);
           } else {
-            if (val > 700) {
-              probability_of_random_jump = (val - 700) * (val - 700) / 100;
-            }
+            probability_of_random_jump = val * 100 / 1024;
             ws2812_set_wheel(ws2812, val * 4, true, false, true);
             WS2812_show(ws2812);
           }
