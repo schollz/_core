@@ -151,7 +151,7 @@ void input_handling() {
 #endif
 
 #ifdef DETROITUNDERGROUND
-  probability_of_random_jump = 950;
+  probability_of_random_jump = 25;
   probability_of_random_retrig = 400;
   probability_of_random_tunnel = 60;
 #endif
@@ -266,9 +266,6 @@ void input_handling() {
 #endif
 #endif
 
-    if (random_integer_in_range(1, 1000000) < probability_of_random_jump) {
-      do_random_jump = true;
-    }
     if (random_integer_in_range(1, 1000000) < probability_of_random_retrig) {
       sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
       go_retrigger_2key(random_integer_in_range(0, 15),
@@ -386,7 +383,7 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 12, adc * 127 / 4096);
 #endif
-          probability_of_random_jump = adc;
+          probability_of_random_jump = adc * 100 / 4096;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
                             adc * 255 / 4096, 100);
