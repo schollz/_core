@@ -592,6 +592,51 @@ void input_handling() {
         printf("[ectocore] knob_break_atten %d\n", val);
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
+        if (!cv_plugged[CV_AMEN]) {
+          if (val < 300) {
+            if (random_sequence_length == 0) {
+              for (uint8_t i = 0; i < 64; i++) {
+                random_sequence_arr[i] = random_integer_in_range(0, 64);
+              }
+              random_sequence_length = 1;
+            }
+            if (random_sequence_length > 0) {
+              int16_t new_length = (int16_t)(val) * 64 / 300;
+              if (new_length > 11) {
+                // round to the nearest 2
+                new_length = (new_length / 2) * 2;
+              } else if (new_length < 1) {
+                new_length = 1;
+              }
+              random_sequence_length = new_length;
+            }
+            do_retrig_at_end_of_phrase = false;
+          } else if (val < 600) {
+            if (random_sequence_length == 0) {
+              for (uint8_t i = 0; i < 64; i++) {
+                random_sequence_arr[i] = random_integer_in_range(0, 64);
+              }
+              random_sequence_length = 1;
+            }
+            if (random_sequence_length > 0) {
+              int16_t new_length = (int16_t)(val - 300) * 64 / 300;
+              if (new_length > 11) {
+                // round to the nearest 2
+                new_length = (new_length / 2) * 2;
+              } else if (new_length < 1) {
+                new_length = 1;
+              }
+              random_sequence_length = new_length;
+            }
+            do_retrig_at_end_of_phrase = true;
+          } else {
+            random_sequence_length = 0;
+            do_retrig_at_end_of_phrase = false;
+          }
+        } else {
+          random_sequence_length = 0;
+          do_retrig_at_end_of_phrase = false;
+        }
       }
     }
 
