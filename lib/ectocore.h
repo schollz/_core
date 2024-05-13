@@ -49,6 +49,12 @@
 #include "midi_comm_callback.h"
 #endif
 
+// toggle the fx
+void toggle_fx(uint8_t fx_num) {
+  sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  update_fx(fx_num);
+}
+
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
 
@@ -147,7 +153,7 @@ void input_handling() {
   MCP3208 *mcp3208 = MCP3208_malloc(spi1, 9, 10, 8, 11);
 
   bool btn_taptempo_on = false;
-  sf->vol = VOLUME_STEPS;
+  sf->vol = VOLUME_STEPS - 10;
   sf->fx_active[FX_SATURATE] = true;
   sf->pitch_val_index = PITCH_VAL_MID;
   sf->stay_in_sync = true;
@@ -554,6 +560,33 @@ void input_handling() {
 
           if (val > 700) {
             probability_of_random_retrig = (val - 700) * (val - 700) / 500;
+          } else {
+            probability_of_random_retrig = 0;
+          }
+          if (val > 600) {
+            sf->fx_param[FX_REVERSE][2] = (val - 600) * 80 / (1024 - 600);
+          } else {
+            sf->fx_param[FX_REVERSE][2] = 0;
+          }
+          if (val > 750) {
+            sf->fx_param[FX_TIMESTRETCH][2] = (val - 750) * 64 / (1024 - 750);
+          } else {
+            sf->fx_param[FX_TIMESTRETCH][2] = 0;
+          }
+          if (val > 800) {
+            sf->fx_param[FX_COMB][2] = (val - 800) * 64 / (1024 - 800);
+          } else {
+            sf->fx_param[FX_COMB][2] = 0;
+          }
+          if (val > 850) {
+            sf->fx_param[FX_EXPAND][2] = (val - 850) * 64 / (1024 - 850);
+          } else {
+            sf->fx_param[FX_EXPAND][2] = 0;
+          }
+          if (val > 950) {
+            sf->fx_param[FX_TAPE_STOP][2] = (val - 950) * 64 / (1024 - 950);
+          } else {
+            sf->fx_param[FX_TAPE_STOP][2] = 0;
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
@@ -599,6 +632,10 @@ void input_handling() {
                 random_sequence_arr[i] = random_integer_in_range(0, 64);
               }
               random_sequence_length = 1;
+            } else if (random_sequence_arr[1] - random_sequence_arr[0] != 1) {
+              for (uint8_t i = 1; i < 64; i += 2) {
+                random_sequence_arr[i] = (random_sequence_arr[i - 1] + 1) % 64;
+              }
             }
             if (random_sequence_length > 0) {
               int16_t new_length = (int16_t)(val) * 64 / 300;
@@ -611,7 +648,7 @@ void input_handling() {
               random_sequence_length = new_length;
             }
             do_retrig_at_end_of_phrase = false;
-          } else if (val < 600) {
+          } else if (val < 700) {
             if (random_sequence_length == 0) {
               for (uint8_t i = 0; i < 64; i++) {
                 random_sequence_arr[i] = random_integer_in_range(0, 64);
@@ -619,7 +656,7 @@ void input_handling() {
               random_sequence_length = 1;
             }
             if (random_sequence_length > 0) {
-              int16_t new_length = (int16_t)(val - 300) * 64 / 300;
+              int16_t new_length = (int16_t)(val - 300) * 64 / (700 - 300);
               if (new_length > 11) {
                 // round to the nearest 2
                 new_length = (new_length / 2) * 2;
@@ -674,6 +711,67 @@ void input_handling() {
         }
       }
     }
+
+    // updating the random fx
+    if (clock_did_activate) {
+      clock_did_activate = false;
+      for (uint8_t i = 0; i < 16; i++) {
+        if (sf->fx_param[i][2] > 0) {
+          if (sf->fx_active[i]) {
+            if (random_integer_in_range(0, 96) <
+                probability_max_values_off[sf->fx_param[i][2] >> 4]) {
+              toggle_fx(i);
+              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+            }
+          } else {
+            if (random_integer_in_range(0, 96) <
+                probability_max_values[sf->fx_param[i][2] >> 4]) {
+              toggle_fx(i);
+              // TODO: also randomize the parameters?
+              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+            }
+          }
+        }
+      }
+    }
+
+    // load the new sample if variation changed
+    if (sel_variation_next != sel_variation) {
+      if (!audio_callback_in_mute) {
+        while (!sync_using_sdcard) {
+          sleep_us(250);
+        }
+        while (sync_using_sdcard) {
+          sleep_us(250);
+        }
+      }
+      sync_using_sdcard = true;
+      // measure the time it takes
+      uint32_t time_start = time_us_32();
+      FRESULT fr = f_close(&fil_current);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
+              sel_sample_cur, sel_variation_next);
+      fr = f_open(&fil_current, fil_current_name, FA_READ);
+      if (fr != FR_OK) {
+        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+      }
+
+      // TODO: fix this
+      // if sel_variation_next == 0
+      phases[0] = round(
+          ((float)phases[0] * (float)sel_variation_scale[sel_variation_next]) /
+          (float)sel_variation_scale[sel_variation]);
+
+      sel_variation = sel_variation_next;
+      sync_using_sdcard = false;
+      printf("[zeptocore] loading new sample variation took %d us\n",
+             time_us_32() - time_start);
+    }
+
+    // updating the leds
     if (debounce_ws2812_set_wheel > 0) {
       debounce_ws2812_set_wheel--;
     } else {

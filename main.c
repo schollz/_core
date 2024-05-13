@@ -102,7 +102,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     // retriggering at end of a phrase
     if (do_retrig_at_end_of_phrase) {
       if (beat_start_retrig == 0) {
+#ifdef INCLUDE_ECTOCORE
+        beat_start_retrig = random_integer_in_range(2, 8);
+#else
         beat_start_retrig = random_integer_in_range(2, 10);
+#endif
       }
       if ((beat_start_retrig >= 4 &&
            beat_total % 32 == (32 - beat_start_retrig)) ||
