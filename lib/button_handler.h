@@ -574,18 +574,13 @@ void button_handler(ButtonMatrix *bm) {
                  key_pressed[2] == 14 && key_pressed[3] == 13) {
         // toggle random sequence mode
         if (random_sequence_length == 0) {
-          uint8_t sequence_length = random_integer_in_range(1, 16) * 4;
-          for (uint8_t i = 0; i < sequence_length; i++) {
-            random_sequence_arr[i] = random_integer_in_range(0, 64);
-          }
-          random_sequence_length = sequence_length;
           // create string with the length
           char random_sequence_str[10];
-          sprintf(random_sequence_str, "RAND %d", sequence_length);
+          sprintf(random_sequence_str, "RAND %d", do_random_sequence(true));
           DebounceDigits_setText(debouncer_digits, random_sequence_str, 200);
         } else {
+          do_random_sequence(false);
           DebounceDigits_setText(debouncer_digits, "NORM", 200);
-          random_sequence_length = 0;
         }
       } else if (key_pressed[0] == 13 && key_pressed[1] == 14 &&
                  key_pressed[2] == 18 && key_pressed[3] == 17) {

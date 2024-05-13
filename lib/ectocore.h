@@ -49,13 +49,17 @@
 #include "midi_comm_callback.h"
 #endif
 
+const uint16_t debounce_ws2812_set_wheel_time = 10000;
+uint16_t debounce_ws2812_set_wheel = 0;
+
 void ws2812_wheel_clear(WS2812 *ws2812) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   for (uint8_t i = 0; i < 16; i++) {
     WS2812_fill(ws2812, i, 0, 0, 0);
   }
 }
-
 void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   if (val > 4079) {
     val = 4079;
   }
@@ -624,6 +628,22 @@ void input_handling() {
           }
         }
       }
+    }
+    if (debounce_ws2812_set_wheel > 0) {
+      debounce_ws2812_set_wheel--;
+    } else {
+      // highlight the current sample in the leds
+      for (uint8_t i = 0; i < 16; i++) {
+        WS2812_fill(ws2812, i, 0, 0, 0);
+      }
+      WS2812_fill(ws2812,
+                  banks[sel_bank_cur]
+                          ->sample[sel_sample_cur]
+                          .snd[FILEZERO]
+                          ->slice_current %
+                      16,
+                  50, 190, 255);
+      WS2812_show(ws2812);
     }
   }
 }
