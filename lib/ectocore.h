@@ -304,7 +304,7 @@ void input_handling() {
 
     if (debounce_input_detection > 0) {
       debounce_input_detection--;
-    } else {
+    } else if (mean_signal > 0) {
       // input detection
       bool found_change = false;
       int16_t val_input;
@@ -340,23 +340,16 @@ void input_handling() {
         }
       }
       for (uint8_t j = 0; j < 3; j++) {
-        if (found_change) {
-          continue;
-        }
         if (!is_signal[j] && !cv_plugged[j]) {
           printf("[ectocore] cv_%d plugged\n", j);
-          found_change = true;
+          debounce_mean_signal = 10;
         } else if (is_signal[j] && cv_plugged[j]) {
           printf("[ectocore] cv_%d unplugged\n", j);
-          found_change = true;
+          debounce_mean_signal = 10;
         }
         cv_plugged[j] = !is_signal[j];
       }
       debounce_input_detection = 100;
-      if (found_change) {
-        // increase the debouncing
-        debounce_input_detection = 3000;
-      }
     }
 
     // update the cv for each channel
@@ -390,10 +383,13 @@ void input_handling() {
           // TODO: not sure
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
-          sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
-                                   banks[sel_bank_cur]->num_samples);
-          if (sel_sample_next != sel_sample_cur) {
-            fil_current_change = true;
+          if (fil_current_change != true) {
+            sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
+                                     banks[sel_bank_cur]->num_samples);
+            if (sel_sample_next != sel_sample_cur) {
+              printf("[ectocore] switch sample %d\n", sel_sample_next);
+              fil_current_change = true;
+            }
           }
         }
       }
