@@ -36,10 +36,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     GPIO_CLOCK_IN=17
     GPIO_CLOCK_OUT=19
     GPIO_TRIG_OUT=18
-    GPIO_LED_MODE1=12
-    GPIO_LED_MODE2=13
-    GPIO_LED_MODE3=14
-    GPIO_LED_MODE4=15
+    GPIO_MODE_LEDA=12
+    GPIO_MODE_LEDB=13
+
 
 
     # debug printing
