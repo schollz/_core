@@ -48,14 +48,9 @@
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
+#include "fx_pattern.h"
 
 uint8_t gpio_btn_taptempo_val = 0;
-
-// toggle the fx
-void toggle_fx(uint8_t fx_num) {
-  sf->fx_active[fx_num] = !sf->fx_active[fx_num];
-  update_fx(fx_num);
-}
 
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
@@ -123,65 +118,6 @@ void break_set(int16_t val, bool ignore_taptempo_btn) {
     //   WS2812_fill(ws2812, 17, 0, 255, 0);
     //   WS2812_show(ws2812);
     // }
-    uint8_t u8val = val * 255 / 1024;
-    // global_filter_index =
-    //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
-    // printf("[ectocore] global_filter_index: %d\n",
-    // global_filter_index); for (uint8_t channel = 0; channel < 2;
-    // channel++) {
-    //   ResonantFilter_setFilterType(resFilter[channel], 0);
-    //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
-    // }
-
-    if (val > 700) {
-      probability_of_random_retrig = (val - 700) * (val - 700) / 500;
-    } else {
-      probability_of_random_retrig = 0;
-    }
-    if (val > 100) {
-      sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
-      // sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 -
-      // 100);
-      // sf->fx_param[FX_COMB][2] = (val - 100) * 20 / (1024 - 100);
-      sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
-      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
-      // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
-      sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
-      sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
-    } else {
-      sf->fx_param[FX_REVERSE][2] = 0;
-      if (sf->fx_active[FX_REVERSE]) {
-        toggle_fx(FX_REVERSE);
-      }
-      sf->fx_param[FX_TIMESTRETCH][2] = 0;
-      if (sf->fx_active[FX_TIMESTRETCH]) {
-        toggle_fx(FX_TIMESTRETCH);
-      }
-      sf->fx_param[FX_COMB][2] = 0;
-      if (sf->fx_active[FX_COMB]) {
-        toggle_fx(FX_COMB);
-      }
-      sf->fx_param[FX_EXPAND][2] = 0;
-      if (sf->fx_active[FX_EXPAND]) {
-        toggle_fx(FX_EXPAND);
-      }
-      sf->fx_param[FX_TAPE_STOP][2] = 0;
-      if (sf->fx_active[FX_TAPE_STOP]) {
-        toggle_fx(FX_TAPE_STOP);
-      }
-      sf->fx_param[FX_BEATREPEAT][2] = 0;
-      if (sf->fx_active[FX_BEATREPEAT]) {
-        toggle_fx(FX_BEATREPEAT);
-      }
-      sf->fx_param[FX_BITCRUSH][2] = 0;
-      if (sf->fx_active[FX_BITCRUSH]) {
-        toggle_fx(FX_BITCRUSH);
-      }
-      sf->fx_param[FX_DELAY][2] = 0;
-      if (sf->fx_active[FX_DELAY]) {
-        toggle_fx(FX_DELAY);
-      }
-    }
   }
 }
 
@@ -258,18 +194,6 @@ void input_handling() {
   uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
-  uint8_t fx_random_on[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_off[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_max[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_max_off[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
   uint16_t debounce_input_detection = 0;
   uint16_t debounce_mean_signal = 0;
   uint16_t mean_signal = 0;
@@ -395,7 +319,7 @@ void input_handling() {
       }
       if (total_signals_sent > 0) {
         mean_signal = total_mean_signal / (total_signals_sent * length_signal);
-        printf("[ectocore] mean_signal: %d\n", mean_signal);
+        // printf("[ectocore] mean_signal: %d\n", mean_signal);
       }
       debounce_mean_signal = 10000;
     }
@@ -758,56 +682,7 @@ void input_handling() {
     // updating the random fx
     if (clock_did_activate) {
       clock_did_activate = false;
-      for (uint8_t i = 0; i < 16; i++) {
-        if (sf->fx_param[i][2] > 0) {
-          if (sf->fx_active[i]) {
-            fx_random_on[i]++;
-            fx_random_off[i] = 0;
-            if (fx_random_on[i] >= fx_random_max[i]) {
-              toggle_fx(i);
-              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
-              fx_random_max_off[i] = random_integer_in_range(2, 6);
-              if (i == FX_TIMESTRETCH) {
-                fx_random_max_off[i] = random_integer_in_range(16, 32);
-              } else if (i == FX_REVERSE) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_COMB) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_EXPAND) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_TAPE_STOP) {
-                fx_random_max_off[i] = random_integer_in_range(8, 16);
-              }
-            }
-          } else {
-            fx_random_off[i]++;
-            fx_random_on[i] = 0;
-            if (fx_random_off[i] >= fx_random_max_off[i]) {
-              if (random_integer_in_range(0, 100) < sf->fx_param[i][2] / 4) {
-                fx_random_max[i] = random_integer_in_range(4, 16);
-                if (i == FX_TIMESTRETCH) {
-                  fx_random_max[i] = random_integer_in_range(16, 32);
-                } else if (i == FX_REVERSE) {
-                  fx_random_max[i] = random_integer_in_range(1, 4);
-                } else if (i == FX_COMB) {
-                  fx_random_max[i] = random_integer_in_range(1, 4);
-                } else if (i == FX_EXPAND) {
-                  fx_random_max[i] = random_integer_in_range(2, 4);
-                } else if (i == FX_TAPE_STOP) {
-                  fx_random_max[i] = random_integer_in_range(4, 12);
-                } else if (i == FX_BEATREPEAT) {
-                  fx_random_max[i] = random_integer_in_range(1, 3);
-                }
-                sf->fx_param[i][1] = random_integer_in_range(0, 200);
-                sf->fx_param[i][2] = random_integer_in_range(0, 200);
-                toggle_fx(i);
-                // TODO: also randomize the parameters?
-                printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
-              }
-            }
-          }
-        }
-      }
+      update_patterns();
     }
 
     // load the new sample if variation changed
