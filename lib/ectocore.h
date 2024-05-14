@@ -846,6 +846,7 @@ void input_handling() {
                       16,
                   50, 190, 255);
       WS2812_show(ws2812);
+      sleep_ms(1);
     }
   }
 }
