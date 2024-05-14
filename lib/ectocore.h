@@ -307,19 +307,12 @@ void input_handling() {
     button_change[i] = ButtonChange_malloc();
   }
 
-#define MODE_NUM 4
-  const uint8_t mode_gpio_led[MODE_NUM] = {
-      GPIO_LED_MODE1,
-      GPIO_LED_MODE2,
-      GPIO_LED_MODE3,
-      GPIO_LED_MODE4,
-  };
-  for (uint8_t i = 0; i < MODE_NUM; i++) {
-    gpio_init(mode_gpio_led[i]);
-    gpio_set_dir(mode_gpio_led[i], GPIO_OUT);
-    gpio_put(mode_gpio_led[i], 0);
-  }
-  gpio_put(mode_gpio_led[ectocore_trigger_mode], 1);
+  gpio_init(GPIO_MODE_LEDA);
+  gpio_set_dir(GPIO_MODE_LEDA, GPIO_OUT);
+  gpio_put(GPIO_MODE_LEDA, 0);
+  gpio_init(GPIO_MODE_LEDB);
+  gpio_set_dir(GPIO_MODE_LEDB, GPIO_OUT);
+  gpio_put(GPIO_MODE_LEDB, 0);
 
 // create random dust timers
 #define DUST_NUM 4
@@ -724,15 +717,33 @@ void input_handling() {
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
         if (val == 1) {
-          if (ectocore_trigger_mode < MODE_NUM - 1) {
+          if (ectocore_trigger_mode < 4 - 1) {
             ectocore_trigger_mode++;
           } else {
             ectocore_trigger_mode = 0;
           }
-          for (uint8_t j = 0; j < MODE_NUM; j++) {
-            gpio_put(mode_gpio_led[j], 0);
+          switch (ectocore_trigger_mode) {
+            case TRIGGER_MODE_KICK:
+              printf("[ectocore] trigger mode: kick\n");
+              gpio_put(GPIO_MODE_LEDA, 0);
+              gpio_put(GPIO_MODE_LEDB, 0);
+              break;
+            case TRIGGER_MODE_SNARE:
+              printf("[ectocore] trigger mode: snare\n");
+              gpio_put(GPIO_MODE_LEDA, 1);
+              gpio_put(GPIO_MODE_LEDB, 0);
+              break;
+            case TRIGGER_MODE_HH:
+              printf("[ectocore] trigger mode: hh\n");
+              gpio_put(GPIO_MODE_LEDA, 0);
+              gpio_put(GPIO_MODE_LEDB, 1);
+              break;
+            case TRIGGER_MODE_RANDOM:
+              printf("[ectocore] trigger mode: random\n");
+              gpio_put(GPIO_MODE_LEDA, 1);
+              gpio_put(GPIO_MODE_LEDB, 1);
+              break;
           }
-          gpio_put(mode_gpio_led[ectocore_trigger_mode], 1);
         }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         printf("[ectocore] btn_bank %d\n", val);
