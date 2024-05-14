@@ -49,6 +49,8 @@
 #include "midi_comm_callback.h"
 #endif
 
+uint8_t gpio_btn_taptempo_val = 0;
+
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
   sf->fx_active[fx_num] = !sf->fx_active[fx_num];
@@ -57,6 +59,7 @@ void toggle_fx(uint8_t fx_num) {
 
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
+uint8_t debounce_file_change = 0;
 
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -85,6 +88,101 @@ void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
   }
   WS2812_fill(ws2812, filled, r ? val : 0, g ? val : 0, b ? val : 0);
   WS2812_show(ws2812);
+}
+
+void break_set(int16_t val, bool ignore_taptempo_btn) {
+  if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
+    // change volume
+    if (val < 412) {
+      sf->vol = val * VOLUME_STEPS / 412;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 0;
+    } else if (val > 700 && val <= 850) {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 1;
+    } else if (val > 850) {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_SATURATE] = 0;
+      sf->fx_active[FX_FUZZ] = 1;
+      sf->fx_param[FX_FUZZ][0] = (val - 850) * 255 / (1024 - 850);
+    } else {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 0;
+    }
+  } else {
+    // // BREAK MUTE
+    // if (val < 20 && !button_mute) {
+    //   trigger_button_mute = true;
+    //   printf("[ectocore] mute\n");
+    //   WS2812_fill(ws2812, 17, 0, 0, 255);
+    //   WS2812_show(ws2812);
+    // } else if (val >= 20 && button_mute) {
+    //   button_mute = false;
+    //   WS2812_fill(ws2812, 17, 0, 255, 0);
+    //   WS2812_show(ws2812);
+    // }
+    uint8_t u8val = val * 255 / 1024;
+    // global_filter_index =
+    //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
+    // printf("[ectocore] global_filter_index: %d\n",
+    // global_filter_index); for (uint8_t channel = 0; channel < 2;
+    // channel++) {
+    //   ResonantFilter_setFilterType(resFilter[channel], 0);
+    //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    // }
+
+    if (val > 700) {
+      probability_of_random_retrig = (val - 700) * (val - 700) / 500;
+    } else {
+      probability_of_random_retrig = 0;
+    }
+    if (val > 100) {
+      sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
+      // sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 -
+      // 100);
+      // sf->fx_param[FX_COMB][2] = (val - 100) * 20 / (1024 - 100);
+      sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
+      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
+      // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
+      sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
+      sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
+    } else {
+      sf->fx_param[FX_REVERSE][2] = 0;
+      if (sf->fx_active[FX_REVERSE]) {
+        toggle_fx(FX_REVERSE);
+      }
+      sf->fx_param[FX_TIMESTRETCH][2] = 0;
+      if (sf->fx_active[FX_TIMESTRETCH]) {
+        toggle_fx(FX_TIMESTRETCH);
+      }
+      sf->fx_param[FX_COMB][2] = 0;
+      if (sf->fx_active[FX_COMB]) {
+        toggle_fx(FX_COMB);
+      }
+      sf->fx_param[FX_EXPAND][2] = 0;
+      if (sf->fx_active[FX_EXPAND]) {
+        toggle_fx(FX_EXPAND);
+      }
+      sf->fx_param[FX_TAPE_STOP][2] = 0;
+      if (sf->fx_active[FX_TAPE_STOP]) {
+        toggle_fx(FX_TAPE_STOP);
+      }
+      sf->fx_param[FX_BEATREPEAT][2] = 0;
+      if (sf->fx_active[FX_BEATREPEAT]) {
+        toggle_fx(FX_BEATREPEAT);
+      }
+      sf->fx_param[FX_BITCRUSH][2] = 0;
+      if (sf->fx_active[FX_BITCRUSH]) {
+        toggle_fx(FX_BITCRUSH);
+      }
+      sf->fx_param[FX_DELAY][2] = 0;
+      if (sf->fx_active[FX_DELAY]) {
+        toggle_fx(FX_DELAY);
+      }
+    }
+  }
 }
 
 void dust_1() {
@@ -380,19 +478,24 @@ void input_handling() {
                                                 .snd[FILEZERO]
                                                 ->slice_num);
         } else if (i == CV_BREAK) {
-          // TODO: not sure
+          // update the break stuff
+          break_set(linlin(cv_values[i], -512, 512, 0, 1024), true);
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
-          if (fil_current_change != true) {
+          if (fil_current_change != true && debounce_file_change == 0) {
             sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
                                      banks[sel_bank_cur]->num_samples);
             if (sel_sample_next != sel_sample_cur) {
               printf("[ectocore] switch sample %d\n", sel_sample_next);
               fil_current_change = true;
+              debounce_file_change = 100;
             }
           }
         }
       }
+    }
+    if (debounce_file_change > 0) {
+      debounce_file_change--;
     }
 
     if (clock_out_ready) {
@@ -468,7 +571,9 @@ void input_handling() {
     }
 #endif
 
-    if (gpio_get(GPIO_BTN_TAPTEMPO) == 0 && !btn_taptempo_on) {
+    gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
+
+    if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
       btn_taptempo_on = true;
       gpio_put(GPIO_LED_TAPTEMPO, 0);
       val = TapTempo_tap(taptempo);
@@ -476,7 +581,7 @@ void input_handling() {
         printf("[ectocore] tap bpm -> %d\n", val);
         sf->bpm_tempo = val;
       }
-    } else if (gpio_get(GPIO_BTN_TAPTEMPO) == 1 && btn_taptempo_on) {
+    } else if (gpio_btn_taptempo_val == 1 && btn_taptempo_on) {
       btn_taptempo_on = false;
       gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
@@ -527,101 +632,10 @@ void input_handling() {
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
         printf("[ectocore] knob_break %d\n", val);
         ws2812_set_wheel(ws2812, val * 4, true, true, false);
-        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
-          // change volume
-          if (val < 412) {
-            sf->vol = val * VOLUME_STEPS / 412;
-            sf->fx_active[FX_FUZZ] = 0;
-            sf->fx_active[FX_SATURATE] = 0;
-          } else if (val > 700 && val <= 850) {
-            sf->vol = VOLUME_STEPS;
-            sf->fx_active[FX_FUZZ] = 0;
-            sf->fx_active[FX_SATURATE] = 1;
-          } else if (val > 850) {
-            sf->vol = VOLUME_STEPS;
-            sf->fx_active[FX_SATURATE] = 0;
-            sf->fx_active[FX_FUZZ] = 1;
-            sf->fx_param[FX_FUZZ][0] = (val - 850) * 255 / (1024 - 850);
-          } else {
-            sf->vol = VOLUME_STEPS;
-            sf->fx_active[FX_FUZZ] = 0;
-            sf->fx_active[FX_SATURATE] = 0;
-          }
-        } else {
-          // // BREAK MUTE
-          // if (val < 20 && !button_mute) {
-          //   trigger_button_mute = true;
-          //   printf("[ectocore] mute\n");
-          //   WS2812_fill(ws2812, 17, 0, 0, 255);
-          //   WS2812_show(ws2812);
-          // } else if (val >= 20 && button_mute) {
-          //   button_mute = false;
-          //   WS2812_fill(ws2812, 17, 0, 255, 0);
-          //   WS2812_show(ws2812);
-          // }
-          uint8_t u8val = val * 255 / 1024;
-          // global_filter_index =
-          //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
-          // printf("[ectocore] global_filter_index: %d\n",
-          // global_filter_index); for (uint8_t channel = 0; channel < 2;
-          // channel++) {
-          //   ResonantFilter_setFilterType(resFilter[channel], 0);
-          //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
-          // }
-
-          if (val > 700) {
-            probability_of_random_retrig = (val - 700) * (val - 700) / 500;
-          } else {
-            probability_of_random_retrig = 0;
-          }
-          if (val > 100) {
-            sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
-            // sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 -
-            // 100);
-            // sf->fx_param[FX_COMB][2] = (val - 100) * 20 / (1024 - 100);
-            sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
-            sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
-            // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
-            sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
-            sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
-          } else {
-            sf->fx_param[FX_REVERSE][2] = 0;
-            if (sf->fx_active[FX_REVERSE]) {
-              toggle_fx(FX_REVERSE);
-            }
-            sf->fx_param[FX_TIMESTRETCH][2] = 0;
-            if (sf->fx_active[FX_TIMESTRETCH]) {
-              toggle_fx(FX_TIMESTRETCH);
-            }
-            sf->fx_param[FX_COMB][2] = 0;
-            if (sf->fx_active[FX_COMB]) {
-              toggle_fx(FX_COMB);
-            }
-            sf->fx_param[FX_EXPAND][2] = 0;
-            if (sf->fx_active[FX_EXPAND]) {
-              toggle_fx(FX_EXPAND);
-            }
-            sf->fx_param[FX_TAPE_STOP][2] = 0;
-            if (sf->fx_active[FX_TAPE_STOP]) {
-              toggle_fx(FX_TAPE_STOP);
-            }
-            sf->fx_param[FX_BEATREPEAT][2] = 0;
-            if (sf->fx_active[FX_BEATREPEAT]) {
-              toggle_fx(FX_BEATREPEAT);
-            }
-            sf->fx_param[FX_BITCRUSH][2] = 0;
-            if (sf->fx_active[FX_BITCRUSH]) {
-              toggle_fx(FX_BITCRUSH);
-            }
-            sf->fx_param[FX_DELAY][2] = 0;
-            if (sf->fx_active[FX_DELAY]) {
-              toggle_fx(FX_DELAY);
-            }
-          }
-        }
+        break_set(val, false);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         printf("[ectocore] knob_amen %d\n", val);
-        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
+        if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           global_filter_index = val * (resonantfilter_fc_max) / 1024;
           printf("[ectocore] global_filter_index: %d\n", global_filter_index);
