@@ -283,16 +283,22 @@ void input_handling() {
       debounce_mean_signal--;
     } else {
       // calculate mean signal
-      mean_signal = 0;
+      int16_t total_mean_signal = 0;
+      uint8_t total_signals_sent = 0;
       for (uint8_t j = 0; j < 3; j++) {
-        for (uint8_t i = 0; i < length_signal; i++) {
-          gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-          sleep_us(6);
-          mean_signal += MCP3208_read(mcp3208, cv_signals[j], false);
+        if (!cv_plugged[j]) {
+          total_signals_sent++;
+          for (uint8_t i = 0; i < length_signal; i++) {
+            gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
+            sleep_us(6);
+            total_mean_signal += MCP3208_read(mcp3208, cv_signals[j], false);
+          }
         }
       }
-      mean_signal = mean_signal / (3 * length_signal);
-      printf("[ectocore] mean_signal: %d\n", mean_signal);
+      if (total_signals_sent > 0) {
+        mean_signal = total_mean_signal / (total_signals_sent * length_signal);
+        printf("[ectocore] mean_signal: %d\n", mean_signal);
+      }
       debounce_mean_signal = 10000;
     }
 
