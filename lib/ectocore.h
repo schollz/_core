@@ -325,8 +325,8 @@ void input_handling() {
 
   // create clock
   ClockInput *clockinput =
-      ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
-                        clock_handling_start);
+      ClockInput_create(GPIO_CLOCK_MIDI_1, clock_handling_up,
+                        clock_handling_down, clock_handling_start);
 
   WS2812 *ws2812;
   ws2812 = WS2812_new(7, pio0, 2);

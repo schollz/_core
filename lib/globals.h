@@ -413,7 +413,7 @@ void do_update_phase_from_beat_current() {
   phase_change = true;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE
-  gpio_put(GPIO_LED_TAPTEMPO, slice % 2 == 0);
+  gpio_put(GPIO_LED_TAPTEMPO, beat_total % 2 == 0);
 #endif
 
   // printf("[globals] do_update_phase_from_beat_current: %d, %d %d [%d, %d]\n",
