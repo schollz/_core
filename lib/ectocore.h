@@ -364,7 +364,7 @@ void input_handling() {
       if (cv_plugged[i]) {
         // firist figure out CV values
         val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
-        if (i < 3) {
+        if (i < 2) {
           // read in the attenuator
           int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
           if (val_attenuate > 520) {
