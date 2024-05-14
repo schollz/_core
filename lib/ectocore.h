@@ -48,6 +48,7 @@
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
+#define INPUT_DETECT_US_WAIT 6
 
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
@@ -57,6 +58,7 @@ void toggle_fx(uint8_t fx_num) {
 
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
+uint8_t debounce_sample_change = 0;
 
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -261,6 +263,7 @@ void input_handling() {
     // clock input handler
     ClockInput_update(clockinput);
     if (clock_in_do) {
+      printf("clock input\n");
       if (ClockInput_timeSinceLast(clockinput) > 1000000) {
         printf("clock input timeout\n");
         clock_in_do = false;
@@ -287,12 +290,12 @@ void input_handling() {
       for (uint8_t j = 0; j < 3; j++) {
         for (uint8_t i = 0; i < length_signal; i++) {
           gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-          sleep_us(6);
+          sleep_us(INPUT_DETECT_US_WAIT);
           mean_signal += MCP3208_read(mcp3208, cv_signals[j], false);
         }
       }
       mean_signal = mean_signal / (3 * length_signal);
-      printf("[ectocore] mean_signal: %d\n", mean_signal);
+      // printf("[ectocore] mean_signal: %d\n", mean_signal);
       debounce_mean_signal = 10000;
     }
 
@@ -311,7 +314,7 @@ void input_handling() {
       for (uint8_t j = 0; j < 3; j++) {
         for (uint8_t i = 0; i < length_signal; i++) {
           gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-          sleep_us(6);
+          sleep_us(INPUT_DETECT_US_WAIT);
           val_input = MCP3208_read(mcp3208, cv_signals[j], false);
           if (val_input > mean_signal) {
             response_signal[j][i] = 1;
@@ -358,7 +361,7 @@ void input_handling() {
       if (cv_plugged[i]) {
         // firist figure out CV values
         val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
-        if (i < 3) {
+        if (i < 2) {
           // read in the attenuator
           int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
           if (val_attenuate > 520) {
@@ -384,13 +387,21 @@ void input_handling() {
           // TODO: not sure
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
-          sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
-                                   banks[sel_bank_cur]->num_samples);
-          if (sel_sample_next != sel_sample_cur) {
-            fil_current_change = true;
+          // printf("[ectocore] cv_sample %d\n", cv_values[i]);
+          if (!fil_current_change && debounce_sample_change == 0) {
+            sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
+                                     banks[sel_bank_cur]->num_samples);
+            if (sel_sample_next != sel_sample_cur) {
+              debounce_sample_change = 255;
+              printf("[ectocore] cv_sample %d\n", sel_sample_next);
+              fil_current_change = true;
+            }
           }
         }
       }
+    }
+    if (debounce_sample_change > 0) {
+      debounce_sample_change--;
     }
 
     if (clock_out_ready) {
