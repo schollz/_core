@@ -118,6 +118,7 @@ void break_set(int16_t val, bool ignore_taptempo_btn) {
     //   WS2812_fill(ws2812, 17, 0, 255, 0);
     //   WS2812_show(ws2812);
     // }
+    update_pattern_val(val * 255 / 1024);
   }
 }
 
