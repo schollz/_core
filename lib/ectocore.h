@@ -160,6 +160,18 @@ void input_handling() {
   uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
+  uint8_t fx_random_on[16] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+  uint8_t fx_random_off[16] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+  uint8_t fx_random_max[16] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+  uint8_t fx_random_max_off[16] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
   uint16_t debounce_input_detection = 0;
   uint16_t debounce_mean_signal = 0;
   uint16_t mean_signal = 0;
@@ -560,30 +572,49 @@ void input_handling() {
           } else {
             probability_of_random_retrig = 0;
           }
-          if (val > 600) {
-            sf->fx_param[FX_REVERSE][2] = (val - 600) * 100 / (1024 - 600);
+          if (val > 100) {
+            sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
+            // sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 -
+            // 100);
+            // sf->fx_param[FX_COMB][2] = (val - 100) * 20 / (1024 - 100);
+            sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
+            sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
+            // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
+            sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
+            sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
           } else {
             sf->fx_param[FX_REVERSE][2] = 0;
-          }
-          if (val > 750) {
-            sf->fx_param[FX_TIMESTRETCH][2] = (val - 750) * 64 / (1024 - 750);
-          } else {
+            if (sf->fx_active[FX_REVERSE]) {
+              toggle_fx(FX_REVERSE);
+            }
             sf->fx_param[FX_TIMESTRETCH][2] = 0;
-          }
-          if (val > 800) {
-            sf->fx_param[FX_COMB][2] = (val - 800) * 64 / (1024 - 800);
-          } else {
+            if (sf->fx_active[FX_TIMESTRETCH]) {
+              toggle_fx(FX_TIMESTRETCH);
+            }
             sf->fx_param[FX_COMB][2] = 0;
-          }
-          if (val > 850) {
-            sf->fx_param[FX_EXPAND][2] = (val - 850) * 64 / (1024 - 850);
-          } else {
+            if (sf->fx_active[FX_COMB]) {
+              toggle_fx(FX_COMB);
+            }
             sf->fx_param[FX_EXPAND][2] = 0;
-          }
-          if (val > 950) {
-            sf->fx_param[FX_TAPE_STOP][2] = (val - 950) * 64 / (1024 - 950);
-          } else {
+            if (sf->fx_active[FX_EXPAND]) {
+              toggle_fx(FX_EXPAND);
+            }
             sf->fx_param[FX_TAPE_STOP][2] = 0;
+            if (sf->fx_active[FX_TAPE_STOP]) {
+              toggle_fx(FX_TAPE_STOP);
+            }
+            sf->fx_param[FX_BEATREPEAT][2] = 0;
+            if (sf->fx_active[FX_BEATREPEAT]) {
+              toggle_fx(FX_BEATREPEAT);
+            }
+            sf->fx_param[FX_BITCRUSH][2] = 0;
+            if (sf->fx_active[FX_BITCRUSH]) {
+              toggle_fx(FX_BITCRUSH);
+            }
+            sf->fx_param[FX_DELAY][2] = 0;
+            if (sf->fx_active[FX_DELAY]) {
+              toggle_fx(FX_DELAY);
+            }
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
@@ -714,17 +745,49 @@ void input_handling() {
       for (uint8_t i = 0; i < 16; i++) {
         if (sf->fx_param[i][2] > 0) {
           if (sf->fx_active[i]) {
-            if (random_integer_in_range(0, 96) <
-                probability_max_values_off[sf->fx_param[i][2] >> 4]) {
+            fx_random_on[i]++;
+            fx_random_off[i] = 0;
+            if (fx_random_on[i] >= fx_random_max[i]) {
               toggle_fx(i);
               printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+              fx_random_max_off[i] = random_integer_in_range(2, 6);
+              if (i == FX_TIMESTRETCH) {
+                fx_random_max_off[i] = random_integer_in_range(16, 32);
+              } else if (i == FX_REVERSE) {
+                fx_random_max_off[i] = random_integer_in_range(1, 4);
+              } else if (i == FX_COMB) {
+                fx_random_max_off[i] = random_integer_in_range(1, 4);
+              } else if (i == FX_EXPAND) {
+                fx_random_max_off[i] = random_integer_in_range(1, 4);
+              } else if (i == FX_TAPE_STOP) {
+                fx_random_max_off[i] = random_integer_in_range(8, 16);
+              }
             }
           } else {
-            if (random_integer_in_range(0, 96) <
-                probability_max_values[sf->fx_param[i][2] >> 4]) {
-              toggle_fx(i);
-              // TODO: also randomize the parameters?
-              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+            fx_random_off[i]++;
+            fx_random_on[i] = 0;
+            if (fx_random_off[i] >= fx_random_max_off[i]) {
+              if (random_integer_in_range(0, 100) < sf->fx_param[i][2] / 4) {
+                fx_random_max[i] = random_integer_in_range(4, 16);
+                if (i == FX_TIMESTRETCH) {
+                  fx_random_max[i] = random_integer_in_range(16, 32);
+                } else if (i == FX_REVERSE) {
+                  fx_random_max[i] = random_integer_in_range(1, 4);
+                } else if (i == FX_COMB) {
+                  fx_random_max[i] = random_integer_in_range(1, 4);
+                } else if (i == FX_EXPAND) {
+                  fx_random_max[i] = random_integer_in_range(2, 4);
+                } else if (i == FX_TAPE_STOP) {
+                  fx_random_max[i] = random_integer_in_range(4, 12);
+                } else if (i == FX_BEATREPEAT) {
+                  fx_random_max[i] = random_integer_in_range(1, 3);
+                }
+                sf->fx_param[i][1] = random_integer_in_range(0, 200);
+                sf->fx_param[i][2] = random_integer_in_range(0, 200);
+                toggle_fx(i);
+                // TODO: also randomize the parameters?
+                printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+              }
             }
           }
         }
