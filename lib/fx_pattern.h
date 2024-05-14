@@ -13,8 +13,21 @@ void toggle_fx_on(uint8_t fx_num, bool on) {
 #define PATTERN_REVERSE_SIZE 4
 #define PATTERN_REVERSE_SLICES 32
 const bool pattern_reverse[4][32] = {
-    {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
      0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+    {0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+     0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+    {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+};
+
+#define PATTERN_FILTER_SIZE 4
+#define PATTERN_FILTER_SLICES 32
+const bool pattern_filter[4][32] = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
      0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
     {0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1,
@@ -26,7 +39,7 @@ const bool pattern_reverse[4][32] = {
 #define PATTERN_RETRIGGER_SIZE 4
 #define PATTERN_RETRIGGER_SLICES 32
 const uint8_t pattern_retrigger[4][32] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0,
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0},
@@ -77,6 +90,17 @@ void update_patterns() {
     toggle_fx(FX_REVERSE);
     printf("reverse (%d): %d\n", pattern_val * PATTERN_REVERSE_SIZE / 255,
            sf->fx_active[FX_REVERSE]);
+  }
+
+  if ((pattern_filter[pattern_val * PATTERN_FILTER_SIZE / 255]
+                     [beat_total % PATTERN_FILTER_SLICES] &&
+       !sf->fx_active[FX_FILTER]) ||
+      (!pattern_filter[pattern_val * PATTERN_FILTER_SIZE / 255]
+                      [beat_total % PATTERN_FILTER_SLICES] &&
+       sf->fx_active[FX_FILTER])) {
+    toggle_fx(FX_FILTER);
+    printf("filter (%d): %d\n", pattern_val * PATTERN_FILTER_SIZE / 255,
+           sf->fx_active[FX_FILTER]);
   }
   if ((pattern_delay[pattern_val * PATTERN_DELAY_SIZE / 255]
                     [beat_total % PATTERN_DELAY_SLICES] > 0 &&
