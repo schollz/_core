@@ -19,6 +19,19 @@ Alternatively you can also download [the stock samples](https://infinitedigits.c
 <img src="/img/core_tool.png" style="width:70%;  margin:0 auto; padding:1em; text-align:center;">
 <br><small>Screenshot of the core tool</small><p>
 
+### Transfering samples to SD card
+
+Once you finish using the tool to collect your samples, click the **Download .zip** button in the lower left corner. This will download a zip file containing all of your samples.
+
+Unzip this **.zip** file extract all the **bankX** folders into the SD card. The SD card structure should look like this:
+
+<div style="text-align:center;">
+<img src="/img/folders.png" style="max-width:100%;">
+</div>
+
+Each of those **bankX** folders contains all the nessecary audio files. The **bank0** folder corresponds to the first bank (they are "0-indexed"). If you want a bank to be in a different slot, you can simply rename it. For example, you could rename **bank0** to **bank2** and it would be loaded into the third bank slot.
+
+
 ### Download to use tool offline:
 
 <details><summary>Windows</summary>
