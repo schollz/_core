@@ -12,6 +12,8 @@ Activating this combo will create a random sequence that will be used in place o
 
 If this is activated with [random fill](#random-fill), then a new sequence will automatically be generated every 32 beats.
 
+If this is activated, holding down and pressing any of the **1-16** keys will automatically generate a new sequence of that length.
+
 <figure class="imgcombo">
 <img src="/img/combo_rand.png">
 <figcaption>Combo for toggling a random sequence.</figcaption>
