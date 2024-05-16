@@ -265,7 +265,15 @@ void button_key_on_single(uint8_t key) {
 }
 
 void button_key_on_double(uint8_t key1, uint8_t key2) {
-  printf("on %d+%d\n", key1, key2);
+  printf("on double %d+%d\n", key1, key2);
+  if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
+    uint8_t tempos[16] = {60,  70,  80,  90,  100, 110, 120, 130,
+                          140, 150, 160, 170, 180, 190, 200, 210};
+    printf("[button_handler] select tempo: %d %d\n", key2, tempos[key2 - 4]);
+    sf->bpm_tempo = tempos[key2 - 4];
+    DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
+    return;
+  }
   if (key1 == KEY_A) {
     if (key2 == KEY_B) {
       // S+A
@@ -466,11 +474,13 @@ void button_handler(ButtonMatrix *bm) {
     key_timer++;
   }
   if (key_timer == 300 && key_pressed_num > 0) {
-    printf("combo: ");
+    // create string
+    char key_pressed_str[256];
+    sprintf(key_pressed_str, "[button_handler],combo: ");
     for (uint8_t i = 0; i < key_pressed_num; i++) {
-      printf("%d ", key_pressed[i]);
+      sprintf(key_pressed_str, "%s%d ", key_pressed_str, key_pressed[i]);
     }
-    printf("\n");
+    printf("%s\n", key_pressed_str);
 
     if (key_pressed_num >= 3) {
       bool do_merge = key_pressed[0] == KEY_C;
@@ -1094,7 +1104,8 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   } else {
-    if (key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) {
+    if ((key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) &&
+        !(key_on_buttons[KEY_A] || key_did_go_off[KEY_A])) {
       if (key_total_pressed > 0) {
         if (KEY_C_sample_select) {
           // illuminate which samples are available in the bank sel_bank_next
