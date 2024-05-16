@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 	log.SetLevel(flagLogLevel)
 	if !flagDontOpen {
-		utils.OpenBrowser("http://localhost:8101")
+		utils.OpenBrowser("http://localhost:8101/tool")
 	}
 	err := sox.Init()
 	if err != nil {
