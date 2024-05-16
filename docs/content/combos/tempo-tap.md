@@ -30,3 +30,5 @@ Secondly, you can hold **A** and tap **B** to manually tap in the tempo, which r
 
 
 In both methods, the newly set tempo is briefly displayed, providing immediate visual confirmation of adjustments. This feature ensures that users can easily synchronize their audio to the desired pace.
+
+Thirdly, you can hold **A** and hold **B** and tap any of the keys, 1-16 to set the tempo to a pre-defined value. This is useful for quickly setting the tempo to a common value.
