@@ -33,6 +33,7 @@
 uint8_t key_held_num = 0;
 bool key_held_on = false;
 int32_t key_timer = 0;
+int32_t key_timer_on = 0;
 uint8_t key_pressed[100];
 uint8_t key_pressed_num = 0;
 uint8_t key_total_pressed = 0;
@@ -476,11 +477,20 @@ void button_handler(ButtonMatrix *bm) {
   if (key_timer == 300 && key_pressed_num > 0) {
     // create string
     char key_pressed_str[256];
-    sprintf(key_pressed_str, "[button_handler],combo: ");
+    sprintf(key_pressed_str, "[button_handler](%d)combo: ", key_timer_on);
     for (uint8_t i = 0; i < key_pressed_num; i++) {
       sprintf(key_pressed_str, "%s%d ", key_pressed_str, key_pressed[i]);
     }
     printf("%s\n", key_pressed_str);
+
+    // if in RAND mode, generate new one
+    if (key_pressed_num == 1 && key_timer_on > 800 &&
+        random_sequence_length > 0 && key_pressed[0] > 3) {
+      do_random_sequence_len(key_pressed[0] - 3);
+      char random_sequence_str[10];
+      sprintf(random_sequence_str, "%d", random_sequence_length);
+      DebounceDigits_setText(debouncer_digits, random_sequence_str, 150);
+    }
 
     if (key_pressed_num >= 3) {
       bool do_merge = key_pressed[0] == KEY_C;
@@ -759,6 +769,9 @@ void button_handler(ButtonMatrix *bm) {
   bool key_held = false;
   for (uint8_t i = 0; i < bm->on_num; i++) {
     key_total_pressed++;
+    if (key_total_pressed == 1) {
+      key_timer_on = 0;
+    }
     if (!key_held_on) {
       key_held_on = true;
       key_held_num = bm->on[i];
@@ -830,6 +843,10 @@ void button_handler(ButtonMatrix *bm) {
         }
       }
     }
+  }
+
+  if (key_total_pressed > 0) {
+    key_timer_on++;
   }
 
   // rendering!

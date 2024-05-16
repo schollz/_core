@@ -463,7 +463,7 @@ void step_sequencer_stop() { printf("stop\n"); }
 
 uint8_t do_random_sequence(bool on) {
   if (on) {
-    uint8_t sequence_length = random_integer_in_range(1, 16) * 4;
+    uint8_t sequence_length = random_integer_in_range(1, 8) * 2;
     for (uint8_t i = 0; i < sequence_length; i++) {
       random_sequence_arr[i] = random_integer_in_range(0, 64);
     }
@@ -472,6 +472,13 @@ uint8_t do_random_sequence(bool on) {
     random_sequence_length = 0;
   }
   return random_sequence_length;
+}
+
+void do_random_sequence_len(uint8_t len) {
+  for (uint8_t i = 0; i < len; i++) {
+    random_sequence_arr[i] = random_integer_in_range(0, 64);
+  }
+  random_sequence_length = len;
 }
 
 #endif
