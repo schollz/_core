@@ -10,6 +10,7 @@ zeptoboard is the breadboard variant of the zeptocore. It has most of the same f
 
 you can purchase the components directly from me (helps to support my development!):
 
+
 <div >
 <div id='product-component-1715183469019' class="product"></div>
 </div>
@@ -192,3 +193,11 @@ or directly from another manufacturer like Amazon:
 <p style="text-align:center;">
 <img src="/_core_bb.png" style="width:90%; text-align:center; margin:auto 0; padding:1em; max-width:500px;">
 </p>
+
+## pcm5102
+
+when you get these off-the-shelf pcm5102 chips, make sure that you solder the backside to ensure proper audio connections. see this diagram:
+
+<div style="text-align:center;">
+<img src="/img/pcm5102.png">
+</div>
