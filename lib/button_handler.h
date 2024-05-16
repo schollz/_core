@@ -484,7 +484,7 @@ void button_handler(ButtonMatrix *bm) {
     printf("%s\n", key_pressed_str);
 
     // if in RAND mode, generate new one
-    if (key_pressed_num == 1 && key_timer_on > 800 &&
+    if (key_pressed_num == 1 && key_timer_on > 400 &&
         random_sequence_length > 0 && key_pressed[0] > 3) {
       do_random_sequence_len(key_pressed[0] - 3);
       char random_sequence_str[10];
