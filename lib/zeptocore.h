@@ -277,13 +277,16 @@ void input_handling() {
     // check if a single button is held
     // for purposes of changing the fx params
     int8_t single_key = -1;
-    for (uint8_t i = 4; i < 20; i++) {
-      if (key_on_buttons[i] > 0) {
-        if (single_key == -1) {
-          single_key = i;
-        } else {
-          single_key = -1;
-          break;
+    if (key_on_buttons[0] > 0 && key_on_buttons[1] > 0) {
+    } else {
+      for (uint8_t i = 4; i < 20; i++) {
+        if (key_on_buttons[i] > 0) {
+          if (single_key == -1) {
+            single_key = i;
+          } else {
+            single_key = -1;
+            break;
+          }
         }
       }
     }
