@@ -3,7 +3,7 @@
 #include "wavetablesyn.h"
 #define WAVETABLEBASS_MAX 3
 
-const uint8_t wavetablebass_harmonics[3] = {0, 12, 19};
+const uint8_t wavetablebass_harmonics[3] = {0, 4, 9};
 typedef struct WaveBass {
   WaveSyn *osc[WAVETABLEBASS_MAX];
   uint8_t note;
@@ -57,10 +57,10 @@ int32_t WaveBass_next(WaveBass *self) {
       WaveSyn_new(self->osc[0], self->note + wavetablebass_harmonics[0], 0, 1,
                   100);
     } else if (self->change_count == 500 && WAVETABLEBASS_MAX > 1) {
-      WaveSyn_new(self->osc[1], self->note + wavetablebass_harmonics[1], 1, 3,
+      WaveSyn_new(self->osc[1], self->note + wavetablebass_harmonics[1], 1, 1,
                   50);
     } else if (self->change_count == 1000 && WAVETABLEBASS_MAX > 2) {
-      WaveSyn_new(self->osc[2], self->note + wavetablebass_harmonics[2], 2, 4,
+      WaveSyn_new(self->osc[2], self->note + wavetablebass_harmonics[2], 2, 1,
                   25);
     }
     self->change_count++;
