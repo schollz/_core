@@ -342,6 +342,8 @@ void input_handling() {
   tusb_init();
 #endif
 
+  bool clock_input_absent = false;
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -353,8 +355,7 @@ void input_handling() {
     ClockInput_update(clockinput);
     if (clock_in_do) {
       if (ClockInput_timeSinceLast(clockinput) > 1000000) {
-        printf("clock input timeout\n");
-        clock_in_do = false;
+        clock_input_absent = true;
       }
     }
 
@@ -567,6 +568,12 @@ void input_handling() {
     gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
 
     if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
+      if (clock_input_absent && clock_in_activator >= 3) {
+        printf("reseting clock\n");
+        clock_in_ready = false;
+        clock_in_activator = 0;
+        clock_in_do = false;
+      }
       btn_taptempo_on = true;
       gpio_put(GPIO_LED_TAPTEMPO, 0);
       val = TapTempo_tap(taptempo);
