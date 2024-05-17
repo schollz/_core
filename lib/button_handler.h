@@ -847,6 +847,13 @@ void button_handler(ButtonMatrix *bm) {
 
   if (key_total_pressed > 0) {
     key_timer_on++;
+    if (key_total_pressed == 1) {
+      single_key_on = key_pressed[0];
+    } else {
+      single_key_on = -1;
+    }
+  } else {
+    single_key_on = -1;
   }
 
   // rendering!
