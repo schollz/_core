@@ -126,6 +126,7 @@ bool mute_because_of_playback_type = false;
 bool mode_hands_on_unmute = false;
 
 bool key3_activated = false;
+int8_t single_key_on = -1;
 uint8_t key3_pressed_keys[3] = {0, 0, 0};
 
 SaveFile *sf;
@@ -365,6 +366,7 @@ WS2812 *ws2812;
 
 uint8_t key_jump_debounce = 0;
 bool do_random_jump = false;
+bool jump_precedence = false;
 
 void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
@@ -383,8 +385,12 @@ void do_update_phase_from_beat_current() {
     }
   }
   uint16_t slice = beat_current;
-  if (random_sequence_length > 0) {
-    slice = random_sequence_arr[beat_current % random_sequence_length];
+  if (!jump_precedence) {
+    if (random_sequence_length > 0) {
+      slice = random_sequence_arr[beat_current % random_sequence_length];
+    } else if (single_key_on >= 4 && mode_buttons16 == MODE_JUMP) {
+      slice = (beat_current / 16) * 16 + (single_key_on - 4);
+    }
   }
   slice = slice %
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
@@ -426,6 +432,7 @@ void do_update_phase_from_beat_current() {
   //            ->sample[sel_sample_cur]
   //            .snd[FILEZERO]
   //            ->slice_stop[slice]);
+  jump_precedence = false;
 }
 
 void key_do_jump(uint8_t beat) {
@@ -448,6 +455,7 @@ void key_do_jump(uint8_t beat) {
       }
       retrig_filter_original = 0;
     }
+    jump_precedence = true;
     do_update_phase_from_beat_current();
   }
 }
