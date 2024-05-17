@@ -521,7 +521,8 @@ app = new Vue({
         },
         newURL(evt) {
             var data = evt.target.value;
-            window.location.href = window.location.href + data;
+            // get base url
+            window.location.href = window.location.origin + "/" + data;
         },
         isSelected(fileIndex) {
             return this.selectedFiles.includes(fileIndex);

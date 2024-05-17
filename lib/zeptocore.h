@@ -28,6 +28,9 @@
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
+#ifdef INCLUDE_SSD1306
+#include "ssd1306.h"
+#endif
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -130,10 +133,10 @@ void input_handling() {
   uint8_t debounce_beat_repeat = 0;
 
   // debug test
-  printStringWithDelay("zv2.6.1");
+  printStringWithDelay("zv2.7.1");
 
   // print to screen
-  printf("version=v2.6.1\n");
+  printf("version=v2.7.1\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -148,6 +151,13 @@ void input_handling() {
   }
 #ifdef INCLUDE_MIDI
   tusb_init();
+#endif
+
+#ifdef INCLUDE_SSD1306
+  ssd1306_t disp;
+  disp.external_vcc = false;
+  ssd1306_init(&disp, 128, 64, 0x3C, i2c_default);
+  ssd1306_clear(&disp);
 #endif
 
 #ifdef DETROITUNDERGROUND
@@ -205,7 +215,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.6.1\n");
+        printf("version=v2.7.1\n");
       }
     }
 
@@ -218,6 +228,14 @@ void input_handling() {
       MessageSync_print(messagesync);
       MessageSync_clear(messagesync);
     }
+
+#ifdef INCLUDE_SSD1306
+    char buf_ssd1306[16];
+    sprintf(buf_ssd1306, "%d", beat_current);
+    ssd1306_clear(&disp);
+    ssd1306_draw_string(&disp, 8, 24, 2, buf_ssd1306);
+    ssd1306_show(&disp);
+#endif
 
     // check to see if the probability knobs are activated for the fx
     if (clock_did_activate) {
@@ -277,13 +295,16 @@ void input_handling() {
     // check if a single button is held
     // for purposes of changing the fx params
     int8_t single_key = -1;
-    for (uint8_t i = 4; i < 20; i++) {
-      if (key_on_buttons[i] > 0) {
-        if (single_key == -1) {
-          single_key = i;
-        } else {
-          single_key = -1;
-          break;
+    if (key_on_buttons[0] > 0 && key_on_buttons[1] > 0) {
+    } else {
+      for (uint8_t i = 4; i < 20; i++) {
+        if (key_on_buttons[i] > 0) {
+          if (single_key == -1) {
+            single_key = i;
+          } else {
+            single_key = -1;
+            break;
+          }
         }
       }
     }
@@ -341,13 +362,19 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 3, adc * 127 / 4096);
 #endif
-          sf->bpm_tempo = round(linlin(
-              adc, 0, 4095,
-              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
-               2),
-              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm *
-               2)));
-          sf->bpm_tempo = util_clamp(sf->bpm_tempo, 30, 300);
+          uint16_t bpm_new_tempo =
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
+          bpm_new_tempo = round(
+              linlin(adc, 0, 4095, bpm_new_tempo / 2, bpm_new_tempo * 3 / 2));
+          if (bpm_new_tempo % 10 == 1 || bpm_new_tempo % 10 == 9) {
+            // round to nearest 5
+            bpm_new_tempo = (bpm_new_tempo / 5) * 5;
+          } else if (bpm_new_tempo % 10 == 3 || bpm_new_tempo % 10 == 7) {
+            // round to nearest 2
+            bpm_new_tempo = (bpm_new_tempo / 2) * 2;
+          }
+          printf("bpm_new_tempo: %d\n", bpm_new_tempo);
+          sf->bpm_tempo = util_clamp(bpm_new_tempo, 30, 300);
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
