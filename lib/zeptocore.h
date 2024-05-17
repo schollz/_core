@@ -28,6 +28,9 @@
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
+#ifdef INCLUDE_SSD1306
+#include "ssd1306.h"
+#endif
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -150,6 +153,13 @@ void input_handling() {
   tusb_init();
 #endif
 
+#ifdef INCLUDE_SSD1306
+  ssd1306_t disp;
+  disp.external_vcc = false;
+  ssd1306_init(&disp, 128, 64, 0x3C, i2c_default);
+  ssd1306_clear(&disp);
+#endif
+
 #ifdef DETROITUNDERGROUND
   probability_of_random_jump = 25;
   probability_of_random_retrig = 400;
@@ -218,6 +228,14 @@ void input_handling() {
       MessageSync_print(messagesync);
       MessageSync_clear(messagesync);
     }
+
+#ifdef INCLUDE_SSD1306
+    char buf_ssd1306[16];
+    sprintf(buf_ssd1306, "%d", beat_current);
+    ssd1306_clear(&disp);
+    ssd1306_draw_string(&disp, 8, 24, 2, buf_ssd1306);
+    ssd1306_show(&disp);
+#endif
 
     // check to see if the probability knobs are activated for the fx
     if (clock_did_activate) {
