@@ -344,13 +344,19 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 3, adc * 127 / 4096);
 #endif
-          sf->bpm_tempo = round(linlin(
-              adc, 0, 4095,
-              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
-               2),
-              (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm *
-               2)));
-          sf->bpm_tempo = util_clamp(sf->bpm_tempo, 30, 300);
+          uint16_t bpm_new_tempo =
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
+          bpm_new_tempo = round(
+              linlin(adc, 0, 4095, bpm_new_tempo / 2, bpm_new_tempo * 3 / 2));
+          if (bpm_new_tempo % 10 == 1 || bpm_new_tempo % 10 == 9) {
+            // round to nearest 5
+            bpm_new_tempo = (bpm_new_tempo / 5) * 5;
+          } else if (bpm_new_tempo % 10 == 3 || bpm_new_tempo % 10 == 7) {
+            // round to nearest 2
+            bpm_new_tempo = (bpm_new_tempo / 2) * 2;
+          }
+          printf("bpm_new_tempo: %d\n", bpm_new_tempo);
+          sf->bpm_tempo = util_clamp(bpm_new_tempo, 30, 300);
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
