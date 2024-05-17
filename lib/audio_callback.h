@@ -252,13 +252,13 @@ BREAKOUT_OF_MUTE:
     samples_to_read =
         round(buffer->max_sample_count * sf->bpm_tempo * envelope_pitch_val *
               pitch_vals[sf->pitch_val_index] * scratch_pitch *
-              pitch_vals[retrig_pitch]) *
-        (banks[sel_bank_cur]
-             ->sample[sel_sample_cur]
-             .snd[FILEZERO]
-             ->oversampling +
-         1) /
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
+              pitch_vals[retrig_pitch] *
+              (banks[sel_bank_cur]
+                   ->sample[sel_sample_cur]
+                   .snd[FILEZERO]
+                   ->oversampling +
+               1) /
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm);
   } else {
     samples_to_read =
         round((float)buffer->max_sample_count * envelope_pitch_val *
