@@ -70,10 +70,20 @@ void ws2812_wheel_clear(WS2812 *ws2812) {
     WS2812_fill(ws2812, i, 0, 0, 0);
   }
 }
+
+#define WHEEL_MIDPOINT 2400
 void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   if (val > 4079) {
     val = 4079;
+  }
+  // fudge factor
+  if (val > WHEEL_MIDPOINT) {
+    val = (val - WHEEL_MIDPOINT) * val / (4079 - WHEEL_MIDPOINT) +
+          ((4079 - WHEEL_MIDPOINT) - (val - WHEEL_MIDPOINT)) * (val * 2 / 3) /
+              (4079 - WHEEL_MIDPOINT);
+  } else {
+    val = val * 2 / 3;
   }
   int8_t filled = 0;
   while (val > 255) {
