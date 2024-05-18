@@ -112,6 +112,7 @@ bool usb_midi_present = false;
 #include "sequencehandler.h"
 #include "taptempo.h"
 #ifdef INCLUDE_ECTOCORE
+#include "dazzle.h"
 #include "ectocore_easing.h"
 #endif
 #ifdef INCLUDE_ZEPTOCORE
