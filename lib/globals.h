@@ -58,6 +58,8 @@ struct repeating_timer timer;
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
 
+uint16_t total_number_samples = 0;
+
 // one wire midi
 bool use_onewiremidi = false;
 
