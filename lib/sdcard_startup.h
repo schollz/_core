@@ -40,6 +40,9 @@ void check_setup_files() {
 }
 
 void update_reverb() {
+  if (freeverb == NULL) {
+    return;
+  }
   uint8_t val = sf->fx_param[FX_EXPAND][0];
   if (val < 85) {
     FV_Reverb_set_roomsize(freeverb, val * Q16_16_1 / 85);
@@ -306,6 +309,7 @@ void sdcard_startup() {
              banks[bi]->num_samples);
       banks_with_samples[banks_with_samples_num] = bi;
       banks_with_samples_num++;
+      total_number_samples += banks[bi]->num_samples;
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
         continue;
         if (bi == 0) {
@@ -390,9 +394,12 @@ void sdcard_startup() {
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
          (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
 
-  // allocate as much space as possible for the reverb
-  freeverb = FV_Reverb_malloc(FV_INITIALROOM, FV_INITIALDAMP, FV_INITIALWET,
-                              FV_INITIALDRY);
+  // if you have too many samples, reverb won't work
+  if (total_number_samples < 128) {
+    // allocate as much space as possible for the reverb
+    freeverb = FV_Reverb_malloc(FV_INITIALROOM, FV_INITIALDAMP, FV_INITIALWET,
+                                FV_INITIALDRY);
+  }
 
   total_heap = getTotalHeap();
   used_heap = total_heap - getFreeHeap();
