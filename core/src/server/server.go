@@ -195,14 +195,16 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	} else {
 		// TODO: add caching
-		// add caching
-		w.Header().Set("Cache-Control", "max-age=86400")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("Cache-Control", "must-revalidate")
-		w.Header().Set("Cache-Control", "proxy-revalidate")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
+		// add caching if not png
+		if !strings.HasSuffix(r.URL.Path, ".png") {
+			w.Header().Set("Cache-Control", "max-age=86400")
+			w.Header().Set("Cache-Control", "no-cache")
+			w.Header().Set("Cache-Control", "no-store")
+			w.Header().Set("Cache-Control", "must-revalidate")
+			w.Header().Set("Cache-Control", "proxy-revalidate")
+			w.Header().Set("Pragma", "no-cache")
+			w.Header().Set("Expires", "0")
+		}
 
 		if strings.HasPrefix(r.URL.Path, "/tool") {
 			r.URL.Path = "/" + strings.TrimPrefix(r.URL.Path, "/tool")
