@@ -47,7 +47,7 @@
 //
 #include "mcp3208.h"
 #include "midicallback.h"
-#include "onewiremidi.h"
+#include "onewiremidi2.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -327,18 +327,12 @@ void input_handling() {
   Dust_setDuration(dust[0], 1000 * 8);
 
   // create clock/midi
-  ClockInput *clockinput;
-  Onewiremidi *onewiremidi;
-  use_onewiremidi = true;
-  if (use_onewiremidi) {
-    // setup one wire midi
-    onewiremidi =
-        Onewiremidi_new(pio0, 3, 15, midi_note_on, midi_note_off, midi_start,
-                        midi_continue, midi_stop, midi_timing);
-  } else {
-    clockinput = ClockInput_create(GPIO_CLOCK_IN, clock_handling_up,
-                                   clock_handling_down, clock_handling_start);
-  }
+  Onewiremidi *onewiremidi =
+      Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
+                      midi_start, midi_continue, midi_stop, midi_timing);
+  ClockInput *clockinput =
+      ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
+                        clock_handling_start);
 
   WS2812 *ws2812;
   ws2812 = WS2812_new(7, pio0, 2);
@@ -363,37 +357,13 @@ void input_handling() {
 #endif
     int16_t val;
 
-    // clock input handler
-    if (do_switch_between_clock_and_midi) {
-      do_switch_between_clock_and_midi = false;
-      if (use_onewiremidi) {
-        // TODO: switching back doesn't work yet
-        // // switch to clock
-        // Onewiremidi_destroy(onewiremidi);
-        // clockinput =
-        //     ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
-        //                       clock_handling_down, clock_handling_start);
-      } else {
-        // switch to one wire midi
-        // ClockInput_destroy(clockinput);
-        // onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO,
-        // midi_note_on,
-        //                               midi_note_off, midi_start,
-        //                               midi_continue, midi_stop, midi_timing);
+    ClockInput_update(clockinput);
+    if (clock_in_do) {
+      if (ClockInput_timeSinceLast(clockinput) > 1000000) {
+        clock_input_absent = true;
       }
-      use_onewiremidi = !use_onewiremidi;
     }
-    if (!use_onewiremidi) {
-      // clock input handler
-      ClockInput_update(clockinput);
-      if (clock_in_do) {
-        if (ClockInput_timeSinceLast(clockinput) > 1000000) {
-          clock_input_absent = true;
-        }
-      }
-    } else {
-      Onewiremidi_receive(onewiremidi);
-    }
+    Onewiremidi_receive(onewiremidi);
 
     if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
       printf("[ecotocre] random retrigger\n");
