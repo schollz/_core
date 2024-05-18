@@ -10,7 +10,12 @@ Uploading samples is a straightforward process similar to transferring a file on
 
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
-Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card. Stock samples include amen break remixes and incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks.
+Alternatively you can also download one of the sample packs below and load them directly onto the SD card.
+
+### Sample packs
+
+-  [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB), include incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks and other breaks collated by myself (infinite digits) and one-shot samples made for the OP-1. 
+-  [pikocore stock samples](https://infinitedigits.co/start_samples_pikocore.zip) (1.4 GB), includes 256 samples from the [pikocore](https://pikocore.com) project at full 44.1 kHz / 16-bit quality.
 
 ### Use tool online: **[zeptocore v2.7.1](/tool)**
 
