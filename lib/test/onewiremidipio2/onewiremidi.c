@@ -14,7 +14,7 @@
 int main() {
   stdio_init_all();
 
-  sleep_ms(4500);  // Wait for the circuit to settle
+  sleep_ms(500);  // Wait for the circuit to settle
   printf("clock freq: %2.3f\n", (float)clock_get_hz(clk_sys));
   // Set up the state machine we're going to use to receive them.
   PIO pio = pio0;
@@ -23,10 +23,21 @@ int main() {
   uart_rx_program_init(pio, sm, offset, 15, 31250);
   // Echo characters received from PIO to the console
   while (true) {
-    char c = uart_rx_program_getc(pio, sm);
-    if (c != 0xf8 && c != 0xfe) {
-      printf("%02x\n", c);
+    char s[36];
+    memset(s, 0, sizeof(s));
+    for (uint i = 0; i < 6; i++) {
+      if (!pio_sm_is_rx_fifo_empty(pio, sm)) {
+        char c = uart_rx_program_getc(pio, sm);
+        if (c != 0xf8) {
+          sprintf(s, "%s%02x ", s, c);
+        }
+      }
+      sleep_us(16);
     }
+    if (s[0] != 0) {
+      printf("%s\n", s);
+    }
+    sleep_ms(1);
   }
 
   return 0;

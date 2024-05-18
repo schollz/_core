@@ -28,6 +28,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}.c)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_stdlib
         hardware_pio
+        hardware_clocks
  )
 
 # enable usb output, disable uart output
