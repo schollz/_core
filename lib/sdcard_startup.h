@@ -185,7 +185,7 @@ void update_fx(uint8_t fx_num) {
       } else {
         sel_variation_next = 0;
       }
-      fil_current_change = true;
+      // fil_current_change = true;
       break;
     default:
       break;

@@ -142,10 +142,9 @@ void break_set(int16_t val, bool ignore_taptempo_btn) {
       probability_of_random_retrig = 0;
     }
     if (val > 100) {
+      sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 - 100);
       sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
-      // sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 -
-      // 100);
-      // sf->fx_param[FX_COMB][2] = (val - 100) * 20 / (1024 - 100);
+      sf->fx_param[FX_COMB][2] = (val - 100) * 5 / (1024 - 100);
       sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
       sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
       // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
@@ -849,13 +848,13 @@ void input_handling() {
       uint32_t time_start = time_us_32();
       FRESULT fr = f_close(&fil_current);
       if (fr != FR_OK) {
-        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+        printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
       }
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
               sel_sample_cur, sel_variation_next);
       fr = f_open(&fil_current, fil_current_name, FA_READ);
       if (fr != FR_OK) {
-        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+        printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
       }
 
       // TODO: fix this
