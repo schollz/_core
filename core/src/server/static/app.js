@@ -9,9 +9,8 @@ var serverID = "";
 var randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 var fadeOutTimeout = null;
 var disconnectedTimeout = null;
-const ccolor = '#dcd6f799';
-const ccolor2 = '#dcd6f766';
-const wavecolor = '#3919a1';
+// get color from `:root` css
+var ccolor, ccolor2, wavecolor, selected_color;
 var hasSavedToCookie = false;
 
 
@@ -448,6 +447,7 @@ app = new Vue({
         regular_message: "",
         uploading: false,
         resampling: 'linear',
+        titleName: "_core",
         title: window.location.pathname,
         disconnected: false,
         previousPages: [],
@@ -1084,7 +1084,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
             for (var i = 0; i < wsRegions.regions.length; i++) {
                 wsRegions.regions[i].setOptions({ color: (sliceType[i] == 1 ? ccolor2 : ccolor) });
             }
-            region.setOptions({ color: "#00770033" });
+            region.setOptions({ color: selected_color });
             if (playing) {
                 console.log('pausing');
                 wsf.pause();
@@ -1117,6 +1117,54 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
 }
 
 window.addEventListener('load', (event) => {
+    // initialize the colors
+    const url = window.location.href;
+    const root = document.documentElement;
+
+    if (url.includes("ectocore")) {
+        // --background-color: #e6eeff55;
+        // --header-footer-background: #5282d9;
+        // --banks-background: #94acda;
+        // --highlight-color: #94acda;
+        // --highlight-color-darker: #7799d6;
+        // --hover-color: #93a6c9;
+        // --other-color: #3478ff;
+        app.titleName = "ectocore";
+        // change the title
+        document.title = "ectocore tool";
+        root.style.setProperty('--background-color', '#e6eeff55');
+        root.style.setProperty('--header-footer-background', '#5282d9');
+        root.style.setProperty('--banks-background', '#94acda');
+        root.style.setProperty('--highlight-color', '#94acda');
+        root.style.setProperty('--highlight-color-darker', '#7799d6');
+        root.style.setProperty('--hover-color', '#93a6c9');
+        root.style.setProperty('--other-color', '#3478ff');
+
+        // prepend all links href with /ecto/
+        var links = document.getElementsByTagName('link');
+        for (var i = 0; i < links.length; i++) {
+            var href = links[i].getAttribute('href');
+            if (href != null) {
+                if (links[i].getAttribute('href').includes('icon')) {
+                    links[i].setAttribute('href', links[i].getAttribute('href').replace('/static/', '/static/ecto/'));
+                }
+            }
+        }
+        // change <meta name="theme-color" content="#f0f4ff">
+        var metas = document.getElementsByTagName('meta');
+        for (var i = 0; i < metas.length; i++) {
+            if (metas[i].getAttribute('name') == "theme-color") {
+                metas[i].setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background'));
+            }
+        }
+    }
+
+    ccolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background') + "33";
+    ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "11";
+    wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background');
+    selected_color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color') + "44";
+
+
     // Initialize WebSocket and other event listeners
     socketCloseListener();
 

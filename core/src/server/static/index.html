@@ -20,7 +20,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/manifest.json">
     <meta name="msapplication-TileColor" content="#f0f4ff">
-    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="/static/ms-icon-144x144.png">
     <meta name="theme-color" content="#f0f4ff">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/all.min.css">
@@ -64,7 +64,7 @@
             <a href=" /"><img src="/static/apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
-                    :href="window.location.protocol+'//'+window.location.host + title + '/'">_core{{title}}</a>
+                    :href="window.location.protocol+'//'+window.location.host + title + '/'">{{titleName}}{{title}}</a>
             </h1>
             &nbsp; <a href="#" id="show-dialog"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -604,13 +604,13 @@
                             <span v-else>mono</span></label>
                         <svg v-if="banks[selectedBank].files[selectedFile].Channels==0"
                             style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="#8d7ace" stroke-width="2"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
                             <circle cx="12" cy="12" r="10"></circle>
                         </svg>
                         <svg v-if="banks[selectedBank].files[selectedFile].Channels==1"
                             style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="#8d7ace" stroke-width="2"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
                             <circle cx="16" cy="12" r="10"></circle>
                             <circle cx="8" cy="12" r="10"></circle>

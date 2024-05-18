@@ -1,16 +1,4 @@
-/* :root {
-    --background-color: #f9f9f9;
-    --header-footer-background: #2a2a2a;
-    --banks-background: #efefef;
-    --highlight-color: #bfbfbf;
-    --hover-color: #c7c7c7;
-    --light-highlight-color: #e4e4e4e8;
-}
-
-body {
-    background-image: url('/static/background.png');
-    background-repeat: repeat;
-} */
+/** zeptocore **/
 
 :root {
     --background-color: #f4f0ff;
@@ -22,13 +10,16 @@ body {
     --other-color: #6d51c9;
 }
 
+
+/** ectocore **/
 /* :root {
-    --background-color: #f0f4ff;
-    --header-footer-background: #005c99;
-    --banks-background: #cde0f7;
-    --highlight-color: #8ab4d7;
-    --hover-color: #a1c3e6;
-    --light-highlight-color: #e1ecfa;
+    --background-color: #e6eeff55;
+    --header-footer-background: #5282d9;
+    --banks-background: #94acda;
+    --highlight-color: #94acda;
+    --highlight-color-darker: #7799d6;
+    --hover-color: #93a6c9;
+    --other-color: #3478ff;
 } */
 
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,500;1,600;1,700&display=swap');
