@@ -357,6 +357,7 @@ void input_handling() {
   tusb_init();
 #endif
 
+  Dazzle *dazzle = Dazzle_malloc();
   bool clock_input_absent = false;
 
   while (1) {
@@ -738,6 +739,7 @@ void input_handling() {
       gpio_btn_state[i] = val;
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
+
         if (val == 1) {
           if (ectocore_trigger_mode < 4 - 1) {
             ectocore_trigger_mode++;
@@ -834,6 +836,7 @@ void input_handling() {
                 sf->fx_param[i][1] = random_integer_in_range(0, 200);
                 sf->fx_param[i][2] = random_integer_in_range(0, 200);
                 toggle_fx(i);
+                Dazzle_start(dazzle, i % 3);
                 // TODO: also randomize the parameters?
                 printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
               }
@@ -883,18 +886,22 @@ void input_handling() {
     if (debounce_ws2812_set_wheel > 0) {
       debounce_ws2812_set_wheel--;
     } else {
-      // highlight the current sample in the leds
-      for (uint8_t i = 0; i < 16; i++) {
-        WS2812_fill(ws2812, i, 0, 0, 0);
+      if (Dazzle_update(dazzle, ws2812)) {
+        // dazzling
+      } else {
+        // highlight the current sample in the leds
+        for (uint8_t i = 0; i < 16; i++) {
+          WS2812_fill(ws2812, i, 0, 0, 0);
+        }
+        WS2812_fill(ws2812,
+                    banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[FILEZERO]
+                            ->slice_current %
+                        16,
+                    50, 190, 255);
+        WS2812_show(ws2812);
       }
-      WS2812_fill(ws2812,
-                  banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[FILEZERO]
-                          ->slice_current %
-                      16,
-                  50, 190, 255);
-      WS2812_show(ws2812);
       sleep_ms(1);
     }
   }
