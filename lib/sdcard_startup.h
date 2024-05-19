@@ -228,9 +228,14 @@ void bass_sequencer_stop() { printf("[bass_sequencer_stop] stop\n"); }
 
 void savefile_do_load() {
   if (savefile_has_data[savefile_current]) {
-    SaveFile_load(sf, &sync_using_sdcard, savefile_current);
-    printf("[button_handler] loading %s again\n", fil_current_name);
+    while (sync_using_sdcard) {
+      sleep_us(100);
+    }
+    sync_using_sdcard = true;
+    SaveFile_load(sf, savefile_current);
     f_open(&fil_current, fil_current_name, FA_READ);
+    sync_using_sdcard = false;
+    printf("[button_handler] loading %s again\n", fil_current_name);
     // update all the fx
     for (uint8_t i = 0; i < 16; i++) {
       update_fx(i);
