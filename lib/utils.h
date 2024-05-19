@@ -34,6 +34,24 @@ typedef void (*callback_uint8)(uint8_t);
 typedef void (*callback_uint16)(uint16_t);
 typedef void (*callback_void)();
 
+void hue_to_rgb(uint8_t hue, uint8_t *r, uint8_t *g, uint8_t *b) {
+  if (hue < 85) {
+    *r = hue * 3;
+    *g = 255 - hue * 3;
+    *b = 0;
+  } else if (hue < 170) {
+    hue -= 85;
+    *r = 255 - hue * 3;
+    *g = 0;
+    *b = hue * 3;
+  } else {
+    hue -= 170;
+    *r = 0;
+    *g = hue * 3;
+    *b = 255 - hue * 3;
+  }
+}
+
 #define util_clamp(x, a, b) ((x) > (b) ? (b) : ((x) < (a) ? (a) : (x)))
 
 #define linlin(x, xmin, xmax, ymin, ymax)                                 \
