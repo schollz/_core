@@ -10,14 +10,9 @@ Uploading samples is a straightforward process similar to transferring a file on
 
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
-Alternatively you can also download one of the sample packs below and load them directly onto the SD card.
+Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card. Stock samples include amen break remixes and incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks.
 
-### Sample packs
-
--  [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB), include incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks and other breaks collated by myself (infinite digits) and one-shot samples made for the OP-1. 
--  [pikocore stock samples](https://infinitedigits.co/start_samples_pikocore.zip) (1.4 GB), includes 256 samples from the [pikocore](https://pikocore.com) project at full 44.1 kHz / 16-bit quality.
-
-### Use tool online: **[zeptocore v2.7.1](/tool)**
+### Use tool online: **[zeptocore v2.7.2](/tool)**
 
 
 <p style="text-align:center">
@@ -41,7 +36,7 @@ Each of those **bankX** folders contains all the nessecary audio files. The **ba
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.7.1/core_windows_v2.7.1.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v2.7.2/core_windows_v2.7.2.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -55,13 +50,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.7.1/core_macos_amd64_v2.7.1 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.7.2/core_macos_amd64_v2.7.2 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v2.7.1/core_macos_aarch64_v2.7.1 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v2.7.2/core_macos_aarch64_v2.7.2 > core_macos
 ```
 
 Then to enable the program do:
@@ -84,7 +79,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.7.1/core_linux_amd64_v2.7.1)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v2.7.2/core_linux_amd64_v2.7.2)**
 
 After downloading, run it directly from the terminal.
 
@@ -172,3 +167,17 @@ cd core && air
 And now the server can be accessed at `https://localhost:8000`.
 
 </details>
+
+
+as mentioned in the video there is a pricing tier:
+
+- $15 if you just buy the off-the-shelf components yourself from any vendor you want (more info at https://zeptocore.com/#zeptoboard). (note, this option has no buttons, no LEDS, no speaker and can only be used with a MIDI controller)
+- $35 for same as above but the components come from me and I use the extra $20 to support my firwmare development
+- $109 if you want to buy the components and SMT board from me, but you solder it yourself (this is the full zeptocore!)
+- $149 if you want to buy the components and SMT board from me, and I solder it for you in the next batch (batches every two weeks)
+- $179 if you want to buy the components and SMT board from me and I solder it and ship it same day ($30 for the expedited service)
+
+personally, I don't think the pricing is screwed up. the pricing reflects over 1,000 hours of firmware devleop
+
+
+
