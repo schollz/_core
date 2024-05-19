@@ -126,11 +126,7 @@ void SaveFile_free(SaveFile *sf) {
 
 #ifndef NOSDCARD
 
-bool SaveFile_load(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
-  while (*sync_sd_card) {
-    sleep_us(100);
-  }
-  *sync_sd_card = true;
+bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
   FIL fil; /* File object */
   char fname[32];
   sprintf(fname, "savefile%d", savefile_index);
@@ -155,16 +151,10 @@ bool SaveFile_load(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
     }
   }
   f_close(&fil);
-  *sync_sd_card = false;
-
   return true;
 }
 
-bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
-  while (*sync_sd_card) {
-    sleep_us(100);
-  }
-  *sync_sd_card = true;
+bool SaveFile_save(SaveFile *sf, uint8_t savefile_index) {
   printf("[SaveFile] writing\n");
   FRESULT fr;
   FIL file; /* File object */
@@ -175,7 +165,6 @@ bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   fr = f_open(&file, fname, FA_WRITE | FA_CREATE_ALWAYS);
   if (FR_OK != fr) {
     printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-    *sync_sd_card = false;
     return false;
   }
   unsigned int total_bytes_written;
@@ -196,7 +185,6 @@ bool SaveFile_save(SaveFile *sf, bool *sync_sd_card, uint8_t savefile_index) {
   }
   printf("[SaveFile] wrote %d bytes\n", total_bytes_written);
   f_close(&file);
-  *sync_sd_card = false;
   return true;
 }
 
