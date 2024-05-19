@@ -110,24 +110,6 @@ void Dazzle_start(Dazzle *self, uint8_t effect_num) {
   self->step = 0;
 }
 
-void hue_to_rgb(uint8_t hue, uint8_t *r, uint8_t *g, uint8_t *b) {
-  if (hue < 85) {
-    *r = hue * 3;
-    *g = 255 - hue * 3;
-    *b = 0;
-  } else if (hue < 170) {
-    hue -= 85;
-    *r = 255 - hue * 3;
-    *g = 0;
-    *b = hue * 3;
-  } else {
-    hue -= 170;
-    *r = 0;
-    *g = hue * 3;
-    *b = 255 - hue * 3;
-  }
-}
-
 bool Dazzle_update(Dazzle *self, WS2812 *ws2812) {
   uint32_t current_time = get_current_time_ms();
   if (self->step < self->step_limit) {

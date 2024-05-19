@@ -358,6 +358,8 @@ void input_handling() {
 #endif
 
   Dazzle *dazzle = Dazzle_malloc();
+  uint8_t led_brightness = 255;
+  int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
   while (1) {
@@ -893,13 +895,94 @@ void input_handling() {
         for (uint8_t i = 0; i < 16; i++) {
           WS2812_fill(ws2812, i, 0, 0, 0);
         }
+        if (retrig_beat_num > 0 && retrig_beat_num % 2 == 0) {
+          for (uint8_t i = 0; i < 16; i++) {
+            uint8_t r, g, b;
+            hue_to_rgb((float)255 / (retrig_beat_num + 1), &r, &g, &b);
+            WS2812_fill(ws2812, i, r * led_brightness / 255,
+                        g * led_brightness / 255, b * led_brightness / 255);
+          }
+        }
         WS2812_fill(ws2812,
                     banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
                             .snd[FILEZERO]
                             ->slice_current %
                         16,
-                    50, 190, 255);
+                    50 * led_brightness / 255, 190 * led_brightness / 255,
+                    255 * led_brightness / 255);
+        if (sf->fx_active[FX_COMB]) {
+          for (uint8_t i = 2; i < 14; i += 2) {
+            WS2812_fill(ws2812,
+                        (banks[sel_bank_cur]
+                             ->sample[sel_sample_cur]
+                             .snd[FILEZERO]
+                             ->slice_current +
+                         i) %
+                            16,
+                        50 / 8 * led_brightness / 255,
+                        190 / 8 * led_brightness / 255,
+                        255 / 8 * led_brightness / 255);
+          }
+        }
+        // add flourishes if effects are on
+        if (sf->fx_active[FX_REVERSE]) {
+          WS2812_fill(ws2812,
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[FILEZERO]
+                           ->slice_current +
+                       1) %
+                          16,
+                      50 / 2 * led_brightness / 255,
+                      190 / 2 * led_brightness / 255,
+                      255 / 2 * led_brightness / 255);
+          WS2812_fill(ws2812,
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[FILEZERO]
+                           ->slice_current +
+                       2) %
+                          16,
+                      50 / 4 * led_brightness / 255,
+                      190 / 4 * led_brightness / 255,
+                      255 / 4 * led_brightness / 255);
+          WS2812_fill(ws2812,
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[FILEZERO]
+                           ->slice_current +
+                       3) %
+                          16,
+                      50 / 8 * led_brightness / 255,
+                      190 / 8 * led_brightness / 255,
+                      255 / 8 * led_brightness / 255);
+        }
+        if (sf->fx_active[FX_DELAY]) {
+          WS2812_fill(ws2812,
+                      (banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[FILEZERO]
+                           ->slice_current +
+                       8) %
+                          16,
+                      50 / 2 * led_brightness / 255,
+                      190 / 2 * led_brightness / 255,
+                      255 / 2 * led_brightness / 255);
+        }
+        if (sf->fx_active[FX_TIMESTRETCH]) {
+          led_brightness_direction = -1;
+        } else {
+          led_brightness_direction = 0;
+          led_brightness = 255;
+        }
+
+        if (led_brightness + led_brightness_direction > 255 ||
+            led_brightness - led_brightness_direction < 0) {
+          led_brightness_direction = -led_brightness_direction;
+        }
+        led_brightness += led_brightness_direction;
+
         WS2812_show(ws2812);
       }
       sleep_ms(1);
