@@ -281,21 +281,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       mode_buttons16 = MODE_JUMP;
       uint16_t val = TapTempo_tap(taptempo);
       if (val > 0) {
-        uint32_t current_time = time_us_32();
-        if (tap_tempo_last == 0) {
-          tap_tempo_last = current_time;
-        }
-        if (current_time - tap_tempo_last < 1000000) {
-          tap_tempo_hits++;
-          if (tap_tempo_hits > 2) {
-            printf("tap bpm -> %d\n", val);
-            sf->bpm_tempo = val;
-            DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
-          }
-        } else {
-          tap_tempo_hits = 0;
-        }
-        tap_tempo_last = current_time;
+        printf("tap bpm -> %d\n", val);
+        sf->bpm_tempo = val;
+        DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
       }
     } else if (key2 == KEY_C) {
       // S+B
