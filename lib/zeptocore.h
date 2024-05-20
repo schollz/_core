@@ -153,6 +153,11 @@ void input_handling() {
   tusb_init();
 #endif
 
+#ifdef INCLUDE_USBHOST
+  board_init();
+  tusb_init();
+#endif
+
 #ifdef INCLUDE_SSD1306
   ssd1306_t disp;
   disp.external_vcc = false;

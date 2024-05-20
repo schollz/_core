@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/lib/pcg_basic.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/usb_descriptors.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/kbd.c
 )
 
 # Tell CMake to stop if a warning occurs

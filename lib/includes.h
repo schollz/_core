@@ -48,7 +48,10 @@
 #include "bsp/board.h"
 #include "tusb.h"
 #endif
-
+#ifdef INCLUDE_USBHOST
+#include "bsp/board.h"
+#include "tusb.h"
+#endif
 //
 #include "definitions.h"
 //
