@@ -91,6 +91,10 @@ uint16_t TapTempo_tap(TapTempo *self) {
       sum += self->taps[i];
     }
   }
+  // need at least three taps
+  if (count < 3) {
+    return 0;
+  }
   // round to the nearest 2 or 5
   milliseconds = round(60000.0 / ((float)sum / count));
   if (milliseconds % 10 == 3 || milliseconds % 10 == 7 ||
