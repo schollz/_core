@@ -25,6 +25,8 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/lib/ssd1306.c
 )
 
+# Tell CMake to stop if a warning occurs
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 
 # Tell CMake where to find other source code
 add_subdirectory(lib/my_pico_audio)
