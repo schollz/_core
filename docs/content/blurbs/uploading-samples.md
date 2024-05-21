@@ -10,7 +10,6 @@ Uploading samples is a straightforward process similar to transferring a file on
 
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
-Alternatively you can also download [the stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB) and load them directly onto the SD card. Stock samples include amen break remixes and incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz) with a whole bank (bank 2) of amazing drum breaks.
 
 ### Use tool online: **[zeptocore v2.7.2](/tool)**
 
@@ -18,6 +17,13 @@ Alternatively you can also download [the stock samples](https://infinitedigits.c
 <p style="text-align:center">
 <img src="/img/core_tool.png" style="width:70%;  margin:0 auto; padding:1em; text-align:center;">
 <br><small>Screenshot of the core tool</small><p>
+
+### Stock samples
+
+The zeptocore arrives with "stock" samples on it. If you ever want to remove them and replace them you can get them here by redownloading and transfering them back to the SD card. 
+
+- [zeptocore stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB). Includes incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz), my own library of breaks and one-hit drums for the op1.
+- [pikocore stock samples](https://infinitedigits.co/start_samples_pikocore.zip) (1.2 GB). This sample pack has 256 samples of different Amen breaks and other manipulated drums.
 
 ### Transfering samples to SD card
 
