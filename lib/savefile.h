@@ -40,6 +40,9 @@ typedef struct SaveFile {
   uint64_t pitch_val_index : 7;
   uint64_t do_retrig_pitch_changes : 1;
   uint64_t _padding : 55;
+#ifdef INCLUDE_ECTOCORE
+  uint16_t center_calibration[8];
+#endif
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
@@ -96,6 +99,11 @@ SaveFile *SaveFile_malloc() {
   sf->fx_param[FX_TAPE_STOP][0] = 70;
   sf->fx_param[FX_TAPE_STOP][1] = 45;
   sf->pitch_val_index = 48;
+#ifdef INCLUDE_ECTOCORE
+  for (int i = 0; i < 8; i++) {
+    sf->center_calibration[i] = 1024 / 2;
+  }
+#endif
   return sf;
 }
 
