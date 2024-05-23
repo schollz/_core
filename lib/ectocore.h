@@ -362,12 +362,40 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
+  uint16_t debounce_startup = 1000;
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
     int16_t val;
+
+    if (debounce_startup > 0) {
+      debounce_startup--;
+      if (debounce_startup == 0) {
+        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
+          // do calibration
+          printf("[ectocore] calibrating\n");
+          for (uint8_t i = 0; i < 8; i++) {
+            sleep_ms(1);
+            sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
+            printf("[ectocore]  %d = %d\n", i, sf->center_calibration[i]);
+          }
+        }
+        // save file
+        while (sync_using_sdcard) {
+          sleep_us(100);
+        }
+        sync_using_sdcard = true;
+        SaveFile_save(sf, savefile_current);
+        // load prevoius file
+        f_open(&fil_current, fil_current_name, FA_READ);
+        sync_using_sdcard = false;
+        printf("[ectocore] loading %s again\n", fil_current_name);
+        printf("[ectocore] startup complete\n");
+      }
+    }
 
     ClockInput_update(clockinput);
     if (clock_in_do) {
