@@ -95,9 +95,9 @@ void ResonantFilter_reset2(ResonantFilter* rf, float fc, float fs, float q,
   float w0 = 2 * 3.14159265358979732384626 * (fc / fs);
   float cosW = cos(w0);
   float sinW = sin(w0);
-  float A = pow(10, db / 40);
+  // float A = pow(10, db / 40);
   float alpha = sinW / (2 * q);
-  float beta = pow(A, 0.5) / q;
+  // float beta = pow(A, 0.5) / q;
   float b0, b1, b2, a0, a1, a2;
 
   if (filter_type == FILTER_HIGHPASS) {
