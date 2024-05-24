@@ -39,6 +39,8 @@ FilterExp *FilterExp_create(int alpha) {
   return fe;
 }
 
+void FilterExp_free(FilterExp *fe) { free(fe); }
+
 int FilterExp_update(FilterExp *fe, int x) {
   fe->filtered = fe->alpha * x + (ALPHA_MAX - fe->alpha) * fe->filtered;
   fe->filtered = fe->filtered / ALPHA_MAX;
@@ -56,6 +58,8 @@ FilterExpUint32 *FilterExpUint32_create(uint32_t alpha) {
   fe->alpha = alpha;
   return fe;
 }
+
+void FilterExpUint32_free(FilterExpUint32 *fe) { free(fe); }
 
 uint32_t FilterExpUint32_update(FilterExpUint32 *fe, uint32_t x) {
   fe->filtered = fe->alpha * x + (ALPHA_MAX - fe->alpha) * fe->filtered;

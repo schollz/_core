@@ -113,15 +113,15 @@ void update_fx(uint8_t fx_num) {
             linlin((float)sf->fx_param[FX_REPITCH][1], 0.0, 255.0, 0.25, 4.0));
       }
       break;
-    case FX_SPEEDUP:
-      if (sf->fx_active[fx_num]) {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch), 2.0, 1);
-      } else {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch), 1.0, 1);
-      }
-      break;
+    // case FX_SPEEDUP:
+    //   if (sf->fx_active[fx_num]) {
+    //     Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+    //                     Envelope2_update(envelope_pitch), 2.0, 1);
+    //   } else {
+    //     Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
+    //                     Envelope2_update(envelope_pitch), 1.0, 1);
+    //   }
+    //   break;
     case FX_TAPE_STOP:
       if (sf->fx_active[FX_TAPE_STOP]) {
         Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
@@ -167,15 +167,15 @@ void update_fx(uint8_t fx_num) {
             linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
       }
       break;
-    case FX_VOLUME_RAMP:
-      if (sf->fx_active[FX_VOLUME_RAMP]) {
-        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_volume), 0, 1.618 / 2);
-      } else {
-        Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_volume), 1, 1.618 / 2);
-      }
-      break;
+    // case FX_VOLUME_RAMP:
+    //   if (sf->fx_active[FX_VOLUME_RAMP]) {
+    //     Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+    //                     Envelope2_update(envelope_volume), 0, 1.618 / 2);
+    //   } else {
+    //     Envelope2_reset(envelope_volume, BLOCKS_PER_SECOND,
+    //                     Envelope2_update(envelope_volume), 1, 1.618 / 2);
+    //   }
+    //   break;
     case FX_SCRATCH:
       scratch_lfo_val = 0;
       scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
@@ -307,7 +307,7 @@ void sdcard_startup() {
     // #endif
 
     char dirname[10];
-    sprintf(dirname, "bank%d\0", bi);
+    sprintf(dirname, "bank%d", bi);
     banks[bi] = list_files(dirname);
     if (banks[bi]->num_samples > 0) {
       printf("[sdcard_startup] bank %d has %d samples\n", bi,

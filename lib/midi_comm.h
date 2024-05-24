@@ -13,7 +13,7 @@ uint32_t read_midi_message(uint8_t* buffer, uint32_t bufsize) {
   return 0;
 }
 
-uint32_t send_buffer_as_sysex(uint8_t* buffer, uint32_t bufsize) {
+uint32_t send_buffer_as_sysex(char* buffer, uint32_t bufsize) {
   uint8_t sysex_data[bufsize + 2];  // +2 for SysEx start and end bytes
 
   sysex_data[0] = 0xF0;  // Start of SysEx

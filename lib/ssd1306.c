@@ -50,7 +50,7 @@ inline static void fancy_write(i2c_inst_t *i2c, uint8_t addr,
       printf("[%s] timeout!\n", name);
       break;
     default:
-      printf("[%s] wrote successfully %lu bytes!\n", name, len);
+      printf("[%s] wrote successfully %u bytes!\n", name, len);
       break;
   }
 }
