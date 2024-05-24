@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 # error if there is a warning
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
 
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
