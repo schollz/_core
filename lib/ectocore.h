@@ -71,20 +71,12 @@ void ws2812_wheel_clear(WS2812 *ws2812) {
   }
 }
 
-#define WHEEL_MIDPOINT 2400
 void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   if (val > 4079) {
     val = 4079;
   }
-  // fudge factor
-  if (val > WHEEL_MIDPOINT) {
-    val = (val - WHEEL_MIDPOINT) * val / (4079 - WHEEL_MIDPOINT) +
-          ((4079 - WHEEL_MIDPOINT) - (val - WHEEL_MIDPOINT)) * (val * 2 / 3) /
-              (4079 - WHEEL_MIDPOINT);
-  } else {
-    val = val * 2 / 3;
-  }
+
   int8_t filled = 0;
   while (val > 255) {
     val -= 256;
@@ -362,12 +354,43 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
+  uint16_t debounce_startup = 10000;
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
     int16_t val;
+    if (debounce_startup > 0) {
+      debounce_startup--;
+      if (debounce_startup < 8) {
+        if (gpio_get(GPIO_BTN_BANK) == 0) {
+          for (uint8_t i = 0; i < 8; i++) {
+            if (debounce_startup == i) {
+              sleep_ms(1);
+              sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
+              if (i == 0) {
+                // save file
+                while (sync_using_sdcard) {
+                  sleep_us(100);
+                }
+                sync_using_sdcard = true;
+                SaveFile_save(sf, savefile_current);
+                // load prevoius file
+                f_open(&fil_current, fil_current_name, FA_READ);
+                sync_using_sdcard = false;
+                printf("[ectocore] calibrate %d=%d\nand saved.", i,
+                       sf->center_calibration[i]);
+              } else {
+                printf("[ectocore] calibrate %d=%d,", i,
+                       sf->center_calibration[i]);
+              }
+            }
+          }
+        }
+      }
+    }
 
     ClockInput_update(clockinput);
     if (clock_in_do) {
@@ -609,6 +632,14 @@ void input_handling() {
                               MCP3208_read(mcp3208, knob_gpio[i], false));
       if (val < 0) {
         continue;
+      }
+      // normalize val based on center calibration
+      if (val < sf->center_calibration[knob_gpio[i]]) {
+        val = linlin(val, 0, sf->center_calibration[knob_gpio[i]], 0, 512);
+      } else {
+        val = linlin(val - sf->center_calibration[knob_gpio[i]], 0,
+                     1024 - sf->center_calibration[knob_gpio[i]], 0, 512) +
+              512;
       }
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0) {
