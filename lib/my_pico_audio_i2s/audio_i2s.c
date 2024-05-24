@@ -21,7 +21,7 @@
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 
-//#define CORE1_PROCESS_I2S_CALLBACK  // Multi-Core Processing Mode
+// #define CORE1_PROCESS_I2S_CALLBACK  // Multi-Core Processing Mode
 //(Experimentally Single-Core seems better) #define WATCH_DMA_TRANSFER_INTERVAL
 //// Activate only for analysis because of watch overhead #define
 // WATCH_PIO_SM_TX_FIFO_LEVEL  // Activate only for analysis because of watch
@@ -176,7 +176,7 @@ const audio_format_t *audio_i2s_setup(
   dma_channel_config dma_config = dma_channel_get_default_config(dma_channel);
 
   channel_config_set_dreq(&dma_config, DREQ_PIOx_TX0 + sm);
-  enum dma_channel_transfer_size i2s_dma_configure_size;
+  enum dma_channel_transfer_size i2s_dma_configure_size = DMA_SIZE_8;
   if (_i2s_output_audio_format->channel_count == AUDIO_CHANNEL_MONO) {
     switch (_i2s_output_audio_format->pcm_format) {
       case AUDIO_PCM_FORMAT_S8:

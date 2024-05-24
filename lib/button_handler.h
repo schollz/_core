@@ -470,11 +470,31 @@ void button_handler(ButtonMatrix *bm) {
   if (key_timer == 300 && key_pressed_num > 0) {
     // create string
     char key_pressed_str[256];
-    sprintf(key_pressed_str, "[button_handler](%d)combo: ", key_timer_on);
-    for (uint8_t i = 0; i < key_pressed_num; i++) {
-      sprintf(key_pressed_str, "%s%d ", key_pressed_str, key_pressed[i]);
+    int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
+                       "[button_handler](%ld)combo: ", key_timer_on);
+
+    // Ensure the snprintf was successful and within the buffer size
+    if (pos >= 0 && pos < sizeof(key_pressed_str)) {
+      for (uint8_t i = 0; i < key_pressed_num; i++) {
+        // Calculate remaining space in the buffer
+        int remaining = sizeof(key_pressed_str) - pos;
+        if (remaining > 0) {
+          int ret =
+              snprintf(key_pressed_str + pos, remaining, "%d ", key_pressed[i]);
+          // Check if snprintf was successful
+          if (ret < 0 || ret >= remaining) {
+            // Handle error (e.g., truncate string, log error, etc.)
+            key_pressed_str[sizeof(key_pressed_str) - 1] = '\0';
+            break;
+          }
+          pos += ret;
+        } else {
+          // No space left in the buffer
+          break;
+        }
+      }
+      printf("%s\n", key_pressed_str);
     }
-    printf("%s\n", key_pressed_str);
 
     // if in RAND mode, generate new one
     if (key_pressed_num == 1 && key_timer_on > 400 &&
@@ -713,7 +733,6 @@ void button_handler(ButtonMatrix *bm) {
 #endif
 
   // check queue for buttons that turned off
-  bool do_update_top = false;
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     key_did_go_off[i] = false;
   }
@@ -749,7 +768,6 @@ void button_handler(ButtonMatrix *bm) {
     }
 
     if (bm->off[i] < 4) {
-      do_update_top = true;
     } else {
 #ifdef INCLUDE_MIDI
       // send out midi notes
@@ -759,7 +777,6 @@ void button_handler(ButtonMatrix *bm) {
   }
 
   // check queue for buttons that turned on
-  bool key_held = false;
   for (uint8_t i = 0; i < bm->on_num; i++) {
     key_total_pressed++;
     if (key_total_pressed == 1) {
@@ -809,7 +826,6 @@ void button_handler(ButtonMatrix *bm) {
     key_on_buttons_last[bm->on[i]] = key_on_buttons[bm->on[i]];
     key_on_buttons[bm->on[i]] = key_num_presses;
     if (bm->on[i] < 4) {
-      do_update_top = true;
     } else {
 #ifdef INCLUDE_MIDI
       // send out midi notes

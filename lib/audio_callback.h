@@ -48,8 +48,10 @@ void i2s_callback_func() {
   uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
+#ifdef PRINT_SDCARD_TIMING
   uint32_t give_audio_buffer_time = 0;
   uint32_t take_audio_buffer_time = 0;
+#endif
 
   // flag for new phase
   bool do_crossfade = false;
@@ -57,7 +59,9 @@ void i2s_callback_func() {
   bool do_fade_in = false;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
+#ifdef PRINT_SDCARD_TIMING
   take_audio_buffer_time = (time_us_64() - startTime);
+#endif
   if (buffer == NULL) {
     return;
   }
@@ -655,15 +659,15 @@ BREAKOUT_OF_MUTE:
   // apply other fx
   // TODO: fade in/out these fx using the crossfade?
   // TODO: LFO's move to main thread?
-  if (sf->fx_active[FX_TREMELO] || sf->fx_active[FX_PAN]) {
-    int32_t u;
+  if (sf->fx_active[FX_PAN]) {
+    // int32_t u;
     int32_t v;
     int32_t w;
-    if (sf->fx_active[FX_TREMELO]) {
-      uint8_t vv = linlin(sf->fx_param[FX_TREMELO][1], 0, 255, 128, 255);
-      u = q16_16_sin01(lfo_tremelo_val);
-      u = u * vv / 255 + (Q16_16_1 * (255 - vv) / 255);
-    }
+    // if (sf->fx_active[FX_TREMELO]) {
+    //   uint8_t vv = linlin(sf->fx_param[FX_TREMELO][1], 0, 255, 128, 255);
+    //   u = q16_16_sin01(lfo_tremelo_val);
+    //   u = u * vv / 255 + (Q16_16_1 * (255 - vv) / 255);
+    // }
     if (sf->fx_active[FX_PAN]) {
       uint8_t vv = linlin(sf->fx_param[FX_PAN][1], 0, 255, 128, 255);
       v = q16_16_sin01(lfo_pan_val);
@@ -672,10 +676,10 @@ BREAKOUT_OF_MUTE:
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       for (uint8_t channel = 0; channel < 2; channel++) {
-        if (sf->fx_active[FX_TREMELO]) {
-          samples[i * 2 + channel] =
-              q16_16_multiply(samples[i * 2 + channel], u);
-        }
+        // if (sf->fx_active[FX_TREMELO]) {
+        //   samples[i * 2 + channel] =
+        //       q16_16_multiply(samples[i * 2 + channel], u);
+        // }
         if (sf->fx_active[FX_PAN]) {
           if (channel == 0) {
             samples[i * 2 + channel] =
@@ -746,7 +750,9 @@ BREAKOUT_OF_MUTE:
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);
+#ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);
+#endif
 
   if (trigger_button_mute) {
     button_mute = true;

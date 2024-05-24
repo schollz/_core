@@ -99,7 +99,6 @@ void input_handling() {
 
   printf("entering while loop\n");
 
-  uint pressed2 = 0;
   uint8_t new_vol;
   //   (
   // a=Array.fill(72,{ arg i;
@@ -107,8 +106,8 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput;
-  Onewiremidi *onewiremidi;
+  ClockInput *clockinput = NULL;
+  Onewiremidi *onewiremidi = NULL;
   if (use_onewiremidi) {
     // setup one wire midi
     onewiremidi =
@@ -344,9 +343,11 @@ void input_handling() {
         } else if (key_on_buttons[FX_TIGHTEN + 4]) {
           printf("updating gate\n");
           Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
-        } else if (key_on_buttons[FX_TREMELO + 4]) {
-          lfo_tremelo_step =
-              Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
+          // deactivated
+          // } else if (key_on_buttons[FX_TREMELO + 4]) {
+          //   lfo_tremelo_step =
+          //       Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) *
+          //       2);
         } else if (key_on_buttons[FX_PAN + 4]) {
           lfo_pan_step =
               Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
