@@ -108,11 +108,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         beat_start_retrig = random_integer_in_range(2, 10);
 #endif
       }
-      if ((beat_start_retrig >= 4 &&
-           beat_total % 32 == (32 - beat_start_retrig)) ||
-          (beat_start_retrig < 4 &&
-           beat_total % 16 == (16 - beat_start_retrig)) &&
-              !retrig_ready && !retrig_first) {
+      if (((beat_start_retrig >= 4 &&
+            beat_total % 32 == (32 - beat_start_retrig)) ||
+           (beat_start_retrig < 4 &&
+            beat_total % 16 == (16 - beat_start_retrig))) &&
+          !retrig_ready && !retrig_first) {
         // do retriggering if beat_current is at the end of 32 beats
         uint8_t time_multiplier[4] = {1, 2, 4, 8};
         uint8_t time_multiplier_index = random_integer_in_range(0, 3);

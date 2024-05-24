@@ -48,8 +48,10 @@ void i2s_callback_func() {
   uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
+#ifdef PRINT_SDCARD_TIMING
   uint32_t give_audio_buffer_time = 0;
   uint32_t take_audio_buffer_time = 0;
+#endif
 
   // flag for new phase
   bool do_crossfade = false;
@@ -57,7 +59,9 @@ void i2s_callback_func() {
   bool do_fade_in = false;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
+#ifdef PRINT_SDCARD_TIMING
   take_audio_buffer_time = (time_us_64() - startTime);
+#endif
   if (buffer == NULL) {
     return;
   }
@@ -746,7 +750,9 @@ BREAKOUT_OF_MUTE:
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);
+#ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);
+#endif
 
   if (trigger_button_mute) {
     button_mute = true;

@@ -99,7 +99,6 @@ void input_handling() {
 
   printf("entering while loop\n");
 
-  uint pressed2 = 0;
   uint8_t new_vol;
   //   (
   // a=Array.fill(72,{ arg i;
