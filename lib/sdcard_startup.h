@@ -307,7 +307,7 @@ void sdcard_startup() {
     // #endif
 
     char dirname[10];
-    sprintf(dirname, "bank%d\0", bi);
+    sprintf(dirname, "bank%d", bi);
     banks[bi] = list_files(dirname);
     if (banks[bi]->num_samples > 0) {
       printf("[sdcard_startup] bank %d has %d samples\n", bi,

@@ -471,7 +471,7 @@ void button_handler(ButtonMatrix *bm) {
     // create string
     char key_pressed_str[256];
     int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
-                       "[button_handler](%d)combo: ", key_timer_on);
+                       "[button_handler](%ld)combo: ", key_timer_on);
 
     // Ensure the snprintf was successful and within the buffer size
     if (pos >= 0 && pos < sizeof(key_pressed_str)) {
@@ -733,7 +733,6 @@ void button_handler(ButtonMatrix *bm) {
 #endif
 
   // check queue for buttons that turned off
-  bool do_update_top = false;
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     key_did_go_off[i] = false;
   }
@@ -769,7 +768,6 @@ void button_handler(ButtonMatrix *bm) {
     }
 
     if (bm->off[i] < 4) {
-      do_update_top = true;
     } else {
 #ifdef INCLUDE_MIDI
       // send out midi notes
@@ -779,7 +777,6 @@ void button_handler(ButtonMatrix *bm) {
   }
 
   // check queue for buttons that turned on
-  bool key_held = false;
   for (uint8_t i = 0; i < bm->on_num; i++) {
     key_total_pressed++;
     if (key_total_pressed == 1) {
@@ -829,7 +826,6 @@ void button_handler(ButtonMatrix *bm) {
     key_on_buttons_last[bm->on[i]] = key_on_buttons[bm->on[i]];
     key_on_buttons[bm->on[i]] = key_num_presses;
     if (bm->on[i] < 4) {
-      do_update_top = true;
     } else {
 #ifdef INCLUDE_MIDI
       // send out midi notes
