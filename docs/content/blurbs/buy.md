@@ -15,11 +15,9 @@ weight = 1
 <p style="text-align:center; font-weight:900; margin-bottom:0; margin-top:2em; font-size:1.2em;">a handmade, handheld
 sample player.</p>
 <p style="text-align:center; margin-top:0;font-size:1em;">
-sales ship within 3 business days except
+"made to order" ships immediately.
 <br>
-"pre-order expedited" ships
-within 1-2 weeks <br>
-and "pre-order" ships within 3-5 weeks</p>
+"next batch" ships within 2 weeks. </p>
 </div>
 
 
