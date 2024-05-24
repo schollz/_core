@@ -80,13 +80,14 @@ void LEDText_displayNumber(LEDText *lt, uint16_t number) {
 void LEDText_update(LEDText *lt, LEDS *leds) {
   if (lt->debounce > 0) {
     lt->debounce--;
-    if (lt->debounce == 0)
+    if (lt->debounce == 0) {
       if (lt->i < strlen(lt->text)) {
         LEDText_showGlyph(lt, leds, lt->text[lt->i]);
         lt->i++;
       } else {
         LEDS_clear(leds);
       }
+    }
   }
 }
 
