@@ -81,7 +81,7 @@ SampleInfo *SampleInfo_load(const char *fname) {
   }
   unsigned int bytes_read;
 
-  SampleInfoPack *sip = (SampleInfoPack *)malloc(SAMPLEINFOPACK_SIZE);
+  SampleInfoPack *sip = (SampleInfoPack *)malloc(sizeof(SampleInfoPack));
   if (sip == NULL) {
     perror("Error allocating memory");
     f_close(&fil);
