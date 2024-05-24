@@ -68,6 +68,7 @@ for i in range(wavetable_max):
     print("    case %d:" % i)
     print(f"return wavetable{i};")
 print("  }")
+print(" return wavetable0;")
 print("}")
 
 print("#endif")

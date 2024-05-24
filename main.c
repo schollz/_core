@@ -24,9 +24,9 @@
 
 #include "lib/includes.h"
 
-static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
-static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
-static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
+// static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
+// static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
+// static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
 
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
