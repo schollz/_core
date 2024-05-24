@@ -57,28 +57,28 @@ bool run_mount() {
   return true;
 }
 
-static void run_cat() {
-  char *arg1 = strtok(NULL, " ");
-  if (!arg1) {
-    arg1 = "2.raw";
-  }
-  FIL fil;
-  FRESULT fr = f_open(&fil, arg1, FA_READ);
-  if (FR_OK != fr) {
-    printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-    return;
-  }
-  char buf[256];
-  unsigned int bytes_read;
-  unsigned int pos;
-  f_lseek(&fil, 1);
-  f_read(&fil, buf, 256, &bytes_read);
-  printf("bytes_read: %d\n");
-  pos += bytes_read;
-  printf("run_cat read %d bytes\n", bytes_read);
-  fr = f_close(&fil);
-  if (FR_OK != fr) printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
-}
+// static void run_cat() {
+//   char *arg1 = strtok(NULL, " ");
+//   if (!arg1) {
+//     arg1 = "2.raw";
+//   }
+//   FIL fil;
+//   FRESULT fr = f_open(&fil, arg1, FA_READ);
+//   if (FR_OK != fr) {
+//     printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+//     return;
+//   }
+//   char buf[256];
+//   unsigned int bytes_read;
+//   unsigned int pos;
+//   f_lseek(&fil, 1);
+//   f_read(&fil, buf, 256, &bytes_read);
+//   printf("bytes_read: %d\n");
+//   pos += bytes_read;
+//   printf("run_cat read %d bytes\n", bytes_read);
+//   fr = f_close(&fil);
+//   if (FR_OK != fr) printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+// }
 
 #define FF_MAX_SS 512
 #define BUFFSZ (32 * FF_MAX_SS)  // Should be a factor of 1 Mebibyte

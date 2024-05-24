@@ -2879,5 +2879,6 @@ const int16_t* wavetable_data(uint8_t wave) {
     case 51:
       return wavetable51;
   }
+  return wavetable0;
 }
 #endif
