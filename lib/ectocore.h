@@ -302,6 +302,7 @@ void input_handling() {
       GPIO_BTN_BANK,
       GPIO_BTN_TAPTEMPO,
   };
+  uint32_t gpio_btn_last_pressed[BUTTON_NUM] = {0, 0, 0, 0};
   uint8_t gpio_btn_state[BUTTON_NUM] = {0, 0, 0, 0};
   ButtonChange *button_change[BUTTON_NUM];
   for (uint8_t i = 0; i < BUTTON_NUM; i++) {
@@ -770,6 +771,9 @@ void input_handling() {
       }
       val = 1 - val;
       gpio_btn_state[i] = val;
+      if (val) {
+        gpio_btn_last_pressed[i] = to_ms_since_boot(get_absolute_time());
+      }
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
 
@@ -804,6 +808,31 @@ void input_handling() {
         }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         printf("[ectocore] btn_bank %d\n", val);
+        if (val == 0) {
+          if (to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i] <
+              200) {
+            // "tap"
+            // switch the bank by one
+            if (banks_with_samples_num > 1) {
+              for (uint8_t j = 1; j < banks_with_samples_num; j++) {
+                uint8_t bank_num = (sel_bank_cur + j) % banks_with_samples_num;
+                if (banks[bank_num]->num_samples > 0) {
+                  sel_bank_next = bank_num;
+                  if (sel_bank_next != sel_bank_cur) {
+                    sel_sample_next =
+                        sel_sample_cur % banks[sel_bank_next]->num_samples;
+                    fil_current_change = true;
+                    printf("[ectocore] switch bank %d\n", sel_bank_next);
+                    ws2812_wheel_clear(ws2812);
+                    WS2812_fill(ws2812, sel_bank_next, 255, 0, 0);
+                    WS2812_show(ws2812);
+                  }
+                  break;
+                }
+              }
+            }
+          }
+        }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
         printf("[ectocore] btn_mult %d\n", val);
         if (val == 1) {
