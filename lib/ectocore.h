@@ -370,30 +370,33 @@ void input_handling() {
     midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
     int16_t val;
-
     if (debounce_startup > 0) {
       debounce_startup--;
-      if (debounce_startup == 0) {
-        if (gpio_get(GPIO_BTN_TAPTEMPO) == 0) {
-          // do calibration
-          printf("[ectocore] calibrating\n");
+      if (debounce_startup < 8) {
+        if (gpio_get(GPIO_BTN_BANK) == 0) {
           for (uint8_t i = 0; i < 8; i++) {
-            sleep_ms(1);
-            sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
-            printf("[ectocore]  %d = %d\n", i, sf->center_calibration[i]);
+            if (debounce_startup == i) {
+              sleep_ms(1);
+              sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
+              if (i == 0) {
+                // save file
+                while (sync_using_sdcard) {
+                  sleep_us(100);
+                }
+                sync_using_sdcard = true;
+                SaveFile_save(sf, savefile_current);
+                // load prevoius file
+                f_open(&fil_current, fil_current_name, FA_READ);
+                sync_using_sdcard = false;
+                printf("[ectocore] calibrate %d=%d\nand saved.", i,
+                       sf->center_calibration[i]);
+              } else {
+                printf("[ectocore] calibrate %d=%d,", i,
+                       sf->center_calibration[i]);
+              }
+            }
           }
         }
-        // save file
-        while (sync_using_sdcard) {
-          sleep_us(100);
-        }
-        sync_using_sdcard = true;
-        SaveFile_save(sf, savefile_current);
-        // load prevoius file
-        f_open(&fil_current, fil_current_name, FA_READ);
-        sync_using_sdcard = false;
-        printf("[ectocore] loading %s again\n", fil_current_name);
-        printf("[ectocore] startup complete\n");
       }
     }
 
@@ -637,6 +640,14 @@ void input_handling() {
                               MCP3208_read(mcp3208, knob_gpio[i], false));
       if (val < 0) {
         continue;
+      }
+      // normalize val based on center calibration
+      if (val < sf->center_calibration[knob_gpio[i]]) {
+        val = linlin(val, 0, sf->center_calibration[knob_gpio[i]], 0, 512);
+      } else {
+        val = linlin(val - sf->center_calibration[knob_gpio[i]], 0,
+                     1024 - sf->center_calibration[knob_gpio[i]], 0, 512) +
+              512;
       }
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0) {
