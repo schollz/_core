@@ -55,7 +55,7 @@ SampleList *list_files(const char *dir) {
   samplelist->num_samples = total_files;
   if (total_files == 0) {
     printf("%s: %d\n", dir, total_files);
-    samplelist->sample == NULL;
+    samplelist->sample = NULL;
     return samplelist;
   }
   samplelist->sample = malloc(sizeof(Sample) * total_files);
