@@ -133,10 +133,10 @@ void input_handling() {
   uint16_t debounce_sel_variation_next = 0;
 
   // debug test
-  printStringWithDelay("zv2.7.2");
+  printStringWithDelay("zv2.7.3");
 
   // print to screen
-  printf("version=v2.7.2\n");
+  printf("version=v2.7.3\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -215,7 +215,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.7.2\n");
+        printf("version=v2.7.3\n");
       }
     }
 
