@@ -107,8 +107,8 @@ void input_handling() {
   // });
   // a.postln;
   // )
-  ClockInput *clockinput;
-  Onewiremidi *onewiremidi;
+  ClockInput *clockinput = NULL;
+  Onewiremidi *onewiremidi = NULL;
   if (use_onewiremidi) {
     // setup one wire midi
     onewiremidi =
