@@ -84,7 +84,8 @@
                     </span>
                 </span>
                 <span v-else-if="deviceType==''">
-                    <a href=" https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank">firmware
+                    <a href=" https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank"
+                        id="firmwareDownloadLink">firmware
                         [[.VersionCurrent]]</a>
                 </span>
                 <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
@@ -730,7 +731,8 @@
                         <div v-if="uploading">uploading</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
-                        <button type="submit" v-else-if="diskUsage>0">Download .zip to load onto SD card ({{
+                        <button id="downloadZipButton" type="submit" v-else-if="diskUsage>0">Download .zip to load onto
+                            SD card ({{
                             formatBytes(diskUsage)
                             }})</button>
 
@@ -765,7 +767,8 @@
     <script src="/static/vue.js"></script>
     <script src="/static/jquery-3.6.0.js"></script>
     <script src="/static/jquery-ui.js"></script>
-
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <script type="module">
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
         window.WaveSurf = WaveSurferG;
@@ -842,8 +845,13 @@
                     }));
                 }
             });
+
+
         };
     </script>
+
+
+
 </body>
 
 </html>
