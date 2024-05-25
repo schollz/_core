@@ -1193,4 +1193,19 @@ window.addEventListener('load', (event) => {
 
     }
 
+    setTimeout(() => {
+        tippy('#downloadZipButton', {
+            content: 'After downloading, extract the contents to the SD card.',
+        });
+        tippy('#dropaudiofilemode', {
+            content: 'The "oneshot" mode will set properties to make it easy to merge.',
+        });
+        tippy('#show-dialog', {
+            content: 'Copy this workspace to a new location.',
+        });
+        tippy('#firmwareDownloadLink', {
+            content: 'Click to download the latest firmware from releases.',
+        });
+    }, 1000);
+
 });
