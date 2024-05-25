@@ -281,11 +281,6 @@ button:hover {
     color: white;
 }
 
-
-.footer {
-    justify-content: space-between;
-}
-
 .footer-item {
     margin-bottom: 0.25rem;
     margin-top: 0.25rem;
@@ -293,20 +288,24 @@ button:hover {
 
 .footer-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     /* Center items vertically */
-}
-
-
-footer>form {
-    max-width: 500px;
-    margin: left;
 }
 
 footer>form>select {
     max-width: 2em;
 }
+
+.spacer {
+    flex-grow: 1;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+}
+
 
 body {
     padding: 2em;
@@ -657,4 +656,48 @@ a {
 
 .file-uploader {
     height: 100%;
+}
+
+.fr {
+    float: right;
+}
+
+/* Basic reset for select elements */
+footer select {
+    -webkit-appearance: none;
+    /* Remove default bezel in Chrome and Safari */
+    -moz-appearance: none;
+    /* Remove default bezel in Firefox */
+    appearance: none;
+    /* Remove default bezel in modern browsers */
+    border: none;
+    /* Remove default border */
+    padding: 0.5rem;
+    /* Add padding for better appearance */
+    background: none;
+    /* Remove default background */
+    background-color: var(--header-footer-background);
+    /* Set custom background color */
+    color: #fff;
+    /* Set custom text color */
+    font-size: 1rem;
+    /* Set custom font size */
+    border-radius: 4px;
+    /* Add border-radius for rounded corners */
+    padding-right: 2em;
+    margin-left: 0.5em;
+}
+
+/* Optional: Add custom border */
+footer select {
+    border: 1px solid #ccc;
+    /* Add a custom border */
+}
+
+/* Optional: Add custom arrow */
+footer select {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iNyIgdmlld0JveD0iMCAwIDEyIDciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMUw2IDZMMTItMUwiIGZpbGw9IiM0NDQiLz48L3N2Zz4=');
+    /* Custom arrow image */
+    background-repeat: no-repeat;
+    background-position: right 0.5em center;
 }
