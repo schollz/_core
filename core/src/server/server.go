@@ -471,7 +471,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				if err != nil {
 					log.Error(err)
 				} else {
-					go processFile(query["id"][0], newFilename, path.Join(StorageFolder, place, newFilename, newFilename))
+					go processFile(query["id"][0], newFilename, path.Join(StorageFolder, place, newFilename, newFilename), "default")
 				}
 			}
 		} else if message.Action == "onsetdetect" {
@@ -729,8 +729,15 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		err = fmt.Errorf("no place")
 		return
 	}
+	if _, ok := query["dropaudiofilemode"]; !ok {
+		err = fmt.Errorf("no dropaudiofilemode")
+		return
+	}
 	id := query["id"][0]
 	place := query["place"][0]
+	dropaudiofilemode := query["dropaudiofilemode"][0]
+
+	log.Debugf("upload, %s, %s, %s", id, place, dropaudiofilemode)
 	_, place = filepath.Split(place)
 
 	// Parse the multipart form data
@@ -789,7 +796,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 
 		totalBytesWritten += byteCounter.TotalBytes
-		go processFile(id, file.Filename, localFile)
+		go processFile(id, file.Filename, localFile, dropaudiofilemode)
 	}
 
 	// Send a response
@@ -798,9 +805,9 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
-func processFile(id string, uploadedFile string, localFile string) {
-	log.Debugf("prcessing file %s from upload %s", localFile, uploadedFile)
-	f, err := zeptocore.Get(localFile)
+func processFile(id string, uploadedFile string, localFile string, dropaudiofilemode string) {
+	log.Debugf("prcessing file %s from upload %s (%s)", localFile, uploadedFile, dropaudiofilemode)
+	f, err := zeptocore.Get(localFile, dropaudiofilemode)
 	if err != nil {
 		log.Error(err)
 		mutex.Lock()

@@ -58,7 +58,7 @@ var (
 	working   int
 )
 
-func Get(pathToOriginal string) (f File, err error) {
+func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error) {
 	_, filename := filepath.Split(pathToOriginal)
 	f = File{
 		Filename:   filename,
@@ -158,6 +158,17 @@ func Get(pathToOriginal string) (f File, err error) {
 			errSliceDetect = nil
 		}
 
+	}
+
+	if len(dropaudiofilemode) > 0 && dropaudiofilemode[0] == "oneshot" {
+		log.Debugf("setting %s to oneshot", f.PathToFile)
+		f.OneShot = true
+		f.SplicePlayback = 1
+		f.TempoMatch = false
+		f.BPM = 120
+		f.SliceStart = []float64{0.0}
+		f.SliceStop = []float64{1.0}
+		errSliceDetect = nil
 	}
 
 	// get the number of channels

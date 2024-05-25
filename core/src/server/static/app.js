@@ -640,7 +640,7 @@ app = new Vue({
             }
 
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
                 method: 'POST',
                 body: formData,
             })
@@ -827,7 +827,7 @@ app = new Vue({
                 formData.append('files', file);
             }
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
                 method: 'POST',
                 body: formData,
             })
