@@ -436,6 +436,7 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         progressBarWidth: '0px',
+        dropaudiofilemode: 'default',
         oversampling: '1x', // Default to '1x'
         stereoMono: 'mono', // Default to 'mono'
         isMobile: false, // Define isMobile variable
@@ -639,7 +640,7 @@ app = new Vue({
             }
 
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
                 method: 'POST',
                 body: formData,
             })
@@ -826,7 +827,7 @@ app = new Vue({
                 formData.append('files', file);
             }
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
                 method: 'POST',
                 body: formData,
             })
