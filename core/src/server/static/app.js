@@ -436,6 +436,7 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         progressBarWidth: '0px',
+        dropaudiofilemode: 'default',
         oversampling: '1x', // Default to '1x'
         stereoMono: 'mono', // Default to 'mono'
         isMobile: false, // Define isMobile variable
