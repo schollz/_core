@@ -14,6 +14,8 @@ If this is activated with [random fill](#random-fill), then a new sequence will 
 
 If this is activated, holding down and pressing any of the **1-16** keys will automatically generate a new sequence of that length.
 
+*New in v2.7.4*: If this is activated, holding down **B** and pressing **A** will swap out a random entry in the sequence for another random entry.
+
 <figure class="imgcombo">
 <img src="/img/combo_rand.png">
 <figcaption>Combo for toggling a random sequence.</figcaption>
