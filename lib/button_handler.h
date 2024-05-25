@@ -275,6 +275,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
     return;
   }
+  if (key1 == KEY_B && key2 == KEY_A && random_sequence_length > 0) {
+    // generate new sequence
+    random_sequence_arr[random_integer_in_range(0, random_sequence_length)] =
+        random_integer_in_range(0, 64);
+    return;
+  }
   if (key1 == KEY_A) {
     if (key2 == KEY_B) {
       // S+A

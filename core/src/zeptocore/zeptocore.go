@@ -126,27 +126,33 @@ func Get(pathToOriginal string) (f File, err error) {
 			f.TempoMatch = false
 			f.BPM = 120
 		}
-		spliceStartBytes := []byte(metadata.Artist())
-		spliceStopBytes := []byte(metadata.Album())
-		duration, _ := sox.Length(f.PathToAudio)
-		log.Debugf("spliceStartBytes: %s", spliceStartBytes)
-		log.Debugf("spliceStopBytes: %s", spliceStopBytes)
-		if len(spliceStartBytes) > 0 && len(spliceStopBytes) > 0 {
-			err = json.Unmarshal(spliceStartBytes, &f.SliceStart)
-			if err != nil {
-				log.Error(err)
-			}
-			err = json.Unmarshal(spliceStopBytes, &f.SliceStop)
-			if err != nil {
-				log.Error(err)
-			}
-			for i := range f.SliceStart {
-				f.SliceStart[i] = f.SliceStart[i] / duration
-			}
-			for i := range f.SliceStop {
-				f.SliceStop[i] = f.SliceStop[i] / duration
+		if strings.Contains(metadata.Comment(), "singleslice") {
+			f.SliceStart = []float64{0.0}
+			f.SliceStop = []float64{1.0}
+		} else {
+			spliceStartBytes := []byte(metadata.Artist())
+			spliceStopBytes := []byte(metadata.Album())
+			duration, _ := sox.Length(f.PathToAudio)
+			log.Debugf("spliceStartBytes: %s", spliceStartBytes)
+			log.Debugf("spliceStopBytes: %s", spliceStopBytes)
+			if len(spliceStartBytes) > 0 && len(spliceStopBytes) > 0 {
+				err = json.Unmarshal(spliceStartBytes, &f.SliceStart)
+				if err != nil {
+					log.Error(err)
+				}
+				err = json.Unmarshal(spliceStopBytes, &f.SliceStop)
+				if err != nil {
+					log.Error(err)
+				}
+				for i := range f.SliceStart {
+					f.SliceStart[i] = f.SliceStart[i] / duration
+				}
+				for i := range f.SliceStop {
+					f.SliceStop[i] = f.SliceStop[i] / duration
+				}
 			}
 		}
+
 		fopen.Close()
 		if len(f.SliceStart) > 0 {
 			errSliceDetect = nil
