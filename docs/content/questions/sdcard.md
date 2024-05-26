@@ -18,16 +18,16 @@ Do *not* use these cards! They may appear to work, but they can cause spurious g
 - Kootion brand
 - Sandisk Ultra
 - Kingston brand
+- 5% of JUANWE cards
 
 ### Known good cards
 
-- Juanwe
-- SanDisk Ultra, SanDisk Extreme
+- Gigastone 16GB + 32GB
 - SP Elite
+- SanDisk Ultra, SanDisk Extreme
 - Samsung EVO
 - PNY Elite
 - MicroCenter
-- Gigastone
 
 Here is my personal investigation into the cards and a comparison of the options available to me. The cards on the far left experience random dropouts, while the cards on the far right are deemed too slow. The cards in the middle are considered the best:
 
