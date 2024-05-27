@@ -14,6 +14,6 @@ Change the pitch by holding **A** and turning **Knob Y**. Pitch can be changed i
 *Try it:* Interesting effects can be obtained by turning the tempo high and turning the pitch down or vice-versa.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/pitch_turn.webp">
+<img src="/img/pitch_turn.webp">
 <figcaption>Changing pitch.</figcaption>
 </figure>

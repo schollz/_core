@@ -11,7 +11,7 @@ icon = 'drum'
 Activating this combo will continuously toggle a random fill at the end of a sequence. 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/combo_fill.webp">
+<img src="/img/combo_fill.webp">
 <figcaption>Combo for toggling the random fill mode.</figcaption>
 </figure>
 

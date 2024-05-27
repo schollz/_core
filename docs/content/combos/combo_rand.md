@@ -17,7 +17,7 @@ If this is activated, holding down and pressing any of the **1-16** keys will au
 *New in v2.7.4*: If this is activated, holding down **B** and pressing **A** will swap out a random entry in the sequence for another random entry.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/combo_rand.webp">
+<img src="/img/combo_rand.webp">
 <figcaption>Combo for toggling a random sequence.</figcaption>
 </figure>
 

@@ -33,7 +33,7 @@ I created a device called [**the itty bitty midi**](https://ittybittymidi.com) w
 *Note*: By default the zeptocore expects clock signals in the `CLOCK` input. You can switch to `MIDI` input by pressing the following combination: `13`+`10`+`11`+`16`.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/combo_midi.webp">
+<img src="/img/combo_midi.webp">
 <figcaption>Combo for activating itty bitty midi MIDI input through the CLOCK in</figcaption>
 </figure>
 
@@ -44,5 +44,5 @@ The MIDI layer allows you to communicate with the zeptocore via a browser and co
 If successful, a small screen will pop up that lets you see the current state of the zeptocore and allows you to interact with the zeptocore directly via the keyboard:
 
 <p style="max-width:80%; margin: auto;">
-<img loading="lazy" src="/img/zeptoboard_midi.webp" style="width:100%;">
+<img src="/img/zeptoboard_midi.webp" style="width:100%;">
 </p>

@@ -17,6 +17,6 @@ In the `MASH` mode, pressing in the **1-16** will toggle [effects](#effects) on 
 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/mode_mash.webp">
+<img src="/img/mode_mash.webp">
 <figcaption>Combo going to <code>MASH</code> mode.</figcaption>
 </figure>

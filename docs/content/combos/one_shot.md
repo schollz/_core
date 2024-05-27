@@ -13,6 +13,6 @@ The [Zeptocore tool](https://tool.zeptocore.com) can be utilized to configure th
 One-shot mode will show `ONESHOT ON` when enabled and `ONESHOT OFF` when disabled.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/combo_oneshot.webp">
+<img src="/img/combo_oneshot.webp">
 <figcaption>Combo for toggling one-shot mode.</figcaption>
 </figure>

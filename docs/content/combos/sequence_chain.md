@@ -12,7 +12,7 @@ mode = 'any'
 Sequences can be combined into "chains" of sequences, which are saved as new sequences that can be recalled or further chained into new sequences.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/chain_sequence.webp">
+<img src="/img/chain_sequence.webp">
 <figcaption>Combo for creating a sequence chain.</figcaption>
 </figure>
 
