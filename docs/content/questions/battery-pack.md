@@ -1,5 +1,5 @@
 +++
-title = 'What is the residue in the battery holder?'
+title = 'What is in the battery holder?'
 date = 2024-02-01T12:33:06-08:00
 weight = 51
 +++
