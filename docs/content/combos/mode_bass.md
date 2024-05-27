@@ -17,6 +17,6 @@ In the `BASS` mode, pressing in the **1-16** will play bass notes.
 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/mode_bass.webp">
+<img src="/img/mode_bass.webp">
 <figcaption>Combo going to <code>BASS</code> mode.</figcaption>
 </figure>

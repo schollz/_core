@@ -17,6 +17,6 @@ In the `JUMP` mode, pressing in the **1-16** will jump slices, create little loo
 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/mode_jump.webp">
+<img src="/img/mode_jump.webp">
 <figcaption>Combo going to <code>JUMP</code> mode.</figcaption>
 </figure>
