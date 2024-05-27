@@ -21,12 +21,12 @@ To update your zeptocore to the latest version, follow these steps:
 5. Wait momentarily for the drive to disappear, indicating the update is complete, and the device will turn on automatically.
 
 
-<p style="max-width:80%; margin: auto; text-align:center;">
- <video  controls>
-        <source src="/img/button.webm" type="video/webm" />
-        Your browser does not support the video tag.
-    </video>
-</p>
+<div style="max-width: 100%; overflow: hidden; padding: 1em; display: flex; justify-content: center;">
+<video controls style="width: 100%; height: auto; max-width: 600px;">
+    <source src="/img/button.webm" type="video/webm" />
+    Your browser does not support the video tag.
+</video>
+</div>
 
 Congratulations, your zeptocore has been successfully updated to the latest version. 
 
