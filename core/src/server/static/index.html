@@ -61,7 +61,7 @@
         </dialog>
 
         <header>
-            <a href=" /"><img src="/static/apple-icon.png"
+            <a href=" /"><img loading="lazy" src="/static/apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">{{titleName}}{{title}}</a>
@@ -547,7 +547,7 @@
                             d="				M93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 				c-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />
                     </svg>
 
-                    <!-- <img src="/static/Infinity-2.3s-200px.svg" style="margin: 0 auto; text-align: center;"> -->
+                    <!-- <img loading="lazy" src="/static/Infinity-2.3s-200px.svg" style="margin: 0 auto; text-align: center;"> -->
                 </div>
 
                 <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">

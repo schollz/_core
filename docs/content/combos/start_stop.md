@@ -11,6 +11,6 @@ icon = 'play'
 This key combination will mute the audio and stop playback. Pressing it again will restart the audio from the first beat. If you only need to mute the audio without stopping playback, you can use the [mute](#mute) key combination.
 
 <figure class="imgcombo">
-<img src="/img/start_stop.png">
+<img loading="lazy" src="/img/start_stop.png">
 <figcaption>Combo for toggling the start and stop.</figcaption>
 </figure>
