@@ -27,7 +27,8 @@
 // static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
 // static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
 // static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
-
+bool repeating_timer_callback_playback_stopped = false;
+uint64_t repeating_timer_callback_playback_counter = 0;
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -63,11 +64,32 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     do_stop_playback = false;
     playback_stopped = true;
   }
+
+#ifdef INCLUDE_MIDI
+  // always send out MIDI clock signal at 24 pulses per quarter note
+  repeating_timer_callback_playback_counter++;
+  if (repeating_timer_callback_playback_counter % 8 == 0) {
+    send_midi_clock();
+  }
+#endif
   if (playback_stopped) {
+    if (!repeating_timer_callback_playback_stopped) {
+      repeating_timer_callback_playback_stopped = true;
+#ifdef INCLUDE_MIDI
+      send_midi_stop();
+#endif
+    }
     return true;
+  }
+  if (repeating_timer_callback_playback_stopped) {
+    repeating_timer_callback_playback_stopped = false;
+#ifdef INCLUDE_MIDI
+    send_midi_start();
+#endif
   }
 
   bpm_timer_counter++;
+
   bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
                                                      ->sample[sel_sample_cur]
                                                      .snd[FILEZERO]
@@ -138,6 +160,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
+
     // check if need to do tunneling
     // avoid tunneling if we are in a timestretched variation
     if (sel_variation == 0) {
