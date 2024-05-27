@@ -168,7 +168,7 @@ resetpico:
 	python3 dev/reset_pico.py 
 
 docsbuild:
-	cd docs && hugo 
+	cd docs && hugo --minify
 	rm -rf core/src/server/docs
 	cp -r docs/public core/src/server/docs
 
