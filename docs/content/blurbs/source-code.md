@@ -22,7 +22,7 @@ To update your zeptocore to the latest version, follow these steps:
 
 
 <p style="max-width:80%; margin: auto;">
-<img src="/img/button.gif" style="width:100%;">
+<img loading="lazy" src="/img/button.gif" style="width:100%;">
 </p>
 
 Congratulations, your zeptocore has been successfully updated to the latest version. 

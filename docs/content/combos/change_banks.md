@@ -14,6 +14,6 @@ You can also change banks + samples simultaneously using [button presses](/#chan
 
 
 <figure class="imgcombo">
-<img src="/img/change_samples2.png">
+<img loading="lazy" src="/img/change_samples2.png">
 <figcaption>Alternatively hold the <code>C</code> key while turning knobs to change bank/sample individually.</figcaption>
 </figure>

@@ -12,6 +12,6 @@ If a sequence is recorded in this slot, this button will toggle playback for the
 
 
 <figure class="imgcombo">
-<img src="/img/sequence_play.png">
+<img loading="lazy" src="/img/sequence_play.png">
 <figcaption>Combo for playing a sequence slot.</figcaption>
 </figure>

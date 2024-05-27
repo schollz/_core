@@ -13,6 +13,6 @@ Change the volume by holding **A** and turning **Knob Z**. Turning the knob full
 
 
 <figure class="imgcombo">
-<img src="/img/volume_turn.png">
+<img loading="lazy" src="/img/volume_turn.png">
 <figcaption>Changing volume.</figcaption>
 </figure>

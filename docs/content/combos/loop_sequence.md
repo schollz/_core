@@ -12,6 +12,6 @@ icon = 'repeat'
 Select a slice with **1-16** and then press another key on the **1-16** keypad. Subsequently, press a *third* key on the **1-16** keypad. This action will create a loop between the first and second slices pressed.
 
 <figure class="imgcombo">
-<img src="/img/loop_sequence.png">
+<img loading="lazy" src="/img/loop_sequence.png">
 <figcaption>Hold three keys in <code>JUMP</code> mode to activate looping.</figcaption>
 </figure>

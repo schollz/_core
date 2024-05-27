@@ -32,6 +32,6 @@ Do *not* use these cards! They may appear to work, but they can cause spurious g
 Here is my personal investigation into the cards and a comparison of the options available to me. The cards on the far left experience random dropouts, while the cards on the far right are deemed too slow. The cards in the middle are considered the best:
 
 <p style="text-align:center;">
-<img src="https://schollz.com/img/sdcard_timings2.png" style="width:90%;">
+<img loading="lazy" src="https://schollz.com/img/sdcard_timings2.png" style="width:90%;">
 </p>
 

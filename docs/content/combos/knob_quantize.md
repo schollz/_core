@@ -12,6 +12,6 @@ mode = 'any'
 This knob will increase the quantization for the current playing sequence (JUMP, MASH, or BASS).
 
 <figure class="imgcombo">
-<img src="/img/quantize.png">
+<img loading="lazy" src="/img/quantize.png">
 <figcaption>Hold the <code>C</code> key while turning <code>Knob Z</code> to change quantization.</figcaption>
 </figure>

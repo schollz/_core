@@ -13,6 +13,6 @@ Sequence lock mode, when activated, will synchronize the sequence to a global cl
 
 
 <figure class="imgcombo">
-<img src="/img/combo_lock.png">
+<img loading="lazy" src="/img/combo_lock.png">
 <figcaption>Combo for toggling sequence lock.</figcaption>
 </figure>

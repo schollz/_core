@@ -13,6 +13,6 @@ Rotating this knob clockwise will increase the cutoff frequency of the low pass 
 
 
 <figure class="imgcombo">
-<img src="/img/filter_turn.png">
+<img loading="lazy" src="/img/filter_turn.png">
 <figcaption>Combo for doing a filter sweep.</figcaption>
 </figure>

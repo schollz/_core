@@ -13,6 +13,6 @@ Turning this knob will adjust the volume of the bass. Turn it clockwise to incre
 
 
 <figure class="imgcombo">
-<img src="/img/bass_volume.png">
+<img loading="lazy" src="/img/bass_volume.png">
 <figcaption>Combo for changing the volume of the bass.</figcaption>
 </figure>
