@@ -199,5 +199,5 @@ or directly from another manufacturer like Amazon:
 when you get these off-the-shelf pcm5102 chips, make sure that you solder the backside to ensure proper audio connections. see this diagram:
 
 <div style="text-align:center;">
-<img src="/img/pcm5102.webp">
+<img src="/img/pcm5102.webp" style="width:90%; text-align:center; margin:auto 0; padding:1em; max-width:500px;">
 </div>
