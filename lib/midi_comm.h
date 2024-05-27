@@ -39,6 +39,45 @@ uint32_t send_text_as_sysex(const char* text) {
   return tud_midi_n_stream_write(0, 0, sysex_data, sizeof(sysex_data));
 }
 
+void send_midi_clock() {
+  // Ensure TinyUSB stack is initialized and ready
+  if (tud_ready()) {
+    // Construct the MIDI message
+    // MIDI Timing Clock message format: 0xF8
+    uint8_t midi_message[1];
+    midi_message[0] = 0xF8;  // Timing Clock command
+
+    // Send the MIDI message
+    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
+  }
+}
+
+void send_midi_start() {
+  // Ensure TinyUSB stack is initialized and ready
+  if (tud_ready()) {
+    // Construct the MIDI message
+    // MIDI Start message format: 0xFA
+    uint8_t midi_message[1];
+    midi_message[0] = 0xFA;  // Start command
+
+    // Send the MIDI message
+    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
+  }
+}
+
+void send_midi_stop() {
+  // Ensure TinyUSB stack is initialized and ready
+  if (tud_ready()) {
+    // Construct the MIDI message
+    // MIDI Stop message format: 0xFC
+    uint8_t midi_message[1];
+    midi_message[0] = 0xFC;  // Stop command
+
+    // Send the MIDI message
+    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
+  }
+}
+
 void send_midi_note_on(uint8_t note, uint8_t velocity) {
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
