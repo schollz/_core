@@ -13,6 +13,6 @@ This key combo will mute the audio but playback and clocking will continue.
 If you want to stop everything you need to use [start/stop](#startstop).
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/mute.png">
+<img loading="lazy" src="/img/mute.webp">
 <figcaption>Combo for toggling mute.</figcaption>
 </figure>

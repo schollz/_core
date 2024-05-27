@@ -14,6 +14,6 @@ Select a slice with **1-16** and then press another key on the **1-16** keypad t
 If you want pitch up/down effects to be applied to the retriggering, you can enable the [Retrigger Setting](#retrigger-settings) under the effects (**A** + **15** in jump mode).
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/retrigger.png">
+<img loading="lazy" src="/img/retrigger.webp">
 <figcaption>Hold any of the 16 keys and then press any of the 16 keys to jump while in <code>JUMP</code> mode to do a retrigger.</figcaption>
 </figure>

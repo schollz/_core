@@ -191,7 +191,7 @@ or directly from another manufacturer like Amazon:
  (_note:_ if you purchase components from me, I am able to provide reasonable amounts of support to help with your project).
 
 <p style="text-align:center;">
-<img loading="lazy" src="/_core_bb.png" style="width:90%; text-align:center; margin:auto 0; padding:1em; max-width:500px;">
+<img loading="lazy" src="/_core_bb.webp" style="width:90%; text-align:center; margin:auto 0; padding:1em; max-width:500px;">
 </p>
 
 ## pcm5102
@@ -199,5 +199,5 @@ or directly from another manufacturer like Amazon:
 when you get these off-the-shelf pcm5102 chips, make sure that you solder the backside to ensure proper audio connections. see this diagram:
 
 <div style="text-align:center;">
-<img loading="lazy" src="/img/pcm5102.png">
+<img loading="lazy" src="/img/pcm5102.webp">
 </div>

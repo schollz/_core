@@ -16,7 +16,7 @@ The Tempo feature offers dual methods for precision tempo control.
 First, you can adjust dynamically by holding **A** and rotating **Knob X**—with the middle position representing the original BPM, turning fully clockwise for double speed, and turning fully counter-clockwise for half speed.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/tempo_turn.png">
+<img loading="lazy" src="/img/tempo_turn.webp">
 <figcaption>Combo for changing the tempo with a knob.</figcaption>
 </figure>
 
@@ -24,7 +24,7 @@ First, you can adjust dynamically by holding **A** and rotating **Knob X**—wit
 Secondly, you can hold **A** and tap **B** to manually tap in the tempo, which ranges from 30 to 300 BPM.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/tempo_tap.png">
+<img loading="lazy" src="/img/tempo_tap.webp">
 <figcaption>Combo for changing the tempo with tapping.</figcaption>
 </figure>
 

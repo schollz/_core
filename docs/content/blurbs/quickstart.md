@@ -13,14 +13,14 @@ weight = 3
 To power on the device, toggle the switch on the top right to the "up" position. The device comes pre-loaded with several samples. A sample will start playing automatically.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/jump.png">
+<img loading="lazy" src="/img/jump.webp">
 <figcaption>Press keys to jump samples.</figcaption>
 </figure>
 
  Navigate through the samples by pressing any of the `1-16` keys.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/retrigger.png">
+<img loading="lazy" src="/img/retrigger.webp">
 <figcaption>Hold a key and press to initiate a retrigger.</figcaption>
 </figure>
 
@@ -33,7 +33,7 @@ To power on the device, toggle the switch on the top right to the "up" position.
 The `A`, `B`, `C`, and `D` keys are used in combination with the knobs to adjust various settings.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/volume_turn.png">
+<img loading="lazy" src="/img/volume_turn.webp">
 <figcaption>Changing the volume.</figcaption>
 </figure>
 
@@ -41,7 +41,7 @@ Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `
 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/tempo_turn.png">
+<img loading="lazy" src="/img/tempo_turn.webp">
 <figcaption>Changing the tempo.</figcaption>
 </figure>
 
@@ -54,7 +54,7 @@ Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob Y
 There are 16 banks of samples, with each bank capable of holding 16 samples. By default, you are in the first bank and the first sample. 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/change_samples.png">
+<img loading="lazy" src="/img/change_samples.webp">
 <figcaption>Pressing two keys while holding <code>B</code> will select a bank and then sample.</figcaption>
 </figure>
 
@@ -66,7 +66,7 @@ To switch to a different bank and select a different sample, follow these steps:
 The device powers up in `JUMP` mode, where pressing `1-16` allows you to navigate through samples. When in jump mode you can hold `A` and press any of the `1-16` to activate an effect.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/jump_effect.png">
+<img loading="lazy" src="/img/jump_effect.webp">
 <figcaption>Example of toggling the `fuzz` effect in `JUMP` mode.</figcaption>
 </figure>
 
