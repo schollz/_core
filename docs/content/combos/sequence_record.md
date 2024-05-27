@@ -11,7 +11,7 @@ mode = 'any'
 This key combination will toggle sequence recording. In the [JUMP mode](#mode-jump), it will record a sequence of jumps. In the [MASH mode](#mode-mash), it will record a sequence of toggling effects. In the [BASS mode](#mode-bass), it will record a bass sequence.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/sequence_rec.png">
+<img loading="lazy" src="/img/sequence_rec.webp">
 <figcaption>Combo for recording/deleting a sequence slot.</figcaption>
 </figure>
 

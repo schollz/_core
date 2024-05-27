@@ -15,7 +15,7 @@ The sample tool is required for the sample preprocessing step, before transferri
 
 
 <p style="text-align:center">
-<img loading="lazy" src="/img/core_tool.png" style="width:70%;  margin:0 auto; padding:1em; text-align:center;">
+<img loading="lazy" src="/img/core_tool.webp" style="width:70%;  margin:0 auto; padding:1em; text-align:center;">
 <br><small>Screenshot of the core tool</small><p>
 
 ### Stock samples
@@ -32,7 +32,7 @@ Once you finish using the tool to collect your samples, click the **Download .zi
 Unzip this **.zip** file extract all the **bankX** folders into the SD card. The SD card structure should look like this:
 
 <div style="text-align:center;">
-<img loading="lazy" src="/img/folders.png" style="max-width:100%;">
+<img loading="lazy" src="/img/folders.webp" style="max-width:100%;">
 </div>
 
 Each of those **bankX** folders contains all the nessecary audio files. The **bank0** folder corresponds to the first bank (they are "0-indexed"). If you want a bank to be in a different slot, you can simply rename it. For example, you could rename **bank0** to **bank2** and it would be loaded into the third bank slot.

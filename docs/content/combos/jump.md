@@ -14,6 +14,6 @@ In `jump` mode, pressing any of the 16 keys will "jump" the sample between slice
 
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/jump.png">
+<img loading="lazy" src="/img/jump.webp">
 <figcaption>Press any of the 16 keys to jump while in <code>JUMP</code> mode.</figcaption>
 </figure>

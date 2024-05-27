@@ -13,6 +13,6 @@ The Sync Out feature enables Zeptocore to output a sync signal through the left 
 When enabled, the Sync Out mode will show `SYNC ON`, and when disabled, it will display `SYNC OFF`.
 
 <figure class="imgcombo">
-<img loading="lazy" src="/img/combo_sync.png">
+<img loading="lazy" src="/img/combo_sync.webp">
 <figcaption>Combo for activating itty bitty midi MIDI input through the CLOCK in</figcaption>
 </figure>
