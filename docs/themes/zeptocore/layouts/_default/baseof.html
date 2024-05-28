@@ -347,6 +347,13 @@
             </tbody>
         </table>
     </section>
+
+    <section class="help faq">
+        {{ range where .Site.RegularPages "Section" "versions" }}
+
+        {{ .Content }}
+        {{ end }}
+    </section>
     <footer>
         <div class="footer-inner">
             <p>zeptocore v2.7.6</p>
