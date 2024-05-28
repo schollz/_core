@@ -167,7 +167,10 @@ server:
 resetpico: 
 	python3 dev/reset_pico.py 
 
-docsbuild:
+versions.md:
+	cd dev/gitread && go build -v && ./gitread ../../docs/content/versions/versions.md
+
+docsbuild: versions.md
 	cd docs && hugo --minify
 	rm -rf core/src/server/docs
 	cp -r docs/public core/src/server/docs
@@ -206,5 +209,5 @@ core_linux_amd64: docsbuild
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -v -x -o ../core_linux_amd64
 
 .PHONY: docs
-docs:
+docs: versions.md
 	cd docs && hugo serve -D --bind 0.0.0.0
