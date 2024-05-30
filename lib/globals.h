@@ -380,19 +380,20 @@ void do_update_phase_from_beat_current() {
     beat_current = random_integer_in_range(0, 15);
     do_random_jump = false;
   }
-  if (probability_of_random_jump > 0) {
-    if (random_integer_in_range(0, 100) < probability_of_random_jump) {
-      beat_current = random_integer_in_range(
-          0,
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
-    }
-  }
   uint16_t slice = beat_current;
   if (!jump_precedence) {
     if (random_sequence_length > 0) {
       slice = random_sequence_arr[beat_current % random_sequence_length];
     } else if (single_key_on >= 4 && mode_buttons16 == MODE_JUMP) {
       slice = (beat_current / 16) * 16 + (single_key_on - 4);
+    }
+  }
+  if (probability_of_random_jump > 0) {
+    if (random_integer_in_range(0, 100) < probability_of_random_jump) {
+      beat_current = random_integer_in_range(
+          0,
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
+      slice = beat_current;
     }
   }
   slice = slice %
