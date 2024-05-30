@@ -11,7 +11,7 @@ Uploading samples is a straightforward process similar to transferring a file on
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
 
-### Use tool online: **[zeptocore v2.7.6](/tool)**
+### Use tool online: **[zeptocore v2.7.6](/tool)** (Chrome and Firefox only)
 
 
 <p style="text-align:center">
