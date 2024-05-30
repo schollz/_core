@@ -51,6 +51,7 @@
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
+#include "ectocore_flash.h"
 
 uint8_t gpio_btn_taptempo_val = 0;
 
