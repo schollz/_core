@@ -91,8 +91,8 @@ uint16_t TapTempo_tap(TapTempo *self) {
       sum += self->taps[i];
     }
   }
-  // need at least three taps
-  if (count < 3) {
+  // need at least two taps
+  if (count < 2) {
     return 0;
   }
   // round to the nearest 2 or 5
