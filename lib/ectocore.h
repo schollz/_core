@@ -402,7 +402,17 @@ void input_handling() {
                                             sf->center_calibration[6],
                                             sf->center_calibration[7],
                                         }};
+
+            // make the LEDS go RED
+            ws2812_wheel_clear(ws2812);
+            for (uint8_t j = 0; j < 18; j++) {
+              WS2812_fill(ws2812, j, 255, 0, 0);
+            }
+            WS2812_show(ws2812);
+            sleep_ms(10);
             write_struct_to_flash(&write_data, sizeof(write_data));
+            sleep_ms(1000);
+            reset_usb_boot(0, 0);
           }
         }
         printf("[ectocore] calibrate %d=%d,", i, sf->center_calibration[i]);
