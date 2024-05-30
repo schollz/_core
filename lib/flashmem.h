@@ -1,7 +1,8 @@
+#ifndef FLASHMEM_LIB
+#define FLASHMEM_LIB 1
 
-// Define the flash storage offset (make sure this does not overlap with your
-// program's code or other data)
-#define FLASH_TARGET_OFFSET 1572864
+#define FLASH_TARGET_OFFSET 1835008
+
 // Function to write arbitrary C struct to flash memory
 void write_struct_to_flash(const void* data, size_t size) {
   // Ensure the data size is not larger than a sector (usually 4096 bytes)
@@ -36,25 +37,4 @@ void read_struct_from_flash(void* data, size_t size) {
   memcpy(data, flash_address, size);
 }
 
-// Example struct to demonstrate usage
-typedef struct {
-  int id;
-  float value;
-  char name[32];
-} MyStruct;
-
-MyStruct test_flash() {
-  // Create an example struct to write to flash
-  MyStruct write_data = {123, 456.78f, "Hello Flash"};
-
-  // Write the struct to flash
-  write_struct_to_flash(&write_data, sizeof(write_data));
-
-  // Create a struct to read the data back into
-  MyStruct read_data;
-
-  // Read the struct from flash
-  read_struct_from_flash(&read_data, sizeof(read_data));
-
-  return read_data;
-}
+#endif
