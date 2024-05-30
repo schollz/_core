@@ -32,11 +32,13 @@
 
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "hardware/flash.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
 #include "hardware/pll.h"
 #include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
+#include "hardware/sync.h"
 #include "pico/audio_i2s.h"
 #include "pico/binary_info.h"
 #include "pico/bootrom.h"

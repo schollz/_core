@@ -558,7 +558,15 @@ int main() {
   gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
 #endif
 
-  ap = init_audio();
+#ifdef INCLUDE_ECTOCORE
+  gpio_init(GPIO_BTN_BANK);
+  gpio_set_dir(GPIO_BTN_BANK, GPIO_IN);
+  gpio_pull_up(GPIO_BTN_BANK);
+  do_calibration_mode == (gpio_get(GPIO_BTN_BANK) == 0);
+#endif
+  if (!do_calibration_mode) {
+    ap = init_audio();
+  }
 
   // Implicitly called by disk_initialize,
   // but called here to set up the GPIOs

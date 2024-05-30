@@ -195,6 +195,9 @@ void input_handling() {
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
+      if (adc_startup == 0) {
+        printf("adc startup done\n");
+      }
       // if (adc_startup == 0) {
       //   for (int i = 1; i < 2; i++) {
       //     PIO p = (i == 0) ? pio0 : pio1;

@@ -50,9 +50,11 @@ target_link_libraries(${PROJECT_NAME}
     my_pico_audio_i2s
     FatFs_SPI
     hardware_clocks
+    hardware_flash
     hardware_adc
     hardware_pio
     hardware_i2c
+    hardware_sync
 )
 
 # target_compile_options(command_line PUBLIC -Wall -Wextra -Wno-unused-function -Wno-unused-parameter)
