@@ -564,6 +564,10 @@ int main() {
   gpio_pull_up(GPIO_BTN_BANK);
   sleep_ms(1);
   do_calibration_mode = (gpio_get(GPIO_BTN_BANK) == 0);
+  if (do_calibration_mode) {
+    sleep_ms(100);
+    do_calibration_mode = do_calibration_mode && (gpio_get(GPIO_BTN_BANK) == 0);
+  }
 #endif
   if (!do_calibration_mode) {
     ap = init_audio();
