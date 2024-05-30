@@ -99,6 +99,67 @@ void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
   WS2812_show(ws2812);
 }
 
+void ws2812_set_wheel_right_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
+                                 bool b) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
+  if (val > 1024) {
+    val = 1024;
+  }
+
+  int8_t filled = (val * 8) / 1024;          // Scale val to range 0-8
+  int16_t remainder = (val * 8) % 1024 / 4;  // Scale remainder to range 0-255
+  if (remainder > 255) {
+    remainder = 255;
+  }
+  for (uint8_t i = 0; i < 8; i++) {
+    WS2812_fill(ws2812, i, 0, 0, 0);
+  }
+  for (uint8_t i = 8; i < 8 + filled; i++) {
+    WS2812_fill(ws2812, i, r ? 255 : 0, g ? 255 : 0, b ? 255 : 0);
+  }
+
+  if (remainder < 10) {
+    remainder = 0;
+  }
+
+  if (filled < 8) {
+    WS2812_fill(ws2812, 8 + filled, r ? remainder : 0, g ? remainder : 0,
+                b ? remainder : 0);
+  }
+
+  WS2812_show(ws2812);
+}
+
+void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
+                                bool b) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
+  if (val > 1024) {
+    val = 1024;
+  }
+  val = 1024 - val;
+  int8_t filled = (val * 8) / 1024;          // Scale val to range 0-8
+  int16_t remainder = (val * 8) % 1024 / 4;  // Scale remainder to range 0-255
+  if (remainder > 255) {
+    remainder = 255;
+  }
+  for (uint8_t i = 0; i < 16; i++) {
+    WS2812_fill(ws2812, i, 0, 0, 0);
+  }
+  for (uint8_t i = 0; i < filled; i++) {
+    WS2812_fill(ws2812, 7 - i, r ? 255 : 0, g ? 255 : 0, b ? 255 : 0);
+  }
+
+  if (remainder < 10) {
+    remainder = 0;
+  }
+
+  if (filled < 8) {
+    WS2812_fill(ws2812, 7 - filled, r ? remainder : 0, g ? remainder : 0,
+                b ? remainder : 0);
+  }
+
+  WS2812_show(ws2812);
+}
 void break_set(int16_t val, bool ignore_taptempo_btn) {
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
     // change volume
@@ -723,69 +784,72 @@ void input_handling() {
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           }
         } else {
-          if (val < 10 && !playback_stopped) {
-            // if (!button_mute) trigger_button_mute = true;
-            // do_stop_playback = true;
-            // WS2812_fill(ws2812, 17, 255, 0, 0);
-            // WS2812_show(ws2812);
-          } else if (val > 10 && playback_stopped) {
-            // do_restart_playback = true;
-            // button_mute = false;
-            // WS2812_fill(ws2812, 17, 0, 255, 0);
-            // WS2812_show(ws2812);
+          if (!cv_plugged[CV_AMEN]) {
+            if (val < 57) {
+              ws2812_set_wheel(ws2812, val * 4, 12, 123, 32);
+              WS2812_show(ws2812);
+              // disable random sequence mode
+              random_sequence_length = 0;
+              do_retrig_at_end_of_phrase = false;
+            } else if (val < 966) {
+              ws2812_set_wheel(ws2812, val * 4, 60, 63, 32);
+              WS2812_show(ws2812);
+              uint8_t sequence_lengths[11] = {
+                  1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
+              };
+              random_sequence_length =
+                  sequence_lengths[((int16_t)(val - 57) * 11 / (966 - 57)) %
+                                   11];
+              printf("[ectocore] random_sequence_length %d\n",
+                     random_sequence_length);
+              do_retrig_at_end_of_phrase = false;
+            } else {
+              ws2812_set_wheel(ws2812, val * 4, 120, 3, 32);
+              WS2812_show(ws2812);
+              printf("[ectocore] regen sequence\n");
+              // generative mode + generate new sequence
+              for (uint8_t i = 0; i < 64; i++) {
+                random_sequence_arr[i] = random_integer_in_range(0, 64);
+              }
+              for (uint8_t i = 0; i < 16; i++) {
+                ws2812_set_wheel(ws2812, i, 0, 255, 0);
+              }
+              WS2812_show(ws2812);
+              sleep_ms(200);
+              random_sequence_length = 8;
+              do_retrig_at_end_of_phrase = true;
+            }
           } else {
-            probability_of_random_jump = val * 100 / 1024;
-            ws2812_set_wheel(ws2812, val * 4, true, false, true);
-            WS2812_show(ws2812);
+            random_sequence_length = 0;
+            do_retrig_at_end_of_phrase = false;
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
         printf("[ectocore] knob_break_atten %d\n", val);
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
-        if (!cv_plugged[CV_AMEN]) {
-          if (val < 100) {
-            // generative mode
-            if (random_sequence_length == 0) {
-              for (uint8_t i = 0; i < 64; i++) {
-                random_sequence_arr[i] = random_integer_in_range(0, 64);
-              }
-              random_sequence_length = 1;
-            }
-            random_sequence_length = 8;
-            do_retrig_at_end_of_phrase = true;
-          } else if (val < 700) {
-            if (random_sequence_length == 0) {
-              for (uint8_t i = 0; i < 64; i++) {
-                random_sequence_arr[i] = random_integer_in_range(0, 64);
-              }
-              random_sequence_length = 1;
-            }
-            if (random_sequence_length > 0) {
-              uint8_t sequnece_lengths[11] = {
-                  1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
-              };
-              int16_t new_length = (int16_t)(val - 100) * 11 / (700 - 100);
-              new_length = sequnece_lengths[new_length % 11];
-              if (new_length > 2) {
-                // round to the nearest 2
-                new_length = (new_length / 2) * 2;
-              } else if (new_length < 1) {
-                new_length = 1;
-              }
-              random_sequence_length = new_length;
-              printf("[ectocore] random_sequence_length %d\n",
-                     random_sequence_length);
-            }
-            do_retrig_at_end_of_phrase = false;
-          } else {
-            random_sequence_length = 0;
-            do_retrig_at_end_of_phrase = false;
-          }
+        if (val < 512) {
+          sf->stay_in_sync = false;
+          probability_of_random_jump = (512 - val) * 100 / 512;
+          ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, true);
         } else {
-          random_sequence_length = 0;
-          do_retrig_at_end_of_phrase = false;
+          sf->stay_in_sync = true;
+          probability_of_random_jump = (val - 512) * 100 / 512;
+          ws2812_set_wheel_right_half(ws2812, 2 * (val - 512), true, false,
+                                      true);
         }
+        // if (val < 10 && !playback_stopped) {
+        //   // if (!button_mute) trigger_button_mute = true;
+        //   // do_stop_playback = true;
+        //   // WS2812_fill(ws2812, 17, 255, 0, 0);
+        //   // WS2812_show(ws2812);
+        // } else if (val > 10 && playback_stopped) {
+        //   // do_restart_playback = true;
+        //   // button_mute = false;
+        //   // WS2812_fill(ws2812, 17, 0, 255, 0);
+        //   // WS2812_show(ws2812);
+        // } else {
+        // }
       }
     }
 
