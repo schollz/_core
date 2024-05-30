@@ -52,6 +52,10 @@
 #include "midi_comm_callback.h"
 #endif
 
+typedef struct EctocoreFlash {
+  uint16_t center_calibration[8];
+} EctocoreFlash;
+
 uint8_t gpio_btn_taptempo_val = 0;
 
 // toggle the fx
@@ -365,31 +369,43 @@ void input_handling() {
     int16_t val;
     if (debounce_startup > 0) {
       debounce_startup--;
-      if (debounce_startup < 8) {
-        if (gpio_get(GPIO_BTN_BANK) == 0) {
-          for (uint8_t i = 0; i < 8; i++) {
-            if (debounce_startup == i) {
-              sleep_ms(1);
-              sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
-              if (i == 0) {
-                // save file
-                while (sync_using_sdcard) {
-                  sleep_us(100);
-                }
-                sync_using_sdcard = true;
-                SaveFile_save(sf, savefile_current);
-                // load prevoius file
-                f_open(&fil_current, fil_current_name, FA_READ);
-                sync_using_sdcard = false;
-                printf("[ectocore] calibrate %d=%d\nand saved.", i,
-                       sf->center_calibration[i]);
-              } else {
-                printf("[ectocore] calibrate %d=%d,", i,
-                       sf->center_calibration[i]);
-              }
-            }
+      if (debounce_startup == 8) {
+        printf("[ectocore] startup\n");
+        // read flash data
+        EctocoreFlash read_data;
+        read_struct_from_flash(&read_data, sizeof(read_data));
+        bool data_corrupted = false;
+        for (uint8_t i = 0; i < 8; i++) {
+          if (read_data.center_calibration[i] < 0 ||
+              read_data.center_calibration[i] > 1024) {
+            data_corrupted = true;
           }
         }
+        if (!data_corrupted) {
+          for (uint8_t i = 0; i < 8; i++) {
+            sf->center_calibration[i] = read_data.center_calibration[i];
+          }
+        }
+      } else if (debounce_startup < 8) {
+        uint8_t i = debounce_startup;
+        if (gpio_get(GPIO_BTN_BANK) == 0) {
+          sleep_ms(1);
+          sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
+          if (i == 0) {
+            EctocoreFlash write_data = {.center_calibration = {
+                                            sf->center_calibration[0],
+                                            sf->center_calibration[1],
+                                            sf->center_calibration[2],
+                                            sf->center_calibration[3],
+                                            sf->center_calibration[4],
+                                            sf->center_calibration[5],
+                                            sf->center_calibration[6],
+                                            sf->center_calibration[7],
+                                        }};
+            write_struct_to_flash(&write_data, sizeof(write_data));
+          }
+        }
+        printf("[ectocore] calibrate %d=%d,", i, sf->center_calibration[i]);
       }
     }
 
