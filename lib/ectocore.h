@@ -99,6 +99,53 @@ void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
   WS2812_show(ws2812);
 }
 
+void ws2812_set_wheel_green_yellow_red(WS2812 *ws2812, uint16_t val) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
+  if (val > 1024) {
+    val = 1024;
+  }
+
+  // clear
+  for (uint8_t i = 0; i < 16; i++) {
+    WS2812_fill(ws2812, i, 0, 0, 0);
+  }
+
+  int8_t filled = (val * 16) / 1024;          // Scale val to range 0-8
+  int16_t remainder = (val * 16) % 1024 / 4;  // Scale remainder to range 0-255
+  if (remainder > 255) {
+    remainder = 255;
+  }
+  for (uint8_t i = 0; i < filled; i++) {
+    uint8_t r = 0;
+    uint8_t g = 0;
+    if (i < 8) {
+      g = 255;
+    } else if (i < 12) {
+      g = 255;
+      r = 255;
+    } else {
+      r = 255;
+    }
+    WS2812_fill(ws2812, i, r, g, 0);
+  }
+
+  uint8_t i = filled;
+  uint8_t r = 0;
+  uint8_t g = 0;
+  if (i < 8) {
+    g = 255;
+  } else if (i < 12) {
+    g = 255;
+    r = 255;
+  } else {
+    r = 255;
+  }
+  r = r * remainder / 255;
+  g = g * remainder / 255;
+  WS2812_fill(ws2812, i, r ? remainder : 0, g ? remainder : 0, 0);
+  WS2812_show(ws2812);
+}
+
 void ws2812_set_wheel_right_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
                                  bool b) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -160,28 +207,35 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
 
   WS2812_show(ws2812);
 }
-void break_set(int16_t val, bool ignore_taptempo_btn) {
+void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
+    if (show_wheel) {
+      ws2812_set_wheel_green_yellow_red(ws2812, val);
+    }
     // change volume
-    if (val < 412) {
-      sf->vol = val * VOLUME_STEPS / 412;
+    if (val <= 532) {
+      sf->vol = val * VOLUME_STEPS / 532;
       sf->fx_active[FX_FUZZ] = 0;
       sf->fx_active[FX_SATURATE] = 0;
-    } else if (val > 700 && val <= 850) {
+    } else if (val > 532 && val <= 768) {
       sf->vol = VOLUME_STEPS;
       sf->fx_active[FX_FUZZ] = 0;
       sf->fx_active[FX_SATURATE] = 1;
-    } else if (val > 850) {
+      sf->fx_param[FX_SATURATE][0] = 100 + (val - 532) * 128 / (768 - 532);
+    } else if (val > 768) {
       sf->vol = VOLUME_STEPS;
       sf->fx_active[FX_SATURATE] = 0;
       sf->fx_active[FX_FUZZ] = 1;
-      sf->fx_param[FX_FUZZ][0] = (val - 850) * 255 / (1024 - 850);
+      sf->fx_param[FX_FUZZ][0] = (val - 768) * 255 / (1024 - 768);
     } else {
       sf->vol = VOLUME_STEPS;
       sf->fx_active[FX_FUZZ] = 0;
       sf->fx_active[FX_SATURATE] = 0;
     }
   } else {
+    if (show_wheel) {
+      ws2812_set_wheel(ws2812, val * 4, false, true, true);
+    }
     // // BREAK MUTE
     // if (val < 20 && !button_mute) {
     //   trigger_button_mute = true;
@@ -602,7 +656,7 @@ void input_handling() {
                                                 ->slice_num);
         } else if (i == CV_BREAK) {
           // update the break stuff
-          break_set(linlin(cv_values[i], -512, 512, 0, 1024), true);
+          break_set(linlin(cv_values[i], -512, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
           if (fil_current_change != true && debounce_file_change == 0) {
@@ -780,8 +834,7 @@ void input_handling() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
         printf("[ectocore] knob_break %d\n", val);
-        ws2812_set_wheel(ws2812, val * 4, true, true, false);
-        break_set(val, false);
+        break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
