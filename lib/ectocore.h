@@ -518,7 +518,7 @@ void input_handling() {
       }
       if (total_signals_sent > 0) {
         mean_signal = total_mean_signal / (total_signals_sent * length_signal);
-        printf("[ectocore] mean_signal: %d\n", mean_signal);
+        // printf("[ectocore] mean_signal: %d\n", mean_signal);
       }
       debounce_mean_signal = 10000;
     }
@@ -692,6 +692,18 @@ void input_handling() {
       // printf("random retrigger\n");
       go_retrigger_2key(1, 1);
     }
+#else
+#ifdef PRINT_AUDIOBLOCKDROPS
+    // random stuff
+    if (random_integer_in_range(1, 10000) < 80) {
+      // printf("random retrig\n");
+      key_do_jump(random_integer_in_range(0, 15));
+    } else if (random_integer_in_range(1, 10000) < 5) {
+      // printf("random retrigger\n");
+      go_retrigger_2key(random_integer_in_range(0, 15),
+                        random_integer_in_range(0, 15));
+    }
+#endif
 #endif
 
     gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
@@ -952,7 +964,7 @@ void input_handling() {
             fx_random_off[i] = 0;
             if (fx_random_on[i] >= fx_random_max[i]) {
               toggle_fx(i);
-              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+              // printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
               fx_random_max_off[i] = random_integer_in_range(2, 6);
               if (i == FX_TIMESTRETCH) {
                 fx_random_max_off[i] = random_integer_in_range(16, 32);
@@ -990,7 +1002,8 @@ void input_handling() {
                 toggle_fx(i);
                 Dazzle_start(dazzle, i % 3);
                 // TODO: also randomize the parameters?
-                printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
+                // printf("[zeptocore] random fx: %d %d\n", i,
+                // sf->fx_active[i]);
               }
             }
           }
