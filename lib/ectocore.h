@@ -456,7 +456,9 @@ void input_handling() {
                         clock_handling_start);
 
   WS2812 *ws2812;
-  ws2812 = WS2812_new(7, pio0, 2);
+  ws2812 = WS2812_new(GPIO_WS2812, pio0, 2);
+  WS2812_set_brightness(ws2812, 20);
+
   // random colors
   for (uint8_t i = 0; i < 18; i++) {
     WS2812_fill(ws2812, i, random_integer_in_range(0, 255),
@@ -829,7 +831,7 @@ void input_handling() {
           if (val != sel_sample_cur) {
             sel_sample_next = val;
             fil_current_change = true;
-            printf("[ectocore] switch sample %d\n", val);
+            printf("[ectocore] switchsample val=%d\n", val);
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
