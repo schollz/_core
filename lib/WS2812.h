@@ -29,12 +29,18 @@
 
 #define NUM_LEDS 18
 
+const uint8_t ws2812_brightness_values[21] = {
+    0,  1,  2,  3,  4,   6,   10,  15,  21,  30,  39,
+    51, 64, 80, 97, 117, 140, 164, 192, 222, 255,
+};
+
 typedef struct WS2812 {
   uint pin;
   PIO pio;
   uint sm;
   uint8_t bytes[4];
   uint32_t data[NUM_LEDS];
+  uint8_t brightness;
 } WS2812;
 
 WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
@@ -43,6 +49,7 @@ WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
   ws->pin = pin;
   ws->pio = pio;
   ws->sm = sm;
+  ws->brightness = 255;
   memset(ws->data, 0, sizeof(ws->data));
   ws->bytes[0] = 0;
   ws->bytes[1] = 2;
@@ -54,11 +61,24 @@ WS2812 *WS2812_new(uint pin, PIO pio, uint sm) {
   return ws;
 }
 
+void WS2812_set_brightness(WS2812 *ws, uint8_t brightness) {
+  // brightness between 0 and 100
+  if (brightness > 100) {
+    brightness = 100;
+  }
+  ws->brightness = ws2812_brightness_values[brightness * 21 / 100];
+  return;
+}
+
 void WS2812_fill(WS2812 *ws, int index, uint8_t red, uint8_t green,
                  uint8_t blue) {
   if (index < 0 || index >= NUM_LEDS) {
     return;  // Safety check to avoid overflow
   }
+  // scale by brightness level
+  red = (red * ws->brightness) / 255;
+  green = (green * ws->brightness) / 255;
+  blue = (blue * ws->brightness) / 255;
   uint32_t rgbw =
       (uint32_t)(blue) << 16 | (uint32_t)(green) << 8 | (uint32_t)(red);
   uint32_t result = 0;
