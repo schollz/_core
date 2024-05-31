@@ -39,6 +39,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     GPIO_TRIG_OUT=18
     GPIO_MODE_LEDA=12
     GPIO_MODE_LEDB=13
+    GPIO_WS2812=7
 
 
 
