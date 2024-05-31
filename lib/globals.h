@@ -358,9 +358,9 @@ int8_t cv_beat_current_override = -1;
 
 #define ECTOCORE_CLOCK_NUM_DIVISIONS 7
 const uint8_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
-    8, 8 * 2, 8 / 2, 8 * 4, 8 / 4, 8 * 8, 8 / 8,
+    8 / 8, 8 / 4, 8 / 2, 8, 8 * 2, 8 * 4, 8 * 8,
 };
-uint8_t ectocore_clock_selected_division = 0;
+uint8_t ectocore_clock_selected_division = 3;
 #endif
 
 #ifdef INCLUDE_RGBLED
