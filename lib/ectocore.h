@@ -477,6 +477,7 @@ void input_handling() {
   bool clock_input_absent = false;
 
   uint16_t debounce_startup = 10000;
+  uint32_t btn_mult_on_time = 0;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -991,13 +992,21 @@ void input_handling() {
           }
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
-        printf("[ectocore] btn_mult %d\n", val);
-        if (val == 1) {
-          if (ectocore_clock_selected_division <
-              ECTOCORE_CLOCK_NUM_DIVISIONS - 1) {
-            ectocore_clock_selected_division++;
+        if (val) {
+          printf("[ectocore] btn_mult %d\n", val);
+          btn_mult_on_time = to_ms_since_boot(get_absolute_time());
+        } else {
+          if (to_ms_since_boot(get_absolute_time()) - btn_mult_on_time < 200) {
+            // tap
+            printf("[ectocore] btn_mult tap\n");
+            if (ectocore_clock_selected_division > 0)
+              ectocore_clock_selected_division--;
           } else {
-            ectocore_clock_selected_division = 0;
+            // hold
+            printf("[ectocore] btn_mult hold\n");
+            if (ectocore_clock_selected_division <
+                ECTOCORE_CLOCK_NUM_DIVISIONS - 1)
+              ectocore_clock_selected_division++;
           }
         }
       }
