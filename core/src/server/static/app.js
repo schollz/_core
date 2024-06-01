@@ -310,6 +310,15 @@ const socketMessageListener = (e) => {
         if (savedState.banks) {
             app.banks = savedState.banks;
         }
+        if (savedState.resampling) {
+            app.resampling = savedState.resampling;
+        }
+        if (savedState.settingsBrightness) {
+            app.settingsBrightness = savedState.settingsBrightness;
+        }
+        if (savedState.settingsClockStop) {
+            app.settingsClockStop = savedState.settingsClockStop;
+        }
         if (savedState.oversampling) {
             app.oversampling = savedState.oversampling;
         }
@@ -465,6 +474,9 @@ app = new Vue({
         },
         oversampling: 'saveState',
         stereoMono: 'saveState',
+        resampling: 'saveState',
+        settingsBrightness: 'saveState',
+        settingsClockStop: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
@@ -669,6 +681,8 @@ app = new Vue({
                 resampling: app.resampling,
                 selectedBank: app.selectedBank,
                 selectedFile: app.selectedFile,
+                settingsBrightness: app.settingsBrightness,
+                settingsClockStop: app.settingsClockStop,
             };
             if (!hasSavedToCookie) {
                 saveCurrentPage();
@@ -917,10 +931,13 @@ app = new Vue({
             app.downloading = false;
 
             // Include other options as needed
+            // see the pack.Data struct in pack.go
             const formData = {
                 oversampling: this.oversampling,
                 stereoMono: this.stereoMono,
                 resampling: this.resampling,
+                settingsBrightness: parseInt(app.settingsBrightness),
+                settingsClockStop: app.settingsClockStop,
                 banks: [],
             };
             for (var i = 0; i < this.banks.length; i++) {

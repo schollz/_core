@@ -40,16 +40,16 @@ void check_setup_files() {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resample_linear") == 0) {
+    if (strcmp(fno.fname, "resampling=linear") == 0) {
       quadratic_resampling = false;
       printf("[sdcard_startup] linear resampling\n");
-    } else if (strcmp(fno.fname, "resample_quadratic") == 0) {
+    } else if (strcmp(fno.fname, "resampling=quadratic") == 0) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
     }
 
     // check if a file has the prefix "brightness"
-    if (strncmp(fno.fname, "brightness", 10) == 0) {
+    if (strncmp(fno.fname, "brightness=", 11) == 0) {
       global_brightness = extractNumber(fno.fname);
       if (global_brightness > 100) {
         global_brightness = 100;
