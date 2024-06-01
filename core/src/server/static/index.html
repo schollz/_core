@@ -33,6 +33,7 @@
             --highlight-color: #c3b8e6;
             --highlight-color-darker: #afa2db;
             --hover-color: #d2cde9;
+            --hover-color-light: #e6e3f4;
             --other-color: #6d51c9;
         }
     </style>
@@ -48,6 +49,7 @@
             --highlight-color: #94acda;
             --highlight-color-darker: #7799d6;
             --hover-color: #93a6c9;
+            --hover-color-light: #c3d1f0;
             --other-color: #3478ff;
         }
     </style>
@@ -237,7 +239,7 @@
 
                 [[ if .IsMain ]]
                 <div class="help-banner"
-                    style="box-shadow: 12px 12px 2px 1px #bdafedaa; background: var(--banks-background);">
+                    style="box-shadow: 12px 12px 2px 1px var(--hover-color-light); background: var(--banks-background);">
                     <h2>Welcome to the _core tool.</h2>
                     <p v-if="previousPages.length>0">
                         Previous workspaces: <span v-for="link in previousPages"><a
