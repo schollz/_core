@@ -487,7 +487,11 @@ void input_handling() {
     int16_t val;
     if (debounce_startup > 0) {
       debounce_startup--;
-      if (debounce_startup == 8) {
+      if (debounce_startup == 10) {
+        printf("clock_start_stop_sync: %d\n", clock_start_stop_sync);
+      } else if (debounce_startup == 9) {
+        printf("global_brightness: %d\n", global_brightness);
+      } else if (debounce_startup == 8) {
         printf("[ectocore] startup\n");
         // read flash data
         EctocoreFlash read_data;
@@ -765,6 +769,13 @@ void input_handling() {
 
     gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
 
+    if (!clock_start_stop_sync && clock_in_do) {
+      if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
+        clock_in_ready = false;
+        clock_in_do = false;
+        clock_in_activator = 0;
+      }
+    }
     if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
       if (clock_input_absent && clock_in_activator >= 3) {
         printf("reseting clock\n");
@@ -896,15 +907,19 @@ void input_handling() {
         printf("[ectocore] knob_break_atten %d\n", val);
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
-        if (val < 512) {
+        if (val < 512 - 24) {
           sf->stay_in_sync = false;
-          probability_of_random_jump = (512 - val) * 100 / 512;
+          probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
           ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, true);
+        } else if (val > 512 + 24) {
+          sf->stay_in_sync = true;
+          probability_of_random_jump = (val - (512 + 24)) * 100 / (512 + 24);
+          ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), true,
+                                      false, true);
         } else {
           sf->stay_in_sync = true;
-          probability_of_random_jump = (val - 512) * 100 / 512;
-          ws2812_set_wheel_right_half(ws2812, 2 * (val - 512), true, false,
-                                      true);
+          probability_of_random_jump = 0;
+          ws2812_wheel_clear(ws2812);
         }
         // if (val < 10 && !playback_stopped) {
         //   // if (!button_mute) trigger_button_mute = true;

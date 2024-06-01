@@ -101,16 +101,16 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		return
 	}
 	if data.Resampling == "linear" {
-		os.Create(path.Join(mainFolder, "resampling=linear"))
+		os.Create(path.Join(mainFolder, "resampling-linear"))
 	} else {
-		os.Create(path.Join(mainFolder, "resampling=quadratic"))
+		os.Create(path.Join(mainFolder, "resampling-quadratic"))
 	}
 	if data.SettingsClockStop {
-		os.Create(path.Join(mainFolder, "clock_stop=on"))
+		os.Create(path.Join(mainFolder, "clock_stop_sync-on"))
 	} else {
-		os.Create(path.Join(mainFolder, "clock_stop=off"))
+		os.Create(path.Join(mainFolder, "clock_stop_sync-off"))
 	}
-	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness=%d", data.SettingsBrightness)))
+	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
 
 	// copy files
 	for i, bank := range data.Banks {
