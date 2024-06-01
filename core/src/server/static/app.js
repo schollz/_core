@@ -435,6 +435,8 @@ app = new Vue({
         deviceVersion: "",
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
+        settingsBrightness: 50,
+        settingsClockStop: false,
         progressBarWidth: '0px',
         dropaudiofilemode: 'default',
         oversampling: '1x', // Default to '1x'
@@ -1121,44 +1123,6 @@ window.addEventListener('load', (event) => {
     // initialize the colors
     const url = window.location.href;
     const root = document.documentElement;
-
-    if (url.includes("ectocore")) {
-        // --background-color: #e6eeff55;
-        // --header-footer-background: #5282d9;
-        // --banks-background: #94acda;
-        // --highlight-color: #94acda;
-        // --highlight-color-darker: #7799d6;
-        // --hover-color: #93a6c9;
-        // --other-color: #3478ff;
-        app.titleName = "ectocore";
-        // change the title
-        document.title = "ectocore tool";
-        root.style.setProperty('--background-color', '#e6eeff55');
-        root.style.setProperty('--header-footer-background', '#5282d9');
-        root.style.setProperty('--banks-background', '#94acda');
-        root.style.setProperty('--highlight-color', '#94acda');
-        root.style.setProperty('--highlight-color-darker', '#7799d6');
-        root.style.setProperty('--hover-color', '#93a6c9');
-        root.style.setProperty('--other-color', '#3478ff');
-
-        // prepend all links href with /ecto/
-        var links = document.getElementsByTagName('link');
-        for (var i = 0; i < links.length; i++) {
-            var href = links[i].getAttribute('href');
-            if (href != null) {
-                if (links[i].getAttribute('href').includes('icon')) {
-                    links[i].setAttribute('href', links[i].getAttribute('href').replace('/static/', '/static/ecto/'));
-                }
-            }
-        }
-        // change <meta name="theme-color" content="#f0f4ff">
-        var metas = document.getElementsByTagName('meta');
-        for (var i = 0; i < metas.length; i++) {
-            if (metas[i].getAttribute('name') == "theme-color") {
-                metas[i].setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background'));
-            }
-        }
-    }
 
     ccolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background') + "33";
     ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "11";

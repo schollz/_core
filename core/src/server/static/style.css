@@ -1,27 +1,3 @@
-/** zeptocore **/
-
-:root {
-    --background-color: #f4f0ff;
-    --header-footer-background: #bdafeb;
-    --banks-background: #dcd6f7;
-    --highlight-color: #c3b8e6;
-    --highlight-color-darker: #afa2db;
-    --hover-color: #d2cde9;
-    --other-color: #6d51c9;
-}
-
-
-/** ectocore **/
-/* :root {
-    --background-color: #e6eeff55;
-    --header-footer-background: #5282d9;
-    --banks-background: #94acda;
-    --highlight-color: #94acda;
-    --highlight-color-darker: #7799d6;
-    --hover-color: #93a6c9;
-    --other-color: #3478ff;
-} */
-
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,500;1,600;1,700&display=swap');
 
 @font-face {
@@ -61,7 +37,7 @@ body {
     border-radius: 2em;
     border-color: var(--header-footer-background);
     border-style: solid;
-    box-shadow: rgba(189, 175, 237, 0.667) 12px 12px 2px 1px;
+    box-shadow: var(--highlight-color) 12px 12px 2px 1px;
     background: var(--background-color);
     padding: 1em;
 }
