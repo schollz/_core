@@ -265,24 +265,20 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsBuy          bool
 				IsMain         bool
 				IsZeptocore    bool
+				IsEctocore     bool
 				IsUpload       bool
 				VersionCurrent string
 				GenURL1        string
 				GenURL2        string
-				EctocorePage   bool
-				ZeptocorePage  bool
 			}{
-				IsFaq:          r.URL.Path[1:] == "faq",
-				IsBuy:          r.URL.Path[1:] == "buy",
 				IsMain:         r.URL.Path == "/",
-				IsZeptocore:    r.URL.Path == "/zeptocore",
 				VersionCurrent: "v2.7.7",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
-				EctocorePage:   isEctocore,
-				ZeptocorePage:  !isEctocore,
+				IsEctocore:     isEctocore,
+				IsZeptocore:    !isEctocore,
 			}
-			data.IsUpload = !(data.IsBuy || data.IsFaq || data.IsMain || data.IsZeptocore)
+			data.IsUpload = !(data.IsMain)
 
 			err = tmpl.Execute(w, data)
 			if err != nil {
