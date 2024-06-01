@@ -210,12 +210,12 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 
 		// add caching
 		w.Header().Set("Cache-Control", "max-age=86400")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("Cache-Control", "no-store")
-		w.Header().Set("Cache-Control", "must-revalidate")
-		w.Header().Set("Cache-Control", "proxy-revalidate")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
+		w.Header().Set("Expires", time.Now().Add(86400*time.Second).Format(time.RFC1123))
+		w.Header().Set("Last-Modified", time.Now().Format(time.RFC1123))
+		w.Header().Set("Pragma", "cache")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
 
 		if strings.HasPrefix(r.URL.Path, "/tool") {
 			r.URL.Path = "/" + strings.TrimPrefix(r.URL.Path, "/tool")
