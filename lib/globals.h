@@ -167,6 +167,15 @@ int32_t clock_in_beat_total = 0;
 uint32_t clock_in_diff_2x = 0;
 uint32_t clock_in_last_time = 0;
 
+typedef struct SampleSelection {
+  uint8_t bank : 4;    // 0-15
+  uint8_t sample : 4;  // 0-15
+} SampleSelection;
+
+bool global_knobx_sample_selector = false;
+SampleSelection *sample_selection;
+uint8_t sample_selection_num = 0;
+
 uint8_t do_update_beat_repeat = 0;
 uint8_t beat_start_retrig = 0;
 bool do_retrig_at_end_of_phrase = false;
