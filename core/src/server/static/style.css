@@ -55,6 +55,16 @@ body {
     font-size: 0.7rem;
 }
 
+#dialog-settings {
+    font-family: 'MonaspaceKrypton', monospace;
+    background-color: var(--background-color);
+    border-radius: 2em;
+    border-color: var(--header-footer-background);
+    border-style: solid;
+    box-shadow: rgba(189, 175, 237, 0.667) 12px 12px 2px 1px;
+    background: var(--background-color);
+    padding: 1em;
+}
 
 #app {
     display: flex;
