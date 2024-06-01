@@ -33,7 +33,6 @@ body {
 
 #dialog-settings {
     font-family: 'MonaspaceKrypton', monospace;
-    background-color: var(--background-color);
     border-radius: 2em;
     border-color: var(--header-footer-background);
     border-style: solid;
