@@ -16,12 +16,13 @@ import (
 var Storage = "zips"
 
 type Data struct {
-	Oversampling       string `json:"oversampling"`
-	StereoMono         string `json:"stereoMono"`
-	Resampling         string `json:"resampling"`
-	SettingsBrightness int    `json:"settingsBrightness"`
-	SettingsClockStop  bool   `json:"settingsClockStop"`
-	Banks              []struct {
+	Oversampling        string `json:"oversampling"`
+	StereoMono          string `json:"stereoMono"`
+	Resampling          string `json:"resampling"`
+	SettingsBrightness  int    `json:"settingsBrightness"`
+	SettingsClockStop   bool   `json:"settingsClockStop"`
+	SettingsKnobXSample bool   `json:"settingsKnobXSample"`
+	Banks               []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
 }
@@ -109,6 +110,11 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-on"))
 	} else {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-off"))
+	}
+	if data.SettingsKnobXSample {
+		os.Create(path.Join(mainFolder, "knobx-select_sample"))
+	} else {
+		os.Create(path.Join(mainFolder, "knobx-default"))
 	}
 	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
 
