@@ -476,7 +476,7 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
-  uint16_t debounce_startup = 10000;
+  uint16_t debounce_startup = 2000;
   uint32_t btn_mult_on_time = 0;
 
   while (1) {
@@ -491,7 +491,7 @@ void input_handling() {
         printf("clock_start_stop_sync: %d\n", clock_start_stop_sync);
       } else if (debounce_startup == 9) {
         printf("global_brightness: %d\n", global_brightness);
-      } else if (debounce_startup == 8) {
+      } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
         // read flash data
         EctocoreFlash read_data;
@@ -508,8 +508,8 @@ void input_handling() {
             sf->center_calibration[i] = read_data.center_calibration[i];
           }
         }
-      } else if (debounce_startup < 8) {
-        uint8_t i = debounce_startup;
+      } else if (debounce_startup >= 100 && debounce_startup < 108) {
+        uint8_t i = debounce_startup - 100;
         if (gpio_get(GPIO_BTN_BANK) == 0) {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
@@ -796,8 +796,12 @@ void input_handling() {
     }
 
     for (uint8_t i = 0; i < KNOB_NUM; i++) {
-      val = KnobChange_update(knob_change[i],
-                              MCP3208_read(mcp3208, knob_gpio[i], false));
+      uint8_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
+      val = KnobChange_update(knob_change[i], raw_val);
+      if (debounce_startup == 15 + i) {
+        val = raw_val;
+        printf("[ectocore] knob %d=%d\n", i, val);
+      }
       if (val < 0) {
         continue;
       }
@@ -920,6 +924,7 @@ void input_handling() {
           sf->stay_in_sync = true;
           probability_of_random_jump = 0;
           ws2812_wheel_clear(ws2812);
+          WS2812_show(ws2812);
         }
         // if (val < 10 && !playback_stopped) {
         //   // if (!button_mute) trigger_button_mute = true;
