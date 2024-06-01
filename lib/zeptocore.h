@@ -420,6 +420,21 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
                             adc * 255 / 4096, 100);
         } else {
+          if (global_knobx_sample_selector) {
+            uint8_t sample_selection_index = adc * sample_selection_num / 4096;
+            uint8_t f_sel_bank_next =
+                sample_selection[sample_selection_index].bank;
+            uint8_t f_sel_sample_next =
+                sample_selection[sample_selection_index].sample;
+            if (f_sel_bank_next != sel_bank_cur ||
+                f_sel_sample_next != sel_sample_cur) {
+              sel_bank_next = f_sel_bank_next;
+              sel_sample_next = f_sel_sample_next;
+              printf("[zeptocore] %d bank %d, sample %d\n",
+                     sample_selection_index, sel_bank_next, sel_sample_next);
+              fil_current_change = true;
+            }
+          }
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 0, adc * 127 / 4096);
