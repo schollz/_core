@@ -457,7 +457,7 @@ void input_handling() {
 
   WS2812 *ws2812;
   ws2812 = WS2812_new(GPIO_WS2812, pio0, 2);
-  WS2812_set_brightness(ws2812, 20);
+  WS2812_set_brightness(ws2812, global_brightness);
 
   // random colors
   for (uint8_t i = 0; i < 18; i++) {

@@ -1,3 +1,27 @@
+int extractNumber(const char *str) {
+  // Pointer to traverse the string
+  const char *p = str;
+
+  // Move the pointer to the end of the string
+  while (*p != '\0') {
+    p++;
+  }
+
+  // Move backwards until we find the first digit
+  while (p >= str && !isdigit(*p)) {
+    p--;
+  }
+
+  // Move backwards to get the entire number
+  const char *numStart = p;
+  while (numStart >= str && isdigit(*numStart)) {
+    numStart--;
+  }
+  numStart++;  // Move one step forward to the first digit
+
+  // Convert the substring to an integer
+  return atoi(numStart);
+}
 
 void check_setup_files() {
   DIR dj;      /* Directory object */
@@ -22,6 +46,14 @@ void check_setup_files() {
     } else if (strcmp(fno.fname, "resample_quadratic") == 0) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
+    }
+
+    // check if a file has the prefix "brightness"
+    if (strncmp(fno.fname, "brightness", 10) == 0) {
+      global_brightness = extractNumber(fno.fname);
+      if (global_brightness > 100) {
+        global_brightness = 100;
+      }
     }
 
     // create savefile name
