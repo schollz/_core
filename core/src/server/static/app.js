@@ -1187,6 +1187,9 @@ window.addEventListener('load', (event) => {
         tippy('#firmwareDownloadLink', {
             content: 'Click to download the latest firmware from releases.',
         });
+        tippy('#show-dialog-settings', {
+            content: 'Edit the global settings.',
+        });
     }, 1000);
 
 });
