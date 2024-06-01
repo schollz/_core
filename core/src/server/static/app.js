@@ -319,6 +319,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsClockStop) {
             app.settingsClockStop = savedState.settingsClockStop;
         }
+        if (savedState.settingsKnobXSample) {
+            app.settingsKnobXSample = savedState.settingsKnobXSample;
+        }
         if (savedState.oversampling) {
             app.oversampling = savedState.oversampling;
         }
@@ -446,6 +449,7 @@ app = new Vue({
         lastSelectedFile: null,
         settingsBrightness: 50,
         settingsClockStop: false,
+        settingsKnobXSample: false,
         progressBarWidth: '0px',
         dropaudiofilemode: 'default',
         oversampling: '1x', // Default to '1x'
@@ -477,6 +481,7 @@ app = new Vue({
         resampling: 'saveState',
         settingsBrightness: 'saveState',
         settingsClockStop: 'saveState',
+        settingsKnobXSample: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
@@ -683,6 +688,7 @@ app = new Vue({
                 selectedFile: app.selectedFile,
                 settingsBrightness: app.settingsBrightness,
                 settingsClockStop: app.settingsClockStop,
+                settingsKnobXSample: app.settingsKnobXSample,
             };
             if (!hasSavedToCookie) {
                 saveCurrentPage();
@@ -938,6 +944,7 @@ app = new Vue({
                 resampling: this.resampling,
                 settingsBrightness: parseInt(app.settingsBrightness),
                 settingsClockStop: app.settingsClockStop,
+                settingsKnobXSample: app.settingsKnobXSample,
                 banks: [],
             };
             for (var i = 0; i < this.banks.length; i++) {
