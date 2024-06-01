@@ -267,7 +267,7 @@ void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
       sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
       sf->fx_param[FX_COMB][2] = (val - 100) * 5 / (1024 - 100);
       sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
-      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
+      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 3 / (1024 - 100);
       // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
       sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
       sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
