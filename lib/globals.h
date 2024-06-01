@@ -154,6 +154,7 @@ uint8_t dub_step_beat = 0;
 uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 bool sel_variation_fadeout = false;
+uint8_t global_brightness = 0;  // 0 - 100
 
 bool quadratic_resampling = false;
 bool clock_out_do = false;
