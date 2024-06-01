@@ -1208,4 +1208,16 @@ window.addEventListener('load', (event) => {
         });
     }, 1000);
 
+    // add listener for openSettings
+    document.getElementById('openSettings').addEventListener('click', () => {
+        $('#modal-container').removeAttr('class').addClass("sketch");
+        $('body').addClass('modal-active');
+    });
+
+    $('#modal-container').click(function () {
+        $(this).addClass('out');
+        $('body').removeClass('modal-active');
+    });
+
+
 });
