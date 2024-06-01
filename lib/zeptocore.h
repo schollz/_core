@@ -131,6 +131,9 @@ void input_handling() {
 
   uint8_t debounce_beat_repeat = 0;
   uint16_t debounce_sel_variation_next = 0;
+  uint8_t sample_selection_index_last = 0;
+  uint8_t debounce_sample_selection = 0;
+  uint8_t sample_selection_index = 0;
 
   // debug test
   printStringWithDelay("zv2.8.0");
@@ -329,7 +332,8 @@ void input_handling() {
 
 #ifdef INCLUDE_KNOBS
     // knob X
-    adc = FilterExp_update(adcs[0], adc_read());
+    uint16_t adc_raw = adc_read();
+    adc = FilterExp_update(adcs[0], adc_raw);
     if (abs(adc_last[0] - adc) > adc_threshold) {
       adc_debounce[0] = adc_debounce_max;
     }
@@ -421,19 +425,7 @@ void input_handling() {
                             adc * 255 / 4096, 100);
         } else {
           if (global_knobx_sample_selector) {
-            uint8_t sample_selection_index = adc * sample_selection_num / 4096;
-            uint8_t f_sel_bank_next =
-                sample_selection[sample_selection_index].bank;
-            uint8_t f_sel_sample_next =
-                sample_selection[sample_selection_index].sample;
-            if (f_sel_bank_next != sel_bank_cur ||
-                f_sel_sample_next != sel_sample_cur) {
-              sel_bank_next = f_sel_bank_next;
-              sel_sample_next = f_sel_sample_next;
-              printf("[zeptocore] %d bank %d, sample %d\n",
-                     sample_selection_index, sel_bank_next, sel_sample_next);
-              fil_current_change = true;
-            }
+            sample_selection_index = adc_raw * sample_selection_num / 4096;
           }
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -443,6 +435,27 @@ void input_handling() {
       }
     }
 #endif
+
+    if (global_knobx_sample_selector) {
+      if (sample_selection_index_last != sample_selection_index) {
+        sample_selection_index_last = sample_selection_index;
+        debounce_sample_selection = 4;
+      } else if (debounce_sample_selection > 0) {
+        debounce_sample_selection--;
+      } else {
+        uint8_t f_sel_bank_next = sample_selection[sample_selection_index].bank;
+        uint8_t f_sel_sample_next =
+            sample_selection[sample_selection_index].sample;
+        if (f_sel_bank_next != sel_bank_cur ||
+            f_sel_sample_next != sel_sample_cur) {
+          sel_bank_next = f_sel_bank_next;
+          sel_sample_next = f_sel_sample_next;
+          printf("[zeptocore] %d bank %d, sample %d\n", sample_selection_index,
+                 sel_bank_next, sel_sample_next);
+          fil_current_change = true;
+        }
+      }
+    }
 
 #ifdef BTN_COL_START
     // button handler
