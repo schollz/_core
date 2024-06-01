@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path"
 	"sort"
 	"strings"
 	"text/template"
@@ -144,6 +145,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	folder, _ := path.Split(os.Args[1])
+	os.MkdirAll(folder, 0777)
 	file, err := os.Create(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
