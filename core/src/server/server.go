@@ -191,7 +191,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
-	} else if strings.HasPrefix(r.URL.Path, "/docs") || strings.Contains(r.URL.Path, "buy") || strings.HasPrefix(r.URL.Path, "/guide") || r.URL.Path == "/" {
+	} else if !isEctocore &&
+		(strings.HasPrefix(r.URL.Path, "/docs") ||
+			strings.Contains(r.URL.Path, "buy") ||
+			strings.HasPrefix(r.URL.Path, "/guide") ||
+			r.URL.Path == "/") {
 		if strings.Contains(r.URL.Path, "buy") || r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" || r.URL.Path == "/" {
 			r.URL.Path = "/docs/index.html"
 		}
