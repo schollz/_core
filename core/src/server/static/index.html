@@ -63,6 +63,15 @@
             </form>
         </dialog>
 
+
+        <dialog id="dialog-settings">
+            <p style="font-weight: 900;">Settings</p>
+            <p><input type="checkbox"> Knob X scroll samples</p>
+            <p style="text-align: center;">
+                <button id="js-close">Update</button>
+            </p>
+        </dialog>
+
         <header>
             <a href=" /"><img src="/static/apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
@@ -848,7 +857,14 @@
             document.getElementById("show-dialog").addEventListener("click", () => {
                 document.getElementById("dialog").showModal();
             });
-
+            document.getElementById("show-dialog-settings").addEventListener("click", () => {
+                document.getElementById("dialog-settings").showModal();
+            });
+            document.getElementById("dialog-settings").querySelector("#js-close").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("dialog-settings").close();
+            });
+            document.getElementById("dialog-settings").showModal();
             document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
                 document.getElementById("dialog").close();
