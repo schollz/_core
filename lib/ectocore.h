@@ -1014,6 +1014,10 @@ void input_handling() {
               }
             }
           }
+        } else {
+          ws2812_wheel_clear(ws2812);
+          WS2812_fill(ws2812, sel_bank_cur, 255, 0, 0);
+          WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
         if (val) {
