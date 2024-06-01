@@ -40,20 +40,34 @@ void check_setup_files() {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resampling=linear") == 0) {
+    if (strcmp(fno.fname, "resampling-linear") == 0) {
       quadratic_resampling = false;
       printf("[sdcard_startup] linear resampling\n");
-    } else if (strcmp(fno.fname, "resampling=quadratic") == 0) {
+    } else if (strcmp(fno.fname, "resampling-quadratic") == 0) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
     }
 
+    // check for the clock_start_stop_sync
+    if (strcmp(fno.fname, "clock_stop_sync-on") == 0) {
+      clock_start_stop_sync = true;
+    } else {
+      clock_start_stop_sync = false;
+    }
+
     // check if a file has the prefix "brightness"
-    if (strncmp(fno.fname, "brightness=", 11) == 0) {
+    if (strncmp(fno.fname, "brightness-", 11) == 0) {
       global_brightness = extractNumber(fno.fname);
       if (global_brightness > 100) {
         global_brightness = 100;
       }
+    }
+
+    // check for the clock_start_stop_sync
+    if (strcmp(fno.fname, "knobx-select_sample") == 0) {
+      global_knobx_sample_selector = true;
+    } else {
+      global_knobx_sample_selector = false;
     }
 
     // create savefile name
@@ -401,6 +415,22 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  if (global_knobx_sample_selector) {
+    sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
+    for (uint8_t bi = 0; bi < 16; bi++) {
+      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
+        // add to sample_selection list if not one-shot
+        if (banks[bi]->sample[si].snd[0]->play_mode == PLAY_NORMAL &&
+            sample_selection_num < 255) {
+          // append to sample_selection
+          sample_selection[sample_selection_num] =
+              (SampleSelection){.bank = bi, .sample = si};
+          sample_selection_num++;
+        }
+      }
+    }
+  }
 
   // load save file
   // load new save file

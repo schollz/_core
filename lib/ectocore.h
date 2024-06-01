@@ -267,7 +267,7 @@ void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
       sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
       sf->fx_param[FX_COMB][2] = (val - 100) * 5 / (1024 - 100);
       sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
-      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 10 / (1024 - 100);
+      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 3 / (1024 - 100);
       // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
       sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
       sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
@@ -476,8 +476,12 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
-  uint16_t debounce_startup = 10000;
+  uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
+
+  for (uint8_t i = 0; i < 64; i++) {
+    random_sequence_arr[i] = random_integer_in_range(0, 64);
+  }
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -487,7 +491,11 @@ void input_handling() {
     int16_t val;
     if (debounce_startup > 0) {
       debounce_startup--;
-      if (debounce_startup == 8) {
+      if (debounce_startup == 10) {
+        printf("clock_start_stop_sync: %d\n", clock_start_stop_sync);
+      } else if (debounce_startup == 9) {
+        printf("global_brightness: %d\n", global_brightness);
+      } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
         // read flash data
         EctocoreFlash read_data;
@@ -504,8 +512,8 @@ void input_handling() {
             sf->center_calibration[i] = read_data.center_calibration[i];
           }
         }
-      } else if (debounce_startup < 8) {
-        uint8_t i = debounce_startup;
+      } else if (debounce_startup >= 100 && debounce_startup < 108) {
+        uint8_t i = debounce_startup - 100;
         if (gpio_get(GPIO_BTN_BANK) == 0) {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
@@ -765,6 +773,13 @@ void input_handling() {
 
     gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
 
+    if (!clock_start_stop_sync && clock_in_do) {
+      if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
+        clock_in_ready = false;
+        clock_in_do = false;
+        clock_in_activator = 0;
+      }
+    }
     if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
       if (clock_input_absent && clock_in_activator >= 3) {
         printf("reseting clock\n");
@@ -785,8 +800,12 @@ void input_handling() {
     }
 
     for (uint8_t i = 0; i < KNOB_NUM; i++) {
-      val = KnobChange_update(knob_change[i],
-                              MCP3208_read(mcp3208, knob_gpio[i], false));
+      int16_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
+      val = KnobChange_update(knob_change[i], raw_val);
+      if (debounce_startup == 15 + i) {
+        val = raw_val;
+        printf("[ectocore] knob %d=%d\n", i, val);
+      }
       if (val < 0) {
         continue;
       }
@@ -824,7 +843,7 @@ void input_handling() {
           }
         } else {
           // sample selection
-          printf("[ectocore] switch sample %d\n", val);
+          printf("[ectocore] sample %d\n", val);
           val = (val * banks[sel_bank_next]->num_samples) / 1024;
           ws2812_wheel_clear(ws2812);
           WS2812_fill(ws2812, val, 0, 255, 255);
@@ -896,15 +915,20 @@ void input_handling() {
         printf("[ectocore] knob_break_atten %d\n", val);
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
-        if (val < 512) {
+        if (val < 512 - 24) {
           sf->stay_in_sync = false;
-          probability_of_random_jump = (512 - val) * 100 / 512;
+          probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
           ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, true);
+        } else if (val > 512 + 24) {
+          sf->stay_in_sync = true;
+          probability_of_random_jump = (val - (512 + 24)) * 100 / (512 + 24);
+          ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), true,
+                                      false, true);
         } else {
           sf->stay_in_sync = true;
-          probability_of_random_jump = (val - 512) * 100 / 512;
-          ws2812_set_wheel_right_half(ws2812, 2 * (val - 512), true, false,
-                                      true);
+          probability_of_random_jump = 0;
+          ws2812_wheel_clear(ws2812);
+          WS2812_show(ws2812);
         }
         // if (val < 10 && !playback_stopped) {
         //   // if (!button_mute) trigger_button_mute = true;
@@ -990,6 +1014,10 @@ void input_handling() {
               }
             }
           }
+        } else {
+          ws2812_wheel_clear(ws2812);
+          WS2812_fill(ws2812, sel_bank_cur, 255, 0, 0);
+          WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
         if (val) {
