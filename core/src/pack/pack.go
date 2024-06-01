@@ -16,10 +16,12 @@ import (
 var Storage = "zips"
 
 type Data struct {
-	Oversampling string `json:"oversampling"`
-	StereoMono   string `json:"stereoMono"`
-	Resampling   string `json:"resampling"`
-	Banks        []struct {
+	Oversampling       string `json:"oversampling"`
+	StereoMono         string `json:"stereoMono"`
+	Resampling         string `json:"resampling"`
+	SettingsBrightness int    `json:"settingsBrightness"`
+	SettingsClockStop  bool   `json:"settingsClockStop"`
+	Banks              []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
 }
@@ -37,6 +39,11 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		return
 	}
 	log.Tracef("data: %+v", data)
+	log.Debugf("oversampling: %s", data.Oversampling)
+	log.Debugf("stereoMono: %s", data.StereoMono)
+	log.Debugf("resampling: %s", data.Resampling)
+	log.Debugf("settingsBrightness: %d", data.SettingsBrightness)
+	log.Debugf("settingsClockStop: %v", data.SettingsClockStop)
 
 	oversampling := 1
 	if data.Oversampling == "2x" {
@@ -94,10 +101,16 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		return
 	}
 	if data.Resampling == "linear" {
-		os.Create(path.Join(mainFolder, "resample_linear"))
+		os.Create(path.Join(mainFolder, "resampling=linear"))
 	} else {
-		os.Create(path.Join(mainFolder, "resample_quadratic"))
+		os.Create(path.Join(mainFolder, "resampling=quadratic"))
 	}
+	if data.SettingsClockStop {
+		os.Create(path.Join(mainFolder, "clock_stop=on"))
+	} else {
+		os.Create(path.Join(mainFolder, "clock_stop=off"))
+	}
+	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness=%d", data.SettingsBrightness)))
 
 	// copy files
 	for i, bank := range data.Banks {
