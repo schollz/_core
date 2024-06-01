@@ -476,8 +476,12 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = false;
 
-  uint16_t debounce_startup = 2000;
+  uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
+
+  for (uint8_t i = 0; i < 64; i++) {
+    random_sequence_arr[i] = random_integer_in_range(0, 64);
+  }
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -796,7 +800,7 @@ void input_handling() {
     }
 
     for (uint8_t i = 0; i < KNOB_NUM; i++) {
-      uint8_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
+      int16_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
       val = KnobChange_update(knob_change[i], raw_val);
       if (debounce_startup == 15 + i) {
         val = raw_val;
@@ -839,7 +843,7 @@ void input_handling() {
           }
         } else {
           // sample selection
-          printf("[ectocore] switch sample %d\n", val);
+          printf("[ectocore] sample %d\n", val);
           val = (val * banks[sel_bank_next]->num_samples) / 1024;
           ws2812_wheel_clear(ws2812);
           WS2812_fill(ws2812, val, 0, 255, 255);
