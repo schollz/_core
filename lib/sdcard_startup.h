@@ -63,6 +63,13 @@ void check_setup_files() {
       }
     }
 
+    // check for the clock_start_stop_sync
+    if (strcmp(fno.fname, "knobx-select_sample") == 0) {
+      global_knobx_sample_selector = true;
+    } else {
+      global_knobx_sample_selector = false;
+    }
+
     // create savefile name
     for (uint8_t i = 0; i < 16; i++) {
       char savefile_name[100];
@@ -408,6 +415,22 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  if (global_knobx_sample_selector) {
+    sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
+    for (uint8_t bi = 0; bi < 16; bi++) {
+      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
+        // add to sample_selection list if not one-shot
+        if (banks[bi]->sample[si].snd[0]->play_mode == PLAY_NORMAL &&
+            sample_selection_num < 255) {
+          // append to sample_selection
+          sample_selection[sample_selection_num] =
+              (SampleSelection){.bank = bi, .sample = si};
+          sample_selection_num++;
+        }
+      }
+    }
+  }
 
   // load save file
   // load new save file

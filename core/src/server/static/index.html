@@ -99,7 +99,11 @@
         <dialog id="dialog-settings">
             <h2>Settings</h2>
             [[ if .IsZeptocore ]]
-            <p><input type="checkbox"> Knob X scroll samples</p>
+            <p>
+                <label for="settingsKnobXSample" style="padding-right:1em;">Knob X switches samples</label>
+                <input id="settingsKnobXSample" type="checkbox" v-model="settingsKnobXSample">
+                <span v-if="settingsKnobXSample">on</span><span v-else>off</span>
+            </p>
             [[ else ]]
             <p>
                 <label for="settingsClockStop" style="padding-right:1em;">Clock start/stop sync</label><input
