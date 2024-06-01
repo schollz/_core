@@ -16,12 +16,14 @@ var flagLogLevel string
 var flagDontOpen bool
 var flagUseFilesOnDisk bool
 var flagDontConnect bool
+var flagIsEctocore bool
 
 func init() {
 	flag.StringVar(&flagLogLevel, "log", "debug", "log level (trace, debug, info)")
 	flag.BoolVar(&flagUseFilesOnDisk, "usefiles", false, "use files on disk")
 	flag.BoolVar(&flagDontOpen, "dontopen", false, "don't open browser")
 	flag.BoolVar(&flagDontConnect, "dontconnect", false, "don't connect to core")
+	flag.BoolVar(&flagIsEctocore, "ectocore", false, "startup in ectocore mode")
 }
 
 func main() {
@@ -48,7 +50,7 @@ func main() {
 		}
 	}
 
-	err = server.Serve(flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)
+	err = server.Serve(flagIsEctocore, flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)

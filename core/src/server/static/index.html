@@ -5,23 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>_core load</title>
-    <link rel="apple-touch-icon" sizes="57x57" href="/static/apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/static/apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/static/apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/static/apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/static/apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/static/apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/static/apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/static/apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/static/android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"
+        href="/static/[[ if .EctocorePage]]ecto/[[ end]]android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/[[ if .EctocorePage]]ecto/[[ end]]favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/[[ if .EctocorePage]]ecto/[[ end]]favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/[[ if .EctocorePage]]ecto/[[ end]]favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/static/[[ if .EctocorePage]]ecto/[[ end]]ms-icon-144x144.png">
     <link rel="manifest" href="/static/manifest.json">
+    [[ if .ZeptocorePage ]]
     <meta name="msapplication-TileColor" content="#f0f4ff">
-    <meta name="msapplication-TileImage" content="/static/ms-icon-144x144.png">
     <meta name="theme-color" content="#f0f4ff">
+    <style>
+        /** zeptocore **/
+        :root {
+            --background-color: #f4f0ff;
+            --header-footer-background: #bdafeb;
+            --banks-background: #dcd6f7;
+            --highlight-color: #c3b8e6;
+            --highlight-color-darker: #afa2db;
+            --hover-color: #d2cde9;
+            --other-color: #6d51c9;
+        }
+    </style>
+    [[ else ]]
+    <meta name="msapplication-TileColor" content="#94acda">
+    <meta name="theme-color" content="#94acda">
+    <style>
+        /** ectocore **/
+        :root {
+            --background-color: #e6eeff55;
+            --header-footer-background: #5282d9;
+            --banks-background: #94acda;
+            --highlight-color: #94acda;
+            --highlight-color-darker: #7799d6;
+            --hover-color: #93a6c9;
+            --other-color: #3478ff;
+        }
+    </style>
+    [[ end ]]
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/all.min.css">
     <link rel="stylesheet" href="/static/jquery-ui.css">
@@ -29,9 +64,11 @@
 </head>
 
 <body>
+    [[ if .ZeptocorePage ]]
     <div class="ear leftear"><a href="/docs" style="left:30px; position:relative;"><i class="fas fa-book fa-rotate-by"
                 style="--fa-rotate-angle: -45deg; " aria-hidden="true"></i></a></div>
     <div class="ear rightear"><a href="/#buy">buy</a></div>
+    [[ end ]]
 
 
     <div id="fadeCircle"></div>
@@ -65,15 +102,30 @@
 
 
         <dialog id="dialog-settings">
-            <p style="font-weight: 900;">Settings</p>
+            <h2>Settings</h2>
+            [[ if .IsZeptocore ]]
             <p><input type="checkbox"> Knob X scroll samples</p>
+            [[ else ]]
+            <p>
+                <label for="settingsClockStop" style="padding-right:1em;">Clock start/stop sync</label><input
+                    id="settingsClockStop" type="checkbox" v-model="settingsClockStop">
+                <span v-if="settingsClockStop">on</span><span v-else>off</span>
+            </p>
+            <!-- slider for brightness-->
+            <p style="display: flex; align-items: center;">
+                <label for="brightness" style="padding-right:1em;">Brightness</label>
+                <input type="range" id="brightness" name="brightness" min="0" max="100" value="50"
+                    v-model="settingsBrightness">
+                {{ settingsBrightness }}%
+            </p>
+            [[ end ]]
             <p style="text-align: center;">
                 <button id="js-close">Update</button>
             </p>
         </dialog>
 
         <header>
-            <a href=" /"><img src="/static/apple-icon.png"
+            <a href=" /"><img src="/static/[[ if .EctocorePage]]ecto/[[ end]]apple-icon.png"
                     style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
             <h1 style="margin:0; padding:0;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">{{titleName}}{{title}}</a>
