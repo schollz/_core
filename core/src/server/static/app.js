@@ -1195,8 +1195,17 @@ window.addEventListener('load', (event) => {
             content: 'Click to download the latest firmware from releases.',
         });
         tippy('#show-dialog-settings', {
-            content: 'Edit the global settings.',
+            content: 'Global settings are files that go on the SD card.',
         });
+        // find all elements ".banks-selector > ul > li"
+        var desktopBankLabels = document.getElementsByClassName('banks-selector')[0].getElementsByTagName('li');
+        for (var i = 0; i < desktopBankLabels.length; i++) {
+            tippy(desktopBankLabels[i], {
+                content: 'Select Bank ' + (i + 1),
+                // show on the right
+                placement: 'right',
+            });
+        }
     }, 1000);
 
 });
