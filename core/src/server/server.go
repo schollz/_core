@@ -54,8 +54,10 @@ var chanString chan string
 var latestTag string
 var deviceVersion string
 var deviceType string
+var isEctocore bool
 
-func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
+func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
+	isEctocore = useEctocore
 	useFilesOnDisk = useFiles
 	chanPrepareUpload = chanPrepareUploadArg
 	chanDeviceType = chanDeviceTypeArg
@@ -139,6 +141,9 @@ func Serve(useFiles bool, flagDontConnect bool, chanStringArg chan string, chanP
 	}()
 
 	connections = make(map[string]*websocket.Conn)
+	if isEctocore {
+		Port = 8100
+	}
 	log.Debugf("listening on :%d", Port)
 	http.HandleFunc("/", handler)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", Port), nil)
@@ -260,6 +265,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				VersionCurrent string
 				GenURL1        string
 				GenURL2        string
+				EctocorePage   bool
+				ZeptocorePage  bool
 			}{
 				IsFaq:          r.URL.Path[1:] == "faq",
 				IsBuy:          r.URL.Path[1:] == "buy",
@@ -268,6 +275,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				VersionCurrent: "v2.7.7",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
+				EctocorePage:   isEctocore,
+				ZeptocorePage:  !isEctocore,
 			}
 			data.IsUpload = !(data.IsBuy || data.IsFaq || data.IsMain || data.IsZeptocore)
 
