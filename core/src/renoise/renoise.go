@@ -27,6 +27,7 @@ func GetSliceMarkers(fname string) (filename string, start []float64, end []floa
 		return
 	}
 	markers := []int{}
+	log.Tracef("data: %+v", data)
 	for _, d := range data.Samples.Sample[0].SliceMarkers.SliceMarker {
 		markers = append(markers, d.SamplePosition)
 	}
@@ -52,12 +53,16 @@ func GetSliceMarkers(fname string) (filename string, start []float64, end []floa
 		return
 	}
 	log.Tracef("filename: %s, numSamples: %d", filename, numSamples)
-	for i, _ := range markers {
+	for i := range markers {
 		if i == 0 {
 			continue
 		}
 		start = append(start, float64(markers[i-1])/float64(numSamples))
 		end = append(end, float64(markers[i])/float64(numSamples))
+		if i == len(markers)-1 {
+			start = append(start, float64(markers[i])/float64(numSamples))
+			end = append(end, 1)
+		}
 	}
 
 	if !DebugMode {
@@ -94,10 +99,50 @@ func parseXML(xmlFile string) (data RenoiseInstrument, err error) {
 	// Read the XML file into a byte slice.
 	xmlBytes, err := os.ReadFile(xmlFile)
 	if err != nil {
+		log.Error(err)
 		return
 	}
-	err = xml.Unmarshal(xmlBytes, &data)
+	// find the first instance of <Samples> and remove everything before it
+	start := 0
+	for i, b := range xmlBytes {
+		if b == '<' && string(xmlBytes[i:i+8]) == "<Samples" {
+			start = i
+			break
+		}
+	}
+	if start == 0 {
+		err = fmt.Errorf("could not find <Samples>")
+		log.Error(err)
+		return
+	}
+	xmlBytes = xmlBytes[start:]
+	// find the first instance of </Samples> and remove everything after it
+	end := 0
+	for i, b := range xmlBytes {
+		if b == '<' && string(xmlBytes[i:i+10]) == "</Samples>" {
+			end = i + 10
+			break
+		}
+	}
+	if end == 0 {
+		err = fmt.Errorf("could not find </Samples>")
+		log.Error(err)
+		return
+	}
 
+	xmlBytes = xmlBytes[:end]
+	// prepend xml header
+	xmlBytes = append([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?><RenoiseInstrument>\n"), xmlBytes...)
+	// append xml footer
+	xmlBytes = append(xmlBytes, []byte("\n</RenoiseInstrument>")...)
+
+	os.WriteFile("test.xml", xmlBytes, 0644)
+	err = xml.Unmarshal(xmlBytes, &data)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Tracef("data: %+v", data)
 	return
 }
 
