@@ -133,7 +133,9 @@
             <div class="section">
                 <h3><a href="">Reference</a></h3>
                 <p class="list"> <a href="#combo-list" class="clade">Combos</a> <a href="#effect-list"
-                        class="clade">Effects</a> <a href="#version-history" class="clade">Version history</a>
+                        class="clade">Effects</a>
+                    <a href="#contact" class="clade">Contact</a>
+                    <a href="#version-history" class="clade">Version history</a>
                 </p>
             </div>
             <div>
@@ -347,7 +349,11 @@
             </tbody>
         </table>
     </section>
-
+    <section class="help faq">
+        {{ range where .Site.RegularPages "Section" "contact" }}
+        {{ .Content }}
+        {{ end }}
+    </section>
     <section class="help faq">
         {{ range where .Site.RegularPages "Section" "versions" }}
 
