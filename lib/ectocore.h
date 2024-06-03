@@ -478,6 +478,7 @@ void input_handling() {
 
   uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
+  uint32_t btn_mult_hold_time = 0;
 
   for (uint8_t i = 0; i < 64; i++) {
     random_sequence_arr[i] = random_integer_in_range(0, 64);
@@ -1023,18 +1024,13 @@ void input_handling() {
         if (val) {
           printf("[ectocore] btn_mult %d\n", val);
           btn_mult_on_time = to_ms_since_boot(get_absolute_time());
+          btn_mult_hold_time = btn_mult_on_time;
         } else {
           if (to_ms_since_boot(get_absolute_time()) - btn_mult_on_time < 200) {
             // tap
             printf("[ectocore] btn_mult tap\n");
             if (ectocore_clock_selected_division > 0)
               ectocore_clock_selected_division--;
-          } else {
-            // hold
-            printf("[ectocore] btn_mult hold\n");
-            if (ectocore_clock_selected_division <
-                ECTOCORE_CLOCK_NUM_DIVISIONS - 1)
-              ectocore_clock_selected_division++;
           }
         }
       }
@@ -1043,6 +1039,20 @@ void input_handling() {
           gpio_btn_state[GPIO_BTN_MODE] > 0 &&
           gpio_btn_state[GPIO_BTN_MULT] > 0) {
         reset_usb_boot(0, 0);
+      }
+    }
+
+    // check for button mult holding, and change the clock division
+    // every second
+    if (gpio_btn_state[GPIO_BTN_MULT] > 0 &&
+        gpio_btn_state[GPIO_BTN_MODE] == 0 &&
+        gpio_btn_state[GPIO_BTN_BANK] == 0 &&
+        gpio_btn_state[GPIO_BTN_TAPTEMPO] == 0) {
+      if (to_ms_since_boot(get_absolute_time()) - btn_mult_hold_time > 1000) {
+        btn_mult_hold_time = to_ms_since_boot(get_absolute_time());
+        // hold
+        if (ectocore_clock_selected_division < ECTOCORE_CLOCK_NUM_DIVISIONS - 1)
+          ectocore_clock_selected_division++;
       }
     }
 
