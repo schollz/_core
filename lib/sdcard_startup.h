@@ -49,10 +49,10 @@ void check_setup_files() {
     }
 
     // check for the clock_start_stop_sync
-    if (strcmp(fno.fname, "clock_stop_sync-on") == 0) {
-      clock_start_stop_sync = true;
-    } else {
+    if (strcmp(fno.fname, "clock_stop_sync-off") == 0) {
       clock_start_stop_sync = false;
+    } else {
+      clock_start_stop_sync = true;
     }
 
     // check if a file has the prefix "brightness"
