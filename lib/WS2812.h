@@ -29,9 +29,10 @@
 
 #define NUM_LEDS 18
 
-const uint8_t ws2812_brightness_values[21] = {
-    0,  1,  2,  3,  4,   6,   10,  15,  21,  30,  39,
-    51, 64, 80, 97, 117, 140, 164, 192, 222, 255,
+const uint8_t ws2812_brightness_values[16] = {
+    0, 1, 2, 3, 4, 6, 10, 15, 21, 30, 39, 51, 64, 80, 97, 117,
+    // disallow brightness > 50% of the RGB
+    // 140, 164, 192, 222, 255,
 };
 
 typedef struct WS2812 {
@@ -66,7 +67,10 @@ void WS2812_set_brightness(WS2812 *ws, uint8_t brightness) {
   if (brightness > 100) {
     brightness = 100;
   }
-  ws->brightness = ws2812_brightness_values[brightness * 21 / 100];
+  ws->brightness = ws2812_brightness_values[brightness * 16 / 100];
+  if (brightness > 0 && ws->brightness == 0) {
+    ws->brightness = 1;
+  }
   return;
 }
 
