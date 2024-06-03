@@ -61,6 +61,8 @@ void check_setup_files() {
       if (global_brightness > 100) {
         global_brightness = 100;
       }
+    } else {
+      global_brightness = 50;
     }
 
     // check for the clock_start_stop_sync
