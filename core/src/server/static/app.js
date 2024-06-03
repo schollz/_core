@@ -99,7 +99,7 @@ function setupMidiInputListener() {
                     app.deviceVersion = sysex.split("=")[1];
                     console.log(`[setupMidiInputListener] Device version: ${app.deviceVersion}`)
                 }
-            } else {
+            } else if (midiMessage.data[0] != 0xf8) {
                 addToMidiConsole(midiMessage.data);
             }
         };
