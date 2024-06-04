@@ -415,6 +415,10 @@ void input_handling() {
   }
 
 #define BUTTON_NUM 4
+#define BTN_MODE 0
+#define BTN_MULT 1
+#define BTN_BANK 2
+#define BTN_TAPTEMPO 3
   const uint8_t gpio_btns[BUTTON_NUM] = {
       GPIO_BTN_MODE,
       GPIO_BTN_MULT,
@@ -536,10 +540,13 @@ void input_handling() {
               WS2812_fill(ws2812, j, 255, 0, 0);
             }
             WS2812_show(ws2812);
+            watchdog_reboot(0, SRAM_END, 900);
             sleep_ms(10);
             write_struct_to_flash(&write_data, sizeof(write_data));
             sleep_ms(1000);
-            reset_usb_boot(0, 0);
+            for (;;) {
+              __wfi();
+            }
           }
         }
         printf("[ectocore] calibrate %d=%d,", i, sf->center_calibration[i]);
@@ -773,7 +780,6 @@ void input_handling() {
 #endif
 
     gpio_btn_taptempo_val = gpio_get(GPIO_BTN_TAPTEMPO);
-
     if (!clock_start_stop_sync && clock_in_do) {
       if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
         clock_in_ready = false;
@@ -1024,33 +1030,57 @@ void input_handling() {
           WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
-        if (val) {
-          printf("[ectocore] btn_mult %d\n", val);
-          btn_mult_on_time = to_ms_since_boot(get_absolute_time());
-          btn_mult_hold_time = btn_mult_on_time;
+        if (val == 1) {
+          if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
+            printf("[ectocore] ectocore stop\n");
+            // A+C
+            if (!playback_stopped && !do_stop_playback) {
+              if (!button_mute) trigger_button_mute = true;
+              do_stop_playback = true;
+              // do_restart_playback = true;
+              // button_mute = false;
+            }
+          } else {
+            printf("[ectocore] btn_mult %d %d\n", val,
+                   gpio_btn_state[BTN_TAPTEMPO]);
+            btn_mult_on_time = to_ms_since_boot(get_absolute_time());
+            btn_mult_hold_time = btn_mult_on_time;
+          }
         } else {
-          if (to_ms_since_boot(get_absolute_time()) - btn_mult_on_time < 200) {
-            // tap
-            printf("[ectocore] btn_mult tap\n");
-            if (ectocore_clock_selected_division > 0)
-              ectocore_clock_selected_division--;
+          if (gpio_btn_state[BTN_TAPTEMPO]) {
+          } else {
+            if (to_ms_since_boot(get_absolute_time()) - btn_mult_on_time <
+                200) {
+              // tap
+              printf("[ectocore] btn_mult tap\n");
+              if (ectocore_clock_selected_division > 0)
+                ectocore_clock_selected_division--;
+            }
+          }
+        }
+      } else if (gpio_btns[i] == GPIO_BTN_TAPTEMPO) {
+        printf("[ectocore] btn_taptempo %d\n", val);
+        if (val == 1) {
+          if (playback_stopped && !do_restart_playback) {
+            do_restart_playback = true;
+            button_mute = false;
           }
         }
       }
       // check for reset
-      if (gpio_btn_state[GPIO_BTN_BANK] > 0 &&
-          gpio_btn_state[GPIO_BTN_MODE] > 0 &&
-          gpio_btn_state[GPIO_BTN_MULT] > 0) {
-        reset_usb_boot(0, 0);
+      if (gpio_btn_state[BTN_BANK] > 0 && gpio_btn_state[BTN_MODE] > 0 &&
+          gpio_btn_state[BTN_MULT] > 0) {
+        watchdog_reboot(0, SRAM_END, 0);
+        for (;;) {
+          __wfi();
+        }
       }
     }
 
     // check for button mult holding, and change the clock division
     // every second
-    if (gpio_btn_state[GPIO_BTN_MULT] > 0 &&
-        gpio_btn_state[GPIO_BTN_MODE] == 0 &&
-        gpio_btn_state[GPIO_BTN_BANK] == 0 &&
-        gpio_btn_state[GPIO_BTN_TAPTEMPO] == 0) {
+    if (gpio_btn_state[BTN_MULT] > 0 && gpio_btn_state[BTN_MODE] == 0 &&
+        gpio_btn_state[BTN_BANK] == 0 && gpio_btn_state[BTN_TAPTEMPO] == 0) {
       if (to_ms_since_boot(get_absolute_time()) - btn_mult_hold_time > 1000) {
         btn_mult_hold_time = to_ms_since_boot(get_absolute_time());
         // hold
