@@ -39,12 +39,14 @@
 #include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
 #include "hardware/sync.h"
+#include "hardware/watchdog.h"
 #include "pico/audio_i2s.h"
 #include "pico/binary_info.h"
 #include "pico/bootrom.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include "pico/types.h"
+
 //
 #ifdef INCLUDE_MIDI
 #include "bsp/board.h"
