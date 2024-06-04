@@ -815,8 +815,11 @@ void input_handling() {
         val = linlin(val, 0, sf->center_calibration[knob_gpio[i]], 0, 512);
       } else {
         val = linlin(val - sf->center_calibration[knob_gpio[i]], 0,
-                     1024 - sf->center_calibration[knob_gpio[i]], 0, 512) +
+                     1023 - sf->center_calibration[knob_gpio[i]], 0, 512) +
               512;
+        if (val > 1023) {
+          val = 1023;
+        }
       }
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0) {
