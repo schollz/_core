@@ -668,11 +668,14 @@ void input_handling() {
           // printf("knob %d: %d\n", i, adcValue);
           if (i == 0) {
             // change volume
-            new_vol = (255 - adcValue) * VOLUME_STEPS / 255;
+            new_vol = (255 - adcValue) * VOLUME_STEPS * 6 / 7 / 255;
             if (new_vol != sf->vol) {
               sf->vol = new_vol;
               printf("sf-vol: %d\n", sf->vol);
             }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+                              255 - adcValue, 200);
           } else if (i == 1) {
             // change filter
             global_filter_index =
@@ -680,9 +683,13 @@ void input_handling() {
             for (uint8_t channel = 0; channel < 2; channel++) {
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
+                              adcValue, 200);
           } else if (i == 3) {
             // <change_sample>
-            sample_selection_index = adcValue * sample_selection_num / 255;
+            sample_selection_index =
+                adcValue * (sample_selection_num - 1) / 255;
             uint8_t f_sel_bank_next =
                 sample_selection[sample_selection_index].bank;
             uint8_t f_sel_sample_next =
@@ -695,12 +702,18 @@ void input_handling() {
                      sample_selection_index, sel_bank_next, sel_sample_next);
               fil_current_change = true;
             }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR], adcValue,
+                              200);
             // </change_sample>
           } else if (i == 4) {
             // random jumping
             probability_of_random_jump = adcValue * 100 / 255;
             probability_of_random_retrig = adcValue * 100 / 255;
             probability_of_random_tunnel = adcValue * 50 / 255;
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
+                              adcValue, 200);
           } else if (i == 5) {
             if (adcValue < 16) {
               sf->bpm_tempo = banks[sel_bank_cur]
@@ -714,9 +727,14 @@ void input_handling() {
             }
           } else if (i == 6) {
             // add random effects
-            sf->fx_param[FX_REVERSE][2] = adcValue;
-            sf->fx_param[FX_COMB][2] = adcValue / 3;
-            sf->fx_param[FX_TIMESTRETCH][2] = adcValue / 4;
+            sf->fx_param[FX_REVERSE][2] = adcValue / 3;
+            sf->fx_param[FX_COMB][2] = adcValue / 5;
+            sf->fx_param[FX_TIMESTRETCH][2] = adcValue / 7;
+            sf->fx_param[FX_BITCRUSH][2] = adcValue / 6;
+            sf->fx_param[FX_TIGHTEN][2] = adcValue / 8;
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                              adcValue, 200);
           } else if (i == 7) {
             // add saturation
             if (adcValue < 32) {
@@ -738,6 +756,9 @@ void input_handling() {
               random_sequence_length = 8;
               do_retrig_at_end_of_phrase = true;
             }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
+                              adcValue, 200);
           }
         }
       }
