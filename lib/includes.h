@@ -100,6 +100,7 @@ bool usb_midi_present = false;
 #ifdef INCLUDE_RGBLED
 #include "WS2812.h"
 #endif
+#include "ads7830.h"
 #include "beatrepeat.h"
 #include "button_change.h"
 #include "buttonmatrix3.h"

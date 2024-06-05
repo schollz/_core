@@ -169,6 +169,20 @@ void input_handling() {
   probability_of_random_tunnel = 60;
 #endif
 
+  for (uint8_t i = 0; i < 64; i++) {
+    random_sequence_arr[i] = random_integer_in_range(0, 64);
+  }
+
+  KnobChange *knob_change_arcade[8];
+  ADS7830 *arcade_ads7830;
+  if (is_arcade_box) {
+    arcade_ads7830 = ADS7830_malloc(ADS7830_ADDR);
+    // create array of knob changes
+    for (uint8_t i = 0; i < 8; i++) {
+      knob_change_arcade[i] = KnobChange_malloc(2);
+    }
+  }
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -644,6 +658,84 @@ void input_handling() {
       }
     }
 #endif
+
+    if (is_arcade_box) {
+      // read the arcade box knobs
+      for (uint8_t i = 0; i < 8; i++) {
+        int16_t adcValue = KnobChange_update(
+            knob_change_arcade[i], (int16_t)ADS7830_read(arcade_ads7830, i));
+        if (adcValue > -1) {
+          // printf("knob %d: %d\n", i, adcValue);
+          if (i == 0) {
+            // change volume
+            new_vol = (255 - adcValue) * VOLUME_STEPS / 255;
+            if (new_vol != sf->vol) {
+              sf->vol = new_vol;
+              printf("sf-vol: %d\n", sf->vol);
+            }
+          } else if (i == 1) {
+            // change filter
+            global_filter_index =
+                (255 - adcValue) * (resonantfilter_fc_max) / 255;
+            for (uint8_t channel = 0; channel < 2; channel++) {
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            }
+          } else if (i == 3) {
+            // <change_sample>
+            printf("sample_selection_num: %d\n", sample_selection_num);
+            sample_selection_index = adcValue * sample_selection_num / 255;
+            printf("sample_selection_index: %d\n", sample_selection_index);
+            uint8_t f_sel_bank_next =
+                sample_selection[sample_selection_index].bank;
+            uint8_t f_sel_sample_next =
+                sample_selection[sample_selection_index].sample;
+            if (f_sel_bank_next != sel_bank_cur ||
+                f_sel_sample_next != sel_sample_cur) {
+              sel_bank_next = f_sel_bank_next;
+              sel_sample_next = f_sel_sample_next;
+              printf("[zeptocore] %d bank %d, sample %d\n",
+                     sample_selection_index, sel_bank_next, sel_sample_next);
+              fil_current_change = true;
+            }
+            // </change_sample>
+          } else if (i == 4) {
+            // random jumping
+            probability_of_random_jump = adcValue * 100 / 255;
+            probability_of_random_retrig = adcValue * 100 / 255;
+            probability_of_random_tunnel = adcValue * 50 / 255;
+          } else if (i == 5) {
+            sf->bpm_tempo = util_clamp(
+                ((adcValue * (240 - 60) / 255) / 2) * 2 + 60, 60, 240);
+          } else if (i == 6) {
+            // add random effects
+            sf->fx_param[FX_REVERSE][2] = adcValue * 100 / 255;
+            sf->fx_param[FX_COMB][2] = adcValue * 20 / 255;
+            sf->fx_param[FX_TIMESTRETCH][2] = adcValue * 10 / 255;
+          } else if (i == 7) {
+            // add saturation
+            if (adcValue < 32) {
+              // normal
+              do_retrig_at_end_of_phrase = false;
+              random_sequence_length = 0;
+            } else if (adcValue < 255 - 32) {
+              do_retrig_at_end_of_phrase = false;
+              uint8_t sequence_lengths[11] = {
+                  1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
+              };
+              random_sequence_length = sequence_lengths
+                  [((int16_t)(adcValue - 32) * 11 / (255 - 32)) % 11];
+            } else {
+              // new random sequence
+              for (uint8_t i = 0; i < 64; i++) {
+                random_sequence_arr[i] = random_integer_in_range(0, 64);
+              }
+              random_sequence_length = 8;
+              do_retrig_at_end_of_phrase = true;
+            }
+          }
+        }
+      }
+    }
 
     // TODO: dead code?
     // update the text if any
