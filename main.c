@@ -562,9 +562,10 @@ int main() {
   sleep_ms(5);
   // detect if 0x61 exists
   uint8_t rxdata;
-  uint8_t ret = i2c_read_timeout_us(i2c_default, 0x61, &rxdata, 1, false, 200);
+  int ret = i2c_read_timeout_us(i2c_default, 0x61, &rxdata, 1, false, 2000);
   if (ret < 0) {
     // normal
+    is_arcade_box = false;
   } else {
     // arcade box
     is_arcade_box = true;
