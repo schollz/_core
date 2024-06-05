@@ -46,6 +46,7 @@ typedef struct LEDS {
   uint8_t gpio_leds_state[4];
   uint16_t gpio_leds_count[4];
   int8_t gpio_leds_pin[4];
+  uint8_t gpio_leds_set;
 } LEDS;
 
 LEDS *LEDS_create() {
@@ -60,6 +61,7 @@ LEDS *LEDS_create() {
     leds->gpio_leds_state[i] = 0;
     leds->gpio_leds_pin[i] = -1;
   }
+  leds->gpio_leds_set = 0;
 
 #ifdef LED_1_GPIO
   leds->gpio_leds_pin[0] = LED_1_GPIO;
@@ -74,27 +76,37 @@ LEDS *LEDS_create() {
   leds->gpio_leds_pin[3] = LED_4_GPIO;
 #endif
 
-  // my unique PCA9552 wiring requires a unique mapping
-  uint8_t row_map[] = {// row 1
-                       0, 0, 3, 3,
-                       // row 2
-                       0, 0, 3, 3,
-                       // row 3
-                       1, 1, 2, 2,
-                       // row 4
-                       1, 1, 2, 2};
-  uint8_t col_map[] = {//
-                       3, 2, 0, 1,
-                       //
-                       1, 0, 2, 3,
-                       //
-                       3, 2, 0, 1,
-                       //
-                       1, 0, 2, 3};
-
   if (!is_arcade_box) {
+    // my unique PCA9552 wiring requires a unique mapping
+    uint8_t row_map[] = {// row 1
+                         0, 0, 3, 3,
+                         // row 2
+                         0, 0, 3, 3,
+                         // row 3
+                         1, 1, 2, 2,
+                         // row 4
+                         1, 1, 2, 2};
+    uint8_t col_map[] = {//
+                         3, 2, 0, 1,
+                         //
+                         1, 0, 2, 3,
+                         //
+                         3, 2, 0, 1,
+                         //
+                         1, 0, 2, 3};
     leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
   } else {
+    uint8_t row_map[] = {// row 1
+                         0, 0, 0, 0,
+                         // row 2
+                         1, 1, 1, 1,
+                         // row 3
+                         2, 2, 2, 2,
+                         // row 4
+                         3, 3, 3, 3};
+    uint8_t col_map[] = {
+        3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0,
+    };
     leds->pca = PCA9552_create(0x61, i2c_default, row_map, col_map);
   }
 
@@ -146,8 +158,12 @@ void LEDS_render(LEDS *leds) {
       leds->gpio_leds_state[j] = leds->state[0][j];
       if (leds->gpio_leds_state[j] == LED_NONE) {
         gpio_put(leds->gpio_leds_pin[j], 0);
+        if (is_arcade_box)
+          leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 0);
       } else if (leds->gpio_leds_state[j] == LED_BRIGHT) {
         gpio_put(leds->gpio_leds_pin[j], 1);
+        if (is_arcade_box)
+          leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 1);
       }
     }
     // blink GPIO leds
@@ -155,11 +171,19 @@ void LEDS_render(LEDS *leds) {
       leds->gpio_leds_count[j]++;
       if (leds->gpio_leds_count[j] == 700) {
         gpio_put(leds->gpio_leds_pin[j], 1);
+        if (is_arcade_box)
+          leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 1);
       } else if (leds->gpio_leds_count[j] >= 1400) {
         gpio_put(leds->gpio_leds_pin[j], 0);
+        if (is_arcade_box)
+          leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 0);
         leds->gpio_leds_count[j] = 0;
       }
     }
+  }
+
+  if (is_arcade_box) {
+    mcp23017_set_pins_gpiob(i2c_default, MCP23017_ADDR2, leds->gpio_leds_set);
   }
 }
 
