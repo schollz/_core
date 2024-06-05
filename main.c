@@ -568,6 +568,19 @@ int main() {
   } else {
     // arcade box
     is_arcade_box = true;
+    mcp23017_init(i2c_default, MCP23017_ADDR1);
+    mcp23017_init(i2c_default, MCP23017_ADDR2);
+    // addr1
+    // set all as inputs
+    mcp23017_set_dir_gpioa(i2c_default, MCP23017_ADDR1, 0b11111111);
+    mcp23017_set_dir_gpiob(i2c_default, MCP23017_ADDR1, 0b11111111);
+    mcp23017_set_pullup_gpioa(i2c_default, MCP23017_ADDR1, 0b11111111);
+    mcp23017_set_pullup_gpiob(i2c_default, MCP23017_ADDR1, 0b11111111);
+    // addr2
+    // set B as outputs and A as inputs
+    mcp23017_set_dir_gpioa(i2c_default, MCP23017_ADDR2, 0b11111111);
+    mcp23017_set_dir_gpiob(i2c_default, MCP23017_ADDR2, 0b00000000);
+    mcp23017_set_pullup_gpioa(i2c_default, MCP23017_ADDR2, 0b11111111);
   }
 #endif
 

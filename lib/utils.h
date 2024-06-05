@@ -25,6 +25,23 @@
 #ifndef LIB_UTILS
 #define LIB_UTILS 1
 
+#include <stdbool.h>
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
+#define BYTE_TO_BINARY(byte)                                \
+  ((byte)&0x80 ? '1' : '0'), ((byte)&0x40 ? '1' : '0'),     \
+      ((byte)&0x20 ? '1' : '0'), ((byte)&0x10 ? '1' : '0'), \
+      ((byte)&0x08 ? '1' : '0'), ((byte)&0x04 ? '1' : '0'), \
+      ((byte)&0x02 ? '1' : '0'), ((byte)&0x01 ? '1' : '0')
+
+uint16_t bit_set(uint16_t value, uint8_t bit, bool on) {
+  if (on) {
+    return value | (1 << bit);
+  } else {
+    return value & ~(1 << bit);
+  }
+}
+
 // callback definitions
 typedef void (*callback_int_int)(int, int);
 typedef void (*callback_int)(int);
