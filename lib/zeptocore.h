@@ -682,9 +682,7 @@ void input_handling() {
             }
           } else if (i == 3) {
             // <change_sample>
-            printf("sample_selection_num: %d\n", sample_selection_num);
             sample_selection_index = adcValue * sample_selection_num / 255;
-            printf("sample_selection_index: %d\n", sample_selection_index);
             uint8_t f_sel_bank_next =
                 sample_selection[sample_selection_index].bank;
             uint8_t f_sel_sample_next =
