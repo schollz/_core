@@ -84,13 +84,6 @@ LEDS *LEDS_create() {
   leds->gpio_leds_pin[2] = LED_3_GPIO;
   leds->gpio_leds_pin[3] = LED_4_GPIO;
 
-  // setup PCA9552 leds
-  i2c_init(i2c_default, 40 * 1000);
-  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
-  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
-  gpio_pull_up(I2C_SDA_PIN);
-  gpio_pull_up(I2C_SCL_PIN);
-
   // my unique PCA9552 wiring requires a unique mapping
   uint8_t row_map[] = {// row 1
                        0, 0, 2, 3,
