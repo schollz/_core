@@ -90,6 +90,8 @@ bool usb_midi_present = false;
 #include "midi_out.h"
 #endif
 //
+#include "mcp23017/mcp23017_lib.h"
+//
 #include "array_resample.h"
 #include "audio_pool.h"
 #ifdef INCLUDE_BASS
@@ -115,7 +117,6 @@ bool usb_midi_present = false;
 #include "freeverb_fp_mono.h"
 #include "gate.h"
 #include "knob_change.h"
-#include "mcp23017/mcp23017_lib.h"
 #include "messagesync.h"
 #include "sequencehandler.h"
 #include "taptempo.h"

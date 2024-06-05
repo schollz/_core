@@ -47,6 +47,7 @@ typedef struct LEDS {
   uint16_t gpio_leds_count[4];
   int8_t gpio_leds_pin[4];
   uint8_t gpio_leds_set;
+  uint8_t gpio_leds_set_last;
 } LEDS;
 
 LEDS *LEDS_create() {
@@ -183,7 +184,10 @@ void LEDS_render(LEDS *leds) {
   }
 
   if (is_arcade_box) {
-    mcp23017_set_pins_gpiob(i2c_default, MCP23017_ADDR2, leds->gpio_leds_set);
+    if (leds->gpio_leds_set != leds->gpio_leds_set_last) {
+      leds->gpio_leds_set_last = leds->gpio_leds_set;
+      mcp23017_set_pins_gpiob(i2c_default, MCP23017_ADDR2, leds->gpio_leds_set);
+    }
   }
 }
 

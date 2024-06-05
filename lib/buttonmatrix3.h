@@ -34,6 +34,7 @@ typedef struct ButtonMatrix {
   uint sm;
   uint32_t last_value;
   uint8_t mapping[BUTTONMATRIX_BUTTONS_MAX];
+  bool button_on_last[BUTTONMATRIX_BUTTONS_MAX];
   bool button_on[BUTTONMATRIX_BUTTONS_MAX];
   int8_t on_num;
   uint8_t on[BUTTONMATRIX_BUTTONS_MAX];  // list of buttons that turned n
@@ -121,6 +122,62 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
 void ButtonMatrix_read(ButtonMatrix *bm) {
   bm->on_num = -1;
   bm->off_num = -1;
+
+  if (is_arcade_box) {
+    // input_pin_state0 corresponds to the first 4 buttons
+    uint8_t input_pin_state_a =
+        mcp23017_get_pins_gpioa(i2c_default, MCP23017_ADDR1);
+    sleep_us(100);
+    uint8_t input_pin_state_b =
+        mcp23017_get_pins_gpiob(i2c_default, MCP23017_ADDR1);
+    sleep_us(100);
+    uint8_t input_pin_state_c =
+        mcp23017_get_pins_gpioa(i2c_default, MCP23017_ADDR2);
+    sleep_us(100);
+    for (uint8_t i = 0; i < 4; i++) {
+      // check if bit is set
+      bm->button_on[i] = (input_pin_state_c >> i) & 1;
+    }
+    for (uint8_t i = 0; i < 8; i++) {
+      // check if bit is set
+      bm->button_on[i + 4] = (input_pin_state_a >> i) & 1;
+    }
+    for (uint8_t i = 0; i < 8; i++) {
+      // check if bit is set
+      bm->button_on[i + 12] = (input_pin_state_b >> i) & 1;
+    }
+    // reverse
+    for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+      bm->button_on[i] = !bm->button_on[i];
+    }
+
+    // check if any buttons changed
+    for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+      if (bm->button_on[i] != bm->button_on_last[i]) {
+        // printf("button %d changed to %d \n", i, bm->button_on[i]);
+        if (bm->button_on[i]) {
+          bm->on_num++;
+          bm->on[bm->on_num] = i;
+        } else {
+          bm->off_num++;
+          bm->off[bm->off_num] = i;
+        }
+      }
+    }
+
+    // save as last state
+    for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+      bm->button_on_last[i] = bm->button_on[i];
+    }
+
+    if (bm->on_num > -1) {
+      bm->on_num++;
+    }
+    if (bm->off_num > -1) {
+      bm->off_num++;
+    }
+    return;
+  }
 
   // read new value;
   uint32_t value = 0;

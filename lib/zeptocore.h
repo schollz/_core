@@ -458,8 +458,7 @@ void input_handling() {
     }
 
 #ifdef BTN_COL_START
-    // button handler
-    button_handler(bm);
+    if (!is_arcade_box) button_handler(bm);
 #endif
 
 #ifdef INCLUDE_KNOBS
@@ -569,8 +568,8 @@ void input_handling() {
 #endif
 
 #ifdef BTN_COL_START
-    // button handler
-    button_handler(bm);
+    if (!is_arcade_box) button_handler(bm);
+
 #endif
 
 #ifdef INCLUDE_KNOBS
@@ -653,8 +652,7 @@ void input_handling() {
     LEDS_render(leds);
 
 #ifdef BTN_COL_START
-    // button handler
-    button_handler(bm);
+    if (!is_arcade_box) button_handler(bm);
 #endif
 
 #ifdef INCLUDE_KEYBOARD
