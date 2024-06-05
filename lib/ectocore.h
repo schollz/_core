@@ -411,7 +411,7 @@ void input_handling() {
   };
   KnobChange *knob_change[KNOB_NUM];
   for (uint8_t i = 0; i < KNOB_NUM; i++) {
-    knob_change[i] = KnobChange_malloc();
+    knob_change[i] = KnobChange_malloc(6);
   }
 
 #define BUTTON_NUM 4
