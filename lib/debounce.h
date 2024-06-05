@@ -36,6 +36,14 @@ bool DebounceUint8_active(DebounceUint8 *self) {
     return false;
   }
   self->duration--;
+  if (is_arcade_box) {
+    for (uint8_t i = 0; i < 3; i++) {
+      if (self->duration == 0) {
+        break;
+      }
+      self->duration--;
+    }
+  }
   return true;
 }
 

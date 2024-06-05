@@ -418,7 +418,7 @@ void sdcard_startup() {
     }
   }  // bank loop
 
-  if (global_knobx_sample_selector) {
+  if (global_knobx_sample_selector || is_arcade_box) {
     sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
     for (uint8_t bi = 0; bi < 16; bi++) {
       for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
