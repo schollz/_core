@@ -746,9 +746,9 @@ void input_handling() {
             // split the area into FX_POSSIBLE_NUM
             uint8_t fx_index = adcValue * FX_POSSIBLE_NUM / 255;
             for (uint8_t i = 0; i < FX_POSSIBLE_NUM; i++) {
-              uint8_t fx_num = fx_possible[i];
-              sf->fx_param[fx_num][2] = 0;
-              if (fx_num > 0) {
+              int8_t fx_num = fx_possible[i];
+              if (fx_num >= 0) {
+                sf->fx_param[fx_num][2] = 0;
                 if (i != fx_index) {
                   if (sf->fx_active[fx_num]) {
                     toggle_fx(fx_num);
