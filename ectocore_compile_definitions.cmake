@@ -41,7 +41,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     GPIO_MODE_LEDB=13
     GPIO_WS2812=7
 
-
+    # ARCADE DEFINITIONS
+    MCP23017_ADDR1=0x20
+    MCP23017_ADDR2=0x21
+    ADS7830_ADDR=0x48
 
     # debug printing
     # PRINT_AUDIO_USAGE=1
