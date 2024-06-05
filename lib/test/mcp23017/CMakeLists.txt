@@ -23,9 +23,12 @@ add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}.c)
 
+add_subdirectory(mcp23017)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
         pico_stdlib
-        hardware_spi
+        hardware_i2c
+        mcp23017_lib
  )
 
 # enable usb output, disable uart output
