@@ -26,16 +26,20 @@
 #define KNOB_CHANGE_LIB 1
 
 typedef struct KnobChange {
-  int16_t last : 13;
-  int16_t threshold : 3;
+  int16_t last;
+  int16_t debounce : 12;
+  int16_t threshold : 4;
 } KnobChange;
 
-KnobChange *KnobChange_malloc(uint8_t threshold) {
+KnobChange *KnobChange_malloc(int16_t threshold) {
   KnobChange *self = (KnobChange *)malloc(sizeof(KnobChange));
   if (threshold > 7) {
     threshold = 7;
+  } else if (threshold < 0) {
+    threshold = -1 * threshold;
   }
   self->last = -1;
+  self->debounce = 0;
   self->threshold = threshold;
   return self;
 }
@@ -43,17 +47,20 @@ KnobChange *KnobChange_malloc(uint8_t threshold) {
 void KnobChange_free(KnobChange *self) { free(self); }
 
 int16_t KnobChange_update(KnobChange *self, int16_t val) {
+  if (self->debounce > 0) {
+    self->debounce--;
+  }
   if (self->last == -1) {
     self->last = val;
     return val;
   }
   int16_t diff = val - self->last;
-  if (diff > self->threshold) {
+  if (diff > self->threshold || diff < -self->threshold) {
     self->last = val;
+    self->debounce = 10;
     return val;
-  } else if (diff < -self->threshold) {
-    self->last = val;
-    return val;
+  } else if (self->debounce > 0) {
+    return self->last;
   }
   return -1;
 }

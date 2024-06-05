@@ -32,6 +32,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # ARCADE DEFINITIONS
     MCP23017_ADDR1=0x20
     MCP23017_ADDR2=0x21
+    ADS7830_ADDR=0x48
 
     # # black
     # SDCARD_CMD_GPIO=2
