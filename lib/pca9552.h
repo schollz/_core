@@ -51,13 +51,6 @@
 #define PCA9552_ERR_REG 0xFB
 #define PCA9552_ERR_I2C 0xFA
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
-#define BYTE_TO_BINARY(byte)                                \
-  ((byte)&0x80 ? '1' : '0'), ((byte)&0x40 ? '1' : '0'),     \
-      ((byte)&0x20 ? '1' : '0'), ((byte)&0x10 ? '1' : '0'), \
-      ((byte)&0x08 ? '1' : '0'), ((byte)&0x04 ? '1' : '0'), \
-      ((byte)&0x02 ? '1' : '0'), ((byte)&0x01 ? '1' : '0')
-
 typedef struct PCA9552 {
   uint8_t address;
   uint8_t error;
@@ -239,7 +232,11 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use,
 
   // PWM 0 is dim
   PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
-  PCA9552_setPWM(pca, 0, 225);      // dim both PWMs
+  if (is_arcade_box) {
+    PCA9552_setPWM(pca, 0, 40);  // dim both PWMs
+  } else {
+    PCA9552_setPWM(pca, 0, 225);  // dim both PWMs
+  }
   // PWM 1 is bright blink
   PCA9552_setPrescaler(pca, 1, 12);  //  1 Hz
   PCA9552_setPWM(pca, 1, 128);       // 50% duty
