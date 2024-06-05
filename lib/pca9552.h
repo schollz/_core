@@ -233,7 +233,7 @@ PCA9552 *PCA9552_create(const uint8_t deviceAddress, struct i2c_inst *i2c_use,
   // PWM 0 is dim
   PCA9552_setPrescaler(pca, 0, 0);  //  44 Hz
   if (is_arcade_box) {
-    PCA9552_setPWM(pca, 0, 235);  // dim both PWMs
+    PCA9552_setPWM(pca, 0, 20);  // dim both PWMs
   } else {
     PCA9552_setPWM(pca, 0, 225);  // dim both PWMs
   }

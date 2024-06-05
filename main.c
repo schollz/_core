@@ -554,15 +554,15 @@ int main() {
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
 
 #ifdef INCLUDE_ZEPTOCORE
-  i2c_init(i2c_default, 40 * 1000);
+  i2c_init(i2c_default, 50 * 1000);
   gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
   gpio_pull_up(I2C_SDA_PIN);
   gpio_pull_up(I2C_SCL_PIN);
+  sleep_ms(5);
   // detect if 0x61 exists
   uint8_t rxdata;
-  uint8_t ret =
-      i2c_read_timeout_us(i2c_default, 0x61, &rxdata, 1, false, 10000);
+  uint8_t ret = i2c_read_timeout_us(i2c_default, 0x61, &rxdata, 1, false, 200);
   if (ret < 0) {
     // normal
   } else {
@@ -573,14 +573,23 @@ int main() {
     // addr1
     // set all as inputs
     mcp23017_set_dir_gpioa(i2c_default, MCP23017_ADDR1, 0b11111111);
+    sleep_ms(1);
     mcp23017_set_dir_gpiob(i2c_default, MCP23017_ADDR1, 0b11111111);
+    sleep_ms(1);
     mcp23017_set_pullup_gpioa(i2c_default, MCP23017_ADDR1, 0b11111111);
+    sleep_ms(1);
+    mcp23017_set_pullup_gpioa(i2c_default, MCP23017_ADDR1, 0b11111111);
+    sleep_ms(1);
     mcp23017_set_pullup_gpiob(i2c_default, MCP23017_ADDR1, 0b11111111);
+    sleep_ms(1);
     // addr2
     // set B as outputs and A as inputs
     mcp23017_set_dir_gpioa(i2c_default, MCP23017_ADDR2, 0b11111111);
+    sleep_ms(1);
     mcp23017_set_dir_gpiob(i2c_default, MCP23017_ADDR2, 0b00000000);
+    sleep_ms(1);
     mcp23017_set_pullup_gpioa(i2c_default, MCP23017_ADDR2, 0b11111111);
+    sleep_ms(1);
   }
 #endif
 
