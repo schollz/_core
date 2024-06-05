@@ -52,6 +52,8 @@
 #include "bsp/board.h"
 #include "tusb.h"
 #endif
+//
+bool is_arcade_box = false;
 
 //
 #include "definitions.h"

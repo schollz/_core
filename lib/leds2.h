@@ -74,13 +74,6 @@ LEDS *LEDS_create() {
   leds->gpio_leds_pin[3] = LED_4_GPIO;
 #endif
 
-  // setup PCA9552 leds
-  i2c_init(i2c_default, 40 * 1000);
-  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
-  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
-  gpio_pull_up(I2C_SDA_PIN);
-  gpio_pull_up(I2C_SCL_PIN);
-
   // my unique PCA9552 wiring requires a unique mapping
   uint8_t row_map[] = {// row 1
                        0, 0, 3, 3,
@@ -99,7 +92,12 @@ LEDS *LEDS_create() {
                        //
                        1, 0, 2, 3};
 
-  leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
+  if (!is_arcade_box) {
+    leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
+  } else {
+    leds->pca = PCA9552_create(0x61, i2c_default, row_map, col_map);
+  }
+
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }

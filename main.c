@@ -553,6 +553,24 @@ int main() {
   gpio_set_dir(PIN_DCDC_PSM_CTRL, GPIO_OUT);
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
 
+#ifdef INCLUDE_ZEPTOCORE
+  i2c_init(i2c_default, 40 * 1000);
+  gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
+  gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
+  gpio_pull_up(I2C_SDA_PIN);
+  gpio_pull_up(I2C_SCL_PIN);
+  // detect if 0x61 exists
+  uint8_t rxdata;
+  uint8_t ret =
+      i2c_read_timeout_us(i2c_default, 0x61, &rxdata, 1, false, 10000);
+  if (ret < 0) {
+    // normal
+  } else {
+    // arcade box
+    is_arcade_box = true;
+  }
+#endif
+
 #ifdef LED_TOP_GPIO
   gpio_init(LED_TOP_GPIO);
   gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
