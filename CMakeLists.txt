@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
 # Tell CMake where to find other source code
 add_subdirectory(lib/my_pico_audio)
 add_subdirectory(lib/my_pico_audio_i2s)
+add_subdirectory(lib/mcp23017)
 add_subdirectory(lib/sdio build)
 
 # generate pio
@@ -49,6 +50,7 @@ target_link_libraries(${PROJECT_NAME}
     pico_multicore
     my_pico_audio_i2s
     FatFs_SPI
+    mcp23017_lib
     hardware_clocks
     hardware_flash
     hardware_adc

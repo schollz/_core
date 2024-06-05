@@ -101,6 +101,14 @@ bool DebounceDigits_active(DebounceDigits *self) {
     return false;
   }
   self->duration--;
+  if (is_arcade_box) {
+    for (uint8_t i = 0; i < 3; i++) {
+      if (self->duration == 0) {
+        break;
+      }
+      self->duration--;
+    }
+  }
   // printf("self->duration: %d\n", self->duration);
   if (self->duration == 0) {
     self->space = !self->space;

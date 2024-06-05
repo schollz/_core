@@ -52,6 +52,8 @@
 #include "bsp/board.h"
 #include "tusb.h"
 #endif
+//
+bool is_arcade_box = false;
 
 //
 #include "definitions.h"
@@ -88,6 +90,8 @@ bool usb_midi_present = false;
 #include "midi_out.h"
 #endif
 //
+#include "mcp23017/mcp23017_lib.h"
+//
 #include "array_resample.h"
 #include "audio_pool.h"
 #ifdef INCLUDE_BASS
@@ -96,6 +100,7 @@ bool usb_midi_present = false;
 #ifdef INCLUDE_RGBLED
 #include "WS2812.h"
 #endif
+#include "ads7830.h"
 #include "beatrepeat.h"
 #include "button_change.h"
 #include "buttonmatrix3.h"
