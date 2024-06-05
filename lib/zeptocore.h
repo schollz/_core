@@ -677,16 +677,18 @@ void input_handling() {
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                               255 - adcValue, 200);
           } else if (i == 1) {
-            // change filter
-            global_filter_index =
-                (255 - adcValue) * (resonantfilter_fc_max) / 255;
-            for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            // change bpm
+            if (adcValue < 16) {
+              sf->bpm_tempo = banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->bpm;
+            } else {
+              sf->bpm_tempo = util_clamp(
+                  (((adcValue - 16) * (240 - 60) / (255 - 16)) / 2) * 2 + 60,
+                  60, 240);
             }
-            clear_debouncers();
-            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
-                              adcValue, 200);
-          } else if (i == 3) {
+          } else if (i == 2) {
             // <change_sample>
             sample_selection_index =
                 adcValue * (sample_selection_num - 1) / 255;
@@ -706,7 +708,86 @@ void input_handling() {
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR], adcValue,
                               200);
             // </change_sample>
+          } else if (i == 3) {
+            // <change_speed>
+            if (adcValue < 16) {
+              sf->pitch_val_index = PITCH_VAL_MID;
+            } else if (adcValue >= 16 && adcValue < 128) {
+              sf->pitch_val_index =
+                  (adcValue - 16) * (PITCH_VAL_MID) / (128 - 16);
+            } else {
+              sf->pitch_val_index =
+                  (adcValue - 128) * (PITCH_VAL_MAX - PITCH_VAL_MID) / 127 +
+                  PITCH_VAL_MID;
+            }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
+                              adcValue, 250);
+            // </change_speed>
           } else if (i == 4) {
+            // change filter
+            global_filter_index =
+                (255 - adcValue) * (resonantfilter_fc_max) / 255;
+            for (uint8_t channel = 0; channel < 2; channel++) {
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
+                              adcValue, 200);
+
+          } else if (i == 5) {
+#define FX_POSSIBLE_NUM 6
+            int8_t fx_possible[FX_POSSIBLE_NUM] = {
+                -1,          FX_REVERSE,     FX_COMB,
+                FX_BITCRUSH, FX_TIMESTRETCH, FX_TIGHTEN};
+            uint8_t fx_possible_scaling[FX_POSSIBLE_NUM] = {0,   200, 120,
+                                                            160, 80,  160};
+
+            // split the area into FX_POSSIBLE_NUM
+            uint8_t fx_index = adcValue * FX_POSSIBLE_NUM / 255;
+            for (uint8_t i = 0; i < FX_POSSIBLE_NUM; i++) {
+              uint8_t fx_num = fx_possible[i];
+              sf->fx_param[fx_num][2] = 0;
+              if (fx_num > 0) {
+                if (i != fx_index) {
+                  if (sf->fx_active[fx_num]) {
+                    toggle_fx(fx_num);
+                  }
+                }
+              }
+            }
+            for (uint8_t i = 1; i < fx_index; i++) {
+              uint8_t fx_num = fx_possible[i];
+              sf->fx_param[fx_num][2] = adcValue * fx_possible_scaling[i] / 255;
+            }
+            // // add random effects
+            // sf->fx_param[FX_REVERSE][2] = adcValue / 3;
+            // sf->fx_param[FX_COMB][2] = adcValue / 5;
+            // sf->fx_param[FX_TIMESTRETCH][2] = adcValue / 7;
+            // sf->fx_param[FX_BITCRUSH][2] = adcValue / 6;
+            // sf->fx_param[FX_TIGHTEN][2] = adcValue / 8;
+            // if (adcValue < 32) {
+            //   // turn off all fx
+            //   if (sf->fx_active[FX_REVERSE]) {
+            //     toggle_fx(FX_REVERSE);
+            //   }
+            //   if (sf->fx_active[FX_COMB]) {
+            //     toggle_fx(FX_COMB);
+            //   }
+            //   if (sf->fx_active[FX_TIMESTRETCH]) {
+            //     toggle_fx(FX_TIMESTRETCH);
+            //   }
+            //   if (sf->fx_active[FX_BITCRUSH]) {
+            //     toggle_fx(FX_BITCRUSH);
+            //   }
+            //   if (sf->fx_active[FX_TIGHTEN]) {
+            //     toggle_fx(FX_TIGHTEN);
+            //   }
+            // }
+            clear_debouncers();
+            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                              adcValue, 200);
+          } else if (i == 6) {
             // random jumping
             probability_of_random_jump = adcValue * 100 / 255;
             probability_of_random_retrig = adcValue * 100 / 255;
@@ -714,29 +795,9 @@ void input_handling() {
             clear_debouncers();
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1],
                               adcValue, 200);
-          } else if (i == 5) {
-            if (adcValue < 16) {
-              sf->bpm_tempo = banks[sel_bank_cur]
-                                  ->sample[sel_sample_cur]
-                                  .snd[FILEZERO]
-                                  ->bpm;
-            } else {
-              sf->bpm_tempo = util_clamp(
-                  (((adcValue - 16) * (240 - 60) / (255 - 16)) / 2) * 2 + 60,
-                  60, 240);
-            }
-          } else if (i == 6) {
-            // add random effects
-            sf->fx_param[FX_REVERSE][2] = adcValue / 3;
-            sf->fx_param[FX_COMB][2] = adcValue / 5;
-            sf->fx_param[FX_TIMESTRETCH][2] = adcValue / 7;
-            sf->fx_param[FX_BITCRUSH][2] = adcValue / 6;
-            sf->fx_param[FX_TIGHTEN][2] = adcValue / 8;
-            clear_debouncers();
-            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
-                              adcValue, 200);
+
           } else if (i == 7) {
-            // add saturation
+            // random sequencer
             if (adcValue < 32) {
               // normal
               do_retrig_at_end_of_phrase = false;
