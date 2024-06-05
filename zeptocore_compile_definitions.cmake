@@ -29,6 +29,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_MIDI=1
     # INCLUDE_SSD1306=1
 
+    # ARCADE DEFINITIONS
+    MCP23017_ADDR1=0x20
+    MCP23017_ADDR2=0x21
+
     # # black
     # SDCARD_CMD_GPIO=2
     # SDCARD_D0_GPIO=3
