@@ -22,6 +22,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # PRINT_MEMORY_USAGE=1
     # PRINT_SDCARD_TIMING=1
 
+    # ARCADE DEFINITIONS
+    MCP23017_ADDR1=0x20
+    MCP23017_ADDR2=0x21
+    ADS7830_ADDR=0x48
+
     # turn off gpio for leds
     LEDS_NO_GPIO=1
 
