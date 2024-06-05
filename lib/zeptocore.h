@@ -704,13 +704,21 @@ void input_handling() {
             probability_of_random_retrig = adcValue * 100 / 255;
             probability_of_random_tunnel = adcValue * 50 / 255;
           } else if (i == 5) {
-            sf->bpm_tempo = util_clamp(
-                ((adcValue * (240 - 60) / 255) / 2) * 2 + 60, 60, 240);
+            if (adcValue < 16) {
+              sf->bpm_tempo = banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->bpm;
+            } else {
+              sf->bpm_tempo = util_clamp(
+                  (((adcValue - 16) * (240 - 60) / (255 - 16)) / 2) * 2 + 60,
+                  60, 240);
+            }
           } else if (i == 6) {
             // add random effects
-            sf->fx_param[FX_REVERSE][2] = adcValue * 100 / 255;
-            sf->fx_param[FX_COMB][2] = adcValue * 20 / 255;
-            sf->fx_param[FX_TIMESTRETCH][2] = adcValue * 10 / 255;
+            sf->fx_param[FX_REVERSE][2] = adcValue;
+            sf->fx_param[FX_COMB][2] = adcValue / 3;
+            sf->fx_param[FX_TIMESTRETCH][2] = adcValue / 4;
           } else if (i == 7) {
             // add saturation
             if (adcValue < 32) {
