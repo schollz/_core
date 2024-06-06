@@ -9,8 +9,7 @@ weight = 7
 
 zeptocade is an upcoming housing for the zeptocore that provides 20 arcade-style LED buttons instead of the tactile buttons. 
 
-
-releasing soon. subscribe for more information:
+releasing soon. [click here for demo](https://www.youtube.com/watch?v=q_q3SHdD_Dg). subscribe for more information:
 
 <style>
 #mc_embed_shell {
