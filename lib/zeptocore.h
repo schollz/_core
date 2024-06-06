@@ -71,6 +71,32 @@ void clear_debouncers() {
   DebounceDigits_clear(debouncer_digits);
 }
 
+void make_random_sequence(uint8_t adcValue) {
+  if (adcValue > 255) adcValue = 255;
+  if (adcValue < 32) {
+    // normal
+    do_retrig_at_end_of_phrase = false;
+    random_sequence_length = 0;
+  } else if (adcValue < 255 - 32) {
+    do_retrig_at_end_of_phrase = false;
+    uint8_t sequence_lengths[11] = {
+        1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
+    };
+    random_sequence_length =
+        sequence_lengths[((int16_t)(adcValue - 32) * 11 / (255 - 32)) % 11];
+  } else {
+    // new random sequence
+    for (uint8_t i = 0; i < 64; i++) {
+      random_sequence_arr[i] = random_integer_in_range(0, 64);
+    }
+    random_sequence_length = 8;
+    do_retrig_at_end_of_phrase = true;
+  }
+  clear_debouncers();
+  DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE], adcValue,
+                    200);
+}
+
 void input_handling() {
   printf("core1 running!\n");
   // flash bad signs
@@ -407,7 +433,7 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 6, adc * 127 / 4096);
 #endif
-
+          make_random_sequence(adc * 255 / 4096);
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -798,28 +824,7 @@ void input_handling() {
 
           } else if (i == 7) {
             // random sequencer
-            if (adcValue < 32) {
-              // normal
-              do_retrig_at_end_of_phrase = false;
-              random_sequence_length = 0;
-            } else if (adcValue < 255 - 32) {
-              do_retrig_at_end_of_phrase = false;
-              uint8_t sequence_lengths[11] = {
-                  1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
-              };
-              random_sequence_length = sequence_lengths
-                  [((int16_t)(adcValue - 32) * 11 / (255 - 32)) % 11];
-            } else {
-              // new random sequence
-              for (uint8_t i = 0; i < 64; i++) {
-                random_sequence_arr[i] = random_integer_in_range(0, 64);
-              }
-              random_sequence_length = 8;
-              do_retrig_at_end_of_phrase = true;
-            }
-            clear_debouncers();
-            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
-                              adcValue, 200);
+            make_random_sequence(adcValue);
           }
         }
       }
