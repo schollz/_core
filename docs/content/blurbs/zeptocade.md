@@ -14,12 +14,11 @@ releasing soon. [click here for demo](https://www.youtube.com/watch?v=q_q3SHdD_D
 <style>
 #mc_embed_shell {
     width: 80%;
-    margin: 20px auto;
+    margin: 0 auto;
     padding: 20px;
     border-radius: 10px;
     background: var( --other-color-lighter);
     box-shadow: 10px 10px var(--background-color);
-    margin: 4em;
     border-style: solid;
     border-color: rgb(0, 0, 255, 0.3);
 }
@@ -61,12 +60,12 @@ releasing soon. [click here for demo](https://www.youtube.com/watch?v=q_q3SHdD_D
 .clear input[type="submit"]:hover {
             background-color:  var(--other-color-lighter);
              color: var(--header-footer-background);
-    color: var(--other-color-lighter);
+    color: white;
     box-shadow: 5px 5px #fff;
 }
 #mc_embed_shell  input {
         font: inherit;
-        font-size: 2em;
+        font-size: 1.2em;
     }
 </style>
 
