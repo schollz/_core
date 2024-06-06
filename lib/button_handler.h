@@ -1157,7 +1157,7 @@ void button_handler(ButtonMatrix *bm) {
           }
         } else {
           // illuminate which banks have samples
-          for (uint8_t i = 0; i < 16; i++) {
+          for (uint8_t i = 1; i < 16; i++) {
             if (banks_with_samples[i] > 0) {
               if (i == sel_bank_cur) {
                 LEDS_set(leds, i + 4, LED_BRIGHT);
@@ -1165,6 +1165,11 @@ void button_handler(ButtonMatrix *bm) {
                 LEDS_set(leds, i + 4, LED_DIM);
               }
             }
+          }
+          if (sel_bank_cur == 0) {
+            LEDS_set(leds, 4, LED_BRIGHT);
+          } else {
+            LEDS_set(leds, 4, LED_DIM);
           }
         }
         LEDS_render(leds);
