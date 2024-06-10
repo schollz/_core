@@ -32,7 +32,7 @@
 
 typedef struct ResonantFilter {
   bool passthrough;
-  uint8_t passthrough_last;
+  int16_t passthrough_last;
   uint8_t filter_type;
   uint8_t fc;
   uint8_t q;
@@ -87,6 +87,7 @@ void ResonantFilter_setFilterType(ResonantFilter* rf, uint8_t filter_type) {
     return;
   }
   rf->filter_type = filter_type;
+  rf->passthrough_last = -1;
   ResonantFilter_reset(rf);
 }
 
