@@ -21,6 +21,7 @@ type Data struct {
 	Resampling          string `json:"resampling"`
 	SettingsBrightness  int    `json:"settingsBrightness"`
 	SettingsClockStop   bool   `json:"settingsClockStop"`
+	SettingsClockOutput bool   `json:"settingsClockOutput"`
 	SettingsKnobXSample bool   `json:"settingsKnobXSample"`
 	Banks               []struct {
 		Files []string `json:"files"`
@@ -110,6 +111,11 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-on"))
 	} else {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-off"))
+	}
+	if data.SettingsClockOutput {
+		os.Create(path.Join(mainFolder, "clock_output_trig-on"))
+	} else {
+		os.Create(path.Join(mainFolder, "clock_output_trig-off"))
 	}
 	if data.SettingsKnobXSample {
 		os.Create(path.Join(mainFolder, "knobx-select_sample"))

@@ -55,6 +55,13 @@ void check_setup_files() {
       clock_start_stop_sync = true;
     }
 
+    // check for clock output trig/gate
+    if (strcmp(fno.fname, "clock_output_trig-on") == 0) {
+      clock_output_trig = true;
+    } else {
+      clock_output_trig = false;
+    }
+
     // check if a file has the prefix "brightness"
     if (strncmp(fno.fname, "brightness-", 11) == 0) {
       global_brightness = extractNumber(fno.fname);
