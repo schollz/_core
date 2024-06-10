@@ -61,9 +61,9 @@ def design_filter(fc, fs, db, q, filter_type):
 # produce a multidimensional array, indexed by q and frequency
 # for C-code generation
 qs = [1.5]
-notes = list(range(44, 128))
+notes = list(range(44, 130))
 filter_types = ["FILTER_LOWPASS", "FILTER_HIGHPASS"]
-filter_types = ["FILTER_LOWPASS"]
+# filter_types = ["FILTER_LOWPASS"]
 print(f"const uint8_t resonantfilter_q_max = {len(qs)};")
 print(f"const uint8_t resonantfilter_fc_max = {len(notes)};")
 print(f"const uint8_t resonantfilter_filter_max = {len(filter_types)};")
@@ -76,6 +76,8 @@ for filter_type in filter_types:
     print(f"// {filter_type}")
     print("{")
     for i, q in enumerate(qs):
+        if filter_type == "FILTER_HIGH_PASS":
+            q = 1.05
         print(f"// q = {q}")
         print("{")
         for j, note in enumerate(notes):
