@@ -106,14 +106,18 @@ bool repeating_timer_callback(struct repeating_timer *t) {
            8) ==
       0) {
     gpio_put(GPIO_CLOCK_OUT, 1);
-  } else if (bpm_timer_counter % (banks[sel_bank_cur]
+    clock_output_trig_time = to_ms_since_boot(get_absolute_time());
+  } else if (!clock_output_trig &&
+             bpm_timer_counter % (banks[sel_bank_cur]
                                       ->sample[sel_sample_cur]
                                       .snd[FILEZERO]
                                       ->splice_trigger *
                                   ectocore_clock_out_divisions
                                       [ectocore_clock_selected_division] /
                                   8 / 2) ==
-             0) {
+                 0) {
+    // if clock output trig mode is on, then it will be switched off in the main
+    // loop
     gpio_put(GPIO_CLOCK_OUT, 0);
   }
 #endif
