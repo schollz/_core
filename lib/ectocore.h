@@ -1069,14 +1069,17 @@ void input_handling() {
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
         if (val == 1) {
           if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
-            printf("[ectocore] ectocore stop\n");
             // A+C
             if (!playback_stopped && !do_stop_playback) {
+              printf("[ectocore] ectocore stop\n");
               if (!button_mute) trigger_button_mute = true;
               do_stop_playback = true;
-              // do_restart_playback = true;
-              // button_mute = false;
+            } else if (playback_stopped && !do_restart_playback) {
+              printf("[ectocore] ectocore start\n");
+              do_restart_playback = true;
+              button_mute = false;
             }
+            TapTempo_reset(taptempo);
           } else {
             printf("[ectocore] btn_mult %d %d\n", val,
                    gpio_btn_state[BTN_TAPTEMPO]);
@@ -1101,6 +1104,7 @@ void input_handling() {
           if (playback_stopped && !do_restart_playback) {
             do_restart_playback = true;
             button_mute = false;
+            TapTempo_reset(taptempo);
           }
         }
       }
