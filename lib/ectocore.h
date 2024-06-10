@@ -866,16 +866,38 @@ void input_handling() {
             }
           }
         } else {
-          // sample selection
-          printf("[ectocore] sample %d\n", val);
-          val = (val * banks[sel_bank_next]->num_samples) / 1024;
-          ws2812_wheel_clear(ws2812);
-          WS2812_fill(ws2812, val, 0, 255, 255);
-          WS2812_show(ws2812);
-          if (val != sel_sample_cur) {
-            sel_sample_next = val;
-            fil_current_change = true;
-            printf("[ectocore] switchsample val=%d\n", val);
+          if (gpio_btn_taptempo_val == 0) {
+            // tap + sample changes gating
+            if (val < 128) {
+              // gating off
+              if (sf->fx_active[FX_TIGHTEN]) {
+                printf("[ectocore] gating off\n");
+                toggle_fx(FX_TIGHTEN);
+              }
+            } else {
+              // gating on
+              if (!sf->fx_active[FX_TIGHTEN]) {
+                printf("[ectocore] gating on\n");
+                toggle_fx(FX_TIGHTEN);
+              }
+              // change gating based on the value
+              sf->fx_param[FX_TIGHTEN][0] = linlin(val, 128, 1024, 0, 200);
+              Gate_set_amount(audio_gate,
+                              45 + 200 - sf->fx_param[FX_TIGHTEN][0]);
+            }
+            ws2812_set_wheel(ws2812, val * 4, 255, 255, 0);
+          } else {
+            // sample selection
+            printf("[ectocore] sample %d\n", val);
+            val = (val * banks[sel_bank_next]->num_samples) / 1024;
+            ws2812_wheel_clear(ws2812);
+            WS2812_fill(ws2812, val, 0, 255, 255);
+            WS2812_show(ws2812);
+            if (val != sel_sample_cur) {
+              sel_sample_next = val;
+              fil_current_change = true;
+              printf("[ectocore] switchsample val=%d\n", val);
+            }
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
