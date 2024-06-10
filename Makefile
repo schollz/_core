@@ -3,25 +3,25 @@ export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
 
 NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
 
-dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 
-zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptoboard.uf2
 
-zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptocore.uf2
 
-zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptocore_nooverclock.uf2
 
-ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h build
+ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore.uf2
 
@@ -93,6 +93,9 @@ lib/transfer_saturate2.h:
 lib/resonantfilter_data.h:
 	cd lib && python3 resonantfilter.py > resonantfilter_data.h
 	clang-format -i --style=google lib/resonantfilter_data.h
+
+lib/cuedsounds.h:
+	cd dev/audio2flash && go build -v && ./audio2flash -in cuedsounds -out ../../lib/cuedsounds.h
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras

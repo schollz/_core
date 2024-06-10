@@ -355,6 +355,10 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
 }
 
 void input_handling() {
+#ifdef INCLUDE_CUEDSOUNDS
+  cuedsounds_do_play = random_integer_in_range(0, 100);
+#endif
+
   // flash bad signs
   while (!fil_is_open) {
     printf("waiting to start\n");
