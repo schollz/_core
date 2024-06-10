@@ -107,6 +107,9 @@ bool usb_midi_present = false;
 #include "charlieplex.h"
 #include "clock_input.h"
 #include "comb.h"
+#ifdef INCLUDE_CUEDSOUNDS
+#include "cuedsounds.h"
+#endif
 #include "debounce.h"
 #include "delay.h"
 #include "dust.h"
