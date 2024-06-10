@@ -261,3 +261,5 @@ dev/starting_samples_kero/
 dev/zeptocore_v2.7.6.uf2
 docs/content/versions/versions.mdlib/cuedsounds.h
 lib/hadouken.h
+docs/content/versions/
+lib/cuedsounds.h
