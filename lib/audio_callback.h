@@ -731,6 +731,7 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
+#ifndef INCLUDE_ECTOCORE
   if (clock_out_do) {
     if (clock_out_ready) {
       clock_out_ready = false;
@@ -743,6 +744,7 @@ BREAKOUT_OF_MUTE:
       }
     }
   }
+#endif
 
 #ifdef INCLUDE_ECTOCORE
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
