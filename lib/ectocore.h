@@ -234,7 +234,7 @@ void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     }
   } else {
     if (show_wheel) {
-      ws2812_set_wheel(ws2812, val * 4, false, true, true);
+      ws2812_set_wheel(ws2812, val * 4, false, false, true);
     }
     // // BREAK MUTE
     // if (val < 20 && !button_mute) {
