@@ -17,7 +17,7 @@ jobs:
     - name: Install sox
       run: |
         sudo apt update
-        sudo apt install sox
+        sudo apt install sox libsox-fmt-mp3
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v3.0.0
       with:
