@@ -57,6 +57,13 @@ TapTempo *TapTempo_malloc() {
 
 void TapTempo_free(TapTempo *self) { free(self); }
 
+void TapTempo_reset(TapTempo *self) {
+  self->index = 0;
+  for (int i = 0; i < TAPTEMPO_SIZE; i++) {
+    self->taps[i] = 0;
+  }
+}
+
 // TapTempo_tap returns the current tempo in bpm
 // calculated from a weighted average of the last taps
 uint16_t TapTempo_tap(TapTempo *self) {
