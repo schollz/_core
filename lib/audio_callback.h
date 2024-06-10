@@ -650,11 +650,9 @@ BREAKOUT_OF_MUTE:
 
 // apply filter
 #ifdef INCLUDE_FILTER
-  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-    for (uint8_t channel = 0; channel < 2; channel++) {
-      samples[i * 2 + channel] =
-          ResonantFilter_update(resFilter[channel], samples[i * 2 + channel]);
-    }
+  for (uint8_t channel = 0; channel < 2; channel++) {
+    ResonantFilter_update(resFilter[channel], samples, buffer->max_sample_count,
+                          channel);
   }
 #endif
 
