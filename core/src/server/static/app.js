@@ -319,6 +319,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsClockStop) {
             app.settingsClockStop = savedState.settingsClockStop;
         }
+        if (savedState.settingsClockOutput) {
+            app.settingsClockOutput = savedState.settingsClockOutput;
+        }
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
@@ -449,6 +452,7 @@ app = new Vue({
         lastSelectedFile: null,
         settingsBrightness: 50,
         settingsClockStop: false,
+        settingsClockOutput: false,
         settingsKnobXSample: false,
         progressBarWidth: '0px',
         dropaudiofilemode: 'default',
@@ -481,6 +485,7 @@ app = new Vue({
         resampling: 'saveState',
         settingsBrightness: 'saveState',
         settingsClockStop: 'saveState',
+        settingsClockOutput: 'saveState',
         settingsKnobXSample: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
@@ -688,6 +693,7 @@ app = new Vue({
                 selectedFile: app.selectedFile,
                 settingsBrightness: app.settingsBrightness,
                 settingsClockStop: app.settingsClockStop,
+                settingsClockOutput: app.settingsClockOutput,
                 settingsKnobXSample: app.settingsKnobXSample,
             };
             if (!hasSavedToCookie) {
@@ -944,6 +950,7 @@ app = new Vue({
                 resampling: this.resampling,
                 settingsBrightness: parseInt(app.settingsBrightness),
                 settingsClockStop: app.settingsClockStop,
+                settingsClockOutput: app.settingsClockOutput,
                 settingsKnobXSample: app.settingsKnobXSample,
                 banks: [],
             };
