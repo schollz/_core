@@ -743,6 +743,16 @@ void input_handling() {
         gpio_put(GPIO_TRIG_OUT, 0);
       }
     }
+
+    // check the clock output if trig mode is active
+    if (clock_output_trig && clock_output_trig_time > 0) {
+      if (to_ms_since_boot(get_absolute_time()) - clock_output_trig_time >
+          100) {
+        gpio_put(GPIO_CLOCK_OUT, 0);
+        clock_output_trig_time = 0;
+      }
+    }
+
     // check for input
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {

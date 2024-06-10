@@ -112,6 +112,11 @@
                     id="settingsClockStop" type="checkbox" v-model="settingsClockStop">
                 <span v-if="settingsClockStop">on</span><span v-else>off</span>
             </p>
+            <p>
+                <label for="settingsClockOutput" style="padding-right:1em;">Clock out</label><input
+                    id="settingsClockOutput" type="checkbox" v-model="settingsClockOutput">
+                <span v-if="settingsClockOutput">trig</span><span v-else>gate</span>
+            </p>
             <!-- slider for brightness-->
             <p style="display: flex; align-items: center;">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>
