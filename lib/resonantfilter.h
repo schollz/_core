@@ -168,7 +168,8 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 #define CROSSFADE_FILTER 8
 #define CROSSFADE_FILTER_WAIT 4
 
-int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
+void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
+                           uint16_t num_samples, uint8_t channel) {
   if (rf->do_setFc) {
     ResonantFilter_setFc_(rf, rf->do_setFc_val);
     rf->do_setFc = false;
@@ -178,29 +179,33 @@ int32_t ResonantFilter_update(ResonantFilter* rf, int32_t in) {
     rf->do_setFilterType = false;
   }
   if (rf->passthrough) {
-    return in;
+    return;
   }
-  int32_t y = q16_16_multiply(rf->b0, in) + q16_16_multiply(rf->b1, rf->x1_f) +
-              q16_16_multiply(rf->b2, rf->x2_f) -
-              q16_16_multiply(rf->a1, rf->y1_f) -
-              q16_16_multiply(rf->a2, rf->y2_f);
+  int32_t y;
+  for (uint16_t i = 0; i < num_samples; i++) {
+    y = q16_16_multiply(rf->b0, samples[i * 2 + channel]) +
+        q16_16_multiply(rf->b1, rf->x1_f) + q16_16_multiply(rf->b2, rf->x2_f) -
+        q16_16_multiply(rf->a1, rf->y1_f) - q16_16_multiply(rf->a2, rf->y2_f);
 
-  rf->x2_f = rf->x1_f;
-  rf->x1_f = in;
-  rf->y2_f = rf->y1_f;
-  rf->y1_f = y;
-  if (rf->passthrough_last < CROSSFADE_FILTER) {
-    rf->passthrough_last++;
-    if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
-      return in;
-    } else {
-      return ((q16_16_fp_to_int32(y) *
-               (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
-              (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
-                (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
-               in)) /
-             (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
+    rf->x2_f = rf->x1_f;
+    rf->x1_f = samples[i * 2 + channel];
+    rf->y2_f = rf->y1_f;
+    rf->y1_f = y;
+    if (rf->passthrough_last < CROSSFADE_FILTER) {
+      rf->passthrough_last++;
+      if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
+        // do nothing
+        continue;
+      } else {
+        samples[i * 2 + channel] =
+            ((q16_16_fp_to_int32(y) *
+              (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
+             (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
+               (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
+              samples[i * 2 + channel])) /
+            (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
+      }
     }
+    samples[i * 2 + channel] = q16_16_fp_to_int32(y);
   }
-  return q16_16_fp_to_int32(y);
 }
