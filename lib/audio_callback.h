@@ -648,6 +648,10 @@ BREAKOUT_OF_MUTE:
     phases[head] += (values_to_read * (phase_forward * 2 - 1));
   }
 
+#ifdef INCLUDE_CUEDSOUNDS
+  cuedsounds_audio_update(samples, buffer->max_sample_count);
+#endif
+
 // apply filter
 #ifdef INCLUDE_FILTER
   for (uint8_t channel = 0; channel < 2; channel++) {
