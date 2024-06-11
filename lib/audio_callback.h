@@ -697,9 +697,12 @@ BREAKOUT_OF_MUTE:
     }
   }
 
-  // apply delay
+// apply delay
+#ifdef INCLUDE_ECTOCORE
+#else
   Delay_setFeedback(delay, 8 - linlin(sf->fx_param[FX_DELAY][0], 0, 240, 2, 8));
   Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
+#endif
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
   // apply reverb
