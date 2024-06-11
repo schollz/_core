@@ -350,6 +350,9 @@ void do_do_retrigger(uint8_t effect, bool on, bool pitch_chanes) {
 }
 
 void break_fx_toggle(uint8_t effect, bool on) {
+  // if (effect != 4) {
+  //   return;
+  // }
   if (on) {
     // set the activation time
     break_fx_beat_activated[effect] =
@@ -551,7 +554,6 @@ void break_fx_update() {
 }
 
 bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
-  break_knob_set_point = val;
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
     if (show_wheel) {
       ws2812_set_wheel_green_yellow_red(ws2812, val);
@@ -578,7 +580,7 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     }
     return true;
   }
-
+  break_knob_set_point = val;
   if (show_wheel) {
     ws2812_set_wheel(ws2812, val * 4, false, false, true);
   }
@@ -1345,38 +1347,50 @@ void input_handling() {
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
+      bool do_try_change = false;
       if (!audio_callback_in_mute) {
+        // uint32_t time_start = time_us_32();
+        sleep_us(100);
         while (!sync_using_sdcard) {
-          sleep_us(250);
+          sleep_us(100);
         }
+        // printf("sync1: %ld\n", time_us_32() - time_start);
+        uint32_t time_start = time_us_32();
+        sleep_us(100);
         while (sync_using_sdcard) {
-          sleep_us(250);
+          sleep_us(100);
+        }
+        // printf("sync2: %ld\n", time_us_32() - time_start);
+        // make sure the audio block was faster than usual
+        if (time_us_32() - time_start < 4000) {
+          do_try_change = true;
         }
       }
-      sync_using_sdcard = true;
-      // measure the time it takes
-      uint32_t time_start = time_us_32();
-      FRESULT fr = f_close(&fil_current);
-      if (fr != FR_OK) {
-        printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-      }
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation_next);
-      fr = f_open(&fil_current, fil_current_name, FA_READ);
-      if (fr != FR_OK) {
-        printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
-      }
+      if (do_try_change) {
+        sync_using_sdcard = true;
+        // measure the time it takes
+        uint32_t time_start = time_us_32();
+        FRESULT fr = f_close(&fil_current);
+        if (fr != FR_OK) {
+          printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+        }
+        sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
+                sel_sample_cur, sel_variation_next);
+        fr = f_open(&fil_current, fil_current_name, FA_READ);
+        if (fr != FR_OK) {
+          printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
+        }
 
-      // TODO: fix this
-      // if sel_variation_next == 0
-      phases[0] = round(
-          ((float)phases[0] * (float)sel_variation_scale[sel_variation_next]) /
-          (float)sel_variation_scale[sel_variation]);
+        // TODO: fix this
+        // if sel_variation_next == 0
+        phases[0] = round(((float)phases[0] *
+                           (float)sel_variation_scale[sel_variation_next]) /
+                          (float)sel_variation_scale[sel_variation]);
 
-      sel_variation = sel_variation_next;
-      sync_using_sdcard = false;
-      printf("[zeptocore] loading new sample variation took %d us\n",
-             time_us_32() - time_start);
+        sel_variation = sel_variation_next;
+        sync_using_sdcard = false;
+        printf("[zeptocore] sel_variation %d us\n", time_us_32() - time_start);
+      }
     }
 
     // updating the leds
