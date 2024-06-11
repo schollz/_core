@@ -218,7 +218,8 @@ uint8_t break_fx_beat_refractory_min_max[32] = {
     4,  16,  // delay
     4,  16,  // comb
     4,  8,   // beat repeat
-    4,  4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4,  16,  // reverb
+    4,  4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
 uint8_t break_fx_beat_duration_min_max[32] = {
     2, 4,   // distortion
@@ -229,7 +230,8 @@ uint8_t break_fx_beat_duration_min_max[32] = {
     4, 16,  // delay
     2, 6,   // comb
     1, 4,   // beat repeat
-    4, 4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 12,  // reverb
+    4, 4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
 uint8_t break_fx_probability_scaling[16] = {
     50,  // distortion
@@ -239,8 +241,9 @@ uint8_t break_fx_probability_scaling[16] = {
     50,  // time stretch
     80,  // delay
     50,  // comb
-    50,  // beat repeat
-    50, 50, 50, 50, 50, 50, 50, 50,
+    40,  // beat repeat
+    50,  // reverb
+    50, 50, 50, 50, 50, 50, 50,
 };
 
 uint8_t break_fx_beat_activated[16] = {
@@ -258,7 +261,7 @@ uint8_t break_fx_beat_after_activated[16] = {
 // }
 
 void break_fx_toggle(uint8_t effect, bool on) {
-  if (effect != 8 - 1) {
+  if (effect != 9 - 1) {
     return;
   }
   if (on) {
@@ -364,10 +367,14 @@ void break_fx_toggle(uint8_t effect, bool on) {
       update_fx(FX_COMB);
       break;
     case 7:
+      // beat repeat
       sf->fx_active[FX_BEATREPEAT] = on;
       update_fx(FX_BEATREPEAT);
       break;
     case 8:
+      // reverb
+      sf->fx_active[FX_EXPAND] = on;
+      update_fx(FX_EXPAND);
       break;
     case 9:
       break;
