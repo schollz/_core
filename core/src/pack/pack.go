@@ -105,9 +105,9 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		return
 	}
 	if data.Resampling == "linear" {
-		os.Create(path.Join(mainFolder, "resampling-linear"))
+		os.Create(path.Join(mainFolder, "resampling_quadratic-off"))
 	} else {
-		os.Create(path.Join(mainFolder, "resampling-quadratic"))
+		os.Create(path.Join(mainFolder, "resampling_quadratic-on"))
 	}
 	if data.SettingsClockStop {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-on"))
@@ -120,9 +120,9 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		os.Create(path.Join(mainFolder, "clock_output_trig-off"))
 	}
 	if data.SettingsKnobXSample {
-		os.Create(path.Join(mainFolder, "knobx-select_sample"))
+		os.Create(path.Join(mainFolder, "knobx_select_sample-on"))
 	} else {
-		os.Create(path.Join(mainFolder, "knobx-default"))
+		os.Create(path.Join(mainFolder, "knobx_select_sample-off"))
 	}
 	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
 

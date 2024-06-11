@@ -40,12 +40,12 @@ void check_setup_files() {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resampling-linear") == 0) {
-      quadratic_resampling = false;
-      printf("[sdcard_startup] linear resampling\n");
-    } else if (strcmp(fno.fname, "resampling-quadratic") == 0) {
+    if (strcmp(fno.fname, "resampling_quadratic-on") == 0) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
+    } else {
+      quadratic_resampling = true;
+      printf("[sdcard_startup] linear resampling\n");
     }
 
     // check for the clock_start_stop_sync
@@ -73,7 +73,7 @@ void check_setup_files() {
     }
 
     // check for the clock_start_stop_sync
-    if (strcmp(fno.fname, "knobx-select_sample") == 0) {
+    if (strcmp(fno.fname, "knobx_select_sample-on") == 0) {
       global_knobx_sample_selector = true;
     } else {
       global_knobx_sample_selector = false;
