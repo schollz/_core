@@ -67,6 +67,7 @@ void toggle_fx(uint8_t fx_num) {
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
 uint8_t debounce_file_change = 0;
+uint16_t break_knob_set_point = 0;
 
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -207,114 +208,6 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
 
   WS2812_show(ws2812);
 }
-void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
-  if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
-    if (show_wheel) {
-      ws2812_set_wheel_green_yellow_red(ws2812, val);
-    }
-    // change volume
-    if (val <= 532) {
-      sf->vol = val * VOLUME_STEPS / 532;
-      sf->fx_active[FX_FUZZ] = 0;
-      sf->fx_active[FX_SATURATE] = 0;
-    } else if (val > 532 && val <= 768) {
-      sf->vol = VOLUME_STEPS;
-      sf->fx_active[FX_FUZZ] = 0;
-      sf->fx_active[FX_SATURATE] = 1;
-      sf->fx_param[FX_SATURATE][0] = 100 + (val - 532) * 128 / (768 - 532);
-    } else if (val > 768) {
-      sf->vol = VOLUME_STEPS;
-      sf->fx_active[FX_SATURATE] = 0;
-      sf->fx_active[FX_FUZZ] = 1;
-      sf->fx_param[FX_FUZZ][0] = (val - 768) * 255 / (1024 - 768);
-    } else {
-      sf->vol = VOLUME_STEPS;
-      sf->fx_active[FX_FUZZ] = 0;
-      sf->fx_active[FX_SATURATE] = 0;
-    }
-  } else {
-    if (show_wheel) {
-      ws2812_set_wheel(ws2812, val * 4, false, false, true);
-    }
-    // // BREAK MUTE
-    // if (val < 20 && !button_mute) {
-    //   trigger_button_mute = true;
-    //   printf("[ectocore] mute\n");
-    //   WS2812_fill(ws2812, 17, 0, 0, 255);
-    //   WS2812_show(ws2812);
-    // } else if (val >= 20 && button_mute) {
-    //   button_mute = false;
-    //   WS2812_fill(ws2812, 17, 0, 255, 0);
-    //   WS2812_show(ws2812);
-    // }
-    uint8_t u8val = val * 255 / 1024;
-    // global_filter_index =
-    //     ectocore_easing_filter[u8val] * (resonantfilter_fc_max) / 255;
-    // printf("[ectocore] global_filter_index: %d\n",
-    // global_filter_index); for (uint8_t channel = 0; channel < 2;
-    // channel++) {
-    //   ResonantFilter_setFilterType(resFilter[channel], 0);
-    //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
-    // }
-
-    if (val > 200) {
-      probability_of_random_retrig = (val - 200) * (val - 200) / 500;
-    } else {
-      probability_of_random_retrig = 0;
-      retrig_beat_num = 0;
-      retrig_ready = false;
-      retrig_vol = 1.0;
-      retrig_pitch = PITCH_VAL_MID;
-    }
-    if (val > 100) {
-      sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 5 / (1024 - 100);
-      sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
-      sf->fx_param[FX_COMB][2] = (val - 100) * 5 / (1024 - 100);
-      sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
-      sf->fx_param[FX_TAPE_STOP][2] = (val - 100) * 3 / (1024 - 100);
-      // sf->fx_param[FX_BEATREPEAT][2] = (val - 100) * 10 / (1024 - 100);
-      sf->fx_param[FX_BITCRUSH][2] = (val - 100) * 8 / (1024 - 100);
-      sf->fx_param[FX_DELAY][2] = (val - 100) * 12 / (1024 - 100);
-    } else {
-      sf->fx_param[FX_REVERSE][2] = 0;
-      if (sf->fx_active[FX_REVERSE]) {
-        toggle_fx(FX_REVERSE);
-      }
-      sf->fx_param[FX_TIMESTRETCH][2] = 0;
-      if (sf->fx_active[FX_TIMESTRETCH]) {
-        toggle_fx(FX_TIMESTRETCH);
-      }
-      sf->fx_param[FX_COMB][2] = 0;
-      if (sf->fx_active[FX_COMB]) {
-        toggle_fx(FX_COMB);
-      }
-      sf->fx_param[FX_EXPAND][2] = 0;
-      if (sf->fx_active[FX_EXPAND]) {
-        toggle_fx(FX_EXPAND);
-      }
-      sf->fx_param[FX_TAPE_STOP][2] = 0;
-      if (sf->fx_active[FX_TAPE_STOP]) {
-        toggle_fx(FX_TAPE_STOP);
-      }
-      sf->fx_param[FX_BEATREPEAT][2] = 0;
-      if (sf->fx_active[FX_BEATREPEAT]) {
-        toggle_fx(FX_BEATREPEAT);
-      }
-      sf->fx_param[FX_BITCRUSH][2] = 0;
-      if (sf->fx_active[FX_BITCRUSH]) {
-        toggle_fx(FX_BITCRUSH);
-      }
-      sf->fx_param[FX_DELAY][2] = 0;
-      if (sf->fx_active[FX_DELAY]) {
-        toggle_fx(FX_DELAY);
-      }
-    }
-  }
-}
-
-void dust_1() {
-  // printf("[ectocore] dust_1\n");
-}
 
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   if (retrig_vol != 1.0) {
@@ -358,6 +251,345 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   retrig_ready = true;
 }
 
+uint8_t break_fx_beat_refractory_min_max[32] = {
+    4,  16,  // distortion
+    4,  16,  // loss
+    4,  16,  // bitcrush
+    4,  16,  // filter
+    16, 32,  // time stretch
+    4,  16,  // delay
+    4,  16,  // comb
+    4,  8,   // beat repeat
+    2,  16,  // reverb
+    2,  6,   // autopan
+    8,  32,  // pitch down
+    8,  32,  // pitch up
+    1,  8,   // reverse
+    4,  8,   // retrigger no pitch
+    8,  16,  // retrigger w/ pitch
+    32, 64,  // tapestop
+};
+uint8_t break_fx_beat_duration_min_max[32] = {
+    2, 4,   // distortion
+    2, 4,   // loss
+    2, 4,   // bitcrush
+    4, 8,   // filter
+    4, 32,  // time stretch
+    4, 16,  // delay
+    2, 6,   // comb
+    1, 4,   // beat repeat
+    4, 12,  // reverb
+    4, 8,   // autopan
+    8, 32,  // pitch down
+    8, 32,  // pitch up
+    1, 8,   // reverse
+    4, 8,   // retrigger no pitch
+    4, 12,  // retrigger w/ pitch
+    8, 16,  // tape stop
+};
+uint8_t break_fx_probability_scaling[16] = {
+    50,  // distortion
+    50,  // loss
+    50,  // bitcrush
+    50,  // filter
+    50,  // time stretch
+    80,  // delay
+    50,  // comb
+    40,  // beat repeat
+    50,  // reverb
+    50,  // autopan
+    40,  // pitch down
+    30,  // pitch up
+    70,  // reverse
+    50,  // retirgger no pitch
+    30,  // retrigger with pitch,
+    5,   // tape sotp
+};
+
+uint8_t break_fx_beat_activated[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+uint8_t break_fx_beat_after_activated[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+// if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
+//   printf("[ecotocre] random retrigger\n");
+//   sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
+//   go_retrigger_2key(random_integer_in_range(0, 15),
+//                     random_integer_in_range(0, 15));
+// }
+
+void do_do_retrigger(uint8_t effect, bool on, bool pitch_chanes) {
+  // retrigger no pitch
+  if (on && retrig_beat_num == 0) {
+    sf->do_retrig_pitch_changes = pitch_chanes;
+    debounce_quantize = 0;
+    retrig_first = true;
+    retrig_beat_num = break_fx_beat_activated[effect];
+    uint8_t retrig_timer_dividers[6] = {8, 6, 4, 3, 2, 1};
+    uint8_t divider = retrig_timer_dividers[random_integer_in_range(0, 5)];
+    retrig_timer_reset = 96 / divider;
+    retrig_beat_num = retrig_beat_num * divider;
+    if (divider > 4) {
+      retrig_beat_num = retrig_beat_num / 2;
+    }
+    retrig_vol = 0.02;
+    retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
+                      ((float)retrig_beat_num);
+    if (random_integer_in_range(0, 100) < 50) {
+      beat_current = beat_current_last;
+    }
+    retrig_ready = true;
+  } else if (!on) {
+    retrig_beat_num = 0;
+    retrig_ready = false;
+    retrig_vol = 1.0;
+    retrig_pitch = PITCH_VAL_MID;
+  }
+}
+
+void break_fx_toggle(uint8_t effect, bool on) {
+  // if (effect != 4) {
+  //   return;
+  // }
+  if (on) {
+    // set the activation time
+    break_fx_beat_activated[effect] =
+        random_integer_in_range(break_fx_beat_duration_min_max[effect * 2],
+                                break_fx_beat_duration_min_max[effect * 2 + 1]);
+    printf("[break_fx_toggle] fx %d on for %d beats\n", effect + 1,
+           break_fx_beat_activated[effect]);
+  } else {
+    // set the refractory period
+    break_fx_beat_after_activated[effect] = random_integer_in_range(
+        break_fx_beat_refractory_min_max[effect * 2],
+        break_fx_beat_refractory_min_max[effect * 2 + 1]);
+    printf("[break_fx_toggle] fx %d off for %d beats\n", effect + 1,
+           break_fx_beat_after_activated[effect]);
+  }
+
+  switch (effect) {
+    case 0:
+      // distortion
+      if (on) {
+        sf->fx_active[FX_FUZZ] = true;
+      } else {
+        sf->fx_active[FX_FUZZ] = false;
+      }
+      update_fx(FX_FUZZ);
+      break;
+    case 1:
+      // loss
+      if (on) {
+        sf->fx_param[FX_SHAPER][0] = random_integer_in_range(0, 255);
+        sf->fx_param[FX_SHAPER][1] = random_integer_in_range(0, 255);
+        sf->fx_active[FX_SHAPER] = true;
+      } else {
+        sf->fx_active[FX_SHAPER] = false;
+      }
+      update_fx(FX_SHAPER);
+      break;
+    case 2:
+      // bitcrush
+      if (on) {
+        sf->fx_param[FX_BITCRUSH][0] = random_integer_in_range(220, 255);
+        sf->fx_param[FX_BITCRUSH][1] = random_integer_in_range(210, 255);
+        sf->fx_active[FX_BITCRUSH] = true;
+      } else {
+        sf->fx_active[FX_BITCRUSH] = false;
+      }
+      update_fx(FX_BITCRUSH);
+      break;
+    case 3:
+      // filter
+      if (on) {
+        sf->fx_param[FX_FILTER][0] = random_integer_in_range(0, 128);
+        sf->fx_param[FX_FILTER][1] = random_integer_in_range(0, 64);
+        sf->fx_active[FX_FILTER] = true;
+      } else {
+        sf->fx_active[FX_FILTER] = false;
+      }
+      update_fx(FX_FILTER);
+      break;
+    case 4:
+      // time stretch
+      if (on) {
+        sf->fx_active[FX_TIMESTRETCH] = true;
+      } else {
+        sf->fx_active[FX_TIMESTRETCH] = false;
+      }
+      update_fx(FX_TIMESTRETCH);
+      break;
+    case 5:
+      // time-synced delay
+      if (on) {
+        uint8_t faster = 1;
+        if (random_integer_in_range(0, 100) < 25) {
+          faster = 2;
+        }
+        if (sf->bpm_tempo > 140) {
+          Delay_setDuration(delay, (30 * 44100) / sf->bpm_tempo / faster);
+        } else {
+          Delay_setDuration(delay, (15 * 44100) / sf->bpm_tempo / faster);
+        }
+        uint8_t feedback = random_integer_in_range(0, 4);
+        if (feedback == 0 && break_fx_beat_activated[effect] > 6) {
+          feedback = 1;
+        }
+        Delay_setFeedback(delay, feedback);
+        sf->fx_active[FX_DELAY] = true;
+      } else {
+        sf->fx_active[FX_DELAY] = false;
+      }
+      update_fx(FX_DELAY);
+      break;
+    case 6:
+      // combo
+      if (on) {
+        sf->fx_param[FX_COMB][0] = random_integer_in_range(0, 255);
+        sf->fx_param[FX_COMB][1] = random_integer_in_range(0, 255);
+        sf->fx_active[FX_COMB] = true;
+      } else {
+        sf->fx_active[FX_COMB] = false;
+      }
+      update_fx(FX_COMB);
+      break;
+    case 7:
+      // beat repeat
+      sf->fx_active[FX_BEATREPEAT] = on;
+      update_fx(FX_BEATREPEAT);
+      break;
+    case 8:
+      // reverb
+      sf->fx_active[FX_EXPAND] = on;
+      update_fx(FX_EXPAND);
+      break;
+    case 9:
+      // autopan
+      sf->fx_active[FX_PAN] = on;
+      uint8_t possible_speeds[3] = {2, 4, 8};
+      lfo_pan_step =
+          Q16_16_2PI / (48 * possible_speeds[random_integer_in_range(0, 2)]);
+      update_fx(FX_PAN);
+      break;
+    case 10:
+      // pitch down
+      if (!sf->fx_active[FX_REPITCH]) {
+        sf->fx_param[FX_REPITCH][0] = 0;
+        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      }
+      sf->fx_active[FX_REPITCH] = on;
+      update_fx(FX_REPITCH);
+      break;
+    case 11:
+      // pitch up
+      if (!sf->fx_active[FX_REPITCH]) {
+        sf->fx_param[FX_REPITCH][0] = 255;
+        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      }
+      sf->fx_active[FX_REPITCH] = on;
+      update_fx(FX_REPITCH);
+      break;
+    case 12:
+      // reverse
+      sf->fx_active[FX_REVERSE] = on;
+      update_fx(FX_REVERSE);
+      break;
+    case 13:
+      // retrigger
+      do_do_retrigger(effect, on, false);
+      break;
+    case 14:
+      // retrigger pitched
+      do_do_retrigger(effect, on, true);
+      break;
+    case 15:
+      sf->fx_param[FX_TAPE_STOP][0] = random_integer_in_range(0, 128);
+      sf->fx_param[FX_TAPE_STOP][1] = random_integer_in_range(0, 128);
+      sf->fx_active[FX_TAPE_STOP] = on;
+      update_fx(FX_TAPE_STOP);
+      break;
+    default:
+  }
+}
+
+void break_fx_update() {
+  if (!beat_did_activate) {
+    return;
+  }
+  beat_did_activate = false;
+  uint16_t break_knob_set_point_scaled =
+      (((break_knob_set_point * break_knob_set_point) / 1024) *
+       break_knob_set_point) /
+      1024;
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    // check if the fx is allowed in the grimoire runes
+    if (grimoire_rune_effect[grimoire_rune][effect] == false &&
+        break_fx_beat_activated[effect] > 0) {
+      // turn off if it is activated
+      break_fx_beat_activated[effect] = 0;
+      break_fx_toggle(effect, false);
+      continue;
+    }
+    if (break_fx_beat_activated[effect] > 0) {
+      break_fx_beat_activated[effect]--;
+      if (break_fx_beat_activated[effect] == 0) {
+        // turn off the fx
+        break_fx_toggle(effect, false);
+      }
+    } else if (break_fx_beat_after_activated[effect] > 0) {
+      // don't allow to be turned on in this refractory period
+      break_fx_beat_after_activated[effect]--;
+    } else if (grimoire_rune_effect[grimoire_rune][effect] == true) {
+      // roll a die to see if the fx is activated
+      if (random_integer_in_range(0, 200) <
+          break_knob_set_point_scaled * break_fx_probability_scaling[effect] /
+              1024) {
+        // activate the effect
+        break_fx_toggle(effect, true);
+      }
+    }
+  }
+}
+
+bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
+  if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
+    if (show_wheel) {
+      ws2812_set_wheel_green_yellow_red(ws2812, val);
+    }
+    // change volume
+    if (val <= 532) {
+      sf->vol = val * VOLUME_STEPS / 532;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 0;
+    } else if (val > 532 && val <= 768) {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 1;
+      sf->fx_param[FX_SATURATE][0] = 100 + (val - 532) * 128 / (768 - 532);
+    } else if (val > 768) {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_SATURATE] = 0;
+      sf->fx_active[FX_FUZZ] = 1;
+      sf->fx_param[FX_FUZZ][0] = (val - 768) * 255 / (1024 - 768);
+    } else {
+      sf->vol = VOLUME_STEPS;
+      sf->fx_active[FX_FUZZ] = 0;
+      sf->fx_active[FX_SATURATE] = 0;
+    }
+    return true;
+  }
+  break_knob_set_point = val;
+  if (show_wheel) {
+    ws2812_set_wheel(ws2812, val * 4, false, false, true);
+  }
+}
+
+void dust_1() {
+  // printf("[ectocore] dust_1\n");
+}
+
 void input_handling() {
 #ifdef INCLUDE_CUEDSOUNDS
   cuedsounds_do_play = random_integer_in_range(0, 100);
@@ -389,18 +621,6 @@ void input_handling() {
   uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
-  uint8_t fx_random_on[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_off[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_max[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
-  uint8_t fx_random_max_off[16] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
   uint16_t debounce_input_detection = 0;
   uint16_t debounce_mean_signal = 0;
   uint16_t mean_signal = 0;
@@ -569,13 +789,6 @@ void input_handling() {
     }
     Onewiremidi_receive(onewiremidi);
 
-    if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
-      printf("[ecotocre] random retrigger\n");
-      sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
-      go_retrigger_2key(random_integer_in_range(0, 15),
-                        random_integer_in_range(0, 15));
-    }
-
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
       Dust_update(dust[i]);
@@ -686,7 +899,8 @@ void input_handling() {
           break_set(linlin(cv_values[i], -512, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
-          if (fil_current_change != true && debounce_file_change == 0) {
+          if (fil_current_change != true && debounce_file_change == 0 &&
+              !sf->fx_active[FX_TIMESTRETCH]) {
             sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
                                      banks[sel_bank_cur]->num_samples);
             if (sel_sample_next != sel_sample_cur) {
@@ -804,7 +1018,8 @@ void input_handling() {
         }
       }
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
-        if (gpio_get(GPIO_BTN_BANK) == 0) {
+        if (gpio_get(GPIO_BTN_BANK) == 0 && !sf->fx_active[FX_TIMESTRETCH] &&
+            fil_current_change == false) {
           // bank selection
           printf("[ectocore] switch bank %d\n", val);
           val = (val * banks_with_samples_num) / 1024;
@@ -848,7 +1063,8 @@ void input_handling() {
                               45 + 200 - sf->fx_param[FX_TIGHTEN][0]);
             }
             ws2812_set_wheel(ws2812, val * 4, 255, 255, 0);
-          } else {
+          } else if (!sf->fx_active[FX_TIMESTRETCH] &&
+                     fil_current_change == false) {
             // sample selection
             printf("[ectocore] sample %d\n", val);
             val = (val * banks[sel_bank_next]->num_samples) / 1024;
@@ -944,6 +1160,17 @@ void input_handling() {
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
         printf("[ectocore] knob_break_atten %d\n", val);
+        // change the grimoire rune
+        grimoire_rune = val * 7 / 1024;
+        // show the current effects toggled for this rune
+        ws2812_wheel_clear(ws2812);
+        for (uint8_t j = 0; j < 16; j++) {
+          if (grimoire_rune_effect[grimoire_rune][j]) {
+            WS2812_fill(ws2812, j, 255, 144, 144);
+          }
+        }
+        WS2812_show(ws2812);
+
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
         if (val < 512 - 24) {
@@ -1023,7 +1250,8 @@ void input_handling() {
         printf("[ectocore] btn_bank %d\n", val);
         if (val == 0) {
           if (to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i] <
-              200) {
+                  200 &&
+              !sf->fx_active[FX_TIMESTRETCH] && fil_current_change == false) {
             // "tap"
             // switch the bank by one
             if (banks_with_samples_num > 1) {
@@ -1115,96 +1343,54 @@ void input_handling() {
     }
 
     // updating the random fx
-    if (clock_did_activate) {
-      clock_did_activate = false;
-      for (uint8_t i = 0; i < 16; i++) {
-        if (sf->fx_param[i][2] > 0) {
-          if (sf->fx_active[i]) {
-            fx_random_on[i]++;
-            fx_random_off[i] = 0;
-            if (fx_random_on[i] >= fx_random_max[i]) {
-              toggle_fx(i);
-              // printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
-              fx_random_max_off[i] = random_integer_in_range(2, 6);
-              if (i == FX_TIMESTRETCH) {
-                fx_random_max_off[i] = random_integer_in_range(4, 8);
-              } else if (i == FX_REVERSE) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_COMB) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_EXPAND) {
-                fx_random_max_off[i] = random_integer_in_range(1, 4);
-              } else if (i == FX_TAPE_STOP) {
-                fx_random_max_off[i] = random_integer_in_range(8, 16);
-              }
-            }
-          } else {
-            fx_random_off[i]++;
-            fx_random_on[i] = 0;
-            if (fx_random_off[i] >= fx_random_max_off[i]) {
-              if (random_integer_in_range(0, 100) < sf->fx_param[i][2] / 4) {
-                fx_random_max[i] = random_integer_in_range(4, 16);
-                if (i == FX_TIMESTRETCH) {
-                  fx_random_max[i] = random_integer_in_range(4, 8);
-                } else if (i == FX_REVERSE) {
-                  fx_random_max[i] = random_integer_in_range(1, 4);
-                } else if (i == FX_COMB) {
-                  fx_random_max[i] = random_integer_in_range(1, 4);
-                } else if (i == FX_EXPAND) {
-                  fx_random_max[i] = random_integer_in_range(2, 4);
-                } else if (i == FX_TAPE_STOP) {
-                  fx_random_max[i] = random_integer_in_range(4, 12);
-                } else if (i == FX_BEATREPEAT) {
-                  fx_random_max[i] = random_integer_in_range(1, 3);
-                }
-                sf->fx_param[i][1] = random_integer_in_range(0, 200);
-                sf->fx_param[i][2] = random_integer_in_range(0, 200);
-                toggle_fx(i);
-                Dazzle_start(dazzle, i % 3);
-                // TODO: also randomize the parameters?
-                // printf("[zeptocore] random fx: %d %d\n", i,
-                // sf->fx_active[i]);
-              }
-            }
-          }
-        }
-      }
-    }
+    break_fx_update();
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
+      bool do_try_change = false;
       if (!audio_callback_in_mute) {
+        // uint32_t time_start = time_us_32();
+        sleep_us(100);
         while (!sync_using_sdcard) {
-          sleep_us(250);
+          sleep_us(100);
         }
+        // printf("sync1: %ld\n", time_us_32() - time_start);
+        uint32_t time_start = time_us_32();
+        sleep_us(100);
         while (sync_using_sdcard) {
-          sleep_us(250);
+          sleep_us(100);
+        }
+        // printf("sync2: %ld\n", time_us_32() - time_start);
+        // make sure the audio block was faster than usual
+        if (time_us_32() - time_start < 4000) {
+          do_try_change = true;
         }
       }
-      sync_using_sdcard = true;
-      // measure the time it takes
-      uint32_t time_start = time_us_32();
-      FRESULT fr = f_close(&fil_current);
-      if (fr != FR_OK) {
-        printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-      }
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation_next);
-      fr = f_open(&fil_current, fil_current_name, FA_READ);
-      if (fr != FR_OK) {
-        printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
-      }
+      if (do_try_change) {
+        sync_using_sdcard = true;
+        // measure the time it takes
+        uint32_t time_start = time_us_32();
+        FRESULT fr = f_close(&fil_current);
+        if (fr != FR_OK) {
+          printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+        }
+        sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
+                sel_sample_cur, sel_variation_next);
+        fr = f_open(&fil_current, fil_current_name, FA_READ);
+        if (fr != FR_OK) {
+          printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
+        }
 
-      // TODO: fix this
-      // if sel_variation_next == 0
-      phases[0] = round(
-          ((float)phases[0] * (float)sel_variation_scale[sel_variation_next]) /
-          (float)sel_variation_scale[sel_variation]);
+        // TODO: fix this
+        // if sel_variation_next == 0
+        phases[0] = round(((float)phases[0] *
+                           (float)sel_variation_scale[sel_variation_next]) /
+                          (float)sel_variation_scale[sel_variation]);
 
-      sel_variation = sel_variation_next;
-      sync_using_sdcard = false;
-      printf("[zeptocore] loading new sample variation took %d us\n",
-             time_us_32() - time_start);
+        sel_variation = sel_variation_next;
+        sync_using_sdcard = false;
+        printf("[zeptocore] sel_variation %d us\n", time_us_32() - time_start);
+      }
     }
 
     // updating the leds

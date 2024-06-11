@@ -67,6 +67,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # INCLUDE_SINEBASS=1
 
     USBD_PID=0x1837
+    SKIP_SDIO_CHECKSUMS=1
 )
 
 

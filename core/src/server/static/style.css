@@ -686,3 +686,129 @@ footer select {
     background-repeat: no-repeat;
     background-position: right 0.5em center;
 }
+
+.grimoire-container {
+    display: flex;
+    align-items: center;
+    margin-top: -2em;
+    margin-bottom: -1em;
+    margin-left: -1.5em;
+}
+
+.dropdown {
+    margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dropdown select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 50px);
+    grid-template-rows: repeat(4, 50px);
+    gap: 10px;
+}
+
+.effect-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.effect-icon i {
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    color: #11111133;
+}
+
+.effect-icon.bright i {
+    color: black;
+}
+
+.effect-icon.bright {
+    transform: scale(1.1);
+}
+
+
+.circle-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.circle-icon {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.circle-icon svg {
+    /* change stroke to gray */
+    stroke: lightgray;
+    transition: stroke 0.3s ease-in-out;
+}
+
+.circle-icon.bright svg {
+    stroke: black;
+}
+
+.circle-icon.bright {
+    transform: scale(1.1);
+}
+
+.circle-icon:nth-child(1) {
+    transform: translate(240%, 270%) rotate(130deg) translate(100px) rotate(-130deg);
+}
+
+.circle-icon:nth-child(2) {
+    transform: translate(240%, 270%) rotate(177deg) translate(100px) rotate(-177deg);
+}
+
+.circle-icon:nth-child(3) {
+    transform: translate(240%, 270%) rotate(224deg) translate(100px) rotate(-224deg);
+}
+
+.circle-icon:nth-child(4) {
+    transform: translate(240%, 270%) rotate(270deg) translate(100px) rotate(-270deg);
+}
+
+.circle-icon:nth-child(5) {
+    transform: translate(240%, 270%) rotate(316deg) translate(100px) rotate(-316deg);
+}
+
+.circle-icon:nth-child(6) {
+    transform: translate(240%, 270%) rotate(363deg) translate(100px) rotate(-363deg);
+}
+
+.circle-icon:nth-child(7) {
+    transform: translate(240%, 270%) rotate(410deg) translate(100px) rotate(-410deg);
+}
+
+.knob-icon {
+    transition: transform 0.3s ease;
+    width: 100px;
+}

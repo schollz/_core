@@ -124,7 +124,7 @@ void BeatRepeat_process(BeatRepeat *self, int16_t *samples,
 }
 
 void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
-  fprintf(stderr, "repeat %d\n", num_samples);
+  // fprintf(stderr, "repeat %d\n", num_samples);
   if (num_samples == 0) {
     if (self->repeat_start > -1 && self->repeat_end > -1) {
       self->crossfade_in = CROSSFADE3_LIMIT;
@@ -157,9 +157,9 @@ void BeatRepeat_repeat(BeatRepeat *self, int16_t num_samples) {
     }
   }
   self->repeat_index = self->repeat_start;
-  fprintf(stderr, "repeating %d->%d (%d samples used, asked for %d)\n",
-          self->repeat_start, self->repeat_end,
-          self->repeat_end - self->repeat_start, num_samples);
+  // fprintf(stderr, "repeating %d->%d (%d samples used, asked for %d)\n",
+  //         self->repeat_start, self->repeat_end,
+  //         self->repeat_end - self->repeat_start, num_samples);
 }
 
 void BeatRepeat_free(BeatRepeat *self) { free(self); }
