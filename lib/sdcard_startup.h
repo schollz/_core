@@ -175,8 +175,22 @@ void update_fx(uint8_t fx_num) {
       break;
     case FX_BEATREPEAT:
       if (sf->fx_active[fx_num]) {
+#ifdef INCLUDE_ECTOCORE
+        uint16_t samples = 30 * 44100 / sf->bpm_tempo;
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 3 / 2;
+        }
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 3 / 4;
+        }
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 2;
+        }
+        BeatRepeat_repeat(beatrepeat, samples);
+#else
         BeatRepeat_repeat(beatrepeat,
                           sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
+#endif
       } else {
         BeatRepeat_repeat(beatrepeat, 0);
       }
