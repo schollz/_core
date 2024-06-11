@@ -65,6 +65,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     playback_stopped = true;
   }
 
+#ifdef INCLUDE_ECTOCORE
+  uint8_t ecto_do_clock_trig = 0;
+#endif
+
 #ifdef INCLUDE_MIDI
   // always send out MIDI clock signal at 24 pulses per quarter note
   repeating_timer_callback_playback_counter++;
@@ -105,6 +109,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
            ectocore_clock_out_divisions[ectocore_clock_selected_division] /
            8) ==
       0) {
+    ecto_do_clock_trig++;
     gpio_put(GPIO_CLOCK_OUT, 1);
     clock_output_trig_time = to_ms_since_boot(get_absolute_time());
   } else if (!clock_output_trig &&
@@ -164,6 +169,9 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
+#ifdef INCLUDE_ECTOCORE
+    ecto_do_clock_trig++;
+#endif
 
     // check if need to do tunneling
     // avoid tunneling if we are in a timestretched variation
@@ -504,6 +512,51 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 
 #ifdef LED_TOP_GPIO
   gpio_put(LED_TOP_GPIO, beat_total % 2 == 0 ? 1 : 0);
+#endif
+
+#ifdef INCLUDE_ECTOCORE
+  if (ecto_do_clock_trig == 2) {
+    ecto_do_clock_trig = 0;
+    ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+    uint16_t j = banks[sel_bank_cur]
+                     ->sample[sel_sample_cur]
+                     .snd[FILEZERO]
+                     ->slice_current;
+    if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
+      if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 1 ||
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 3) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
+      if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 2 ||
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 3) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
+      if (banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->slice_type[j] > 0) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
+      if (random_integer_in_range(1, 100) <= 15) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    }
+  }
 #endif
 
   return true;

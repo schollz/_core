@@ -17,8 +17,8 @@ import (
 
 const NUM_FREQUNCIES = 435
 
-var kick_frequencies = [2]int{0, 204}
-var snare_frequencies = [2]int{225, 275}
+var kick_frequencies = [2]int{0, 170}
+var snare_frequencies = [2]int{225, 295}
 
 // DrumExtract takes the original filename and the fractional slice start/stop points
 // and prints out a slice of booleans indicating whether or not there is a kick at each slice
@@ -158,22 +158,22 @@ func DrumExtract(fname string, slice_start []float64, slice_end []float64) (kick
 	kickvalueStd := stddev(kickvalues)
 	snarevalueStd := stddev(snarevalues)
 
-	// for _, v := range kickvalues {
-	// 	fmt.Println(v)
-	// }
-	// for _, v := range snarevalues {
-	// 	fmt.Println(v)
-	// }
-	// fmt.Println(kickvalueStd)
+	for _, v := range kickvalues {
+		fmt.Println(v)
+	}
+	for _, v := range snarevalues {
+		fmt.Println(v)
+	}
+	fmt.Println(kickvalueStd)
 	_, _, maxi, _ := peakdetect.PeakDetect(kickvalues[:], kickvalueStd)
 	_, _, smaxi, _ := peakdetect.PeakDetect(snarevalues[:], snarevalueStd)
-	// fmt.Println("peaks")
-	// for _, v := range maxi {
-	// 	fmt.Println(v)
-	// }
-	// for _, v := range smaxi {
-	// 	fmt.Println(v + len(kickvalues))
-	// }
+	fmt.Println("peaks")
+	for _, v := range maxi {
+		fmt.Println(v)
+	}
+	for _, v := range smaxi {
+		fmt.Println(v + len(kickvalues))
+	}
 	kicks = make([]bool, len(kickvalues))
 	snares = make([]bool, len(snarevalues))
 	for _, v := range maxi {
