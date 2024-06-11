@@ -257,13 +257,17 @@ void break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     //   ResonantFilter_setFc(resFilter[channel], global_filter_index);
     // }
 
-    if (val > 700) {
-      probability_of_random_retrig = (val - 700) * (val - 700) / 500;
+    if (val > 200) {
+      probability_of_random_retrig = (val - 200) * (val - 200) / 500;
     } else {
       probability_of_random_retrig = 0;
+      retrig_beat_num = 0;
+      retrig_ready = false;
+      retrig_vol = 1.0;
+      retrig_pitch = PITCH_VAL_MID;
     }
     if (val > 100) {
-      sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 15 / (1024 - 100);
+      sf->fx_param[FX_TIMESTRETCH][2] = (val - 100) * 5 / (1024 - 100);
       sf->fx_param[FX_REVERSE][2] = (val - 100) * 100 / (1024 - 100);
       sf->fx_param[FX_COMB][2] = (val - 100) * 5 / (1024 - 100);
       sf->fx_param[FX_EXPAND][2] = (val - 100) * 15 / (1024 - 100);
@@ -698,53 +702,11 @@ void input_handling() {
       debounce_file_change--;
     }
 
-    if (clock_out_ready) {
-      clock_out_ready = false;
-      uint16_t j = beat_current;
-      while (j > banks[sel_bank_cur]
-                     ->sample[sel_sample_cur]
-                     .snd[FILEZERO]
-                     ->slice_num) {
-        j -= banks[sel_bank_cur]
-                 ->sample[sel_sample_cur]
-                 .snd[FILEZERO]
-                 ->slice_num;
-      }
-      if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
-        if (banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 1 ||
-            banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 3) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
-        if (banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 2 ||
-            banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 3) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
-        if (random_integer_in_range(1, 100) < 20) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      }
-    } else if (debounce_trig > 0) {
-      debounce_trig--;
-      if (debounce_trig == 0) {
+    // turn off trigout after 10 ms
+    if (ecto_trig_out_last > 0) {
+      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 10) {
         gpio_put(GPIO_TRIG_OUT, 0);
+        ecto_trig_out_last = 0;
       }
     }
 
@@ -1165,7 +1127,7 @@ void input_handling() {
               // printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
               fx_random_max_off[i] = random_integer_in_range(2, 6);
               if (i == FX_TIMESTRETCH) {
-                fx_random_max_off[i] = random_integer_in_range(16, 32);
+                fx_random_max_off[i] = random_integer_in_range(4, 8);
               } else if (i == FX_REVERSE) {
                 fx_random_max_off[i] = random_integer_in_range(1, 4);
               } else if (i == FX_COMB) {
@@ -1183,7 +1145,7 @@ void input_handling() {
               if (random_integer_in_range(0, 100) < sf->fx_param[i][2] / 4) {
                 fx_random_max[i] = random_integer_in_range(4, 16);
                 if (i == FX_TIMESTRETCH) {
-                  fx_random_max[i] = random_integer_in_range(16, 32);
+                  fx_random_max[i] = random_integer_in_range(4, 8);
                 } else if (i == FX_REVERSE) {
                   fx_random_max[i] = random_integer_in_range(1, 4);
                 } else if (i == FX_COMB) {
