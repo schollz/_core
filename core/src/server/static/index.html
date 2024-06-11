@@ -117,18 +117,119 @@
                     id="settingsClockOutput" type="checkbox" v-model="settingsClockOutput">
                 <span v-if="settingsClockOutput">trig</span><span v-else>gate</span>
             </p>
+            <!-- slider for brightness-->
+            <p style="display: flex; align-items: center;">
+                <label for="brightness" style="padding-right:1em;">Brightness</label>
+                <input type="range" id="brightness" name="brightness" min="0" max="100" value="50"
+                    v-model="settingsBrightness">
+                {{ settingsBrightness }}%
+            </p>
+
             <p>
-            <div class="container">
+                Grimoire Break random effects:
+            <div class="grimoire-container">
                 <div class="circle-container">
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 130)"><i class="fas fa-home"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 170)"><i class="fas fa-user"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 210)"><i class="fas fa-bell"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 250)"><i class="fas fa-cog"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 290)"><i class="fas fa-envelope"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 330)"><i class="fas fa-heart"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 370)"><i class="fas fa-star"></i></div>
-                    <div class="circle-icon" onclick="toggleCircleIcon(this, 410)"><i class="fas fa-search"></i></div>
-                    <div class="knob-icon" id="knob"><svg width="100%" height="100%" viewBox="0 0 720 720" version="1.1"
+                    <div class="circle-icon" @click="grimoireClick(0);" :class="{bright: grimoireSelected==0 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+                    <div class="circle-icon" @click="grimoireClick(1);" :class="{bright: grimoireSelected==1 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(2);" :class="{bright: grimoireSelected==2 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(3);" :class="{bright: grimoireSelected==3 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(4);" :class="{bright: grimoireSelected==4 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(5);" :class="{bright: grimoireSelected==5 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(6);" :class="{bright: grimoireSelected==6 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <!-- change knob degrees by Vue2.0 variable grimoireKnobDegrees -->
+                    <div class="knob-icon" id="knob"
+                        :style="{ transform: 'translate(97.5%, 100%) rotate(' + grimoireKnobDegrees + 'deg)' }">
+                        <svg width="100%" height="100%" viewBox="0 0 720 720" version="1.1"
                             xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                             xml:space="preserve" xmlns:serif="http://www.serif.com/"
                             style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
@@ -144,36 +245,72 @@
                     </div>
                 </div>
                 <div class="icon-grid">
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-home"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-user"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-bell"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-cog"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-envelope"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-heart"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-star"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-search"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-camera"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-music"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-film"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-book"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-map"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-umbrella"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-gift"></i></div>
-                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-globe"></i></div>
+                    <div id="distortionEffect" class="effect-icon" @click="grimoireEffectClick(0);"
+                        :class="{bright: grimoireEffects[grimoireSelected][0] }">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div id="lossEffect" class="effect-icon" @click="grimoireEffectClick(1);"
+                        :class="{bright: grimoireEffects[grimoireSelected][1] }">
+                        <i class="fas fa-radio"></i>
+                    </div>
+                    <div id="bitcrushEffect" class="effect-icon" @click="grimoireEffectClick(2);"
+                        :class="{bright: grimoireEffects[grimoireSelected][2] }">
+                        <i class="fas fa-wave-square"></i>
+                    </div>
+                    <div id="filterEffect" class="effect-icon" @click="grimoireEffectClick(3);"
+                        :class="{bright: grimoireEffects[grimoireSelected][3] }">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div id="timestretchEffect" class="effect-icon" @click="grimoireEffectClick(4);"
+                        :class="{bright: grimoireEffects[grimoireSelected][4] }">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div id="delayEffect" class="effect-icon" @click="grimoireEffectClick(5);"
+                        :class="{bright: grimoireEffects[grimoireSelected][5] }">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div id="combEffect" class="effect-icon" @click="grimoireEffectClick(6);"
+                        :class="{bright: grimoireEffects[grimoireSelected][6] }">
+                        <i class="fas fa-brush"></i>
+                    </div>
+                    <div id="beatRepeatEffect" class="effect-icon" @click="grimoireEffectClick(7);"
+                        :class="{bright: grimoireEffects[grimoireSelected][7] }">
+                        <i class="fas fa-redo-alt"></i>
+                    </div>
+                    <div id="reverbEffect" class="effect-icon" @click="grimoireEffectClick(8);"
+                        :class="{bright: grimoireEffects[grimoireSelected][8] }">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div id="autopanEffect" class="effect-icon" @click="grimoireEffectClick(9);"
+                        :class="{bright: grimoireEffects[grimoireSelected][9] }">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div id="slowDownEffect" class="effect-icon" @click="grimoireEffectClick(10);"
+                        :class="{bright: grimoireEffects[grimoireSelected][10] }">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <div id="speedupEffect" class="effect-icon" @click="grimoireEffectClick(11);"
+                        :class="{bright: grimoireEffects[grimoireSelected][11] }">
+                        <i class="fas fa-running"> </i>
+                    </div>
+                    <div id="reverseEffect" class="effect-icon" @click="grimoireEffectClick(12);"
+                        :class="{bright: grimoireEffects[grimoireSelected][12] }">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div id="retriggerEffect" class="effect-icon" @click="grimoireEffectClick(13);"
+                        :class="{bright: grimoireEffects[grimoireSelected][13] }">
+                        <i class="fas fa-braille"></i>
+                    </div>
+                    <div id="retriggerPitchEffect" class="effect-icon" @click="grimoireEffectClick(14);"
+                        :class="{bright: grimoireEffects[grimoireSelected][14] }">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div id="tapestopEffect" class="effect-icon" @click="grimoireEffectClick(15);"
+                        :class="{bright: grimoireEffects[grimoireSelected][15] }">
+                        <i class="fas fa-tape"></i>
+                    </div>
                 </div>
             </div>
-            <script>
-                function toggleBrightness(element) {
-                    element.classList.toggle('bright');
-                }
-            </script>
-            </p>
-            <!-- slider for brightness-->
-            <p style="display: flex; align-items: center;">
-                <label for="brightness" style="padding-right:1em;">Brightness</label>
-                <input type="range" id="brightness" name="brightness" min="0" max="100" value="50"
-                    v-model="settingsBrightness">
-                {{ settingsBrightness }}%
             </p>
             [[ end ]]
             <p style="text-align: center;">
