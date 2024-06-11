@@ -479,13 +479,14 @@ app = new Vue({
         grimoireSelected: 0,
         grimoireKnobDegrees: 0,
         settingsGrimoireEffects: [
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            // fuzz, loss,  bitcr, filte, times, delay, combf, repea, rever, panni, slowd, speed, rever, retri, retri, stop 
+            [true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, true, false, false, false, false, false, false, true, false, false, false],
+            [false, false, false, false, true, true, false, false, true, true, false, false, false, false, false, false],
+            [false, false, false, false, false, true, true, false, true, false, false, false, true, true, false, false],
+            [false, false, false, false, false, false, false, false, false, false, true, true, true, false, true, true],
+            [false, false, false, false, true, true, false, false, false, true, false, false, false, false, false, false],
+            [true, false, true, false, true, true, true, true, false, true, false, false, true, true, true, false],
         ],
     },
     watch: {
@@ -1238,6 +1239,46 @@ window.addEventListener('load', (event) => {
         tippy('#show-dialog-settings', {
             content: 'Global settings are files that go on the SD card.',
         });
+
+
+        let grimoireList = [
+            "amalgam",
+            "alum",
+            "tree",
+            "azurite",
+            "hematite",
+            "sulphur",
+            "brimstone",
+        ];
+        for (let ii = 0; ii < grimoireList.length; ii++) {
+            if (ii < 3) {
+                // show on the left
+                tippy('#grimoire' + ii, {
+                    content: grimoireList[ii],
+                    zIndex: 99999999,
+                    appendTo: "parent",
+                    hideOnClick: false,
+                    placement: 'left',
+                });
+            } else if (ii > 3) {
+                // show on the right
+                tippy('#grimoire' + ii, {
+                    content: grimoireList[ii],
+                    zIndex: 99999999,
+                    appendTo: "parent",
+                    hideOnClick: false,
+                    placement: 'right',
+                });
+            } else {
+                tippy('#grimoire' + ii, {
+                    content: grimoireList[ii],
+                    zIndex: 99999999,
+                    appendTo: "parent",
+                    hideOnClick: false,
+                });
+
+            }
+        }
 
         let effectList = [
             ['distortionEffect', 'Fuzz distortion'],
