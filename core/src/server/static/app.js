@@ -319,6 +319,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsClockStop) {
             app.settingsClockStop = savedState.settingsClockStop;
         }
+        if (savedState.settingsGrimoireEffects) {
+            app.settingsGrimoireEffects = savedState.settingsGrimoireEffects;
+        }
         if (savedState.settingsClockOutput) {
             app.settingsClockOutput = savedState.settingsClockOutput;
         }
@@ -475,7 +478,7 @@ app = new Vue({
         selectedFiles: [], // New property to store selected files
         grimoireSelected: 0,
         grimoireKnobDegrees: 0,
-        grimoireEffects: [
+        settingsGrimoireEffects: [
             [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
             [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
             [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
@@ -497,6 +500,7 @@ app = new Vue({
         settingsBrightness: 'saveState',
         settingsClockStop: 'saveState',
         settingsClockOutput: 'saveState',
+        settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
@@ -518,7 +522,7 @@ app = new Vue({
     },
     methods: {
         isGrimoireEffectSelected(num) {
-            let v = this.grimoireEffects[this.grimoireSelected][num];
+            let v = this.settingsGrimoireEffects[this.grimoireSelected][num];
             console.log(v);
             return v;
         },
@@ -527,9 +531,11 @@ app = new Vue({
             this.grimoireKnobDegrees = num * (505 - 220) / 6 + 220;
         },
         grimoireEffectClick(num) {
-            this.grimoireEffects[this.grimoireSelected][num] = !this.grimoireEffects[this.grimoireSelected][num];
+            this.settingsGrimoireEffects[this.grimoireSelected][num] = !this.settingsGrimoireEffects[this.grimoireSelected][num];
             // update vue2 
             this.$forceUpdate();
+            // update state
+            this.saveState();
         },
         resetDevice() {
             midiResetDevice();
@@ -719,6 +725,7 @@ app = new Vue({
                 settingsBrightness: app.settingsBrightness,
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
+                settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
             };
             if (!hasSavedToCookie) {
@@ -976,6 +983,7 @@ app = new Vue({
                 settingsBrightness: parseInt(app.settingsBrightness),
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
+                settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 banks: [],
             };
