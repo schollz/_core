@@ -209,26 +209,42 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
   WS2812_show(ws2812);
 }
 
-uint8_t break_fx_beat_refractory_min[16] = {
-    4, 4, 4, 4, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+uint8_t break_fx_beat_refractory_min_max[32] = {
+    4,  16,  // distortion
+    4,  16,  // loss
+    4,  16,  // bitcrush
+    4,  16,  // filter
+    16, 32,  // time stretch
+    4,  16,  // delay
+    4,  16,  // comb
+    4,  4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
-uint8_t break_fx_beat_refractory_max[16] = {
-    16, 16, 16, 16, 32, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+uint8_t break_fx_beat_duration_min_max[32] = {
+    2, 4,   // distortion
+    2, 4,   // loss
+    2, 4,   // bitcrush
+    4, 8,   // filter
+    4, 32,  // time stretch
+    4, 16,  // delay
+    2, 6,   // comb
+    4, 4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
-uint8_t break_fx_beat_duration_min[16] = {
-    2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+uint8_t break_fx_probability_scaling[16] = {
+    50,  // distortion
+    50,  // loss
+    50,  // bitcrush
+    50,  // filter
+    50,  // time stretch
+    80,  // delay
+    50,  // comb
+    50, 50, 50, 50, 50, 50, 50, 50, 50,
 };
-uint8_t break_fx_beat_duration_max[16] = {
-    4, 8, 8, 8, 32, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-};
+
 uint8_t break_fx_beat_activated[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 uint8_t break_fx_beat_after_activated[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
-uint8_t break_fx_probability_scaling[16] = {
-    50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
 };
 
 // if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
@@ -239,17 +255,21 @@ uint8_t break_fx_probability_scaling[16] = {
 // }
 
 void break_fx_toggle(uint8_t effect, bool on) {
+  if (effect != 7 - 1) {
+    return;
+  }
   if (on) {
     // set the activation time
-    break_fx_beat_activated[effect] = random_integer_in_range(
-        break_fx_beat_duration_min[effect], break_fx_beat_duration_max[effect]);
+    break_fx_beat_activated[effect] =
+        random_integer_in_range(break_fx_beat_duration_min_max[effect * 2],
+                                break_fx_beat_duration_min_max[effect * 2 + 1]);
     printf("[break_fx_toggle] fx %d on for %d beats\n", effect + 1,
            break_fx_beat_activated[effect]);
   } else {
     // set the refractory period
-    break_fx_beat_after_activated[effect] =
-        random_integer_in_range(break_fx_beat_refractory_min[effect],
-                                break_fx_beat_refractory_max[effect]);
+    break_fx_beat_after_activated[effect] = random_integer_in_range(
+        break_fx_beat_refractory_min_max[effect * 2],
+        break_fx_beat_refractory_min_max[effect * 2 + 1]);
     printf("[break_fx_toggle] fx %d off for %d beats\n", effect + 1,
            break_fx_beat_after_activated[effect]);
   }
@@ -307,8 +327,38 @@ void break_fx_toggle(uint8_t effect, bool on) {
       update_fx(FX_TIMESTRETCH);
       break;
     case 5:
+      // time-synced delay
+      if (on) {
+        uint8_t faster = 1;
+        if (random_integer_in_range(0, 100) < 25) {
+          faster = 2;
+        }
+        if (sf->bpm_tempo > 140) {
+          Delay_setDuration(delay, (30 * 44100) / sf->bpm_tempo / faster);
+        } else {
+          Delay_setDuration(delay, (15 * 44100) / sf->bpm_tempo / faster);
+        }
+        uint8_t feedback = random_integer_in_range(0, 4);
+        if (feedback == 0 && break_fx_beat_activated[effect] > 6) {
+          feedback = 1;
+        }
+        Delay_setFeedback(delay, feedback);
+        sf->fx_active[FX_DELAY] = true;
+      } else {
+        sf->fx_active[FX_DELAY] = false;
+      }
+      update_fx(FX_DELAY);
       break;
     case 6:
+      // combo
+      if (on) {
+        sf->fx_param[FX_COMB][0] = random_integer_in_range(0, 255);
+        sf->fx_param[FX_COMB][1] = random_integer_in_range(0, 255);
+        sf->fx_active[FX_COMB] = true;
+      } else {
+        sf->fx_active[FX_COMB] = false;
+      }
+      update_fx(FX_COMB);
       break;
     case 7:
       break;
