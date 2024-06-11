@@ -117,6 +117,53 @@
                     id="settingsClockOutput" type="checkbox" v-model="settingsClockOutput">
                 <span v-if="settingsClockOutput">trig</span><span v-else>gate</span>
             </p>
+            <p>
+            <div class="container">
+                <div class="dropdown">
+                    <select id="iconSelect">
+                        <option value="home">Home</option>
+                        <option value="user">User</option>
+                        <option value="bell">Bell</option>
+                        <option value="cog">Cog</option>
+                        <option value="envelope">Envelope</option>
+                        <option value="heart">Heart</option>
+                        <option value="star">Star</option>
+                        <option value="search">Search</option>
+                        <option value="camera">Camera</option>
+                        <option value="music">Music</option>
+                        <option value="film">Film</option>
+                        <option value="book">Book</option>
+                        <option value="map">Map</option>
+                        <option value="umbrella">Umbrella</option>
+                        <option value="gift">Gift</option>
+                        <option value="globe">Globe</option>
+                    </select>
+                </div>
+                <div class="icon-grid">
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-home"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-user"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-bell"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-cog"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-envelope"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-heart"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-star"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-search"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-camera"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-music"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-film"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-book"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-map"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-umbrella"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-gift"></i></div>
+                    <div class="icon" onclick="toggleBrightness(this)"><i class="fas fa-globe"></i></div>
+                </div>
+            </div>
+            <script>
+                function toggleBrightness(element) {
+                    element.classList.toggle('bright');
+                }
+            </script>
+            </p>
             <!-- slider for brightness-->
             <p style="display: flex; align-items: center;">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>
@@ -649,6 +696,8 @@
             document.getElementById("show-dialog").addEventListener("click", () => {
                 document.getElementById("dialog").showModal();
             });
+            // TODO: remove this
+            document.getElementById("dialog-settings").showModal();
             document.getElementById("show-dialog-settings").addEventListener("click", () => {
                 document.getElementById("dialog-settings").showModal();
             });

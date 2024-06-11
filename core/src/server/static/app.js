@@ -1213,6 +1213,8 @@ window.addEventListener('load', (event) => {
                 placement: 'right',
             });
         }
+
+
     }, 1000);
 
 });

@@ -686,3 +686,58 @@ footer select {
     background-repeat: no-repeat;
     background-position: right 0.5em center;
 }
+
+.container {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown {
+    margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dropdown select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 50px);
+    grid-template-rows: repeat(4, 50px);
+    gap: 10px;
+}
+
+.icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.icon i {
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    color: #11111133;
+}
+
+.icon.bright i {
+    color: black;
+}
+
+.icon.bright {
+    transform: scale(1.1);
+}
