@@ -209,14 +209,17 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
   WS2812_show(ws2812);
 }
 
-uint8_t break_fx_beat_refractory[16] = {
-    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+uint8_t break_fx_beat_refractory_min[16] = {
+    4, 4, 4, 4, 16, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 };
-uint8_t break_fx_beat_duration_max[16] = {
-    4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+uint8_t break_fx_beat_refractory_max[16] = {
+    16, 16, 16, 16, 32, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
 };
 uint8_t break_fx_beat_duration_min[16] = {
     2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+};
+uint8_t break_fx_beat_duration_max[16] = {
+    4, 8, 8, 8, 32, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
 };
 uint8_t break_fx_beat_activated[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -225,7 +228,7 @@ uint8_t break_fx_beat_after_activated[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 uint8_t break_fx_probability_scaling[16] = {
-    50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
 };
 
 // if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
@@ -237,86 +240,95 @@ uint8_t break_fx_probability_scaling[16] = {
 
 void break_fx_toggle(uint8_t effect, bool on) {
   if (on) {
-    printf("[break_fx_toggle] fx %d on\n", effect + 1);
-    switch (effect) {
-      case 0:
-        // distortion + fuzz
-        sf->fx_active[FX_FUZZ] = true;
-        update_fx(FX_FUZZ);
-        break;
-      case 1:
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      case 4:
-        break;
-      case 5:
-        break;
-      case 6:
-        break;
-      case 7:
-        break;
-      case 8:
-        break;
-      case 9:
-        break;
-      case 10:
-        break;
-      case 11:
-        break;
-      case 12:
-        break;
-      case 13:
-        break;
-      case 14:
-        break;
-      case 15:
-        break;
-      default:
-    }
-
+    // set the activation time
+    break_fx_beat_activated[effect] = random_integer_in_range(
+        break_fx_beat_duration_min[effect], break_fx_beat_duration_max[effect]);
+    printf("[break_fx_toggle] fx %d on for %d beats\n", effect + 1,
+           break_fx_beat_activated[effect]);
   } else {
-    printf("[break_fx_toggle] fx %d off\n", effect + 1);
-    switch (effect) {
-      case 0:
-        // distortion
+    // set the refractory period
+    break_fx_beat_after_activated[effect] =
+        random_integer_in_range(break_fx_beat_refractory_min[effect],
+                                break_fx_beat_refractory_max[effect]);
+    printf("[break_fx_toggle] fx %d off for %d beats\n", effect + 1,
+           break_fx_beat_after_activated[effect]);
+  }
+
+  switch (effect) {
+    case 0:
+      // distortion
+      if (on) {
+        sf->fx_active[FX_FUZZ] = true;
+      } else {
         sf->fx_active[FX_FUZZ] = false;
-        update_fx(FX_FUZZ);
-        break;
-      case 1:
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      case 4:
-        break;
-      case 5:
-        break;
-      case 6:
-        break;
-      case 7:
-        break;
-      case 8:
-        break;
-      case 9:
-        break;
-      case 10:
-        break;
-      case 11:
-        break;
-      case 12:
-        break;
-      case 13:
-        break;
-      case 14:
-        break;
-      case 15:
-        break;
-      default:
-    }
+      }
+      update_fx(FX_FUZZ);
+      break;
+    case 1:
+      // loss
+      if (on) {
+        sf->fx_param[FX_SHAPER][0] = random_integer_in_range(0, 255);
+        sf->fx_param[FX_SHAPER][1] = random_integer_in_range(0, 255);
+        sf->fx_active[FX_SHAPER] = true;
+      } else {
+        sf->fx_active[FX_SHAPER] = false;
+      }
+      update_fx(FX_SHAPER);
+      break;
+    case 2:
+      // bitcrush
+      if (on) {
+        sf->fx_param[FX_BITCRUSH][0] = random_integer_in_range(220, 255);
+        sf->fx_param[FX_BITCRUSH][1] = random_integer_in_range(210, 255);
+        sf->fx_active[FX_BITCRUSH] = true;
+      } else {
+        sf->fx_active[FX_BITCRUSH] = false;
+      }
+      update_fx(FX_BITCRUSH);
+      break;
+    case 3:
+      // filter
+      if (on) {
+        sf->fx_param[FX_FILTER][0] = random_integer_in_range(0, 128);
+        sf->fx_param[FX_FILTER][1] = random_integer_in_range(0, 64);
+        sf->fx_active[FX_FILTER] = true;
+      } else {
+        sf->fx_active[FX_FILTER] = false;
+      }
+      update_fx(FX_FILTER);
+      break;
+    case 4:
+      // time stretch
+      if (on) {
+        sf->fx_active[FX_TIMESTRETCH] = true;
+      } else {
+        sf->fx_active[FX_TIMESTRETCH] = false;
+      }
+      update_fx(FX_TIMESTRETCH);
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+    case 7:
+      break;
+    case 8:
+      break;
+    case 9:
+      break;
+    case 10:
+      break;
+    case 11:
+      break;
+    case 12:
+      break;
+    case 13:
+      break;
+    case 14:
+      break;
+    case 15:
+      break;
+    default:
   }
 }
 
@@ -331,8 +343,10 @@ void break_fx_update() {
       1024;
   for (uint8_t effect = 0; effect < 16; effect++) {
     // check if the fx is allowed in the grimoire runes
-    if (grimoire_rune_effect[grimoire_rune][effect] == false) {
+    if (grimoire_rune_effect[grimoire_rune][effect] == false &&
+        break_fx_beat_activated[effect] > 0) {
       // turn off if it is activated
+      break_fx_beat_activated[effect] = 0;
       break_fx_toggle(effect, false);
       continue;
     }
@@ -341,24 +355,15 @@ void break_fx_update() {
       if (break_fx_beat_activated[effect] == 0) {
         // turn off the fx
         break_fx_toggle(effect, false);
-        // set the refractory period
-        break_fx_beat_after_activated[effect] =
-            break_fx_beat_refractory[effect];
       }
     } else if (break_fx_beat_after_activated[effect] > 0) {
       // don't allow to be turned on in this refractory period
       break_fx_beat_after_activated[effect]--;
-    } else {
+    } else if (grimoire_rune_effect[grimoire_rune][effect] == true) {
       // roll a die to see if the fx is activated
-      // printf("[ectocore] break_fx_roll: %d\n", break_knob_set_point_scaled);
       if (random_integer_in_range(0, 100) <
           break_knob_set_point_scaled * break_fx_probability_scaling[effect] /
               1024) {
-        break_fx_beat_activated[effect] =
-            random_integer_in_range(break_fx_beat_duration_min[effect],
-                                    break_fx_beat_duration_max[effect]);
-        printf("[ectocore] break_fx_activate: %d (%d beats)\n", effect,
-               break_fx_beat_activated[effect]);
         // activate the effect
         break_fx_toggle(effect, true);
       }
@@ -828,7 +833,8 @@ void input_handling() {
           break_set(linlin(cv_values[i], -512, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
           // change the sample based on the cv value
-          if (fil_current_change != true && debounce_file_change == 0) {
+          if (fil_current_change != true && debounce_file_change == 0 &&
+              !sf->fx_active[FX_TIMESTRETCH]) {
             sel_sample_next = linlin(cv_values[i], 0, 1024, 0,
                                      banks[sel_bank_cur]->num_samples);
             if (sel_sample_next != sel_sample_cur) {
@@ -946,7 +952,8 @@ void input_handling() {
         }
       }
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
-        if (gpio_get(GPIO_BTN_BANK) == 0) {
+        if (gpio_get(GPIO_BTN_BANK) == 0 && !sf->fx_active[FX_TIMESTRETCH] &&
+            fil_current_change == false) {
           // bank selection
           printf("[ectocore] switch bank %d\n", val);
           val = (val * banks_with_samples_num) / 1024;
@@ -990,7 +997,8 @@ void input_handling() {
                               45 + 200 - sf->fx_param[FX_TIGHTEN][0]);
             }
             ws2812_set_wheel(ws2812, val * 4, 255, 255, 0);
-          } else {
+          } else if (!sf->fx_active[FX_TIMESTRETCH] &&
+                     fil_current_change == false) {
             // sample selection
             printf("[ectocore] sample %d\n", val);
             val = (val * banks[sel_bank_next]->num_samples) / 1024;
@@ -1176,7 +1184,8 @@ void input_handling() {
         printf("[ectocore] btn_bank %d\n", val);
         if (val == 0) {
           if (to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i] <
-              200) {
+                  200 &&
+              !sf->fx_active[FX_TIMESTRETCH] && fil_current_change == false) {
             // "tap"
             // switch the bank by one
             if (banks_with_samples_num > 1) {
