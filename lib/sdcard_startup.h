@@ -92,6 +92,38 @@ void check_setup_files() {
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
+
+  // go through directory grimoire/rune1/*
+  // go through runes[1-7]
+  for (uint8_t rune = 1; rune <= 7; rune++) {
+    for (uint8_t effect = 0; effect < 16; effect++) {
+      grimoire_rune_effect[rune - 1][effect] = false;
+    }
+    char dirname[16];
+    sprintf(dirname, "grimoire/rune%d", rune);
+    // printf("[sdcard_startup] checking %s\n", dirname);
+    fr = f_findfirst(&dj, &fno, dirname, "*");
+    if (FR_OK != fr) {
+      continue;
+    }
+    // printf("[sdcard_startup] found %s\n", dirname);
+    while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+      // printf("[sdcard_startup] %s", fno.fname);
+      // set to true if effect%d-on is found
+      for (uint8_t effect = 1; effect <= 16; effect++) {
+        char effect_name[100];
+        sprintf(effect_name, "effect%d-on", effect);
+        if (strcmp(fno.fname, effect_name) == 0) {
+          grimoire_rune_effect[rune - 1][effect - 1] = true;
+          // printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+          //        grimoire_rune_effect[rune - 1][effect = 1]);
+          break;
+        }
+      }
+      // move to next file
+      fr = f_findnext(&dj, &fno); /* Search for next item */
+    }
+  }
 }
 
 void update_reverb() {
