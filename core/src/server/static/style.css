@@ -741,3 +741,76 @@ footer select {
 .icon.bright {
     transform: scale(1.1);
 }
+
+
+.circle-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.circle-icon {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.circle-icon i {
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    color: #11111133;
+}
+
+.circle-icon.bright i {
+    color: black;
+}
+
+.circle-icon.bright {
+    transform: scale(1.1);
+}
+
+.circle-icon:nth-child(1) {
+    transform: translate(240%, 270%) rotate(130deg) translate(100px) rotate(-130deg);
+}
+
+.circle-icon:nth-child(2) {
+    transform: translate(240%, 270%) rotate(170deg) translate(100px) rotate(-170deg);
+}
+
+.circle-icon:nth-child(3) {
+    transform: translate(240%, 270%) rotate(210deg) translate(100px) rotate(-210deg);
+}
+
+.circle-icon:nth-child(4) {
+    transform: translate(240%, 270%) rotate(250deg) translate(100px) rotate(-250deg);
+}
+
+.circle-icon:nth-child(5) {
+    transform: translate(240%, 270%) rotate(290deg) translate(100px) rotate(-290deg);
+}
+
+.circle-icon:nth-child(6) {
+    transform: translate(240%, 270%) rotate(330deg) translate(100px) rotate(-330deg);
+}
+
+.circle-icon:nth-child(7) {
+    transform: translate(240%, 270%) rotate(370deg) translate(100px) rotate(-370deg);
+}
+
+.circle-icon:nth-child(8) {
+    transform: translate(240%, 270%) rotate(410deg) translate(100px) rotate(-410deg);
+}
+
+.knob-icon {
+    transform: translate(95%, 100%) rotate(0deg);
+    transition: transform 0.3s ease;
+    width: 100px;
+}
