@@ -125,7 +125,7 @@ resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 
-upload: resetpico2 dobuild
+upload: resetpico2 changebaud dobuild
 	./dev/upload.sh 
 
 bootreset: dobuild
