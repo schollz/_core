@@ -129,6 +129,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // trigger clock out if it is going
   if (do_splice_trigger) {
     beat_total++;
+    beat_did_activate = true;
 
     // retriggering at end of a phrase
     if (do_retrig_at_end_of_phrase) {

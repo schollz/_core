@@ -255,6 +255,7 @@ a.size
 
 // probability_max_values dictates how many out of every note will be activated
 bool clock_did_activate = false;
+bool beat_did_activate = false;
 const uint8_t probability_max_values[16] = {
     // 0 = never
     // 1 = 1/64

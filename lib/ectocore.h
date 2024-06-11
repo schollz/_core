@@ -67,6 +67,7 @@ void toggle_fx(uint8_t fx_num) {
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
 uint8_t debounce_file_change = 0;
+uint16_t break_knob_set_point = 0;
 
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -208,13 +209,165 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
   WS2812_show(ws2812);
 }
 
-void break_fx_toggle() {
-  clock_did_activate = false;
-  for (uint8_t i = 0; i < 16; i++) {
+uint8_t break_fx_beat_refractory[16] = {
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+};
+uint8_t break_fx_beat_duration_max[16] = {
+    4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+};
+uint8_t break_fx_beat_duration_min[16] = {
+    2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+};
+uint8_t break_fx_beat_activated[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+uint8_t break_fx_beat_after_activated[16] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+uint8_t break_fx_probability_scaling[16] = {
+    50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+// if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
+//   printf("[ecotocre] random retrigger\n");
+//   sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
+//   go_retrigger_2key(random_integer_in_range(0, 15),
+//                     random_integer_in_range(0, 15));
+// }
+
+void break_fx_toggle(uint8_t effect, bool on) {
+  if (on) {
+    printf("[break_fx_toggle] fx %d on\n", effect + 1);
+    switch (effect) {
+      case 0:
+        // distortion + fuzz
+        sf->fx_active[FX_FUZZ] = true;
+        update_fx(FX_FUZZ);
+        break;
+      case 1:
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        break;
+      case 5:
+        break;
+      case 6:
+        break;
+      case 7:
+        break;
+      case 8:
+        break;
+      case 9:
+        break;
+      case 10:
+        break;
+      case 11:
+        break;
+      case 12:
+        break;
+      case 13:
+        break;
+      case 14:
+        break;
+      case 15:
+        break;
+      default:
+    }
+
+  } else {
+    printf("[break_fx_toggle] fx %d off\n", effect + 1);
+    switch (effect) {
+      case 0:
+        // distortion
+        sf->fx_active[FX_FUZZ] = false;
+        update_fx(FX_FUZZ);
+        break;
+      case 1:
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        break;
+      case 5:
+        break;
+      case 6:
+        break;
+      case 7:
+        break;
+      case 8:
+        break;
+      case 9:
+        break;
+      case 10:
+        break;
+      case 11:
+        break;
+      case 12:
+        break;
+      case 13:
+        break;
+      case 14:
+        break;
+      case 15:
+        break;
+      default:
+    }
+  }
+}
+
+void break_fx_update() {
+  if (!beat_did_activate) {
+    return;
+  }
+  beat_did_activate = false;
+  uint16_t break_knob_set_point_scaled =
+      (((break_knob_set_point * break_knob_set_point) / 1024) *
+       break_knob_set_point) /
+      1024;
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    // check if the fx is allowed in the grimoire runes
+    if (grimoire_rune_effect[grimoire_rune][effect] == false) {
+      // turn off if it is activated
+      break_fx_toggle(effect, false);
+      continue;
+    }
+    if (break_fx_beat_activated[effect] > 0) {
+      break_fx_beat_activated[effect]--;
+      if (break_fx_beat_activated[effect] == 0) {
+        // turn off the fx
+        break_fx_toggle(effect, false);
+        // set the refractory period
+        break_fx_beat_after_activated[effect] =
+            break_fx_beat_refractory[effect];
+      }
+    } else if (break_fx_beat_after_activated[effect] > 0) {
+      // don't allow to be turned on in this refractory period
+      break_fx_beat_after_activated[effect]--;
+    } else {
+      // roll a die to see if the fx is activated
+      // printf("[ectocore] break_fx_roll: %d\n", break_knob_set_point_scaled);
+      if (random_integer_in_range(0, 100) <
+          break_knob_set_point_scaled * break_fx_probability_scaling[effect] /
+              1024) {
+        break_fx_beat_activated[effect] =
+            random_integer_in_range(break_fx_beat_duration_min[effect],
+                                    break_fx_beat_duration_max[effect]);
+        printf("[ectocore] break_fx_activate: %d (%d beats)\n", effect,
+               break_fx_beat_activated[effect]);
+        // activate the effect
+        break_fx_toggle(effect, true);
+      }
+    }
   }
 }
 
 bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
+  break_knob_set_point = val;
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
     if (show_wheel) {
       ws2812_set_wheel_green_yellow_red(ws2812, val);
@@ -564,13 +717,6 @@ void input_handling() {
       }
     }
     Onewiremidi_receive(onewiremidi);
-
-    if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
-      printf("[ecotocre] random retrigger\n");
-      sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
-      go_retrigger_2key(random_integer_in_range(0, 15),
-                        random_integer_in_range(0, 15));
-    }
 
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
@@ -1122,9 +1268,7 @@ void input_handling() {
     }
 
     // updating the random fx
-    if (clock_did_activate) {
-      break_fx_toggle();
-    }
+    break_fx_update();
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
