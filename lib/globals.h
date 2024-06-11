@@ -388,6 +388,7 @@ WS2812 *ws2812;
 uint8_t key_jump_debounce = 0;
 bool do_random_jump = false;
 bool jump_precedence = false;
+uint32_t beat_current_last = 0;
 
 void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
@@ -414,6 +415,7 @@ void do_update_phase_from_beat_current() {
       slice = beat_current;
     }
   }
+  beat_current_last = beat_current;
   slice = slice %
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
   beat_current_show = slice;
