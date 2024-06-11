@@ -506,6 +506,45 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   gpio_put(LED_TOP_GPIO, beat_total % 2 == 0 ? 1 : 0);
 #endif
 
+#ifdef INCLUDE_ECTOCORE
+  if (clock_out_ready) {
+    clock_out_ready = false;
+    clock_out_last = to_ms_since_boot(get_absolute_time());
+    uint16_t j = banks[sel_bank_cur]
+                     ->sample[sel_sample_cur]
+                     .snd[FILEZERO]
+                     ->slice_current;
+    if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
+      if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 1 ||
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 3) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
+      if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 2 ||
+          banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->slice_type[j] == 3) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
+    } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
+      if (random_integer_in_range(1, 100) < 20) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    }
+  }
+#endif
+
   return true;
 }
 
