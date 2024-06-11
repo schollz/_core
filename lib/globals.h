@@ -158,7 +158,10 @@ uint8_t global_brightness = 0;  // 0 - 100
 bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 uint32_t clock_output_trig_time = 0;
-
+#ifdef INCLUDE_ECTOCORE
+bool grimoire_rune_effect[7][16];
+uint8_t grimoire_rune = 0;
+#endif
 bool quadratic_resampling = false;
 bool clock_out_do = false;
 bool clock_out_ready = false;
@@ -252,6 +255,7 @@ a.size
 
 // probability_max_values dictates how many out of every note will be activated
 bool clock_did_activate = false;
+bool beat_did_activate = false;
 const uint8_t probability_max_values[16] = {
     // 0 = never
     // 1 = 1/64
@@ -384,6 +388,7 @@ WS2812 *ws2812;
 uint8_t key_jump_debounce = 0;
 bool do_random_jump = false;
 bool jump_precedence = false;
+uint32_t beat_current_last = 0;
 
 void do_update_phase_from_beat_current() {
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
@@ -410,6 +415,7 @@ void do_update_phase_from_beat_current() {
       slice = beat_current;
     }
   }
+  beat_current_last = beat_current;
   slice = slice %
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
   beat_current_show = slice;

@@ -129,6 +129,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   // trigger clock out if it is going
   if (do_splice_trigger) {
     beat_total++;
+    beat_did_activate = true;
 
     // retriggering at end of a phrase
     if (do_retrig_at_end_of_phrase) {
@@ -216,7 +217,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       if (retrig_ready) {
         if (retrig_first) {
           // generate random value between 0 and 1
-          retrig_vol = (float)random_integer_in_range(50, 100) / 100;
+#ifdef INCLUDE_ECTOCORE
+#else
+          retrig_vol = (float)random_integer_in_range(0, 50) / 100;
+#endif
           retrig_pitch = PITCH_VAL_MID;
           if (sf->do_retrig_pitch_changes &&
               random_integer_in_range(1, 100) < 70) {
@@ -258,6 +262,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         }
         if (retrig_vol < 1.0) {
           retrig_vol += retrig_vol_step;
+          // printf("retrig_vol: %f\n", retrig_vol);
           if (retrig_vol > 1.0) {
             retrig_vol = 1.0;
           }

@@ -16,14 +16,15 @@ import (
 var Storage = "zips"
 
 type Data struct {
-	Oversampling        string `json:"oversampling"`
-	StereoMono          string `json:"stereoMono"`
-	Resampling          string `json:"resampling"`
-	SettingsBrightness  int    `json:"settingsBrightness"`
-	SettingsClockStop   bool   `json:"settingsClockStop"`
-	SettingsClockOutput bool   `json:"settingsClockOutput"`
-	SettingsKnobXSample bool   `json:"settingsKnobXSample"`
-	Banks               []struct {
+	Oversampling            string   `json:"oversampling"`
+	StereoMono              string   `json:"stereoMono"`
+	Resampling              string   `json:"resampling"`
+	SettingsBrightness      int      `json:"settingsBrightness"`
+	SettingsClockStop       bool     `json:"settingsClockStop"`
+	SettingsClockOutput     bool     `json:"settingsClockOutput"`
+	SettingsKnobXSample     bool     `json:"settingsKnobXSample"`
+	SettingsGrimoireEffects [][]bool `json:"settingsGrimoireEffects"`
+	Banks                   []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
 }
@@ -46,6 +47,7 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	log.Debugf("resampling: %s", data.Resampling)
 	log.Debugf("settingsBrightness: %d", data.SettingsBrightness)
 	log.Debugf("settingsClockStop: %v", data.SettingsClockStop)
+	log.Debugf("settingsGrimoireEffects: %+v", data.SettingsGrimoireEffects)
 
 	oversampling := 1
 	if data.Oversampling == "2x" {
@@ -103,9 +105,9 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 		return
 	}
 	if data.Resampling == "linear" {
-		os.Create(path.Join(mainFolder, "resampling-linear"))
+		os.Create(path.Join(mainFolder, "resampling_quadratic-off"))
 	} else {
-		os.Create(path.Join(mainFolder, "resampling-quadratic"))
+		os.Create(path.Join(mainFolder, "resampling_quadratic-on"))
 	}
 	if data.SettingsClockStop {
 		os.Create(path.Join(mainFolder, "clock_stop_sync-on"))
@@ -117,12 +119,26 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	} else {
 		os.Create(path.Join(mainFolder, "clock_output_trig-off"))
 	}
+	// knob x
 	if data.SettingsKnobXSample {
-		os.Create(path.Join(mainFolder, "knobx-select_sample"))
+		os.Create(path.Join(mainFolder, "knobx_select_sample-on"))
 	} else {
-		os.Create(path.Join(mainFolder, "knobx-default"))
+		os.Create(path.Join(mainFolder, "knobx_select_sample-off"))
 	}
+	// brightness
 	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
+
+	// grimoire effects
+	for i, effect := range data.SettingsGrimoireEffects {
+		os.MkdirAll(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1)), 0777)
+		for j, on := range effect {
+			if on {
+				os.Create(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1), fmt.Sprintf("effect%d-on", j+1)))
+			} else {
+				os.Create(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1), fmt.Sprintf("effect%d-off", j+1)))
+			}
+		}
+	}
 
 	// copy files
 	for i, bank := range data.Banks {

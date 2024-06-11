@@ -569,6 +569,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			}
 		} else if message.Action == "updatestate" {
 			// save into the keystore the message.State for message.Place
+			// log.Debugf("updating state for %s: %s", message.Place, message.State)
 			err = keystore.Update(func(tx *bolt.Tx) error {
 				b := tx.Bucket([]byte("states"))
 				return b.Put([]byte(message.Place), []byte(message.State))

@@ -124,6 +124,194 @@
                     v-model="settingsBrightness">
                 {{ settingsBrightness }}%
             </p>
+
+            <p>
+                Grimoire Break random effects:
+            <div class="grimoire-container">
+                <div class="circle-container">
+                    <div class="circle-icon" @click="grimoireClick(0);" :class="{bright: grimoireSelected==0 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+                    <div class="circle-icon" @click="grimoireClick(1);" :class="{bright: grimoireSelected==1 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(2);" :class="{bright: grimoireSelected==2 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(3);" :class="{bright: grimoireSelected==3 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(4);" :class="{bright: grimoireSelected==4 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(5);" :class="{bright: grimoireSelected==5 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div class="circle-icon" @click="grimoireClick(6);" :class="{bright: grimoireSelected==6 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <!-- change knob degrees by Vue2.0 variable grimoireKnobDegrees -->
+                    <div class="knob-icon" id="knob"
+                        :style="{ transform: 'translate(97.5%, 100%) rotate(' + grimoireKnobDegrees + 'deg)' }">
+                        <svg width="100%" height="100%" viewBox="0 0 720 720" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="Trimmer">
+                                <circle cx="360.278" cy="360.732" r="333.008" style="fill:white;" />
+                                <path
+                                    d="M27.407,346.386C27.106,346.359 26.803,346.327 26.5,346.29C11.797,344.478 1.332,331.069 3.144,316.366C5.541,296.92 9.491,277.953 14.866,259.592C19.028,245.374 33.95,237.21 48.168,241.372C48.463,241.458 48.756,241.549 49.045,241.645C48.767,241.523 48.49,241.395 48.213,241.263C34.855,234.858 29.21,218.813 35.615,205.455C44.014,187.937 53.79,171.203 64.801,155.392C73.268,143.236 90.011,140.24 102.168,148.707C102.416,148.879 102.66,149.055 102.9,149.235C102.678,149.034 102.459,148.829 102.243,148.62C91.593,138.322 91.307,121.315 101.605,110.665C115.033,96.779 129.568,83.969 145.068,72.38C156.932,63.508 173.767,65.938 182.638,77.803C182.819,78.045 182.996,78.289 183.167,78.535C183.019,78.272 182.874,78.006 182.733,77.737C175.879,64.604 180.976,48.376 194.109,41.521C211.153,32.625 228.997,25.053 247.504,18.943C261.571,14.298 276.763,21.948 281.408,36.015C281.504,36.307 281.595,36.598 281.68,36.89C281.623,36.593 281.571,36.293 281.523,35.991C279.213,21.358 289.218,7.602 303.852,5.293C322.237,2.391 341.083,0.883 360.278,0.883C379.93,0.883 399.216,2.463 418.017,5.502C432.641,7.866 442.595,21.658 440.231,36.283C440.183,36.585 440.129,36.885 440.07,37.183C440.157,36.891 440.249,36.599 440.347,36.308C445.044,22.258 460.264,14.665 474.314,19.362C492.795,25.54 510.611,33.178 527.624,42.138C540.732,49.041 545.769,65.288 538.865,78.395C538.724,78.664 538.578,78.93 538.429,79.192C538.601,78.947 538.778,78.703 538.96,78.462C547.875,66.63 564.719,64.262 576.551,73.177C592.006,84.822 606.494,97.685 619.872,111.621C630.131,122.309 629.783,139.314 619.095,149.573C618.877,149.782 618.657,149.987 618.434,150.187C618.675,150.008 618.921,149.833 619.17,149.66C631.358,141.238 648.09,144.296 656.512,156.483C667.465,172.333 677.178,189.104 685.513,206.654C691.869,220.036 686.164,236.06 672.783,242.415C672.506,242.547 672.229,242.673 671.95,242.794C672.24,242.7 672.532,242.61 672.827,242.525C687.06,238.415 701.952,246.635 706.061,260.868C711.367,279.247 715.247,298.229 717.572,317.685C719.33,332.395 708.815,345.764 694.106,347.522C693.803,347.559 693.501,347.589 693.2,347.615C693.498,347.618 693.797,347.625 694.097,347.637C708.9,348.238 720.429,360.744 719.828,375.546C719.031,395.164 716.659,414.379 712.838,433.068C709.87,447.582 695.677,456.956 681.163,453.989C680.863,453.927 680.566,453.861 680.271,453.791C680.558,453.889 680.845,453.993 681.13,454.102C694.973,459.378 701.928,474.901 696.651,488.744C689.718,506.933 681.352,524.418 671.69,541.059C664.252,553.87 647.811,558.232 635,550.794C634.737,550.641 634.477,550.485 634.222,550.325C634.46,550.507 634.696,550.695 634.93,550.886C646.386,560.279 648.062,577.205 638.67,588.662C626.408,603.617 612.966,617.569 598.486,630.372C587.387,640.185 570.41,639.141 560.597,628.043C560.397,627.817 560.202,627.588 560.01,627.357C560.18,627.606 560.345,627.859 560.507,628.115C568.421,640.639 564.678,657.231 552.155,665.145C535.878,675.43 518.721,684.447 500.823,692.055C487.189,697.851 471.415,691.487 465.619,677.854C465.5,677.572 465.385,677.29 465.276,677.006C465.358,677.299 465.435,677.595 465.508,677.892C469.022,692.284 460.191,706.821 445.799,710.335C427.242,714.866 408.122,717.958 388.566,719.483C373.797,720.635 360.87,709.579 359.719,694.81C359.695,694.509 359.677,694.208 359.663,693.909C359.649,694.208 359.629,694.509 359.605,694.81C358.399,709.575 345.432,720.584 330.667,719.378C311.118,717.781 292.009,714.618 273.466,710.017C259.088,706.45 250.311,691.88 253.879,677.501C253.952,677.204 254.031,676.909 254.114,676.617C254.004,676.899 253.888,677.181 253.767,677.462C247.921,691.074 232.123,697.379 218.511,691.533C200.644,683.859 183.52,674.779 167.28,664.433C154.785,656.474 151.104,639.868 159.064,627.373C159.227,627.118 159.393,626.866 159.563,626.617C159.371,626.847 159.175,627.075 158.974,627.301C149.121,638.363 132.14,639.344 121.078,629.491C106.645,616.635 93.254,602.635 81.047,587.633C71.696,576.142 73.434,559.222 84.925,549.872C85.159,549.681 85.396,549.495 85.634,549.314C85.378,549.473 85.119,549.628 84.856,549.779C72.017,557.171 55.592,552.748 48.201,539.909C38.602,523.233 30.3,505.718 23.434,487.501C18.209,473.638 25.221,458.142 39.083,452.917C39.371,452.809 39.659,452.706 39.947,452.608C39.651,452.678 39.352,452.743 39.052,452.803C24.527,455.717 10.369,446.29 7.455,431.765C3.703,413.064 1.403,393.842 0.677,374.22C0.13,359.415 11.705,346.952 26.509,346.405C26.809,346.394 27.109,346.387 27.407,346.386ZM42.422,451.898C55.35,448.853 68.859,455.809 73.667,468.567C79.505,484.055 86.564,498.947 94.726,513.125C101.534,524.951 98.319,539.819 87.735,547.868C99.035,540.856 114.073,543.165 122.686,553.75C133.084,566.528 144.491,578.454 156.784,589.404C166.977,598.483 168.611,613.612 161.099,624.587C169.613,614.371 184.613,611.824 196.124,619.157C209.936,627.957 224.5,635.679 239.697,642.206C252.224,647.587 258.563,661.396 254.936,674.173C259.768,661.802 273.162,654.631 286.395,657.914C302.163,661.826 318.413,664.514 335.037,665.872C348.65,666.984 359.07,678.093 359.668,691.391C360.315,678.095 370.775,667.024 384.392,665.962C401.023,664.665 417.283,662.037 433.065,658.184C446.309,654.95 459.677,662.171 464.463,674.56C460.884,661.77 467.273,647.984 479.821,642.65C495.043,636.179 509.634,628.51 523.478,619.763C535.015,612.472 550.006,615.075 558.483,625.322C551.01,614.319 552.701,599.196 562.926,590.155C575.26,579.249 586.71,567.365 597.155,554.626C605.807,544.072 620.855,541.818 632.128,548.873C621.574,540.786 618.412,525.905 625.264,514.104C633.479,499.955 640.593,485.089 646.488,469.623C651.344,456.884 664.877,449.978 677.792,453.07C665.232,448.755 657.511,435.671 660.242,422.314C663.494,406.411 665.51,390.06 666.188,373.367C666.743,359.72 677.417,348.854 690.68,347.713C677.374,347.608 665.889,337.614 664.268,324.055C662.292,307.517 658.994,291.381 654.484,275.758C650.702,262.659 657.363,249.001 669.545,243.705C656.912,247.815 642.871,242.002 637.021,229.685C629.93,214.754 621.665,200.487 612.347,187.002C604.587,175.773 606.573,160.685 616.466,151.794C605.778,159.714 590.596,158.645 581.143,148.797C569.749,136.926 557.409,125.971 544.245,116.052C533.347,107.841 530.478,92.903 537.06,81.35C529.413,92.225 514.68,95.994 502.608,89.637C488.147,82.02 473.003,75.527 457.293,70.276C444.362,65.953 436.9,52.717 439.455,39.682C435.667,52.414 422.911,60.674 409.45,58.498C393.44,55.91 377.015,54.566 360.278,54.566C343.93,54.566 327.879,55.848 312.221,58.32C298.753,60.445 286.028,52.139 282.287,39.393C284.793,52.437 277.281,65.645 264.335,69.92C248.604,75.113 233.437,81.55 218.949,89.112C206.854,95.425 192.134,91.601 184.528,80.698C191.067,92.275 188.143,107.202 177.215,115.373C164.014,125.244 151.634,136.155 140.197,147.982C130.709,157.795 115.525,158.809 104.866,150.852C114.725,159.78 116.654,174.873 108.853,186.073C99.485,199.525 91.168,213.761 84.022,228.665C78.126,240.961 64.062,246.722 51.445,242.565C63.607,247.905 70.218,261.588 66.388,274.674C61.819,290.281 58.462,306.404 56.424,322.933C54.754,336.485 43.232,346.437 29.925,346.494C43.185,347.682 53.82,358.587 54.324,372.237C54.941,388.934 56.897,405.293 60.09,421.206C62.771,434.574 55,447.632 42.422,451.898Z"
+                                    style="fill:white;" />
+                                <path d="M360.278,55.388L360.278,360.732"
+                                    style="fill:none;stroke:black;stroke-width:52.92px;" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="icon-grid">
+                    <div id="distortionEffect" class="effect-icon" @click="grimoireEffectClick(0);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][0] }">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div id="lossEffect" class="effect-icon" @click="grimoireEffectClick(1);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][1] }">
+                        <i class="fas fa-radio"></i>
+                    </div>
+                    <div id="bitcrushEffect" class="effect-icon" @click="grimoireEffectClick(2);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][2] }">
+                        <i class="fas fa-wave-square"></i>
+                    </div>
+                    <div id="filterEffect" class="effect-icon" @click="grimoireEffectClick(3);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][3] }">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div id="timestretchEffect" class="effect-icon" @click="grimoireEffectClick(4);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][4] }">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div id="delayEffect" class="effect-icon" @click="grimoireEffectClick(5);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][5] }">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div id="combEffect" class="effect-icon" @click="grimoireEffectClick(6);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][6] }">
+                        <i class="fas fa-brush"></i>
+                    </div>
+                    <div id="beatRepeatEffect" class="effect-icon" @click="grimoireEffectClick(7);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][7] }">
+                        <i class="fas fa-redo-alt"></i>
+                    </div>
+                    <div id="reverbEffect" class="effect-icon" @click="grimoireEffectClick(8);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][8] }">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div id="autopanEffect" class="effect-icon" @click="grimoireEffectClick(9);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][9] }">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div id="slowDownEffect" class="effect-icon" @click="grimoireEffectClick(10);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][10] }">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <div id="speedupEffect" class="effect-icon" @click="grimoireEffectClick(11);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][11] }">
+                        <i class="fas fa-running"> </i>
+                    </div>
+                    <div id="reverseEffect" class="effect-icon" @click="grimoireEffectClick(12);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][12] }">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div id="retriggerEffect" class="effect-icon" @click="grimoireEffectClick(13);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][13] }">
+                        <i class="fas fa-braille"></i>
+                    </div>
+                    <div id="retriggerPitchEffect" class="effect-icon" @click="grimoireEffectClick(14);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][14] }">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div id="tapestopEffect" class="effect-icon" @click="grimoireEffectClick(15);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][15] }">
+                        <i class="fas fa-tape"></i>
+                    </div>
+                </div>
+            </div>
+            </p>
             [[ end ]]
             <p style="text-align: center;">
                 <button id="js-close">Update</button>
@@ -649,6 +837,8 @@
             document.getElementById("show-dialog").addEventListener("click", () => {
                 document.getElementById("dialog").showModal();
             });
+            // TODO: remove this
+            document.getElementById("dialog-settings").showModal();
             document.getElementById("show-dialog-settings").addEventListener("click", () => {
                 document.getElementById("dialog-settings").showModal();
             });
