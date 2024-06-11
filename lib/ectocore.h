@@ -220,7 +220,10 @@ uint8_t break_fx_beat_refractory_min_max[32] = {
     4,  8,   // beat repeat
     2,  16,  // reverb
     2,  6,   // autopan
-    4,  8,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    8,  32,  // pitch down
+    8,  32,  // pitch up
+    1,  8,   // reverse
+    4,  4,  4, 4, 4, 4,
 };
 uint8_t break_fx_beat_duration_min_max[32] = {
     2, 4,   // distortion
@@ -233,7 +236,10 @@ uint8_t break_fx_beat_duration_min_max[32] = {
     1, 4,   // beat repeat
     4, 12,  // reverb
     4, 8,   // autopan
-    4, 4,  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    8, 32,  // pitch down
+    8, 32,  // pitch up
+    1, 8,   // reverse
+    4, 4,  4, 4, 4, 4,
 };
 uint8_t break_fx_probability_scaling[16] = {
     50,  // distortion
@@ -246,7 +252,10 @@ uint8_t break_fx_probability_scaling[16] = {
     40,  // beat repeat
     50,  // reverb
     50,  // autopan
-    50, 50, 50, 50, 50, 50,
+    40,  // pitch down
+    30,  // pitch up
+    70,  // reverse
+    50, 50, 50,
 };
 
 uint8_t break_fx_beat_activated[16] = {
@@ -264,7 +273,7 @@ uint8_t break_fx_beat_after_activated[16] = {
 // }
 
 void break_fx_toggle(uint8_t effect, bool on) {
-  if (effect != 10 - 1) {
+  if (effect != 13 - 1) {
     return;
   }
   if (on) {
@@ -382,16 +391,33 @@ void break_fx_toggle(uint8_t effect, bool on) {
     case 9:
       // autopan
       sf->fx_active[FX_PAN] = on;
-      uint8_t possible_speeds[4] = {1, 2, 4, 8};
+      uint8_t possible_speeds[3] = {2, 4, 8};
       lfo_pan_step =
-          Q16_16_2PI / (48 * possible_speeds[random_integer_in_range(0, 3)]);
+          Q16_16_2PI / (48 * possible_speeds[random_integer_in_range(0, 2)]);
       update_fx(FX_PAN);
       break;
     case 10:
+      // pitch down
+      if (!sf->fx_active[FX_REPITCH]) {
+        sf->fx_param[FX_REPITCH][0] = 0;
+        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      }
+      sf->fx_active[FX_REPITCH] = on;
+      update_fx(FX_REPITCH);
       break;
     case 11:
+      // pitch up
+      if (!sf->fx_active[FX_REPITCH]) {
+        sf->fx_param[FX_REPITCH][0] = 255;
+        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      }
+      sf->fx_active[FX_REPITCH] = on;
+      update_fx(FX_REPITCH);
       break;
     case 12:
+      // reverse
+      sf->fx_active[FX_REVERSE] = on;
+      update_fx(FX_REVERSE);
       break;
     case 13:
       break;
