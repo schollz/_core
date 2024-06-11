@@ -125,6 +125,15 @@ void check_setup_files() {
       fr = f_findnext(&dj, &fno); /* Search for next item */
     }
   }
+
+  // testing purposes
+  // set all to false
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    grimoire_rune_effect[0][effect] = false;
+  }
+  uint8_t effect_test = 5;
+  grimoire_rune_effect[0][effect_test - 1] = true;
+
 #endif
 }
 
