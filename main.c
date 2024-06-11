@@ -537,8 +537,14 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         gpio_put(GPIO_TRIG_OUT, 1);
       }
     } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
+      if (banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->slice_type[j] > 0) {
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
     } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
-      if (random_integer_in_range(1, 100) < 20) {
+      if (random_integer_in_range(1, 100) <= 15) {
         gpio_put(GPIO_TRIG_OUT, 1);
       }
     }
