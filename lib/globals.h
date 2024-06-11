@@ -158,8 +158,9 @@ uint8_t global_brightness = 0;  // 0 - 100
 bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 uint32_t clock_output_trig_time = 0;
+#ifdef INCLUDE_ECTOCORE
 bool grimoire_rune_effect[7][16];
-
+#endif
 bool quadratic_resampling = false;
 bool clock_out_do = false;
 bool clock_out_ready = false;

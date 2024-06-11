@@ -93,6 +93,7 @@ void check_setup_files() {
   }
   f_closedir(&dj);
 
+#ifdef INCLUDE_ECTOCORE
   // go through directory grimoire/rune1/*
   // go through runes[1-7]
   for (uint8_t rune = 1; rune <= 7; rune++) {
@@ -124,6 +125,7 @@ void check_setup_files() {
       fr = f_findnext(&dj, &fno); /* Search for next item */
     }
   }
+#endif
 }
 
 void update_reverb() {
