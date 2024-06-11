@@ -162,6 +162,7 @@ uint32_t clock_output_trig_time = 0;
 bool quadratic_resampling = false;
 bool clock_out_do = false;
 bool clock_out_ready = false;
+uint32_t clock_out_last = 0;
 bool clock_in_do = false;
 bool clock_in_ready = false;
 uint8_t clock_in_activator = 0;

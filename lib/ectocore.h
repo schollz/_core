@@ -698,53 +698,11 @@ void input_handling() {
       debounce_file_change--;
     }
 
-    if (clock_out_ready) {
-      clock_out_ready = false;
-      uint16_t j = beat_current;
-      while (j > banks[sel_bank_cur]
-                     ->sample[sel_sample_cur]
-                     .snd[FILEZERO]
-                     ->slice_num) {
-        j -= banks[sel_bank_cur]
-                 ->sample[sel_sample_cur]
-                 .snd[FILEZERO]
-                 ->slice_num;
-      }
-      if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
-        if (banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 1 ||
-            banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 3) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
-        if (banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 2 ||
-            banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->slice_type[j] == 3) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
-      } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
-        if (random_integer_in_range(1, 100) < 20) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          debounce_trig = 100;
-        }
-      }
-    } else if (debounce_trig > 0) {
-      debounce_trig--;
-      if (debounce_trig == 0) {
+    // turn off trigout after 10 ms
+    if (clock_out_last > 0) {
+      if (to_ms_since_boot(get_absolute_time()) - clock_out_last > 10) {
         gpio_put(GPIO_TRIG_OUT, 0);
+        clock_out_last = 0;
       }
     }
 
