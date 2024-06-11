@@ -687,9 +687,12 @@ footer select {
     background-position: right 0.5em center;
 }
 
-.container {
+.grimoire-container {
     display: flex;
     align-items: center;
+    margin-top: -2em;
+    margin-bottom: -1em;
+    margin-left: -1.5em;
 }
 
 .dropdown {
@@ -715,7 +718,7 @@ footer select {
     gap: 10px;
 }
 
-.icon {
+.effect-icon {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -728,17 +731,17 @@ footer select {
     cursor: pointer;
 }
 
-.icon i {
+.effect-icon i {
     font-size: 1rem;
     transition: color 0.3s ease;
     color: #11111133;
 }
 
-.icon.bright i {
+.effect-icon.bright i {
     color: black;
 }
 
-.icon.bright {
+.effect-icon.bright {
     transform: scale(1.1);
 }
 
@@ -763,14 +766,14 @@ footer select {
     cursor: pointer;
 }
 
-.circle-icon i {
-    font-size: 1rem;
-    transition: color 0.3s ease;
-    color: #11111133;
+.circle-icon svg {
+    /* change stroke to gray */
+    stroke: lightgray;
+    transition: stroke 0.3s ease-in-out;
 }
 
-.circle-icon.bright i {
-    color: black;
+.circle-icon.bright svg {
+    stroke: black;
 }
 
 .circle-icon.bright {
@@ -782,35 +785,30 @@ footer select {
 }
 
 .circle-icon:nth-child(2) {
-    transform: translate(240%, 270%) rotate(170deg) translate(100px) rotate(-170deg);
+    transform: translate(240%, 270%) rotate(177deg) translate(100px) rotate(-177deg);
 }
 
 .circle-icon:nth-child(3) {
-    transform: translate(240%, 270%) rotate(210deg) translate(100px) rotate(-210deg);
+    transform: translate(240%, 270%) rotate(224deg) translate(100px) rotate(-224deg);
 }
 
 .circle-icon:nth-child(4) {
-    transform: translate(240%, 270%) rotate(250deg) translate(100px) rotate(-250deg);
+    transform: translate(240%, 270%) rotate(270deg) translate(100px) rotate(-270deg);
 }
 
 .circle-icon:nth-child(5) {
-    transform: translate(240%, 270%) rotate(290deg) translate(100px) rotate(-290deg);
+    transform: translate(240%, 270%) rotate(316deg) translate(100px) rotate(-316deg);
 }
 
 .circle-icon:nth-child(6) {
-    transform: translate(240%, 270%) rotate(330deg) translate(100px) rotate(-330deg);
+    transform: translate(240%, 270%) rotate(363deg) translate(100px) rotate(-363deg);
 }
 
 .circle-icon:nth-child(7) {
-    transform: translate(240%, 270%) rotate(370deg) translate(100px) rotate(-370deg);
-}
-
-.circle-icon:nth-child(8) {
     transform: translate(240%, 270%) rotate(410deg) translate(100px) rotate(-410deg);
 }
 
 .knob-icon {
-    transform: translate(95%, 100%) rotate(0deg);
     transition: transform 0.3s ease;
     width: 100px;
 }

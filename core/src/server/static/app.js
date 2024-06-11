@@ -473,6 +473,17 @@ app = new Vue({
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
         selectedFiles: [], // New property to store selected files
+        grimoireSelected: 0,
+        grimoireKnobDegrees: 0,
+        grimoireEffects: [
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+        ],
     },
     watch: {
         // Watch for changes in app properties and save state to cookies
@@ -506,6 +517,20 @@ app = new Vue({
         }
     },
     methods: {
+        isGrimoireEffectSelected(num) {
+            let v = this.grimoireEffects[this.grimoireSelected][num];
+            console.log(v);
+            return v;
+        },
+        grimoireClick(num) {
+            this.grimoireSelected = num;
+            this.grimoireKnobDegrees = num * (505 - 220) / 6 + 220;
+        },
+        grimoireEffectClick(num) {
+            this.grimoireEffects[this.grimoireSelected][num] = !this.grimoireEffects[this.grimoireSelected][num];
+            // update vue2 
+            this.$forceUpdate();
+        },
         resetDevice() {
             midiResetDevice();
             this.regular_message = "zeptocore is resetting now.<br>";
@@ -1166,6 +1191,7 @@ window.addEventListener('load', (event) => {
 
     // Check if the window width is less than 768 pixels to set isMobile
     app.isMobile = window.innerWidth < 768;
+    app.grimoireClick(0);
 
     // Listen for window resize events to update isMobile
     window.addEventListener('resize', () => {
@@ -1204,6 +1230,33 @@ window.addEventListener('load', (event) => {
         tippy('#show-dialog-settings', {
             content: 'Global settings are files that go on the SD card.',
         });
+
+        let effectList = [
+            ['distortionEffect', 'Fuzz distortion'],
+            ['lossEffect', 'Lossy compression effect'],
+            ['bitcrushEffect', 'Bitcrushing reduction'],
+            ['filterEffect', 'Frequency filtering'],
+            ['timestretchEffect', 'Time stretching'],
+            ['delayEffect', 'Delay echo effect'],
+            ['combEffect', 'Comb filtering effect'],
+            ['beatRepeatEffect', 'Beat repetition effect'],
+            ['reverbEffect', 'Reverberation effect'],
+            ['autopanEffect', 'Automatic panning'],
+            ['slowDownEffect', 'Slow down tempo'],
+            ['speedupEffect', 'Speed up tempo'],
+            ['reverseEffect', 'Reverse audio'],
+            ['retriggerEffect', 'Retrigger effect'],
+            ['retriggerPitchEffect', 'Retrigger with pitch shift'],
+            ['tapestopEffect', 'Tape stop effect']
+        ];
+        for (let effect of effectList) {
+            tippy('#' + effect[0], {
+                content: effect[1],
+                zIndex: 99999999,
+                appendTo: "parent",
+                hideOnClick: false,
+            });
+        }
         // find all elements ".banks-selector > ul > li"
         var desktopBankLabels = document.getElementsByClassName('banks-selector')[0].getElementsByTagName('li');
         for (var i = 0; i < desktopBankLabels.length; i++) {
@@ -1216,5 +1269,6 @@ window.addEventListener('load', (event) => {
 
 
     }, 1000);
+
 
 });
