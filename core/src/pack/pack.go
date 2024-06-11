@@ -119,12 +119,26 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	} else {
 		os.Create(path.Join(mainFolder, "clock_output_trig-off"))
 	}
+	// knob x
 	if data.SettingsKnobXSample {
 		os.Create(path.Join(mainFolder, "knobx_select_sample-on"))
 	} else {
 		os.Create(path.Join(mainFolder, "knobx_select_sample-off"))
 	}
+	// brightness
 	os.Create(path.Join(mainFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
+
+	// grimoire effects
+	for i, effect := range data.SettingsGrimoireEffects {
+		os.MkdirAll(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1)), 0777)
+		for j, on := range effect {
+			if on {
+				os.Create(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1), fmt.Sprintf("effect%d-on", j+1)))
+			} else {
+				os.Create(path.Join(mainFolder, "grimoire", fmt.Sprintf("rune%d", i+1), fmt.Sprintf("effect%d-off", j+1)))
+			}
+		}
+	}
 
 	// copy files
 	for i, bank := range data.Banks {
