@@ -40,12 +40,12 @@ void check_setup_files() {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resampling-linear") == 0) {
-      quadratic_resampling = false;
-      printf("[sdcard_startup] linear resampling\n");
-    } else if (strcmp(fno.fname, "resampling-quadratic") == 0) {
+    if (strcmp(fno.fname, "resampling_quadratic-on") == 0) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling\n");
+    } else {
+      quadratic_resampling = true;
+      printf("[sdcard_startup] linear resampling\n");
     }
 
     // check for the clock_start_stop_sync
@@ -73,7 +73,7 @@ void check_setup_files() {
     }
 
     // check for the clock_start_stop_sync
-    if (strcmp(fno.fname, "knobx-select_sample") == 0) {
+    if (strcmp(fno.fname, "knobx_select_sample-on") == 0) {
       global_knobx_sample_selector = true;
     } else {
       global_knobx_sample_selector = false;
@@ -92,6 +92,47 @@ void check_setup_files() {
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
+
+#ifdef INCLUDE_ECTOCORE
+  // go through directory grimoire/rune1/*
+  // go through runes[1-7]
+  for (uint8_t rune = 1; rune <= 7; rune++) {
+    for (uint8_t effect = 0; effect < 16; effect++) {
+      grimoire_rune_effect[rune - 1][effect] = false;
+    }
+    char dirname[16];
+    sprintf(dirname, "grimoire/rune%d", rune);
+    // printf("[sdcard_startup] checking %s\n", dirname);
+    fr = f_findfirst(&dj, &fno, dirname, "*");
+    if (FR_OK != fr) {
+      continue;
+    }
+    // printf("[sdcard_startup] found %s\n", dirname);
+    while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+      // printf("[sdcard_startup] %s", fno.fname);
+      // set to true if effect%d-on is found
+      for (uint8_t effect = 1; effect <= 16; effect++) {
+        char effect_name[100];
+        sprintf(effect_name, "effect%d-on", effect);
+        if (strcmp(fno.fname, effect_name) == 0) {
+          grimoire_rune_effect[rune - 1][effect - 1] = true;
+          // printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+          //        grimoire_rune_effect[rune - 1][effect = 1]);
+          break;
+        }
+      }
+      // move to next file
+      fr = f_findnext(&dj, &fno); /* Search for next item */
+    }
+  }
+
+  // testing purposes
+  // set all to false
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    grimoire_rune_effect[0][effect] = true;
+  }
+
+#endif
 }
 
 void update_reverb() {
@@ -134,8 +175,22 @@ void update_fx(uint8_t fx_num) {
       break;
     case FX_BEATREPEAT:
       if (sf->fx_active[fx_num]) {
+#ifdef INCLUDE_ECTOCORE
+        uint16_t samples = 30 * 44100 / sf->bpm_tempo;
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 3 / 2;
+        }
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 3 / 4;
+        }
+        if (random_integer_in_range(1, 100) < 50) {
+          samples = samples * 2;
+        }
+        BeatRepeat_repeat(beatrepeat, samples);
+#else
         BeatRepeat_repeat(beatrepeat,
                           sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
+#endif
       } else {
         BeatRepeat_repeat(beatrepeat, 0);
       }
