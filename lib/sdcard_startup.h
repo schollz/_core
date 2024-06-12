@@ -62,6 +62,13 @@ void check_setup_files() {
       clock_output_trig = false;
     }
 
+    // check for clock output behavior (sync with tempo or sync with slice)
+    if (strcmp(fno.fname, "clock_behavior_sync_slice-on") == 0) {
+      clock_behavior_sync_slice = true;
+    } else {
+      clock_behavior_sync_slice = false;
+    }
+
     // check if a file has the prefix "brightness"
     if (strncmp(fno.fname, "brightness-", 11) == 0) {
       global_brightness = extractNumber(fno.fname);
