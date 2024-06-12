@@ -784,9 +784,7 @@ void input_handling() {
 
     ClockInput_update(clockinput);
     if (clock_in_do) {
-      if (ClockInput_timeSinceLast(clockinput) > 1000000) {
-        clock_input_absent = true;
-      }
+      clock_input_absent = ClockInput_timeSinceLast(clockinput) > 1000000;
     }
     Onewiremidi_receive(onewiremidi);
 
@@ -984,6 +982,8 @@ void input_handling() {
         clock_in_ready = false;
         clock_in_activator = 0;
         clock_in_do = false;
+      } else if (!clock_input_absent) {
+        // pressing clock while clock is active will reset to beat 1
       } else {
         val = TapTempo_tap(taptempo);
         if (val > 0) {
