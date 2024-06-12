@@ -119,5 +119,29 @@ static inline uint8_t linlin_int32_uint8(int32_t in, int32_t in_min,
       (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
       out_min, out_max);
 }
+void generate_euclidean_rhythm(int n, int k, int offset, bool *rhythm) {
+  int pattern[n];
+  int bucket = 0;
 
+  // Initialize the rhythm array to false
+  for (int i = 0; i < n; i++) {
+    rhythm[i] = false;
+  }
+
+  for (int i = 0; i < n; i++) {
+    bucket += k;
+    if (bucket >= n) {
+      bucket -= n;
+      rhythm[i] = true;
+    }
+  }
+  // rotate by offset
+  for (int i = 0; i < offset; i++) {
+    bool tmp = rhythm[n - 1];
+    for (int j = n - 1; j > 0; j--) {
+      rhythm[j] = rhythm[j - 1];
+    }
+    rhythm[0] = tmp;
+  }
+}
 #endif
