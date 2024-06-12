@@ -16,15 +16,16 @@ import (
 var Storage = "zips"
 
 type Data struct {
-	Oversampling            string   `json:"oversampling"`
-	StereoMono              string   `json:"stereoMono"`
-	Resampling              string   `json:"resampling"`
-	SettingsBrightness      int      `json:"settingsBrightness"`
-	SettingsClockStop       bool     `json:"settingsClockStop"`
-	SettingsClockOutput     bool     `json:"settingsClockOutput"`
-	SettingsKnobXSample     bool     `json:"settingsKnobXSample"`
-	SettingsGrimoireEffects [][]bool `json:"settingsGrimoireEffects"`
-	Banks                   []struct {
+	Oversampling              string   `json:"oversampling"`
+	StereoMono                string   `json:"stereoMono"`
+	Resampling                string   `json:"resampling"`
+	SettingsBrightness        int      `json:"settingsBrightness"`
+	SettingsClockStop         bool     `json:"settingsClockStop"`
+	SettingsClockOutput       bool     `json:"settingsClockOutput"`
+	SettingsClockBehaviorSync bool     `json:"settingsClockBehaviorSync"`
+	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
+	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
+	Banks                     []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
 }
@@ -119,6 +120,13 @@ func Zip(pathToStorage string, payload []byte) (zipFilename string, err error) {
 	} else {
 		os.Create(path.Join(mainFolder, "clock_output_trig-off"))
 	}
+
+	if data.SettingsClockBehaviorSync {
+		os.Create(path.Join(mainFolder, "clock_behavior_sync_slice-on"))
+	} else {
+		os.Create(path.Join(mainFolder, "clock_behavior_sync_slice-off"))
+	}
+
 	// knob x
 	if data.SettingsKnobXSample {
 		os.Create(path.Join(mainFolder, "knobx_select_sample-on"))
