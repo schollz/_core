@@ -707,7 +707,7 @@ void input_handling() {
   Dazzle *dazzle = Dazzle_malloc();
   uint8_t led_brightness = 255;
   int8_t led_brightness_direction = 0;
-  bool clock_input_absent = false;
+  bool clock_input_absent = true;
 
   uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
@@ -784,9 +784,7 @@ void input_handling() {
 
     ClockInput_update(clockinput);
     if (clock_in_do) {
-      if (ClockInput_timeSinceLast(clockinput) > 1000000) {
-        clock_input_absent = true;
-      }
+      clock_input_absent = ClockInput_timeSinceLast(clockinput) > 1000000;
     }
     Onewiremidi_receive(onewiremidi);
 
@@ -984,14 +982,38 @@ void input_handling() {
         clock_in_ready = false;
         clock_in_activator = 0;
         clock_in_do = false;
+      } else if (!clock_input_absent) {
+        // pressing clock while clock is active will reset to beat 1
+        // after determining whether the press is closer to the last
+        // clock or the next clock (i.e. we are either early or late)
+        uint32_t next_time =
+            clock_in_last_time + (clock_in_last_time - clock_in_last_last_time);
+        uint32_t now_time = time_us_32();
+        // ---|-----------|-----------|-------
+        // --lastlast----last---NOW--next
+        // determine if we are in the first half or the second half
+        if (now_time > clock_in_last_time +
+                           (clock_in_last_time - clock_in_last_last_time) / 2) {
+          // we are in the second half
+          // the next clock is going to be the first beat
+          // reset it to -1, so that when it increments it will be at 0
+          clock_in_beat_total = -1;
+        } else {
+          // we are in the first half
+          // the next clock is going to be the second beat
+          // reset it to 0, so that when it increments it will be at 1
+          clock_in_beat_total = 0;
+        }
+        // DOING
+      } else {
+        val = TapTempo_tap(taptempo);
+        if (val > 0) {
+          printf("[ectocore] tap bpm -> %d\n", val);
+          sf->bpm_tempo = val;
+        }
       }
       btn_taptempo_on = true;
       gpio_put(GPIO_LED_TAPTEMPO, 0);
-      val = TapTempo_tap(taptempo);
-      if (val > 0) {
-        printf("[ectocore] tap bpm -> %d\n", val);
-        sf->bpm_tempo = val;
-      }
     } else if (gpio_btn_taptempo_val == 1 && btn_taptempo_on) {
       btn_taptempo_on = false;
       gpio_put(GPIO_LED_TAPTEMPO, 1);
