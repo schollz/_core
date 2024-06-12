@@ -4,6 +4,7 @@ void clock_in_do_update() {
     clock_in_activator++;
   } else {
     clock_in_do = true;
+    clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();
     clock_in_beat_total++;
     clock_in_ready = true;
@@ -37,6 +38,7 @@ void clock_handling_start() {
     clock_in_activator++;
   } else {
     clock_in_do = true;
+    clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();
     clock_in_beat_total = 0;
     clock_in_ready = true;
