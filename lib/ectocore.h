@@ -984,6 +984,28 @@ void input_handling() {
         clock_in_do = false;
       } else if (!clock_input_absent) {
         // pressing clock while clock is active will reset to beat 1
+        // after determining whether the press is closer to the last
+        // clock or the next clock (i.e. we are either early or late)
+        uint32_t next_time =
+            clock_in_last_time + (clock_in_last_time - clock_in_last_last_time);
+        uint32_t now_time = time_us_32();
+        // ---|-----------|-----------|-------
+        // --lastlast----last---NOW--next
+        // determine if we are in the first half or the second half
+        if (now_time > clock_in_last_time +
+                           (clock_in_last_time - clock_in_last_last_time) / 2) {
+          // we are in the second half
+          // the next clock is going to be the first beat
+          // reset it to -1, so that when it increments it will be at 0
+          clock_in_beat_total = -1;
+        } else {
+          // we are in the first half
+          // the next clock is going to be the second beat
+          // reset it to 0, so that when it increments it will be at 1
+          clock_in_beat_total = 0;
+        }
+
+        // DOING
       } else {
         val = TapTempo_tap(taptempo);
         if (val > 0) {
