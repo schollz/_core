@@ -511,6 +511,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       update_fx(FX_TAPE_STOP);
       break;
     default:
+      break;
   }
 }
 
