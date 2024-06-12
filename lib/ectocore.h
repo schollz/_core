@@ -707,7 +707,7 @@ void input_handling() {
   Dazzle *dazzle = Dazzle_malloc();
   uint8_t led_brightness = 255;
   int8_t led_brightness_direction = 0;
-  bool clock_input_absent = false;
+  bool clock_input_absent = true;
 
   uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
@@ -1004,7 +1004,6 @@ void input_handling() {
           // reset it to 0, so that when it increments it will be at 1
           clock_in_beat_total = 0;
         }
-
         // DOING
       } else {
         val = TapTempo_tap(taptempo);
