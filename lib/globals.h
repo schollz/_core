@@ -173,6 +173,7 @@ uint8_t clock_in_activator = 0;
 int32_t clock_in_beat_total = 0;
 uint32_t clock_in_diff_2x = 0;
 uint32_t clock_in_last_time = 0;
+uint32_t clock_in_last_last_time = 0;
 
 typedef struct SampleSelection {
   uint8_t bank : 4;    // 0-15
