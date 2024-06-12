@@ -984,14 +984,15 @@ void input_handling() {
         clock_in_ready = false;
         clock_in_activator = 0;
         clock_in_do = false;
+      } else {
+        val = TapTempo_tap(taptempo);
+        if (val > 0) {
+          printf("[ectocore] tap bpm -> %d\n", val);
+          sf->bpm_tempo = val;
+        }
       }
       btn_taptempo_on = true;
       gpio_put(GPIO_LED_TAPTEMPO, 0);
-      val = TapTempo_tap(taptempo);
-      if (val > 0) {
-        printf("[ectocore] tap bpm -> %d\n", val);
-        sf->bpm_tempo = val;
-      }
     } else if (gpio_btn_taptempo_val == 1 && btn_taptempo_on) {
       btn_taptempo_on = false;
       gpio_put(GPIO_LED_TAPTEMPO, 1);
