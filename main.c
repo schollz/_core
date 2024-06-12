@@ -101,30 +101,52 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
-  if (bpm_timer_counter %
-          (banks[sel_bank_cur]
-               ->sample[sel_sample_cur]
-               .snd[FILEZERO]
-               ->splice_trigger *
-           ectocore_clock_out_divisions[ectocore_clock_selected_division] /
-           8) ==
-      0) {
-    ecto_do_clock_trig++;
-    gpio_put(GPIO_CLOCK_OUT, 1);
-    clock_output_trig_time = to_ms_since_boot(get_absolute_time());
-  } else if (!clock_output_trig &&
-             bpm_timer_counter % (banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->splice_trigger *
-                                  ectocore_clock_out_divisions
-                                      [ectocore_clock_selected_division] /
-                                  8 / 2) ==
-                 0) {
-    // if clock output trig mode is on, then it will be switched off in the main
-    // loop
-    gpio_put(GPIO_CLOCK_OUT, 0);
+  if (clock_behavior_sync_slice) {
+    if (bpm_timer_counter %
+            (banks[sel_bank_cur]
+                 ->sample[sel_sample_cur]
+                 .snd[FILEZERO]
+                 ->splice_trigger *
+             ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+             8) ==
+        0) {
+      ecto_do_clock_trig++;
+      gpio_put(GPIO_CLOCK_OUT, 1);
+      clock_output_trig_time = to_ms_since_boot(get_absolute_time());
+    } else if (!clock_output_trig &&
+               bpm_timer_counter % (banks[sel_bank_cur]
+                                        ->sample[sel_sample_cur]
+                                        .snd[FILEZERO]
+                                        ->splice_trigger *
+                                    ectocore_clock_out_divisions
+                                        [ectocore_clock_selected_division] /
+                                    8 / 2) ==
+                   0) {
+      // if clock output trig mode is on, then it will be switched off in the
+      // main loop
+      gpio_put(GPIO_CLOCK_OUT, 0);
+    }
+  } else {
+    if (bpm_timer_counter %
+            (192 *
+             ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+             8) ==
+        0) {
+      ecto_do_clock_trig++;
+      gpio_put(GPIO_CLOCK_OUT, 1);
+      clock_output_trig_time = to_ms_since_boot(get_absolute_time());
+    } else if (!clock_output_trig &&
+               bpm_timer_counter % (192 *
+                                    ectocore_clock_out_divisions
+                                        [ectocore_clock_selected_division] /
+                                    8 / 2) ==
+                   0) {
+      // if clock output trig mode is on, then it will be switched off in the
+      // main loop
+      gpio_put(GPIO_CLOCK_OUT, 0);
+    }
   }
+
 #endif
   // trigger clock out if it is going
   if (do_splice_trigger) {
