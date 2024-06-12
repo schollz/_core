@@ -115,7 +115,7 @@ midicom:
 	./dev/midicom/midicom
 	
 changebaud:
-	curl localhost:7083 
+	-curl localhost:7083 
 
 resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"

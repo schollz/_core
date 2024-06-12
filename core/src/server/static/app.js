@@ -325,6 +325,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsClockOutput) {
             app.settingsClockOutput = savedState.settingsClockOutput;
         }
+        if (savedState.settingsClockBehaviorSync) {
+            app.settingsClockBehaviorSync = savedState.settingsClockBehaviorSync;
+        }
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
@@ -456,6 +459,7 @@ app = new Vue({
         settingsBrightness: 50,
         settingsClockStop: false,
         settingsClockOutput: false,
+        settingsClockBehaviorSync: false,
         settingsKnobXSample: false,
         progressBarWidth: '0px',
         dropaudiofilemode: 'default',
@@ -501,6 +505,7 @@ app = new Vue({
         settingsBrightness: 'saveState',
         settingsClockStop: 'saveState',
         settingsClockOutput: 'saveState',
+        settingsClockBehaviorSync: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         selectedFile: 'saveState',
@@ -726,6 +731,7 @@ app = new Vue({
                 settingsBrightness: app.settingsBrightness,
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
+                settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
             };
@@ -984,6 +990,7 @@ app = new Vue({
                 settingsBrightness: parseInt(app.settingsBrightness),
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
+                settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 banks: [],
