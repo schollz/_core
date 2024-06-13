@@ -449,6 +449,7 @@ void do_update_phase_from_beat_current() {
 #endif
 
 #ifdef INCLUDE_ZEPTOCORE
+#ifdef INCLUDE_CUEDSOUNDS
   if (banks[sel_bank_cur]
               ->sample[sel_sample_cur]
               .snd[FILEZERO]
@@ -461,6 +462,7 @@ void do_update_phase_from_beat_current() {
     cuedsounds_do_play = CUEDSOUNDS_FILE_KICK017;
     printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK017);
   }
+#endif
 #endif
   // printf("[globals] do_update_phase_from_beat_current: %d, %d %d [%d, %d]\n",
   //        beat_current, slice, phase_new,
