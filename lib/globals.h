@@ -448,6 +448,20 @@ void do_update_phase_from_beat_current() {
   gpio_put(GPIO_LED_TAPTEMPO, beat_total % 2 == 1);
 #endif
 
+#ifdef INCLUDE_ZEPTOCORE
+  if (banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->slice_type[slice] == 1 ||
+      banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->slice_type[slice] == 3) {
+    // is kick
+    cuedsounds_do_play = CUEDSOUNDS_FILE_KICK017;
+    printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK017);
+  }
+#endif
   // printf("[globals] do_update_phase_from_beat_current: %d, %d %d [%d, %d]\n",
   //        beat_current, slice, phase_new,
   //        banks[sel_bank_cur]
