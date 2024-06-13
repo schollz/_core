@@ -649,7 +649,7 @@ BREAKOUT_OF_MUTE:
   }
 
 #ifdef INCLUDE_CUEDSOUNDS
-  cuedsounds_audio_update(samples, buffer->max_sample_count);
+  cuedsounds_audio_update(samples, buffer->max_sample_count, vol_main);
 #endif
 
 // apply filter
