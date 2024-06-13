@@ -459,8 +459,8 @@ void do_update_phase_from_beat_current() {
               .snd[FILEZERO]
               ->slice_type[slice] == 3) {
     // is kick
-    cuedsounds_do_play = CUEDSOUNDS_FILE_KICK017;
-    printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK017);
+    cuedsounds_do_play = CUEDSOUNDS_FILE_KICK088;
+    printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK088);
   }
 #endif
 #endif
