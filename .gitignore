@@ -264,3 +264,8 @@ lib/hadouken.h
 docs/content/versions/
 lib/cuedsounds.h
 dev/audio2flash/audio2flash
+detroitunderground_20240529.uf2
+dev/pikocore-starting/
+dev/starting_samples_pikocore/
+dev/zeptocore_v2.8.0.uf2
+dev/zeptocore_v2.8.2.uf2
