@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sort"
 	"strings"
 
 	log "github.com/schollz/logger"
@@ -27,9 +28,8 @@ func main() {
 	run()
 }
 
-func run() (err error) {
-
-	_, fileNameOnly := path.Split(flagOut)
+func convertToUpper(s string) string {
+	_, fileNameOnly := path.Split(s)
 	codeName := strings.Map(func(r rune) rune {
 		if r >= 'A' && r <= 'Z' {
 			return r
@@ -39,6 +39,12 @@ func run() (err error) {
 		}
 		return '_'
 	}, strings.ToUpper(strings.Split(fileNameOnly, ".")[0]))
+	return codeName
+}
+func run() (err error) {
+
+	_, fileNameOnly := path.Split(flagOut)
+	codeName := convertToUpper(fileNameOnly)
 	codeNameLower := strings.ToLower(codeName)
 
 	log.Tracef("%s %s", codeName, codeNameLower)
@@ -48,6 +54,11 @@ func run() (err error) {
 		log.Errorf("could not read folder: %s", err)
 		return
 	}
+
+	// sort files
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
 
 	for i, file := range files {
 		tempFile := fmt.Sprintf("temp%d.wav", i)
@@ -68,6 +79,9 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("#define %s_FILES %d\n", codeName, len(files)))
 	// sb.WriteString(fmt.Sprintf("#define %s_SAMPLES %d\n", codeName, len(vals)))
 	// sb.WriteString(fmt.Sprintf("const int16_t __in_flash() %s_audio[] = {\n", codeNameLower))
+	for i := range files {
+		sb.WriteString(fmt.Sprintf("#define %s_FILE_%s %d\n", codeName, convertToUpper(files[i].Name()), i))
+	}
 
 	// determine start/stop positions
 	start := 0
@@ -108,11 +122,11 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("uint32_t %s_start_index = 0;\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("uint32_t %s_stop_index = 0;\n", codeNameLower))
 
-	sb.WriteString(fmt.Sprintf("void %s_audio_update(int32_t* samples, uint16_t num_samples) {\n", codeNameLower))
+	sb.WriteString(fmt.Sprintf("void %s_audio_update(int32_t* samples, uint16_t num_samples, uint vol_main) {\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("  if (!%s_is_playing && %s_do_play<0) {\n", codeNameLower, codeNameLower))
 	sb.WriteString(fmt.Sprintf("    return;\n"))
 	sb.WriteString(fmt.Sprintf("  }\n"))
-	sb.WriteString(fmt.Sprintf("  if (%s_do_play>=0) {\n", codeNameLower))
+	sb.WriteString(fmt.Sprintf("  if (%s_do_play>=0 && !%s_is_playing) {\n", codeNameLower, codeNameLower))
 	sb.WriteString(fmt.Sprintf("    %s_is_playing = true;\n", codeNameLower))
 	// check which filename it is and set the start index using an if-else
 	for i := range files {
@@ -130,9 +144,9 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("  }\n"))
 
 	sb.WriteString(fmt.Sprintf("for (uint16_t i = 0; i < num_samples; i++) {\n"))
-	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index];\n", codeNameLower, codeNameLower))
-	sb.WriteString(fmt.Sprintf("  // convert to 16-bit from 32-bit\n"))
-	sb.WriteString(fmt.Sprintf("  audio = audio << 16;\n"))
+	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * 200 / 255;\n", codeNameLower, codeNameLower))
+	sb.WriteString(fmt.Sprintf("  audio = (vol_main * audio) << 8u;\n"))
+	sb.WriteString(fmt.Sprintf("  audio += (audio >> 16u);\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 0] += audio;\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 1] += audio;\n"))
 	sb.WriteString(fmt.Sprintf("  %s_index++;\n", codeNameLower))
