@@ -268,12 +268,24 @@ void button_key_on_single(uint8_t key) {
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on double %d+%d\n", key1, key2);
   if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
-    uint8_t tempos[16] = {60,  70,  80,  90,  100, 110, 120, 130,
-                          140, 150, 160, 170, 180, 190, 200, 210};
-    printf("[button_handler] select tempo: %d %d\n", key2, tempos[key2 - 4]);
-    sf->bpm_tempo = tempos[key2 - 4];
-    DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
-    return;
+    // make sure KEY_A is on first
+    uint16_t key_a_on = 0;
+    uint16_t key_b_on = 0;
+    for (uint8_t i = 0; i < key_pressed_num; i++) {
+      if (key_pressed[i] == KEY_A) {
+        key_a_on = i;
+      } else if (key_pressed[i] == KEY_B) {
+        key_b_on = i;
+      }
+    }
+    if (key_a_on < key_b_on) {
+      uint8_t tempos[16] = {60,  70,  80,  90,  100, 110, 120, 130,
+                            140, 150, 160, 170, 180, 190, 200, 210};
+      printf("[button_handler] select tempo: %d %d\n", key2, tempos[key2 - 4]);
+      sf->bpm_tempo = tempos[key2 - 4];
+      DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
+      return;
+    }
   }
   if (key1 == KEY_B && key2 == KEY_A && random_sequence_length > 0) {
     // generate new sequence
@@ -478,6 +490,16 @@ void button_handler(ButtonMatrix *bm) {
     char key_pressed_str[256];
     int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
                        "[button_handler](%ld)combo: ", key_timer_on);
+
+    if (key_pressed_num > 2) {
+      if (key_pressed[0] == 1 && key_pressed[1] == 0) {
+        printf("[button_handler] customseq\n");
+        random_sequence_length = key_pressed_num - 2;
+        for (uint16_t i = 2; i < key_pressed_num; i++) {
+          random_sequence_arr[i - 2] = key_pressed[i] - 4;
+        }
+      }
+    }
 
     // Ensure the snprintf was successful and within the buffer size
     if (pos >= 0 && pos < sizeof(key_pressed_str)) {
