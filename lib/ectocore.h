@@ -624,13 +624,14 @@ void input_handling() {
         if (i < 2) {
           // read in the attenuator
           int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
-          if (val_attenuate > 520) {
+          if (val_attenuate > 512 + 20) {
             // linear interpolation
-            val = val * (val_attenuate - 520) / (1024 - 520);
+            val = val * (val_attenuate - (512 + 20)) / (1024 - (512 + 20));
             cv_values[i] = val;
-          } else if (val_attenuate < 500) {
-            // TODO: add random noise
-            val_attenuate = 500 - val_attenuate;
+          } else if (val_attenuate < (512 - 20)) {
+            // add random noise
+            val_attenuate = (512 - 20) - val_attenuate;
+            val_attenuate = val_attenuate / 2;
             cv_values[i] = val + random_integer_in_range(-1 * val_attenuate,
                                                          val_attenuate);
           }
