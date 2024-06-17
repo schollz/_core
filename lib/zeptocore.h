@@ -443,8 +443,8 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 9, adc * 127 / 4096);
 #endif
-          sel_sample_knob_ready = true;
           sample_selection_index = adc_raw * sample_selection_num / 4096;
+          printf("sample_selection_index: %d\n", sample_selection_index);
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -467,13 +467,13 @@ void input_handling() {
     }
 #endif
 
-    if (global_knobx_sample_selector || sel_sample_knob_ready) {
-      if (sample_selection_index_last != sample_selection_index) {
-        sample_selection_index_last = sample_selection_index;
-        debounce_sample_selection = 4;
-      } else if (debounce_sample_selection > 0) {
-        debounce_sample_selection--;
-      } else {
+    if (sample_selection_index_last != sample_selection_index) {
+      printf("sample_selection_index: %d\n", sample_selection_index);
+      sample_selection_index_last = sample_selection_index;
+      debounce_sample_selection = 4;
+    } else if (debounce_sample_selection > 0) {
+      debounce_sample_selection--;
+      if (debounce_sample_selection == 0) {
         uint8_t f_sel_bank_next = sample_selection[sample_selection_index].bank;
         uint8_t f_sel_sample_next =
             sample_selection[sample_selection_index].sample;
@@ -491,6 +491,8 @@ void input_handling() {
 #ifdef BTN_COL_START
     if (!is_arcade_box) button_handler(bm);
 #endif
+
+    break_fx_update();
 
 #ifdef INCLUDE_KNOBS
     // knob Y
