@@ -185,7 +185,7 @@ docsbuild: versions.md
 
 .PHONY: core_windows.exe
 core_windows.exe: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w" -x -o ../core_windows.exe
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w" -o ../core_windows.exe
 
 core/MacOSX11.3.sdk:
 	cd core && wget https://github.com/joseluisq/macosx-sdks/releases/download/11.3/MacOSX11.3.sdk.tar.xz
@@ -197,7 +197,7 @@ core_macos_aarch64: docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_aarch64
+	go build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_aarch64
 
 .PHONY: core_macos_amd64
 core_macos_amd64: docsbuild core/MacOSX11.3.sdk
@@ -205,16 +205,16 @@ core_macos_amd64: docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_amd64
+	go build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd64
 
 .PHONY: core_macos_amd642
 core_macos_amd642: docsbuild
 	cd core && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 \
-	go build -ldflags "-s -w" -buildmode=pie -v -x -o ../core_macos_amd642
+	go build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd642
 
 .PHONY: core_linux_amd64
 core_linux_amd64: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -v -x -o ../core_linux_amd64
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -v -o ../core_linux_amd64
 
 .PHONY: docs
 docs: versions.md
