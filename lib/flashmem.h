@@ -11,8 +11,8 @@ void write_struct_to_flash(const void* data, size_t size) {
     return;
   }
 
-  // Compute the flash address
-  uint32_t flash_address = XIP_BASE + FLASH_TARGET_OFFSET;
+  // // Compute the flash address
+  // uint32_t flash_address = XIP_BASE + FLASH_TARGET_OFFSET;
 
   // Disable interrupts to prevent flash access conflicts
   uint32_t interrupt_status = save_and_disable_interrupts();
