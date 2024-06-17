@@ -630,7 +630,9 @@ void input_handling() {
             cv_values[i] = val;
           } else if (val_attenuate < 500) {
             // TODO: add random noise
-            cv_values[i] = val;
+            val_attenuate = 500 - val_attenuate;
+            cv_values[i] = val + random_integer_in_range(-1 * val_attenuate,
+                                                         val_attenuate);
           }
         } else {
           cv_values[i] = val;
@@ -947,33 +949,24 @@ void input_handling() {
 
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         printf("[ectocore] knob_amen_atten %d\n", val);
-        if (val < 512 - 24) {
-          sf->stay_in_sync = false;
-          probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
-          ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, true);
-        } else if (val > 512 + 24) {
-          sf->stay_in_sync = true;
-          probability_of_random_jump = (val - (512 + 24)) * 100 / (512 + 24);
-          ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), true,
-                                      false, true);
-        } else {
-          sf->stay_in_sync = true;
-          probability_of_random_jump = 0;
-          ws2812_wheel_clear(ws2812);
-          WS2812_show(ws2812);
+        // check if CV is plugged in for AMEN
+        if (!cv_plugged[CV_AMEN]) {
+          if (val < 512 - 24) {
+            sf->stay_in_sync = false;
+            probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
+            ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, true);
+          } else if (val > 512 + 24) {
+            sf->stay_in_sync = true;
+            probability_of_random_jump = (val - (512 + 24)) * 100 / (512 + 24);
+            ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), true,
+                                        false, true);
+          } else {
+            sf->stay_in_sync = true;
+            probability_of_random_jump = 0;
+            ws2812_wheel_clear(ws2812);
+            WS2812_show(ws2812);
+          }
         }
-        // if (val < 10 && !playback_stopped) {
-        //   // if (!button_mute) trigger_button_mute = true;
-        //   // do_stop_playback = true;
-        //   // WS2812_fill(ws2812, 17, 255, 0, 0);
-        //   // WS2812_show(ws2812);
-        // } else if (val > 10 && playback_stopped) {
-        //   // do_restart_playback = true;
-        //   // button_mute = false;
-        //   // WS2812_fill(ws2812, 17, 0, 255, 0);
-        //   // WS2812_show(ws2812);
-        // } else {
-        // }
       }
     }
 
