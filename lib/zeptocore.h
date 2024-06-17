@@ -570,11 +570,12 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
         } else if (button_is_pressed(KEY_D)) {
+          // D + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 13, adc * 127 / 4096);
 #endif
-          probability_of_random_retrig = adc;
+          break_knob_set_point = adc * 1024 / 4096;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
