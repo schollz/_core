@@ -557,27 +557,18 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
+          // C + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 10, adc * 127 / 4096);
 #endif
-
-          // change sample
-
-          // change bank
-          uint8_t bank_next_possible = sel_bank_cur;
-          uint8_t sample_next_possible =
-              adc * banks[sel_bank_cur]->num_samples / 4096;
-          if (sample_next_possible != sel_sample_cur &&
-              banks[bank_next_possible]->num_samples > 0 &&
-              !banks[bank_next_possible]
-                   ->sample[sample_next_possible]
-                   .snd[FILEZERO]
-                   ->one_shot) {
-            sel_bank_next = bank_next_possible;
-            sel_sample_next = sample_next_possible;
-            fil_current_change = true;
+          probability_of_random_tunnel = adc * 1000 / 4096;
+          if (probability_of_random_tunnel < 100) {
+            probability_of_random_tunnel = 0;
           }
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                            adc * 255 / 4096, 100);
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -663,17 +654,12 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
+          // D + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 14, adc * 127 / 4096);
 #endif
-          probability_of_random_tunnel = adc * 1000 / 4096;
-          if (probability_of_random_tunnel < 100) {
-            probability_of_random_tunnel = 0;
-          }
-          clear_debouncers();
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
-                            adc * 255 / 4096, 100);
+
         } else {
 #ifdef INCLUDE_MIDI
           // send out midi cc
