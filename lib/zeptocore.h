@@ -651,6 +651,7 @@ void input_handling() {
           Sequencer_quantize(
               sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
               quantizations[adc * 9 / 4096]);
+          clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
@@ -659,7 +660,11 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 14, adc * 127 / 4096);
 #endif
-
+          // change the grimoire rune
+          grimoire_rune = adc * 7 / 4096;
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_GRIMOIRE],
+                            adc * 255 / 4096, 100);
         } else {
 #ifdef INCLUDE_MIDI
           // send out midi cc
