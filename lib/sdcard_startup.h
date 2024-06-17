@@ -8,13 +8,13 @@ int extractNumber(const char *str) {
   }
 
   // Move backwards until we find the first digit
-  while (p >= str && !isdigit(*p)) {
+  while (p >= str && !isdigit((unsigned char)*p)) {
     p--;
   }
 
   // Move backwards to get the entire number
   const char *numStart = p;
-  while (numStart >= str && isdigit(*numStart)) {
+  while (numStart >= str && isdigit((unsigned char)*numStart)) {
     numStart--;
   }
   numStart++;  // Move one step forward to the first digit
@@ -530,7 +530,8 @@ void sdcard_startup() {
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   // if you have too many samples, reverb won't work
   if (total_number_samples < 128) {
@@ -542,7 +543,8 @@ void sdcard_startup() {
   total_heap = getTotalHeap();
   used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,

@@ -28,11 +28,11 @@
 #include <stdbool.h>
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
-#define BYTE_TO_BINARY(byte)                                \
-  ((byte)&0x80 ? '1' : '0'), ((byte)&0x40 ? '1' : '0'),     \
-      ((byte)&0x20 ? '1' : '0'), ((byte)&0x10 ? '1' : '0'), \
-      ((byte)&0x08 ? '1' : '0'), ((byte)&0x04 ? '1' : '0'), \
-      ((byte)&0x02 ? '1' : '0'), ((byte)&0x01 ? '1' : '0')
+#define BYTE_TO_BINARY(byte)                                    \
+  ((byte) & 0x80 ? '1' : '0'), ((byte) & 0x40 ? '1' : '0'),     \
+      ((byte) & 0x20 ? '1' : '0'), ((byte) & 0x10 ? '1' : '0'), \
+      ((byte) & 0x08 ? '1' : '0'), ((byte) & 0x04 ? '1' : '0'), \
+      ((byte) & 0x02 ? '1' : '0'), ((byte) & 0x01 ? '1' : '0')
 
 uint16_t bit_set(uint16_t value, uint8_t bit, bool on) {
   if (on) {
@@ -120,7 +120,6 @@ static inline uint8_t linlin_int32_uint8(int32_t in, int32_t in_min,
       out_min, out_max);
 }
 void generate_euclidean_rhythm(int n, int k, int offset, bool *rhythm) {
-  int pattern[n];
   int bucket = 0;
 
   // Initialize the rhythm array to false
