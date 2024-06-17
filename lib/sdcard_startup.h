@@ -131,12 +131,6 @@ void check_setup_files() {
       fr = f_findnext(&dj, &fno); /* Search for next item */
     }
   }
-
-  // testing purposes
-  // set all to false
-  for (uint8_t effect = 0; effect < 16; effect++) {
-    grimoire_rune_effect[0][effect] = true;
-  }
 }
 
 void update_reverb() {
@@ -484,21 +478,21 @@ void sdcard_startup() {
     }
   }  // bank loop
 
-  if (global_knobx_sample_selector || is_arcade_box) {
-    sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
-    for (uint8_t bi = 0; bi < 16; bi++) {
-      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
-        // add to sample_selection list if not one-shot
-        if (banks[bi]->sample[si].snd[0]->play_mode == PLAY_NORMAL &&
-            sample_selection_num < 255) {
-          // append to sample_selection
-          sample_selection[sample_selection_num] =
-              (SampleSelection){.bank = bi, .sample = si};
-          sample_selection_num++;
-        }
+#ifdef INCLUDE_ZEPTOCORE
+  sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
+  for (uint8_t bi = 0; bi < 16; bi++) {
+    for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
+      // add to sample_selection list if not one-shot
+      if (banks[bi]->sample[si].snd[0]->play_mode == PLAY_NORMAL &&
+          sample_selection_num < 255) {
+        // append to sample_selection
+        sample_selection[sample_selection_num] =
+            (SampleSelection){.bank = bi, .sample = si};
+        sample_selection_num++;
       }
     }
   }
+#endif
 
   // load save file
   // load new save file
