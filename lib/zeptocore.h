@@ -200,7 +200,7 @@ void input_handling() {
   }
 
   KnobChange *knob_change_arcade[8];
-  ADS7830 *arcade_ads7830;
+  ADS7830 *arcade_ads7830 = NULL;
   if (is_arcade_box) {
     arcade_ads7830 = ADS7830_malloc(ADS7830_ADDR);
     // create array of knob changes
