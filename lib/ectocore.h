@@ -686,7 +686,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.9.2\n");
+        printf("version=v3.0.0\n");
       }
     }
 
