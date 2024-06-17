@@ -209,6 +209,8 @@ void input_handling() {
     }
   }
 
+  bool sel_sample_knob_ready = false;
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -435,25 +437,13 @@ void input_handling() {
 #endif
           make_random_sequence(adc * 255 / 4096);
         } else if (button_is_pressed(KEY_C)) {
+          // C + X
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 9, adc * 127 / 4096);
 #endif
-          // change bank
-          uint8_t bank_next_possible =
-              banks_with_samples[adc * banks_with_samples_num / 4096];
-          uint8_t sample_next_possible =
-              sel_sample_cur % banks[bank_next_possible]->num_samples;
-          if (bank_next_possible != sel_bank_cur &&
-              banks[bank_next_possible]->num_samples > 0 &&
-              !banks[bank_next_possible]
-                   ->sample[sample_next_possible]
-                   .snd[FILEZERO]
-                   ->one_shot) {
-            sel_bank_next = bank_next_possible;
-            sel_sample_next = sample_next_possible;
-            fil_current_change = true;
-          }
+          sel_sample_knob_ready = true;
+          sample_selection_index = adc_raw * sample_selection_num / 4096;
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -476,7 +466,7 @@ void input_handling() {
     }
 #endif
 
-    if (global_knobx_sample_selector) {
+    if (global_knobx_sample_selector || sel_sample_knob_ready) {
       if (sample_selection_index_last != sample_selection_index) {
         sample_selection_index_last = sample_selection_index;
         debounce_sample_selection = 4;
