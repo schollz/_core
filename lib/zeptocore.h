@@ -31,6 +31,7 @@
 #ifdef INCLUDE_SSD1306
 #include "ssd1306.h"
 #endif
+#include "break_knob.h"
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
