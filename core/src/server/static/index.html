@@ -132,7 +132,11 @@
             [[ end ]]
 
             <p>
+                [[ if .IsZeptocore ]]
+                Random effect banks (<strong>D+Z</strong> to select and <strong>D+Y</strong> to activate):
+                [[else]]
                 Grimoire of Breaks:
+                [[end]]
             <div class="grimoire-container">
                 <div class="circle-container">
                     <div id="grimoire0" class="circle-icon" @click="grimoireClick(0);"
