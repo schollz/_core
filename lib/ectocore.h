@@ -53,6 +53,8 @@
 #endif
 #include "break_knob.h"
 
+#define KNOB_ATTEN_ZERO_WIDTH 80
+
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
 } EctocoreFlash;
@@ -98,6 +100,45 @@ void ws2812_set_wheel_euclidean(WS2812 *ws2812, uint8_t val, uint8_t r,
   }
 
   WS2812_show(ws2812);
+}
+
+void ws2812_set_wheel_start_stop(WS2812 *ws2812, uint8_t start, uint8_t stop,
+                                 uint8_t r, uint8_t g, uint8_t b) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
+  // start is 0-16, stop is 0-16
+  ws2812_wheel_clear(ws2812);
+  for (uint8_t i = start; i <= stop; i++) {
+    WS2812_fill(ws2812, i, r, g, b);
+  }
+  WS2812_show(ws2812);
+}
+
+// cv_start and cv_stop are between 0 and 1000
+int16_t cv_start = -1;
+int16_t cv_stop = -1;
+void set_cv_start_stop(int16_t knob1, int16_t knob2) {
+  int16_t cv_start_old = cv_start;
+  int16_t cv_stop_old = cv_stop;
+  // start and stop are knob values between 0-1024
+  cv_start = knob1 * 1000 / 1024;
+  if (knob2 < 512) {
+    cv_stop = cv_start + ((512 - knob2) * 1000 / 512);
+  } else {
+    cv_stop = cv_start + (knob2 - 512) * 1000 / 512;
+  }
+  if (cv_stop > 1000) {
+    cv_stop = 1000;
+  }
+  if (cv_start != cv_start_old || cv_stop != cv_stop_old) {
+    printf("[ectocore] cv_start=%d, cv_stop=%d\n", cv_start, cv_stop);
+    if (knob2 < 512) {
+      ws2812_set_wheel_start_stop(ws2812, cv_start * 16 / 1000,
+                                  cv_stop * 16 / 1000, 100, 200, 255);
+    } else {
+      ws2812_set_wheel_start_stop(ws2812, cv_start * 16 / 1000,
+                                  cv_stop * 16 / 1000, 200, 100, 255);
+    }
+  }
 }
 
 void ws2812_set_wheel(WS2812 *ws2812, uint16_t val, bool r, bool g, bool b) {
@@ -384,10 +425,16 @@ void input_handling() {
 
   // update the knobs
 #define KNOB_NUM 5
+#define KNOB_BREAK 0
+#define KNOB_BREAK_ATTEN 1
+#define KNOB_AMEN 2
+#define KNOB_AMEN_ATTEN 3
+#define KNOB_SAMPLE 4
   uint8_t knob_gpio[KNOB_NUM] = {
       MCP_KNOB_BREAK, MCP_ATTEN_BREAK, MCP_KNOB_AMEN,
       MCP_ATTEN_AMEN, MCP_KNOB_SAMPLE,
   };
+  int16_t knob_val[KNOB_NUM] = {0, 0, 0, 0, 0};
   KnobChange *knob_change[KNOB_NUM];
   for (uint8_t i = 0; i < KNOB_NUM; i++) {
     knob_change[i] = KnobChange_malloc(6);
@@ -519,10 +566,13 @@ void input_handling() {
               WS2812_fill(ws2812, j, 255, 0, 0);
             }
             WS2812_show(ws2812);
-            watchdog_reboot(0, SRAM_END, 900);
+            sleep_ms(10);
+            printf("[ectocore] write calibration\n");
+            sleep_ms(1);
+            watchdog_reboot(0, SRAM_END, 1900);
             sleep_ms(10);
             write_struct_to_flash(&write_data, sizeof(write_data));
-            sleep_ms(1000);
+            sleep_ms(3000);
             for (;;) {
               __wfi();
             }
@@ -619,33 +669,38 @@ void input_handling() {
     // update the cv for each channel
     for (uint8_t i = 0; i < 3; i++) {
       if (cv_plugged[i]) {
-        // firist figure out CV values
+        // collect out CV values
         val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
-        if (i < 2) {
-          // read in the attenuator
-          int16_t val_attenuate = MCP3208_read(mcp3208, cv_attenuate[i], false);
-          if (val_attenuate > 512 + 20) {
-            // linear interpolation
-            val = val * (val_attenuate - (512 + 20)) / (1024 - (512 + 20));
-            cv_values[i] = val;
-          } else if (val_attenuate < (512 - 20)) {
-            // add random noise
-            val_attenuate = (512 - 20) - val_attenuate;
-            val_attenuate = val_attenuate / 2;
-            cv_values[i] = val + random_integer_in_range(-1 * val_attenuate,
-                                                         val_attenuate);
-          }
-        } else {
-          cv_values[i] = val;
-        }
         // then do something based on the CV value
         if (i == CV_AMEN) {
-          // change the position base on the CV value
-          cv_beat_current_override = linlin(cv_values[i], -512, 512, 0,
-                                            banks[sel_bank_cur]
-                                                ->sample[sel_sample_cur]
-                                                .snd[FILEZERO]
-                                                ->slice_num);
+          if (cv_start == -1 || cv_stop == -1) {
+            set_cv_start_stop(knob_val[KNOB_AMEN], knob_val[KNOB_AMEN_ATTEN]);
+          }
+          // possibly add random value
+          if (knob_val[KNOB_AMEN_ATTEN] < 512) {
+            int16_t range = (512 - knob_val[KNOB_AMEN_ATTEN]) * 256;
+            val = val + random_integer_in_range(-1 * range, range);
+            while (val < -512) {
+              val += 512;
+            }
+            while (val > 512) {
+              val -= 512;
+            }
+          }
+          cv_beat_current_override = linlin(val, -512, 512,
+                                            cv_start *
+                                                banks[sel_bank_cur]
+                                                    ->sample[sel_sample_cur]
+                                                    .snd[FILEZERO]
+                                                    ->slice_num /
+                                                1000,
+                                            cv_stop *
+                                                banks[sel_bank_cur]
+                                                    ->sample[sel_sample_cur]
+                                                    .snd[FILEZERO]
+                                                    ->slice_num /
+                                                1000);
+
         } else if (i == CV_BREAK) {
           // update the break stuff
           break_set(linlin(cv_values[i], -512, 512, 0, 1024), true, false);
@@ -792,6 +847,7 @@ void input_handling() {
           val = 1023;
         }
       }
+      knob_val[i] = val;
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0 && !sf->fx_active[FX_TIMESTRETCH] &&
             fil_current_change == false) {
@@ -933,6 +989,8 @@ void input_handling() {
           } else {
             random_sequence_length = 0;
             do_retrig_at_end_of_phrase = false;
+            // show the current offset
+            set_cv_start_stop(knob_val[KNOB_AMEN], knob_val[KNOB_AMEN_ATTEN]);
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
@@ -967,6 +1025,8 @@ void input_handling() {
             ws2812_wheel_clear(ws2812);
             WS2812_show(ws2812);
           }
+        } else {
+          set_cv_start_stop(knob_val[KNOB_AMEN], knob_val[KNOB_AMEN_ATTEN]);
         }
       }
     }
