@@ -363,19 +363,21 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
 
     } else if (key2 > 3) {
       // A+H
-      if (!KEY_C_sample_select) {
-        sel_bank_select =
-            banks_with_samples[(key2 - 4) % banks_with_samples_num];
-        KEY_C_sample_select = true;
-        printf("sel_bank_select: %d\n", sel_bank_select);
-      } else {
-        sel_bank_next = sel_bank_select;
-        sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
-        tunneling_original_sample = sel_sample_next;
-        printf("sel_bank_next: %d\n", sel_bank_next);
-        printf("sel_sample_next: %d\n", sel_sample_next);
-        fil_current_change = true;
-        KEY_C_sample_select = false;
+      if (key_pressed[1] != KEY_A) {
+        if (!KEY_C_sample_select) {
+          sel_bank_select =
+              banks_with_samples[(key2 - 4) % banks_with_samples_num];
+          KEY_C_sample_select = true;
+          printf("sel_bank_select: %d\n", sel_bank_select);
+        } else {
+          sel_bank_next = sel_bank_select;
+          sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
+          tunneling_original_sample = sel_sample_next;
+          printf("sel_bank_next: %d\n", sel_bank_next);
+          printf("sel_sample_next: %d\n", sel_sample_next);
+          fil_current_change = true;
+          KEY_C_sample_select = false;
+        }
       }
     }
   } else if (key1 == KEY_C) {
