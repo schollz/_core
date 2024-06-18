@@ -159,10 +159,8 @@ bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 bool clock_behavior_sync_slice = false;
 uint32_t clock_output_trig_time = 0;
-#ifdef INCLUDE_ECTOCORE
 bool grimoire_rune_effect[7][16];
 uint8_t grimoire_rune = 0;
-#endif
 bool quadratic_resampling = false;
 bool clock_out_do = false;
 bool clock_out_ready = false;
@@ -218,7 +216,8 @@ Saturation *saturation;
 #define DEBOUNCE_UINT8_LED_RANDOM1 4
 #define DEBOUNCE_UINT8_LED_RANDOM2 5
 #define DEBOUNCE_UINT8_LED_TRIANGLE 6
-#define DEBOUNCE_UINT8_NUM 7
+#define DEBOUNCE_UINT8_LED_GRIMOIRE 7
+#define DEBOUNCE_UINT8_NUM 8
 DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
 #ifdef INCLUDE_ZEPTOCORE
 DebounceDigits *debouncer_digits;

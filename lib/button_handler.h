@@ -957,6 +957,17 @@ void button_handler(ButtonMatrix *bm) {
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
+                 debouncer_uint8[DEBOUNCE_UINT8_LED_GRIMOIRE])) {
+    for (uint8_t j = 0; j < 16; j++) {
+      if (grimoire_rune_effect[grimoire_rune][j]) {
+        LEDS_set(leds, j + 4, LED_BRIGHT);
+      } else {
+        LEDS_set(leds, j + 4, 0);
+      }
+    }
+    LEDS_render(leds);
+    return;
+  } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1])) {
     // show an LED bar
     const uint8_t led_bar_ordering[32] = {

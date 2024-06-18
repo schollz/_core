@@ -31,6 +31,7 @@
 #ifdef INCLUDE_SSD1306
 #include "ssd1306.h"
 #endif
+#include "break_knob.h"
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -162,10 +163,10 @@ void input_handling() {
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv2.9.2");
+  printStringWithDelay("zv3.0.0");
 
   // print to screen
-  printf("version=v2.9.2\n");
+  printf("version=v3.0.0\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -263,7 +264,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v2.9.2\n");
+        printf("version=v3.0.0\n");
       }
     }
 
@@ -442,8 +443,8 @@ void input_handling() {
           // send out midi cc
           MidiOut_cc(midiout[0], 9, adc * 127 / 4096);
 #endif
-          sel_sample_knob_ready = true;
           sample_selection_index = adc_raw * sample_selection_num / 4096;
+          printf("sample_selection_index: %d\n", sample_selection_index);
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -466,13 +467,13 @@ void input_handling() {
     }
 #endif
 
-    if (global_knobx_sample_selector || sel_sample_knob_ready) {
-      if (sample_selection_index_last != sample_selection_index) {
-        sample_selection_index_last = sample_selection_index;
-        debounce_sample_selection = 4;
-      } else if (debounce_sample_selection > 0) {
-        debounce_sample_selection--;
-      } else {
+    if (sample_selection_index_last != sample_selection_index) {
+      printf("sample_selection_index: %d\n", sample_selection_index);
+      sample_selection_index_last = sample_selection_index;
+      debounce_sample_selection = 4;
+    } else if (debounce_sample_selection > 0) {
+      debounce_sample_selection--;
+      if (debounce_sample_selection == 0) {
         uint8_t f_sel_bank_next = sample_selection[sample_selection_index].bank;
         uint8_t f_sel_sample_next =
             sample_selection[sample_selection_index].sample;
@@ -490,6 +491,8 @@ void input_handling() {
 #ifdef BTN_COL_START
     if (!is_arcade_box) button_handler(bm);
 #endif
+
+    break_fx_update();
 
 #ifdef INCLUDE_KNOBS
     // knob Y
@@ -556,33 +559,25 @@ void input_handling() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_C)) {
+          // C + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 10, adc * 127 / 4096);
 #endif
-
-          // change sample
-
-          // change bank
-          uint8_t bank_next_possible = sel_bank_cur;
-          uint8_t sample_next_possible =
-              adc * banks[sel_bank_cur]->num_samples / 4096;
-          if (sample_next_possible != sel_sample_cur &&
-              banks[bank_next_possible]->num_samples > 0 &&
-              !banks[bank_next_possible]
-                   ->sample[sample_next_possible]
-                   .snd[FILEZERO]
-                   ->one_shot) {
-            sel_bank_next = bank_next_possible;
-            sel_sample_next = sample_next_possible;
-            fil_current_change = true;
+          probability_of_random_tunnel = adc * 1000 / 4096;
+          if (probability_of_random_tunnel < 100) {
+            probability_of_random_tunnel = 0;
           }
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+                            adc * 255 / 4096, 100);
         } else if (button_is_pressed(KEY_D)) {
+          // D + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 13, adc * 127 / 4096);
 #endif
-          probability_of_random_retrig = adc;
+          break_knob_set_point = adc * 1024 / 4096;
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
@@ -659,19 +654,19 @@ void input_handling() {
           Sequencer_quantize(
               sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
               quantizations[adc * 9 / 4096]);
+          clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_D)) {
+          // D + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 14, adc * 127 / 4096);
 #endif
-          probability_of_random_tunnel = adc * 1000 / 4096;
-          if (probability_of_random_tunnel < 100) {
-            probability_of_random_tunnel = 0;
-          }
+          // change the grimoire rune
+          grimoire_rune = adc * 7 / 4096;
           clear_debouncers();
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_GRIMOIRE],
                             adc * 255 / 4096, 100);
         } else {
 #ifdef INCLUDE_MIDI
