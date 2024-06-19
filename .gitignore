@@ -212,7 +212,7 @@ core/src/server/docs/
 "Sample00 (Amen Brother (Version 1) 1).1.wav.info"
 lib/test/sampleinfo/sampleinfo.bin
 dev/starting_samples/
-dev/zeptocore_v3.0.0.uf2
+dev/zeptocore_v3.0.1.uf2
 core/.hugo_build.lock
 core/public/
 docs/content/blurbs/chat_2024_03_25_09_01_41.md
