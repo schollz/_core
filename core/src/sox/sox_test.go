@@ -73,26 +73,33 @@ import (
 // 	fmt.Println(onsets)
 // 	fmt.Println(bpm_estimates)
 
-// 	pieces := make([]string, len(bpm_estimates))
-// 	for i, bpm_estimate := range bpm_estimates {
-// 		var piece string
-// 		piece, err = Trim(fname, onsets[i], onsets[i+1]-onsets[i])
-// 		if err != nil {
-// 			return
-// 		}
-// 		if math.Abs(bpm_estimate-bpm) < 10 {
-// 			piece, err = RetempoStretch(piece, bpm_estimate, bpm)
-// 			if err != nil {
-// 				return
-// 			}
-// 		}
-// 		pieces[i] = piece
-// 	}
-// 	fmt.Println(pieces)
-// 	fname2, err = Join(pieces...)
-// 	return
-// }
-
+//		pieces := make([]string, len(bpm_estimates))
+//		for i, bpm_estimate := range bpm_estimates {
+//			var piece string
+//			piece, err = Trim(fname, onsets[i], onsets[i+1]-onsets[i])
+//			if err != nil {
+//				return
+//			}
+//			if math.Abs(bpm_estimate-bpm) < 10 {
+//				piece, err = RetempoStretch(piece, bpm_estimate, bpm)
+//				if err != nil {
+//					return
+//				}
+//			}
+//			pieces[i] = piece
+//		}
+//		fmt.Println(pieces)
+//		fname2, err = Join(pieces...)
+//		return
+//	}
+func TestMain(m *testing.M) {
+	// call flag.Parse() here if TestMain uses flags
+	err := Init()
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(m.Run())
+}
 func TestVersion(t *testing.T) {
 	version, err := Version()
 	assert.Nil(t, err)
@@ -157,7 +164,10 @@ func TestReverseReverb(t *testing.T) {
 	Clean()
 }
 func TestRun(t *testing.T) {
-	stdout, stderr, err := run(sox.GetBinary(), "--help")
+	stdout, stderr, err := run(GetBinary(), "--help")
+	if err != nil {
+		log.Error(err)
+	}
 	assert.Nil(t, err)
 	assert.True(t, strings.Contains(stdout, "SoX"))
 	assert.Empty(t, stderr)
@@ -175,6 +185,12 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, 44100, samplerate)
 	assert.Equal(t, 2, channnels)
 	assert.Equal(t, 24, precision)
+}
+
+func TestWarp(t *testing.T) {
+	fname2, err := Warp("amen_beats8_bpm172.wav", 120, 4)
+	assert.Nil(t, err)
+	log.Trace(fname2)
 }
 
 func TestSilence(t *testing.T) {
