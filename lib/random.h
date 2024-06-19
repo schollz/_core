@@ -3,7 +3,7 @@
 pcg32_random_t rng;
 
 int random_integer_in_range(int min, int max) {
-  return (int)pcg32_boundedrand_r(&rng, max - min) + min;
+  return (int)pcg32_boundedrand_r(&rng, max + 1 - min) + min;
 }
 
 void random_initialize() {
