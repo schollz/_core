@@ -144,6 +144,31 @@ func ConvertToMatch(fname string, fnameMatch string) (fname2 string, err error) 
 	return
 }
 
+func Warp(fname string, bpmSet float64, beatDivisionSet float64) (fname2 string, err error) {
+	// first determine the BPM / Beats in the file
+	beats, bpm, err := GetBPM(fname)
+	if err != nil {
+		return
+	}
+	// determine the current duration
+	duration, err := Length(fname)
+	if err != nil {
+		return
+	}
+	log.Tracef("bpm: %2.2f, beats: %2.2f, duration: %2.2f", bpm, beats, duration)
+	// round the beats to the nearest beat division
+	beatsSet := math.Round(beats/beatDivisionSet) * beatDivisionSet
+	if beatsSet == 0 {
+		beatsSet = beatDivisionSet
+	}
+	// determine the new duration
+	durationSet := float64(beatsSet) * 60 / bpmSet
+	log.Tracef("new bpm: %2.2f, new beats: %2.2f, new duration: %2.2f", bpmSet, beatsSet, durationSet)
+	// stretch the audio to the new duration
+	fname2, err = Stretch(fname, durationSet/duration)
+	return
+}
+
 // ResampleRate changes the sample rate and precision
 func ResampleRate(fname string, sampleRate int, precision int) (fname2 string, err error) {
 	fname2 = Tmpfile()
