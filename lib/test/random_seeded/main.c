@@ -48,5 +48,9 @@ int main() {
     printf("%d ", random_sequence[i]);
   }
   printf("\n");
+
+  for (uint8_t i = 0; i < num_numbers; i++) {
+    printf("%d ", random_integer_in_range(0, 1));
+  }
   return 0;
 }
