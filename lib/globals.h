@@ -412,7 +412,8 @@ void do_update_phase_from_beat_current() {
     if (random_integer_in_range(0, 100) < probability_of_random_jump) {
       beat_current = random_integer_in_range(
           0,
-          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num -
+              1);
       slice = beat_current;
     }
   }
