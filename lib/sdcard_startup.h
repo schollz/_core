@@ -111,6 +111,10 @@ void check_setup_files() {
     // printf("[sdcard_startup] checking %s\n", dirname);
     fr = f_findfirst(&dj, &fno, dirname, "*");
     if (FR_OK != fr) {
+      // folder not found, create random effects
+      for (uint8_t effect = 0; effect < 16; effect++) {
+        grimoire_rune_effect[rune - 1][effect] = random_integer_in_range(0, 1);
+      }
       continue;
     }
     // printf("[sdcard_startup] found %s\n", dirname);
@@ -521,8 +525,7 @@ void sdcard_startup() {
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
-         total_heap);
+         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
 
   // if you have too many samples, reverb won't work
   if (total_number_samples < 128) {
@@ -534,8 +537,7 @@ void sdcard_startup() {
   total_heap = getTotalHeap();
   used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
-         total_heap);
+         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
 
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
