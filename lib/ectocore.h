@@ -423,6 +423,7 @@ void input_handling() {
       {0, 0, 1, 0, 1, 1, 0, 0, 1, 1},
       {1, 0, 0, 1, 0, 1, 0, 1, 1, 1},
   };
+  bool cv_was_unplugged[3] = {false, false, false};
 
   // update the knobs
 #define KNOB_NUM 5
@@ -661,6 +662,7 @@ void input_handling() {
         } else if (is_signal[j] && cv_plugged[j]) {
           printf("[ectocore] cv_%d unplugged\n", j);
           debounce_mean_signal = 10;
+          cv_was_unplugged[j] = true;
         }
         cv_plugged[j] = !is_signal[j];
       }
@@ -835,6 +837,18 @@ void input_handling() {
       if (debounce_startup == 15 + i) {
         val = raw_val;
         printf("[ectocore] knob %d=%d\n", i, val);
+      } else if (i == KNOB_BREAK && cv_was_unplugged[CV_BREAK]) {
+        cv_was_unplugged[CV_BREAK] = false;
+        val = raw_val;
+        printf("[ectocore] (CV_BREAK) knob %d=%d\n", i, val);
+      } else if (i == KNOB_AMEN && cv_was_unplugged[CV_AMEN]) {
+        cv_was_unplugged[CV_AMEN] = false;
+        val = raw_val;
+        printf("[ectocore] (CV_AMEN) knob %d=%d\n", i, val);
+      } else if (i == KNOB_SAMPLE && cv_was_unplugged[CV_SAMPLE]) {
+        cv_was_unplugged[CV_SAMPLE] = false;
+        val = raw_val;
+        printf("[ectocore] (CV_SAMPLE) knob %d=%d\n", i, val);
       }
       if (val < 0) {
         continue;
