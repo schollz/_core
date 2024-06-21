@@ -371,7 +371,6 @@ uint8_t cv_attenuate[2] = {MCP_ATTEN_AMEN, MCP_ATTEN_BREAK};
 #define CV_AMEN 0
 #define CV_BREAK 1
 #define CV_SAMPLE 2
-int16_t cv_values[3] = {0, 0, 0};
 bool cv_plugged[3] = {false, false, false};
 int8_t cv_beat_current_override = -1;
 

@@ -182,9 +182,9 @@ void break_fx_toggle(uint8_t effect, bool on) {
         } else {
           Delay_setDuration(delay, (15 * 44100) / sf->bpm_tempo / faster);
         }
-        uint8_t feedback = random_integer_in_range(0, 4);
-        if (feedback == 0 && break_fx_beat_activated[effect] > 6) {
-          feedback = 1;
+        uint8_t feedback = random_integer_in_range(1, 4);
+        if (break_fx_beat_activated[effect] > 6) {
+          feedback = 2;
         }
         Delay_setFeedback(delay, feedback);
         sf->fx_active[FX_DELAY] = true;
