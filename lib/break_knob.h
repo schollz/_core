@@ -196,8 +196,8 @@ void break_fx_toggle(uint8_t effect, bool on) {
     case 6:
       // combo
       if (on) {
-        sf->fx_param[FX_COMB][0] = random_integer_in_range(0, 255);
-        sf->fx_param[FX_COMB][1] = random_integer_in_range(0, 100);
+        sf->fx_param[FX_COMB][0] = random_integer_in_range(0, 120);
+        sf->fx_param[FX_COMB][1] = random_integer_in_range(0, 20);
         sf->fx_active[FX_COMB] = true;
       } else {
         sf->fx_active[FX_COMB] = false;
