@@ -15,9 +15,7 @@ weight = 1
 <p style="text-align:center; font-weight:900; margin-bottom:0; margin-top:2em; font-size:1.2em;">a handmade, handheld
 sample player.</p>
 <p style="text-align:center; margin-top:0;font-size:1em;">
-"made to order" ships immediately.
-<br>
-"next batch" ships within 2 weeks. </p>
+orders ship every Tuesday.
 </div>
 
 
