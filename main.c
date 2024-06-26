@@ -29,6 +29,7 @@
 // static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
 bool repeating_timer_callback_playback_stopped = false;
 uint64_t repeating_timer_callback_playback_counter = 0;
+int32_t phase_sample_old = 0;
 // timer
 bool repeating_timer_callback(struct repeating_timer *t) {
   if (!fil_is_open) {
@@ -541,50 +542,45 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   gpio_put(LED_TOP_GPIO, beat_total % 2 == 0 ? 1 : 0);
 #endif
 
+  if (!sync_in_audio_loop) {
+    // check to see if a phase crossed a boundary of a transient
+    int32_t phase_sample = phases[0] / 2 /
+                           (banks[sel_bank_cur]
+                                ->sample[sel_sample_cur]
+                                .snd[FILEZERO]
+                                ->num_channels +
+                            1);
+    if (phase_sample != phase_sample_old) {
+      for (uint8_t i = 0; i < 3; i++) {
+        for (uint8_t j = 0; j < 16; j++) {
+          if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->transients[i][j] == 0) {
+            continue;
+          }
+          if (phase_sample_old < banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[FILEZERO]
+                                     ->transients[i][j] &&
+              phase_sample >= banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->transients[i][j]) {
+            // transient activated
 #ifdef INCLUDE_ECTOCORE
-  if (ecto_do_clock_trig == 2) {
-    ecto_do_clock_trig = 0;
-    ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
-    uint16_t j = banks[sel_bank_cur]
-                     ->sample[sel_sample_cur]
-                     .snd[FILEZERO]
-                     ->slice_current;
-    if (ectocore_trigger_mode == TRIGGER_MODE_KICK) {
-      if (banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[FILEZERO]
-                  ->slice_type[j] == 1 ||
-          banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[FILEZERO]
-                  ->slice_type[j] == 3) {
-        gpio_put(GPIO_TRIG_OUT, 1);
+            if (ectocore_trigger_mode == i) {
+              ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+              gpio_put(GPIO_TRIG_OUT, 1);
+            }
+#endif
+          }
+        }
       }
-    } else if (ectocore_trigger_mode == TRIGGER_MODE_SNARE) {
-      if (banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[FILEZERO]
-                  ->slice_type[j] == 2 ||
-          banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[FILEZERO]
-                  ->slice_type[j] == 3) {
-        gpio_put(GPIO_TRIG_OUT, 1);
-      }
-    } else if (ectocore_trigger_mode == TRIGGER_MODE_HH) {
-      if (banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[FILEZERO]
-              ->slice_type[j] > 0) {
-        gpio_put(GPIO_TRIG_OUT, 1);
-      }
-    } else if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
-      if (random_integer_in_range(1, 100) <= 15) {
-        gpio_put(GPIO_TRIG_OUT, 1);
-      }
+
+      phase_sample_old = phase_sample;
     }
   }
-#endif
 
   return true;
 }

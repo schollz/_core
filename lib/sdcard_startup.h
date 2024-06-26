@@ -407,7 +407,7 @@ void sdcard_startup() {
 
   // sleep_ms(2000);
   check_setup_files();
-  sleep_ms(2000);
+  // sleep_ms(2000);
 
   for (uint8_t bi = 0; bi < 16; bi++) {
     // TODO: show which banks are loading?

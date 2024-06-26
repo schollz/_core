@@ -45,6 +45,7 @@ void update_filter_from_envelope(int32_t val) {
 }
 
 void i2s_callback_func() {
+  sync_in_audio_loop = true;
   uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
@@ -63,6 +64,7 @@ void i2s_callback_func() {
   take_audio_buffer_time = (time_us_64() - startTime);
 #endif
   if (buffer == NULL) {
+    sync_in_audio_loop = false;
     return;
   }
 
@@ -157,6 +159,7 @@ void i2s_callback_func() {
 
     // audio muted flag to ensure a fade in occurs when
     // unmuted
+    sync_in_audio_loop = false;
     return;
   }
 
@@ -440,6 +443,7 @@ BREAKOUT_OF_MUTE:
         give_audio_buffer(ap, buffer);
         sync_using_sdcard = false;
         sdcard_startup();
+        sync_in_audio_loop = false;
         return;
       }
       t1 = time_us_32();
@@ -644,7 +648,6 @@ BREAKOUT_OF_MUTE:
       }
       first_loop = false;
     }
-    phases_old[head] = phases[head];
     phases[head] += (values_to_read * (phase_forward * 2 - 1));
   }
 
@@ -840,49 +843,12 @@ BREAKOUT_OF_MUTE:
     }
   }
 
-  // check to see if a phase crossed a boundary of a transient
-  for (uint8_t i = 0; i < 3; i++) {
-    for (uint8_t j = 0; j < 16; j++) {
-      if (banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[FILEZERO]
-              ->transients[i][j] == 0) {
-        continue;
-      }
-      // convert the current byte position to sample position
-      // 16-bit audio, stereo or mono
-      int32_t phase_sample = phases[0] / 2 /
-                             (banks[sel_bank_cur]
-                                  ->sample[sel_sample_cur]
-                                  .snd[FILEZERO]
-                                  ->num_channels +
-                              1);
-      int32_t phase_sample_old = phases_old[0] / 2 /
-                                 (banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->num_channels +
-                                  1);
-      if (phase_sample_old < banks[sel_bank_cur]
-                                 ->sample[sel_sample_cur]
-                                 .snd[FILEZERO]
-                                 ->transients[i][j] &&
-          phase_sample >= banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[FILEZERO]
-                              ->transients[i][j]) {
-        MessageSync_printf(messagesync, "transient %d %d %d %d\n", i, j,
-                           phase_sample, phase_sample_old);
-      }
-    }
-  }
-
   MessageSync_lockIfNotEmpty(messagesync);
 
   // change phase_forward back if it was switched
   if (change_phase_forward) {
     phase_forward = !phase_forward;
   }
-
+  sync_in_audio_loop = false;
   return;
 }
