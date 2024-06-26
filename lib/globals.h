@@ -56,7 +56,6 @@ FRESULT fil_result;
 struct repeating_timer timer;
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
-bool sync_in_audio_loop = false;
 
 uint16_t total_number_samples = 0;
 

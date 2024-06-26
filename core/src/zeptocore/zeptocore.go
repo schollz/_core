@@ -262,6 +262,7 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 			f.Transients[2] = transients3
 			log.Debugf("saving transients for %s", f.PathToAudio)
 			f.Save()
+			f.Regenerate()
 		}
 
 	}()

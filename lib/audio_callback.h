@@ -45,7 +45,6 @@ void update_filter_from_envelope(int32_t val) {
 }
 
 void i2s_callback_func() {
-  sync_in_audio_loop = true;
   uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
@@ -64,7 +63,6 @@ void i2s_callback_func() {
   take_audio_buffer_time = (time_us_64() - startTime);
 #endif
   if (buffer == NULL) {
-    sync_in_audio_loop = false;
     return;
   }
 
@@ -159,7 +157,6 @@ void i2s_callback_func() {
 
     // audio muted flag to ensure a fade in occurs when
     // unmuted
-    sync_in_audio_loop = false;
     return;
   }
 
@@ -443,7 +440,6 @@ BREAKOUT_OF_MUTE:
         give_audio_buffer(ap, buffer);
         sync_using_sdcard = false;
         sdcard_startup();
-        sync_in_audio_loop = false;
         return;
       }
       t1 = time_us_32();
@@ -849,6 +845,5 @@ BREAKOUT_OF_MUTE:
   if (change_phase_forward) {
     phase_forward = !phase_forward;
   }
-  sync_in_audio_loop = false;
   return;
 }
