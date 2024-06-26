@@ -483,8 +483,10 @@ void sdcard_startup() {
   }  // bank loop
 
   // // print transients
-  // sleep_ms(1000);
-  // for (uint8_t i = 0; i < 16; i++) {
+  // sleep_ms(2000);
+  // printf("transient_num_1: %d\n",
+  // banks[0]->sample[0].snd[0]->transient_num_1); for (uint8_t i = 0; i <
+  // banks[0]->sample[0].snd[0]->transient_num_1; i++) {
   //   printf("transients[0][%d]: %d\n", i,
   //          banks[0]->sample[0].snd[0]->transients[0][i]);
   // }
