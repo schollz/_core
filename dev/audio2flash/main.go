@@ -144,7 +144,7 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("  }\n"))
 
 	sb.WriteString(fmt.Sprintf("for (uint16_t i = 0; i < num_samples; i++) {\n"))
-	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * 150 / 255;\n", codeNameLower, codeNameLower))
+	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * 50 / 255;\n", codeNameLower, codeNameLower))
 	sb.WriteString(fmt.Sprintf("  audio = (vol_main * audio) << 8u;\n"))
 	sb.WriteString(fmt.Sprintf("  audio += (audio >> 16u);\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 0] += audio;\n"))
