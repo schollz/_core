@@ -608,6 +608,16 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 
       phase_sample_old = phase_sample;
     }
+#ifdef INCLUDE_ECTOCORE
+    // random transients
+    if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
+      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 100 &&
+          random_integer_in_range(1, 6000) < 10) {
+        ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+        gpio_put(GPIO_TRIG_OUT, 1);
+      }
+    }
+#endif
   }
 
   return true;
