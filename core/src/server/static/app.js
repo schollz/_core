@@ -1128,27 +1128,6 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
 
     wsf.on('decode', () => {
 
-        // draw transients
-        let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
-        for (var i = 0; i < transients.length; i++) {
-            for (var j = 0; j < transients[i].length; j++) {
-                if (transients[i][j] > 0) {
-                    let start = parseFloat(transients[i][j]) / 44100.0;
-                    wsRegions.addRegion({
-                        start: start - 0.01,
-                        end: start + 0.01,
-                        color: transient_colors[i],
-                        opacity: 0.5,
-                        height: 0.5,
-                        drag: false,
-                        resize: false,
-                        loop: false,
-                    });
-                }
-            }
-        }
-
-
 
         console.log("wsf.on('decode')");
         // Regions
@@ -1162,15 +1141,70 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
                 loop: false,
             });
         }
-        setTimeout(() => {
-        }, 100);
+
+        // draw transients
+        let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
+        let transient_content = ['◉', '◈', '◇']
+        for (var i = 0; i < transients.length; i++) {
+            for (var j = 0; j < transients[i].length; j++) {
+                let htmlElement = document.createElement('span');
+                htmlElement.innerHTML = transient_content[i];
+                htmlElement.style.left = '-1px';
+                htmlElement.style.position = 'relative';
+                let color = 'rgb(255,255,255,0.6)';
+                if (transients[i][j] > 0) {
+                    let start = parseFloat(transients[i][j]) / 44100.0;
+                    wsRegions.addRegion({
+                        start: start - 0.007,
+                        end: start + 0.007,
+                        // color: transient_colors[i],
+                        color: color,
+                        opacity: 0.5,
+                        height: 0.5,
+                        drag: true,
+                        resize: false,
+                        loop: false,
+                        content: htmlElement,
+                        id: `transient-${i}-${j}`,
+                    });
+                }
+            }
+        }
+
         // fix this debounce ot take argument of the region
         const updateRegion = debounce(function (region) {
+            // check if region has transient prefix
+            console.log(region.id.startsWith('transient-'));
+            if (region.id.startsWith('transient-')) {
+                let parts = region.id.split('-');
+                let i = parseInt(parts[1]);
+                let j = parseInt(parts[2]);
+                console.log("updating transient", i, j, region.start);
+                // update the transient
+                let samplePosition = Math.round((0.007 + region.start) * 44100);
+                app.banks[app.selectedBank].files[app.selectedFile].Transients[i][j] = samplePosition;
+                socket.send(JSON.stringify({
+                    action: "settransient",
+                    filename: filename,
+                    i: i,
+                    j: j,
+                    n: samplePosition,
+                }));
+                setTimeout(() => {
+                    app.saveState();
+                }, 100);
+                return;
+            }
             let regions = wsf.plugins[0].regions;
             regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
             let sliceStart = [];
             let sliceStop = [];
             for (var i = 0; i < regions.length; i++) {
+                // filter out transients
+                if (regions[i].id.startsWith('transient-')) {
+                    continue;
+                }
+
                 if (i == 0 || regions[i].start > regions[i - 1].start) {
                     sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
                     sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
