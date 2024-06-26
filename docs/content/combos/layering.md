@@ -8,7 +8,6 @@ mode = 'any'
 icon = 'drum'
 +++
 
-
 *Note: v4.0.0 and later firmware required for this feature.*
 
 This is an experimental mode that lets you choose from 15 different kick samples (keys `1` to `15`). Hold down the `A` button and then hold down the `D` button and then press one of the 15 keys to layer the selected kick sample with the currently loaded sample. The selected kick sample will be played at the same time as the detected kick drums in the sample. This can be useful for adding more punch to your kick drums. 
