@@ -34,7 +34,6 @@ char fil_current_name[32];
 bool fil_is_open;
 uint8_t cpu_utilization;
 int32_t phases[2];
-int32_t phases_old[2];
 int32_t phase_new;
 uint16_t mem_index[2];
 bool mem_use;

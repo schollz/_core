@@ -327,6 +327,9 @@ type Message struct {
 	DeviceVersion        string         `json:"deviceVersion"`
 	DeviceFirmwareUpload string         `json:"deviceFirmwareUpload"`
 	LatestVersion        string         `json:"latestVersion"`
+	Transients           [][]int        `json:"transients"`
+	FileNum              int            `json:"fileNum"`
+	BankNum              int            `json:"bankNum"`
 }
 
 func isValidWorkspace(s string) bool {
@@ -390,6 +393,18 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Filename: message.Filename,
 					File:     f,
 					Success:  true,
+				})
+			}
+		} else if message.Action == "isprocessing" {
+			newestTime, _ := utils.TimeOfNewestFile(path.Join(StorageFolder, place))
+			duration := time.Since(newestTime).Seconds()
+			if duration < 5.0 {
+				c.WriteJSON(Message{
+					Action: "isworking",
+				})
+			} else {
+				c.WriteJSON(Message{
+					Action: "notworking",
 				})
 			}
 		} else if message.Action == "uploadfirmware" {
@@ -502,6 +517,33 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			} else {
 				log.Error(err)
 			}
+		} else if message.Action == "gettransients" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err == nil {
+				isEmpty := true
+				for _, v := range f.Transients {
+					for _, vv := range v {
+						if vv != 0 {
+							isEmpty = false
+							break
+						}
+					}
+					if !isEmpty {
+						break
+					}
+				}
+				if !isEmpty {
+					// send the transients
+					c.WriteJSON(Message{
+						Action:     "transients",
+						Transients: f.Transients,
+						BankNum:    message.BankNum,
+						FileNum:    message.FileNum,
+					})
+				}
+
+			}
+
 		} else if message.Action == "setslices" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			log.Tracef("setting slices: %+v", message.SliceStart)
