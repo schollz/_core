@@ -330,6 +330,9 @@ type Message struct {
 	Transients           [][]int        `json:"transients"`
 	FileNum              int            `json:"fileNum"`
 	BankNum              int            `json:"bankNum"`
+	I                    int            `json:"i"`
+	J                    int            `json:"j"`
+	N                    int            `json:"n"`
 }
 
 func isValidWorkspace(s string) bool {
@@ -543,7 +546,13 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 
 			}
-
+		} else if message.Action == "settransient" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetTransient(message.I, message.J, message.N)
+			}
 		} else if message.Action == "setslices" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			log.Tracef("setting slices: %+v", message.SliceStart)

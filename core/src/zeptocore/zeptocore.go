@@ -437,6 +437,19 @@ func (f *File) UpdateSliceTypes() {
 	log.Tracef("slice types: %+v", f.SliceType)
 }
 
+func (f *File) SetTransient(i int, j int, value int) {
+	mu.Lock()
+	defer mu.Unlock()
+	log.Debugf("transient before: %d", f.Transients[i][j])
+	f.Transients[i][j] = value
+	log.Debugf("transient after: %d", f.Transients[i][j])
+
+	f.SaveNoDebounce()
+	go func() {
+		f.Regenerate()
+	}()
+}
+
 func (f *File) SetSlices(sliceStart []float64, sliceEnd []float64) (sliceType []int) {
 	mu.Lock()
 	defer mu.Unlock()
