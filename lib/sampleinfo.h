@@ -190,13 +190,6 @@ SampleInfo *SampleInfo_load(const char *fname) {
     }
   }
 
-  // print out transients
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 16; j++) {
-      printf("transients[%d][%d]: %d\n", i, j, si->transients[i][j]);
-    }
-  }
-
   f_close(&fil);
   free(sip);
 

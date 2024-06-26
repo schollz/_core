@@ -34,7 +34,6 @@ char fil_current_name[32];
 bool fil_is_open;
 uint8_t cpu_utilization;
 int32_t phases[2];
-int32_t phases_old[2];
 int32_t phase_new;
 uint16_t mem_index[2];
 bool mem_use;
@@ -57,6 +56,7 @@ FRESULT fil_result;
 struct repeating_timer timer;
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
+bool sync_in_audio_loop = false;
 
 uint16_t total_number_samples = 0;
 
