@@ -393,7 +393,7 @@ void sdcard_startup() {
   }
   sync_using_sdcard = true;
   while (!run_mount()) {
-    sleep_ms(200);
+    sleep_ms(10);
   }
   envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);

@@ -240,7 +240,7 @@ function generateRandomWord() {
 
 const socketMessageListener = (e) => {
     data = JSON.parse(e.data);
-    console.log("socketMessageListener", data.action)
+    // console.log("socketMessageListener", data.action)
     if (data.action == "processed") {
         console.log("processed");
         for (var i = 0; i < data.file.SliceStart.length; i++) {
@@ -357,6 +357,10 @@ const socketMessageListener = (e) => {
         app.uploading = false;
         app.processing = false;
         app.downloading = true;
+    } else if (data.action == "isworking") {
+        app.isworking = true;
+    } else if (data.action == "notworking") {
+        app.isworking = false;
     } else if (data.action == "transients") {
         console.log(data)
         app.banks[data.bankNum].files[data.fileNum].Transients = data.transients;
@@ -398,6 +402,7 @@ const socketMessageListener = (e) => {
         }
     }
 };
+var isProcesingInterval;
 const socketOpenListener = (e) => {
     console.log('Connected');
     if (disconnectedTimeout != null) {
@@ -412,6 +417,16 @@ const socketOpenListener = (e) => {
             }));
         }
     }, 50);
+    // check if processing 
+    clearInterval(isProcesingInterval);
+    isProcesingInterval = setInterval(() => {
+        if (socket != null) {
+            socket.send(JSON.stringify({
+                action: "isprocessing",
+                place: window.location.pathname,
+            }));
+        }
+    }, 1000);
     try {
         socket.send(JSON.stringify({
             action: "connected"
@@ -421,7 +436,7 @@ const socketOpenListener = (e) => {
     }
 };
 const socketErrorListener = (e) => {
-    console.error(e);
+    // console.error(e);
 }
 const socketCloseListener = (e) => {
     if (socket) {
@@ -471,6 +486,7 @@ app = new Vue({
         downloading: false,
         showCookiePolicy: false,
         processing: false,
+        isworking: false,
         error_message: "",
         regular_message: "",
         uploading: false,

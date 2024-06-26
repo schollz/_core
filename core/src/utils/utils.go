@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	log "github.com/schollz/logger"
 )
@@ -202,4 +203,21 @@ func RandomString(n int) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func TimeOfNewestFile(folder string) (t time.Time, err error) {
+	// find all files in folder recursively and get the oldest time
+	// of the files
+	// set default time to 1979
+	t = time.Date(1979, 1, 1, 0, 0, 0, 0, time.UTC)
+	err = filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.ModTime().After(t) {
+			t = info.ModTime()
+		}
+		return nil
+	})
+	return
 }
