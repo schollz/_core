@@ -63,7 +63,7 @@ function listMidiPorts() {
 
         })
         .catch(error => {
-            console.error('Error accessing MIDI devices:', error);
+            // console.error('Error accessing MIDI devices:', error);
         });
 }
 
@@ -357,6 +357,18 @@ const socketMessageListener = (e) => {
         app.uploading = false;
         app.processing = false;
         app.downloading = true;
+    } else if (data.action == "transients") {
+        console.log(data)
+        app.banks[data.bankNum].files[data.fileNum].Transients = data.transients;
+        setTimeout(() => {
+            showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
+                app.banks[app.selectedBank].files[app.selectedFile].Duration,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                app.banks[app.selectedBank].files[app.selectedFile].Transients,
+            );
+        }, 100);
     } else if (data.action == "progress") {
         totalBytesUploaded = data.number;
         var maxWidth = window.innerWidth;
@@ -1051,6 +1063,29 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
     if (wsf != null) {
         wsf.destroy();
     }
+    // check if transients are empty
+    let isEmpty = true;
+    for (var i = 0; i < transients.length; i++) {
+        for (var j = 0; j < transients[i].length; j++) {
+            if (transients[i][j] > 0) {
+                isEmpty = false;
+                break;
+            }
+        }
+        if (!isEmpty) {
+            break;
+        }
+    }
+    if (isEmpty) {
+        console.log("no transients?");
+        // send message to server
+        socket.send(JSON.stringify({
+            action: "gettransients",
+            filename: filename,
+            bankNum: app.selectedBank,
+            fileNum: app.selectedFile,
+        }));
+    }
     console.log('showWaveform', filename);
     console.log('sliceType', sliceType);
     var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
@@ -1235,13 +1270,13 @@ window.addEventListener('load', (event) => {
     if (navigator.userAgent.indexOf("Firefox") != -1) {
         console.log("Firefox is not supported for MIDI, please use Chrome or Safari.");
     } else {
+        // check if midi is available
         listMidiPorts();
         checkMidiInterval = setInterval(() => {
             if (!app.midiIsSetup) {
                 listMidiPorts();
             }
         }, 250);
-
     }
 
     setTimeout(() => {

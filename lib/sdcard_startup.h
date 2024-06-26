@@ -407,7 +407,7 @@ void sdcard_startup() {
 
   // sleep_ms(2000);
   check_setup_files();
-  // sleep_ms(2000);
+  sleep_ms(2000);
 
   for (uint8_t bi = 0; bi < 16; bi++) {
     // TODO: show which banks are loading?
@@ -481,6 +481,13 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  // print the transients for the first sample
+  sleep_ms(2000);
+  for (uint8_t i = 0; i < 16; i++) {
+    printf("transients[0][%d]: %d\n", i,
+           banks[0]->sample[0].snd[0]->transients[0][i]);
+  }
 
 #ifdef INCLUDE_ZEPTOCORE
   sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
