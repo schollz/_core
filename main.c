@@ -548,8 +548,20 @@ bool repeating_timer_callback(struct repeating_timer *t) {
       (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
        1);
   if (phase_sample != phase_sample_old) {
+    uint16_t transient_nums[3] = {banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->transient_num_1,
+                                  banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->transient_num_2,
+                                  banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->transient_num_3};
     for (uint8_t i = 0; i < 3; i++) {
-      for (uint8_t j = 0; j < 16; j++) {
+      for (uint8_t j = 0; j < transient_nums[i]; j++) {
         if (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
                 .snd[FILEZERO]
