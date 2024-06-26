@@ -395,6 +395,18 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Success:  true,
 				})
 			}
+		} else if message.Action == "isprocessing" {
+			newestTime, _ := utils.TimeOfNewestFile(path.Join(StorageFolder, place))
+			duration := time.Since(newestTime).Seconds()
+			if duration < 5.0 {
+				c.WriteJSON(Message{
+					Action: "isworking",
+				})
+			} else {
+				c.WriteJSON(Message{
+					Action: "notworking",
+				})
+			}
 		} else if message.Action == "uploadfirmware" {
 			var success bool
 			var message string
