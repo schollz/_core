@@ -17,8 +17,18 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, err error) {
-	cmd := exec.Command("demucs", "--repo", FOLDER_MODEL, "-o", FOLDER_MODEL+"_output", "-n", "modelo_final", filePath)
+var downloadedModel = false
+
+func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
+	kickTransients = make([]int, 16)
+	snareTransients = make([]int, 16)
+	if !downloadedModel {
+		log.Trace("model not downloaded, skipping")
+		return
+	}
+	demucsCmd := []string{"demucs", "--repo", FOLDER_MODEL, "-o", FOLDER_MODEL + "_output", "-n", "modelo_final", filePath}
+	log.Trace(strings.Join(demucsCmd, " "))
+	cmd := exec.Command(demucsCmd[0], demucsCmd[1:]...)
 	err = cmd.Run()
 	if err != nil {
 		fmt.Println("Error running demucs:", err)
@@ -33,6 +43,18 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	if err != nil {
 		log.Error(err)
 	}
+	otherTransients, err = getTransientSamplePositions(FOLDER_MODEL + "_output/modelo_final/" + filenameWithoutExtension + "/platillos.wav")
+	if err != nil {
+		log.Error(err)
+	}
+
+	// // reduce by 1500 samples to account for the delay in the model
+	// for i := range kickTransients {
+	// 	kickTransients[i] -= 1500
+	// 	if kickTransients[i] < 0 {
+	// 		kickTransients[i] = 0
+	// 	}
+	// }
 	// truncate arrays if they are greater than 16
 	if len(kickTransients) > 16 {
 		kickTransients = kickTransients[:16]
@@ -40,6 +62,10 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	if len(snareTransients) > 16 {
 		snareTransients = snareTransients[:16]
 	}
+	if len(otherTransients) > 16 {
+		otherTransients = otherTransients[:16]
+	}
+
 	// pad with zeros if they are smaller than 16
 	for len(kickTransients) < 16 {
 		kickTransients = append(kickTransients, 0)
@@ -47,6 +73,10 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	for len(snareTransients) < 16 {
 		snareTransients = append(snareTransients, 0)
 	}
+	for len(otherTransients) < 16 {
+		otherTransients = append(otherTransients, 0)
+	}
+
 	return
 }
 
@@ -145,18 +175,33 @@ func envelopeFollower(audioData []float64, frameRate, windowSize, hopSize int) [
 }
 
 func getPeaks(envelope []float64, timeAxis []float64) []float64 {
-	peakHeight := 0.5 * max(envelope)
+	envelopeMean := 0.0
+	for _, v := range envelope {
+		envelopeMean += v
+	}
+	envelopeMean /= float64(len(envelope))
+	envelopeStd := 0.0
+	for _, v := range envelope {
+		envelopeStd += (v - envelopeMean) * (v - envelopeMean)
+	}
+	envelopeStd = math.Sqrt(envelopeStd / float64(len(envelope)))
+
+	peakHeight := envelopeMean + math.Sqrt(envelopeStd)/2.0
+
 	peaks := []float64{}
 	inPeak := false
 	lastPeak := -1.0
+	peakMinimumDistance := 0.1
 
 	for i, v := range envelope {
-		if v > peakHeight && !inPeak && timeAxis[i]-lastPeak > 0.2 {
+		if v > peakHeight && !inPeak && timeAxis[i]-lastPeak > peakMinimumDistance {
 			peaks = append(peaks, timeAxis[i])
 			inPeak = true
-			lastPeak = timeAxis[i]
 		} else if v < peakHeight && inPeak {
 			inPeak = false
+			lastPeak = timeAxis[i]
+		} else if v > peakHeight && !inPeak && timeAxis[i]-lastPeak <= peakMinimumDistance {
+			lastPeak = timeAxis[i]
 		}
 	}
 	return peaks
@@ -175,6 +220,7 @@ func max(data []float64) float64 {
 const FOLDER_MODEL = "drum_separation_model"
 
 func DownloadModel() (err error) {
+
 	// check if folder exists
 	if _, err = os.Stat(FOLDER_MODEL); os.IsNotExist(err) {
 
@@ -197,5 +243,6 @@ func DownloadModel() (err error) {
 
 		err = utils.Unzip(FOLDER_MODEL+".zip", ".")
 	}
+	downloadedModel = err == nil
 	return
 }

@@ -270,18 +270,6 @@ const socketMessageListener = (e) => {
             window.location = "/" + data.message;
         }
         console.log(data);
-    } else if (data.action == "slicetype") {
-        app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
-        if (app.selectedFile != null) {
-            // setTimeout(() => {
-            //     showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
-            //         app.banks[app.selectedBank].files[app.selectedFile].Duration,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceType,
-            //     );
-            // }, 100);
-        }
     } else if (data.action == "onsetdetect") {
         if (wsf != null) {
             app.deleteAllRegions();
@@ -350,6 +338,9 @@ const socketMessageListener = (e) => {
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                    app.banks[app.selectedBank].files[app.selectedFile].TransientsKick,
+                    app.banks[app.selectedBank].files[app.selectedFile].TransientsSnare,
+                    app.banks[app.selectedBank].files[app.selectedFile].TransientsOther,
                 );
             }, 100);
         }
@@ -801,6 +792,9 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsKick,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsSnare,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsOther,
                     );
                 }, 100);
             }
@@ -926,6 +920,10 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsKick,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsSnare,
+                        this.banks[this.selectedBank].files[this.selectedFile].TransientsOther,
+
                     );
                 }, 100);
             }
@@ -1056,7 +1054,7 @@ app = new Vue({
 const showWaveform = debounce(showWaveform_, 50);
 
 
-function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
+function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, transientsKick, transientsSnare, transientsOther) {
     if (wsf != null) {
         wsf.destroy();
     }
@@ -1079,12 +1077,63 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
     wsf.on('zoom', () => {
         console.log('zoom');
     });
-    // set the width of a WaveSurfer to 100 px
 
 
     wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
 
+
     wsf.on('decode', () => {
+
+        // draw kick transients
+        for (var i = 0; i < transientsKick.length; i++) {
+            if (transientsKick[i] > 0) {
+                let start = parseFloat(transientsKick[i]) / 44100.0;
+                wsRegions.addRegion({
+                    start: start - 0.01,
+                    end: start + 0.01,
+                    color: 'rgba(255, 0, 0, 0.25)',
+                    opacity: 0.5,
+                    height: 0.5,
+                    drag: false,
+                    resize: false,
+                    loop: false,
+                });
+            }
+        }
+        // draw snare transients
+        for (var i = 0; i < transientsSnare.length; i++) {
+            if (transientsSnare[i] > 0) {
+                let start = parseFloat(transientsSnare[i]) / 44100.0;
+                wsRegions.addRegion({
+                    start: start - 0.01,
+                    end: start + 0.01,
+                    color: 'rgba(0, 255,0, 0.25)',
+                    opacity: 0.5,
+                    height: 0.5,
+                    drag: false,
+                    resize: false,
+                    loop: false,
+                });
+            }
+        }
+        // draw other transients 
+        for (var i = 0; i < transientsOther.length; i++) {
+            if (transientsOther[i] > 0) {
+                let start = parseFloat(transientsOther[i]) / 44100.0;
+                wsRegions.addRegion({
+                    start: start - 0.01,
+                    end: start + 0.01,
+                    color: 'rgba(0, 0, 255, 0.25)',
+                    opacity: 0.5,
+                    height: 0.5,
+                    drag: false,
+                    resize: false,
+                    loop: false,
+                });
+            }
+        }
+
+
         console.log("wsf.on('decode')");
         // Regions
         for (var i = 0; i < sliceStart.length; i++) {
