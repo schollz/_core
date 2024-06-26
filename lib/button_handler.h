@@ -633,6 +633,15 @@ void button_handler(ButtonMatrix *bm) {
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", 200);
         }
+      } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
+                 key_pressed[2] == 10 && key_pressed[3] == 19) {
+        // switch between layering kicks
+        do_layer_kicks = !do_layer_kicks;
+        if (do_layer_kicks) {
+          DebounceDigits_setText(debouncer_digits, "LAYER", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+        }
       } else if (key_pressed[0] == 9 && key_pressed[1] == 10 &&
                  key_pressed[2] == 14 && key_pressed[3] == 13) {
         // toggle random sequence mode
