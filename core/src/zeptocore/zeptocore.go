@@ -93,16 +93,6 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		f.Transients[i] = make([]int, 16)
 	}
 
-	// create wait group
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		// get transients
-		f.Transients[0], f.Transients[1], f.Transients[2], _ = drumextract2.DrumExtract2(f.PathToAudio)
-		log.Debugf("transients: %+v", f.Transients)
-	}()
-
 	var errSliceDetect error
 	errSliceDetect = fmt.Errorf("slice detection failed")
 	if filepath.Ext(f.PathToFile) == ".xrni" {
@@ -246,9 +236,6 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	// create the 0 file (original)
 	fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
 
-	// wait for transients
-	wg.Wait()
-
 	// check if fname0 exists
 	if _, err := os.Stat(fname0); err != nil {
 		// save the json
@@ -263,6 +250,21 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 			log.Error(err)
 		}
 	}
+
+	go func() {
+		// get transients
+		transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
+		if errTransients == nil {
+			// reload in case its been too long
+			f.Load()
+			f.Transients[0] = transients1
+			f.Transients[1] = transients2
+			f.Transients[2] = transients3
+			log.Debugf("saving transients for %s", f.PathToAudio)
+			f.Save()
+		}
+
+	}()
 
 	return
 }

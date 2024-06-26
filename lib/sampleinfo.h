@@ -48,7 +48,7 @@ typedef struct SampleInfo {
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
-  int32_t transients[3][16];
+  int32_t **transients;
 } SampleInfo;
 
 typedef struct SampleInfoPack {
@@ -73,7 +73,7 @@ void SampleInfo_free(SampleInfo *si) {
 
 #ifndef NOSDCARD
 // sdcard version
-SampleInfo *SampleInfo_load(const char *fname) {
+SampleInfo *SampleInfo_load(const char *fname, bool load_transients) {
   FIL fil;
   FRESULT fr;
   fr = f_open(&fil, fname, FA_READ);
@@ -176,17 +176,21 @@ SampleInfo *SampleInfo_load(const char *fname) {
     return NULL;
   }
 
-  // load in transients
-  for (int i = 0; i < 3; i++) {
-    fr = f_read(&fil, si->transients[i], sizeof(int32_t) * 16, &bytes_read);
-    if (fr != FR_OK) {
-      // 0 all the transients
-      for (int j = 0; j < 3; j++) {
-        for (int k = 0; k < 16; k++) {
-          si->transients[j][k] = 0;
+  if (load_transients) {
+    // load in transients
+    si->transients = malloc(sizeof(int32_t *) * 3);
+    for (int i = 0; i < 3; i++) {
+      si->transients[i] = malloc(sizeof(int32_t) * 16);
+      fr = f_read(&fil, si->transients[i], sizeof(int32_t) * 16, &bytes_read);
+      if (fr != FR_OK) {
+        // 0 all the transients
+        for (int j = 0; j < 3; j++) {
+          for (int k = 0; k < 16; k++) {
+            si->transients[j][k] = 0;
+          }
         }
+        break;
       }
-      break;
     }
   }
 

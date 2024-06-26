@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
@@ -18,23 +19,34 @@ import (
 )
 
 var downloadedModel = false
+var mutex sync.Mutex
 
 func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return drumExtract2(filePath)
+}
+
+func drumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
 	kickTransients = make([]int, 16)
 	snareTransients = make([]int, 16)
 	if !downloadedModel {
 		log.Trace("model not downloaded, skipping")
 		return
 	}
-	demucsCmd := []string{"demucs", "--repo", FOLDER_MODEL, "-o", FOLDER_MODEL + "_output", "-n", "modelo_final", filePath}
-	log.Trace(strings.Join(demucsCmd, " "))
-	cmd := exec.Command(demucsCmd[0], demucsCmd[1:]...)
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("Error running demucs:", err)
-	}
+	// check if file exists
 	_, filename := filepath.Split(filePath)
 	filenameWithoutExtension := strings.TrimSuffix(filename, filepath.Ext(filename))
+	stemFile := FOLDER_MODEL + "_output/modelo_final/" + filenameWithoutExtension + "/bombo.wav"
+	if _, err = os.Stat(stemFile); err != nil {
+		demucsCmd := []string{"demucs", "--repo", FOLDER_MODEL, "-o", FOLDER_MODEL + "_output", "-n", "modelo_final", filePath}
+		log.Trace(strings.Join(demucsCmd, " "))
+		cmd := exec.Command(demucsCmd[0], demucsCmd[1:]...)
+		err = cmd.Run()
+		if err != nil {
+			fmt.Println("Error running demucs:", err)
+		}
+	}
 	kickTransients, err = getTransientSamplePositions(FOLDER_MODEL + "_output/modelo_final/" + filenameWithoutExtension + "/bombo.wav")
 	if err != nil {
 		log.Error(err)
@@ -48,13 +60,6 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 		log.Error(err)
 	}
 
-	// // reduce by 1500 samples to account for the delay in the model
-	// for i := range kickTransients {
-	// 	kickTransients[i] -= 1500
-	// 	if kickTransients[i] < 0 {
-	// 		kickTransients[i] = 0
-	// 	}
-	// }
 	// truncate arrays if they are greater than 16
 	if len(kickTransients) > 16 {
 		kickTransients = kickTransients[:16]
@@ -105,11 +110,12 @@ func getTransientSamplePositions(filePath string) (transients []int, err error) 
 }
 
 func readWav(filePath string) ([]float64, int, error) {
+	tmpRawFile := utils.RandomString(10) + ".raw"
 	// convert the .wav file to raw data using the sox command
-	cmdArray := []string{"sox", filePath, "-t", "raw", "-r", "44100", "-b", "16", "-c", "1", "out.raw"}
+	cmdArray := []string{"sox", filePath, "-t", "raw", "-r", "44100", "-b", "16", "-c", "1", tmpRawFile}
 	log.Trace(strings.Join(cmdArray, " "))
 	cmd := exec.Command(cmdArray[0], cmdArray[1:]...)
-	defer os.Remove("out.raw")
+	defer os.Remove(tmpRawFile)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
@@ -117,7 +123,7 @@ func readWav(filePath string) ([]float64, int, error) {
 		return nil, 0, err
 	}
 
-	file, err := os.Open("out.raw")
+	file, err := os.Open(tmpRawFile)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -135,7 +141,7 @@ func readWav(filePath string) ([]float64, int, error) {
 		return nil, 0, fmt.Errorf("file size is not a multiple of 2 bytes")
 	}
 
-	// Read the file content into a byte slice
+	// Read the file content into a byte slicej
 	byteValues := make([]byte, fileSize)
 	_, err = file.Read(byteValues)
 	if err != nil {
