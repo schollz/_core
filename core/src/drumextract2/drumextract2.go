@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
 	"github.com/schollz/progressbar/v3"
@@ -24,7 +25,25 @@ var mutex sync.Mutex
 func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	return drumExtract2(filePath)
+	kickTransients, snareTransients, _, err = drumExtract2(filePath)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	numTransients := 8
+
+	onsets, err := onsetdetect.OnsetDetect(filePath, numTransients)
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	otherTransients = make([]int, len(onsets))
+	for i, v := range onsets {
+		otherTransients[i] = int(math.Round(v * 44100))
+	}
+	return
 }
 
 func drumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
