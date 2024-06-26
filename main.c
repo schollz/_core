@@ -543,54 +543,71 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 #endif
 
   // check to see if a phase crossed a boundary of a transient
-  int32_t phase_sample =
-      phases[0] / 2 /
-      (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
-       1);
-  if (phase_sample != phase_sample_old) {
-    uint16_t transient_nums[3] = {banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->transient_num_1,
-                                  banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->transient_num_2,
-                                  banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->transient_num_3};
-    for (uint8_t i = 0; i < 3; i++) {
-      for (uint8_t j = 0; j < transient_nums[i]; j++) {
-        if (banks[sel_bank_cur]
-                ->sample[sel_sample_cur]
-                .snd[FILEZERO]
-                ->transients[i][j] == 0) {
-          continue;
-        }
-        if (phase_sample_old < (banks[sel_bank_cur]
+  // only check if not timestretching
+  if (sel_variation == 0) {
+    int32_t phase_sample = phases[0] / 2 /
+                               (banks[sel_bank_cur]
                                     ->sample[sel_sample_cur]
                                     .snd[FILEZERO]
-                                    ->transients[i][j] *
-                                16) &&
-            phase_sample >= (banks[sel_bank_cur]
-                                 ->sample[sel_sample_cur]
-                                 .snd[FILEZERO]
-                                 ->transients[i][j] *
-                             16) &&
-            (phase_sample - phase_sample_old < 800)) {
-          // transient activated
-#ifdef INCLUDE_ECTOCORE
-          if (ectocore_trigger_mode == i) {
-            ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
-            gpio_put(GPIO_TRIG_OUT, 1);
+                                    ->num_channels +
+                                1) +
+                           440;
+    if (phase_sample != phase_sample_old) {
+      uint16_t transient_nums[3] = {banks[sel_bank_cur]
+                                        ->sample[sel_sample_cur]
+                                        .snd[FILEZERO]
+                                        ->transient_num_1,
+                                    banks[sel_bank_cur]
+                                        ->sample[sel_sample_cur]
+                                        .snd[FILEZERO]
+                                        ->transient_num_2,
+                                    banks[sel_bank_cur]
+                                        ->sample[sel_sample_cur]
+                                        .snd[FILEZERO]
+                                        ->transient_num_3};
+      for (uint8_t i = 0; i < 3; i++) {
+        for (uint8_t j = 0; j < transient_nums[i]; j++) {
+          if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->transients[i][j] == 0) {
+            continue;
           }
+          if (phase_sample_old < (banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->transients[i][j] *
+                                  16) &&
+              phase_sample >= (banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[FILEZERO]
+                                   ->transients[i][j] *
+                               16) &&
+              (phase_sample - phase_sample_old < 881)) {
+#ifdef INCLUDE_ZEPTOCORE
+#ifdef INCLUDE_CUEDSOUNDS
+            if (do_layer_kicks) {
+              if (i == 0) {
+                // is kick
+                cuedsounds_do_play = CUEDSOUNDS_FILE_KICK019;
+                printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK019);
+              }
+            }
 #endif
+#endif
+            // transient activated
+#ifdef INCLUDE_ECTOCORE
+            if (ectocore_trigger_mode == i) {
+              ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+              gpio_put(GPIO_TRIG_OUT, 1);
+            }
+#endif
+          }
         }
       }
-    }
 
-    phase_sample_old = phase_sample;
+      phase_sample_old = phase_sample;
+    }
   }
 
   return true;
