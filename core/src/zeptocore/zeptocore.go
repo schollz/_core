@@ -14,6 +14,7 @@ import (
 	"github.com/bep/debounce"
 	"github.com/dhowden/tag"
 	"github.com/schollz/_core/core/src/drumextract"
+	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/op1"
 	"github.com/schollz/_core/core/src/renoise"
@@ -23,20 +24,23 @@ import (
 )
 
 type File struct {
-	Filename       string
-	Duration       float64
-	PathToFile     string
-	PathToAudio    string
-	BPM            int
-	SliceStart     []float64 // fractional (0-1)
-	SliceStop      []float64 // fractional (0-1)
-	SliceType      []int     // 0 = normal, 1 = kick
-	TempoMatch     bool
-	OneShot        bool
-	Channels       int  // 0 if mono, 1 if stereo
-	Oversampling   int  // 1, 2, or 4
-	SpliceTrigger  int  // 0, 16, 32, 48, 64, 80, 96, 112, 128
-	SpliceVariable bool // 0,1 (off/on)
+	Filename        string
+	Duration        float64
+	PathToFile      string
+	PathToAudio     string
+	BPM             int
+	SliceStart      []float64 // fractional (0-1)
+	SliceStop       []float64 // fractional (0-1)
+	SliceType       []int     // 0 = normal, 1 = kick
+	TransientsKick  []int     // 16
+	TransientsSnare []int     // 16
+	TransientsOther []int     // 16
+	TempoMatch      bool
+	OneShot         bool
+	Channels        int  // 0 if mono, 1 if stereo
+	Oversampling    int  // 1, 2, or 4
+	SpliceTrigger   int  // 0, 16, 32, 48, 64, 80, 96, 112, 128
+	SpliceVariable  bool // 0,1 (off/on)
 	// from audio_callaback.h:
 	// // starts at splice start and ends at splice stop
 	// #define PLAY_SPLICE_STOP 0
@@ -85,6 +89,16 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		SpliceVariable: false,
 		SpliceTrigger:  96,
 	}
+
+	// create wait group
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// get transients
+		f.TransientsKick, f.TransientsSnare, f.TransientsOther, _ = drumextract2.DrumExtract2(f.PathToAudio)
+	}()
+
 	var errSliceDetect error
 	errSliceDetect = fmt.Errorf("slice detection failed")
 	if filepath.Ext(f.PathToFile) == ".xrni" {
@@ -242,6 +256,9 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 			log.Error(err)
 		}
 	}
+
+	// wait for transients
+	wg.Wait()
 	return
 }
 

@@ -31,7 +31,7 @@ def envelope_follower(audio_data, frame_rate, window_size=512, hop_size=128):
 
 def get_peaks(envelope, time_axis):
     # determine the peak height
-    peak_height = 0.5 * np.max(envelope)
+    peak_height = np.mean(envelope) + np.std(envelope)
     peaks = []
     in_peak = False
     last_peak = -1
@@ -47,7 +47,6 @@ def get_peaks(envelope, time_axis):
 
 def plot_envelope_with_peaks(envelope, frame_rate, hop_size):
     time_axis = np.arange(0, len(envelope) * hop_size, hop_size) / frame_rate
-    peak_height = 0.5 * np.max(envelope)
     peaks = get_peaks(envelope, time_axis)
     peaks_time = time_axis[peaks]
     print(peaks_time)
@@ -63,10 +62,10 @@ def plot_envelope_with_peaks(envelope, frame_rate, hop_size):
 
 
 # Example usage
-file_path = "redoblante.wav"  # Replace with your .wav file path
+file_path = "bombo.wav"  # Replace with your .wav file path
 audio_data, frame_rate = read_wav(file_path)
-hop_size = 64
-window_size = 128
+hop_size = 32
+window_size = 64
 envelope = envelope_follower(
     audio_data, frame_rate, window_size=window_size, hop_size=hop_size
 )
