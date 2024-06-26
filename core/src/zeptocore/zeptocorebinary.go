@@ -24,6 +24,9 @@ type SampleInfo struct {
 	SliceStart     []int32
 	SliceStop      []int32
 	SliceType      []int8
+	SliceKick      []int32
+	SliceSnare     []int32
+	SliceOther     []int32
 }
 
 type SampleInfoPack struct {
@@ -34,6 +37,9 @@ type SampleInfoPack struct {
 	SliceStart []int32
 	SliceStop  []int32
 	SliceType  []int8
+	SliceKick  []int32
+	SliceSnare []int32
+	SliceOther []int32
 }
 
 func SampleInfoMarshal(si *SampleInfo) *SampleInfoPack {
@@ -73,10 +79,16 @@ func SampleInfoMarshal(si *SampleInfo) *SampleInfoPack {
 		SliceStart: make([]int32, len(si.SliceStart)),
 		SliceStop:  make([]int32, len(si.SliceStop)),
 		SliceType:  make([]int8, len(si.SliceType)),
+		SliceKick:  make([]int32, len(si.SliceKick)),
+		SliceSnare: make([]int32, len(si.SliceSnare)),
+		SliceOther: make([]int32, len(si.SliceOther)),
 	}
 	copy(pack.SliceStart, si.SliceStart)
 	copy(pack.SliceStop, si.SliceStop)
 	copy(pack.SliceType, si.SliceType)
+	copy(pack.SliceKick, si.SliceKick)
+	copy(pack.SliceSnare, si.SliceSnare)
+	copy(pack.SliceOther, si.SliceOther)
 	return pack
 }
 
@@ -122,6 +134,24 @@ func (sip *SampleInfoPack) WriteToFile(filename string) error {
 			return err
 		}
 	}
+	for _, v := range sip.SliceKick {
+		err = binary.Write(file, binary.LittleEndian, v)
+		if err != nil {
+			return err
+		}
+	}
+	for _, v := range sip.SliceSnare {
+		err = binary.Write(file, binary.LittleEndian, v)
+		if err != nil {
+			return err
+		}
+	}
+	for _, v := range sip.SliceOther {
+		err = binary.Write(file, binary.LittleEndian, v)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -140,6 +170,9 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		f.SliceStart = []float64{0.0}
 		f.SliceStop = []float64{1.0}
 		f.SliceType = []int{0}
+		f.TransientsKick = []int{0}
+		f.TransientsSnare = []int{0}
+		f.TransientsOther = []int{0}
 		sliceNum = 1
 	}
 	BPMTempoMatch := uint8(0)
@@ -170,11 +203,17 @@ func (f File) updateInfo(fnameIn string) (err error) {
 		SliceStart:     []int32{},
 		SliceStop:      []int32{},
 		SliceType:      []int8{},
+		SliceKick:      []int32{},
+		SliceSnare:     []int32{},
+		SliceOther:     []int32{},
 	}
-	for i, _ := range f.SliceStart {
+	for i := range f.SliceStart {
 		sampleinfo.SliceStart = append(sampleinfo.SliceStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
 		sampleinfo.SliceStop = append(sampleinfo.SliceStop, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 		sampleinfo.SliceType = append(sampleinfo.SliceType, int8(f.SliceType[i]))
+		sampleinfo.SliceKick = append(sampleinfo.SliceKick, int32(f.TransientsKick[i]))
+		sampleinfo.SliceSnare = append(sampleinfo.SliceSnare, int32(f.TransientsSnare[i]))
+		sampleinfo.SliceOther = append(sampleinfo.SliceOther, int32(f.TransientsOther[i]))
 	}
 
 	if strings.HasSuffix(fnameIn, "0.wav") {
