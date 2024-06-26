@@ -270,3 +270,8 @@ dev/starting_samples_pikocore/
 dev/zeptocore_v2.8.0.uf2
 dev/zeptocore_v2.8.2.uf2
 dev/zeptocore_v3.0.1.uf2
+core/src/drumextract2/drum_separation_model.zip
+core/src/drumextract2/drum_separation_model/
+drum_separation_model.zip
+drum_separation_model/
+drumseparation_model.zip
