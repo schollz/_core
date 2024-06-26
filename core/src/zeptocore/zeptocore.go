@@ -24,23 +24,21 @@ import (
 )
 
 type File struct {
-	Filename        string
-	Duration        float64
-	PathToFile      string
-	PathToAudio     string
-	BPM             int
-	SliceStart      []float64 // fractional (0-1)
-	SliceStop       []float64 // fractional (0-1)
-	SliceType       []int     // 0 = normal, 1 = kick
-	TransientsKick  []int     // 16
-	TransientsSnare []int     // 16
-	TransientsOther []int     // 16
-	TempoMatch      bool
-	OneShot         bool
-	Channels        int  // 0 if mono, 1 if stereo
-	Oversampling    int  // 1, 2, or 4
-	SpliceTrigger   int  // 0, 16, 32, 48, 64, 80, 96, 112, 128
-	SpliceVariable  bool // 0,1 (off/on)
+	Filename       string
+	Duration       float64
+	PathToFile     string
+	PathToAudio    string
+	BPM            int
+	SliceStart     []float64 // fractional (0-1)
+	SliceStop      []float64 // fractional (0-1)
+	SliceType      []int     // 0 = normal, 1 = kick
+	Transients     [][]int   // kick, snare, other
+	TempoMatch     bool
+	OneShot        bool
+	Channels       int  // 0 if mono, 1 if stereo
+	Oversampling   int  // 1, 2, or 4
+	SpliceTrigger  int  // 0, 16, 32, 48, 64, 80, 96, 112, 128
+	SpliceVariable bool // 0,1 (off/on)
 	// from audio_callaback.h:
 	// // starts at splice start and ends at splice stop
 	// #define PLAY_SPLICE_STOP 0
@@ -89,6 +87,11 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		SpliceVariable: false,
 		SpliceTrigger:  96,
 	}
+	// make transients 3 x 16
+	f.Transients = make([][]int, 3)
+	for i := range f.Transients {
+		f.Transients[i] = make([]int, 16)
+	}
 
 	// create wait group
 	var wg sync.WaitGroup
@@ -96,7 +99,8 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	go func() {
 		defer wg.Done()
 		// get transients
-		f.TransientsKick, f.TransientsSnare, f.TransientsOther, _ = drumextract2.DrumExtract2(f.PathToAudio)
+		f.Transients[0], f.Transients[1], f.Transients[2], _ = drumextract2.DrumExtract2(f.PathToAudio)
+		log.Debugf("transients: %+v", f.Transients)
 	}()
 
 	var errSliceDetect error
@@ -242,6 +246,9 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	// create the 0 file (original)
 	fname0 := path.Join(folder, fmt.Sprintf("%s.0.wav", filenameWithouExt))
 
+	// wait for transients
+	wg.Wait()
+
 	// check if fname0 exists
 	if _, err := os.Stat(fname0); err != nil {
 		// save the json
@@ -257,8 +264,6 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		}
 	}
 
-	// wait for transients
-	wg.Wait()
 	return
 }
 

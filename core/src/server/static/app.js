@@ -338,9 +338,7 @@ const socketMessageListener = (e) => {
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceType,
-                    app.banks[app.selectedBank].files[app.selectedFile].TransientsKick,
-                    app.banks[app.selectedBank].files[app.selectedFile].TransientsSnare,
-                    app.banks[app.selectedBank].files[app.selectedFile].TransientsOther,
+                    app.banks[app.selectedBank].files[app.selectedFile].Transients,
                 );
             }, 100);
         }
@@ -792,9 +790,7 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsKick,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsSnare,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsOther,
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients,
                     );
                 }, 100);
             }
@@ -920,10 +916,7 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsKick,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsSnare,
-                        this.banks[this.selectedBank].files[this.selectedFile].TransientsOther,
-
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients,
                     );
                 }, 100);
             }
@@ -1054,7 +1047,7 @@ app = new Vue({
 const showWaveform = debounce(showWaveform_, 50);
 
 
-function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, transientsKick, transientsSnare, transientsOther) {
+function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, transients) {
     if (wsf != null) {
         wsf.destroy();
     }
@@ -1084,54 +1077,26 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
 
     wsf.on('decode', () => {
 
-        // draw kick transients
-        for (var i = 0; i < transientsKick.length; i++) {
-            if (transientsKick[i] > 0) {
-                let start = parseFloat(transientsKick[i]) / 44100.0;
-                wsRegions.addRegion({
-                    start: start - 0.01,
-                    end: start + 0.01,
-                    color: 'rgba(255, 0, 0, 0.25)',
-                    opacity: 0.5,
-                    height: 0.5,
-                    drag: false,
-                    resize: false,
-                    loop: false,
-                });
+        // draw transients
+        let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
+        for (var i = 0; i < transients.length; i++) {
+            for (var j = 0; j < transients[i].length; j++) {
+                if (transients[i][j] > 0) {
+                    let start = parseFloat(transients[i][j]) / 44100.0;
+                    wsRegions.addRegion({
+                        start: start - 0.01,
+                        end: start + 0.01,
+                        color: transient_colors[i],
+                        opacity: 0.5,
+                        height: 0.5,
+                        drag: false,
+                        resize: false,
+                        loop: false,
+                    });
+                }
             }
         }
-        // draw snare transients
-        for (var i = 0; i < transientsSnare.length; i++) {
-            if (transientsSnare[i] > 0) {
-                let start = parseFloat(transientsSnare[i]) / 44100.0;
-                wsRegions.addRegion({
-                    start: start - 0.01,
-                    end: start + 0.01,
-                    color: 'rgba(0, 255,0, 0.25)',
-                    opacity: 0.5,
-                    height: 0.5,
-                    drag: false,
-                    resize: false,
-                    loop: false,
-                });
-            }
-        }
-        // draw other transients 
-        for (var i = 0; i < transientsOther.length; i++) {
-            if (transientsOther[i] > 0) {
-                let start = parseFloat(transientsOther[i]) / 44100.0;
-                wsRegions.addRegion({
-                    start: start - 0.01,
-                    end: start + 0.01,
-                    color: 'rgba(0, 0, 255, 0.25)',
-                    opacity: 0.5,
-                    height: 0.5,
-                    drag: false,
-                    resize: false,
-                    loop: false,
-                });
-            }
-        }
+
 
 
         console.log("wsf.on('decode')");
