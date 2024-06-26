@@ -839,6 +839,7 @@
 
                     <div class="footer-item">
                         <div v-if="uploading">uploading</div>
+                        <div v-else-if="isworking">computing</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
                         <button id="downloadZipButton" type="submit" v-else-if="diskUsage>0">Download .zip to load onto

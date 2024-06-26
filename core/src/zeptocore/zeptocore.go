@@ -14,6 +14,7 @@ import (
 	"github.com/bep/debounce"
 	"github.com/dhowden/tag"
 	"github.com/schollz/_core/core/src/drumextract"
+	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/op1"
 	"github.com/schollz/_core/core/src/renoise"
@@ -31,6 +32,7 @@ type File struct {
 	SliceStart     []float64 // fractional (0-1)
 	SliceStop      []float64 // fractional (0-1)
 	SliceType      []int     // 0 = normal, 1 = kick
+	Transients     [][]int   // kick, snare, other
 	TempoMatch     bool
 	OneShot        bool
 	Channels       int  // 0 if mono, 1 if stereo
@@ -85,6 +87,12 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		SpliceVariable: false,
 		SpliceTrigger:  96,
 	}
+	// make transients 3 x 16
+	f.Transients = make([][]int, 3)
+	for i := range f.Transients {
+		f.Transients[i] = make([]int, 16)
+	}
+
 	var errSliceDetect error
 	errSliceDetect = fmt.Errorf("slice detection failed")
 	if filepath.Ext(f.PathToFile) == ".xrni" {
@@ -242,6 +250,23 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 			log.Error(err)
 		}
 	}
+
+	go func() {
+		// get transients
+		transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
+		if errTransients == nil {
+			// reload in case its been too long
+			f.Load()
+			f.Transients[0] = transients1
+			f.Transients[1] = transients2
+			f.Transients[2] = transients3
+			log.Debugf("saving transients for %s", f.PathToAudio)
+			f.Save()
+			f.Regenerate()
+		}
+
+	}()
+
 	return
 }
 

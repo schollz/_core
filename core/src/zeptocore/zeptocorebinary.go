@@ -24,6 +24,7 @@ type SampleInfo struct {
 	SliceStart     []int32
 	SliceStop      []int32
 	SliceType      []int8
+	Transients     [][]int32
 }
 
 type SampleInfoPack struct {
@@ -34,6 +35,7 @@ type SampleInfoPack struct {
 	SliceStart []int32
 	SliceStop  []int32
 	SliceType  []int8
+	Transients [][]int32
 }
 
 func SampleInfoMarshal(si *SampleInfo) *SampleInfoPack {
@@ -74,9 +76,14 @@ func SampleInfoMarshal(si *SampleInfo) *SampleInfoPack {
 		SliceStop:  make([]int32, len(si.SliceStop)),
 		SliceType:  make([]int8, len(si.SliceType)),
 	}
+
 	copy(pack.SliceStart, si.SliceStart)
 	copy(pack.SliceStop, si.SliceStop)
 	copy(pack.SliceType, si.SliceType)
+	for i := range si.Transients {
+		pack.Transients = append(pack.Transients, make([]int32, len(si.Transients[i])))
+		copy(pack.Transients[i], si.Transients[i])
+	}
 	return pack
 }
 
@@ -122,6 +129,39 @@ func (sip *SampleInfoPack) WriteToFile(filename string) error {
 			return err
 		}
 	}
+	log.Debugf("writing transients: %d", sip.Transients)
+	for _, transients := range sip.Transients {
+		count := 0
+		for _, v := range transients {
+			if v == 0 {
+				continue
+			}
+			count++
+		}
+		// write nums
+		err = binary.Write(file, binary.LittleEndian, uint16(count))
+		if err != nil {
+			return err
+		}
+	}
+	for _, transients := range sip.Transients {
+		for _, v := range transients {
+			if v == 0 {
+				continue
+			}
+			// scale v to uint16
+			// it only allows first 24 seconds to be logged but its okay
+			v = v / 16
+			if v > 65535 {
+				v = 0
+			}
+			err = binary.Write(file, binary.LittleEndian, uint16(v))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -156,27 +196,35 @@ func (f File) updateInfo(fnameIn string) (err error) {
 	}
 
 	sampleinfo := &SampleInfo{
-		Size:           uint32(fsize),
-		Bpm:            uint16(f.BPM),
-		PlayMode:       uint16(f.SplicePlayback),
-		OneShot:        uint16(oneshot),
-		TempoMatch:     uint16(BPMTempoMatch),
-		Oversampling:   uint16(f.Oversampling - 1),
-		NumChannels:    uint16(f.Channels),
-		Version:        0,
+		Size:         uint32(fsize),
+		Bpm:          uint16(f.BPM),
+		PlayMode:     uint16(f.SplicePlayback),
+		OneShot:      uint16(oneshot),
+		TempoMatch:   uint16(BPMTempoMatch),
+		Oversampling: uint16(f.Oversampling - 1),
+		NumChannels:  uint16(f.Channels),
+		// Versoin 1+ will load transients
+		Version:        1,
 		SpliceTrigger:  uint16(f.SpliceTrigger),
 		SpliceVariable: uint16(splicevariable),
 		SliceNum:       uint8(sliceNum),
 		SliceStart:     []int32{},
 		SliceStop:      []int32{},
 		SliceType:      []int8{},
+		Transients:     [][]int32{},
 	}
-	for i, _ := range f.SliceStart {
+	for i := range f.SliceStart {
 		sampleinfo.SliceStart = append(sampleinfo.SliceStart, int32(math.Round(f.SliceStart[i]*fsize))/4*4)
 		sampleinfo.SliceStop = append(sampleinfo.SliceStop, int32(math.Round(f.SliceStop[i]*fsize))/4*4)
 		sampleinfo.SliceType = append(sampleinfo.SliceType, int8(f.SliceType[i]))
 	}
-
+	for i := range f.Transients {
+		transients := []int32{}
+		for j := range f.Transients[i] {
+			transients = append(transients, int32(f.Transients[i][j]))
+		}
+		sampleinfo.Transients = append(sampleinfo.Transients, transients)
+	}
 	if strings.HasSuffix(fnameIn, "0.wav") {
 		log.Debugf("writing sample info %s to %+v", fnameIn, sampleinfo)
 	}
