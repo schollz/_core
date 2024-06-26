@@ -48,7 +48,7 @@ typedef struct SampleInfo {
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
-  int32_t **transients;
+  uint16_t **transients;
 } SampleInfo;
 
 typedef struct SampleInfoPack {
@@ -178,10 +178,10 @@ SampleInfo *SampleInfo_load(const char *fname, bool load_transients) {
 
   if (load_transients) {
     // load in transients
-    si->transients = malloc(sizeof(int32_t *) * 3);
+    si->transients = malloc(sizeof(uint16_t *) * 3);
     for (int i = 0; i < 3; i++) {
-      si->transients[i] = malloc(sizeof(int32_t) * 16);
-      fr = f_read(&fil, si->transients[i], sizeof(int32_t) * 16, &bytes_read);
+      si->transients[i] = malloc(sizeof(uint16_t) * 16);
+      fr = f_read(&fil, si->transients[i], sizeof(uint16_t) * 16, &bytes_read);
       if (fr != FR_OK) {
         // 0 all the transients
         for (int j = 0; j < 3; j++) {

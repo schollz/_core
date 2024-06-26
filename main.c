@@ -556,14 +556,17 @@ bool repeating_timer_callback(struct repeating_timer *t) {
                 ->transients[i][j] == 0) {
           continue;
         }
-        if (phase_sample_old < banks[sel_bank_cur]
-                                   ->sample[sel_sample_cur]
-                                   .snd[FILEZERO]
-                                   ->transients[i][j] &&
-            phase_sample >= banks[sel_bank_cur]
-                                ->sample[sel_sample_cur]
-                                .snd[FILEZERO]
-                                ->transients[i][j]) {
+        if (phase_sample_old < (banks[sel_bank_cur]
+                                    ->sample[sel_sample_cur]
+                                    .snd[FILEZERO]
+                                    ->transients[i][j] *
+                                16) &&
+            phase_sample >= (banks[sel_bank_cur]
+                                 ->sample[sel_sample_cur]
+                                 .snd[FILEZERO]
+                                 ->transients[i][j] *
+                             16) &&
+            (phase_sample - phase_sample_old < 800)) {
           // transient activated
 #ifdef INCLUDE_ECTOCORE
           if (ectocore_trigger_mode == i) {

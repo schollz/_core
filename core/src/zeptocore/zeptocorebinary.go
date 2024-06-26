@@ -132,7 +132,13 @@ func (sip *SampleInfoPack) WriteToFile(filename string) error {
 	log.Debugf("writing transients: %d", sip.Transients)
 	for _, transients := range sip.Transients {
 		for _, v := range transients {
-			err = binary.Write(file, binary.LittleEndian, v)
+			// scale v to uint16
+			// it only allows first 24 seconds to be logged but its okay
+			v = v / 16
+			if v > 65535 {
+				v = 0
+			}
+			err = binary.Write(file, binary.LittleEndian, uint16(v))
 			if err != nil {
 				return err
 			}

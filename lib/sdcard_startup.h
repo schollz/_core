@@ -482,6 +482,13 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+  // // print transients
+  // sleep_ms(1000);
+  // for (uint8_t i = 0; i < 16; i++) {
+  //   printf("transients[0][%d]: %d\n", i,
+  //          banks[0]->sample[0].snd[0]->transients[0][i]);
+  // }
+
 #ifdef INCLUDE_ZEPTOCORE
   sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
   for (uint8_t bi = 0; bi < 16; bi++) {
