@@ -48,6 +48,7 @@ typedef struct SampleInfo {
   int32_t *slice_start;
   int32_t *slice_stop;
   int8_t *slice_type;
+  int32_t transients[3][16];
 } SampleInfo;
 
 typedef struct SampleInfoPack {
@@ -173,6 +174,27 @@ SampleInfo *SampleInfo_load(const char *fname) {
     free(sip);
     SampleInfo_free(si);
     return NULL;
+  }
+
+  // load in transients
+  for (int i = 0; i < 3; i++) {
+    fr = f_read(&fil, si->transients[i], sizeof(int32_t) * 16, &bytes_read);
+    if (fr != FR_OK) {
+      // 0 all the transients
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 16; k++) {
+          si->transients[j][k] = 0;
+        }
+      }
+      break;
+    }
+  }
+
+  // print out transients
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 16; j++) {
+      printf("transients[%d][%d]: %d\n", i, j, si->transients[i][j]);
+    }
   }
 
   f_close(&fil);
