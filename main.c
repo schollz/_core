@@ -542,44 +542,40 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   gpio_put(LED_TOP_GPIO, beat_total % 2 == 0 ? 1 : 0);
 #endif
 
-  if (!sync_in_audio_loop) {
-    // check to see if a phase crossed a boundary of a transient
-    int32_t phase_sample = phases[0] / 2 /
-                           (banks[sel_bank_cur]
+  // check to see if a phase crossed a boundary of a transient
+  int32_t phase_sample =
+      phases[0] / 2 /
+      (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
+       1);
+  if (phase_sample != phase_sample_old) {
+    for (uint8_t i = 0; i < 3; i++) {
+      for (uint8_t j = 0; j < 16; j++) {
+        if (banks[sel_bank_cur]
+                ->sample[sel_sample_cur]
+                .snd[FILEZERO]
+                ->transients[i][j] == 0) {
+          continue;
+        }
+        if (phase_sample_old < banks[sel_bank_cur]
+                                   ->sample[sel_sample_cur]
+                                   .snd[FILEZERO]
+                                   ->transients[i][j] &&
+            phase_sample >= banks[sel_bank_cur]
                                 ->sample[sel_sample_cur]
                                 .snd[FILEZERO]
-                                ->num_channels +
-                            1);
-    if (phase_sample != phase_sample_old) {
-      for (uint8_t i = 0; i < 3; i++) {
-        for (uint8_t j = 0; j < 16; j++) {
-          if (banks[sel_bank_cur]
-                  ->sample[sel_sample_cur]
-                  .snd[FILEZERO]
-                  ->transients[i][j] == 0) {
-            continue;
-          }
-          if (phase_sample_old < banks[sel_bank_cur]
-                                     ->sample[sel_sample_cur]
-                                     .snd[FILEZERO]
-                                     ->transients[i][j] &&
-              phase_sample >= banks[sel_bank_cur]
-                                  ->sample[sel_sample_cur]
-                                  .snd[FILEZERO]
-                                  ->transients[i][j]) {
-            // transient activated
+                                ->transients[i][j]) {
+          // transient activated
 #ifdef INCLUDE_ECTOCORE
-            if (ectocore_trigger_mode == i) {
-              ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
-              gpio_put(GPIO_TRIG_OUT, 1);
-            }
-#endif
+          if (ectocore_trigger_mode == i) {
+            ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+            gpio_put(GPIO_TRIG_OUT, 1);
           }
+#endif
         }
       }
-
-      phase_sample_old = phase_sample;
     }
+
+    phase_sample_old = phase_sample;
   }
 
   return true;

@@ -129,6 +129,7 @@ func (sip *SampleInfoPack) WriteToFile(filename string) error {
 			return err
 		}
 	}
+	log.Debugf("writing transients: %d", sip.Transients)
 	for _, transients := range sip.Transients {
 		for _, v := range transients {
 			err = binary.Write(file, binary.LittleEndian, v)
