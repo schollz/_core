@@ -586,11 +586,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
               (phase_sample - phase_sample_old < 881)) {
 #ifdef INCLUDE_ZEPTOCORE
 #ifdef INCLUDE_CUEDSOUNDS
-            if (do_layer_kicks) {
+            if (do_layer_kicks > -1) {
               if (i == 0) {
                 // is kick
-                cuedsounds_do_play = CUEDSOUNDS_FILE_KICK019;
-                printf("[globals] kick %d\n", CUEDSOUNDS_FILE_KICK019);
+                cuedsounds_do_play = do_layer_kicks;
+                printf("[globals] kick %d\n", do_layer_kicks);
               }
             }
 #endif

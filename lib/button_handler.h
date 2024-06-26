@@ -286,6 +286,19 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
       return;
     }
+  } else if (key_on_buttons[KEY_A] && key_on_buttons[KEY_D]) {
+    printf("[button_handler] A+D: %d\n", key2);
+#ifdef INCLUDE_CUEDSOUNDS
+    if (key2 == 19) {
+      do_layer_kicks = -1;
+    } else if (key2 - 4 < CUEDSOUNDS_FILES) {
+      cuedsounds_do_play = key2 - 4;
+      do_layer_kicks = cuedsounds_do_play;
+    }
+
+#endif
+
+    return;
   }
   if (key1 == KEY_B && key2 == KEY_A && random_sequence_length > 0) {
     // generate new sequence

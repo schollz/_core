@@ -108,7 +108,7 @@ float scratch_lfo_hz = 0.7;
 
 bool only_play_kicks = false;
 bool only_play_snares = false;
-bool do_layer_kicks = false;
+int8_t do_layer_kicks = -1;
 
 // random things
 uint16_t probability_of_random_jump = 0;
