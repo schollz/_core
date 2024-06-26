@@ -385,7 +385,7 @@ void dust_1() {
 
 void input_handling() {
 #ifdef INCLUDE_CUEDSOUNDS
-  cuedsounds_do_play = random_integer_in_range(0, 100);
+  cuedsounds_do_play = 0;
 #endif
 
   // flash bad signs
