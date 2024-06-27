@@ -1292,7 +1292,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
 
     // Update the zoom level on slider change
     wsf.once('decode', () => {
-        document.querySelector('input[type="range"]').oninput = (e) => {
+        document.querySelector('#wsfzoom').oninput = (e) => {
             const minPxPerSec = Number(e.target.value)
             wsf.zoom(minPxPerSec)
         };
