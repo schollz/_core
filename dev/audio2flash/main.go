@@ -121,7 +121,7 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("uint8_t %s_file = 0;\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("uint32_t %s_start_index = 0;\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("uint32_t %s_stop_index = 0;\n", codeNameLower))
-
+	sb.WriteString(fmt.Sprintf("uint8_t %s_volume = 100;\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("void %s_audio_update(int32_t* samples, uint16_t num_samples, uint vol_main) {\n", codeNameLower))
 	sb.WriteString(fmt.Sprintf("  if (!%s_is_playing && %s_do_play<0) {\n", codeNameLower, codeNameLower))
 	sb.WriteString(fmt.Sprintf("    return;\n"))
@@ -144,7 +144,7 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("  }\n"))
 
 	sb.WriteString(fmt.Sprintf("for (uint16_t i = 0; i < num_samples; i++) {\n"))
-	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * 50 / 255;\n", codeNameLower, codeNameLower))
+	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * %s_volume / 255;\n", codeNameLower, codeNameLower, codeNameLower))
 	sb.WriteString(fmt.Sprintf("  audio = (vol_main * audio) << 8u;\n"))
 	sb.WriteString(fmt.Sprintf("  audio += (audio >> 16u);\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 0] += audio;\n"))
