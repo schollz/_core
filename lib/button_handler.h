@@ -292,7 +292,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
 #ifdef INCLUDE_CUEDSOUNDS
     if (!cued_sound_selector) {
       // select sound
-      cuedsounds_do_play = key2 - 4;
+      cuedsounds_do_play = key2 - 4+1;
       do_layer_kicks = cuedsounds_do_play;
     } else {
       // select volume
