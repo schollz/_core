@@ -288,18 +288,22 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       return;
     }
   } else if (key_on_buttons[KEY_A] && key_on_buttons[KEY_D]) {
-    printf("[button_handler] A+D: %d\n", key2);
 #ifdef INCLUDE_CUEDSOUNDS
     if (!cued_sound_selector) {
       // select sound
-      cuedsounds_do_play = key2 - 4+1;
+      cuedsounds_do_play = key2 - 4 + 1;
+      if (cuedsounds_volume == 0) {
+        cuedsounds_volume = 150;
+      }
       do_layer_kicks = cuedsounds_do_play;
+      printf("cuedsounds_do_play: %d\n", cuedsounds_do_play);
     } else {
       // select volume
       cuedsounds_volume = (key2 - 4) * 255 / 16;
       if (cuedsounds_volume == 0) {
         do_layer_kicks = -1;
       }
+      printf("cuedsounds_volume: %d\n", cuedsounds_volume);
     }
     cued_sound_selector = !cued_sound_selector;
 #endif
