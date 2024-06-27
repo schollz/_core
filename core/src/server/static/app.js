@@ -548,13 +548,7 @@ app = new Vue({
     methods: {
 
         drawTransients() {
-            console.log('drawTransients')
             let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
-            // transients[0][0] = 500;
-            // transients[1][0] = 1500;
-            // transients[2][0] = 3500;
-            // console.log(transients)
-            // draw transients
             let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
             let span = ` <span class="regionsvg" style="display: flex;
     justify-content: center;
@@ -625,6 +619,9 @@ app = new Vue({
                             id: `transient-${i}-${j}`,
                         });
                     }
+                }
+                if (isZeptocore) {
+                    break;
                 }
             }
 
