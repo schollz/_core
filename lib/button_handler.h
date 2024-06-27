@@ -265,6 +265,7 @@ void button_key_on_single(uint8_t key) {
   }
 }
 
+bool cued_sound_selector = false;
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on double %d+%d\n", key1, key2);
   if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
@@ -289,15 +290,19 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
   } else if (key_on_buttons[KEY_A] && key_on_buttons[KEY_D]) {
     printf("[button_handler] A+D: %d\n", key2);
 #ifdef INCLUDE_CUEDSOUNDS
-    if (key2 == 19) {
-      do_layer_kicks = -1;
-    } else if (key2 - 4 < CUEDSOUNDS_FILES) {
+    if (!cued_sound_selector) {
+      // select sound
       cuedsounds_do_play = key2 - 4;
       do_layer_kicks = cuedsounds_do_play;
+    } else {
+      // select volume
+      cuedsounds_volume = (key2 - 4) * 255 / 16;
+      if (cuedsounds_volume == 0) {
+        do_layer_kicks = -1;
+      }
     }
-
+    cued_sound_selector = !cued_sound_selector;
 #endif
-
     return;
   }
   if (key1 == KEY_B && key2 == KEY_A && random_sequence_length > 0) {
@@ -794,6 +799,9 @@ void button_handler(ButtonMatrix *bm) {
     key_on_buttons[bm->off[i]] = 0;
     key_did_go_off[bm->off[i]] = true;
     button_key_off_any(bm->off[i]);
+    if (bm->off[i] == KEY_A || bm->off[i] == KEY_D) {
+      cued_sound_selector = false;
+    }
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
       button_key_off_held(bm->off[i]);
