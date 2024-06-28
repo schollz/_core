@@ -548,15 +548,65 @@ app = new Vue({
     methods: {
 
         drawTransients() {
+            console.log('drawTransients')
             let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
+            // transients[0][0] = 500;
+            // transients[1][0] = 1500;
+            // transients[2][0] = 3500;
+            // console.log(transients)
             // draw transients
             let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
-            let transient_content = ['◉', '◈', '◇']
+            let span = ` <span class="regionsvg" style="display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 20px; position:relative; top:5px;" >`;
+            let transient_content = [`
+                 <svg width="100%" height="100%" viewBox="0 0 20 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-24.5,-564.5)">
+        <g>
+            <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
+                <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75" style="fill:none;stroke:black;stroke-width:2.04px;"/>
+            </g>
+            <g transform="matrix(1,0,0,1.33333,0,-191.5)">
+                <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75" style="fill:none;stroke:black;stroke-width:1.7px;"/>
+            </g>
+            <g transform="matrix(1,0,0,0.857143,0,82.2143)">
+                <path d="M34.5,575.5L34.5,582.5" style="fill:none;stroke:black;stroke-width:2.15px;"/>
+            </g>
+            <path d="M25.5,581.5L28,579.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M43.5,581.5L40.5,579.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+        </g>
+    </g>
+</svg></span>`, `<svg width="100%" height="100%" viewBox="0 0 20 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-57,-564)">
+        <g>
+            <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
+                <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75" style="fill:none;stroke:black;stroke-width:1.46px;"/>
+            </g>
+            <path d="M58,579C58,579 65.56,584.338 75.5,579" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M61,580.186L61,571.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M66.5,581L66.5,572.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
+                <path d="M75.5,578.5L75.5,569" style="fill:none;stroke:black;stroke-width:1.95px;"/>
+            </g>
+        </g>
+    </g>
+</svg></span>`, `<svg width="100%" height="100%" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-87.5,-563)">
+        <g>
+            <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
+                <circle cx="98.5" cy="572.5" r="9.5" style="fill:none;stroke:black;stroke-width:2.03px;"/>
+            </g>
+            <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573" style="fill:none;stroke:black;stroke-width:2px;"/>
+        </g>
+    </g>
+</svg></span>`]
             for (var i = 0; i < transients.length; i++) {
                 for (var j = 0; j < transients[i].length; j++) {
                     let htmlElement = document.createElement('span');
-                    htmlElement.innerHTML = transient_content[i];
-                    htmlElement.style.left = '-1px';
+                    htmlElement.innerHTML = span + transient_content[i];
                     htmlElement.style.position = 'relative';
                     let color = 'rgb(255,255,255,0.3)';
                     if (transients[i][j] > 0) {
@@ -577,6 +627,18 @@ app = new Vue({
                     }
                 }
             }
+
+
+            // find all the parents of `.regionsvg` and add to the style
+            let regionsvg = document.querySelectorAll('#waveform > div')[0].shadowRoot.querySelectorAll('.regionsvg');
+            console.log(regionsvg)
+            for (var i = 0; i < regionsvg.length; i++) {
+                console.log(regionsvg[i])
+                regionsvg[i].parentElement.style.display = 'flex';
+                regionsvg[i].parentElement.style.justifyContent = 'center';
+                regionsvg[i].parentElement.style.alignItems = 'center';
+            }
+
 
         },
         isGrimoireEffectSelected(num) {
