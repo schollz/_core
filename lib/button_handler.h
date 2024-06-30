@@ -265,6 +265,7 @@ void button_key_on_single(uint8_t key) {
   }
 }
 
+bool cued_sound_selector = false;
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on double %d+%d\n", key1, key2);
   if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
@@ -286,6 +287,27 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
       return;
     }
+  } else if (key_on_buttons[KEY_A] && key_on_buttons[KEY_D]) {
+#ifdef INCLUDE_CUEDSOUNDS
+    if (!cued_sound_selector) {
+      // select sound
+      cuedsounds_do_play = key2 - 4 + 1;
+      if (cuedsounds_volume == 0) {
+        cuedsounds_volume = 150;
+      }
+      do_layer_kicks = cuedsounds_do_play;
+      printf("cuedsounds_do_play: %d\n", cuedsounds_do_play);
+    } else {
+      // select volume
+      cuedsounds_volume = (key2 - 4) * 255 / 16;
+      if (cuedsounds_volume == 0) {
+        do_layer_kicks = -1;
+      }
+      printf("cuedsounds_volume: %d\n", cuedsounds_volume);
+    }
+    cued_sound_selector = !cued_sound_selector;
+#endif
+    return;
   }
   if (key1 == KEY_B && key2 == KEY_A && random_sequence_length > 0) {
     // generate new sequence
@@ -633,6 +655,15 @@ void button_handler(ButtonMatrix *bm) {
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", 200);
         }
+      } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
+                 key_pressed[2] == 10 && key_pressed[3] == 19) {
+        // switch between layering kicks
+        do_layer_kicks = !do_layer_kicks;
+        if (do_layer_kicks) {
+          DebounceDigits_setText(debouncer_digits, "LAYER", 200);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+        }
       } else if (key_pressed[0] == 9 && key_pressed[1] == 10 &&
                  key_pressed[2] == 14 && key_pressed[3] == 13) {
         // toggle random sequence mode
@@ -772,6 +803,9 @@ void button_handler(ButtonMatrix *bm) {
     key_on_buttons[bm->off[i]] = 0;
     key_did_go_off[bm->off[i]] = true;
     button_key_off_any(bm->off[i]);
+    if (bm->off[i] == KEY_A || bm->off[i] == KEY_D) {
+      cued_sound_selector = false;
+    }
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
       button_key_off_held(bm->off[i]);
