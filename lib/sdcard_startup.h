@@ -393,9 +393,9 @@ void sdcard_startup() {
   }
   sync_using_sdcard = true;
   while (!run_mount()) {
-    sleep_ms(200);
+    sleep_ms(10);
   }
-  envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 2);
+  envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 4);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
   envelope_filter = EnvelopeLinearInteger_create(BLOCKS_PER_SECOND, 1,
                                                  resonantfilter_fc_max, 0.3);
@@ -481,6 +481,15 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+
+  // // print transients
+  // sleep_ms(2000);
+  // printf("transient_num_1: %d\n",
+  // banks[0]->sample[0].snd[0]->transient_num_1); for (uint8_t i = 0; i <
+  // banks[0]->sample[0].snd[0]->transient_num_1; i++) {
+  //   printf("transients[0][%d]: %d\n", i,
+  //          banks[0]->sample[0].snd[0]->transients[0][i]);
+  // }
 
 #ifdef INCLUDE_ZEPTOCORE
   sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);

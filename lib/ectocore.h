@@ -385,7 +385,7 @@ void dust_1() {
 
 void input_handling() {
 #ifdef INCLUDE_CUEDSOUNDS
-  cuedsounds_do_play = random_integer_in_range(0, 100);
+  cuedsounds_do_play = 0;
 #endif
 
   // flash bad signs
@@ -749,7 +749,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v3.0.2\n");
+        printf("version=v4.0.0\n");
       }
     }
 

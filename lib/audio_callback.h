@@ -644,7 +644,6 @@ BREAKOUT_OF_MUTE:
       }
       first_loop = false;
     }
-
     phases[head] += (values_to_read * (phase_forward * 2 - 1));
   }
 

@@ -5,14 +5,60 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	log "github.com/schollz/logger"
 )
+
+func Unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		rc, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer rc.Close()
+
+		fpath := filepath.Join(dest, f.Name)
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fpath, f.Mode())
+		} else {
+			var fdir string
+			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
+				fdir = fpath[:lastIndex]
+			}
+
+			err = os.MkdirAll(fdir, f.Mode())
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			f, err := os.OpenFile(
+				fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
 
 // ZipFolder
 func ZipFolder(zipFilename string) (err error) {
@@ -147,5 +193,31 @@ func copyFileContents(src, dst string) (err error) {
 		return
 	}
 	err = out.Sync()
+	return
+}
+
+func RandomString(n int) string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
+
+func TimeOfNewestFile(folder string) (t time.Time, err error) {
+	// find all files in folder recursively and get the oldest time
+	// of the files
+	// set default time to 1979
+	t = time.Date(1979, 1, 1, 0, 0, 0, 0, time.UTC)
+	err = filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.ModTime().After(t) {
+			t = info.ModTime()
+		}
+		return nil
+	})
 	return
 }

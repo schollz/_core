@@ -71,7 +71,8 @@ SampleList *list_files(const char *dir) {
       for (uint8_t j = 0; j < FILE_VARIATIONS; j++) {
         char fnameLoad[100];
         sprintf(fnameLoad, "%s/%d.%d.wav.info", dir, i, j);
-        samplelist->sample[filelist_count].snd[j] = SampleInfo_load(fnameLoad);
+        samplelist->sample[filelist_count].snd[j] =
+            SampleInfo_load(fnameLoad, j == 0);
         break;  // Don't load all variations
       }
       filelist_count++;
