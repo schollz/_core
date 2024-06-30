@@ -281,3 +281,5 @@ core/test.xml
 "core/Sample00 (Amen Brother (Version 1) 1).0.wav.info"
 "core/Sample00 (Amen Brother (Version 1) 1).1.wav.info"
 dev/zeptocore_v3.0.2.uf2
+core/src/drumextract2/plot2.py
+core/src/drumextract2/transients.json
