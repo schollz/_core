@@ -96,7 +96,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			}
 		}
 		if portName == "" {
-			log.Trace("no port found")
+			// log.Trace("no port found")
 			if hasPort {
 				hasPort = false
 				chanDeviceType <- ""
@@ -148,7 +148,7 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 			}
 			if port == nil {
 				time.Sleep(250 * time.Millisecond)
-				log.Tracef("unable to open port")
+				// log.Tracef("unable to open port")
 				continue
 			}
 

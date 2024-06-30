@@ -28,6 +28,7 @@ var inputMidiDevice = null;
 var outputMidiDevice = null;
 var checkMidiInterval = null;
 
+
 function midiStartup() {
     app.midiIsSetup = true;
     midiGetVersion();
@@ -63,7 +64,7 @@ function listMidiPorts() {
 
         })
         .catch(error => {
-            console.error('Error accessing MIDI devices:', error);
+            // console.error('Error accessing MIDI devices:', error);
         });
 }
 
@@ -270,18 +271,6 @@ const socketMessageListener = (e) => {
             window.location = "/" + data.message;
         }
         console.log(data);
-    } else if (data.action == "slicetype") {
-        app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
-        if (app.selectedFile != null) {
-            // setTimeout(() => {
-            //     showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
-            //         app.banks[app.selectedBank].files[app.selectedFile].Duration,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
-            //         app.banks[app.selectedBank].files[app.selectedFile].SliceType,
-            //     );
-            // }, 100);
-        }
     } else if (data.action == "onsetdetect") {
         if (wsf != null) {
             app.deleteAllRegions();
@@ -304,6 +293,7 @@ const socketMessageListener = (e) => {
                 resize: true,
                 loop: false,
             });
+            app.drawTransients();
         }
     } else if (data.action == "getstate") {
         var savedState = JSON.parse(data.state);
@@ -350,6 +340,7 @@ const socketMessageListener = (e) => {
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
                     app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                    app.banks[app.selectedBank].files[app.selectedFile].Transients,
                 );
             }, 100);
         }
@@ -368,6 +359,22 @@ const socketMessageListener = (e) => {
         app.uploading = false;
         app.processing = false;
         app.downloading = true;
+    } else if (data.action == "isworking") {
+        app.isworking = true;
+    } else if (data.action == "notworking") {
+        app.isworking = false;
+    } else if (data.action == "transients") {
+        console.log(data)
+        app.banks[data.bankNum].files[data.fileNum].Transients = data.transients;
+        setTimeout(() => {
+            showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
+                app.banks[app.selectedBank].files[app.selectedFile].Duration,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
+                app.banks[app.selectedBank].files[app.selectedFile].SliceType,
+                app.banks[app.selectedBank].files[app.selectedFile].Transients,
+            );
+        }, 100);
     } else if (data.action == "progress") {
         totalBytesUploaded = data.number;
         var maxWidth = window.innerWidth;
@@ -397,6 +404,7 @@ const socketMessageListener = (e) => {
         }
     }
 };
+var isProcesingInterval;
 const socketOpenListener = (e) => {
     console.log('Connected');
     if (disconnectedTimeout != null) {
@@ -411,6 +419,16 @@ const socketOpenListener = (e) => {
             }));
         }
     }, 50);
+    // check if processing 
+    clearInterval(isProcesingInterval);
+    isProcesingInterval = setInterval(() => {
+        if (socket != null) {
+            socket.send(JSON.stringify({
+                action: "isprocessing",
+                place: window.location.pathname,
+            }));
+        }
+    }, 1000);
     try {
         socket.send(JSON.stringify({
             action: "connected"
@@ -420,7 +438,7 @@ const socketOpenListener = (e) => {
     }
 };
 const socketErrorListener = (e) => {
-    console.error(e);
+    // console.error(e);
 }
 const socketCloseListener = (e) => {
     if (socket) {
@@ -470,6 +488,7 @@ app = new Vue({
         downloading: false,
         showCookiePolicy: false,
         processing: false,
+        isworking: false,
         error_message: "",
         regular_message: "",
         uploading: false,
@@ -527,6 +546,98 @@ app = new Vue({
         }
     },
     methods: {
+
+        drawTransients() {
+            let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
+            let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
+            let span = ` <span class="regionsvg" style="display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 20px; position:relative; top:5px;" >`;
+            let transient_content = [`
+                 <svg width="100%" height="100%" viewBox="0 0 20 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-24.5,-564.5)">
+        <g>
+            <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
+                <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75" style="fill:none;stroke:black;stroke-width:2.04px;"/>
+            </g>
+            <g transform="matrix(1,0,0,1.33333,0,-191.5)">
+                <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75" style="fill:none;stroke:black;stroke-width:1.7px;"/>
+            </g>
+            <g transform="matrix(1,0,0,0.857143,0,82.2143)">
+                <path d="M34.5,575.5L34.5,582.5" style="fill:none;stroke:black;stroke-width:2.15px;"/>
+            </g>
+            <path d="M25.5,581.5L28,579.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M43.5,581.5L40.5,579.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+        </g>
+    </g>
+</svg></span>`, `<svg width="100%" height="100%" viewBox="0 0 20 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-57,-564)">
+        <g>
+            <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
+                <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75" style="fill:none;stroke:black;stroke-width:1.46px;"/>
+            </g>
+            <path d="M58,579C58,579 65.56,584.338 75.5,579" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M61,580.186L61,571.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M66.5,581L66.5,572.5" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;"/>
+            <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
+                <path d="M75.5,578.5L75.5,569" style="fill:none;stroke:black;stroke-width:1.95px;"/>
+            </g>
+        </g>
+    </g>
+</svg></span>`, `<svg width="100%" height="100%" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g transform="matrix(1,0,0,1,-87.5,-563)">
+        <g>
+            <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
+                <circle cx="98.5" cy="572.5" r="9.5" style="fill:none;stroke:black;stroke-width:2.03px;"/>
+            </g>
+            <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573" style="fill:none;stroke:black;stroke-width:2px;"/>
+        </g>
+    </g>
+</svg></span>`]
+            for (var i = 0; i < transients.length; i++) {
+                for (var j = 0; j < transients[i].length; j++) {
+                    let htmlElement = document.createElement('span');
+                    htmlElement.innerHTML = span + transient_content[i];
+                    htmlElement.style.position = 'relative';
+                    let color = 'rgb(255,255,255,0.3)';
+                    if (transients[i][j] > 0) {
+                        let start = parseFloat(transients[i][j]) / 44100.0;
+                        wsRegions.addRegion({
+                            start: start - 0.007,
+                            end: start + 0.007,
+                            // color: transient_colors[i],
+                            color: color,
+                            opacity: 0.5,
+                            height: 0.5,
+                            drag: true,
+                            resize: false,
+                            loop: false,
+                            content: htmlElement,
+                            id: `transient-${i}-${j}`,
+                        });
+                    }
+                }
+                if (isZeptocore) {
+                    break;
+                }
+            }
+
+
+            // find all the parents of `.regionsvg` and add to the style
+            let regionsvg = document.querySelectorAll('#waveform > div')[0].shadowRoot.querySelectorAll('.regionsvg');
+            console.log(regionsvg)
+            for (var i = 0; i < regionsvg.length; i++) {
+                console.log(regionsvg[i])
+                regionsvg[i].parentElement.style.display = 'flex';
+                regionsvg[i].parentElement.style.justifyContent = 'center';
+                regionsvg[i].parentElement.style.alignItems = 'center';
+            }
+
+
+        },
         isGrimoireEffectSelected(num) {
             let v = this.settingsGrimoireEffects[this.grimoireSelected][num];
             console.log(v);
@@ -661,6 +772,8 @@ app = new Vue({
                     });
 
                 }
+                this.drawTransients();
+
                 const bpm = this.banks[this.selectedBank].files[this.selectedFile].BPM;
                 const lengthPerBeat = 60 / bpm;
                 const lengthPerSliceCurrent = regionDuration;
@@ -801,6 +914,7 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients,
                     );
                 }, 100);
             }
@@ -926,6 +1040,7 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStart,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceStop,
                         this.banks[this.selectedBank].files[this.selectedFile].SliceType,
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients,
                     );
                 }, 100);
             }
@@ -1056,9 +1171,32 @@ app = new Vue({
 const showWaveform = debounce(showWaveform_, 50);
 
 
-function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
+function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, transients) {
     if (wsf != null) {
         wsf.destroy();
+    }
+    // check if transients are empty
+    let isEmpty = true;
+    for (var i = 0; i < transients.length; i++) {
+        for (var j = 0; j < transients[i].length; j++) {
+            if (transients[i][j] > 0) {
+                isEmpty = false;
+                break;
+            }
+        }
+        if (!isEmpty) {
+            break;
+        }
+    }
+    if (isEmpty) {
+        console.log("no transients?");
+        // send message to server
+        socket.send(JSON.stringify({
+            action: "gettransients",
+            filename: filename,
+            bankNum: app.selectedBank,
+            fileNum: app.selectedFile,
+        }));
     }
     console.log('showWaveform', filename);
     console.log('sliceType', sliceType);
@@ -1079,12 +1217,14 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
     wsf.on('zoom', () => {
         console.log('zoom');
     });
-    // set the width of a WaveSurfer to 100 px
 
 
     wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
 
+
     wsf.on('decode', () => {
+
+
         console.log("wsf.on('decode')");
         // Regions
         for (var i = 0; i < sliceStart.length; i++) {
@@ -1097,15 +1237,42 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
                 loop: false,
             });
         }
-        setTimeout(() => {
-        }, 100);
+        app.drawTransients();
+
         // fix this debounce ot take argument of the region
         const updateRegion = debounce(function (region) {
+            // check if region has transient prefix
+            console.log(region.id.startsWith('transient-'));
+            if (region.id.startsWith('transient-')) {
+                let parts = region.id.split('-');
+                let i = parseInt(parts[1]);
+                let j = parseInt(parts[2]);
+                console.log("updating transient", i, j, region.start);
+                // update the transient
+                let samplePosition = Math.round((0.007 + region.start) * 44100);
+                app.banks[app.selectedBank].files[app.selectedFile].Transients[i][j] = samplePosition;
+                socket.send(JSON.stringify({
+                    action: "settransient",
+                    filename: filename,
+                    i: i,
+                    j: j,
+                    n: samplePosition,
+                }));
+                setTimeout(() => {
+                    app.saveState();
+                }, 100);
+                return;
+            }
             let regions = wsf.plugins[0].regions;
             regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
             let sliceStart = [];
             let sliceStop = [];
             for (var i = 0; i < regions.length; i++) {
+                // filter out transients
+                if (regions[i].id.startsWith('transient-')) {
+                    continue;
+                }
+
                 if (i == 0 || regions[i].start > regions[i - 1].start) {
                     sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
                     sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
@@ -1184,7 +1351,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType) {
 
     // Update the zoom level on slider change
     wsf.once('decode', () => {
-        document.querySelector('input[type="range"]').oninput = (e) => {
+        document.querySelector('#wsfzoom').oninput = (e) => {
             const minPxPerSec = Number(e.target.value)
             wsf.zoom(minPxPerSec)
         };
@@ -1221,13 +1388,13 @@ window.addEventListener('load', (event) => {
     if (navigator.userAgent.indexOf("Firefox") != -1) {
         console.log("Firefox is not supported for MIDI, please use Chrome or Safari.");
     } else {
+        // check if midi is available
         listMidiPorts();
         checkMidiInterval = setInterval(() => {
             if (!app.midiIsSetup) {
                 listMidiPorts();
             }
         }, 250);
-
     }
 
     setTimeout(() => {

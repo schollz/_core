@@ -180,7 +180,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		b, _ := json.Marshal(map[string]string{"version": "v3.0.2"})
+		b, _ := json.Marshal(map[string]string{"version": "v4.0.0"})
 		w.Write(b)
 		return nil
 	} else if r.URL.Path == "/ws" {
@@ -272,7 +272,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				GenURL2        string
 			}{
 				IsMain:         r.URL.Path == "/",
-				VersionCurrent: "v3.0.2",
+				VersionCurrent: "v4.0.0",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 				IsEctocore:     isEctocore,
@@ -327,6 +327,12 @@ type Message struct {
 	DeviceVersion        string         `json:"deviceVersion"`
 	DeviceFirmwareUpload string         `json:"deviceFirmwareUpload"`
 	LatestVersion        string         `json:"latestVersion"`
+	Transients           [][]int        `json:"transients"`
+	FileNum              int            `json:"fileNum"`
+	BankNum              int            `json:"bankNum"`
+	I                    int            `json:"i"`
+	J                    int            `json:"j"`
+	N                    int            `json:"n"`
 }
 
 func isValidWorkspace(s string) bool {
@@ -390,6 +396,18 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					Filename: message.Filename,
 					File:     f,
 					Success:  true,
+				})
+			}
+		} else if message.Action == "isprocessing" {
+			newestTime, _ := utils.TimeOfNewestFile(path.Join(StorageFolder, place))
+			duration := time.Since(newestTime).Seconds()
+			if duration < 5.0 {
+				c.WriteJSON(Message{
+					Action: "isworking",
+				})
+			} else {
+				c.WriteJSON(Message{
+					Action: "notworking",
 				})
 			}
 		} else if message.Action == "uploadfirmware" {
@@ -501,6 +519,39 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 			} else {
 				log.Error(err)
+			}
+		} else if message.Action == "gettransients" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err == nil {
+				isEmpty := true
+				for _, v := range f.Transients {
+					for _, vv := range v {
+						if vv != 0 {
+							isEmpty = false
+							break
+						}
+					}
+					if !isEmpty {
+						break
+					}
+				}
+				if !isEmpty {
+					// send the transients
+					c.WriteJSON(Message{
+						Action:     "transients",
+						Transients: f.Transients,
+						BankNum:    message.BankNum,
+						FileNum:    message.FileNum,
+					})
+				}
+
+			}
+		} else if message.Action == "settransient" {
+			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			if err != nil {
+				log.Error(err)
+			} else {
+				f.SetTransient(message.I, message.J, message.N)
 			}
 		} else if message.Action == "setslices" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
