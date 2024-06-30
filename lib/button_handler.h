@@ -266,6 +266,7 @@ void button_key_on_single(uint8_t key) {
 }
 
 bool cued_sound_selector = false;
+int8_t cued_sound_last_selected = 1;
 void button_key_on_double(uint8_t key1, uint8_t key2) {
   printf("on double %d+%d\n", key1, key2);
   if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
@@ -296,6 +297,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         cuedsounds_volume = 150;
       }
       do_layer_kicks = cuedsounds_do_play;
+      cued_sound_last_selected = cuedsounds_do_play;
       printf("cuedsounds_do_play: %d\n", cuedsounds_do_play);
     } else {
       // select volume
@@ -657,13 +659,20 @@ void button_handler(ButtonMatrix *bm) {
         }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 19) {
+#ifdef INCLUDE_CUEDSOUNDS
         // switch between layering kicks
-        do_layer_kicks = !do_layer_kicks;
-        if (do_layer_kicks) {
+        if (do_layer_kicks == -1) {
+          do_layer_kicks = cued_sound_last_selected;
+          if (cuedsounds_volume == 0) {
+            cuedsounds_volume = 150;
+          }
           DebounceDigits_setText(debouncer_digits, "LAYER", 200);
         } else {
+          do_layer_kicks = -1;
           DebounceDigits_setText(debouncer_digits, "NORM", 200);
         }
+
+#endif
       } else if (key_pressed[0] == 9 && key_pressed[1] == 10 &&
                  key_pressed[2] == 14 && key_pressed[3] == 13) {
         // toggle random sequence mode
