@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -22,10 +23,12 @@ import (
 var downloadedModel = false
 var mutex sync.Mutex
 
+const TRANSIENT_NUDGE = 22050
+
 func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	kickTransients, snareTransients, _, err = drumExtract2(filePath)
+	kickTransients, snareTransients, _, _, err = drumExtract2(filePath)
 	if err != nil {
 		log.Error(err)
 		return
@@ -46,7 +49,7 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	return
 }
 
-func drumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
+func drumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, onsets []int, err error) {
 	kickTransients = make([]int, 16)
 	snareTransients = make([]int, 16)
 	if !downloadedModel {
@@ -90,6 +93,27 @@ func drumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 		otherTransients = otherTransients[:16]
 	}
 
+	// count total number
+	count := 0
+	count += len(kickTransients)
+	count += len(snareTransients)
+	count += len(otherTransients)
+
+	// find all transients using onset detection
+	allTransientsFloat, err := onsetdetect.OnsetDetect(filePath, count)
+	onsets = make([]int, len(allTransientsFloat))
+	for i, v := range allTransientsFloat {
+		onsets[i] = int(v * 44100)
+	}
+
+	kickTransients = snapToOffsets(kickTransients, onsets)
+	snareTransients = snapToOffsets(snareTransients, onsets)
+	otherTransients = snapToOffsets(otherTransients, onsets)
+
+	kickTransients = filterDuplicates(kickTransients)
+	snareTransients = filterDuplicates(snareTransients)
+	otherTransients = filterDuplicates(otherTransients)
+
 	// pad with zeros if they are smaller than 16
 	for len(kickTransients) < 16 {
 		kickTransients = append(kickTransients, 0)
@@ -102,6 +126,33 @@ func drumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	}
 
 	return
+}
+
+const MIN_DIFFERENCE = 4410
+
+// filterDuplicates removes duplicates from the slice that are less than MIN_DIFFERENCE apart.
+func filterDuplicates(v []int) []int {
+	if len(v) < 2 {
+		return v
+	}
+
+	// First, sort the slice to make it easier to find duplicates.
+	sort.Ints(v)
+
+	// Create a new slice to hold the filtered values.
+	result := make([]int, 0, len(v))
+	result = append(result, v[0]) // Always include the first element.
+
+	for i := 1; i < len(v); i++ {
+		// Check if the current element is MIN_DIFFERENCE apart from the last element in the result.
+		if v[i]-result[len(result)-1] >= MIN_DIFFERENCE {
+			result = append(result, v[i])
+		} else {
+			log.Tracef("removing %d (%d)", i, v[i]-result[len(result)-1])
+		}
+	}
+
+	return result
 }
 
 func getTransientSamplePositions(filePath string) (transients []int, err error) {
@@ -126,6 +177,26 @@ func getTransientSamplePositions(filePath string) (transients []int, err error) 
 		transients[i] = int(math.Round(v * float64(frameRate)))
 	}
 	return
+}
+
+func snapToOffsets(transients []int, onsets []int) []int {
+	// for each transient, find whether there is an onset before it that is within 800 samples
+	for i, v := range transients {
+		// find the closest onset
+		closestDiff := 100000000
+		closestO := 0
+		for _, o := range onsets {
+			if o < v && (v-o) < int(closestDiff) {
+				closestDiff = (v - o)
+				closestO = o
+			}
+		}
+		if closestDiff < TRANSIENT_NUDGE {
+			log.Tracef("nudged %d to %d (%d)", transients[i], closestO, closestDiff)
+			transients[i] = closestO
+		}
+	}
+	return transients
 }
 
 func readWav(filePath string) ([]float64, int, error) {
