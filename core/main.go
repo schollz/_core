@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"os"
+	"os/exec"
 	"time"
 
+	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/minicom"
 	"github.com/schollz/_core/core/src/server"
 	"github.com/schollz/_core/core/src/sox"
@@ -48,6 +50,12 @@ func main() {
 		if err != nil {
 			log.Error(err)
 		}
+	}
+
+	// detect if demucs program is available
+	_, err = exec.LookPath("demucs")
+	if err == nil {
+		drumextract2.DownloadModel()
 	}
 
 	err = server.Serve(flagIsEctocore, flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)

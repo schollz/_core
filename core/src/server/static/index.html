@@ -99,6 +99,8 @@
 
 
         <dialog id="dialog-settings">
+            <!-- X in right corner -->
+            <button id="close-settings" style="position: absolute; right: 2em; top: 2em; padding: 0.5em;">X</button>
             <h2>Settings</h2>
             [[ if .IsZeptocore ]]
             <p>
@@ -727,6 +729,7 @@
                             <circle cx="8" cy="12" r="10"></circle>
                         </svg>
                     </p>
+                    [[ if .IsZeptocore ]]
                     <p>
                         <input type="checkbox" id="oneshot" @click="updateOneshot"
                             v-model="banks[selectedBank].files[selectedFile].OneShot">
@@ -734,6 +737,7 @@
                                 v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
                             <span v-else>off</span></label>
                     </p>
+                    [[ end ]]
                     <p v-if="banks[selectedBank].files[selectedFile].OneShot">
                         <label for="spliceplayback">One-shot mode:</label>
                         <select id="spliceplayback" @click="updateSplicePlayback"
@@ -768,7 +772,7 @@
                             <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="!playingSample">Play
                                 sample</button>
                             <label style="margin-left:1em;">Zoom:</label>
-                            <input type="range" min="10" max="1000" value="10" />
+                            <input id="wsfzoom" type="range" min="10" max="5000" value="10">
                         </p>
                         <p>
                             <button @click="deleteRegion" style="margin-left:0;">Delete selected
@@ -839,6 +843,7 @@
 
                     <div class="footer-item">
                         <div v-if="uploading">uploading</div>
+                        <div v-else-if="isworking">computing</div>
                         <div v-else-if="processing">processing</div>
                         <div v-else-if="downloading">downloading</div>
                         <button id="downloadZipButton" type="submit" v-else-if="diskUsage>0">Download .zip to load onto
@@ -847,6 +852,7 @@
                             }})</button>
 
                     </div>
+                    [[ if .IsZeptocore]]
                     <div class="footer-item footer-right">
                         <label for="dropaudiofilemode">Drop audio file mode:</label>
                         <select id="dropaudiofilemode" v-model="dropaudiofilemode">
@@ -854,6 +860,7 @@
                             <option value="oneshot">oneshot</option>
                         </select>
                     </div>
+                    [[ end ]]
                 </div>
             </form>
             [[ end ]]
@@ -883,6 +890,10 @@
         import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
         window.WaveSurf = WaveSurferG;
         window.RegionsPlugin = RegionsPluginG;
+    </script>
+    <script>
+        // global constants
+        const isZeptocore = [[ if .IsZeptocore ]]true[[ else]]false[[end]];
     </script>
     <script src="/static/app.js"></script>
     <script>
@@ -945,6 +956,18 @@
             document.getElementById("show-dialog-settings").addEventListener("click", () => {
                 document.getElementById("dialog-settings").showModal();
             });
+            // close dialog settings when pressing X 
+            document.getElementById("close-settings").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("dialog-settings").close();
+            });
+            // close dialog-settings when clicking outside
+            document.getElementById("dialog-settings").addEventListener("click", (e) => {
+                if (e.target === document.getElementById("dialog-settings")) {
+                    document.getElementById("dialog-settings").close();
+                }
+            });
+            // close dialog when clicking "update"
             document.getElementById("dialog-settings").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
                 document.getElementById("dialog-settings").close();
