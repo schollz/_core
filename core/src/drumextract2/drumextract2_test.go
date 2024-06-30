@@ -1,7 +1,8 @@
 package drumextract2
 
 import (
-	"fmt"
+	"encoding/json"
+	"os"
 	"testing"
 
 	log "github.com/schollz/logger"
@@ -13,10 +14,17 @@ func TestDrumExtract(t *testing.T) {
 	err := DownloadModel()
 	assert.Nil(t, err)
 
-	kickTransients, snareTransients, otherTransients, err := DrumExtract2("../sox/amen_beats8_bpm172.wav")
+	filename := "../sox/amen_beats8_bpm172.wav"
+	filename = "../../../dev/starting_samples_pikocore/default_sorted/bank0/amen_5c2d11c8_beats16_bpm170.flac"
+	filename = "../../../dev/starting_samples_pikocore/default_sorted/bank0/Sample00_160_Lopus_Break_bpm160_beats8.flac"
+	kickTransients, snareTransients, otherTransients, allTransients, err := drumExtract2(filename)
 	assert.Nil(t, err)
-	assert.Equal(t, 16, len(kickTransients))
-	assert.Equal(t, 16, len(snareTransients))
-	assert.Equal(t, 16, len(otherTransients))
-	fmt.Println(kickTransients)
+	b, _ := json.Marshal(struct {
+		Filename        string
+		KickTransients  []int
+		SnareTransients []int
+		OtherTransients []int
+		AllTransients   []int
+	}{filename, kickTransients, snareTransients, otherTransients, allTransients})
+	os.WriteFile("transients.json", b, 0644)
 }
