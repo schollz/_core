@@ -27,7 +27,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_FILTER=1
     INCLUDE_ZEPTOCORE=1
     INCLUDE_MIDI=1
-    # INCLUDE_CUEDSOUNDS=1
+    INCLUDE_CUEDSOUNDS=1
     # INCLUDE_SSD1306=1
 
     # ARCADE DEFINITIONS
@@ -84,7 +84,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     USBD_PID=0x1836
 
     # DETROITUNDERGROUND=1
-    # INCLUDE_CUEDSOUNDS=1
 )
 
 # uncomment these lines to include midi
