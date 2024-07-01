@@ -3,6 +3,7 @@ package drumextract2
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math"
@@ -23,7 +24,7 @@ import (
 var downloadedModel = false
 var mutex sync.Mutex
 
-const TRANSIENT_NUDGE = 22050
+const TRANSIENT_NUDGE = 22050 / 2
 
 func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
 	mutex.Lock()
@@ -100,7 +101,7 @@ func drumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	count += len(otherTransients)
 
 	// find all transients using onset detection
-	allTransientsFloat, err := onsetdetect.OnsetDetect(filePath, count)
+	allTransientsFloat, err := onsetdetect.OnsetDetect(filePath, count*2)
 	onsets = make([]int, len(allTransientsFloat))
 	for i, v := range allTransientsFloat {
 		onsets[i] = int(v * 44100)
@@ -187,6 +188,23 @@ func getTransientSamplePositions(filePath string) (transients []int, err error) 
 	for i, v := range peaks {
 		transients[i] = int(math.Round(v * float64(frameRate)))
 	}
+
+	if log.GetLevel() == "trace" {
+		// debugging
+		f, _ := os.Create(filePath + ".peaks")
+		b, _ := json.Marshal(peaks)
+		f.Write(b)
+		f.Close()
+		f, _ = os.Create(filePath + ".envelope")
+		b, _ = json.Marshal(envelope)
+		f.Write(b)
+		f.Close()
+		f, _ = os.Create(filePath + ".timeaxis")
+		b, _ = json.Marshal(timeAxis)
+		f.Write(b)
+		f.Close()
+	}
+
 	return
 }
 
@@ -293,7 +311,7 @@ func getPeaks(envelope []float64, timeAxis []float64) []float64 {
 	}
 	envelopeStd = math.Sqrt(envelopeStd / float64(len(envelope)))
 
-	peakHeight := envelopeMean + math.Sqrt(envelopeStd)/2.0
+	peakHeight := envelopeMean + math.Sqrt(envelopeStd)/4.0
 
 	peaks := []float64{}
 	inPeak := false
