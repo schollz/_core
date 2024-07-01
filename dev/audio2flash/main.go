@@ -63,7 +63,7 @@ func run() (err error) {
 	for i, file := range files {
 		tempFile := fmt.Sprintf("temp%d.wav", i)
 		defer os.Remove(tempFile)
-		log.Tracef("%s", strings.Join([]string{"sox", path.Join(flagIn, file.Name()), "-r", "44100", "-c", "1", "-b", "8", tempFile, "norm", "gain", "-6"}, " "))
+		log.Tracef("%s", strings.Join([]string{"sox", path.Join(flagIn, file.Name()), "-r", "44100", "-c", "1", "-b", "16", tempFile, "norm", "gain", "-6"}, " "))
 		cmd := exec.Command("sox", path.Join(flagIn, file.Name()), "-r", "44100", "-c", "1", "-b", "16", tempFile, "norm", "gain", "-6")
 		var output []byte
 		output, err = cmd.CombinedOutput()
