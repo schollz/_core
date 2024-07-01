@@ -125,6 +125,17 @@ func drumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 		otherTransients = append(otherTransients, 0)
 	}
 
+	// if the first is 0 and the second is not, add a few samples to make it nonzero
+	if kickTransients[0] == 0 && kickTransients[1] > 0 {
+		kickTransients[0] = 10
+	}
+	if snareTransients[0] == 0 && snareTransients[1] > 0 {
+		snareTransients[0] = 10
+	}
+	if otherTransients[0] == 0 && otherTransients[1] > 0 {
+		otherTransients[0] = 10
+	}
+
 	return
 }
 
