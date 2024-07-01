@@ -283,3 +283,5 @@ core/test.xml
 dev/zeptocore_v3.0.2.uf2
 core/src/drumextract2/plot2.py
 core/src/drumextract2/transients.json
+core/drum_separation_model_output/
+core/src/drumextract2/drum_separation_model_output/
