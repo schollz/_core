@@ -944,8 +944,10 @@ void input_handling() {
             global_filter_index =
                 val * (resonantfilter_fc_max) / (512 - val_mid);
             printf("[ectocore] lowpass: %d\n", global_filter_index);
+            global_filter_lphp = 0;
             for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFilterType(resFilter[channel], 0);
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             }
             ws2812_set_wheel_left_half(ws2812, 2 * val, false, true, true);
@@ -954,8 +956,10 @@ void input_handling() {
             global_filter_index = (val - (512 + val_mid)) *
                                   (resonantfilter_fc_max) / (512 - val_mid);
             printf("[ectocore] highpass: %d\n", global_filter_index);
+            global_filter_lphp = 1;
             for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFilterType(resFilter[channel], 1);
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             }
             ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + val_mid)),
@@ -963,8 +967,10 @@ void input_handling() {
           } else {
             // no filter
             global_filter_index = resonantfilter_fc_max;
+            global_filter_lphp = 0;
             for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFilterType(resFilter[channel], 0);
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             }
             ws2812_wheel_clear(ws2812);
