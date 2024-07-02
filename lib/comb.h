@@ -24,7 +24,7 @@
 
 #ifndef COMB_LIB
 #define COMB_LIB 1
-#define COMB_RINGBUFFER_SIZE 2000  // samples
+#define COMB_RINGBUFFER_SIZE 2048  // samples
 #include "fixedpoint.h"
 //
 #include "crossfade3.h"
@@ -57,8 +57,15 @@ Comb *Comb_malloc() {
   return self;
 }
 
+#define COMB_ONEPOLE_LPF_A 55536
+#define COMB_ONEPOLE_LPF_B 10000
+
 void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
   for (int ii = 0; ii < num_samples; ii++) {
+    int32_t index_previous = self->index - 1;
+    if (index_previous < 0) {
+      index_previous += COMB_RINGBUFFER_SIZE;
+    }
     if (!self->on) {
       self->ringbuffer[0][self->index] = samples[ii * 2 + 0];
       self->ringbuffer[1][self->index] = samples[ii * 2 + 1];
@@ -69,9 +76,12 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
           index_delay += COMB_RINGBUFFER_SIZE;
         }
         self->ringbuffer[ch][self->index] =
-            samples[ii * 2 + ch] +
-            q16_16_multiply(self->feedback[ch],
-                            self->ringbuffer[ch][index_delay]);
+            (((int64_t)samples[ii * 2 + ch] * COMB_ONEPOLE_LPF_A) +
+             ((int64_t)self->ringbuffer[ch][index_previous] *
+              COMB_ONEPOLE_LPF_B)) >>
+            16;
+        self->ringbuffer[ch][self->index] += q16_16_multiply(
+            self->feedback[ch], self->ringbuffer[ch][index_delay]);
         samples[ii * 2 + ch] =
             (int64_t)self->ringbuffer[ch][self->index] * 5 / 12;
       }
@@ -84,7 +94,7 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
 }
 
 #define FEEDBACK_MAXSPREAD 3267
-#define FEEDBACK_MID ((Q16_16_1 - 1000) - (2 * 3267))
+#define FEEDBACK_MID ((Q16_16_1 - 7000) - (2 * 3267))
 #define DURATION_MAXSPREAD ((COMB_RINGBUFFER_SIZE - 100) / 2)
 #define DURATION_MID (COMB_RINGBUFFER_SIZE / 2)
 
