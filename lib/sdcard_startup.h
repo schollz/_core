@@ -23,6 +23,116 @@ int extractNumber(const char *str) {
   return atoi(numStart);
 }
 
+void load_settings(const char *dir_name) {
+  DIR dj;      /* Directory object */
+  FILINFO fno; /* File information */
+  FRESULT fr;  /* File result error */
+  memset(&dj, 0, sizeof dj);
+  memset(&fno, 0, sizeof fno);
+  fr = f_findfirst(&dj, &fno, dir_name, "*");
+  if (FR_OK != fr) {
+    return;
+  }
+  while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+    if (strcmp(fno.fname, "resampling_quadratic-on") == 0) {
+      quadratic_resampling = true;
+      printf("[sdcard_startup] quadratic resampling on\n");
+    } else if (strcmp(fno.fname, "resampling_quadratic-off") == 0) {
+      quadratic_resampling = true;
+      printf("[sdcard_startup] quadratic resampling off\n");
+    }
+
+    // check for the clock_start_stop_sync
+    if (strcmp(fno.fname, "clock_stop_sync-off") == 0) {
+      clock_start_stop_sync = false;
+    } else if (strcmp(fno.fname, "clock_stop_sync-on") == 0) {
+      clock_start_stop_sync = true;
+    }
+
+    // check for clock output trig/gate
+    if (strcmp(fno.fname, "clock_output_trig-on") == 0) {
+      clock_output_trig = true;
+    } else if (strcmp(fno.fname, "clock_output_trig-off") == 0) {
+      clock_output_trig = false;
+    }
+
+    // check for clock output behavior (sync with tempo or sync with slice)
+    if (strcmp(fno.fname, "clock_behavior_sync_slice-on") == 0) {
+      clock_behavior_sync_slice = true;
+    } else if (strcmp(fno.fname, "clock_behavior_sync_slice-off") == 0) {
+      clock_behavior_sync_slice = false;
+    }
+
+    // check if a file has the prefix "brightness"
+    if (strncmp(fno.fname, "brightness-", 11) == 0) {
+      global_brightness = extractNumber(fno.fname);
+      if (global_brightness > 100) {
+        global_brightness = 100;
+      }
+      printf("[sdcard_startup] '%s' brightness: %d\n", fno.fname,
+             global_brightness);
+    }
+
+    // check for the clock_start_stop_sync
+    if (strcmp(fno.fname, "knobx_select_sample-on") == 0) {
+      global_knobx_sample_selector = true;
+    } else if (strcmp(fno.fname, "knobx_select_sample-off") == 0) {
+      global_knobx_sample_selector = false;
+    }
+
+    fr = f_findnext(&dj, &fno); /* Search for next item */
+  }
+  f_closedir(&dj);
+
+  // go through directory grimoire/rune1/*
+  // go through runes[1-7]
+  for (uint8_t rune = 1; rune <= 7; rune++) {
+    for (uint8_t effect = 0; effect < 16; effect++) {
+      grimoire_rune_effect[rune - 1][effect] = false;
+    }
+    char dirname[32];
+    if (strlen(dir_name) == 0) {
+      sprintf(dirname, "grimoire/rune%d", rune);
+    } else {
+      sprintf(dirname, "%s/grimoire/rune%d", dir_name, rune);
+    }
+    printf("[sdcard_startup] checking %s\n", dirname);
+    fr = f_findfirst(&dj, &fno, dirname, "*");
+    if (FR_OK != fr) {
+      // folder not found, create random effects
+      for (uint8_t effect = 0; effect < 16; effect++) {
+        grimoire_rune_effect[rune - 1][effect] = random_integer_in_range(0, 1);
+      }
+      continue;
+    }
+    // printf("[sdcard_startup] found %s\n", dirname);
+    while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
+      // printf("[sdcard_startup] %s", fno.fname);
+      // set to true if effect%d-on is found
+      for (uint8_t effect = 1; effect <= 16; effect++) {
+        char effect_name_on[100];
+        char effect_name_off[100];
+        sprintf(effect_name_on, "effect%d-on", effect);
+        sprintf(effect_name_off, "effect%d-off", effect);
+        if (strcmp(fno.fname, effect_name_on) == 0) {
+          grimoire_rune_effect[rune - 1][effect - 1] = true;
+          printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+                 grimoire_rune_effect[rune - 1][effect - 1]);
+          break;
+        } else if (strcmp(fno.fname, effect_name_off) == 0) {
+          grimoire_rune_effect[rune - 1][effect - 1] = false;
+          printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+                 grimoire_rune_effect[rune - 1][effect - 1]);
+          break;
+        }
+      }
+      // move to next file
+      fr = f_findnext(&dj, &fno); /* Search for next item */
+    }
+  }
+  f_closedir(&dj);
+}
+
 void check_setup_files() {
   DIR dj;      /* Directory object */
   FILINFO fno; /* File information */
@@ -40,52 +150,6 @@ void check_setup_files() {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resampling_quadratic-on") == 0) {
-      quadratic_resampling = true;
-      printf("[sdcard_startup] quadratic resampling\n");
-    } else {
-      quadratic_resampling = true;
-      printf("[sdcard_startup] linear resampling\n");
-    }
-
-    // check for the clock_start_stop_sync
-    if (strcmp(fno.fname, "clock_stop_sync-off") == 0) {
-      clock_start_stop_sync = false;
-    } else {
-      clock_start_stop_sync = true;
-    }
-
-    // check for clock output trig/gate
-    if (strcmp(fno.fname, "clock_output_trig-on") == 0) {
-      clock_output_trig = true;
-    } else {
-      clock_output_trig = false;
-    }
-
-    // check for clock output behavior (sync with tempo or sync with slice)
-    if (strcmp(fno.fname, "clock_behavior_sync_slice-on") == 0) {
-      clock_behavior_sync_slice = true;
-    } else {
-      clock_behavior_sync_slice = false;
-    }
-
-    // check if a file has the prefix "brightness"
-    if (strncmp(fno.fname, "brightness-", 11) == 0) {
-      global_brightness = extractNumber(fno.fname);
-      if (global_brightness > 100) {
-        global_brightness = 100;
-      }
-    } else {
-      global_brightness = 50;
-    }
-
-    // check for the clock_start_stop_sync
-    if (strcmp(fno.fname, "knobx_select_sample-on") == 0) {
-      global_knobx_sample_selector = true;
-    } else {
-      global_knobx_sample_selector = false;
-    }
-
     // create savefile name
     for (uint8_t i = 0; i < 16; i++) {
       char savefile_name[100];
@@ -95,46 +159,16 @@ void check_setup_files() {
         savefile_has_data[i] = true;
       }
     }
-
     fr = f_findnext(&dj, &fno); /* Search for next item */
   }
   f_closedir(&dj);
 
-  // go through directory grimoire/rune1/*
-  // go through runes[1-7]
-  for (uint8_t rune = 1; rune <= 7; rune++) {
-    for (uint8_t effect = 0; effect < 16; effect++) {
-      grimoire_rune_effect[rune - 1][effect] = false;
-    }
-    char dirname[16];
-    sprintf(dirname, "grimoire/rune%d", rune);
-    // printf("[sdcard_startup] checking %s\n", dirname);
-    fr = f_findfirst(&dj, &fno, dirname, "*");
-    if (FR_OK != fr) {
-      // folder not found, create random effects
-      for (uint8_t effect = 0; effect < 16; effect++) {
-        grimoire_rune_effect[rune - 1][effect] = random_integer_in_range(0, 1);
-      }
-      continue;
-    }
-    // printf("[sdcard_startup] found %s\n", dirname);
-    while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-      // printf("[sdcard_startup] %s", fno.fname);
-      // set to true if effect%d-on is found
-      for (uint8_t effect = 1; effect <= 16; effect++) {
-        char effect_name[100];
-        sprintf(effect_name, "effect%d-on", effect);
-        if (strcmp(fno.fname, effect_name) == 0) {
-          grimoire_rune_effect[rune - 1][effect - 1] = true;
-          // printf("[%d][%d]=%d\n", rune - 1, effect - 1,
-          //        grimoire_rune_effect[rune - 1][effect = 1]);
-          break;
-        }
-      }
-      // move to next file
-      fr = f_findnext(&dj, &fno); /* Search for next item */
-    }
-  }
+  // load settings
+  // sleep_ms(3000);
+  // load from base of card (backwards compatibility)
+  load_settings("");
+  // loading from settings folder (if exists)
+  load_settings("settings");
 }
 
 void update_reverb() {
