@@ -541,17 +541,23 @@ void input_handling() {
             if (adc < 2048 - FILTER_ZERO_SPACING) {
               global_filter_index =
                   adc * (resonantfilter_fc_max) / (2048 - FILTER_ZERO_SPACING);
-              ResonantFilter_setFilterType(resFilter[channel], 0);
+              global_filter_lphp = 0;
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             } else if (adc > 2048 + FILTER_ZERO_SPACING) {
               global_filter_index = (adc - (2048 + FILTER_ZERO_SPACING)) *
                                     (resonantfilter_fc_max) /
                                     (2048 - FILTER_ZERO_SPACING);
-              ResonantFilter_setFilterType(resFilter[channel], 1);
+              global_filter_lphp = 1;
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
             } else {
               global_filter_index = resonantfilter_fc_max;
-              ResonantFilter_setFilterType(resFilter[channel], 0);
+              global_filter_lphp = 0;
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
             }
           }
