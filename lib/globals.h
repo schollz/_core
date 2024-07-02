@@ -245,7 +245,7 @@ int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 #define ENVELOPE_PITCH_THRESHOLD 0.01
 
 uint16_t global_filter_index = resonantfilter_fc_max;
-
+uint8_t global_filter_lphp = 0;
 // pitches derived from supercollider
 /*
 a=(Tuning.et(24).ratios/4)++(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];

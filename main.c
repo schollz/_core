@@ -296,7 +296,8 @@ bool repeating_timer_callback(struct repeating_timer *t) {
             global_filter_index = retrig_filter_original;
           }
           for (uint8_t channel = 0; channel < 2; channel++) {
-            ResonantFilter_setFilterType(resFilter[channel], 0);
+            ResonantFilter_setFilterType(resFilter[channel],
+                                         global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           }
         }
