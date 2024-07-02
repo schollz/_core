@@ -39,7 +39,7 @@ bool first_loop_ever = true;
 
 void update_filter_from_envelope(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
-    ResonantFilter_setFilterType(resFilter[channel], 0);
+    ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
     ResonantFilter_setFc(resFilter[channel], val);
   }
 }
