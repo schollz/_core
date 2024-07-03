@@ -68,12 +68,18 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
         if (index_delay < 0) {
           index_delay += COMB_RINGBUFFER_SIZE;
         }
-        self->ringbuffer[ch][self->index] =
-            samples[ii * 2 + ch] +
-            q16_16_multiply(self->feedback[ch],
-                            self->ringbuffer[ch][index_delay]);
-        samples[ii * 2 + ch] =
-            (int64_t)self->ringbuffer[ch][self->index] * 5 / 12;
+        int64_t val =
+            (int64_t)samples[ii * 2 + ch] +
+            (int64_t)q16_16_multiply(self->feedback[ch],
+                                     self->ringbuffer[ch][index_delay]);
+        if (val > 32000) {
+          // wave fold
+          val = 65535 - val;
+        } else if (val < -32000) {
+          val = -65536 - val;
+        }
+        self->ringbuffer[ch][self->index] = val;
+        samples[ii * 2 + ch] = (int64_t)self->ringbuffer[ch][self->index] / 3;
       }
     }
     self->index++;
