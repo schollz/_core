@@ -1091,7 +1091,10 @@ app = new Vue({
             this.banks[this.selectedBank].files[index1] = this.banks[this.selectedBank].files[index2];
             this.banks[this.selectedBank].files[index2] = temp;
         },
-        submitForm() {
+        doSubmitForm() {
+            this.submitForm(false);
+        },
+        submitForm(settingsOnly) {
             app.uploading = true;
             app.processing = false;
             app.downloading = false;
@@ -1125,7 +1128,7 @@ app = new Vue({
             }
 
             // Use fetch to send a POST request to the server
-            fetch('/download?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/download?id=' + randomID + "&place=" + window.location.pathname + "&settingsOnly=" + settingsOnly, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
