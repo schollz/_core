@@ -22,8 +22,9 @@ The sample tool is required for the sample preprocessing step, before transferri
 
 The zeptocore arrives with "stock" samples on it. If you ever want to remove them and replace them you can get them here by redownloading and transfering them back to the SD card. 
 
-- [zeptocore stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB). Includes incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz), my own library of breaks and one-hit drums for the op1.
-- [pikocore stock samples](https://infinitedigits.co/start_samples_pikocore.zip) (1.2 GB). This sample pack has 256 samples of different Amen breaks and other manipulated drums.
+- [zeptocore stock samples](zeptocore_default_samples_v5.zip) (393 MB). 
+
+Make sure you have the firmware updated to v5+ to use these samples.
 
 ### Transfering samples to SD card
 
