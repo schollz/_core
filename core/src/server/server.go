@@ -735,6 +735,8 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 	id := query["id"][0]
 	place := query["place"][0]
 	_, place = filepath.Split(place)
+	settingsOnlyString := query.Get("settingsOnly")
+	settingsOnly := settingsOnlyString == "true"
 
 	mutex.Lock()
 	if _, ok := connections[id]; ok {
@@ -762,7 +764,7 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	}
 
-	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body)
+	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body, settingsOnly)
 	if err != nil {
 		log.Error(err)
 		return
