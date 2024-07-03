@@ -24,7 +24,7 @@ Do *not* use these cards! They may appear to work, but they can cause spurious g
 
 - Gigastone 16GB + 32GB
 - SP Elite
-- SanDisk Ultra, SanDisk Extreme
+- SanDisk Extreme
 - Samsung EVO
 - PNY Elite
 - MicroCenter
