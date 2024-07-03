@@ -421,7 +421,8 @@
             </div>
             </p>
             <p style="text-align: center;">
-                <button id="js-close">Update</button>
+                <button class="js-close">Update</button>
+                <button class="js-close" @click="submitForm(true);">Download settings</button>
             </p>
         </dialog>
 
@@ -816,7 +817,7 @@
         </main>
         <footer>
             [[ if .IsUpload ]]
-            <form id="downloadForm" @submit.prevent="submitForm">
+            <form id="downloadForm" @submit.prevent="doSubmitForm">
                 <div class="footer-row">
                     <!-- <div class="footer-item">
                         <label for=" oversampling">Oversampling:</label>
@@ -968,10 +969,14 @@
                 }
             });
             // close dialog when clicking "update"
-            document.getElementById("dialog-settings").querySelector("#js-close").addEventListener("click", (e) => {
-                e.preventDefault();
-                document.getElementById("dialog-settings").close();
+            // add to each .js-close in #dialog-settings
+            document.getElementById("dialog-settings").querySelectorAll(".js-close").forEach(closer => {
+                closer.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    document.getElementById("dialog-settings").close();
+                });
             });
+
             document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
                 document.getElementById("dialog").close();
