@@ -26,6 +26,18 @@ There are two ways to do MIDI input to the zeptocore.
 
 Simply plug in a USB cable from the zeptocore to a computer. The zeptocore will show up as a MIDI device on the computer. You can then forward MIDI messages from the computer to the zeptocore. For example, you can use [**midi2midi**](https://schollz.github.io/midi2midi/) in a Chrome browser to forward MIDI messages from a MIDI controller to the zeptocore.
 
+Using MIDI you can also easily sync up with Ableton or other DAWs.
+
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/JMmxfW2QY3Y?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>
+
+
 ### Itty Bitty MIDI
 
 I created a device called [**the itty bitty midi**](https://ittybittymidi.com) which you can use directly with a MIDI controller to send MIDI messages to the zeptocore. Simply plug in the MIDI controller to the "IN" side of the itty bitty midi and then plug the "OUT" side to the `CLOCK` input of the zeptocore. The itty bitty midi will automatically forward MIDI messages to the zeptocore.

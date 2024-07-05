@@ -872,3 +872,7 @@ figcaption {
 .compare td:nth-child(2) {
   background-color: var(--background-color);
 }
+
+.plyr__video-embed iframe {
+  position:relative;
+}
