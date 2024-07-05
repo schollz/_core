@@ -9,4 +9,19 @@ weight = 2
 this is the zeptocore. a handmade, handheld sample player.
 
 
-<iframe width="100%" height="360px" src="https://www.youtube.com/embed/videoseries?si=ZgDGlG2dwHzBIzYH&amp;list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/FZ2C9VIMgeI?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/AVurAVEAFNo?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>
