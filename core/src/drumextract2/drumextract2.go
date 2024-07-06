@@ -47,6 +47,7 @@ func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int,
 	for i, v := range onsets {
 		otherTransients[i] = int(math.Round(v * 44100))
 	}
+	otherTransients = filterDuplicates(otherTransients)
 	return
 }
 
