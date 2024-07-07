@@ -16,9 +16,11 @@ import (
 
 var flagIn string
 var flagOut string
+var flagName string
 
 func init() {
 	flag.StringVar(&flagIn, "in", "folder", "folder of audio files")
+	flag.StringVar(&flagName, "name", "audio", "name of audio data")
 	flag.StringVar(&flagOut, "out", "audio.h", "converted audio data")
 }
 
@@ -43,8 +45,7 @@ func convertToUpper(s string) string {
 }
 func run() (err error) {
 
-	_, fileNameOnly := path.Split(flagOut)
-	codeName := convertToUpper(fileNameOnly)
+	codeName := convertToUpper(flagName)
 	codeNameLower := strings.ToLower(codeName)
 
 	log.Tracef("%s %s", codeName, codeNameLower)
