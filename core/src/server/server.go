@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/lucasepe/codename"
 	cp "github.com/otiai10/copy"
 	"github.com/schollz/_core/core/src/detectdisks"
 	"github.com/schollz/_core/core/src/latestrelease"
@@ -28,6 +27,7 @@ import (
 	"github.com/schollz/_core/core/src/pack"
 	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
+	"github.com/schollz/codename"
 	log "github.com/schollz/logger"
 	bolt "go.etcd.io/bbolt"
 )
