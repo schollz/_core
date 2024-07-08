@@ -755,6 +755,33 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    // apply envelope
+    if (global_volume_increment > 0 &&
+        global_volume_envelope <= GLOBAL_VOLUME_ENVELOPE_MAX) {
+      global_volume_envelope += global_volume_increment;
+      if (global_volume_envelope >= GLOBAL_VOLUME_ENVELOPE_MAX) {
+        global_volume_envelope = GLOBAL_VOLUME_ENVELOPE_MAX;
+        global_volume_increment = -1;
+        global_volume_top_time = 0;
+      }
+    } else if (global_volume_increment < 0 && global_volume_envelope > 0) {
+      if (global_volume_top_time < GLOBAL_VOLUME_ENVELOPE_TOP_TIME_MAX) {
+        global_volume_top_time++;
+      } else {
+        global_volume_envelope += global_volume_increment;
+        if (global_volume_envelope < 0) {
+          global_volume_envelope = 0;
+          global_volume_increment = 0;
+        }
+      }
+    }
+    samples[i * 2 + 0] = ((int64_t)samples[i * 2 + 0]) *
+                         global_volume_envelope / GLOBAL_VOLUME_ENVELOPE_MAX;
+    samples[i * 2 + 1] = ((int64_t)samples[i * 2 + 1]) *
+                         global_volume_envelope / GLOBAL_VOLUME_ENVELOPE_MAX;
+  }
+
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);

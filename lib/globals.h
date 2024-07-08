@@ -150,6 +150,11 @@ bool toggle_chain_rec = false;
 int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
+#define GLOBAL_VOLUME_ENVELOPE_MAX 32700
+#define GLOBAL_VOLUME_ENVELOPE_TOP_TIME_MAX 44100
+int32_t global_volume_envelope = 0;
+int8_t global_volume_increment = 10;
+uint16_t global_volume_top_time = 0;
 
 // add variable to keep track of variation
 uint8_t sel_variation = 0;
@@ -463,6 +468,8 @@ void do_update_phase_from_beat_current() {
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
+    global_volume_increment = 2;
+    printf("global_volume_envelope = %d\n", global_volume_envelope);
     // printf("key_do_jump %d\n", beat);
     // TODO: [0] should be which sequencer it is on
     if (sequencerhandler[0].recording) {
