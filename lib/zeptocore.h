@@ -29,6 +29,7 @@
 #include "midi_comm_callback.h"
 #endif
 #ifdef INCLUDE_SSD1306
+#include "image.h"
 #include "ssd1306.h"
 #endif
 #include "break_knob.h"
@@ -282,7 +283,10 @@ void input_handling() {
     char buf_ssd1306[16];
     sprintf(buf_ssd1306, "%d", beat_current);
     ssd1306_clear(&disp);
+    ssd1306_bmp_show_image(&disp, image_data, image_size);
     ssd1306_draw_string(&disp, 8, 24, 2, buf_ssd1306);
+    ssd1306_bmp_show_image_with_offset(&disp, output_bmp_data, output_bmp_size,
+                                       0, 64 - 17);
     ssd1306_show(&disp);
 #endif
 

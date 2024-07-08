@@ -44,13 +44,13 @@ inline static void fancy_write(i2c_inst_t *i2c, uint8_t addr,
                                const uint8_t *src, size_t len, char *name) {
   switch (i2c_write_blocking(i2c, addr, src, len, false)) {
     case PICO_ERROR_GENERIC:
-      printf("[%s] addr not acknowledged!\n", name);
+      // printf("[%s] addr not acknowledged!\n", name);
       break;
     case PICO_ERROR_TIMEOUT:
-      printf("[%s] timeout!\n", name);
+      // printf("[%s] timeout!\n", name);
       break;
     default:
-      printf("[%s] wrote successfully %u bytes!\n", name, len);
+      // printf("[%s] wrote successfully %u bytes!\n", name, len);
       break;
   }
 }
