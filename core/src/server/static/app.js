@@ -294,6 +294,7 @@ const socketMessageListener = (e) => {
                 loop: false,
             });
             app.drawTransients();
+            updateAllRegions();
         }
     } else if (data.action == "getstate") {
         var savedState = JSON.parse(data.state);
@@ -460,6 +461,36 @@ window.addEventListener('load', (event) => {
 
     socketCloseListener();
 });
+
+const updateAllRegions = () => {
+    let regions = wsf.plugins[0].regions;
+    regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
+    let sliceStart = [];
+    let sliceStop = [];
+    for (var i = 0; i < regions.length; i++) {
+        // filter out transients
+        if (regions[i].id.startsWith('transient-')) {
+            continue;
+        }
+
+        if (i == 0 || regions[i].start > regions[i - 1].start) {
+            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
+            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
+        }
+    }
+
+    // update locally
+    app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
+    app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
+
+    // update remotely
+    socket.send(JSON.stringify({
+        action: "setslices",
+        filename: filename,
+        sliceStart: sliceStart,
+        sliceStop: sliceStop,
+    }));
+}
 
 app = new Vue({
     el: '#app',
@@ -751,7 +782,6 @@ app = new Vue({
                 this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = true;
                 this.updateSpliceVariable();
             }, 350);
-
         },
         createRegionsEvenly() {
             // create regions evenly
@@ -786,6 +816,7 @@ app = new Vue({
                 setTimeout(() => {
                     this.updateSlicesPerBeat();
                 }, 300);
+                updateAllRegions();
             }
 
         },
@@ -1091,7 +1122,10 @@ app = new Vue({
             this.banks[this.selectedBank].files[index1] = this.banks[this.selectedBank].files[index2];
             this.banks[this.selectedBank].files[index2] = temp;
         },
-        submitForm() {
+        doSubmitForm() {
+            this.submitForm(false);
+        },
+        submitForm(settingsOnly) {
             app.uploading = true;
             app.processing = false;
             app.downloading = false;
@@ -1125,7 +1159,7 @@ app = new Vue({
             }
 
             // Use fetch to send a POST request to the server
-            fetch('/download?id=' + randomID + "&place=" + window.location.pathname, {
+            fetch('/download?id=' + randomID + "&place=" + window.location.pathname + "&settingsOnly=" + settingsOnly, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1263,33 +1297,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
                 }, 100);
                 return;
             }
-            let regions = wsf.plugins[0].regions;
-            regions.sort((a, b) => (a.start > b.start) ? 1 : -1);
-            let sliceStart = [];
-            let sliceStop = [];
-            for (var i = 0; i < regions.length; i++) {
-                // filter out transients
-                if (regions[i].id.startsWith('transient-')) {
-                    continue;
-                }
-
-                if (i == 0 || regions[i].start > regions[i - 1].start) {
-                    sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
-                    sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
-                }
-            }
-
-            // update locally
-            app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
-            app.banks[app.selectedBank].files[app.selectedFile].SliceStop = sliceStop;
-
-            // update remotely
-            socket.send(JSON.stringify({
-                action: "setslices",
-                filename: filename,
-                sliceStart: sliceStart,
-                sliceStop: sliceStop,
-            }));
+            updateAllRegions();
         }, 200);
         var regionTriggers = ['region-updated', 'region-created']
         for (regionTrigger of regionTriggers) {

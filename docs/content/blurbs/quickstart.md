@@ -82,6 +82,17 @@ Each effect can be customized with up to two parameters and features a probabili
 
 To add samples, power off the device and remove the microSD card. Samples must be pre-processed before uploading them directly to the SD card. You can utilize [the online tool](/tool) for sample processing or opt to [download the tool](#uploading-samples) for offline use. Updating the firmware is simple - download a new release and upload it using a USB-C cable. Follow the provided [instructions for uploading firmware](#uploading-firmware) to complete the process and install the new firmware.
 
-## everything else
+## long guide
 
 For any additional information, refer to this guide or utilize the [handy reference guide](#reference) which provides quick access to button combinations and the effect list for easy reference.
+
+Also, check out this video walkthrough for a visual guide on how to use the device:
+
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/WBvos0TkcSY?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>

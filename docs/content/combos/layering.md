@@ -10,7 +10,7 @@ mode_alt = 'any'
 icon = 'drum'
 +++
 
-*Note: v4.0.0 and later firmware required for this feature.*
+*Note: v5.0.2 and later firmware required for this feature.*
 
 This is an experimental mode that lets you choose from 16 different kick samples (keys `1` to `16`). Hold down the `A` button and then hold down the `D` button and then press one of the 16 keys to layer the selected kick sample with the currently loaded sample. Continue to hold down the `A` and `D` buttons and press another of the 16 keys to set the volume of the selected kick sample. 
 
@@ -69,8 +69,17 @@ The transients in the kick stem are used to calculate the best placement for kic
 
 
 
-
 <script src="/wave/wavesurfer.js"></script>
 <script src="/wave/waveform.js"></script>
 <!-- 
 The stems are used to determine the position of kicks or snares within a piece of audio. The model if far from perfect, but it is surprsingly good.  -->
+
+
+<div class="plyr__video-embed" id="player">
+  <iframe
+    src="https://www.youtube.com/embed/313Va6h9Ldc?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+    allowfullscreen
+    allowtransparency
+    allow="autoplay"
+  ></iframe>
+</div>
