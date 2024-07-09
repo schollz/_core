@@ -14,7 +14,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     CORE1_PROCESS_I2S_CALLBACK=1 
     DO_OVERCLOCK=1
     INCLUDE_MIDI=1
-
+    # INCLUDE_SSD1306=1
+    
     # debug printing
     # PRINT_AUDIO_USAGE=1
     # PRINT_AUDIO_OVERLOADS=1

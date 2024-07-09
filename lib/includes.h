@@ -108,7 +108,11 @@ bool usb_midi_present = false;
 #include "clock_input.h"
 #include "comb.h"
 #ifdef INCLUDE_CUEDSOUNDS
-#include "cuedsounds.h"
+#ifdef INCLUDE_ECTOCORE
+#include "cuedsounds_ectocore.h"
+#else
+#include "cuedsounds_zeptocore.h"
+#endif
 #endif
 #include "debounce.h"
 #include "delay.h"

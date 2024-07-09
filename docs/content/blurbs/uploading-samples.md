@@ -11,7 +11,7 @@ Uploading samples is a straightforward process similar to transferring a file on
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
 
-### Use tool online: **[zeptocore v4.0.0](/tool)** (Chrome and Firefox only)
+### Use tool online: **[zeptocore v5.0.2](/tool)** (Chrome and Firefox only)
 
 
 <p style="text-align:center">
@@ -22,8 +22,9 @@ The sample tool is required for the sample preprocessing step, before transferri
 
 The zeptocore arrives with "stock" samples on it. If you ever want to remove them and replace them you can get them here by redownloading and transfering them back to the SD card. 
 
-- [zeptocore stock samples](https://infinitedigits.co/starting_samples_20240403.zip) (751 MB). Includes incredible contributions from [raja (aka 'itwasalienz')](https://www.youtube.com/@rajawasalienz), my own library of breaks and one-hit drums for the op1.
-- [pikocore stock samples](https://infinitedigits.co/start_samples_pikocore.zip) (1.2 GB). This sample pack has 256 samples of different Amen breaks and other manipulated drums.
+- [zeptocore stock samples](https://infinitedigits.co/zeptocore_default_samples_v5.zip) (393 MB). 
+
+Make sure you have the firmware updated to v5+ to use these samples.
 
 ### Transfering samples to SD card
 
@@ -42,7 +43,7 @@ Each of those **bankX** folders contains all the nessecary audio files. The **ba
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v4.0.0/core_windows_v4.0.0.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v5.0.2/core_windows_v5.0.2.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -56,13 +57,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v4.0.0/core_macos_amd64_v4.0.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v5.0.2/core_macos_amd64_v5.0.2 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v4.0.0/core_macos_aarch64_v4.0.0 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v5.0.2/core_macos_aarch64_v5.0.2 > core_macos
 ```
 
 Then to enable the program do:
@@ -85,7 +86,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v4.0.0/core_linux_amd64_v4.0.0)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v5.0.2/core_linux_amd64_v5.0.2)**
 
 After downloading, run it directly from the terminal.
 

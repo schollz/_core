@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/lucasepe/codename"
 	cp "github.com/otiai10/copy"
 	"github.com/schollz/_core/core/src/detectdisks"
 	"github.com/schollz/_core/core/src/latestrelease"
@@ -28,6 +27,7 @@ import (
 	"github.com/schollz/_core/core/src/pack"
 	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
+	"github.com/schollz/codename"
 	log "github.com/schollz/logger"
 	bolt "go.etcd.io/bbolt"
 )
@@ -180,7 +180,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		b, _ := json.Marshal(map[string]string{"version": "v4.0.0"})
+		b, _ := json.Marshal(map[string]string{"version": "v5.0.2"})
 		w.Write(b)
 		return nil
 	} else if r.URL.Path == "/ws" {
@@ -272,7 +272,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				GenURL2        string
 			}{
 				IsMain:         r.URL.Path == "/",
-				VersionCurrent: "v4.0.0",
+				VersionCurrent: "v5.0.2",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 				IsEctocore:     isEctocore,
@@ -735,6 +735,8 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 	id := query["id"][0]
 	place := query["place"][0]
 	_, place = filepath.Split(place)
+	settingsOnlyString := query.Get("settingsOnly")
+	settingsOnly := settingsOnlyString == "true"
 
 	mutex.Lock()
 	if _, ok := connections[id]; ok {
@@ -762,7 +764,7 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	}
 
-	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body)
+	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body, settingsOnly)
 	if err != nil {
 		log.Error(err)
 		return

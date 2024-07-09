@@ -384,10 +384,6 @@ void dust_1() {
 }
 
 void input_handling() {
-#ifdef INCLUDE_CUEDSOUNDS
-  cuedsounds_do_play = 0;
-#endif
-
   // flash bad signs
   while (!fil_is_open) {
     printf("waiting to start\n");
@@ -528,6 +524,10 @@ void input_handling() {
         printf("clock_start_stop_sync: %d\n", clock_start_stop_sync);
       } else if (debounce_startup == 9) {
         printf("global_brightness: %d\n", global_brightness);
+      } else if (debounce_startup == 7) {
+#ifdef INCLUDE_CUEDSOUNDS
+        cuedsounds_do_play = 0;
+#endif
       } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
         // read flash data
@@ -749,7 +749,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v4.0.0\n");
+        printf("version=v5.0.2\n");
       }
     }
 
@@ -1230,13 +1230,13 @@ void input_handling() {
         uint32_t time_start = time_us_32();
         FRESULT fr = f_close(&fil_current);
         if (fr != FR_OK) {
-          printf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
+          printf("[main] f_close error: %s\n", FRESULT_str(fr));
         }
         sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
                 sel_sample_cur, sel_variation_next);
         fr = f_open(&fil_current, fil_current_name, FA_READ);
         if (fr != FR_OK) {
-          printf("[zeptocore] f_open error: %s\n", FRESULT_str(fr));
+          printf("[main] f_open error: %s\n", FRESULT_str(fr));
         }
 
         // TODO: fix this
@@ -1247,7 +1247,7 @@ void input_handling() {
 
         sel_variation = sel_variation_next;
         sync_using_sdcard = false;
-        printf("[zeptocore] sel_variation %d us\n", time_us_32() - time_start);
+        printf("[main] sel_variation %d us\n", time_us_32() - time_start);
       }
     }
 

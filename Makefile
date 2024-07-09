@@ -94,8 +94,13 @@ lib/resonantfilter_data.h:
 	cd lib && python3 resonantfilter.py > resonantfilter_data.h
 	clang-format -i --style=google lib/resonantfilter_data.h
 
-lib/cuedsounds.h:
-	cd dev/audio2flash && go build -v && ./audio2flash -in cuedsounds -out ../../lib/cuedsounds.h
+lib/cuedsounds.h: lib/cuedsounds_zeptocore.h lib/cuedsounds_ectocore.h
+
+lib/cuedsounds_zeptocore.h:
+	cd dev/audio2flash && go build -v && ./audio2flash -name cuedsounds -in cuedsounds-zeptocore -out ../../lib/cuedsounds_zeptocore.h
+
+lib/cuedsounds_ectocore.h:
+	cd dev/audio2flash && go build -v && ./audio2flash -name cuedsounds -in cuedsounds-ectocore -out ../../lib/cuedsounds_ectocore.h
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
