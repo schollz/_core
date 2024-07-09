@@ -283,10 +283,17 @@ void input_handling() {
     char buf_ssd1306[16];
     sprintf(buf_ssd1306, "%d", beat_current);
     ssd1306_clear(&disp);
-    ssd1306_bmp_show_image(&disp, image_data, image_size);
-    ssd1306_draw_string(&disp, 8, 24, 2, buf_ssd1306);
+    ssd1306_draw_string(&disp, 8, 24, 1, buf_ssd1306);
     ssd1306_bmp_show_image_with_offset(&disp, output_bmp_data, output_bmp_size,
                                        0, 64 - 17);
+    // tile 4x4 on the right 64x64 pixels of a 14x14 image
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        ssd1306_bmp_show_image_with_offset(&disp, sun_solid2_bmp_data,
+                                           sun_solid2_bmp_size, 64 + i * 16,
+                                           64 - 17 - j * 16 + 1);
+      }
+    }
     ssd1306_show(&disp);
 #endif
 
