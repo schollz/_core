@@ -37,7 +37,7 @@ bool reserved_addr(uint8_t addr) {
 
 int main(void) {
   stdio_init_all();
-  sleep_ms(1000);
+  sleep_ms(2000);
 
   // This example will use I2C0 on the default SDA and SCL pins (GP4, GP5 on a
   // Pico)
@@ -78,12 +78,12 @@ int main(void) {
 
   ssd1306_t disp;
   disp.external_vcc = false;
-  ssd1306_init(&disp, 128, 64, 0x3C, i2c_default);
+  ssd1306_init(&disp, 128, 64, 0x3C, i2c0);
   ssd1306_clear(&disp);
 
   int number = 0;
   while (true) {
-    printf("animation\n");
+    // printf("animation\n");
     char buf[8];
     number++;
     sprintf(buf, "%d", number);
