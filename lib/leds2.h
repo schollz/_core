@@ -31,6 +31,8 @@
 #define LEDS_ROWS 5
 #define LEDS_COLS 4
 
+int blink_time = 700;
+
 typedef struct LEDS {
   // state, 0=off, 1=dim, 2=bright, 3=blink
   // matrix 1 = which face
@@ -97,6 +99,7 @@ LEDS *LEDS_create() {
                          1, 0, 2, 3};
     leds->pca = PCA9552_create(0x60, i2c_default, row_map, col_map);
   } else {
+    blink_time = 70;
     uint8_t row_map[] = {// row 1
                          0, 0, 0, 0,
                          // row 2
@@ -170,11 +173,11 @@ void LEDS_render(LEDS *leds) {
     // blink GPIO leds
     if (leds->gpio_leds_state[j] == LED_BLINK) {
       leds->gpio_leds_count[j]++;
-      if (leds->gpio_leds_count[j] == 700) {
+      if (leds->gpio_leds_count[j] == blink_time) {
         gpio_put(leds->gpio_leds_pin[j], 1);
         if (is_arcade_box)
           leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 1);
-      } else if (leds->gpio_leds_count[j] >= 1400) {
+      } else if (leds->gpio_leds_count[j] >= blink_time * 2) {
         gpio_put(leds->gpio_leds_pin[j], 0);
         if (is_arcade_box)
           leds->gpio_leds_set = bit_set(leds->gpio_leds_set, j, 0);
