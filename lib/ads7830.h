@@ -51,6 +51,7 @@ uint8_t ADS7830_read(ADS7830 *self, uint8_t ch) {
     return -1;
   }
   i2c_read_timeout_us(i2c_default, self->address, &adcValue, 1, false, 5000);
+  // printf("[ads7830] [ch%d] %d\n", ch, adcValue);
   return adcValue;
 }
 
