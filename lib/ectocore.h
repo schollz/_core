@@ -886,7 +886,8 @@ void input_handling() {
                     debounce_file_change = DEBOUNCE_FILE_SWITCH;
                   }
                   ws2812_wheel_clear(ws2812);
-                  WS2812_fill(ws2812, val, 255, 0, 0);
+                  WS2812_fill(ws2812, val * 16 / banks_with_samples_num, 255, 0,
+                              0);
                   WS2812_show(ws2812);
                 }
                 break;
@@ -917,17 +918,17 @@ void input_handling() {
             ws2812_set_wheel(ws2812, val * 4, 255, 255, 0);
           } else {
             // sample selection
-            val = (val * 16) / 1024;
-            if (val >= banks[sel_bank_next]->num_samples) {
-              val = banks[sel_bank_next]->num_samples - 1;
-            }
+            val = (val * banks[sel_bank_cur]->num_samples) / 1024;
             sel_sample_next = val;
             ws2812_wheel_clear(ws2812);
-            WS2812_fill(ws2812, val, 0, 255, 255);
+            WS2812_fill(ws2812, val * 16 / banks[sel_bank_cur]->num_samples, 0,
+                        255, 255);
             WS2812_show(ws2812);
             if (sel_sample_next != sel_sample_cur) {
               debounce_file_change = DEBOUNCE_FILE_SWITCH;
-              printf("[ectocore] knob select sample %d\n", val);
+              printf("[ectocore] knob select sample %d/%d (%d)\n",
+                     sel_sample_next + 1, banks[sel_bank_cur]->num_samples,
+                     raw_val);
             }
           }
         }
@@ -1123,7 +1124,9 @@ void input_handling() {
                     }
                     printf("[ectocore] switch bank %d\n", sel_bank_next);
                     ws2812_wheel_clear(ws2812);
-                    WS2812_fill(ws2812, sel_bank_next, 255, 0, 0);
+                    WS2812_fill(ws2812,
+                                sel_bank_next * 16 / banks_with_samples_num,
+                                255, 0, 0);
                     WS2812_show(ws2812);
                   }
                   break;
