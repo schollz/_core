@@ -30,11 +30,9 @@ jobs:
     - name: Set up Zig
       uses: goto-bus-stop/setup-zig@v2.2.0
       with:
-        version: '0.13.0'
+        version: '0.11.0'
     - name: Setup Go
       uses: actions/setup-go@v5.0.2
-      with:
-        go-version: '1.21.11'
     - name: Install Pico SDK dependencies
       run: |
         sudo apt update

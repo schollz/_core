@@ -1,7 +1,20 @@
 export PICO_EXTRAS_PATH ?= $(CURDIR)/pico-extras
 export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
-
 NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
+
+GOVERSION = go1.21.11
+GOBIN = $(HOME)/go/bin
+GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
+
+install_go21:
+	@if [ -x "$(GOINSTALLPATH)" ]; then \
+		echo "$(GOVERSION) is already installed."; \
+		exit 0; \
+	else \
+		echo "$(GOVERSION) is not installed."; \
+		go install golang.org/dl/$(GOVERSION)@latest; \
+		$(GOINSTALLPATH) download; \
+	fi
 
 dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
@@ -199,20 +212,20 @@ core/MacOSX11.3.sdk:
 	cd core && tar -xvf MacOSX11.3.sdk.tar.xz
 
 .PHONY: core_macos_aarch64
-core_macos_aarch64: docsbuild core/MacOSX11.3.sdk
+core_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_aarch64
+	go1.21.11 build -x -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_aarch64
 
 .PHONY: core_macos_amd64
-core_macos_amd64: docsbuild core/MacOSX11.3.sdk
+core_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd64
+	go1.21.11 build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd64
 
 .PHONY: core_macos_amd642
 core_macos_amd642: docsbuild
