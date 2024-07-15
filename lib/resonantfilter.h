@@ -72,7 +72,6 @@ void ResonantFilter_setFc_(ResonantFilter* rf, uint8_t fc) {
     return;
   }
   rf->fc = fc;
-  ResonantFilter_reset(rf);
 }
 
 void ResonantFilter_setFc(ResonantFilter* rf, uint8_t fc) {
@@ -97,7 +96,6 @@ void ResonantFilter_setFilterType_(ResonantFilter* rf, uint8_t filter_type) {
   }
   rf->filter_type = filter_type;
   rf->passthrough_last = -1;
-  ResonantFilter_reset(rf);
 }
 
 void ResonantFilter_setFilterType(ResonantFilter* rf, uint8_t filter_type) {
@@ -160,6 +158,10 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   rf->x2_f = 0;
   rf->y1_f = 0;
   rf->y2_f = 0;
+  rf->do_setFc = false;
+  rf->do_setFc_val = 0;
+  rf->do_setFilterType = false;
+  rf->do_setFilterType_val = 0;
 
   ResonantFilter_reset(rf);
   return rf;
@@ -170,13 +172,22 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 
 void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
                            uint16_t num_samples, uint8_t channel) {
-  if (rf->do_setFc) {
-    ResonantFilter_setFc_(rf, rf->do_setFc_val);
-    rf->do_setFc = false;
-  }
   if (rf->do_setFilterType) {
     ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
     rf->do_setFilterType = false;
+    if (rf->do_setFc) {
+      ResonantFilter_setFc_(rf, rf->do_setFc_val);
+      rf->do_setFc = false;
+    }
+    ResonantFilter_reset(rf);
+  } else if (rf->do_setFc) {
+    ResonantFilter_setFc_(rf, rf->do_setFc_val);
+    rf->do_setFc = false;
+    if (rf->do_setFilterType) {
+      ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
+      rf->do_setFilterType = false;
+    }
+    ResonantFilter_reset(rf);
   }
   if (rf->passthrough) {
     return;
