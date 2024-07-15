@@ -132,6 +132,21 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   retrig_ready = true;
 }
 
+void do_button_lights(ButtonMatrix *bm) {
+  uint32_t ct = to_ms_since_boot(get_absolute_time());
+  for (uint8_t i = 0; i < 20; i++) {
+    if (key_on_buttons[i] > 0) {
+      LEDS_set(leds, i, LED_BRIGHT);
+    } else if (true) {
+      if (i > 3 && !bm->button_on[i] && ct > bm->off_time[i] &&
+          ct - bm->off_time[i] < 200) {
+        // printf("[%ld] btn %d off time: %ld\n", i, ct, bm->off_time[i]);
+        LEDS_set(leds, i, 0);
+      }
+    }
+  }
+}
+
 void go_update_top() {
   bool all_off = true;
   for (uint8_t i = 0; i < 4; i++) {
@@ -974,6 +989,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, 3, LED_BLINK);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   }
@@ -999,6 +1015,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1010,6 +1027,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, j + 4, 0);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1033,6 +1051,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1057,6 +1076,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1080,6 +1100,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1129,6 +1150,7 @@ void button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, 14, LED_BRIGHT);
       LEDS_set(leds, 19, LED_BRIGHT);
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(
@@ -1153,6 +1175,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceDigits_active(debouncer_digits)) {
@@ -1176,6 +1199,7 @@ void button_handler(ButtonMatrix *bm) {
         break;
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL])) {
@@ -1198,6 +1222,7 @@ void button_handler(ButtonMatrix *bm) {
         LEDS_set(leds, led_bar_ordering[i], LED_DIM);
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else if (key_pressed_num > 0 && key_on_buttons[KEY_D]) {
@@ -1218,6 +1243,7 @@ void button_handler(ButtonMatrix *bm) {
         }
       }
     }
+    do_button_lights(bm);
     LEDS_render(leds);
     return;
   } else {
@@ -1250,6 +1276,7 @@ void button_handler(ButtonMatrix *bm) {
             LEDS_set(leds, 4, LED_DIM);
           }
         }
+        do_button_lights(bm);
         LEDS_render(leds);
         return;
       } else {
@@ -1309,11 +1336,8 @@ void button_handler(ButtonMatrix *bm) {
       }
     }
   }
-  for (uint8_t i = 0; i < 20; i++) {
-    if (key_on_buttons[i] > 0) {
-      LEDS_set(leds, i, LED_BRIGHT);
-    }
-  }
+
+  do_button_lights(bm);
 
   if (playback_stopped) {
     LEDS_set(leds, 0, 0);
