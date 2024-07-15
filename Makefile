@@ -6,6 +6,10 @@ GOVERSION = go1.21.11
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
 
+dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	make -C build -j$(NPROCS)
+
+
 install_go21:
 	@if [ -x "$(GOINSTALLPATH)" ]; then \
 		echo "$(GOVERSION) is already installed."; \
@@ -15,9 +19,6 @@ install_go21:
 		go install golang.org/dl/$(GOVERSION)@latest; \
 		$(GOINSTALLPATH) download; \
 	fi
-
-dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	make -C build -j$(NPROCS)
 
 zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade3.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)

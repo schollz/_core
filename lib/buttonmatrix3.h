@@ -41,6 +41,7 @@ typedef struct ButtonMatrix {
   int8_t off_num;
   uint8_t off[BUTTONMATRIX_BUTTONS_MAX];  // list of buttons that turned off
   uint32_t held_time[BUTTONMATRIX_BUTTONS_MAX];
+  uint32_t off_time[BUTTONMATRIX_BUTTONS_MAX];
 } ButtonMatrix;
 
 void ButtonMatrix_dec_to_binary(ButtonMatrix *bm, uint32_t num) {
@@ -107,6 +108,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
     bm->button_on[i] = false;  // -1 == off
     bm->button_on_last[i] = false;
     bm->held_time[i] = 0;
+    bm->off_time[i] = 0;
   }
 
   uint offset = pio_add_program(bm->pio, &button_matrix_program);
@@ -125,6 +127,7 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
 void ButtonMatrix_read(ButtonMatrix *bm) {
   bm->on_num = -1;
   bm->off_num = -1;
+  uint32_t ct = to_ms_since_boot(get_absolute_time());
 
   if (is_arcade_box) {
     // input_pin_state0 corresponds to the first 4 buttons
@@ -150,8 +153,6 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
       bm->button_on[i + 12] = (input_pin_state_b >> i) & 1;
     }
 
-    uint32_t ct = to_ms_since_boot(get_absolute_time());
-
     // reverse
     for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
       bm->button_on[i] = !bm->button_on[i];
@@ -170,13 +171,15 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
     // check if any buttons changed
     for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
       if (bm->button_on[i] != bm->button_on_last[i]) {
-        printf("button %d changed to %d\n", i, bm->button_on[i]);
+        // printf("[zeptocade buttonmatrix3.h] button %d changed to %d\n", i,
+        //        bm->button_on[i]);
         if (bm->button_on[i]) {
           bm->on_num++;
           bm->on[bm->on_num] = i;
           bm->held_time[i] = ct;
         } else {
           bm->off_num++;
+          bm->off_time[i] = ct;
           bm->off[bm->off_num] = i;
         }
       }
@@ -216,6 +219,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
       if (!bm->button_on[j]) {
         bm->button_on[j] = true;
         bm->on_num++;
+        bm->off_time[j] = ct;
         bm->on[bm->on_num] = j;
         // printf("[%d] on: %d\n", bm->on_num, j);
       }
@@ -223,6 +227,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
       // button turned on to off
       bm->button_on[j] = false;
       bm->off_num++;
+      bm->off_time[j] = ct;
       bm->off[bm->off_num] = j;
       // printf("[%d] off: %d\n", bm->off_num, j);
     }
