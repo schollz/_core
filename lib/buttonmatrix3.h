@@ -159,7 +159,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
       if (bm->button_on[i] && bm->held_time[i] == 0) {
         bm->held_time[i] = ct;
       } else if (bm->button_on[i] && bm->held_time[i] > 0) {
-        if (ct - bm->held_time[i] > 2000) {
+        if (ct - bm->held_time[i] > 5000) {
           bm->button_on[i] = false;
         }
       } else if (!bm->button_on[i]) {
