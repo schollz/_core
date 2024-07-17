@@ -285,7 +285,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
                             140, 150, 160, 170, 180, 190, 200, 210};
       printf("[button_handler] select tempo: %d %d\n", key2, tempos[key2 - 4]);
       sf->bpm_tempo = tempos[key2 - 4];
-      DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
+      DebounceDigits_set(debouncer_digits, sf->bpm_tempo, led_text_time);
       return;
     }
   } else if (key_on_buttons[KEY_A] && key_on_buttons[KEY_D]) {
@@ -325,7 +325,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       if (val > 0) {
         printf("tap bpm -> %d\n", val);
         sf->bpm_tempo = val;
-        DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 200);
+        DebounceDigits_set(debouncer_digits, sf->bpm_tempo, led_text_time);
       }
     } else if (key2 == KEY_C) {
       // S+B
@@ -511,12 +511,12 @@ void button_handler(ButtonMatrix *bm) {
   if (key_total_pressed == 0) {
     key_timer++;
   }
-  if (key_timer == 300 ||
-      (key_timer == 100 && is_arcade_box) && key_pressed_num > 0) {
+  if (key_timer == led_text_time && key_pressed_num > 0) {
     // create string
     char key_pressed_str[256];
     int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
-                       "[button_handler](%ld)combo: ", key_timer_on);
+                       "[button_handler](%d)(%ld)combo: ", key_pressed_num,
+                       key_timer_on);
 
     if (key_pressed_num > 2) {
       if (key_pressed[0] == 1 && key_pressed[1] == 0) {
@@ -557,7 +557,8 @@ void button_handler(ButtonMatrix *bm) {
       do_random_sequence_len(key_pressed[0] - 3);
       char random_sequence_str[10];
       sprintf(random_sequence_str, "%d", random_sequence_length);
-      DebounceDigits_setText(debouncer_digits, random_sequence_str, 150);
+      DebounceDigits_setText(debouncer_digits, random_sequence_str,
+                             led_text_time);
     }
 
     if (key_pressed_num >= 3) {
@@ -608,14 +609,15 @@ void button_handler(ButtonMatrix *bm) {
               false;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               PLAY_NORMAL;
-          DebounceDigits_setText(debouncer_digits, "ONESHOT OFF", 200);
+          DebounceDigits_setText(debouncer_digits, "ONESHOT OFF",
+                                 led_text_time);
         } else {
           printf("toggle one shot ON ");
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
               true;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               PLAY_SPLICE_STOP;
-          DebounceDigits_setText(debouncer_digits, "ONESHOT ON", 200);
+          DebounceDigits_setText(debouncer_digits, "ONESHOT ON", led_text_time);
         }
         printf("combo: 8 9 8!!!\n");
       } else if (key_pressed[0] == 10 && key_pressed[1] == 11 &&
@@ -654,9 +656,9 @@ void button_handler(ButtonMatrix *bm) {
         // switch between MIDI input and CLOCK input
         do_switch_between_clock_and_midi = true;
         if (use_onewiremidi) {
-          // DebounceDigits_setText(debouncer_digits, "CLOCK", 200);
+          // DebounceDigits_setText(debouncer_digits, "CLOCK", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "MIDI", 200);
+          DebounceDigits_setText(debouncer_digits, "MIDI", led_text_time);
         }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 19) {
@@ -667,10 +669,10 @@ void button_handler(ButtonMatrix *bm) {
           if (cuedsounds_volume == 0) {
             cuedsounds_volume = 150;
           }
-          DebounceDigits_setText(debouncer_digits, "LAYER", 200);
+          DebounceDigits_setText(debouncer_digits, "LAYER", led_text_time);
         } else {
           do_layer_kicks = -1;
-          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
         }
 
 #endif
@@ -681,28 +683,30 @@ void button_handler(ButtonMatrix *bm) {
           // create string with the length
           char random_sequence_str[10];
           sprintf(random_sequence_str, "RAND %d", do_random_sequence(true));
-          DebounceDigits_setText(debouncer_digits, random_sequence_str, 200);
+          DebounceDigits_setText(debouncer_digits, random_sequence_str,
+                                 led_text_time);
         } else {
           do_random_sequence(false);
-          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
         }
       } else if (key_pressed[0] == 13 && key_pressed[1] == 14 &&
                  key_pressed[2] == 18 && key_pressed[3] == 17) {
         // toggle random sequence mode
         do_retrig_at_end_of_phrase = !do_retrig_at_end_of_phrase;
         if (do_retrig_at_end_of_phrase) {
-          DebounceDigits_setText(debouncer_digits, "FILL", 200);
+          DebounceDigits_setText(debouncer_digits, "FILL", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
         }
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 6 && key_pressed[3] == 7) {
         sf->stay_in_sync = !sf->stay_in_sync;
         printf("toggling in sync mode: %d\n", sf->stay_in_sync);
         if (sf->stay_in_sync) {
-          DebounceDigits_setText(debouncer_digits, "LOCK OONN", 200);
+          DebounceDigits_setText(debouncer_digits, "LOCK OONN", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "LOCK OOFFFF", 200);
+          DebounceDigits_setText(debouncer_digits, "LOCK OOFFFF",
+                                 led_text_time);
         }
       } else if (key_pressed[0] == 7 && key_pressed[1] == 10 &&
                  key_pressed[2] == 13 && key_pressed[3] == 16) {
@@ -710,28 +714,28 @@ void button_handler(ButtonMatrix *bm) {
         only_play_kicks = !only_play_kicks;
         printf("only_play_kicks: %d\n", only_play_kicks);
         if (only_play_kicks) {
-          DebounceDigits_setText(debouncer_digits, "KICKS", 200);
+          DebounceDigits_setText(debouncer_digits, "KICKS", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
         }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 6) {
         only_play_snares = !only_play_snares;
         printf("only_play_snares: %d\n", only_play_snares);
         if (only_play_snares) {
-          DebounceDigits_setText(debouncer_digits, "SNARES", 200);
+          DebounceDigits_setText(debouncer_digits, "SNARES", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "NORM", 200);
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
         }
       } else if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
                  key_pressed[2] == 13 && key_pressed[3] == 14) {
         quadratic_resampling = !quadratic_resampling;
         if (quadratic_resampling) {
           printf("combo: change resampling to quadratic\n");
-          DebounceDigits_setText(debouncer_digits, "QUAD", 200);
+          DebounceDigits_setText(debouncer_digits, "QUAD", led_text_time);
         } else {
           printf("combo: change resampling to linear\n");
-          DebounceDigits_setText(debouncer_digits, "LINEAR", 200);
+          DebounceDigits_setText(debouncer_digits, "LINEAR", led_text_time);
         }
       } else if (key_pressed[0] == 8 && key_pressed[1] == 9 &&
                  key_pressed[2] == 10 && key_pressed[3] == 11) {
@@ -745,10 +749,11 @@ void button_handler(ButtonMatrix *bm) {
                 .snd[FILEZERO]
                 ->tempo_match) {
           printf("combo: enabled to tempo match mode\n");
-          DebounceDigits_setText(debouncer_digits, "MATCH OONN", 200);
+          DebounceDigits_setText(debouncer_digits, "MATCH OONN", led_text_time);
         } else {
           printf("combo: disabled tempo match mode\n");
-          DebounceDigits_setText(debouncer_digits, "MATCH OOFFF", 200);
+          DebounceDigits_setText(debouncer_digits, "MATCH OOFFF",
+                                 led_text_time);
         }
 
       } else if (key_pressed[0] == 12 && key_pressed[1] == 13 &&
@@ -757,9 +762,9 @@ void button_handler(ButtonMatrix *bm) {
         printf("combo: enabled to pitch retrig mode: %d\n",
                sf->do_retrig_pitch_changes);
         if (sf->do_retrig_pitch_changes) {
-          DebounceDigits_setText(debouncer_digits, "PIT OONN", 200);
+          DebounceDigits_setText(debouncer_digits, "PIT OONN", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "PIT OOFF", 200);
+          DebounceDigits_setText(debouncer_digits, "PIT OOFF", led_text_time);
         }
       }
     } else if (key_pressed_num == 8) {
@@ -769,10 +774,10 @@ void button_handler(ButtonMatrix *bm) {
         clock_out_do = !clock_out_do;
         if (clock_out_do) {
           printf("[button_handler]: combo: clock out enabled\n");
-          DebounceDigits_setText(debouncer_digits, "SYNC OONN", 200);
+          DebounceDigits_setText(debouncer_digits, "SYNC OONN", led_text_time);
         } else {
           printf("[button_handler]: combo: clock out disabled\n");
-          DebounceDigits_setText(debouncer_digits, "SYNC OOFFF", 200);
+          DebounceDigits_setText(debouncer_digits, "SYNC OOFFF", led_text_time);
         }
       }
     }
