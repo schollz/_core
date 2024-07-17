@@ -511,7 +511,8 @@ void button_handler(ButtonMatrix *bm) {
   if (key_total_pressed == 0) {
     key_timer++;
   }
-  if (key_timer == 300 && key_pressed_num > 0) {
+  if (key_timer == 300 ||
+      (key_timer == 100 && is_arcade_box) && key_pressed_num > 0) {
     // create string
     char key_pressed_str[256];
     int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
@@ -1281,7 +1282,7 @@ void button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, 2, 0);
       LEDS_set(leds, 3, LED_BLINK);
     }
-    if (mode_buttons16 == MODE_MASH || mode_buttons16 == MODE_JUMP) {
+    if ((mode_buttons16 == MODE_MASH) || mode_buttons16 == MODE_JUMP) {
       if (sel_variation == 0) {
         LEDS_set(leds, beat_current_show % 16 + 4, LED_DIM);
       } else {
@@ -1302,6 +1303,12 @@ void button_handler(ButtonMatrix *bm) {
     }
     if (mode_buttons16 == MODE_MASH ||
         (mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_A])) {
+      if (is_arcade_box) {
+        // turn off all the leds
+        for (uint8_t i = 4; i < 20; i++) {
+          LEDS_set(leds, i, 0);
+        }
+      }
       for (uint8_t i = 0; i < 16; i++) {
         if (sf->fx_active[i]) {
           LEDS_set(leds, i + 4, LED_BRIGHT);
