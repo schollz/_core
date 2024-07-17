@@ -688,6 +688,7 @@ int main() {
   } else {
     // arcade box
     is_arcade_box = true;
+    led_text_time = 50;
     mcp23017_init(i2c_default, MCP23017_ADDR1);
     mcp23017_init(i2c_default, MCP23017_ADDR2);
     // addr1
