@@ -139,6 +139,10 @@ func findWindows(data []float64, numOnsets int) (top16 []float64, err error) {
 		}
 		top16[i] = w.avg
 	}
+	if len(top16) == 0 {
+		err = fmt.Errorf("no onsets found")
+	}
+
 	sort.Float64s(top16)
 
 	// make sure to get the first one
