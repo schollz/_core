@@ -105,16 +105,17 @@ int printf_sysex(const char* format, ...) {
 
 typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 
-#define MIDI_BUFFER_SIZE 32
-uint8_t midi_buffer[MIDI_BUFFER_SIZE];
-
 void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
                     callback_int midi_note_off, callback_void midi_start,
                     callback_void midi_continue, callback_void midi_stop,
                     callback_void midi_timing) {
-  uint8_t bytes_read = 0;
+  uint8_t midi_buffer[3];
+  midi_buffer[0] = 0;
+  midi_buffer[1] = 0;
+  midi_buffer[2] = 0;
+  uint32_t bytes_read = 0;
   if (tud_midi_n_available(0, 0)) {
-    bytes_read = tud_midi_n_stream_read(0, 0, midi_buffer, MIDI_BUFFER_SIZE);
+    bytes_read = tud_midi_n_stream_read(0, 0, midi_buffer, 3);
   } else {
     return;
   }
@@ -149,14 +150,14 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
       midi_stop();
     }
     return;
-  } else if (midi_buffer[0] == 0x80) {
+  } else if (midi_buffer[0] == 0x80 && bytes_read > 1) {
     // note off received
     usb_midi_present = true;
     if (midi_note_off != NULL) {
       midi_note_off(midi_buffer[1]);
     }
     return;
-  } else if (midi_buffer[0] == 0x90) {
+  } else if (midi_buffer[0] == 0x90 && bytes_read > 2) {
     // note on received
     usb_midi_present = true;
     if (midi_note_on != NULL) {
