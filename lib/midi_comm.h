@@ -118,6 +118,9 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
   } else {
     return;
   }
+  if (bytes_read == 0) {
+    return;
+  }
   if (midi_buffer[0] == 0xf8) {
     // timing received
     usb_midi_present = true;
