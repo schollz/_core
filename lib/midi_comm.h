@@ -3,16 +3,6 @@
 #include <stdarg.h>  // Include this header for va_start, va_end, etc.
 #include <stdio.h>   // Include for vsnprintf
 
-uint8_t midi_buffer[64];
-
-uint32_t read_midi_message(uint8_t* buffer, uint32_t bufsize) {
-  if (tud_midi_n_available(0, 0)) {
-    uint32_t num_bytes_read = tud_midi_n_stream_read(0, 0, buffer, bufsize);
-    return num_bytes_read;  // Return the number of bytes actually read
-  }
-  return 0;
-}
-
 uint32_t send_buffer_as_sysex(char* buffer, uint32_t bufsize) {
   uint8_t sysex_data[bufsize + 2];  // +2 for SysEx start and end bytes
 
@@ -115,13 +105,17 @@ int printf_sysex(const char* format, ...) {
 
 typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 
+#define MIDI_BUFFER_SIZE 32
+uint8_t midi_buffer[MIDI_BUFFER_SIZE];
+
 void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
                     callback_int midi_note_off, callback_void midi_start,
                     callback_void midi_continue, callback_void midi_stop,
                     callback_void midi_timing) {
-  // Read a MIDI message from the USB MIDI stream
-  uint32_t bytes_read = read_midi_message(midi_buffer, sizeof(midi_buffer));
-  if (bytes_read == 0) {
+  uint8_t bytes_read = 0;
+  if (tud_midi_n_available(0, 0)) {
+    bytes_read = tud_midi_n_stream_read(0, 0, midi_buffer, MIDI_BUFFER_SIZE);
+  } else {
     return;
   }
   if (midi_buffer[0] == 0xf8) {
