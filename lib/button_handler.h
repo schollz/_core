@@ -137,7 +137,7 @@ void do_button_lights(ButtonMatrix *bm) {
   for (uint8_t i = 0; i < 20; i++) {
     if (key_on_buttons[i] > 0) {
       LEDS_set(leds, i, LED_BRIGHT);
-    } else if (true) {
+    } else if (mode_buttons16 != MODE_MASH) {
       if (i > 3 && !bm->button_on[i] && ct > bm->off_time[i] &&
           ct - bm->off_time[i] < 200) {
         // printf("[%ld] btn %d off time: %ld\n", i, ct, bm->off_time[i]);
