@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 from datetime import datetime, timedelta
 import click
@@ -90,7 +91,7 @@ def main(directory, delete, age):
                     print(
                         f"Deleting {folder_path} ({pretty_print_filesize(folder_size)}, {pretty_print_age(folder_age)} old)"
                     )
-                    os.rmdir(folder_path)
+                    shutil.rmtree(folder_path)
                 else:
                     print(
                         f"Would delete {folder_path} ({pretty_print_filesize(folder_size)}, {pretty_print_age(folder_age)} old)"
