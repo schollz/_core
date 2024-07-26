@@ -1,8 +1,13 @@
 package onsetdetect
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math"
+	"net/http"
+	"os"
 	"os/exec"
 	"runtime"
 	"sort"
@@ -10,8 +15,61 @@ import (
 	"strings"
 
 	"github.com/schollz/_core/core/src/sox"
+	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
 )
+
+func OnsetDetectAPI(fname string, numOnsets int) (onsets []float64, err error) {
+	filename := utils.RandomString(10) + ".ogg"
+	defer os.Remove(filename)
+
+	cmd := exec.Command("sox", fname, "-r", "32000", "-c", "1", filename)
+	err = cmd.Run()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	// Create a buffer to store the file contents
+	var requestBody bytes.Buffer
+	_, err = io.Copy(&requestBody, file)
+	if err != nil {
+		return
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest("PUT", fmt.Sprintf("http://tool.getectocore.com/onsetdetect?number=%d", numOnsets), &requestBody)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	// Send the HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read and print the response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	err = json.Unmarshal(body, &onsets)
+	return
+}
 
 func OnsetDetect(fname string, numOnsets int) (onsets []float64, err error) {
 	onsets, err = getOnsets(fname, numOnsets)
