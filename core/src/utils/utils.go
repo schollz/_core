@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cespare/xxhash"
 	log "github.com/schollz/logger"
 )
 
@@ -116,7 +117,21 @@ func OpenBrowser(url string) {
 	if err != nil {
 		log.Error(err)
 	}
+}
 
+func HashFile(filename string) (hash string, err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	h := xxhash.New()
+	if _, err = io.Copy(h, f); err != nil {
+		return
+	}
+	hash = fmt.Sprintf("%x", h.Sum(nil))
+	return
 }
 
 func Run(args ...string) (string, string, error) {
