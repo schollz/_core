@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -252,17 +253,33 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	}
 
 	go func() {
-		// get transients
-		transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
-		if errTransients == nil {
-			// reload in case its been too long
-			f.Load()
-			f.Transients[0] = transients1
-			f.Transients[1] = transients2
-			f.Transients[2] = transients3
-			log.Debugf("saving transients for %s", f.PathToAudio)
-			f.Save()
-			f.Regenerate()
+		_, errDemucs := exec.LookPath("demucs")
+		if errDemucs == nil {
+			// get transients
+			transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
+			if errTransients == nil {
+				// reload in case its been too long
+				f.Load()
+				f.Transients[0] = transients1
+				f.Transients[1] = transients2
+				f.Transients[2] = transients3
+				log.Debugf("saving transients for %s", f.PathToAudio)
+				f.Save()
+				f.Regenerate()
+			}
+		} else {
+			// use the public API
+			transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2API(f.PathToAudio)
+			if errTransients == nil {
+				// reload in case its been too long
+				f.Load()
+				f.Transients[0] = transients1
+				f.Transients[1] = transients2
+				f.Transients[2] = transients3
+				log.Debugf("saving transients from API for %s", f.PathToAudio)
+				f.Save()
+				f.Regenerate()
+			}
 		}
 
 	}()

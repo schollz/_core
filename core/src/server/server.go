@@ -21,6 +21,7 @@ import (
 	"github.com/gorilla/websocket"
 	cp "github.com/otiai10/copy"
 	"github.com/schollz/_core/core/src/detectdisks"
+	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/latestrelease"
 	"github.com/schollz/_core/core/src/names"
 	"github.com/schollz/_core/core/src/onsetdetect"
@@ -168,7 +169,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func handle(w http.ResponseWriter, r *http.Request) (err error) {
 
 	// very special paths
-	if r.Method == "POST" {
+	if r.URL.Path == "/drumextract" {
+		return handleDrumExtract(w, r)
+	} else if r.Method == "POST" {
 		// POST file
 		if r.URL.Path == "/download" {
 			return handleDownload(w, r)
@@ -780,6 +783,61 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 
 	// Serve the ZIP file
 	http.ServeFile(w, r, zipFile)
+	return
+}
+
+const maxUploadSize = 10 * 1024 * 1024 // 10 MB
+
+func handleDrumExtract(w http.ResponseWriter, r *http.Request) (err error) {
+	if r.Method != http.MethodPut {
+		log.Error(err)
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
+
+	folder := path.Join(StorageFolder, "drumextract")
+	// create folder if it doesn't exist
+	os.MkdirAll(folder, 0777)
+	// create a random file name
+	filename := path.Join(folder, utils.RandomString(16)+".ogg")
+
+	out, err := os.Create(filename)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, r.Body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	filename2, err := utils.HashFile(filename)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	filename2 = path.Join(folder, filename2+".ogg")
+	log.Debugf("renaming %s to %s", filename, filename2)
+	err = os.Rename(filename, filename2)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	a, b, c, err := drumextract2.DrumExtract2(filename2)
+	log.Debugf("a: %v, b: %v, c: %v, err: %v", a, b, c, err)
+	// return json with a, b, c
+	jsonResponse, _ := json.Marshal(struct {
+		A []int `json:"a"`
+		B []int `json:"b"`
+		C []int `json:"c"`
+	}{a, b, c})
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
 	return
 }
 
