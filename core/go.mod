@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	github.com/bep/debounce v1.2.1
+	github.com/cespare/xxhash v1.1.0
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/google/go-github/v59 v59.0.0
 	github.com/gorilla/websocket v1.5.3
