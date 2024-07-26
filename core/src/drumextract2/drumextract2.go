@@ -26,6 +26,70 @@ var mutex sync.Mutex
 
 const TRANSIENT_NUDGE = 22050 / 2
 
+func DrumExtract2API(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
+	filename := utils.RandomString(10) + ".ogg"
+	defer os.Remove(filename)
+
+	cmd := exec.Command("sox", filePath, "-r", "32000", "-c", "1", filename)
+	err = cmd.Run()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	// Create a buffer to store the file contents
+	var requestBody bytes.Buffer
+	_, err = io.Copy(&requestBody, file)
+	if err != nil {
+		return
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest("PUT", "https://tool.getectocore.com/drumextract", &requestBody)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	// Send the HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read and print the response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	var response struct {
+		A []int `json:"a"`
+		B []int `json:"b"`
+		C []int `json:"c"`
+	}
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	kickTransients = response.A
+	snareTransients = response.B
+	otherTransients = response.C
+	return
+}
+
 func DrumExtract2(filePath string) (kickTransients []int, snareTransients []int, otherTransients []int, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
