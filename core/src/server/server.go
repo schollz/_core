@@ -11,9 +11,11 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -171,6 +173,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	// very special paths
 	if r.URL.Path == "/drumextract" {
 		return handleDrumExtract(w, r)
+	} else if r.URL.Path == "/onsetdetect" {
+		return handleOnsetDetect(w, r)
 	} else if r.Method == "POST" {
 		// POST file
 		if r.URL.Path == "/download" {
@@ -507,22 +511,30 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 			}
 		} else if message.Action == "onsetdetect" {
-			log.Info(message)
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
-			if err == nil {
-				onsets, err := onsetdetect.OnsetDetect(f.PathToFile+".ogg", int(message.Number))
+			go func() {
+				log.Info(message)
+				f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 				if err == nil {
-					log.Tracef("onsets: %+v", onsets)
-					c.WriteJSON(Message{
-						Action:     "onsetdetect",
-						SliceStart: onsets,
-					})
+					_, errAubioOnset := exec.LookPath("aubioonset")
+					var onsets []float64
+					if errAubioOnset == nil {
+						onsets, err = onsetdetect.OnsetDetect(f.PathToFile+".ogg", int(message.Number))
+					} else {
+						onsets, err = onsetdetect.OnsetDetectAPI(f.PathToFile+".ogg", int(message.Number))
+					}
+					if err == nil {
+						log.Tracef("onsets: %+v", onsets)
+						c.WriteJSON(Message{
+							Action:     "onsetdetect",
+							SliceStart: onsets,
+						})
+					} else {
+						log.Error(err)
+					}
 				} else {
 					log.Error(err)
 				}
-			} else {
-				log.Error(err)
-			}
+			}()
 		} else if message.Action == "gettransients" {
 			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
 			if err == nil {
@@ -787,6 +799,57 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 const maxUploadSize = 10 * 1024 * 1024 // 10 MB
+
+func handleOnsetDetect(w http.ResponseWriter, r *http.Request) (err error) {
+	if r.Method != http.MethodPut {
+		log.Error(err)
+		return
+	}
+	// get query number
+	query := r.URL.Query()
+	if _, ok := query["number"]; !ok {
+		err = fmt.Errorf("no number")
+		return
+	}
+	numberString := query["number"][0]
+	number, err := strconv.ParseInt(numberString, 10, 64)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
+
+	folder := path.Join(StorageFolder, "onsetdetect")
+	// create folder if it doesn't exist
+	os.MkdirAll(folder, 0777)
+	// create a random file name
+	filename := path.Join(folder, utils.RandomString(16)+".ogg")
+
+	out, err := os.Create(filename)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, r.Body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	a, err := onsetdetect.OnsetDetect(filename, int(number))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	// return json with a, b, c
+	jsonResponse, _ := json.Marshal(a)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
+	return
+}
 
 func handleDrumExtract(w http.ResponseWriter, r *http.Request) (err error) {
 	if r.Method != http.MethodPut {
