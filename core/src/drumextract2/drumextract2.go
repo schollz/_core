@@ -16,6 +16,7 @@ import (
 	"sync"
 
 	"github.com/schollz/_core/core/src/onsetdetect"
+	"github.com/schollz/_core/core/src/sox"
 	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
 	"github.com/schollz/progressbar/v3"
@@ -30,7 +31,7 @@ func DrumExtract2API(filePath string) (kickTransients []int, snareTransients []i
 	filename := utils.RandomString(10) + ".ogg"
 	defer os.Remove(filename)
 
-	cmd := exec.Command("sox", filePath, "-r", "32000", "-c", "1", filename)
+	cmd := exec.Command(sox.GetBinary(), filePath, "-r", "32000", "-c", "1", filename)
 	err = cmd.Run()
 	if err != nil {
 		log.Error(err)
@@ -296,7 +297,7 @@ func snapToOffsets(transients []int, onsets []int) []int {
 func readWav(filePath string) ([]float64, int, error) {
 	tmpRawFile := utils.RandomString(10) + ".raw"
 	// convert the .wav file to raw data using the sox command
-	cmdArray := []string{"sox", filePath, "-t", "raw", "-r", "44100", "-b", "16", "-c", "1", tmpRawFile}
+	cmdArray := []string{sox.GetBinary(), filePath, "-t", "raw", "-r", "44100", "-b", "16", "-c", "1", tmpRawFile}
 	log.Trace(strings.Join(cmdArray, " "))
 	cmd := exec.Command(cmdArray[0], cmdArray[1:]...)
 	defer os.Remove(tmpRawFile)
