@@ -23,7 +23,7 @@ func OnsetDetectAPI(fname string, numOnsets int) (onsets []float64, err error) {
 	filename := utils.RandomString(10) + ".ogg"
 	defer os.Remove(filename)
 
-	cmd := exec.Command(sox.GetBinary(), fname, "-r", "32000", "-c", "1", filename)
+	cmd := exec.Command(sox.GetBinary(), fname, "-r", "44100", "-c", "1", filename)
 	err = cmd.Run()
 	if err != nil {
 		log.Error(err)

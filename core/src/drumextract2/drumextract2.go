@@ -31,7 +31,7 @@ func DrumExtract2API(filePath string) (kickTransients []int, snareTransients []i
 	filename := utils.RandomString(10) + ".ogg"
 	defer os.Remove(filename)
 
-	cmd := exec.Command(sox.GetBinary(), filePath, "-r", "32000", "-c", "1", filename)
+	cmd := exec.Command(sox.GetBinary(), filePath, "-r", "44100", "-c", "1", filename)
 	err = cmd.Run()
 	if err != nil {
 		log.Error(err)
