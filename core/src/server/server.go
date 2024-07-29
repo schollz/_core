@@ -75,7 +75,6 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 	if err != nil {
 		return
 	}
-
 	// generate a random integer for the session
 	rng, err := codename.DefaultRNG()
 	if err != nil {
@@ -93,6 +92,29 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 		return nil
 	})
 	if err != nil {
+		return
+	}
+	// make sure that the keystore doesn't have entries that don't exist
+	// iterate through all the keys and delete if the file doesn't exist
+	err = keystore.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("states"))
+		c := b.Cursor()
+
+		for k, _ := c.First(); k != nil; k, _ = c.Next() {
+			folder := strings.TrimPrefix(string(k), "/")
+			if _, err := os.Stat(path.Join(StorageFolder, folder)); os.IsNotExist(err) {
+				log.Tracef("folder %s does not exist, deleting", folder)
+				err = b.Delete(k)
+				if err != nil {
+					log.Error(err)
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Error(err)
 		return
 	}
 
