@@ -241,7 +241,7 @@ function generateRandomWord() {
 
 const socketMessageListener = (e) => {
     data = JSON.parse(e.data);
-    console.log("socketMessageListener", data.action)
+    // console.log("socketMessageListener", data.action)
     if (data.action == "processed") {
         console.log("processed");
         for (var i = 0; i < data.file.SliceStart.length; i++) {
@@ -272,6 +272,7 @@ const socketMessageListener = (e) => {
         }
         console.log(data);
     } else if (data.action == "onsetdetect") {
+        console.log(data);
         if (wsf != null) {
             app.deleteAllRegions();
             const duration = wsf.getDuration();
@@ -473,11 +474,14 @@ const updateAllRegions = () => {
             continue;
         }
 
-        if (i == 0 || regions[i].start > regions[i - 1].start) {
+        // console.log(`updateAllRegions: ${i} ${regions[i].start} ${regions[i].end}`);
+        if (sliceStart.length == 0 || regions[i].start > sliceStart[sliceStart.length - 1]) {
+            // console.log(`updateAllRegions: added`);
             sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
             sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
         }
     }
+    // console.log(`updateAllRegions: ${sliceStart.length} slices`);
 
     // update locally
     app.banks[app.selectedBank].files[app.selectedFile].SliceStart = sliceStart;
@@ -486,7 +490,7 @@ const updateAllRegions = () => {
     // update remotely
     socket.send(JSON.stringify({
         action: "setslices",
-        filename: filename,
+        filename: app.banks[app.selectedBank].files[app.selectedFile].Filename,
         sliceStart: sliceStart,
         sliceStop: sliceStop,
     }));
@@ -659,9 +663,7 @@ app = new Vue({
 
             // find all the parents of `.regionsvg` and add to the style
             let regionsvg = document.querySelectorAll('#waveform > div')[0].shadowRoot.querySelectorAll('.regionsvg');
-            console.log(regionsvg)
             for (var i = 0; i < regionsvg.length; i++) {
-                console.log(regionsvg[i])
                 regionsvg[i].parentElement.style.display = 'flex';
                 regionsvg[i].parentElement.style.justifyContent = 'center';
                 regionsvg[i].parentElement.style.alignItems = 'center';
@@ -692,7 +694,6 @@ app = new Vue({
             this.regular_message += `Download this firmware to the new drive: <a href='https://github.com/schollz/_core/releases/download/${app.latestVersion}/zeptocore_${app.latestVersion}.uf2'>${app.latestVersion}</a>`;
         },
         uploadFirmare() {
-            console.log("uploading firmware");
             this.deviceFirmwareUpload = true;
             socket.send(JSON.stringify({
                 action: "uploadfirmware",
@@ -701,8 +702,6 @@ app = new Vue({
         updateSlicesPerBeat() {
             if (socket != null) {
                 setTimeout(() => {
-                    console.log("updateSlicesPerBeat");
-                    console.log(this.banks[this.selectedBank].files[this.selectedFile].SpliceTrigger);
                     socket.send(JSON.stringify({
                         action: "setsplicetrigger",
                         filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
@@ -712,7 +711,6 @@ app = new Vue({
             }
         },
         updateSpliceVariable() {
-            console.log("updateSpliceVariable");
             setTimeout(() => {
                 // update the server file
                 socket.send(JSON.stringify({
@@ -752,7 +750,6 @@ app = new Vue({
         mergeSelectedFiles() {
             // organize selected files by their index
             this.selectedFiles.sort((a, b) => (a > b) ? 1 : -1);
-            console.log('Selected Files:', this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename));
             socket.send(JSON.stringify({
                 action: "mergefiles",
                 filenames: this.selectedFiles.map(index => this.banks[this.selectedBank].files[index].Filename),
@@ -790,7 +787,6 @@ app = new Vue({
                 const numRegions = parseInt(document.getElementById("onsetSlices").value);
                 const duration = wsf.getDuration();
                 const regionDuration = duration / numRegions;
-                console.log(numRegions, duration, regionDuration);
                 for (var i = 0; i < numRegions; i++) {
                     wsRegions.addRegion({
                         start: i * regionDuration,
@@ -807,7 +803,6 @@ app = new Vue({
                 const bpm = this.banks[this.selectedBank].files[this.selectedFile].BPM;
                 const lengthPerBeat = 60 / bpm;
                 const lengthPerSliceCurrent = regionDuration;
-                console.log('slices per beat', lengthPerBeat / lengthPerSliceCurrent);
                 this.banks[this.selectedBank].files[this.selectedFile].SpliceVariable = false;
                 setTimeout(() => {
                     this.updateSpliceVariable();
@@ -833,7 +828,6 @@ app = new Vue({
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
-            console.log('totalBytesRequested', totalBytesRequested);
             if (fadeOutTimeout != null) {
                 clearTimeout(fadeOutTimeout);
             }
@@ -1223,7 +1217,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         }
     }
     if (isEmpty) {
-        console.log("no transients?");
+        // console.log("no transients?");
         // send message to server
         socket.send(JSON.stringify({
             action: "gettransients",
@@ -1232,8 +1226,8 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             fileNum: app.selectedFile,
         }));
     }
-    console.log('showWaveform', filename);
-    console.log('sliceType', sliceType);
+    // console.log('showWaveform', filename, transients.size);
+    // console.log('sliceType', sliceType);
     var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
     var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
     document.getElementById('waveform-parent').style = newWidth;
