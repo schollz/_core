@@ -9,10 +9,13 @@ require (
 	github.com/google/go-github/v59 v59.0.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/mpiannucci/peakdetect v0.0.0-20160920143128-9526111f1fb9
+	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762
+	github.com/muesli/kmeans v0.3.1
+	github.com/muesli/silhouette v0.0.0-20190918002912-9bb99635ab9c
 	github.com/otiai10/copy v1.14.0
 	github.com/schollz/codename v0.0.0-20240708161051-eee8ae079887
 	github.com/schollz/logger v1.2.0
-	github.com/schollz/progressbar/v3 v3.14.4
+	github.com/schollz/progressbar/v3 v3.14.5
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.8.4
 	go.bug.st/serial v1.6.2
@@ -20,15 +23,19 @@ require (
 )
 
 require (
+	github.com/blend/go-sdk v1.20240719.1 // indirect
 	github.com/creack/goselect v0.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/wcharczuk/go-chart v2.0.1+incompatible // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
+	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect

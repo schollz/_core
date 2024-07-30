@@ -14,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/muesli/clusters"
+	"github.com/muesli/kmeans"
+	"github.com/muesli/silhouette"
 	"github.com/schollz/_core/core/src/sox"
 	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
@@ -72,12 +75,76 @@ func OnsetDetectAPI(fname string, numOnsets int) (onsets []float64, err error) {
 }
 
 func OnsetDetect(fname string, numOnsets int) (onsets []float64, err error) {
-	onsets, err = getOnsets(fname, numOnsets)
+	allOnsets, err := getOnsets(fname, numOnsets)
 	if err != nil {
 		return
 	}
-	onsets, err = findWindows(onsets, numOnsets)
+	// find best onset for each window
+	duration, err := sox.Length(fname)
+	if err != nil {
+		return
+	}
+	for i := 0; i < numOnsets; i++ {
+		windowStart := (float64(i) - 0.5) / float64(numOnsets) * duration
+		windowEnd := (float64(i+1) - 0.5) / float64(numOnsets) * duration
+		onsetSubset := []float64{}
+		for _, onset := range allOnsets {
+			if onset >= windowStart && onset <= windowEnd {
+				onsetSubset = append(onsetSubset, onset)
+			}
+		}
+		if len(onsetSubset) == 0 {
+			onsets = append(onsets, (float64(i))/float64(numOnsets)*duration)
+		} else {
+			onsets = append(onsets, findBiggestClusterCenter(onsetSubset))
+		}
+	}
+
+	log.Debugf("onset detection: %+v", onsets)
+
+	// onsets, err = findWindows(allOnsets, numOnsets)
 	log.Trace(onsets)
+	return
+}
+
+func findBiggestClusterCenter(data []float64) (center float64) {
+	if len(data) < 3 {
+		center = data[0]
+		return
+	}
+	var d clusters.Observations
+	for _, v := range data {
+		d = append(d, clusters.Coordinates{
+			v,
+			0,
+		})
+	}
+
+	km := kmeans.New()
+
+	numClusters, _, err := silhouette.EstimateK(d, 8, km)
+	if err != nil {
+		if len(data) < 4 {
+			numClusters = 2
+		} else {
+			numClusters = 3
+		}
+	}
+
+	clusters, _ := km.Partition(d, numClusters)
+
+	// find largest cluster
+	maxCluster := 0
+	maxClusterSize := 0
+	for i, c := range clusters {
+		if len(c.Observations) > maxClusterSize {
+			maxClusterSize = len(c.Observations)
+			maxCluster = i
+		}
+		log.Tracef("cluster %d) %.3f,%d\n", i+1, c.Center[0], len(c.Observations))
+	}
+	center = clusters[maxCluster].Center[0]
+	log.Tracef("center: %.3f", center)
 	return
 }
 
@@ -100,8 +167,8 @@ func getOnsets(fname string, numOnsets int) (onsets []float64, err error) {
 	joblist := []job{}
 
 	// for _, algo := range []string{"energy", "hfc", "specflux", "madmom/OnsetDetector", "madmom/OnsetDetectorLL", "madmom/SuperFlux", "madmom/SuperFluxNN"} {
-	for _, algo := range []string{"energy", "hfc", "specflux"} {
-		thresholds := []float64{3, 2.5, 2, 1.5, 1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.1, 0.05}
+	for _, algo := range []string{"mkl", "complex", "energy", "hfc", "specflux"} {
+		thresholds := []float64{3, 2, 1.5, 1, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.1, 0.05}
 		if strings.Contains(algo, "madmom/") {
 			thresholds = []float64{0.3, 0.2, 0.1}
 		}
