@@ -99,8 +99,13 @@ func getOnsets(fname string, numOnsets int) (onsets []float64, err error) {
 
 	joblist := []job{}
 
+	// for _, algo := range []string{"energy", "hfc", "specflux", "madmom/OnsetDetector", "madmom/OnsetDetectorLL", "madmom/SuperFlux", "madmom/SuperFluxNN"} {
 	for _, algo := range []string{"energy", "hfc", "specflux"} {
-		for _, threshold := range []float64{5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.1, 0.05} {
+		thresholds := []float64{3, 2.5, 2, 1.5, 1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.1, 0.05}
+		if strings.Contains(algo, "madmom/") {
+			thresholds = []float64{0.3, 0.2, 0.1}
+		}
+		for _, threshold := range thresholds {
 			joblist = append(joblist, job{algo, threshold})
 		}
 	}
@@ -117,7 +122,20 @@ func getOnsets(fname string, numOnsets int) (onsets []float64, err error) {
 			for j := range jobs {
 				var r result
 				var out []byte
-				out, r.err = exec.Command("aubioonset", "-i", fname, "-B", "128", "-H", "128", "-t", fmt.Sprint(j.threshold), "-O", j.algo, "-M", fmt.Sprint(duration/128.0)).Output()
+				var cmd *exec.Cmd
+				if strings.Contains(j.algo, "madmom/") {
+					// check if dev/madmom/.venv exists
+					_, errExists := os.Stat("./dev/madmom/.venv/bin/python")
+					if errExists != nil {
+						r.err = fmt.Errorf("madmom not installed")
+						results <- r
+						return
+					}
+					cmd = exec.Command("./dev/madmom/.venv/bin/python", "./dev/"+j.algo, "-t", fmt.Sprint(j.threshold), "single", fname)
+				} else {
+					cmd = exec.Command("aubioonset", "-i", fname, "-B", "128", "-H", "128", "-t", fmt.Sprint(j.threshold), "-O", j.algo, "-M", fmt.Sprint(duration/128.0))
+				}
+				out, r.err = cmd.Output()
 				for _, line := range strings.Split(string(out), "\n") {
 					num, errNum := strconv.ParseFloat(line, 64)
 					if errNum == nil {
