@@ -53,59 +53,59 @@ envs:
 	export PICO_SDK_PATH=/home/zns/pico/pico-sdk 
 
 
-wavetable:
-	cd lib && python3 wavetable.py > wavetable_data.h
+wavetable: .venv
+	cd lib && ../.venv/bin/python wavetable.py > wavetable_data.h
 	clang-format -i --style=google lib/wavetable_data.h
 
-lib/biquad.h:
-	cd lib && python3 biquad.py > biquad.h
+lib/biquad.h: .venv
+	cd lib && ../.venv/bin/python biquad.py > biquad.h
 
-lib/fuzz.h:
-	cd lib && python3 fuzz.py > fuzz.h
+lib/fuzz.h: .venv
+	cd lib && ../.venv/bin/python fuzz.py > fuzz.h
 	clang-format -i --style=google lib/fuzz.h
 
-lib/transfer_doublesine.h:
-	cd lib && python3 transfer_doublesine.py > transfer_doublesine.h
+lib/transfer_doublesine.h: .venv
+	cd lib && ../.venv/bin/python transfer_doublesine.py > transfer_doublesine.h
 	clang-format -i --style=google lib/transfer_doublesine.h
 
 
-lib/sinewaves.h:
-	python3 lib/sinewaves.py > lib/sinewaves.h
+lib/sinewaves.h: .venv
+	.venv/bin/python lib/sinewaves.py > lib/sinewaves.h
 	clang-format -i lib/sinewaves.h
 
-lib/sinewaves2.h:
-	python3 lib/sinewaves2.py > lib/sinewaves2.h
+lib/sinewaves2.h: .venv
+	.venv/bin/python lib/sinewaves2.py > lib/sinewaves2.h
 	clang-format -i lib/sinewaves2.h
 
-lib/crossfade3.h:
+lib/crossfade3.h: .venv
 	# set block size to 441
-	cd lib && python3 crossfade3.py 441 > crossfade3.h
+	cd lib && ../.venv/bin/python crossfade3.py 441 > crossfade3.h
 	clang-format -i --style=google lib/crossfade3.h 
 
-lib/selectx2.h:
-	cd lib && python3 selectx2.py > selectx2.h
+lib/selectx2.h: .venv
+	cd lib && ../.venv/bin/python selectx2.py > selectx2.h
 	clang-format -i --style=google lib/selectx2.h
 	
-lib/crossfade.h: lib/crossfade3.h
-	cd lib && python3 transfer_saturate.py > transfer_saturate.h
+lib/crossfade.h: .venv lib/crossfade3.h
+	cd lib && ../.venv/bin/python transfer_saturate.py > transfer_saturate.h
 	clang-format -i --style=google lib/transfer_saturate.h 
-	cd lib && python3 transfer_distortion.py > transfer_distortion.h
+	cd lib && ../.venv/bin/python transfer_distortion.py > transfer_distortion.h
 	clang-format -i --style=google lib/transfer_distortion.h 
-	cd lib && python3 selectx.py > selectx.h
+	cd lib && ../.venv/bin/python selectx.py > selectx.h
 	clang-format -i --style=google lib/selectx.h 
-	cd lib && python3 biquad.py > biquad.h
+	cd lib && ../.venv/bin/python biquad.py > biquad.h
 	clang-format -i --style=google lib/biquad.h 
-	cd lib && python3 crossfade.py > crossfade.h
+	cd lib && ../.venv/bin/python crossfade.py > crossfade.h
 	clang-format -i --style=google lib/crossfade.h
-	cd lib && python3 crossfade2.py > crossfade2.h
+	cd lib && ../.venv/bin/python crossfade2.py > crossfade2.h
 	clang-format -i --style=google lib/crossfade2.h 
 
-lib/transfer_saturate2.h:
-	cd lib && python3 transfer_saturate2.py > transfer_saturate2.h
+lib/transfer_saturate2.h: .venv
+	cd lib && ../.venv/bin/python transfer_saturate2.py > transfer_saturate2.h
 	clang-format -i --style=google lib/transfer_saturate2.h
 
-lib/resonantfilter_data.h:
-	cd lib && python3 resonantfilter.py > resonantfilter_data.h
+lib/resonantfilter_data.h: .venv
+	cd lib && ../.venv/bin/python resonantfilter.py > resonantfilter_data.h
 	clang-format -i --style=google lib/resonantfilter_data.h
 
 lib/cuedsounds.h: lib/cuedsounds_zeptocore.h lib/cuedsounds_ectocore.h
@@ -149,8 +149,8 @@ resetpico2:
 upload: resetpico2 changebaud dobuild
 	./dev/upload.sh 
 
-bootreset: dobuild
-	python3 dev/reset_pico.py /dev/ttyACM0
+bootreset: .venv dobuild
+	.venv/bin/python dev/reset_pico.py /dev/ttyACM0
 
 autoload: dobuild bootreset upload
 
@@ -169,8 +169,8 @@ audio2:
 	sox lib/audio/amen_5c2d11c8_beats16_bpm170.flac -c 2 --bits 16 --encoding signed-integer --endian little amen_bpm170_beats16_stereo.wav
 	sox lib/audio/amen_0efedaab_beats8_bpm165.flac -c 2 --bits 16 --encoding signed-integer --endian little amen_bpm165_beats8_stereo.wav
 
-bass:
-	cd lib && python3 bass_raw.py audio/bass_e.wav bass_sample.h
+bass: .venv
+	cd lib && ../.venv/bin/python bass_raw.py audio/bass_e.wav bass_sample.h
 
 clean:
 	rm -rf build
@@ -193,8 +193,8 @@ release:
 server:
 	cd core && air
 
-resetpico: 
-	python3 dev/reset_pico.py 
+resetpico: .venv
+	.venv/bin/python dev/reset_pico.py 
 
 versions.md:
 	cd dev/gitread && go build -v && ./gitread ../../docs/content/versions/versions.md
@@ -241,6 +241,10 @@ core_linux_amd64: docsbuild
 docs: versions.md
 	cd docs && hugo serve -D --bind 0.0.0.0
 
+.venv:
+	uv venv 
+	uv pip install -r requirements.txt
+	
 dev/madmom/.venv:
 	cd dev/madmom && uv venv
 	cd dev/madmom && . .venv/bin/activate && uv pip install -r requirements.txt
