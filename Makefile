@@ -240,3 +240,7 @@ core_linux_amd64: docsbuild
 .PHONY: docs
 docs: versions.md
 	cd docs && hugo serve -D --bind 0.0.0.0
+
+dev/madmom/.venv:
+	cd dev/madmom && uv venv
+	cd dev/madmom && . .venv/bin/activate && uv pip install -r requirements.txt

@@ -1,0 +1,7 @@
+cython==3.0.10
+madmom @ git+https://github.com/CPJKU/madmom.git@0551aa8f48d71a367d92b5d3a347a0cf7cd97cc9
+mido==1.3.2
+numpy==1.26.4
+packaging==23.2
+scipy==1.14.0
+setuptools==72.1.0
