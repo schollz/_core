@@ -289,3 +289,7 @@ dev/samples/
 "docs/static/img/zeptocore\357\274\232 kick layering (v4.0.0 firmware release) [313Va6h9Ldc].webp"
 lib/cuedsounds_ectocore.h
 lib/cuedsounds_zeptocore.h
+dev/starting_samples_pikocore.tar
+dev/starting_samples_v4/
+requirements.txt
+test.c
