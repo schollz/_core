@@ -36,7 +36,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
-    - name: Create and activate a virtual environment
+    - name: Create and activate a Python virtual environment
       run: |
         curl -LsSf https://astral.sh/uv/install.sh | sh
         uv venv .venv
