@@ -35,7 +35,7 @@ There is [a simple lower case](https://www.thingiverse.com/thing:6616773) made b
 There is also [a case for USB powering](www.thingiverse.com/thing:6648821) only by [@pabloantxon](https://www.thingiverse.com/pabloantxon/designs) that is available for download and 3D printing:
 
 <figure class="imgcombo" style="margin: auto; text-align: center;">
-    <a href="https://www.thingiverse.com/thing:6616773">
+    <a href="https://www.thingiverse.com/thing:6648821">
         <img src="/img/case2.webp" style="max-width: 250px; display: block; margin: auto;">
         <figcaption>www.thingiverse.com/thing:6648821</figcaption>
     </a>
