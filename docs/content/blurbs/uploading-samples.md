@@ -176,15 +176,3 @@ And now the server can be accessed at `https://localhost:8000`.
 </details>
 
 
-as mentioned in the video there is a pricing tier:
-
-- $15 if you just buy the off-the-shelf components yourself from any vendor you want (more info at https://zeptocore.com/#zeptoboard). (note, this option has no buttons, no LEDS, no speaker and can only be used with a MIDI controller)
-- $35 for same as above but the components come from me and I use the extra $20 to support my firwmare development
-- $109 if you want to buy the components and SMT board from me, but you solder it yourself (this is the full zeptocore!)
-- $149 if you want to buy the components and SMT board from me, and I solder it for you in the next batch (batches every two weeks)
-- $179 if you want to buy the components and SMT board from me and I solder it and ship it same day ($30 for the expedited service)
-
-personally, I don't think the pricing is screwed up. the pricing reflects over 1,000 hours of firmware devleop
-
-
-
