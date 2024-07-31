@@ -43,6 +43,7 @@ func DrumExtract2API(filePath string) (kickTransients []int, snareTransients []i
 		return
 	}
 	defer file.Close()
+	defer os.Remove(filename)
 
 	// Create a buffer to store the file contents
 	var requestBody bytes.Buffer
