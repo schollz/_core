@@ -41,6 +41,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// periodically clean the sox cache
+	go func() {
+		for {
+			time.Sleep(10 * time.Minute)
+			sox.Clean()
+		}
+	}()
+
 	var chanString chan string
 	var chanPrepareUpload chan bool
 	var chanDeviceType chan string
