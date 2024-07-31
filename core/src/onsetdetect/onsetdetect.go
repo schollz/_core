@@ -32,6 +32,7 @@ func OnsetDetectAPI(fname string, numOnsets int) (onsets []float64, err error) {
 		log.Error(err)
 		return
 	}
+	defer os.Remove(filename)
 
 	file, err := os.Open(filename)
 	if err != nil {
