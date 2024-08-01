@@ -11,7 +11,7 @@ Uploading samples is a straightforward process similar to transferring a file on
 The sample tool is required for the sample preprocessing step, before transferring the samples to the SD card. This tool can be [accessed online](/tool) or [downloaded to your computer](#download-to-use-tool-offline) for local use.
 
 
-### Use tool online: **[zeptocore v5.0.7](/tool)** (Chrome and Firefox only)
+### Use tool online: **[zeptocore v5.0.8](/tool)** (Chrome and Firefox only)
 
 
 <p style="text-align:center">
@@ -43,7 +43,7 @@ Each of those **bankX** folders contains all the nessecary audio files. The **ba
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v5.0.7/core_windows_v5.0.7.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v5.0.8/core_windows_v5.0.8.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -57,13 +57,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v5.0.7/core_macos_amd64_v5.0.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v5.0.8/core_macos_amd64_v5.0.8 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v5.0.7/core_macos_aarch64_v5.0.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v5.0.8/core_macos_aarch64_v5.0.8 > core_macos
 ```
 
 Then to enable the program do:
@@ -86,7 +86,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v5.0.7/core_linux_amd64_v5.0.7)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v5.0.8/core_linux_amd64_v5.0.8)**
 
 After downloading, run it directly from the terminal.
 
