@@ -368,6 +368,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (mode_buttons16 == MODE_JUMP) {
       // retrigger
       go_retrigger_2key(key1, key2);
+    } else if (mode_buttons16 == MODE_MASH) {
+      toggle_fx(key2 - 4);
     }
   } else if (key1 == KEY_B) {
     // A
