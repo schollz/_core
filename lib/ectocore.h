@@ -477,8 +477,9 @@ void input_handling() {
   for (uint8_t i = 0; i < 4; i++) {
     gpio_init(gpio_mode_leds[i]);
     gpio_set_dir(gpio_mode_leds[i], GPIO_OUT);
-    gpio_put(gpio_mode_leds[i], 0);
+    gpio_put(gpio_mode_leds[i], 1);
   }
+  gpio_put(gpio_mode_leds[0], 0);
 #endif
 
 // create random dust timers
@@ -1104,9 +1105,9 @@ void input_handling() {
 #endif
 #ifdef ECTOCORE_VERSION_4
               for (uint8_t i = 0; i < 4; i++) {
-                gpio_put(gpio_mode_leds[i], 0);
+                gpio_put(gpio_mode_leds[i], 1);
               }
-              gpio_put(gpio_mode_leds[0], 1);
+              gpio_put(gpio_mode_leds[0], 0);
 #endif
               break;
             case TRIGGER_MODE_SNARE:
@@ -1117,9 +1118,9 @@ void input_handling() {
 #endif
 #ifdef ECTOCORE_VERSION_4
               for (uint8_t i = 0; i < 4; i++) {
-                gpio_put(gpio_mode_leds[i], 0);
+                gpio_put(gpio_mode_leds[i], 1);
               }
-              gpio_put(gpio_mode_leds[1], 1);
+              gpio_put(gpio_mode_leds[1], 0);
 #endif
               break;
             case TRIGGER_MODE_HH:
@@ -1130,9 +1131,9 @@ void input_handling() {
 #endif
 #ifdef ECTOCORE_VERSION_4
               for (uint8_t i = 0; i < 4; i++) {
-                gpio_put(gpio_mode_leds[i], 0);
+                gpio_put(gpio_mode_leds[i], 1);
               }
-              gpio_put(gpio_mode_leds[2], 1);
+              gpio_put(gpio_mode_leds[2], 0);
 #endif
               break;
             case TRIGGER_MODE_RANDOM:
@@ -1143,9 +1144,9 @@ void input_handling() {
 #endif
 #ifdef ECTOCORE_VERSION_4
               for (uint8_t i = 0; i < 4; i++) {
-                gpio_put(gpio_mode_leds[i], 0);
+                gpio_put(gpio_mode_leds[i], 1);
               }
-              gpio_put(gpio_mode_leds[2], 1);
+              gpio_put(gpio_mode_leds[3], 0);
 #endif
               break;
           }
