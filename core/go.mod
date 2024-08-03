@@ -15,7 +15,7 @@ require (
 	github.com/otiai10/copy v1.14.0
 	github.com/schollz/codename v0.0.0-20240708161051-eee8ae079887
 	github.com/schollz/logger v1.2.0
-	github.com/schollz/progressbar/v3 v3.14.5
+	github.com/schollz/progressbar/v3 v3.14.6
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.8.4
 	go.bug.st/serial v1.6.2
