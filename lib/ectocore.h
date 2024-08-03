@@ -459,12 +459,27 @@ void input_handling() {
     button_change[i] = ButtonChange_malloc();
   }
 
+#ifdef ECTOCORE_VERSION_3
   gpio_init(GPIO_MODE_LEDA);
   gpio_set_dir(GPIO_MODE_LEDA, GPIO_OUT);
   gpio_put(GPIO_MODE_LEDA, 0);
   gpio_init(GPIO_MODE_LEDB);
   gpio_set_dir(GPIO_MODE_LEDB, GPIO_OUT);
   gpio_put(GPIO_MODE_LEDB, 0);
+#endif
+#ifdef ECTOCORE_VERSION_4
+  const uint8_t gpio_mode_leds[4] = {
+      GPIO_MODE_1,
+      GPIO_MODE_2,
+      GPIO_MODE_3,
+      GPIO_MODE_4,
+  };
+  for (uint8_t i = 0; i < 4; i++) {
+    gpio_init(gpio_mode_leds[i]);
+    gpio_set_dir(gpio_mode_leds[i], GPIO_OUT);
+    gpio_put(gpio_mode_leds[i], 0);
+  }
+#endif
 
 // create random dust timers
 #define DUST_NUM 4
@@ -1083,23 +1098,55 @@ void input_handling() {
           switch (ectocore_trigger_mode) {
             case TRIGGER_MODE_KICK:
               printf("[ectocore] trigger mode: kick\n");
+#ifdef ECTOCORE_VERSION_3
               gpio_put(GPIO_MODE_LEDA, 0);
               gpio_put(GPIO_MODE_LEDB, 0);
+#endif
+#ifdef ECTOCORE_VERSION_4
+              for (uint8_t i = 0; i < 4; i++) {
+                gpio_put(gpio_mode_leds[i], 0);
+              }
+              gpio_put(gpio_mode_leds[0], 1);
+#endif
               break;
             case TRIGGER_MODE_SNARE:
               printf("[ectocore] trigger mode: snare\n");
+#ifdef ECTOCORE_VERSION_3
               gpio_put(GPIO_MODE_LEDA, 1);
               gpio_put(GPIO_MODE_LEDB, 0);
+#endif
+#ifdef ECTOCORE_VERSION_4
+              for (uint8_t i = 0; i < 4; i++) {
+                gpio_put(gpio_mode_leds[i], 0);
+              }
+              gpio_put(gpio_mode_leds[1], 1);
+#endif
               break;
             case TRIGGER_MODE_HH:
               printf("[ectocore] trigger mode: hh\n");
+#ifdef ECTOCORE_VERSION_3
               gpio_put(GPIO_MODE_LEDA, 0);
               gpio_put(GPIO_MODE_LEDB, 1);
+#endif
+#ifdef ECTOCORE_VERSION_4
+              for (uint8_t i = 0; i < 4; i++) {
+                gpio_put(gpio_mode_leds[i], 0);
+              }
+              gpio_put(gpio_mode_leds[2], 1);
+#endif
               break;
             case TRIGGER_MODE_RANDOM:
               printf("[ectocore] trigger mode: random\n");
+#ifdef ECTOCORE_VERSION_3
               gpio_put(GPIO_MODE_LEDA, 1);
               gpio_put(GPIO_MODE_LEDB, 1);
+#endif
+#ifdef ECTOCORE_VERSION_4
+              for (uint8_t i = 0; i < 4; i++) {
+                gpio_put(gpio_mode_leds[i], 0);
+              }
+              gpio_put(gpio_mode_leds[2], 1);
+#endif
               break;
           }
         }
