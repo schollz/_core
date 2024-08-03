@@ -68,7 +68,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     USBD_PID=0x1837
     SKIP_SDIO_CHECKSUMS=1
-    ECTOCORE_VERSION=3
+    ECTOCORE_VERSION_3=1
 )
 
 

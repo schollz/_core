@@ -64,6 +64,8 @@ jobs:
         cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
         make ectocore
         cp ectocore.uf2 ectocore_${{ github.event.release.name }}.uf2
+        make ectocore_v3
+        cp ectocore.uf2 ectocore_v0.3_${{ github.event.release.name }}.uf2
         make zeptoboard
         cp zeptoboard.uf2 zeptoboard_${{ github.event.release.name }}.uf2
         make core_windows.exe
@@ -75,11 +77,12 @@ jobs:
         make core_macos_amd64
         cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           zeptocore_${{ github.event.release.name }}.uf2
           ectocore_${{ github.event.release.name }}.uf2
+          ectocore_v0.3_${{ github.event.release.name }}.uf2
           zeptoboard_${{ github.event.release.name }}.uf2
           core_windows_${{ github.event.release.name }}.exe
           core_linux_amd64_${{ github.event.release.name }}
