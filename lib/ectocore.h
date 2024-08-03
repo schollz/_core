@@ -746,7 +746,7 @@ void input_handling() {
 
     // turn off trigout after 10 ms
     if (ecto_trig_out_last > 0) {
-      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 10) {
+      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 50) {
         gpio_put(GPIO_TRIG_OUT, 0);
         ecto_trig_out_last = 0;
       }
