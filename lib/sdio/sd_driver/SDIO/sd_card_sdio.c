@@ -540,16 +540,15 @@ static int sd_sdio_read_blocks(sd_card_t *sd_card_p, uint8_t *buffer,
 }
 
 // Helper function to configure whole GPIO in one line
-static void gpio_conf(uint gpio, enum gpio_function fn, bool pullup,
-                      bool pulldown, bool output, bool initial_state,
-                      bool fast_slew) {
+static void gpio_conf(uint gpio, bool pullup, bool pulldown, bool output,
+                      bool initial_state, bool fast_slew) {
   gpio_put(gpio, initial_state);
   gpio_set_dir(gpio, output);
   gpio_set_pulls(gpio, pullup, pulldown);
-  gpio_set_function(gpio, fn);
+  gpio_set_function(gpio, GPIO_FUNC_PIO1);
 
   if (fast_slew) {
-    padsbank0_hw->io[gpio] |= PADS_BANK0_GPIO0_SLEWFAST_BITS;
+    pads_bank0_hw->io[gpio] |= PADS_BANK0_GPIO0_SLEWFAST_BITS;
   }
 }
 
@@ -573,20 +572,13 @@ void sd_sdio_ctor(sd_card_t *sd_card_p) {
   sd_card_p->get_num_sectors = sd_sdio_sectorCount;
   sd_card_p->sd_readCID = sd_sdio_readCID;
 
-  //        pin                          function        pup   pdown  out state
-  //        fast
-  gpio_conf(sd_card_p->sdio_if.CLK_gpio, GPIO_FUNC_PIO1, true, false, true,
-            true, true);
-  gpio_conf(sd_card_p->sdio_if.CMD_gpio, GPIO_FUNC_PIO1, true, false, true,
-            true, true);
-  gpio_conf(sd_card_p->sdio_if.D0_gpio, GPIO_FUNC_PIO1, true, false, false,
-            true, true);
-  gpio_conf(sd_card_p->sdio_if.D1_gpio, GPIO_FUNC_PIO1, true, false, false,
-            true, true);
-  gpio_conf(sd_card_p->sdio_if.D2_gpio, GPIO_FUNC_PIO1, true, false, false,
-            true, true);
-  gpio_conf(sd_card_p->sdio_if.D3_gpio, GPIO_FUNC_PIO1, true, false, false,
-            true, true);
+  //        pin                          pup   pdown  out state fast
+  gpio_conf(sd_card_p->sdio_if.CLK_gpio, true, false, true, true, true);
+  gpio_conf(sd_card_p->sdio_if.CMD_gpio, true, false, true, true, true);
+  gpio_conf(sd_card_p->sdio_if.D0_gpio, true, false, false, true, true);
+  gpio_conf(sd_card_p->sdio_if.D1_gpio, true, false, false, true, true);
+  gpio_conf(sd_card_p->sdio_if.D2_gpio, true, false, false, true, true);
+  gpio_conf(sd_card_p->sdio_if.D3_gpio, true, false, false, true, true);
 
   if (sd_card_p->use_card_detect) {
     gpio_init(sd_card_p->card_detect_gpio);
