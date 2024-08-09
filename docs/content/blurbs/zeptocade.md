@@ -283,3 +283,35 @@ the zeptocade offers a seamless plug-and-play experience with its zeptocore, hou
     allow="autoplay"
   ></iframe>
 </div>
+
+## zeptocore exchange
+
+Removing and adding the zeptocore into the zeptocade is simple and straightforward. The zeptocore is held in place by four screws, which can be removed using a screwdriver. Once the screws are removed, the zeptocore can be lifted out of the zeptocade. To reinsert the zeptocore, simply place it back into the zeptocade and secure it with the screws.
+
+If you are adding the zeptocore for the first time, make sure to first separate the top chip from the bottom plate - the top chip will sit in the top left of the zeptocade (see image below).
+
+The first step is to remove the top four screws with an M4 hex key or Allen wrench.
+
+<figure class="imgcombo">
+<img src="/img/z1.webp">
+<figcaption>Remove the four top screws to allow the plate to be opened.</figcaption>
+</figure>
+
+The second step is to remove the back top corner screw and the standoff in the corner to leave enough room to add/remove the zeptocore.
+
+<figure class="imgcombo">
+<img src="/img/z2.webp">
+<figcaption>Remove the back corner screw to remove the standoff.</figcaption>
+</figure>
+
+
+Now, if adding the zeptocore, simply slide in the zeptocore and slot the knobs into the three holes. Then align the pins and push onto all of the header pins so that it is secure.
+
+If removing the zeptocore, simply pull the zeptocore out of the header pins and slide it out of the zeptocade.
+
+<figure class="imgcombo">
+<img src="/img/z3.webp">
+<figcaption>Carefully pull/push the zeptocore onto the header pins to exchange it.</figcaption>
+</figure>
+
+For more information, see the demo video [on how to add the zeptocore onto the header pins](https://www.youtube.com/watch?v=r8Gdd_zfoDE&t=746s).
