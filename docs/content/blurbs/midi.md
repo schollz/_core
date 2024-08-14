@@ -42,7 +42,7 @@ Using MIDI you can also easily sync up with Ableton or other DAWs.
 
 I created a device called [**the itty bitty midi**](https://ittybittymidi.com) which you can use directly with a MIDI controller to send MIDI messages to the zeptocore. Simply plug in the MIDI controller to the "IN" side of the itty bitty midi and then plug the "OUT" side to the `CLOCK` input of the zeptocore. The itty bitty midi will automatically forward MIDI messages to the zeptocore.
 
-*Note*: By default the zeptocore expects clock signals in the `CLOCK` input. You can switch to `MIDI` input by pressing the following combination: `13`+`10`+`11`+`16`.
+*Note*: By default the zeptocore expects clock signals in the `CLOCK` input. You can switch to `MIDI` input by pressing the following combination: `13`+`10`+`11`+`16`. More information [here](#midi-with-ittybittymidi).
 
 <figure class="imgcombo">
 <img src="/img/combo_midi.webp">
