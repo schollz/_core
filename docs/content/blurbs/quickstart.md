@@ -7,6 +7,7 @@ weight = 3
 
 # Quickstart
 
+Download a [one page PDF](/img/zeptocore_quickstart.pdf) of this guide for easy reference.
 
 ### on & off
 
