@@ -79,6 +79,48 @@ void ws2812_wheel_clear(WS2812 *ws2812) {
   }
 }
 
+void ws2812_set_wheel_section(WS2812 *ws2812, uint8_t val, uint8_t max,
+                              uint8_t r, uint8_t g, uint8_t b) {
+  debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
+  ws2812_wheel_clear(ws2812);
+
+  static uint8_t n = 16;
+  bool rhythm[n];
+  uint8_t arr[n];
+
+  generate_euclidean_rhythm(n, max, 0, rhythm);
+
+  uint8_t total = 0;
+  for (int i = 0; i < n; i++) {
+    arr[i] = rhythm[i];
+    total += arr[i];
+  }
+  if (total == 0) {
+    return;
+  }
+
+  // rotate until i=0 has a 1 in it
+  while (arr[0] == 0) {
+    bool tmp = arr[n - 1];
+    for (int j = n - 1; j > 0; j--) {
+      arr[j] = arr[j - 1];
+    }
+    arr[0] = tmp;
+  }
+
+  // cumulative sum of arr
+  arr[0] = 0;
+  for (int i = 1; i < n; i++) {
+    arr[i] += arr[i - 1];
+  }
+
+  for (uint8_t i = 0; i < 16; i++) {
+    if (arr[i] == val) {
+      WS2812_fill(ws2812, i, r, g, b);
+    }
+  }
+}
+
 void ws2812_set_wheel_euclidean(WS2812 *ws2812, uint8_t val, uint8_t r,
                                 uint8_t g, uint8_t b) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -900,9 +942,8 @@ void input_handling() {
                            sel_bank_next, sel_sample_next);
                     debounce_file_change = DEBOUNCE_FILE_SWITCH;
                   }
-                  ws2812_wheel_clear(ws2812);
-                  WS2812_fill(ws2812, val * 16 / banks_with_samples_num, 255, 0,
-                              0);
+                  ws2812_set_wheel_section(ws2812, j, banks_with_samples_num,
+                                           255, 0, 0);
                   WS2812_show(ws2812);
                 }
                 break;
@@ -1170,10 +1211,8 @@ void input_handling() {
                       debounce_file_change = DEBOUNCE_FILE_SWITCH;
                     }
                     printf("[ectocore] switch bank %d\n", sel_bank_next);
-                    ws2812_wheel_clear(ws2812);
-                    WS2812_fill(ws2812,
-                                sel_bank_next * 16 / banks_with_samples_num,
-                                255, 0, 0);
+                    ws2812_set_wheel_section(ws2812, sel_bank_next,
+                                             banks_with_samples_num, 255, 0, 0);
                     WS2812_show(ws2812);
                   }
                   break;
@@ -1182,8 +1221,8 @@ void input_handling() {
             }
           }
         } else {
-          ws2812_wheel_clear(ws2812);
-          WS2812_fill(ws2812, sel_bank_cur, 255, 0, 0);
+          ws2812_set_wheel_section(ws2812, sel_bank_cur, banks_with_samples_num,
+                                   255, 0, 0);
           WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
