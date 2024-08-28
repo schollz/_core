@@ -885,8 +885,8 @@ void input_handling() {
         if (gpio_get(GPIO_BTN_BANK) == 0 && !sf->fx_active[FX_TIMESTRETCH] &&
             fil_current_change == false) {
           // bank selection
-          printf("[ectocore] switch bank %d\n", val);
           val = (val * banks_with_samples_num) / 1024;
+          printf("[ectocore] switch bank %d\n", val);
           uint8_t bank_num = 0;
           for (uint8_t j = 0; j < banks_with_samples_num; j++) {
             if (banks[j]->num_samples > 0) {
@@ -895,8 +895,7 @@ void input_handling() {
                 if (sel_bank_next != sel_bank_cur) {
                   sel_sample_next =
                       sel_sample_cur % banks[sel_bank_next]->num_samples;
-                  if (debounce_file_change == 0 &&
-                      sel_sample_cur != sel_sample_next) {
+                  if (debounce_file_change == 0) {
                     printf("[ectocore] switch to bank %d, sample %d\n",
                            sel_bank_next, sel_sample_next);
                     debounce_file_change = DEBOUNCE_FILE_SWITCH;
