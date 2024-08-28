@@ -356,7 +356,7 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
       sf->vol = VOLUME_STEPS;
       sf->fx_active[FX_FUZZ] = 0;
       sf->fx_active[FX_SATURATE] = 1;
-      sf->fx_param[FX_SATURATE][0] = 100 + (val - 532) * 128 / (768 - 532);
+      sf->fx_param[FX_SATURATE][0] = 25 + (val - 532) * 128 / (768 - 532);
     } else if (val > 768) {
       sf->vol = VOLUME_STEPS;
       sf->fx_active[FX_SATURATE] = 0;
