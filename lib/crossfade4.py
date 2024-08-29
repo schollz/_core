@@ -42,7 +42,7 @@ def run():
 
     # Calculate the sine of the x-values
     cos_out = np.cos(np.pi / 2 * x)
-    cos_in = np.cos((1 - x) * np.pi / 2)
+    cos_in = np.sin(np.pi / 2 * x)
     sqrt_in = np.sqrt(np.sqrt(x))
     sqrt_out = np.sqrt(np.sqrt(1 - x))
     exp_out = np.exp(-x * np.exp(1.5))
