@@ -24,6 +24,8 @@ crossfade.h
 bass.raw 
 bass.wav 
 lib/crossfade2.h
+lib/crossfade3.h
+lib/crossfade4.h
 convert
 lib/bass_raw.h
 dev/zeptoconverter/1.wav
