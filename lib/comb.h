@@ -27,7 +27,7 @@
 #define COMB_RINGBUFFER_SIZE 2000  // samples
 #include "fixedpoint.h"
 //
-#include "crossfade3.h"
+#include "crossfade4.h"
 #include "stdbool.h"
 
 typedef struct Comb {

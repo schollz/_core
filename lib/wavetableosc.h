@@ -2,7 +2,7 @@
 #define LIB_WAVETABLEOSC_H 1
 #include "fixedpoint.h"
 //
-#include "crossfade3.h"
+#include "crossfade4.h"
 #include "stdbool.h"
 #include "wavetable_data.h"
 
