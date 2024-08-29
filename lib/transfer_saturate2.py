@@ -22,7 +22,7 @@ print("\n};")
 print(
     """
 int16_t transfer_doublesine(int32_t v) {
-    v = (v + 32768) % 8192;
+    v = (v + 32768);
     if (v < 8192) {
         return transfer_doublesine_raw[v];
     } else if (v < 16384) {
