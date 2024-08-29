@@ -75,7 +75,7 @@ bool is_arcade_box = false;
 #include "utils.h"
 #include "volume.h"
 //
-#include "crossfade3.h"
+#include "crossfade4.h"
 //
 #include "bitcrush.h"
 #include "fuzz.h"
