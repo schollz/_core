@@ -28,7 +28,7 @@
 #define BEATREPEAT_ZEROCROSSING_SIZE 1000
 #include "fixedpoint.h"
 //
-#include "crossfade3.h"
+#include "crossfade4.h"
 #include "stdbool.h"
 
 typedef struct BeatRepeat {
