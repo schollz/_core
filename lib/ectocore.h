@@ -1217,8 +1217,9 @@ void input_handling() {
                 if (banks[bank_num]->num_samples > 0) {
                   sel_bank_next = bank_num;
                   if (sel_bank_next != sel_bank_cur) {
-                    sel_sample_next =
-                        sel_sample_cur % banks[sel_bank_next]->num_samples;
+                    sel_sample_next = (knob_val[KNOB_SAMPLE] *
+                                       banks[sel_bank_next]->num_samples) /
+                                      1024;
                     if (debounce_file_change == 0) {
                       debounce_file_change = DEBOUNCE_FILE_SWITCH;
                     }
