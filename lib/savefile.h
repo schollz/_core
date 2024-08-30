@@ -45,9 +45,23 @@ typedef struct SaveFile {
 #endif
 } SaveFile;
 
+typedef struct StartupFile {
+  uint8_t bank;
+  uint64_t _padding;
+} StartupFile;
+#define STARTUPFILE_PATHNAME "startup"
+
 #define SAVEFILE_PATHNAME "save.bin"
 void test_sequencer_emit(uint8_t key) { printf("key %d\n", key); }
 void test_sequencer_stop() { printf("stop\n"); }
+
+StartupFile *StartupFile_malloc() {
+  StartupFile *sf;
+  sf = malloc(sizeof(StartupFile));
+  sf->bank = 0;
+  return sf;
+}
+
 SaveFile *SaveFile_malloc() {
   SaveFile *sf;
   sf = malloc(sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16));
@@ -159,6 +173,44 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
     }
   }
   f_close(&fil);
+  return true;
+}
+
+bool StartupFile_load(StartupFile *sf) {
+  FIL fil; /* File object */
+  char fname[32];
+  sprintf(fname, "%s", STARTUPFILE_PATHNAME);
+  if (f_open(&fil, fname, FA_READ)) {
+    printf("[StartupFile_load] no save file, skipping ");
+  } else {
+    unsigned int bytes_read;
+    if (f_read(&fil, sf, sizeof(StartupFile), &bytes_read)) {
+      printf("[StartupFile_load] problem reading save file");
+    } else {
+      printf("[StartupFile_load] bank = %d\n", sf->bank);
+    }
+  }
+  f_close(&fil);
+  return true;
+}
+
+bool StartupFile_save(StartupFile *sf) {
+  FRESULT fr;
+  FIL file; /* File object */
+  char fname[32];
+
+  sprintf(fname, "%s", STARTUPFILE_PATHNAME);
+  fr = f_open(&file, fname, FA_WRITE | FA_CREATE_ALWAYS);
+  if (FR_OK != fr) {
+    printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
+    return false;
+  }
+  unsigned int bw;
+  if (f_write(&file, sf, sizeof(StartupFile), &bw)) {
+    printf("[StartupFile_save] problem writing save\n");
+  }
+  printf("[StartupFile_save] wrote %d bytes\n", bw);
+  f_close(&file);
   return true;
 }
 

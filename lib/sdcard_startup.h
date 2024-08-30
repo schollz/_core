@@ -408,7 +408,9 @@ void savefile_do_load() {
     sel_sample_next = sf->sample;
     printf("[SaveFile] loaded bank %d sample %d\n", sel_bank_next,
            sel_sample_next);
+#ifndef INCLUDE_ECTOCORE
     fil_current_change = true;
+#endif
   }
 }
 
@@ -568,7 +570,8 @@ void sdcard_startup() {
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   // if you have too many samples, reverb won't work
   if (total_number_samples < 128) {
@@ -580,7 +583,8 @@ void sdcard_startup() {
   total_heap = getTotalHeap();
   used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
@@ -599,6 +603,25 @@ void sdcard_startup() {
   sdcard_startup_is_starting = false;
 
   savefile_do_load();
+
+#ifdef INCLUDE_ECTOCORE
+  // load startup file
+  startup_sf = StartupFile_malloc();
+  while (sync_using_sdcard) {
+    sleep_us(100);
+  }
+  sync_using_sdcard = true;
+  StartupFile_load(startup_sf);
+  sync_using_sdcard = false;
+  sf->bank = startup_sf->bank % banks_with_samples_num;
+  sel_bank_next = sf->bank;
+  sel_bank_cur = sf->bank;
+  sf->sample = sel_sample_next % banks[sel_bank_next]->num_samples;
+  sel_sample_next = sf->sample;
+  printf("[sdcard_startup] loaded startupfile: %d %d\n", sel_bank_next,
+         sel_sample_next);
+  fil_current_change_force = true;
+#endif
 
   fil_is_open = true;
   time_of_initialization = time_us_64();

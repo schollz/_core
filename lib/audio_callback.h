@@ -226,11 +226,13 @@ BREAKOUT_OF_MUTE:
     do_open_file_ready = false;
     // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
-  if (fil_current_change) {
+  if (fil_current_change || fil_current_change_force) {
     fil_current_change = false;
-    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
+    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next ||
+        fil_current_change_force) {
       do_open_file_ready = true;
       do_fade_out = true;
+      fil_current_change_force = false;
       // printf("[audio_callback] do_fade_out, readying do_open_file_ready\n");
     }
   }
@@ -793,7 +795,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;

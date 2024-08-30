@@ -782,7 +782,19 @@ void input_handling() {
           (sel_sample_next != sel_sample_cur ||
            sel_bank_cur != sel_bank_next)) {
         printf("[ectocore] switch sample %d\n", sel_sample_next);
-        fil_current_change = true;
+        if (sel_bank_cur != sel_bank_next) {
+          while (sync_using_sdcard) {
+            sleep_us(100);
+          }
+          sync_using_sdcard = true;
+          startup_sf->bank = sel_bank_next;
+          StartupFile_save(startup_sf);
+          f_open(&fil_current, fil_current_name, FA_READ);
+          sync_using_sdcard = false;
+          fil_current_change = true;
+        } else {
+          fil_current_change = true;
+        }
       }
     }
 
