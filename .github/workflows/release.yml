@@ -22,7 +22,7 @@ jobs:
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v3.0.0
       with:
-        hugo-version: '0.128.2'
+        hugo-version: '0.133.1'
     - name: Set up Python
       uses: actions/setup-python@v5.1.0
       with:
@@ -77,6 +77,14 @@ jobs:
         cp core_macos_aarch64 core_macos_aarch64_${{ github.event.release.name }}
         make core_macos_amd64
         cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
+        make ectocore_windows.exe
+        cp ectocore_windows.exe ectocore_windows_${{ github.event.release.name }}.exe
+        make ectocore_linux_amd64
+        cp ectocore_linux_amd64 ectocore_linux_amd64_${{ github.event.release.name }}
+        make ectocore_macos_aarch64
+        cp ectocore_macos_aarch64 ectocore_macos_aarch64_${{ github.event.release.name }}
+        make ectocore_macos_amd64
+        cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
@@ -89,3 +97,7 @@ jobs:
           core_linux_amd64_${{ github.event.release.name }}
           core_macos_aarch64_${{ github.event.release.name }}
           core_macos_amd64_${{ github.event.release.name }}
+          ectocore_windows_${{ github.event.release.name }}.exe
+          ectocore_linux_amd64_${{ github.event.release.name }}
+          ectocore_macos_aarch64_${{ github.event.release.name }}
+          ectocore_macos_amd64_${{ github.event.release.name }}
