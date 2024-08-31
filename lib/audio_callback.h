@@ -66,6 +66,19 @@ void i2s_callback_func() {
     return;
   }
 
+  if (fifo_count > 0) {
+    fifo_count--;
+    // write zeros
+    int32_t *samples = (int32_t *)buffer->buffer->bytes;
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      samples[i * 2 + 0] = 0;
+      samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
+    }
+
+    give_audio_buffer(ap, buffer);
+
+    return;
+  }
   EnvelopeLinearInteger_update(envelope_filter, update_filter_from_envelope);
 
   float envelope_volume_val = Envelope2_update(envelope_volume);
@@ -793,7 +806,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;

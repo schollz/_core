@@ -49,6 +49,7 @@ uint8_t sel_bank_cur = 0;
 uint8_t sel_bank_next = 0;
 uint8_t sel_bank_select = 0;
 bool fil_current_change = false;
+int fifo_count = 0;
 SampleList *banks[16];
 uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;

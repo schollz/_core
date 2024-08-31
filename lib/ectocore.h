@@ -64,6 +64,15 @@ typedef struct EctocoreFlash2 {
   uint32_t written;
   uint8_t bank;
 } EctocoreFlash2;
+#define FLASH_TARGET_OFFSET_2 1839104
+void write_struct_to_flash2(const void *data, size_t size) {
+  fifo_count = 500;
+  sleep_ms(10);
+  uint32_t ints = save_and_disable_interrupts();
+  flash_range_erase(FLASH_TARGET_OFFSET_2, FLASH_SECTOR_SIZE);
+  flash_range_program(FLASH_TARGET_OFFSET_2, (const uint8_t *)data, size);
+  restore_interrupts(ints);
+}
 
 uint8_t gpio_btn_taptempo_val = 0;
 

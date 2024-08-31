@@ -3,19 +3,6 @@
 
 #define FLASH_TARGET_OFFSET 1835008
 #define FLASH_TARGET_OFFSET_2 1839104
-// #define FLASH_TARGET_OFFSET_2 1966080
-
-// Function to write arbitrary C struct to flash memory
-void write_struct_to_flash2(const void* data, size_t size) {
-  // Disable interrupts to prevent flash access conflicts
-  uint32_t interrupt_status = save_and_disable_interrupts();
-  // Erase the flash sector before writing (sector size is 4096 bytes)
-  flash_range_erase(FLASH_TARGET_OFFSET_2, FLASH_SECTOR_SIZE);
-  // Write the data to flash
-  flash_range_program(FLASH_TARGET_OFFSET_2, (const uint8_t*)data, size);
-  // Restore interrupts
-  restore_interrupts(interrupt_status);
-}
 
 // Function to read arbitrary C struct from flash memory
 void read_struct_from_flash2(void* data, size_t size) {
