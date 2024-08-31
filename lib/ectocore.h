@@ -60,6 +60,11 @@ typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
 } EctocoreFlash;
 
+typedef struct EctocoreFlash2 {
+  uint32_t written;
+  uint8_t bank;
+} EctocoreFlash2;
+
 uint8_t gpio_btn_taptempo_val = 0;
 
 // toggle the fx
@@ -425,7 +430,21 @@ void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
 
+void load_data_from_flash() {
+  // load EctocoreFlash2 data
+  EctocoreFlash2 read_data;
+  read_struct_from_flash2(&read_data, sizeof(read_data));
+  if (read_data.written == 12345678) {
+    // data is not corrupted
+    printf("read_struct_from_flash2 bank=%d", read_data.bank);
+  } else {
+    printf("read_struct_from_flash2 corrupted");
+  }
+}
+
 void input_handling() {
+  load_data_from_flash();
+
   // flash bad signs
   while (!fil_is_open) {
     printf("waiting to start\n");
@@ -781,6 +800,12 @@ void input_handling() {
           sf->fx_active[FX_TIMESTRETCH] == false &&
           (sel_sample_next != sel_sample_cur ||
            sel_bank_cur != sel_bank_next)) {
+        if (sel_bank_cur != sel_bank_next) {
+          // save the current bank into the flash
+          EctocoreFlash2 write_data = {.written = 12345678,
+                                       .bank = sel_bank_next};
+          write_struct_to_flash2(&write_data, sizeof(write_data));
+        }
         printf("[ectocore] switch sample %d\n", sel_sample_next);
         fil_current_change = true;
       }
