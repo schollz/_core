@@ -34,6 +34,7 @@ const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
 bool do_open_file_ready = false;
+bool fil_current_change_force = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 
@@ -226,11 +227,13 @@ BREAKOUT_OF_MUTE:
     do_open_file_ready = false;
     // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
-  if (fil_current_change) {
+  if (fil_current_change || fil_current_change_force) {
     fil_current_change = false;
-    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
+    if (fil_current_change_force || sel_bank_cur != sel_bank_next ||
+        sel_sample_cur != sel_sample_next) {
       do_open_file_ready = true;
       do_fade_out = true;
+      fil_current_change_force = false;
       // printf("[audio_callback] do_fade_out, readying do_open_file_ready\n");
     }
   }
@@ -520,6 +523,11 @@ BREAKOUT_OF_MUTE:
     if (sf->fx_active[FX_SATURATE]) {
       for (uint16_t i = 0; i < values_len; i++) {
         values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
+      }
+      uint8_t tape_emulation_new = sf->fx_param[FX_SATURATE][1] * 4 / 256;
+      if (tape_emulation_new != tape_emulation) {
+        tape_emulation = tape_emulation_new;
+        fil_current_change_force = true;
       }
       Saturation_process(saturation, values, values_len);
     }
