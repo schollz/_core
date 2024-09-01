@@ -869,7 +869,7 @@ void input_handling() {
           debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
         }
         sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-                sel_sample_cur, sel_variation_next);
+                sel_sample_cur, sel_variation_next + tape_emulation * 2);
         fr = f_open(&fil_current, fil_current_name, FA_READ);
         if (fr != FR_OK) {
           debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));

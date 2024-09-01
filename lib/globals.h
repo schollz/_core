@@ -52,6 +52,7 @@ bool fil_current_change = false;
 SampleList *banks[16];
 uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;
+uint8_t tape_emulation = 0;
 
 FRESULT fil_result;
 struct repeating_timer timer;

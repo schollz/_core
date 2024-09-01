@@ -396,7 +396,7 @@ BREAKOUT_OF_MUTE:
         debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
       }
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation);
+              sel_sample_cur, sel_variation + tape_emulation * 2);
       fr = f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
@@ -458,7 +458,7 @@ BREAKOUT_OF_MUTE:
       printf("ERROR READING!\n");
       f_close(&fil_current);  // close and re-open trick
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation);
+              sel_sample_cur, sel_variation + tape_emulation * 2);
       f_open(&fil_current, fil_current_name, FA_READ);
       f_lseek(&fil_current, WAV_HEADER +
                                 ((banks[sel_bank_cur]
