@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"time"
@@ -189,6 +190,25 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 					if err != nil {
 						log.Error(err)
 						return
+					}
+
+					// create tape emulations
+					if i == 1 {
+						emulations := []string{"TC-260", "808 Comp and Tone", "That Dirty LoFi", "Old Telephone"}
+						for i, emulation := range emulations {
+							log.Tracef("emulation: %s on file %d", emulation, filei)
+							cmd := exec.Command("lv2file", "-i", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 0)), "-o", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+i*2)), "-P", emulation, "9")
+							err = cmd.Run()
+							if err != nil {
+								log.Error(err)
+							}
+							cmd = exec.Command("lv2file", "-i", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 1)), "-o", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 3+i*2)), "-P", emulation, "9")
+							err = cmd.Run()
+							if err != nil {
+								log.Error(err)
+							}
+						}
+
 					}
 				}
 			}
