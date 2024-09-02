@@ -755,6 +755,24 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
+  if (mode_amiga) {
+    // apply amiga
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      ResonantFilter_update(amigaFilter[channel], samples,
+                            buffer->max_sample_count, channel);
+    }
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      if (i % 2 == 1) {
+        // copy last
+        samples[i * 2 + 0] = samples[i * 2 - 2];
+        samples[i * 2 + 1] = samples[i * 2 - 1];
+      } else {
+        samples[i * 2 + 0] = (samples[i * 2 + 0] >> 16) << 16;
+        samples[i * 2 + 1] = (samples[i * 2 + 1] >> 16) << 16;
+      }
+    }
+  }
+
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
   give_audio_buffer(ap, buffer);

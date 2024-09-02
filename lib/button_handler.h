@@ -694,6 +694,14 @@ void button_handler(ButtonMatrix *bm) {
         }
 
 #endif
+      } else if (key_pressed[0] == 4 && key_pressed[1] == 6 &&
+                 key_pressed[2] == 9 && key_pressed[3] == 11) {
+        mode_amiga = !mode_amiga;
+        if (mode_amiga) {
+          DebounceDigits_setText(debouncer_digits, "AMIGA", led_text_time);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "NORM", led_text_time);
+        }
       } else if (key_pressed[0] == 9 && key_pressed[1] == 10 &&
                  key_pressed[2] == 14 && key_pressed[3] == 13) {
         // toggle random sequence mode
