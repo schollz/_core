@@ -197,6 +197,7 @@ bool playback_stopped = true;
 bool playback_restarted = false;
 bool audio_callback_in_mute = false;
 bool do_calibration_mode = false;
+bool mode_amiga = false;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
@@ -207,6 +208,7 @@ WaveBass *wavebass;
 #endif
 
 ResonantFilter *resFilter[2];
+ResonantFilter *amigaFilter[2];
 Gate *audio_gate;
 TapTempo *taptempo;
 Saturation *saturation;

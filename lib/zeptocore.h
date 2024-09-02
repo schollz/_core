@@ -658,7 +658,9 @@ void input_handling() {
           // set the bass volume
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
+#ifdef INCLUDE_SINEBASS
           WaveBass_set_volume(wavebass, adc);
+#endif
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
