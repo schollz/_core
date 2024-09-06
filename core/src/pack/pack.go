@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"time"
@@ -191,22 +190,17 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 						log.Error(err)
 						return
 					}
-
-					// create tape emulations
-					if i == 1 {
-						emulations := []string{"TC-260", "808 Comp and Tone", "That Dirty LoFi", "Old Telephone"}
-						for i, emulation := range emulations {
-							log.Tracef("emulation: %s on file %d", emulation, filei)
-							cmd := exec.Command("lv2file", "-i", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 0)), "-o", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+i*2)), "-P", emulation, "9")
-							err = cmd.Run()
-							if err != nil {
-								log.Error(err)
-							}
-							cmd = exec.Command("lv2file", "-i", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 1)), "-o", path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 3+i*2)), "-P", emulation, "9")
-							err = cmd.Run()
-							if err != nil {
-								log.Error(err)
-							}
+					// copy the variations if they exist
+					for j := 0; j < 100; j++ {
+						oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.%d.wav", filenameWithoutExtension, i, j))
+						newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+j*2+i))
+						if _, err := os.Stat(oldFname); os.IsNotExist(err) {
+							continue
+						}
+						// copy wav file
+						err = utils.CopyFile(oldFname, newFname)
+						if err != nil {
+							log.Error(err)
 						}
 
 					}

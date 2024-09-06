@@ -378,6 +378,36 @@ func (f File) Regenerate() {
 			log.Error(err)
 		}
 
+		// create the variatoins
+
+		// create tape emulations
+		_, err = exec.LookPath("lv2file")
+		if err == nil {
+			// create worker group
+			emulations := []string{"TC-260", "808 Comp and Tone", "That Dirty LoFi", "Old Telephone"}
+			var wg sync.WaitGroup
+			wg.Add(len(emulations))
+			for i, emulation := range emulations {
+				go func(i int, emulation string) {
+					defer wg.Done()
+					log.Tracef("emulation: %s on file %d", emulation, i)
+					fnameEmulation := path.Join(folder, fmt.Sprintf("%s.0.%d.wav", filenameWithouExt, i))
+					cmd := exec.Command("lv2file", "-i", fname0, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
+					err = cmd.Run()
+					if err != nil {
+						log.Error(err)
+					}
+					fnameEmulation = path.Join(folder, fmt.Sprintf("%s.1.%d.wav", filenameWithouExt, i))
+					cmd = exec.Command("lv2file", "-i", fname1, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
+					err = cmd.Run()
+					if err != nil {
+						log.Error(err)
+					}
+				}(i, emulation)
+			}
+			wg.Wait()
+		}
+
 		// fname2 := path.Join(folder, fmt.Sprintf("%s.2.wav", filenameWithouExt))
 		// err = createTimeStretched(f.PathToAudio, fname2, 0.125, f.Channels, f.Oversampling)
 		// if err != nil {
