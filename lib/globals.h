@@ -52,7 +52,14 @@ bool fil_current_change = false;
 SampleList *banks[16];
 uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;
-uint8_t tape_emulation = 0;
+uint8_t audio_variant = 0;
+uint8_t audio_variant_num = 0;
+
+void set_audio_variant(uint8_t x) {
+  if (x < audio_variant_num) {
+    audio_variant = x;
+  }
+}
 
 FRESULT fil_result;
 struct repeating_timer timer;
