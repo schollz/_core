@@ -172,7 +172,7 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 			for filei, file := range bank.Files {
 				log.Tracef("bank %d: %s", i, file)
 				filenameWithoutExtension := file[:len(file)-len(path.Ext(file))]
-				for i := 0; i < 100; i++ {
+				for i := 0; i < 2; i++ {
 					oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.wav", filenameWithoutExtension, i))
 					newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, i))
 					if _, err := os.Stat(oldFname); os.IsNotExist(err) {
@@ -191,10 +191,11 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 						return
 					}
 					// copy the variations if they exist
-					for j := 0; j < 100; j++ {
+					for j := 1; j < 4; j++ {
 						oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.%d.wav", filenameWithoutExtension, i, j))
 						newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+j*2+i))
 						if _, err := os.Stat(oldFname); os.IsNotExist(err) {
+							log.Error(err)
 							continue
 						}
 						// copy wav file
@@ -202,7 +203,6 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 						if err != nil {
 							log.Error(err)
 						}
-
 					}
 				}
 			}

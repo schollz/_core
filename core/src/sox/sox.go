@@ -479,6 +479,12 @@ func Slowdown(fname string, slowdown float64) (fname2 string, err error) {
 	return
 }
 
+func Stereo(fname string) (fname2 string, err error) {
+	fname2 = Tmpfile()
+	_, _, err = run(soxbinary, fname, fname2, "channels", "2")
+	return
+}
+
 func CopyPaste(fname string, startPos float64, endPos float64, pastePos float64, crossfade float64, leeway0 ...float64) (fname2 string, err error) {
 	copyLength := endPos - startPos
 	if copyLength < 0.05 {

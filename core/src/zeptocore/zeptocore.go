@@ -391,17 +391,38 @@ func (f File) Regenerate() {
 				go func(i int, emulation string) {
 					defer wg.Done()
 					log.Tracef("emulation: %s on file %d", emulation, i)
-					fnameEmulation := path.Join(folder, fmt.Sprintf("%s.0.%d.wav", filenameWithouExt, i))
-					cmd := exec.Command("lv2file", "-i", fname0, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
-					err = cmd.Run()
+					// convert fname0 to stereo
+					fname0_stereo, err := sox.Stereo(fname0)
 					if err != nil {
 						log.Error(err)
+						return
 					}
-					fnameEmulation = path.Join(folder, fmt.Sprintf("%s.1.%d.wav", filenameWithouExt, i))
-					cmd = exec.Command("lv2file", "-i", fname1, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
-					err = cmd.Run()
+					defer os.Remove(fname0_stereo)
+					fnameEmulation := path.Join(folder, fmt.Sprintf("%s.0.%d.wav", filenameWithouExt, i))
+					cmdString := []string{"lv2file", "-i", fname0_stereo, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel"}
+					cmd := exec.Command(cmdString[0], cmdString[1:]...)
+					stdout, errRun := cmd.CombinedOutput()
+					if errRun != nil {
+						log.Errorf("cmd: %+v", cmdString)
+						log.Errorf("stdout: %s", stdout)
+						log.Error(errRun)
+						return
+					}
+					// convert fname0 to stereo
+					fname1_stereo, err := sox.Stereo(fname1)
 					if err != nil {
 						log.Error(err)
+						return
+					}
+					defer os.Remove(fname1_stereo)
+					fnameEmulation = path.Join(folder, fmt.Sprintf("%s.1.%d.wav", filenameWithouExt, i))
+					cmd = exec.Command("lv2file", "-i", fname1_stereo, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
+					stdout, errRun = cmd.CombinedOutput()
+					if errRun != nil {
+						log.Errorf("cmd: %+v", cmdString)
+						log.Errorf("stdout: %s", stdout)
+						log.Error(errRun)
+						return
 					}
 				}(i, emulation)
 			}
