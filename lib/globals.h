@@ -54,10 +54,12 @@ uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;
 uint8_t audio_variant = 0;
 uint8_t audio_variant_num = 0;
+bool fil_current_change_force = false;
 
 void set_audio_variant(uint8_t x) {
-  if (x < audio_variant_num) {
+  if (x < audio_variant_num && x != audio_variant) {
     audio_variant = x;
+    fil_current_change_force = true;
   }
 }
 
