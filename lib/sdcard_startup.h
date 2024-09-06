@@ -453,7 +453,7 @@ void sdcard_startup() {
     // #endif
 
     char dirname[10];
-    sprintf(dirname, "bank%d", bi);
+    sprintf(dirname, "bank%d", bi + 1);
     banks[bi] = list_files(dirname);
     if (banks[bi]->num_samples > 0) {
       printf("[sdcard_startup] bank %d has %d samples\n", bi,
@@ -601,8 +601,8 @@ void sdcard_startup() {
          total_heap);
 
   FRESULT fr;
-  sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
-          sel_variation + audio_variant * 2);
+  sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
+          sel_sample_cur, sel_variation + audio_variant * 2);
 
   fr = f_open(&fil_current, fil_current_name, FA_READ);
   if (fr != FR_OK) {
