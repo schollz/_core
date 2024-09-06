@@ -57,7 +57,7 @@ uint8_t audio_variant_num = 0;
 bool fil_current_change_force = false;
 
 void set_audio_variant(uint8_t x) {
-  if (x < audio_variant_num && x != audio_variant) {
+  if (x <= audio_variant_num && x != audio_variant) {
     audio_variant = x;
     fil_current_change_force = true;
   }

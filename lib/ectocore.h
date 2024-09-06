@@ -492,6 +492,7 @@ void input_handling() {
       GPIO_BTN_TAPTEMPO,
   };
   uint32_t gpio_btn_last_pressed[BUTTON_NUM] = {0, 0, 0, 0};
+  uint32_t gpio_btn_held_time[BUTTON_NUM] = {0, 0, 0, 0};
   uint8_t gpio_btn_state[BUTTON_NUM] = {0, 0, 0, 0};
   ButtonChange *button_change[BUTTON_NUM];
   for (uint8_t i = 0; i < BUTTON_NUM; i++) {
@@ -1126,11 +1127,17 @@ void input_handling() {
       gpio_btn_state[i] = val;
       if (val) {
         gpio_btn_last_pressed[i] = to_ms_since_boot(get_absolute_time());
+      } else {
+        gpio_btn_held_time[i] =
+            to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i];
       }
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
-        if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
+        if (!val && gpio_btn_held_time[i] > 2000 && audio_variant_num > 0) {
+          // easter egg.. switch to super lofi-mode
+          set_audio_variant(audio_variant_num);
+        } else if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
           // A+B
           if (val == 1) {
             // reset tempo to the tempo of the current sample
