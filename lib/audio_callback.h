@@ -226,11 +226,13 @@ BREAKOUT_OF_MUTE:
     do_open_file_ready = false;
     // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
-  if (fil_current_change) {
+  if (fil_current_change || fil_current_change_force) {
     fil_current_change = false;
-    if (sel_bank_cur != sel_bank_next || sel_sample_cur != sel_sample_next) {
+    if (fil_current_change_force || sel_bank_cur != sel_bank_next ||
+        sel_sample_cur != sel_sample_next) {
       do_open_file_ready = true;
       do_fade_out = true;
+      fil_current_change_force = false;
       // printf("[audio_callback] do_fade_out, readying do_open_file_ready\n");
     }
   }
@@ -396,7 +398,7 @@ BREAKOUT_OF_MUTE:
         debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
       }
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation);
+              sel_sample_cur, sel_variation + audio_variant * 2);
       fr = f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
@@ -458,7 +460,7 @@ BREAKOUT_OF_MUTE:
       printf("ERROR READING!\n");
       f_close(&fil_current);  // close and re-open trick
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation);
+              sel_sample_cur, sel_variation + audio_variant * 2);
       f_open(&fil_current, fil_current_name, FA_READ);
       f_lseek(&fil_current, WAV_HEADER +
                                 ((banks[sel_bank_cur]
@@ -520,6 +522,10 @@ BREAKOUT_OF_MUTE:
     if (sf->fx_active[FX_SATURATE]) {
       for (uint16_t i = 0; i < values_len; i++) {
         values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
+      }
+      if (audio_variant_num > 0) {
+        set_audio_variant(sf->fx_param[FX_SATURATE][1] * audio_variant_num /
+                          256);
       }
       Saturation_process(saturation, values, values_len);
     }
@@ -811,7 +817,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
