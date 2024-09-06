@@ -34,7 +34,6 @@ const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
 bool do_open_file_ready = false;
-bool fil_current_change_force = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 
@@ -525,12 +524,8 @@ BREAKOUT_OF_MUTE:
         values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
       }
       if (audio_variant_num > 0) {
-        uint8_t audio_variant_new =
-            sf->fx_param[FX_SATURATE][1] * audio_variant_num / 256;
-        if (audio_variant_new != audio_variant) {
-          audio_variant = audio_variant_new;
-          fil_current_change_force = true;
-        }
+        set_audio_variant(sf->fx_param[FX_SATURATE][1] * audio_variant_num /
+                          256);
       }
       Saturation_process(saturation, values, values_len);
     }
