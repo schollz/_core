@@ -399,7 +399,7 @@ BREAKOUT_OF_MUTE:
         debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
       }
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation + tape_emulation * 2);
+              sel_sample_cur, sel_variation + audio_variant * 2);
       fr = f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
@@ -461,7 +461,7 @@ BREAKOUT_OF_MUTE:
       printf("ERROR READING!\n");
       f_close(&fil_current);  // close and re-open trick
       sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur,
-              sel_sample_cur, sel_variation + tape_emulation * 2);
+              sel_sample_cur, sel_variation + audio_variant * 2);
       f_open(&fil_current, fil_current_name, FA_READ);
       f_lseek(&fil_current, WAV_HEADER +
                                 ((banks[sel_bank_cur]
@@ -524,10 +524,13 @@ BREAKOUT_OF_MUTE:
       for (uint16_t i = 0; i < values_len; i++) {
         values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
       }
-      uint8_t tape_emulation_new = sf->fx_param[FX_SATURATE][1] * 4 / 256;
-      if (tape_emulation_new != tape_emulation) {
-        tape_emulation = tape_emulation_new;
-        fil_current_change_force = true;
+      if (audio_variant_num > 0) {
+        uint8_t audio_variant_new =
+            sf->fx_param[FX_SATURATE][1] * audio_variant_num / 256;
+        if (audio_variant_new != audio_variant) {
+          audio_variant = audio_variant_new;
+          fil_current_change_force = true;
+        }
       }
       Saturation_process(saturation, values, values_len);
     }
@@ -819,7 +822,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
