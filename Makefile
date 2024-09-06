@@ -9,6 +9,10 @@ GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
 dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 
+chowdsp:
+	sudo apt install -y lv2file
+	wget https://github.com/jatinchowdhury18/AnalogTapeModel/releases/download/v2.11.4/ChowTapeModel-Linux-x64-2.11.4.deb
+	sudo dpkg --install ChowTapeModel-Linux-x64-2.11.4.deb
 
 install_go21:
 	@if [ -x "$(GOINSTALLPATH)" ]; then \
