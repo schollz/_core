@@ -164,10 +164,10 @@ void input_handling() {
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv5.0.10");
+  printStringWithDelay("zv5.0.11");
 
   // print to screen
-  printf("version=v5.0.10\n");
+  printf("version=v5.0.11\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -265,7 +265,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v5.0.10\n");
+        printf("version=v5.0.11\n");
       }
     }
 
@@ -658,7 +658,9 @@ void input_handling() {
           // set the bass volume
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
+#ifdef INCLUDE_SINEBASS
           WaveBass_set_volume(wavebass, adc);
+#endif
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
