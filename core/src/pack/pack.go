@@ -163,7 +163,7 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 				continue
 			}
 			log.Tracef("bank %d has %d files", i, len(bank.Files))
-			bankFolder := path.Join(zipStorage, zipFilename, fmt.Sprintf("bank%d", i))
+			bankFolder := path.Join(zipStorage, zipFilename, fmt.Sprintf("bank%d", i+1))
 			err = os.MkdirAll(bankFolder, 0777)
 			if err != nil {
 				return
