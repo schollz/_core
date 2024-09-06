@@ -516,6 +516,22 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+  // check to see if bank0/0.*2+x).wav exists
+  // if it does, then we are in audio variant mode
+  for (uint8_t i = 2; i < 16; i++) {
+    char filename[100];
+    sprintf(filename, "bank0/0.%d.wav", i);
+    FILINFO fno;
+    FRESULT fr = f_stat(filename, &fno);
+    if (fr == FR_OK) {
+      audio_variant_num = i;
+      printf("[sdcard_startup] audio variant: %s\n", filename);
+    }
+  }
+  if (audio_variant_num > 0) {
+    audio_variant_num = (audio_variant_num - 1) / 2;
+  }
+
   // // print transients
   // sleep_ms(2000);
   // printf("transient_num_1: %d\n",
@@ -568,7 +584,8 @@ void sdcard_startup() {
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   // if you have too many samples, reverb won't work
   if (total_number_samples < 128) {
@@ -580,11 +597,12 @@ void sdcard_startup() {
   total_heap = getTotalHeap();
   used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap)*100.0, used_heap, total_heap);
+         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
+         total_heap);
 
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur, sel_sample_cur,
-          sel_variation);
+          sel_variation + audio_variant * 2);
 
   fr = f_open(&fil_current, fil_current_name, FA_READ);
   if (fr != FR_OK) {
