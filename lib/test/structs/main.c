@@ -51,7 +51,7 @@ int main() {
   FileList *fh[3];
   for (short i = 0; i < 3; i++) {
     char dirname[10];
-    sprintf(dirname, "bank%d\0", i);
+    sprintf(dirname, "bank%d\0", i + 1);
     fh[i] = list_files(dirname, 1);
     printf("fh->num: %d\n", fh[i]->num);
     printf("dirname: %s\n", dirname);
