@@ -1135,8 +1135,14 @@ void input_handling() {
         printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
         if (!val && gpio_btn_held_time[i] > 2000 && audio_variant_num > 0) {
-          // easter egg.. switch to super lofi-mode
-          set_audio_variant(audio_variant_num);
+          // easter egg..toggle lo-fi mode
+          if (!mode_amiga) {
+            mode_amiga = false;
+            set_audio_variant(0);
+          } else {
+            mode_amiga = true;
+            set_audio_variant(audio_variant_num);
+          }
         } else if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
           // A+B
           if (val == 1) {
