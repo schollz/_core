@@ -1400,6 +1400,15 @@ window.addEventListener('load', (event) => {
     }
 
     setTimeout(() => {
+        tippy('#windows_core', {
+            content: 'Click to download an offline version of this tool for windows.'
+        });
+        tippy('#macos_core', {
+            content: 'Click to download an offline version of this tool for macs.'
+        });
+        tippy('#linux_core', {
+            content: 'Click to download an offline version of this tool for linux.'
+        });
         tippy('#downloadZipButton', {
             content: 'After downloading, extract the contents to the SD card.',
         });
@@ -1410,7 +1419,7 @@ window.addEventListener('load', (event) => {
             content: 'Copy this workspace to a new location.',
         });
         tippy('#firmwareDownloadLink', {
-            content: 'Click to download the latest firmware from releases.',
+            content: 'Click to download the latest firmware.',
         });
         tippy('#show-dialog-settings', {
             content: 'Global settings are files that go on the SD card.',
