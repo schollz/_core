@@ -582,7 +582,26 @@ app = new Vue({
     },
     methods: {
 
+        addTransient: function () {
+            let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
+
+        },
+
         drawTransients() {
+            // remove all transients by iterating over all wsRegions
+            var hasTransients = true;
+            while (hasTransients) {
+                hasTransients = false;
+                for (var i = 0; i < wsRegions.regions.length; i++) {
+                    if (wsRegions.regions[i].id.startsWith('transient-')) {
+                        console.log(`removing ${wsRegions.regions[i].id}`);
+                        wsRegions.regions[i].remove();
+                        hasTransients = true;
+                        break;
+                    }
+                }
+            }
+
             let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
             let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
             let span = ` <span class="regionsvg" style="display: flex;
