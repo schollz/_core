@@ -583,7 +583,13 @@ app = new Vue({
     methods: {
 
         addTransient: function () {
-            let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
+            // add a transient into the middle of the waveform screen that is currently zoomed into
+            if (wsf != null) {
+                let duration = wsf.getDuration();
+                let start = wsf.getCurrentTime();
+                // get current zoom 
+                let zoom = wsf.getZoom();
+            }
 
         },
 
@@ -1265,6 +1271,11 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         console.log('zoom');
     });
 
+    wsf.on('interaction', () => {
+        const progress = wsf.getCurrentTime() / wsf.getDuration();  // Get the progress as a percentage
+        const timeClicked = progress * wsf.getDuration();
+        console.log('Waveform clicked at:', timeClicked, 'seconds');
+    });
 
     wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
 
@@ -1341,8 +1352,24 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         })
         wsRegions.on('region-clicked', (region, e) => {
             e.stopPropagation() // prevent triggering a click on the waveform
+
+
+            // Get the click position in the waveform in pixels
+            const regionElement = region.element;
+            const rect = regionElement.getBoundingClientRect(); // Get region's bounding rectangle
+            const clickX = e.clientX - rect.left; // X position relative to the region's left side
+            const clickPercent = clickX / rect.width; // Percentage of the region clicked
+
+            // Calculate the exact time clicked within the region
+            const regionDuration = region.end - region.start;
+            const timeClickedInRegion = region.start + clickPercent * regionDuration;
+
+            console.log('Clicked at:', timeClickedInRegion, 'seconds inside the region');
+
+
             activeRegion = region;
-            console.log(region);
+            // print the seconds of the region clicked
+            console.log(region.start, region.end, e);
             // iterate over wsRegions.regions 
             for (var i = 0; i < wsRegions.regions.length; i++) {
                 wsRegions.regions[i].setOptions({ color: (sliceType[i] == 1 ? ccolor2 : ccolor) });
@@ -1377,6 +1404,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             wsf.zoom(minPxPerSec)
         };
     });
+
 }
 
 window.addEventListener('load', (event) => {
