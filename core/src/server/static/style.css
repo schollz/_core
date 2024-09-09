@@ -812,3 +812,21 @@ footer select {
     transition: transform 0.3s ease;
     width: 100px;
 }
+
+.transient-active {
+    background-color: #000;
+    color: #fff;
+}
+
+.numberDisplay {
+    font-family: inherit;
+    font-size: 1em;
+    padding: 0.5em;
+    background-color: inherit;
+    width: 50px;
+}
+
+.svgicon {
+    top: 2.5px;
+    position: relative;
+}

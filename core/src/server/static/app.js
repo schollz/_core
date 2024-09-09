@@ -505,6 +505,7 @@ app = new Vue({
         selectedBank: 0,
         selectedFile: null,
         deviceType: "",
+        transientDoAdd: [false, false, false],
         latestVersion: "",
         deviceVersion: "",
         deviceFirmwareUpload: "",
@@ -546,6 +547,7 @@ app = new Vue({
             [false, false, false, false, true, true, false, false, false, true, false, false, false, false, false, false],
             [true, false, true, false, true, true, true, true, false, true, false, false, true, true, true, false],
         ],
+        regionClickBehavior: 'clickCreateRegion',
     },
     watch: {
         // Watch for changes in app properties and save state to cookies
@@ -581,18 +583,49 @@ app = new Vue({
         }
     },
     methods: {
-
-        addTransient: function () {
-            // add a transient into the middle of the waveform screen that is currently zoomed into
-            if (wsf != null) {
-                let duration = wsf.getDuration();
-                let start = wsf.getCurrentTime();
-                // get current zoom 
-                let zoom = wsf.getZoom();
+        waveformClick(seconds) {
+            console.log(`waveform clicked at ${seconds}`);
+            if (this.regionClickBehavior == "clickCreateKick") {
+                this.addTransient(0, seconds);
             }
-
         },
-
+        addTransient(j, seconds) {
+            // TODO
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
+                    this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = Math.round(seconds * 44100.0);
+                    break;
+                }
+            }
+            this.drawTransients();
+        },
+        clearTransients(j) {
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = 0;
+            }
+            this.drawTransients();
+        },
+        clearTransientsLast(j) {
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
+                    if (i > 0) {
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i - 1] = 0;
+                    }
+                    break;
+                }
+            }
+            this.drawTransients();
+        },
+        deleteTransients() {
+            if (this.regionClickBehavior == 'clickCreateKick') {
+                this.clearTransients(0);
+            }
+        },
+        deleteTransientsLast() {
+            if (this.regionClickBehavior == 'clickCreateKick') {
+                this.clearTransientsLast(0);
+            }
+        },
         drawTransients() {
             // remove all transients by iterating over all wsRegions
             var hasTransients = true;
@@ -1274,7 +1307,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
     wsf.on('interaction', () => {
         const progress = wsf.getCurrentTime() / wsf.getDuration();  // Get the progress as a percentage
         const timeClicked = progress * wsf.getDuration();
-        console.log('Waveform clicked at:', timeClicked, 'seconds');
+        app.waveformClick(timeClicked);
     });
 
     wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
@@ -1364,9 +1397,12 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             const regionDuration = region.end - region.start;
             const timeClickedInRegion = region.start + clickPercent * regionDuration;
 
-            console.log('Clicked at:', timeClickedInRegion, 'seconds inside the region');
+            app.waveformClick(timeClickedInRegion);
 
 
+            if (app.regionClickBehavior != "clickCreateRegion") {
+                return;
+            }
             activeRegion = region;
             // print the seconds of the region clicked
             console.log(region.start, region.end, e);
@@ -1447,6 +1483,12 @@ window.addEventListener('load', (event) => {
     }
 
     setTimeout(() => {
+        tippy("#editingSplice", {
+            content: "Click waveform and drag splice regions or double click to add splice."
+        });
+        tippy("#editingKick", {
+            content: "Click waveform to add kick trig, hold to drag around."
+        });
         tippy('#windows_core', {
             content: 'Click to download an offline version of this tool for windows.'
         });
