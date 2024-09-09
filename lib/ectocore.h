@@ -606,7 +606,7 @@ void input_handling() {
         }
       } else if (debounce_startup >= 100 && debounce_startup < 108) {
         uint8_t i = debounce_startup - 100;
-        if (gpio_get(GPIO_BTN_BANK) == 0) {
+        if (do_calibration_mode) {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
           if (i == 0) {
