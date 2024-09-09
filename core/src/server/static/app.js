@@ -505,6 +505,7 @@ app = new Vue({
         selectedBank: 0,
         selectedFile: null,
         deviceType: "",
+        transientDoAdd: [false, false, false],
         latestVersion: "",
         deviceVersion: "",
         deviceFirmwareUpload: "",
@@ -546,6 +547,7 @@ app = new Vue({
             [false, false, false, false, true, true, false, false, false, true, false, false, false, false, false, false],
             [true, false, true, false, true, true, true, true, false, true, false, false, true, true, true, false],
         ],
+        regionClickBehavior: 'clickCreateRegion',
     },
     watch: {
         // Watch for changes in app properties and save state to cookies
@@ -581,8 +583,76 @@ app = new Vue({
         }
     },
     methods: {
-
+        waveformClick(seconds) {
+            console.log(`waveform clicked at ${seconds}`);
+            if (this.regionClickBehavior == "clickCreateKick") {
+                this.addTransient(0, seconds);
+            } else if (this.regionClickBehavior == "clickCreateSnare") {
+                this.addTransient(1, seconds);
+            } else if (this.regionClickBehavior == "clickCreateTransient") {
+                this.addTransient(2, seconds);
+            }
+        },
+        addTransient(j, seconds) {
+            // TODO
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
+                    this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = Math.round(seconds * 44100.0);
+                    break;
+                }
+            }
+            this.drawTransients();
+        },
+        clearTransients(j) {
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = 0;
+            }
+            this.drawTransients();
+        },
+        clearTransientsLast(j) {
+            for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
+                if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
+                    if (i > 0) {
+                        this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i - 1] = 0;
+                    }
+                    break;
+                }
+            }
+            this.drawTransients();
+        },
+        deleteTransients() {
+            if (this.regionClickBehavior == 'clickCreateKick') {
+                this.clearTransients(0);
+            } else if (this.regionClickBehavior == 'clickCreateSnare') {
+                this.clearTransients(1);
+            } else if (this.regionClickBehavior == 'clickCreateTransient') {
+                this.clearTransients(2);
+            }
+        },
+        deleteTransientsLast() {
+            if (this.regionClickBehavior == 'clickCreateKick') {
+                this.clearTransientsLast(0);
+            } else if (this.regionClickBehavior == 'clickCreateSnare') {
+                this.clearTransientsLast(1);
+            } else if (this.regionClickBehavior == 'clickCreateTransient') {
+                this.clearTransientsLast(2);
+            }
+        },
         drawTransients() {
+            // remove all transients by iterating over all wsRegions
+            var hasTransients = true;
+            while (hasTransients) {
+                hasTransients = false;
+                for (var i = 0; i < wsRegions.regions.length; i++) {
+                    if (wsRegions.regions[i].id.startsWith('transient-')) {
+                        console.log(`removing ${wsRegions.regions[i].id}`);
+                        wsRegions.regions[i].remove();
+                        hasTransients = true;
+                        break;
+                    }
+                }
+            }
+
             let transients = this.banks[this.selectedBank].files[this.selectedFile].Transients;
             let transient_colors = ['rgb(255,0,0,0.25)', 'rgb(0,255,0,0.25)', 'rgb(0,0,255,0.25)'];
             let span = ` <span class="regionsvg" style="display: flex;
@@ -1246,6 +1316,11 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         console.log('zoom');
     });
 
+    wsf.on('interaction', () => {
+        const progress = wsf.getCurrentTime() / wsf.getDuration();  // Get the progress as a percentage
+        const timeClicked = progress * wsf.getDuration();
+        app.waveformClick(timeClicked);
+    });
 
     wsRegions = wsf.registerPlugin(window.RegionsPlugin.create())
 
@@ -1259,7 +1334,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             wsRegions.addRegion({
                 start: sliceStart[i] * wsf.getDuration(),
                 end: sliceEnd[i] * wsf.getDuration(),
-                color: (sliceType[i] == 1 ? ccolor2 : ccolor),
+                color: ccolor, // (sliceType[i] == 1 ? ccolor2 : ccolor),
                 drag: true,
                 resize: true,
                 loop: false,
@@ -1322,11 +1397,34 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         })
         wsRegions.on('region-clicked', (region, e) => {
             e.stopPropagation() // prevent triggering a click on the waveform
+
+
+            // Get the click position in the waveform in pixels
+            const regionElement = region.element;
+            const rect = regionElement.getBoundingClientRect(); // Get region's bounding rectangle
+            const clickX = e.clientX - rect.left; // X position relative to the region's left side
+            const clickPercent = clickX / rect.width; // Percentage of the region clicked
+
+            // Calculate the exact time clicked within the region
+            const regionDuration = region.end - region.start;
+            const timeClickedInRegion = region.start + clickPercent * regionDuration;
+
+            app.waveformClick(timeClickedInRegion);
+
+
+            if (app.regionClickBehavior != "clickCreateRegion") {
+                return;
+            }
             activeRegion = region;
-            console.log(region);
+            // print the seconds of the region clicked
+            console.log(region.start, region.end, e);
             // iterate over wsRegions.regions 
+            console.log(activeRegion)
             for (var i = 0; i < wsRegions.regions.length; i++) {
-                wsRegions.regions[i].setOptions({ color: (sliceType[i] == 1 ? ccolor2 : ccolor) });
+                wsRegions.regions[i].setOptions({
+                    color: (activeRegion.id == wsRegions.regions[i].id ? ccolor2 : ccolor),
+                    // color: ccolor, // (sliceType[i] == 1 ? ccolor2 : ccolor)
+                });
             }
             region.setOptions({ color: selected_color });
             if (playing) {
@@ -1358,6 +1456,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             wsf.zoom(minPxPerSec)
         };
     });
+
 }
 
 window.addEventListener('load', (event) => {
@@ -1366,7 +1465,7 @@ window.addEventListener('load', (event) => {
     const root = document.documentElement;
 
     ccolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background') + "33";
-    ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "11";
+    ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "00";
     wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background');
     selected_color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color') + "44";
 
@@ -1400,6 +1499,12 @@ window.addEventListener('load', (event) => {
     }
 
     setTimeout(() => {
+        tippy("#editingSplice", {
+            content: "Click waveform and drag splice regions or double click to add splice."
+        });
+        tippy("#editingKick", {
+            content: "Click waveform to add kick trig, hold to drag around."
+        });
         tippy('#windows_core', {
             content: 'Click to download an offline version of this tool for windows.'
         });

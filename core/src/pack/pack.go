@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/schollz/_core/core/src/sox"
 	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
@@ -226,5 +227,6 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	os.Chdir(cwd)
 
 	zipFilename = path.Join(zipStorage, zipFilename+".zip")
+	sox.Clean()
 	return
 }
