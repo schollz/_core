@@ -584,7 +584,7 @@ app = new Vue({
     },
     methods: {
         waveformClick(seconds) {
-            console.log(`waveform clicked at ${seconds}`);
+            console.log(`waveform clicked at ${seconds} (${this.regionClickBehavior})`);
             if (this.regionClickBehavior == "clickCreateKick") {
                 this.addTransient(0, seconds);
             } else if (this.regionClickBehavior == "clickCreateSnare") {
@@ -710,6 +710,7 @@ app = new Vue({
                     let color = 'rgb(255,255,255,0.3)';
                     if (transients[i][j] > 0) {
                         let start = parseFloat(transients[i][j]) / 44100.0;
+                        console.log(`transient ${i} ${j} ${start}`);
                         wsRegions.addRegion({
                             start: start - 0.007,
                             end: start + 0.007,
@@ -725,9 +726,9 @@ app = new Vue({
                         });
                     }
                 }
-                if (isZeptocore) {
-                    break;
-                }
+                // if (isZeptocore) {
+                //     break;
+                // }
             }
 
 
