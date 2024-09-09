@@ -760,8 +760,111 @@
                             <span v-else>off</span></label>
                     </p>
                     <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
-                        Source BPM: <input type="number" v-model="banks[selectedBank].files[selectedFile].BPM"
-                            @change.prevent="updateBPM($event)">
+                        Source BPM: <input class="numberDisplay" type="number"
+                            v-model="banks[selectedBank].files[selectedFile].BPM" @change.prevent="updateBPM($event)">
+                    </p>
+                    <p>
+                        Waveform editing:
+                        <label id="editingSplice">
+                            <input type="radio" value="clickCreateRegion" v-model="regionClickBehavior" checked>
+                            Slice
+                        </label>
+                        <label id="editingKick">
+                            <input type="radio" value="clickCreateKick" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 1.5;">
+                                <g transform="matrix(1,0,0,1,-24.5,-564.5)">
+                                    <g>
+                                        <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
+                                            <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75"
+                                                style="fill: none; stroke: black; stroke-width: 2.04px;">
+                                            </ellipse>
+                                        </g>
+                                        <g transform="matrix(1,0,0,1.33333,0,-191.5)">
+                                            <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75"
+                                                style="fill: none; stroke: black; stroke-width: 1.7px;">
+                                            </ellipse>
+                                        </g>
+                                        <g transform="matrix(1,0,0,0.857143,0,82.2143)">
+                                            <path d="M34.5,575.5L34.5,582.5"
+                                                style="fill: none; stroke: black; stroke-width: 2.15px;"></path>
+                                        </g>
+                                        <path d="M25.5,581.5L28,579.5"
+                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                        <path d="M43.5,581.5L40.5,579.5"
+                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                    </g>
+                                </g>
+                            </svg>
+                        </label>
+                        <label>
+                            <input type="radio" value="clickCreateSnare" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                <g transform="matrix(1,0,0,1,-57,-564)">
+                                    <g>
+                                        <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
+                                            <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75"
+                                                style="fill:none;stroke:black;stroke-width:1.46px;" />
+                                        </g>
+                                        <path d="M58,579C58,579 65.56,584.338 75.5,579"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M61,580.186L61,571.5"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M66.5,581L66.5,572.5"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
+                                            <path d="M75.5,578.5L75.5,569"
+                                                style="fill:none;stroke:black;stroke-width:1.95px;" />
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg></span>
+                        </label>
+                        <label>
+                            <input type="radio" value="clickCreateTransient" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 21 21" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                <g transform="matrix(1,0,0,1,-87.5,-563)">
+                                    <g>
+                                        <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
+                                            <circle cx="98.5" cy="572.5" r="9.5"
+                                                style="fill:none;stroke:black;stroke-width:2.03px;" />
+                                        </g>
+                                        <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                    </g>
+                                </g>
+                            </svg></span>
+                        </label>
+                        <span v-if="regionClickBehavior!='clickCreateRegion'">
+                            <button @click="deleteTransientsLast" style="margin-left:0;">Clear last</button>
+                            <button @click="deleteTransients" style="margin-left:0;">Clear all</button>
+                        </span>
+                        <span v-else>
+                            <button @click="deleteRegion" style="margin-left:0;">Clear last</button>
+                            <button @click="deleteAllRegions" style="margin-left:0;">Clear all</button>
+
+                        </span>
+                    </p>
+
+                    <p v-if="regionClickBehavior=='clickCreateRegion'">
+                        <label>
+                            Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
+                                style="width:3em;" />
+                        </label>
+                        <button @click="createRegionsEvenly" style="margin-left:0;">Create
+                            evenly</button>
+                        <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
+                            transients</button>
                     </p>
 
                     <div id="waveform-parent">
@@ -773,22 +876,6 @@
                                 sample</button>
                             <label style="margin-left:1em;">Zoom:</label>
                             <input id="wsfzoom" type="range" min="10" max="5000" value="10">
-                        </p>
-                        <p>
-                            <button @click="deleteRegion" style="margin-left:0;">Delete selected
-                                slice</button>
-                            <button @click="deleteAllRegions" style="margin-left:0;">Delete all
-                                slices</button>
-                        </p>
-                        <p>
-                            <label>
-                                Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
-                                    style="width:3em;" />
-                            </label>
-                            <button @click="createRegionsEvenly" style="margin-left:0;">Create
-                                evenly</button>
-                            <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
-                                transients</button>
                         </p>
 
                         <p>
