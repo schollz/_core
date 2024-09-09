@@ -587,6 +587,10 @@ app = new Vue({
             console.log(`waveform clicked at ${seconds}`);
             if (this.regionClickBehavior == "clickCreateKick") {
                 this.addTransient(0, seconds);
+            } else if (this.regionClickBehavior == "clickCreateSnare") {
+                this.addTransient(1, seconds);
+            } else if (this.regionClickBehavior == "clickCreateTransient") {
+                this.addTransient(2, seconds);
             }
         },
         addTransient(j, seconds) {
@@ -619,11 +623,19 @@ app = new Vue({
         deleteTransients() {
             if (this.regionClickBehavior == 'clickCreateKick') {
                 this.clearTransients(0);
+            } else if (this.regionClickBehavior == 'clickCreateSnare') {
+                this.clearTransients(1);
+            } else if (this.regionClickBehavior == 'clickCreateTransient') {
+                this.clearTransients(2);
             }
         },
         deleteTransientsLast() {
             if (this.regionClickBehavior == 'clickCreateKick') {
                 this.clearTransientsLast(0);
+            } else if (this.regionClickBehavior == 'clickCreateSnare') {
+                this.clearTransientsLast(1);
+            } else if (this.regionClickBehavior == 'clickCreateTransient') {
+                this.clearTransientsLast(2);
             }
         },
         drawTransients() {
@@ -1322,7 +1334,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             wsRegions.addRegion({
                 start: sliceStart[i] * wsf.getDuration(),
                 end: sliceEnd[i] * wsf.getDuration(),
-                color: (sliceType[i] == 1 ? ccolor2 : ccolor),
+                color: ccolor, // (sliceType[i] == 1 ? ccolor2 : ccolor),
                 drag: true,
                 resize: true,
                 loop: false,
@@ -1407,8 +1419,12 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             // print the seconds of the region clicked
             console.log(region.start, region.end, e);
             // iterate over wsRegions.regions 
+            console.log(activeRegion)
             for (var i = 0; i < wsRegions.regions.length; i++) {
-                wsRegions.regions[i].setOptions({ color: (sliceType[i] == 1 ? ccolor2 : ccolor) });
+                wsRegions.regions[i].setOptions({
+                    color: (activeRegion.id == wsRegions.regions[i].id ? ccolor2 : ccolor),
+                    // color: ccolor, // (sliceType[i] == 1 ? ccolor2 : ccolor)
+                });
             }
             region.setOptions({ color: selected_color });
             if (playing) {
@@ -1449,7 +1465,7 @@ window.addEventListener('load', (event) => {
     const root = document.documentElement;
 
     ccolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background') + "33";
-    ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "11";
+    ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "00";
     wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background');
     selected_color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color') + "44";
 
