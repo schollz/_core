@@ -47,8 +47,15 @@ func Init() (err error) {
 	log.Trace("testing sox")
 	stdout, _, _ := run(soxbinary, "--help")
 	if !strings.Contains(stdout, "SoX") {
-		err = fmt.Errorf("sox not found")
-		return
+		soxbinary = "sox"
+		if err != nil {
+			return
+		}
+		log.Trace("testing sox")
+		stdout, _, _ := run(soxbinary, "--help")
+		if !strings.Contains(stdout, "SoX") {
+			err = fmt.Errorf("sox not found")
+		}
 	}
 	log.Debugf("sox found: %s", soxbinary)
 	return
