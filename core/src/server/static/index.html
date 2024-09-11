@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>_core load</title>
+    <title>[[ if .IsEctocore]]ectocore[[else]]zeptocore[[end]] tool</title>
     <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-72x72.png">
@@ -546,8 +546,9 @@
                                 :href="window.location.protocol+'//'+window.location.host +'/'+ link">{{link}}</a>&nbsp</span>
                     </p>
                     <p>
-                        Use this website to allocate audio files onto the <a href="https://zeptocore.com">zeptocore</a>
-                        or <a href="https://ectocore.rocks">ectocore</a>.
+                        Use this website to allocate audio files onto the [[ if .IsZeptocore ]]<a
+                            href="https://zeptocore.com">zeptocore</a>[[end]][[ if .IsEctocore ]]<a
+                            href="https://ectocore.rocks">ectocore</a>[[end]].
                     </p>
                     <p>There is no
                         login necessary*. To get started, simply type in a name that you can remember and
