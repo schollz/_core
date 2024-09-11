@@ -247,6 +247,10 @@ core_macos_amd642: docsbuild
 core_linux_amd64: docsbuild
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -v -o ../core_linux_amd64
 
+.PHONY: core_server
+core_server: docsbuild
+	cd core && go build -v -o ../core_server
+
 # ectocore builds
 .PHONY: ectocore_windows.exe
 ectocore_windows.exe: docsbuild
