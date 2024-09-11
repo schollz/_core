@@ -530,7 +530,7 @@ app = new Vue({
         uploading: false,
         resampling: 'linear',
         titleName: "_core",
-        title: window.location.pathname,
+        title: window.location.pathname == '/' ? "" : window.location.pathname,
         disconnected: false,
         previousPages: [],
         randomPages: [generateRandomWord(), generateRandomWord(), generateRandomWord()],
