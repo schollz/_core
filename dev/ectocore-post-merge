@@ -22,6 +22,6 @@ echo "New tag available: $latest_tag"
 # Checkout the latest tag
 git checkout "$latest_tag"
 
-cd /www/ectocore && /usr/bin/make core_linux_amd64
+cd /www/ectocore && /usr/bin/make core_server
 /usr/bin/systemctl restart zns.ectocore.service
 
