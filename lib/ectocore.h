@@ -1316,7 +1316,9 @@ void input_handling() {
     }
 
     // updating the random fx
-    break_fx_update();
+    if (debounce_startup == 0) {
+      break_fx_update();
+    }
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
