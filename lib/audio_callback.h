@@ -418,20 +418,20 @@ BREAKOUT_OF_MUTE:
     // phases[head]
     if (phases[head] != last_seeked || do_open_file) {
       t0 = time_us_32();
-      if (f_lseek(&fil_current,
-                  WAV_HEADER +
-                      ((banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[FILEZERO]
-                            ->num_channels +
-                        1) *
-                       (banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[FILEZERO]
-                            ->oversampling +
-                        1) *
-                       44100) +
-                      (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR)) {
+      if (f_lseek(&fil_current, WAV_HEADER +
+                                    ((banks[sel_bank_cur]
+                                          ->sample[sel_sample_cur]
+                                          .snd[FILEZERO]
+                                          ->num_channels +
+                                      1) *
+                                     (banks[sel_bank_cur]
+                                          ->sample[sel_sample_cur]
+                                          .snd[FILEZERO]
+                                          ->oversampling +
+                                      1) *
+                                     44100) +
+                                    (phases[head] / PHASE_DIVISOR) *
+                                        PHASE_DIVISOR) != FR_OK) {
         printf("problem seeking to phase (%d)\n", phases[head]);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           int32_t value0 = 0;
@@ -441,7 +441,7 @@ BREAKOUT_OF_MUTE:
         buffer->sample_count = buffer->max_sample_count;
         give_audio_buffer(ap, buffer);
         sync_using_sdcard = false;
-        sdcard_startup();
+        // sdcard_startup();
         return;
       }
       t1 = time_us_32();
@@ -458,23 +458,26 @@ BREAKOUT_OF_MUTE:
     t0 = time_us_32();
     if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
       printf("ERROR READING!\n");
-      f_close(&fil_current);  // close and re-open trick
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-              sel_sample_cur, sel_variation + audio_variant * 2);
-      f_open(&fil_current, fil_current_name, FA_READ);
-      f_lseek(&fil_current, WAV_HEADER +
-                                ((banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->num_channels +
-                                  1) *
-                                 (banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->oversampling +
-                                  1) *
-                                 44100) +
-                                (phases[head] / PHASE_DIVISOR) * PHASE_DIVISOR);
+      watchdog_reboot(0, SRAM_END, 0);
+      // sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
+      //         sel_sample_cur, sel_variation + audio_variant * 2);
+      // printf("reopening %s\n", fil_current_name);
+      // f_close(&fil_current);  // close and re-open trick
+      // f_open(&fil_current, fil_current_name, FA_READ);
+      // f_lseek(&fil_current, WAV_HEADER +
+      //                           ((banks[sel_bank_cur]
+      //                                 ->sample[sel_sample_cur]
+      //                                 .snd[FILEZERO]
+      //                                 ->num_channels +
+      //                             1) *
+      //                            (banks[sel_bank_cur]
+      //                                 ->sample[sel_sample_cur]
+      //                                 .snd[FILEZERO]
+      //                                 ->oversampling +
+      //                             1) *
+      //                            44100) +
+      //                           (phases[head] / PHASE_DIVISOR) *
+      //                           PHASE_DIVISOR);
     }
     t1 = time_us_32();
     sd_card_total_time += (t1 - t0);
@@ -817,7 +820,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap) * 100.0,
+                       (float)(used_heap) / (float)(total_heap)*100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
@@ -852,8 +855,18 @@ BREAKOUT_OF_MUTE:
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }
-      MessageSync_printf(messagesync, "cpu utilization: %d, flag: %d\n",
-                         cpu_utilizations[cpu_utilizations_i], cpu_usage_flag);
+      char fx_string[17];
+      for (uint8_t i = 0; i < 16; i++) {
+        if (sf->fx_active[i]) {
+          fx_string[i] = '1';
+        } else {
+          fx_string[i] = '0';
+        }
+      }
+      fx_string[16] = retrig_beat_num > 0 ? '1' : '0';
+      MessageSync_printf(messagesync, "cpu: %d, flag: %d, fx: %s\n",
+                         cpu_utilizations[cpu_utilizations_i], cpu_usage_flag,
+                         fx_string);
     } else {
       if (cpu_flag_counter > 0) {
         cpu_flag_counter--;

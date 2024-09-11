@@ -83,6 +83,9 @@ void do_do_retrigger(uint8_t effect, bool on, bool pitch_chanes) {
     if (divider > 4) {
       retrig_beat_num = retrig_beat_num / 2;
     }
+    if (retrig_beat_num == 0) {
+      retrig_beat_num = 2;
+    }
     retrig_vol = 0.02;
     retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
                       ((float)retrig_beat_num);
@@ -107,15 +110,32 @@ void break_fx_toggle(uint8_t effect, bool on) {
     break_fx_beat_activated[effect] =
         random_integer_in_range(break_fx_beat_duration_min_max[effect * 2],
                                 break_fx_beat_duration_min_max[effect * 2 + 1]);
-    printf("[break_fx_toggle] fx %d on for %d beats\n", effect + 1,
-           break_fx_beat_activated[effect]);
+    // char fx_string[16];
+    // for (uint8_t i = 0; i < 16; i++) {
+    //   if (sf->fx_active[i]) {
+    //     fx_string[i] = '1';
+    //   } else {
+    //     fx_string[i] = '0';
+    //   }
+    // }
+    // printf("[break_fx_toggle] %s %d on %d\n", fx_string, effect + 1,
+    //        break_fx_beat_activated[effect]);
   } else {
     // set the refractory period
     break_fx_beat_after_activated[effect] = random_integer_in_range(
         break_fx_beat_refractory_min_max[effect * 2],
         break_fx_beat_refractory_min_max[effect * 2 + 1]);
-    printf("[break_fx_toggle] fx %d off for %d beats\n", effect + 1,
-           break_fx_beat_after_activated[effect]);
+    // char fx_string[16];
+    // for (uint8_t i = 0; i < 16; i++) {
+    //   if (sf->fx_active[i]) {
+    //     fx_string[i] = '1';
+    //   } else {
+    //     fx_string[i] = '0';
+    //   }
+    // }
+    // printf("[break_fx_toggle] %s %d off %d \n", fx_string, effect + 1,
+    //        break_fx_beat_after_activated[effect]);
+    // print a string of 0's and 1's for each effect that is on
   }
 
   switch (effect) {
@@ -224,26 +244,30 @@ void break_fx_toggle(uint8_t effect, bool on) {
       break;
     case 10:
       // pitch down
-      if (!sf->fx_active[FX_REPITCH]) {
+      if (!sf->fx_active[FX_REPITCH] && sf->bpm_tempo < 160 &&
+          sf->bpm_tempo > 120) {
         sf->fx_param[FX_REPITCH][0] = 0;
         sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+        sf->fx_active[FX_REPITCH] = on;
+        update_fx(FX_REPITCH);
       }
-      sf->fx_active[FX_REPITCH] = on;
-      update_fx(FX_REPITCH);
       break;
     case 11:
       // pitch up
-      if (!sf->fx_active[FX_REPITCH]) {
+      if (!sf->fx_active[FX_REPITCH] && sf->bpm_tempo < 160 &&
+          sf->bpm_tempo > 120) {
         sf->fx_param[FX_REPITCH][0] = 255;
         sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+        sf->fx_active[FX_REPITCH] = on;
+        update_fx(FX_REPITCH);
       }
-      sf->fx_active[FX_REPITCH] = on;
-      update_fx(FX_REPITCH);
       break;
     case 12:
+      // if (retrig_beat_num == 0) {
       // reverse
       sf->fx_active[FX_REVERSE] = on;
       update_fx(FX_REVERSE);
+      // }
       break;
     case 13:
       // retrigger
