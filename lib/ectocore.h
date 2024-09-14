@@ -1112,6 +1112,7 @@ void input_handling() {
             WS2812_show(ws2812);
           }
         } else {
+          probability_of_random_jump = 0;
           set_cv_start_stop(knob_val[KNOB_AMEN], knob_val[KNOB_AMEN_ATTEN]);
         }
       }
