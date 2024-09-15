@@ -2,9 +2,9 @@ name: build
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -12,58 +12,84 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout project
-      uses: actions/checkout@v4.1.3
-    - name: Install sox
-      run: |
-        sudo apt update
-        sudo apt install sox libsox-fmt-mp3
-    - name: Setup Hugo
-      uses: peaceiris/actions-hugo@v3.0.0
-      with:
-        hugo-version: '0.128.2'
-    - name: Set up Python
-      uses: actions/setup-python@v5.1.0
-      with:
-        python-version: '3.11'
-    - name: Set up Zig
-      uses: goto-bus-stop/setup-zig@v2.2.0
-      with:
-        version: '0.11.0'
-    - name: Setup Go
-      uses: actions/setup-go@v5.0.2
-    - name: Install Pico SDK dependencies
-      run: |
-        sudo apt update
-        sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc
-    - name: Create and activate a Python virtual environment
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        uv venv .venv
-        echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-        echo "$PWD/.venv/bin" >> $GITHUB_PATH
-    - name: Install Python dependencies
-      run: uv pip install -r requirements.txt
-    - run: uv pip freeze
-    - name: Checkout pico-sdk
-      uses: actions/checkout@v4.1.7
-      with:
-        repository: raspberrypi/pico-sdk
-        path: pico-sdk
-        submodules: true
-        ref: 1.5.1
-    - name: Patch tinyusb
-      run: |
-        sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
-        cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
-    - name: Set PICO_SDK_PATH
-      run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-    - name: Build zeptocore
-      run:
-        make zeptocore
-    - name: Build ectocore
-      run:
-        make ectocore
-    - name: Build core_windows.exe
-      run:
-        make core_windows.exe
+      - name: Checkout project
+        uses: actions/checkout@v4.1.3
+      - name: Install sox
+        run: |
+          sudo apt update
+          sudo apt install sox libsox-fmt-mp3
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3.0.0
+        with:
+          hugo-version: "0.133.1"
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.0
+        with:
+          python-version: "3.11"
+      - name: Set up Zig
+        uses: goto-bus-stop/setup-zig@v2.2.0
+        with:
+          version: "0.11.0"
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.2
+      - name: Install Pico SDK dependencies
+        run: |
+          sudo apt update
+          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
+      - name: Create and activate a Python virtual environment
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv .venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+      - name: Install Python dependencies
+        run: uv pip install -r requirements.txt
+      - run: uv pip freeze
+      - name: Checkout pico-sdk
+        uses: actions/checkout@v4.1.7
+        with:
+          repository: raspberrypi/pico-sdk
+          path: pico-sdk
+          submodules: true
+          ref: 1.5.1
+      - name: Patch tinyusb
+        run: |
+          sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
+          cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
+      - name: Set PICO_SDK_PATH
+        run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
+      - name: Create dummy github.event.release.name
+        run: |
+          echo "github.event.release.name=v0.0.0" >> $GITHUB_ENV
+          echo "GITHUB_EVENT_RELEASE_NAME=v0.0.0" >> $GITHUB_ENV
+      - name: Build UF2s
+        run: |
+          make zeptocore
+          cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
+          make ectocore
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}.uf2
+          make ectocore_v3
+          cp ectocore.uf2 ectocore_v0.3_${{ github.event.release.name }}.uf2
+          make zeptoboard
+          cp zeptoboard.uf2 zeptoboard_${{ github.event.release.name }}.uf2
+          make core_windows.exe
+          cp core_windows.exe core_windows_${{ github.event.release.name }}.exe
+          make core_linux_amd64
+          cp core_linux_amd64 core_linux_amd64_${{ github.event.release.name }}
+          make core_macos_aarch64
+          cp core_macos_aarch64 core_macos_aarch64_${{ github.event.release.name }}
+          make core_macos_amd64
+          cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
+          make ectocore_windows.exe
+          cp ectocore_windows.exe ectocore_windows_${{ github.event.release.name }}.exe
+          make ectocore_linux_amd64
+          cp ectocore_linux_amd64 ectocore_linux_amd64_${{ github.event.release.name }}
+          make ectocore_macos_aarch64
+          cp ectocore_macos_aarch64 ectocore_macos_aarch64_${{ github.event.release.name }}
+          make ectocore_macos_amd64
+          cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
+      - name: Prepare source tarball
+        run: |
+          git clone -b ${{ github.event.release.name }} --depth 1 https://github.com/schollz/_core _core-${{ github.event.release.name }}
+          cd _core-${{ github.event.release.name }}/core && go mod tidy && go mod vendor
+          cd ../.. && tar -czvf _core_${{ github.event.release.name }}_src.tar.gz _core-${{ github.event.release.name }}
