@@ -10,7 +10,7 @@ mode_alt = 'any'
 icon = 'drum'
 +++
 
-*Note: v6.0.0 and later firmware required for this feature.*
+*Note: v6.0.1 and later firmware required for this feature.*
 
 This is an experimental mode that lets you choose from 16 different kick samples (keys `1` to `16`). Hold down the `A` button and then hold down the `D` button and then press one of the 16 keys to layer the selected kick sample with the currently loaded sample. Continue to hold down the `A` and `D` buttons and press another of the 16 keys to set the volume of the selected kick sample. 
 
