@@ -1,6 +1,6 @@
 module github.com/schollz/_core/core
 
-go 1.21.11
+go 1.21.13
 
 require (
 	github.com/bep/debounce v1.2.1

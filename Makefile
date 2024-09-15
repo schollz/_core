@@ -2,7 +2,7 @@ export PICO_EXTRAS_PATH ?= $(CURDIR)/pico-extras
 export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
 NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
 
-GOVERSION = go1.21.11
+GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
 
@@ -228,7 +228,7 @@ core_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.11 build -ldflags "-s -w" -buildmode=pie -o ../core_macos_aarch64
+	go1.21.13 build -ldflags "-s -w" -buildmode=pie -o ../core_macos_aarch64
 
 .PHONY: core_macos_amd64
 core_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
@@ -236,7 +236,7 @@ core_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.11 build -ldflags "-s -w" -buildmode=pie -o ../core_macos_amd64
+	go1.21.13 build -ldflags "-s -w" -buildmode=pie -o ../core_macos_amd64
 
 .PHONY: core_macos_amd642
 core_macos_amd642: docsbuild
@@ -262,7 +262,7 @@ ectocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.11 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_aarch64
+	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_aarch64
 
 .PHONY: ectocore_macos_amd64
 ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
@@ -270,7 +270,7 @@ ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.11 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_amd64
+	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_amd64
 
 .PHONY: ectocore_linux_amd64
 ectocore_linux_amd64: docsbuild
