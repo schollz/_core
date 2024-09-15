@@ -110,8 +110,3 @@ jobs:
         run: |
           make ectocore_linux_amd64
           cp ectocore_linux_amd64 ectocore_linux_amd64_${{ github.event.release.name }}
-      - name: Prepare source tarball
-        run: |
-          git clone -b ${{ github.event.release.name }} --depth 1 https://github.com/schollz/_core _core-${{ github.event.release.name }}
-          cd _core-${{ github.event.release.name }}/core && go mod tidy && go mod vendor
-          cd ../.. && tar -czvf _core_${{ github.event.release.name }}_src.tar.gz _core-${{ github.event.release.name }}
