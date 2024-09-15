@@ -58,8 +58,8 @@ copyboard:
 	cp zeptoboard_compile_definitions.cmake target_compile_definitions.cmake
 
 envs:
-	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras 
-	export PICO_SDK_PATH=/home/zns/pico/pico-sdk 
+	export PICO_EXTRAS_PATH=/home/zns/pico/pico-extras
+	export PICO_SDK_PATH=/home/zns/pico/pico-sdk
 
 
 wavetable: .venv
@@ -89,25 +89,25 @@ lib/sinewaves2.h: .venv
 lib/crossfade4.h: .venv
 	# set block size to 441
 	cd lib && ../.venv/bin/python crossfade4.py 441 > crossfade4.h
-	clang-format -i --style=google lib/crossfade4.h 
+	clang-format -i --style=google lib/crossfade4.h
 
 lib/selectx2.h: .venv
 	cd lib && ../.venv/bin/python selectx2.py > selectx2.h
 	clang-format -i --style=google lib/selectx2.h
-	
+
 lib/crossfade.h: .venv lib/crossfade4.h
 	cd lib && ../.venv/bin/python transfer_saturate.py > transfer_saturate.h
-	clang-format -i --style=google lib/transfer_saturate.h 
+	clang-format -i --style=google lib/transfer_saturate.h
 	cd lib && ../.venv/bin/python transfer_distortion.py > transfer_distortion.h
-	clang-format -i --style=google lib/transfer_distortion.h 
+	clang-format -i --style=google lib/transfer_distortion.h
 	cd lib && ../.venv/bin/python selectx.py > selectx.h
-	clang-format -i --style=google lib/selectx.h 
+	clang-format -i --style=google lib/selectx.h
 	cd lib && ../.venv/bin/python biquad.py > biquad.h
-	clang-format -i --style=google lib/biquad.h 
+	clang-format -i --style=google lib/biquad.h
 	cd lib && ../.venv/bin/python crossfade.py > crossfade.h
 	clang-format -i --style=google lib/crossfade.h
 	cd lib && ../.venv/bin/python crossfade2.py > crossfade2.h
-	clang-format -i --style=google lib/crossfade2.h 
+	clang-format -i --style=google lib/crossfade2.h
 
 lib/transfer_saturate2.h: .venv
 	cd lib && ../.venv/bin/python transfer_saturate2.py > transfer_saturate2.h
@@ -128,10 +128,10 @@ lib/cuedsounds_ectocore.h:
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
 	cd pico-extras && git checkout sdk-1.5.1
-	cd pico-extras && git submodule update -i 
+	cd pico-extras && git submodule update -i
 
 copysamples:
-	cd dev/copysamples && go build -v 
+	cd dev/copysamples && go build -v
 	# sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples2
 	# sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples_kero
 	#sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/pikocore-starting
@@ -144,9 +144,9 @@ minicom:
 midicom:
 	cd dev/midicom && go build -v
 	./dev/midicom/midicom
-	
+
 changebaud:
-	-curl localhost:7083 
+	-curl localhost:7083
 
 resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
@@ -157,14 +157,14 @@ resetpico2:
 	sleep 0.1
 
 upload: resetpico2 changebaud dobuild
-	./dev/upload.sh 
+	./dev/upload.sh
 
 bootreset: .venv dobuild
 	.venv/bin/python dev/reset_pico.py /dev/ttyACM0
 
 autoload: dobuild bootreset upload
 
-build: 
+build:
 	rm -rf build
 	mkdir build
 	cd build && cmake ..
@@ -204,7 +204,7 @@ server:
 	cd core && air
 
 resetpico: .venv
-	.venv/bin/python dev/reset_pico.py 
+	.venv/bin/python dev/reset_pico.py
 
 versions.md:
 	cd dev/gitread && go build -v && ./gitread ../../docs/content/versions/versions.md
@@ -225,12 +225,18 @@ core/MacOSX11.3.sdk:
 .PHONY: core_macos_aarch64
 core_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && go1.21.11 build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_aarch64
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	go1.21.11 build -x -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_aarch64
 
 .PHONY: core_macos_amd64
 core_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && go1.21.11 build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd64
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	go1.21.11 build -ldflags "-s -w" -buildmode=pie -v -o ../core_macos_amd64
 
 .PHONY: core_macos_amd642
 core_macos_amd642: docsbuild
@@ -253,12 +259,18 @@ ectocore_windows.exe: docsbuild
 .PHONY: ectocore_macos_aarch64
 ectocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && go1.21.11 build -x -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -v -o ../ectocore_macos_aarch64
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	go1.21.11 build -x -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -v -o ../ectocore_macos_aarch64
 
 .PHONY: ectocore_macos_amd64
 ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
-	cd core && go1.21.11 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -v -o ../ectocore_macos_amd64
+	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
+	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
+	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
+	go1.21.11 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -v -o ../ectocore_macos_amd64
 
 .PHONY: ectocore_linux_amd64
 ectocore_linux_amd64: docsbuild
@@ -269,9 +281,9 @@ docs: versions.md
 	cd docs && hugo serve -D --bind 0.0.0.0
 
 .venv:
-	uv venv 
+	uv venv
 	uv pip install -r requirements.txt
-	
+
 dev/madmom/.venv:
 	cd dev/madmom && uv venv
 	cd dev/madmom && . .venv/bin/activate && uv pip install -r requirements.txt
