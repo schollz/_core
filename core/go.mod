@@ -1,5 +1,7 @@
 module github.com/schollz/_core/core
 
+go 1.21.11
+
 require (
 	github.com/bep/debounce v1.2.1
 	github.com/cespare/xxhash v1.1.0
@@ -17,7 +19,7 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.9.0
 	go.bug.st/serial v1.6.2
-	go.etcd.io/bbolt v1.3.11
+	go.etcd.io/bbolt v1.3.10
 )
 
 require (
@@ -27,14 +29,17 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/wcharczuk/go-chart v2.0.1+incompatible // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
