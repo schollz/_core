@@ -1,4 +1,4 @@
-name: Build UF2 File on Release
+name: Release
 
 on:
   release:
@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
+  steps:
     - name: Checkout project
       uses: actions/checkout@v4.1.3
     - name: Install sox
@@ -22,15 +22,15 @@ jobs:
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v3.0.0
       with:
-        hugo-version: '0.133.1'
+        hugo-version: "0.133.1"
     - name: Set up Python
       uses: actions/setup-python@v5.1.0
       with:
-        python-version: '3.11'
+        python-version: "3.11"
     - name: Set up Zig
       uses: goto-bus-stop/setup-zig@v2.2.0
       with:
-        version: '0.11.0'
+        version: "0.11.0"
     - name: Setup Go
       uses: actions/setup-go@v5.0.2
     - name: Install Pico SDK dependencies
@@ -59,32 +59,54 @@ jobs:
         cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
     - name: Set PICO_SDK_PATH
       run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-    - name: Build UF2s
+    - name: Build core_macos_amd64
+      run: |
+        make core_macos_amd64
+        cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
+    - name: Build ectocore_macos_aarch64
+      run: |
+        make ectocore_macos_aarch64
+        cp ectocore_macos_aarch64 ectocore_macos_aarch64_${{ github.event.release.name }}
+    - name: Build core_macos_aarch64
+      run: |
+        make core_macos_aarch64
+        cp core_macos_aarch64 core_macos_aarch64_${{ github.event.release.name }}
+    - name: Build ectocore_macos_aarch64
+      run: |
+        make ectocore_macos_amd64
+        cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
+    - name: Build zeptocore.uf2
       run: |
         make zeptocore
         cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
+    - name: Build ectocore.uf2
+      run: |
         make ectocore
         cp ectocore.uf2 ectocore_${{ github.event.release.name }}.uf2
+    - name: Build ectocore_v3.uf2
+      run: |
         make ectocore_v3
         cp ectocore.uf2 ectocore_v0.3_${{ github.event.release.name }}.uf2
+    - name: Build zeptoboard.uf2
+      run: |
         make zeptoboard
         cp zeptoboard.uf2 zeptoboard_${{ github.event.release.name }}.uf2
+    - name: Build core_windows.exe
+      run: |
         make core_windows.exe
         cp core_windows.exe core_windows_${{ github.event.release.name }}.exe
+    - name: Build core_linux_amd64
+      run: |
         make core_linux_amd64
         cp core_linux_amd64 core_linux_amd64_${{ github.event.release.name }}
-        make core_macos_aarch64
-        cp core_macos_aarch64 core_macos_aarch64_${{ github.event.release.name }}
-        make core_macos_amd64
-        cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
+    - name: Build ectocore_windows.exe
+      run: |
         make ectocore_windows.exe
         cp ectocore_windows.exe ectocore_windows_${{ github.event.release.name }}.exe
+    - name: Build ectocore_linux_amd64
+      run: |
         make ectocore_linux_amd64
         cp ectocore_linux_amd64 ectocore_linux_amd64_${{ github.event.release.name }}
-        make ectocore_macos_aarch64
-        cp ectocore_macos_aarch64 ectocore_macos_aarch64_${{ github.event.release.name }}
-        make ectocore_macos_amd64
-        cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
     - name: Prepare source tarball
       run: |
         git clone -b ${{ github.event.release.name }} --depth 1 https://github.com/schollz/_core _core-${{ github.event.release.name }}
