@@ -1,7 +1,5 @@
 module github.com/schollz/_core/core
 
-go 1.23.0
-
 require (
 	github.com/bep/debounce v1.2.1
 	github.com/cespare/xxhash v1.1.0
