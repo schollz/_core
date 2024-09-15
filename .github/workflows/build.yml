@@ -58,10 +58,6 @@ jobs:
           cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-      - name: Create dummy github.event.release.name
-        run: |
-          echo "github.event.release.name=v0.0.0" >> $GITHUB_ENV
-          echo "GITHUB_EVENT_RELEASE_NAME=v0.0.0" >> $GITHUB_ENV
       - name: Build core_macos_amd64
         run: |
           make core_macos_amd64
