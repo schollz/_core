@@ -14,6 +14,7 @@ import (
 
 	"github.com/bep/debounce"
 	"github.com/dhowden/tag"
+	"github.com/schollz/_core/core/src/chapters"
 	"github.com/schollz/_core/core/src/drumextract"
 	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/onsetdetect"
@@ -103,6 +104,13 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		if errSliceDetect == nil {
 			log.Trace("detected slices from renoise")
 			f.PathToAudio = newPath
+		}
+	} else if filepath.Ext(f.PathToFile) == ".wav" {
+		// try to collect start/stop information from chapters
+		log.Tracef("attempting chapters %s", f.PathToFile)
+		f.SliceStart, f.SliceStop, errSliceDetect = chapters.GetSliceMarkers(f.PathToFile)
+		if errSliceDetect == nil && len(f.SliceStart) > 0 && len(f.SliceStop) == len(f.SliceStart) {
+			log.Trace("detected slices from .wav chapters")
 		}
 	} else if filepath.Ext(f.PathToFile) == ".aif" {
 		log.Tracef("attempting op1 %s", f.PathToFile)
