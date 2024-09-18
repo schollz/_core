@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/go-audio/wav"
+	"github.com/schollz/_core/core/src/sox"
 	log "github.com/schollz/logger"
 )
 
@@ -49,8 +50,7 @@ func GetSliceMarkers(filePath string) (start []float64, end []float64, err error
 		cuePoints := []float64{}
 		for _, cue := range decoder.Metadata.CuePoints {
 			// Convert sample offset to seconds
-			timeInSeconds := float64(cue.SampleOffset) / float64(sampleRate)
-			cuePoints = append(cuePoints, timeInSeconds)
+			cuePoints = append(cuePoints, float64(cue.SampleOffset))
 		}
 		if len(cuePoints) > 0 {
 			for i, v := range cuePoints {
@@ -64,6 +64,7 @@ func GetSliceMarkers(filePath string) (start []float64, end []float64, err error
 					end = append(end, v)
 				}
 			}
+			// set to end of file
 		}
 	}
 
@@ -72,17 +73,27 @@ func GetSliceMarkers(filePath string) (start []float64, end []float64, err error
 		log.Tracef("\nSample Loops in %s:\n", filePath)
 		for i, loop := range decoder.Metadata.SamplerInfo.Loops {
 			// Convert start and end sample offsets to seconds
-			startTime := float64(loop.Start) / float64(sampleRate)
-			endTime := float64(loop.End) / float64(sampleRate)
+			startTime := float64(loop.Start)
+			endTime := float64(loop.End)
 			log.Tracef("Loop %d: Start Time: %.3f seconds, End Time: %.3f seconds\n", i+1, startTime, endTime)
 			start = append(start, startTime)
 			end = append(end, endTime)
 		}
 	}
-	// normalize to 3 decimal places
+
+	numSamples, err := sox.NumSamples(filePath)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	// normalize to 1.0
 	for i := range start {
-		start[i] = float64(int(start[i]*1000)) / 1000
-		end[i] = float64(int(end[i]*1000)) / 1000
+		start[i] = start[i] / float64(numSamples)
+		end[i] = end[i] / float64(numSamples)
+	}
+	if end[len(end)-1] < 1 {
+		start = append(start, end[len(end)-1])
+		end = append(end, 1.0)
 	}
 	return
 }
