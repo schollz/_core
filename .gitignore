@@ -1,5 +1,6 @@
 # Prerequisites
 core/*.uf2
+core_server
 core/vendor/*
 *.d
 pico-extras*
