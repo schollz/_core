@@ -38,7 +38,7 @@ bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 
 inline int32_t scale16to32_fixed_dither(int16_t val) {
-  return (((int32_t)val) << 16) + (rand() % 2) - 1;
+  return (((int32_t)val) << 16);  // + ((rand() & 1) - 1);
 }
 
 void update_filter_from_envelope(int32_t val) {
@@ -146,9 +146,9 @@ void i2s_callback_func() {
     int32_t vol_main =
         round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      samples[i * 2 + 0] = values[i];
-      samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
-      samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
+      int32_t value0 = scale16to32_fixed_dither(values[i]);
+      value0 = q16_16_multiply(value0, vol_main);
+      samples[i * 2 + 0] = value0;
       samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
     }
     buffer->sample_count = buffer->max_sample_count;
