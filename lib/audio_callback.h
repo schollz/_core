@@ -44,6 +44,10 @@ void update_filter_from_envelope(int32_t val) {
   }
 }
 
+#ifdef DEBUG_AUDIO_WITH_SINE_WAVE
+uint32_t sine_wave_counter = 0;
+#endif
+
 void i2s_callback_func() {
   uint32_t values_to_read;
   uint32_t t0, t1;
@@ -66,12 +70,26 @@ void i2s_callback_func() {
     return;
   }
 
+  int32_t *samples = (int32_t *)buffer->buffer->bytes;
+
+#ifdef DEBUG_AUDIO_WITH_SINE_WAVE
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    int32_t value0 =
+        (int32_t)(sinf(2 * M_PI * 440 * sine_wave_counter / 44100) *
+                  (0x7ffffff0));
+    sine_wave_counter++;
+    samples[i * 2 + 0] = value0;
+    samples[i * 2 + 1] = value0;
+  }
+  buffer->sample_count = buffer->max_sample_count;
+  give_audio_buffer(ap, buffer);
+  return;
+#endif
+
   EnvelopeLinearInteger_update(envelope_filter, update_filter_from_envelope);
 
   float envelope_volume_val = Envelope2_update(envelope_volume);
   float envelope_pitch_val_new = Envelope2_update(envelope_pitch);
-
-  int32_t *samples = (int32_t *)buffer->buffer->bytes;
 
   if (mute_because_of_playback_type || sync_using_sdcard || !fil_is_open ||
       button_mute || reduce_cpu_usage > 0 ||
@@ -820,7 +838,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap)*100.0,
+                       (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
