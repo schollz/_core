@@ -146,9 +146,8 @@ void i2s_callback_func() {
     int32_t vol_main =
         round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      int32_t value0 = scale16to32_fixed_dither(values[i]);
-      value0 = q16_16_multiply(value0, vol_main);
-      samples[i * 2 + 0] = value0;
+      samples[i * 2 + 0] =
+          q16_16_multiply(((int32_t)values[i]) << 16, vol_main);
       samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
     }
     buffer->sample_count = buffer->max_sample_count;
@@ -606,15 +605,15 @@ BREAKOUT_OF_MUTE:
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
         }
 
-        int32_t v = scale16to32_fixed_dither(newArray[i]);
-        v = q16_16_multiply(v, vol_main);
         if (first_loop) {
-          samples[i * 2 + 0] = v;
+          samples[i * 2 + 0] =
+              q16_16_multiply(((int32_t)newArray[i]) << 16, vol_main);
           if (head == 0) {
             samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
           }
         } else {
-          samples[i * 2 + 0] += v;
+          samples[i * 2 + 0] +=
+              q16_16_multiply(((int32_t)newArray[i]) << 16, vol_main);
           samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
         }
         // int32_t value0 = (vol * newArray[i]) << 8u;
@@ -664,10 +663,8 @@ BREAKOUT_OF_MUTE:
           } else if (do_fade_in) {
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
-
-          int32_t v = scale16to32_fixed_dither(newArray[i]);
-          v = q16_16_multiply(v, vol_main);
-          samples[i * 2 + channel] += v;
+          samples[i * 2 + channel] +=
+              q16_16_multiply(((int32_t)newArray[i]) << 16, vol_main);
         }
         free(newArray);
       }
@@ -840,7 +837,7 @@ BREAKOUT_OF_MUTE:
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
     MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
-                       (float)(used_heap) / (float)(total_heap) * 100.0,
+                       (float)(used_heap) / (float)(total_heap)*100.0,
                        used_heap, total_heap);
 #endif
     cpu_utilizations_i = 0;
