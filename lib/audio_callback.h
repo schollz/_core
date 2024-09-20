@@ -37,6 +37,12 @@ bool do_open_file_ready = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 
+const int32_t scale_factor =
+    (2147483647 / 32767);  // Scale from 16-bit to 32-bit range
+inline int32_t scale16to32_fixed_dither(int16_t val) {
+  return ((int32_t)val) * scale_factor + (rand() % 2) - 1;
+}
+
 void update_filter_from_envelope(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
     ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
@@ -139,9 +145,8 @@ void i2s_callback_func() {
     // if (sf->fx_active[FX_BITCRUSH]) {
     //   Bitcrush_process(values, buffer->max_sample_count);
     // }
-
-    uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
-                                envelope_volume_val / VOLUME_DIVISOR_0_200);
+    int32_t vol_main =
+        round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       samples[i * 2 + 0] = values[i];
       samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
@@ -306,8 +311,8 @@ BREAKOUT_OF_MUTE:
        1);
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
-  uint vol_main = (uint)round(volume_vals[sf->vol] * retrig_vol *
-                              envelope_volume_val / VOLUME_DIVISOR_0_200);
+  int32_t vol_main =
+      round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
 
   if (!phase_change) {
     const int32_t next_phase =
@@ -603,17 +608,15 @@ BREAKOUT_OF_MUTE:
           newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
         }
 
+        int32_t v = scale16to32_fixed_dither(newArray[i]);
+        v = q16_16_multiply(v, vol_main);
         if (first_loop) {
-          samples[i * 2 + 0] = newArray[i];
+          samples[i * 2 + 0] = v;
           if (head == 0) {
-            samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
-            samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
             samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
           }
         } else {
-          samples[i * 2 + 0] += newArray[i];
-          samples[i * 2 + 0] = (vol_main * samples[i * 2 + 0]) << 8u;
-          samples[i * 2 + 0] += (samples[i * 2 + 0] >> 16u);
+          samples[i * 2 + 0] += v;
           samples[i * 2 + 1] = samples[i * 2 + 0];  // R = L
         }
         // int32_t value0 = (vol * newArray[i]) << 8u;
@@ -664,8 +667,9 @@ BREAKOUT_OF_MUTE:
             newArray[i] = crossfade3_in(newArray[i], i, CROSSFADE3_COS);
           }
 
-          int32_t value0 = (vol_main * newArray[i]) << 8u;
-          samples[i * 2 + channel] += value0 + (value0 >> 16u);
+          int32_t v = scale16to32_fixed_dither(newArray[i]);
+          v = q16_16_multiply(v, vol_main);
+          samples[i * 2 + channel] += v;
         }
         free(newArray);
       }
