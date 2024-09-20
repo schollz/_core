@@ -37,10 +37,8 @@ bool do_open_file_ready = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 
-const int32_t scale_factor =
-    (2147483647 / 32767);  // Scale from 16-bit to 32-bit range
 inline int32_t scale16to32_fixed_dither(int16_t val) {
-  return ((int32_t)val) * scale_factor + (rand() % 2) - 1;
+  return (((int32_t)val) << 16) + (rand() % 2) - 1;
 }
 
 void update_filter_from_envelope(int32_t val) {
