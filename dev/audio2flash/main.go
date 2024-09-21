@@ -77,6 +77,7 @@ func run() (err error) {
 	// start building the header
 	var sb strings.Builder
 	sb.WriteString("#include <pico/platform.h>\n\n")
+	sb.WriteString(`#include "lib/fixedpoint.h"` + "\n\n")
 	sb.WriteString(fmt.Sprintf("#define %s_FILES %d\n", codeName, len(files)))
 	// sb.WriteString(fmt.Sprintf("#define %s_SAMPLES %d\n", codeName, len(vals)))
 	// sb.WriteString(fmt.Sprintf("const int16_t __in_flash() %s_audio[] = {\n", codeNameLower))
@@ -145,9 +146,8 @@ func run() (err error) {
 	sb.WriteString(fmt.Sprintf("  }\n"))
 
 	sb.WriteString(fmt.Sprintf("for (uint16_t i = 0; i < num_samples; i++) {\n"))
-	sb.WriteString(fmt.Sprintf("  int32_t audio = %s_audio[%s_index] * %s_volume / 255;\n", codeNameLower, codeNameLower, codeNameLower))
-	sb.WriteString(fmt.Sprintf("  audio = (vol_main * audio) << 8u;\n"))
-	sb.WriteString(fmt.Sprintf("  audio += (audio >> 16u);\n"))
+	sb.WriteString(fmt.Sprintf("  int32_t audio = (((int32_t)%s_audio[%s_index]) * %s_volume) >> 8;\n", codeNameLower, codeNameLower, codeNameLower))
+	sb.WriteString(fmt.Sprintf("  audio = q16_16_multiply((audio) << 16, vol_main);\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 0] += audio;\n"))
 	sb.WriteString(fmt.Sprintf("  samples[i * 2 + 1] += audio;\n"))
 	sb.WriteString(fmt.Sprintf("  %s_index++;\n", codeNameLower))
