@@ -26,6 +26,10 @@ The zeptocore arrives with "stock" samples on it. If you ever want to remove the
 
 Make sure you have the firmware updated to v5+ to use these samples.
 
+### Allowable formats
+
+The sample tool will allow a variety of audio formats to be uploaded, including: **.wav**, **.aif** (OP-1 kits), **.flac**, **.mp3**, **.xrni** (Renoise splices), and even **.wav** (morphagene reels).
+
 ### Transfering samples to SD card
 
 Once you finish using the tool to collect your samples, click the **Download .zip** button in the lower left corner. This will download a zip file containing all of your samples.
