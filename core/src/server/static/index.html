@@ -109,23 +109,23 @@
                 <span v-if="settingsKnobXSample">on</span><span v-else>off</span>
             </p>
             [[ else ]]
-            <p>
+            <p id="pSettingsClockStop">
                 <label for="settingsClockStop" style="padding-right:1em;">Incoming clock start/stop sync</label><input
                     id="settingsClockStop" type="checkbox" v-model="settingsClockStop">
                 <span v-if="settingsClockStop">on</span><span v-else>off</span>
             </p>
-            <p>
+            <p id="pSettingsClockOutput">
                 <label for="settingsClockOutput" style="padding-right:1em;">Outgoing clock type</label><input
                     id="settingsClockOutput" type="checkbox" v-model="settingsClockOutput">
                 <span v-if="settingsClockOutput">trig</span><span v-else>gate</span>
             </p>
-            <p>
+            <p id="pSettingsClockBehaviorSync">
                 <label for="settingsClockBehaviorSync" style="padding-right:1em;">Outgoing clock behavior</label><input
                     id="settingsClockBehaviorSync" type="checkbox" v-model="settingsClockBehaviorSync">
                 <span v-if="settingsClockBehaviorSync">sync with slice</span><span v-else>sync with tempo</span>
             </p>
             <!-- slider for brightness-->
-            <p style="display: flex; align-items: center;">
+            <p style="display: flex; align-items: center;" id="pSettingsBrightness">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>
                 <input type="range" id="brightness" name="brightness" min="0" max="100" value="50"
                     v-model="settingsBrightness">
@@ -422,7 +422,7 @@
             </p>
             <p style="text-align: center;">
                 <button class="js-close">Update</button>
-                <button class="js-close" @click="submitForm(true);">Download settings</button>
+                <button id="bDownloadSettings" class="js-close" @click="submitForm(true);">Download settings</button>
             </p>
         </dialog>
 

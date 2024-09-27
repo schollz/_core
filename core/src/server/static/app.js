@@ -1530,6 +1530,31 @@ window.addEventListener('load', (event) => {
         tippy('#show-dialog-settings', {
             content: 'Click to edit global settings on the ectocore.',
         });
+        tippy('#pSettingsClockStop', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "When 'off', the incoming clock does not effect ectocore. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
+        });
+        tippy('#pSettingsClockOutput', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Clock set to 'trig' will output a 50 ms pulse in the clock out, whereas 'gate' wlil output 1/2 of the length of a pulse, which depends on BPM and current division.",
+        });
+        tippy('#pSettingsClockBehaviorSync', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Outgoing clock set to 'sync with tempo' will output clock pulse with tempo, alternatively you can set to 'sync with slice' which will output pulses synced with each slice (which may not be on a specific beat if variable slices are used).",
+        });
+        tippy('#pSettingsBrightness', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Increase the brighntess of multicolor LEDs (note this increases power usage of ectocore).",
+        });
+        tippy('#bDownloadSettings', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Download a settings folder, which you can unzip onto the SD card to replace your current settings.",
+        });
 
 
         let grimoireList = [
