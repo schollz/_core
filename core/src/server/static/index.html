@@ -428,10 +428,10 @@
 
         <header>
             <a href=" /"><img src="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon.png"
-                    style="filter:brightness(100); max-height: 48px; float:right; position:relative;padding-right:1em;"></a>
-            <h1 style="margin:0; padding:0;"><a
+                    style="filter:brightness(100); max-height: 32px; margin-left: -0.25em;float:right; position:relative;padding-right:1em;"></a>
+            <h1 style="margin:0; padding:0; font-size:1.5em;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">[[ if .IsZeptocore
-                    ]]zeptocore[[else]]ectocore[[end]]{{title}}</a>
+                    ]]zeptocore.com[[else]]ectocore.rocks[[end]]{{title}}</a>
             </h1>
             [[ if .IsMain ]]
             [[ else ]]
@@ -468,7 +468,8 @@
                 </span>
                 <span v-else-if="deviceType==''">
                     <a href=" https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank"
-                        id="firmwareDownloadLink">[[.VersionCurrent]] <i class="fa-solid fa-microchip"></i></a>
+                        id="firmwareDownloadLink" style="font-size:1.0em;">[[.VersionCurrent]] <i
+                            class="fa-solid fa-microchip"></i></a>
                 </span>
                 <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
                     {{deviceFirmwareUpload}}
