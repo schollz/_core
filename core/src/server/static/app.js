@@ -1528,7 +1528,7 @@ window.addEventListener('load', (event) => {
             content: 'Click to download the latest firmware.',
         });
         tippy('#show-dialog-settings', {
-            content: 'Global settings are files that go on the SD card.',
+            content: 'Click to edit global settings on the ectocore.',
         });
 
 
