@@ -621,8 +621,9 @@ a {
 
 
 .selected_on {
-    padding-top: 1.5em !important;
-    padding-bottom: 1.5em !important;
+    /* background-color: var(--highlight-color-darkerer) !important; */
+    /* padding-top: 1.5em !important;
+    padding-bottom: 1.5em !important; */
 }
 
 
