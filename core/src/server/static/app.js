@@ -378,20 +378,20 @@ const socketMessageListener = (e) => {
             );
         }, 100);
     } else if (data.action == "progress") {
-        totalBytesUploaded = data.number;
-        var maxWidth = window.innerWidth;
-        app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
-        console.log(`bytes uploaded: ${totalBytesUploaded}/${totalBytesRequested}`);
-        if (totalBytesUploaded >= totalBytesRequested) {
-            app.progressBarWidth = `${maxWidth}px`;
-            fadeOutProgressbar();
-            fadeOutTimeout = setTimeout(() => {
-                app.progressBarWidth = '0px';
-            }, 5000);
-        } else {
-            var circle = document.getElementsByClassName('progress-bar')[0];
-            circle.style.opacity = '1';
-        }
+        // totalBytesUploaded = data.number;
+        // var maxWidth = window.innerWidth;
+        // app.progressBarWidth = `${Math.floor(totalBytesUploaded / totalBytesRequested * maxWidth)}px`;
+        // console.log(`bytes uploaded: ${totalBytesUploaded}/${totalBytesRequested}`);
+        // if (totalBytesUploaded >= totalBytesRequested) {
+        //     app.progressBarWidth = `${maxWidth}px`;
+        //     fadeOutProgressbar();
+        //     fadeOutTimeout = setTimeout(() => {
+        //         app.progressBarWidth = '0px';
+        //     }, 5000);
+        // } else {
+        //     var circle = document.getElementsByClassName('progress-bar')[0];
+        //     circle.style.opacity = '1';
+        // }
     } else {
         if (data.error != "") {
             app.error_message = data.error;
@@ -910,18 +910,36 @@ app = new Vue({
             }
 
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                    // Optionally, you can handle the server response
-                })
-                .catch(error => {
-                    console.error('Error uploading files:', error);
-                });
+            var xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    var maxWidth = window.innerWidth;
+                    app.progressBarWidth = `${Math.floor(percentComplete / 100.0 * maxWidth)}px`;
+                    if (percentComplete >= 99.99) {
+                        app.progressBarWidth = `${maxWidth}px`;
+                        fadeOutProgressbar();
+                        fadeOutTimeout = setTimeout(() => {
+                            app.progressBarWidth = '0px';
+                        }, 5000);
+                    } else {
+                        var circle = document.getElementsByClassName('progress-bar')[0];
+                        circle.style.opacity = '1';
+                    }
+                }
+            };
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Upload successful:', JSON.parse(xhr.responseText).message);
+                } else {
+                    console.error('Error uploading files:', xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Error during upload:', xhr.statusText);
+            };
+            xhr.open('POST', '/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode);
+            xhr.send(formData);
 
             // Clear the file input value to allow selecting the same file again
             event.target.value = null;
@@ -1104,18 +1122,36 @@ app = new Vue({
                 formData.append('files', file);
             }
             // Use fetch to send a POST request to the server
-            fetch('/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                    // Optionally, you can handle the server response
-                })
-                .catch(error => {
-                    console.error('Error uploading files:', error);
-                });
+            var xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    var percentComplete = (event.loaded / event.total) * 100;
+                    var maxWidth = window.innerWidth;
+                    app.progressBarWidth = `${Math.floor(percentComplete / 100.0 * maxWidth)}px`;
+                    if (percentComplete >= 99.99) {
+                        app.progressBarWidth = `${maxWidth}px`;
+                        fadeOutProgressbar();
+                        fadeOutTimeout = setTimeout(() => {
+                            app.progressBarWidth = '0px';
+                        }, 5000);
+                    } else {
+                        var circle = document.getElementsByClassName('progress-bar')[0];
+                        circle.style.opacity = '1';
+                    }
+                }
+            };
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Upload successful:', JSON.parse(xhr.responseText).message);
+                } else {
+                    console.error('Error uploading files:', xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Error during upload:', xhr.statusText);
+            };
+            xhr.open('POST', '/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode);
+            xhr.send(formData);
         },
         showFileDetails(fileIndex) {
             const index = this.selectedFiles.indexOf(fileIndex);

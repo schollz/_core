@@ -220,7 +220,7 @@ a:hover {
     left: 0;
     height: 0.5rem;
     width: 0;
-    transition: width 0.05s ease, opacity 0.5s ease-out;
+    transition: width 0.1s ease, opacity 0.5s ease-out;
     /* Add a smooth transition effect */
 }
 
