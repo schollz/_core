@@ -32,6 +32,7 @@
             --banks-background: #dcd6f7;
             --highlight-color: #c3b8e6;
             --highlight-color-darker: #afa2db;
+            --highlight-color-darkerer: #be81dca;
             --hover-color: #d2cde9;
             --hover-color-light: #e6e3f4;
             --other-color: #6d51c9;
@@ -48,6 +49,7 @@
             --banks-background: #94acda;
             --highlight-color: #94acda;
             --highlight-color-darker: #7799d6;
+            --highlight-color-darkerer: #5577c6;
             --hover-color: #93a6c9;
             --hover-color-light: #c3d1f0;
             --other-color: #3478ff;
@@ -702,6 +704,7 @@
                             :class="{ 'selected': isSelected(fileIndex), 'selected_on':isSelectedAndOpen(fileIndex) }"
                             :data-file-number="fileIndex + 1">
                             {{ file.Filename }}
+                            <i v-if="isSelectedAndOpen(fileIndex)" class="fas fa-eye"></i>
                             <!-- file movers -->
                             <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile"
                                 style="float:right; z-index:999;">▲</a>
