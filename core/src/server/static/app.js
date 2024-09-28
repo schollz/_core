@@ -710,7 +710,7 @@ app = new Vue({
                     let color = 'rgb(255,255,255,0.3)';
                     if (transients[i][j] > 0) {
                         let start = parseFloat(transients[i][j]) / 44100.0;
-                        console.log(`transient ${i} ${j} ${start}`);
+                        // console.log(`transient ${i} ${j} ${start}`);
                         wsRegions.addRegion({
                             start: start - 0.007,
                             end: start + 0.007,
@@ -1119,12 +1119,18 @@ app = new Vue({
         },
         showFileDetails(fileIndex) {
             const index = this.selectedFiles.indexOf(fileIndex);
+            // console.log("showFileDetails", fileIndex, index, this.selectedFile);
             if (index === -1) {
                 this.selectedFile = fileIndex;
                 this.selectedFiles.push(fileIndex); // File is not selected, so add it to the selectedFiles array
             } else {
-                this.selectedFile = null;
                 this.selectedFiles.splice(index, 1); // File is selected, so remove it from the selectedFiles array
+                if (fileIndex == this.selectedFile) {
+                    this.selectedFile = null;
+                    if (this.selectedFiles.length > 0) {
+                        this.selectedFile = this.selectedFiles[0];
+                    }
+                }
             }
 
             if (this.selectedFile != null) {
