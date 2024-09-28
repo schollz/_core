@@ -1555,6 +1555,14 @@ window.addEventListener('load', (event) => {
             appendTo: "parent",
             content: "Download a settings folder, which you can unzip onto the SD card to replace your current settings.",
         });
+        tippy('#divFileUploader', {
+            zIndex: 9999999,
+            // appendTo: "parent",
+            placement: 'right',
+            hideOnClick: true,
+            content: "Automatic splice detection for OP-1 drum patches, Renoise splices, and Morphagene reels.",
+
+        })
 
 
         let grimoireList = [
