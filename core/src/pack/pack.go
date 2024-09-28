@@ -196,7 +196,6 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 						oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.%d.wav", filenameWithoutExtension, i, j))
 						newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+j*2+i))
 						if _, err := os.Stat(oldFname); os.IsNotExist(err) {
-							log.Error(err)
 							continue
 						}
 						// copy wav file
