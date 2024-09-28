@@ -657,7 +657,7 @@
                 [[ end ]]
 
                 [[ if .IsUpload]]
-                <div class=" file-uploader" v-if="!disconnected"
+                <div id="divFileUploader" class=" file-uploader" v-if="!disconnected"
                     v-bind:class="{ 'height75' : banks[selectedBank].files.length === 0}">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
@@ -712,22 +712,21 @@
                 </div>
 
                 <div class="file-details" v-if="selectedFile!=null && !disconnected">
-                    <p style="margin-top:0;
-                    padding: 0.5rem;
-                    text-align: left;">{{ banks[selectedBank].files[selectedFile].Filename }} ({{
+                    <p style="margin-top:0; padding-top: 0.5rem; padding-bottom: 0; margin-bottom: 0;
+                    text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
                         banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
-                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(1)*1000)}})
+                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(3)*1000)}})
                     </p>
                     <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button>
-                    <span v-if="banks[selectedBank].files.length>1">
+                    <!-- <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button> -->
+                    <!-- <span v-if="banks[selectedBank].files.length>1">
                         <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                         <button @click="moveFileDown"
                             :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                             Down</button>
-                    </span>
+                    </span> -->
                     <p>
                         <input type="checkbox" id="channels" @click="updateChannels"
                             v-model="banks[selectedBank].files[selectedFile].Channels">
