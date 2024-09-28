@@ -987,14 +987,14 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 			TargetWriter: destination,
 			Callback: func(n int64) {
 				log.Tracef("n: %d", n)
-				mutex.Lock()
-				if _, ok := connections[id]; ok {
-					connections[id].WriteJSON(Message{
-						Action: "progress",
-						Number: n + totalBytesWritten,
-					})
-				}
-				mutex.Unlock()
+				// mutex.Lock()
+				// if _, ok := connections[id]; ok {
+				// 	connections[id].WriteJSON(Message{
+				// 		Action: "progress",
+				// 		Number: n + totalBytesWritten,
+				// 	})
+				// }
+				// mutex.Unlock()
 			},
 		}
 
