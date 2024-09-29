@@ -3,25 +3,6 @@ export GOPATH=$HOME/go
 export PATH=$HOME/bin:$PATH:/usr/local/go/bin/:$HOME/go/bin:$HOME/node/bin:$HOME/.cargo/bin
 export PATH="$HOME/zig-linux-x86_64-0.11.0:$PATH"
 
-# Fetch the latest changes and tags
-git fetch origin && git fetch --tags
-
-# Get the currently checked out tag
-current_tag=$(git describe --tags --abbrev=0)
-
-# Get the latest tag from the repository
-latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-
-# Compare the tags
-if [ "$current_tag" == "$latest_tag" ]; then
-    echo "Already on the latest tag: $current_tag"
-    exit 0
-fi
-
-echo "New tag available: $latest_tag"
-# Checkout the latest tag
-git checkout "$latest_tag"
-
 cd /www/ectocore && /usr/bin/make core_server
 /usr/bin/systemctl restart zns.ectocore.service
 
