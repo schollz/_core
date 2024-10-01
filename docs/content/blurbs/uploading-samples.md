@@ -23,7 +23,7 @@ The sample tool is required for the sample preprocessing step, before transferri
 The zeptocore arrives with "stock" samples on it. If you ever want to remove them and replace them you can get them here by redownloading and transfering them back to the SD card. 
 
 - [zeptocore stock samples pack 1 (drums)](https://infinitedigits.co/zeptocore_default_samples_v6.zip) (393 MB). 
-- [zeptocore stock samples pack 2 (melodic + drums)](https://infinitedigits.co/melodic_stock_v6.0.2.zip) (853 MB). 
+- [zeptocore stock samples pack 2 (melodic + drums)](https://infinitedigits.co/melodic_stock_v6.0.1.zip) (853 MB). 
 
 Make sure you have the firmware updated to v5+ to use these samples.
 
