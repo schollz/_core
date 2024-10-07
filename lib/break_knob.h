@@ -244,20 +244,28 @@ void break_fx_toggle(uint8_t effect, bool on) {
       break;
     case 10:
       // pitch down
-      if (!sf->fx_active[FX_REPITCH] && sf->bpm_tempo < 160 &&
-          sf->bpm_tempo > 120) {
-        sf->fx_param[FX_REPITCH][0] = 0;
-        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      if (on && !sf->fx_active[FX_REPITCH]) {
+        if (sf->bpm_tempo < 180 && sf->bpm_tempo > 120) {
+          sf->fx_param[FX_REPITCH][0] = 0;
+          sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+          sf->fx_active[FX_REPITCH] = on;
+          update_fx(FX_REPITCH);
+        }
+      } else if (!on) {
         sf->fx_active[FX_REPITCH] = on;
         update_fx(FX_REPITCH);
       }
       break;
     case 11:
       // pitch up
-      if (!sf->fx_active[FX_REPITCH] && sf->bpm_tempo < 160 &&
-          sf->bpm_tempo > 120) {
-        sf->fx_param[FX_REPITCH][0] = 255;
-        sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+      if (on && !sf->fx_active[FX_REPITCH]) {
+        if (sf->bpm_tempo < 180 && sf->bpm_tempo > 120) {
+          sf->fx_param[FX_REPITCH][0] = 255;
+          sf->fx_param[FX_REPITCH][1] = random_integer_in_range(0, 100);
+          sf->fx_active[FX_REPITCH] = on;
+          update_fx(FX_REPITCH);
+        }
+      } else if (!on) {
         sf->fx_active[FX_REPITCH] = on;
         update_fx(FX_REPITCH);
       }
@@ -297,7 +305,15 @@ void break_fx_update() {
       (((break_knob_set_point * break_knob_set_point) / 1024) *
        break_knob_set_point) /
       1024;
+  // printf("[break_fx_update] %d\n", break_knob_set_point_scaled);
   for (uint8_t effect = 0; effect < 16; effect++) {
+    // if break_knob is below 15 then turn off all effects
+    if (break_knob_set_point_scaled < 15 && sf->fx_active[effect]) {
+      // make the fx repitch turn off faster
+      sf->fx_param[FX_REPITCH][1] = 0;
+      break_fx_toggle(effect, false);
+      continue;
+    }
     // check if the fx is allowed in the grimoire runes
     if (grimoire_rune_effect[grimoire_rune][effect] == false &&
         break_fx_beat_activated[effect] > 0) {

@@ -205,7 +205,7 @@ void update_fx(uint8_t fx_num) {
       Saturation_setActive(saturation, sf->fx_active[fx_num]);
       break;
     case FX_COMB:
-      printf("[update_fx] comb: %d\n", sf->fx_active[fx_num]);
+      // printf("[update_fx] comb: %d\n", sf->fx_active[fx_num]);
       Comb_setActive(combfilter, sf->fx_active[fx_num],
                      sf->fx_param[FX_COMB][0], sf->fx_param[FX_COMB][1]);
       break;
