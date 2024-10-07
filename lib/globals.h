@@ -177,6 +177,7 @@ bool clock_out_do = false;
 bool clock_out_ready = false;
 uint32_t ecto_trig_out_last = 0;
 bool clock_in_do = false;
+bool clock_input_absent_zeptocore = false;
 bool clock_in_ready = false;
 uint8_t clock_in_activator = 0;
 int32_t clock_in_beat_total = 0;
@@ -476,6 +477,22 @@ void do_update_phase_from_beat_current() {
 
 void key_do_jump(uint8_t beat) {
   if (beat >= 0 && beat < 16) {
+#ifdef INCLUDE_ZEPTOCORE
+    if (clock_in_do && clock_input_absent_zeptocore &&
+        clock_in_activator >= 3) {
+      // reset beats
+      bpm_timer_counter = 0;
+      beat_total = 0;
+      key_jump_debounce = 0;
+      dub_step_break = -1;
+      retrig_beat_num = 0;
+      beat_current = 0;
+      playback_stopped = false;
+      clock_in_ready = false;
+      clock_in_activator = 0;
+      clock_in_do = false;
+    }
+#endif
     // printf("key_do_jump %d\n", beat);
     // TODO: [0] should be which sequencer it is on
     if (sequencerhandler[0].recording) {
