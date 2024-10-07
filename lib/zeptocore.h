@@ -212,7 +212,7 @@ void input_handling() {
   }
 
   bool sel_sample_knob_ready = false;
-
+  clock_start_stop_sync = true;
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -612,6 +612,17 @@ void input_handling() {
     if (!use_onewiremidi) {
       // clock input handler
       ClockInput_update(clockinput);
+      if (clock_in_do) {
+        clock_input_absent_zeptocore =
+            ClockInput_timeSinceLast(clockinput) > 1000000;
+      }
+      if (!clock_start_stop_sync && clock_in_do) {
+        if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
+          clock_in_ready = false;
+          clock_in_do = false;
+          clock_in_activator = 0;
+        }
+      }
     } else {
       Onewiremidi_receive(onewiremidi);
     }
