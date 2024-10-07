@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path"
 	"sort"
@@ -12,6 +11,7 @@ import (
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	log "github.com/schollz/logger"
 	"golang.org/x/mod/semver"
 )
 
@@ -33,13 +33,15 @@ type TemplateData struct {
 func main() {
 	r, err := git.PlainOpen("../..")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	// Retrieve all tags (versions) in the repository
 	tagRefs, err := r.Tags()
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	// Store the tags in a slice and sort them by semver
@@ -49,7 +51,8 @@ func main() {
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	sort.Slice(tags, func(i, j int) bool {
@@ -65,17 +68,20 @@ func main() {
 
 		currentTagCommit, err := r.CommitObject(currentTag.Hash())
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 
 		nextTagCommit, err := r.CommitObject(nextTag.Hash())
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 
 		cIter, err := r.Log(&git.LogOptions{From: currentTagCommit.Hash})
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 
 		versionInfo := VersionInfo{
@@ -103,27 +109,25 @@ func main() {
 			message := strings.Join(messageFields, " ")
 			if strings.Contains(c.Message, "Merge pull request") && len(messageFields) > 6 {
 				message = strings.Join(messageFields[6:], " ")
-			}
-			if len(strings.Fields(message)) < 4 {
+			} else {
 				return nil
 			}
 			versionInfo.Commits = append(versionInfo.Commits, CommitInfo{Message: message, Hash: c.Hash.String()})
 			return nil
 		})
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return
 		}
 
 		data.Versions = append(data.Versions, versionInfo)
 
-		if !strings.HasPrefix(nextTag.Name().Short(), "v2.") {
-			break
-		}
 	}
 
 	// remove any versions that have no commits
 	var newVersions []VersionInfo
 	for _, version := range data.Versions {
+		log.Tracef("Version %s has %d commits", version.Version, len(version.Commits))
 		if len(version.Commits) > 0 {
 			newVersions = append(newVersions, version)
 		}
@@ -142,19 +146,22 @@ func main() {
 
 	t, err := template.New("versions").Parse(tmpl)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 
 	folder, _ := path.Split(os.Args[1])
 	os.MkdirAll(folder, 0777)
 	file, err := os.Create(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	defer file.Close()
 
 	err = t.Execute(file, data)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 }
