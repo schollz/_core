@@ -120,6 +120,7 @@ jobs:
           files: |
             _core_${{ github.event.release.name }}_src.tar.gz
             zeptocore_${{ github.event.release.name }}.uf2
+            zeptocore_${{ github.event.release.name }}.tar.gz
             ectocore_${{ github.event.release.name }}.uf2
             ectocore_v0.3_${{ github.event.release.name }}.uf2
             zeptoboard_${{ github.event.release.name }}.uf2
