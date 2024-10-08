@@ -58,4 +58,6 @@ RUN make zeptocore
 RUN echo "H"
 RUN curl -L --upload-file zeptocore.uf2 https://share.schollz.com
 
+RUN /usr/bin/arm-none-eabi-gcc --version
+
 CMD ["bash"]
