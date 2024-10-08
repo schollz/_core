@@ -36,7 +36,7 @@ jobs:
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake libnewlib-arm-none-eabi build-essential wget tar
+          sudo apt install -y cmake build-essential wget tar
       - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
