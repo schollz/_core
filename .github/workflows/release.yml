@@ -37,6 +37,10 @@ jobs:
         run: |
           sudo apt update
           sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
+      - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '13.2.Rel1' # <-- The compiler release to use
       - name: Create and activate a Python virtual environment
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
