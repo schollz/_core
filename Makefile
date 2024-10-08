@@ -1,3 +1,4 @@
+# Makefile
 export PICO_EXTRAS_PATH ?= $(CURDIR)/pico-extras
 export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
 NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
