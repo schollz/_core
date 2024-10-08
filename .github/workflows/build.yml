@@ -46,7 +46,9 @@ jobs:
         run: uv pip install -r requirements.txt
       - run: uv pip freeze
       - name: ARM GCC version
-        run: arm-none-eabi-gcc --version
+        run: |
+          arm-none-eabi-gcc --version
+          arm-none-eabi-g++ --version
       - name: Checkout pico-sdk
         uses: actions/checkout@v4.1.7
         with:
