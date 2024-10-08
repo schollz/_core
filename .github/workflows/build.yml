@@ -36,15 +36,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install cmake build-essential gcc wget tar
-      - name: Create and activate a Python virtual environment
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv venv .venv
-          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-          echo "$PWD/.venv/bin" >> $GITHUB_PATH
-      - name: Install Python dependencies
-        run: uv pip install -r requirements.txt
-      - run: uv pip freeze
       - name: Download and install ARM GNU Toolchain 13.3.rel1
         run: |
           wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
@@ -55,6 +46,15 @@ jobs:
         run: |
           arm-none-eabi-gcc --version
           arm-none-eabi-g++ --version
+      - name: Create and activate a Python virtual environment
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv venv .venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+      - name: Install Python dependencies
+        run: uv pip install -r requirements.txt
+      - run: uv pip freeze
       - name: Checkout pico-sdk
         uses: actions/checkout@v4.1.7
         with:
