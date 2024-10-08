@@ -10,7 +10,7 @@ permissions:
   
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout project
@@ -36,13 +36,11 @@ jobs:
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake build-essential wget tar
-      - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
-        with:
-          release: '13.2.Rel1' # <-- The compiler release to use
+          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
       - name: ARM GCC version
-        run: arm-none-eabi-gcc --version
+        run: |
+          arm-none-eabi-gcc --version
+          arm-none-eabi-g++ --version
       - name: Create and activate a Python virtual environment
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
