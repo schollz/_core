@@ -35,7 +35,17 @@ jobs:
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
-          sudo apt install cmake build-essential gcc wget tar
+          sudo apt install cmake build-essential wget tar
+      - name: Set up GCC 13.x
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13
+      - name: Set GCC 13 as default
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 \
+          && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 60
+      - name: Confirm GCC version
+        run: gcc --version
       - name: Download and install ARM GNU Toolchain 13.2.rel1
         run: |
           wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
