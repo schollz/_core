@@ -53,6 +53,8 @@ jobs:
           path: pico-sdk
           submodules: true
           ref: 1.5.1
+      - name: ARM GCC version
+        run: arm-none-eabi-gcc --version
       - name: Patch tinyusb
         run: |
           sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
