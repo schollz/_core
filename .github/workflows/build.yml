@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout project
@@ -35,23 +35,7 @@ jobs:
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
-          sudo apt install cmake build-essential wget tar
-      - name: Download and install ARM GNU Toolchain 13.2.rel1
-        run: |
-          wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
-          tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
-          echo "$PWD/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
-          echo "$PWD/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/bin" >> $GITHUB_PATH
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc /usr/local/bin/gcc
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ /usr/local/bin/g++
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-ld /usr/local/bin/ld
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-as /usr/local/bin/as
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-cpp /usr/local/bin/cpp
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-nm /usr/local/bin/nm
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-objcopy /usr/local/bin/objcopy
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-objdump /usr/local/bin/objdump
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-size /usr/local/bin/size
-          sudo ln -s $PWD/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-strip /usr/local/bin/strip
+          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
       - name: ARM GCC version
         run: |
           arm-none-eabi-gcc --version
