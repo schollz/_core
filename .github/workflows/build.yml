@@ -36,33 +36,17 @@ jobs:
         run: |
           sudo apt update
           sudo apt install cmake build-essential wget tar
-      - name: Set up GCC 13.x
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13 binutils
-      - name: Set GCC 13 as default
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 \
-          && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 60
-      - name: Confirm GCC version
-        run: gcc --version
-      - name: Ensure correct assembler and linker
-        run: |
-          sudo update-alternatives --install /usr/bin/as as /usr/bin/gcc-13 100
-          sudo update-alternatives --install /usr/bin/ld ld /usr/bin/gcc-13 100
-      - name: Confirm GCC version
-        run: gcc --version
-      - name: Confirm assembler version
-        run: as --version
       - name: Download and install ARM GNU Toolchain 13.2.rel1
         run: |
           wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
           tar -xf arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
           echo "$PWD/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
           echo "$PWD/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/bin" >> $GITHUB_PATH
+          echo "alias ld=arm-none-eabi-ld" >> $BASH_ENV
+          echo "alias as=arm-none-eabi-as" >> $BASH_ENV
+          echo "alias g++=arm-none-eabi-g++" >> $BASH_ENV
+          echo "alias gcc=arm-none-eabi-gcc" >> $BASH_ENV
+          source $BASH_ENV
       - name: ARM GCC version
         run: |
           arm-none-eabi-gcc --version
