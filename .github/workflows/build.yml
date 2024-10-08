@@ -49,6 +49,14 @@ jobs:
           && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 60
       - name: Confirm GCC version
         run: gcc --version
+      - name: Ensure correct assembler and linker
+        run: |
+          sudo update-alternatives --install /usr/bin/as as /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/ld ld /usr/bin/gcc-13 100
+      - name: Confirm GCC version
+        run: gcc --version
+      - name: Confirm assembler version
+        run: as --version
       - name: Download and install ARM GNU Toolchain 13.2.rel1
         run: |
           wget https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz
