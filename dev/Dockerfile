@@ -1,6 +1,6 @@
 # docker build --progress=plain -t coretest .
 
-FROM ubuntu:latest
+FROM ubuntu:24.10
 ENV PICO_SDK_PATH /pico-sdk
 
 RUN apt-get update && \
