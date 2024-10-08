@@ -59,6 +59,12 @@ jobs:
           cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
+      - name: Build zeptocore.uf2
+        run: |
+          make zeptocore
+          cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
+          tar -czf /tmp/workspace.tar.gz .
+          mv /tmp/workspace.tar.gz zeptocore_${{ github.event.release.name }}.tar.gz
       - name: Build core_macos_amd64
         run: |
           make core_macos_amd64
@@ -75,10 +81,6 @@ jobs:
         run: |
           make ectocore_macos_amd64
           cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
-      - name: Build zeptocore.uf2
-        run: |
-          make zeptocore
-          cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
       - name: Build ectocore.uf2
         run: |
           make ectocore
