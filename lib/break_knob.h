@@ -307,6 +307,7 @@ void break_fx_update() {
       1024;
   // printf("[break_fx_update] %d\n", break_knob_set_point_scaled);
   for (uint8_t effect = 0; effect < 16; effect++) {
+#ifdef INCLUDE_ECTOCORE
     // if break_knob is below 15 then turn off all effects
     if (break_knob_set_point_scaled < 15 && sf->fx_active[effect]) {
       // make the fx repitch turn off faster
@@ -314,6 +315,7 @@ void break_fx_update() {
       break_fx_toggle(effect, false);
       continue;
     }
+#endif
     // check if the fx is allowed in the grimoire runes
     if (grimoire_rune_effect[grimoire_rune][effect] == false &&
         break_fx_beat_activated[effect] > 0) {
