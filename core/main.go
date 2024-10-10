@@ -33,11 +33,14 @@ func main() {
 	flag.Parse()
 	log.SetLevel(flagLogLevel)
 	if !flagDontOpen {
-		if EctocoreDefault == "yes" {
-			utils.OpenBrowser("http://localhost:8100/tool")
-		} else {
-			utils.OpenBrowser("http://localhost:8101/tool")
-		}
+		go func() {
+			time.Sleep(2 * time.Second)
+			if EctocoreDefault == "yes" {
+				utils.OpenBrowser("http://localhost:8100/tool")
+			} else {
+				utils.OpenBrowser("http://localhost:8101/tool")
+			}
+		}()
 	}
 	err := sox.Init()
 	if err != nil {
