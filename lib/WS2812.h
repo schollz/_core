@@ -95,7 +95,7 @@ void WS2812_set_brightness(WS2812 *ws, uint8_t brightness) {
   if (brightness > 100) {
     brightness = 100;
   }
-  ws->brightness = ws2812_brightness_values[brightness * 16 / 100];
+  ws->brightness = ws2812_brightness_values[brightness * 160 / 1001];
   if (brightness > 0 && ws->brightness == 0) {
     ws->brightness = 1;
   }
