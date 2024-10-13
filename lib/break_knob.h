@@ -309,7 +309,8 @@ void break_fx_update() {
   for (uint8_t effect = 0; effect < 16; effect++) {
 #ifdef INCLUDE_ECTOCORE
     // if break_knob is below 15 then turn off all effects
-    if (break_knob_set_point_scaled < 15 && sf->fx_active[effect]) {
+    if ((break_knob_set_point_scaled < 15 || debounce_file_change > 0) &&
+        sf->fx_active[effect]) {
       // make the fx repitch turn off faster
       sf->fx_param[FX_REPITCH][1] = 0;
       break_fx_toggle(effect, false);

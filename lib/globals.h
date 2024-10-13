@@ -99,6 +99,7 @@ int32_t beat_current = 0;
 int32_t beat_current_show = 0;
 int32_t beat_total = 0;
 uint debounce_quantize = 0;
+uint8_t debounce_file_change = 0;
 int64_t bpm_timer_counter = 0;
 int64_t bpm_timer_counter_last = 0;
 uint8_t retrig_beat_num = 0;

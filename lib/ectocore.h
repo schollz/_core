@@ -70,7 +70,6 @@ void toggle_fx(uint8_t fx_num) {
 
 const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
-uint8_t debounce_file_change = 0;
 
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
