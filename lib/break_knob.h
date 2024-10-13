@@ -9,7 +9,7 @@ uint8_t break_fx_beat_refractory_min_max[32] = {
     4,  16,  // delay
     4,  16,  // comb
     4,  8,   // beat repeat
-    2,  16,  // reverb
+    8,  32,  // reverb
     2,  6,   // autopan
     8,  32,  // pitch down
     8,  32,  // pitch up
@@ -27,7 +27,7 @@ uint8_t break_fx_beat_duration_min_max[32] = {
     4, 16,  // delay
     2, 6,   // comb
     1, 4,   // beat repeat
-    4, 12,  // reverb
+    8, 36,  // reverb
     4, 8,   // autopan
     8, 32,  // pitch down
     8, 32,  // pitch up
@@ -45,14 +45,14 @@ uint8_t break_fx_probability_scaling[16] = {
     80,  // delay
     50,  // comb
     40,  // beat repeat
-    50,  // reverb
+    40,  // reverb
     50,  // autopan
     40,  // pitch down
     30,  // pitch up
     70,  // reverse
     50,  // retirgger no pitch
     30,  // retrigger with pitch,
-    5,   // tape sotp
+    10,  // tape sotp
 };
 
 uint8_t break_fx_beat_activated[16] = {
