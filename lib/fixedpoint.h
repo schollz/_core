@@ -30,6 +30,9 @@
 // some commons
 #define Q16_16_0 0
 #define Q16_16_0_5 32768
+#define Q16_16_0_75 49152
+#define Q16_16_0_9 59882
+#define Q16_16_0_85 56555
 #define Q16_16_1 65536
 #define Q16_16_MINUS_1 -65536
 #define Q16_16_2 131072
