@@ -39,6 +39,7 @@ typedef struct Dazzle {
   uint8_t effect_num;
   uint8_t brightness;
   int8_t direction;
+  bool still_going;
 } Dazzle;
 
 Dazzle *Dazzle_malloc() {
@@ -47,6 +48,7 @@ Dazzle *Dazzle_malloc() {
   self->brightness = 255;
   self->direction = 1;
   self->step_limit = 31;
+  self->still_going = false;
   return self;
 }
 
@@ -105,9 +107,35 @@ void Dazzle_start(Dazzle *self, uint8_t effect_num) {
     self->brightness = 255;
     self->direction = 1;
     self->step_limit = 34;  // Increased step limit for smooth cycle
+  } else if (effect_num == 3) {
+    // Initialize colors for blue/cyan/green wave effect
+    for (uint8_t i = 0; i < 16; ++i) {
+      if (i % 3 == 0) {
+        self->colors[i][0] = 0;  // Blue
+        self->colors[i][1] = 0;
+        self->colors[i][2] = 255;
+      } else if (i % 3 == 1) {
+        self->colors[i][0] = 0;  // Cyan
+        self->colors[i][1] = 255;
+        self->colors[i][2] = 255;
+      } else {
+        self->colors[i][0] = 0;  // Green
+        self->colors[i][1] = 255;
+        self->colors[i][2] = 0;
+      }
+    }
+    self->brightness = 255;
+    self->direction = 1;
+    self->step_limit = 100;  // Adjust the step limit for smooth transitions
   }
   self->last_update_time = get_current_time_ms();
   self->step = 0;
+}
+
+void Dazzle_restart(Dazzle *self, uint8_t effect_num) {
+  if (!self->still_going) {
+    Dazzle_start(self, effect_num);
+  }
 }
 
 bool Dazzle_update(Dazzle *self, WS2812 *ws2812) {
@@ -118,7 +146,6 @@ bool Dazzle_update(Dazzle *self, WS2812 *ws2812) {
                   self->colors[i][1] * self->brightness / 255,
                   self->colors[i][2] * self->brightness / 255);
     }
-    WS2812_show(ws2812);
     if (current_time - self->last_update_time >= 16) {
       if (self->effect_num == 0) {
         // Shift colors to the right
@@ -156,15 +183,60 @@ bool Dazzle_update(Dazzle *self, WS2812 *ws2812) {
           hue_to_rgb(hue, &self->colors[i][0], &self->colors[i][1],
                      &self->colors[i][2]);
         }
-      }
+      } else if (self->effect_num == 3) {
+        // Smooth sine wave for crossfading and moving blue/cyan/green wave
+        // effect
+        for (uint8_t i = 0; i < 16; ++i) {
+          float wave =
+              (sinf(2 * M_PI * (self->step + i) / self->step_limit) + 1) / 2;
+          uint8_t blue_intensity =
+              (uint8_t)(255 * (1 - wave));                  // Blue fades out
+          uint8_t green_intensity = (uint8_t)(255 * wave);  // Green fades in
+          uint8_t cyan_intensity =
+              (uint8_t)(255 *
+                        fabs(
+                            sinf(M_PI * (self->step + i) /
+                                 self->step_limit)));  // Cyan reaches peak at
+                                                       // the middle of the wave
 
+          // Apply crossfade: blending between blue, cyan, and green
+          self->colors[i][0] = 0;  // No red component
+
+          // Calculate blended green, cyan, and blue values for smooth
+          // transition
+          self->colors[i][1] =
+              green_intensity;  // Green channel modulated by the wave
+          self->colors[i][2] =
+              blue_intensity +
+              cyan_intensity;  // Blue and Cyan share the blue channel, cyan is
+                               // a blend of blue and green
+        }
+
+        // Update the WS2812 LED strip with the new color values
+        for (uint8_t i = 0; i < 16; ++i) {
+          WS2812_fill(ws2812, i, self->colors[i][0], self->colors[i][1],
+                      self->colors[i][2]);
+        }
+
+        // Slow down the update rate for smooth undulation and movement
+        if (current_time - self->last_update_time >= 32) {
+          self->last_update_time = current_time;
+          self->step++;  // Move to the next step of the wave
+        }
+
+        // Reset the step for continuous looping
+        if (self->step >= self->step_limit) {
+          self->step = 0;
+        }
+      }
       self->last_update_time = current_time;
       self->step++;
     }
-    return true;
+    self->still_going = true;
   } else {
-    return false;
+    self->still_going = false;
   }
+  return self->still_going;
 }
 
 #endif /* DAZZLE_LIB */

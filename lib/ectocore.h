@@ -1389,6 +1389,15 @@ void input_handling() {
     } else {
       if (Dazzle_update(dazzle, ws2812)) {
         // dazzling
+        // always show the current slice
+        WS2812_fill_color(ws2812,
+                          banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->slice_current %
+                              16,
+                          CYAN);
+        WS2812_show(ws2812);
       } else {
         // highlight the current sample in the leds
         for (uint8_t i = 0; i < 17; i++) {
@@ -1404,13 +1413,6 @@ void input_handling() {
                         g * led_brightness / 255, b * led_brightness / 255);
           }
         }
-        WS2812_fill_color(ws2812,
-                          banks[sel_bank_cur]
-                                  ->sample[sel_sample_cur]
-                                  .snd[FILEZERO]
-                                  ->slice_current %
-                              16,
-                          CYAN);
         if (sf->fx_active[FX_COMB]) {
           for (uint8_t i = 2; i < 14; i += 2) {
             WS2812_fill_color_dim(ws2812,
@@ -1437,6 +1439,10 @@ void input_handling() {
                             16,
                         r, g, b);
           }
+        }
+
+        if (sf->fx_active[FX_EXPAND]) {
+          Dazzle_restart(dazzle, 3);
         }
         // add flourishes if effects are on
         if (sf->fx_active[FX_REVERSE]) {
@@ -1488,6 +1494,14 @@ void input_handling() {
         }
         led_brightness += led_brightness_direction;
 
+        // always show the current slice
+        WS2812_fill_color(ws2812,
+                          banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->slice_current %
+                              16,
+                          CYAN);
         WS2812_show(ws2812);
       }
       sleep_ms(1);
