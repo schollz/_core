@@ -36,6 +36,8 @@ bool audio_was_muted = false;
 bool do_open_file_ready = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
+int32_t reverb_fade = 0;
+bool reverb_activated = false;
 
 inline int32_t scale16to32_fixed_dither(int16_t val) {
   return (((int32_t)val) << 16);  // + ((rand() & 1) - 1);
@@ -731,17 +733,44 @@ BREAKOUT_OF_MUTE:
   Delay_process(delay, samples, buffer->max_sample_count, 0);
 
   // apply reverb
-  if (sf->fx_active[FX_EXPAND]) {
+  if (sf->fx_active[FX_EXPAND] || reverb_fade > 0 || reverb_activated) {
     if (freeverb != NULL) {
       if (first_loop_ever) {
         // time this process
         t0 = time_us_32();
       }
+      if (reverb_activated && !sf->fx_active[FX_EXPAND]) {
+        reverb_activated = false;
+        if (reverb_fade <= 0) {
+          reverb_fade = Q16_16_0_85;
+        }
+      }
+      if (!reverb_activated && sf->fx_active[FX_EXPAND]) {
+        reverb_activated = true;
+        if (reverb_fade <= 0) {
+          reverb_fade = Q16_16_0_85;
+        }
+      }
+      if (reverb_fade > 0) {
+        // MessageSync_printf(messagesync, "%d fade: %ld\n", reverb_activated,
+        //                    reverb_fade);
+        reverb_fade -= 300;
+        if (reverb_fade < 0) {
+          reverb_fade = 0;
+        }
+        if (sf->fx_active[FX_EXPAND]) {
+          // fade in
+          FV_Reverb_set_wet(freeverb, Q16_16_0_85 - reverb_fade);
+        } else {
+          // fade out
+          FV_Reverb_set_wet(freeverb, reverb_fade);
+        }
+      }
       FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
 
       if (first_loop_ever) {
-        MessageSync_printf(messagesync, "freeverb : %ld us\n",
-                           (time_us_32() - t0));
+        // MessageSync_printf(messagesync, "freeverb : %ld us\n",
+        //                    (time_us_32() - t0));
         first_loop_ever = false;
       }
     }
