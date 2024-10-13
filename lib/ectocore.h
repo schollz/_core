@@ -416,7 +416,7 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
   if (show_wheel) {
     uint8_t r, g, b;
     int16_t val2 = val / 4;
-    hue_to_rgb(val2, &r, &g, &b);
+    hue_to_rgb2(val2, &r, &g, &b);
     ws2812_set_wheel2(ws2812, val, r, g, b);
   }
 }
@@ -958,8 +958,8 @@ void input_handling() {
             val = (val * banks[sel_bank_cur]->num_samples) / 1024;
             sel_sample_next = val;
             ws2812_wheel_clear(ws2812);
-            WS2812_fill(ws2812, val * 16 / banks[sel_bank_cur]->num_samples, 0,
-                        255, 255);
+            WS2812_fill_color(
+                ws2812, val * 16 / banks[sel_bank_cur]->num_samples, BLUE);
             WS2812_show(ws2812);
             if (sel_sample_next != sel_sample_cur) {
               debounce_file_change = DEBOUNCE_FILE_SWITCH;
@@ -1045,7 +1045,11 @@ void input_handling() {
               debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
               for (uint8_t i = 0; i < 16; i++) {
                 uint8_t r, g, b;
-                hue_to_rgb(i * 16 - 1, &r, &g, &b);
+                uint16_t i_ = i * 16;
+                if (i_ > 255) {
+                  i_ = 255;
+                }
+                hue_to_rgb(i_, &r, &g, &b);
                 WS2812_fill(ws2812, i, r, g, b);
               }
               WS2812_show(ws2812);
@@ -1249,7 +1253,8 @@ void input_handling() {
                     }
                     printf("[ectocore] switch bank %d\n", sel_bank_next);
                     ws2812_set_wheel_section(ws2812, sel_bank_next,
-                                             banks_with_samples_num, 255, 0, 0);
+                                             banks_with_samples_num, 41, 0,
+                                             255);
                     WS2812_show(ws2812);
                   }
                   break;
@@ -1259,7 +1264,7 @@ void input_handling() {
           }
         } else {
           ws2812_set_wheel_section(ws2812, sel_bank_cur, banks_with_samples_num,
-                                   255, 0, 0);
+                                   41, 0, 255);
           WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
@@ -1387,9 +1392,10 @@ void input_handling() {
         // dazzling
       } else {
         // highlight the current sample in the leds
-        for (uint8_t i = 0; i < 16; i++) {
+        for (uint8_t i = 0; i < 17; i++) {
           WS2812_fill(ws2812, i, 0, 0, 0);
         }
+        WS2812_fill_color(ws2812, 16, CYAN);
         if (retrig_beat_num > 0 && retrig_beat_num % 2 == 0) {
           for (uint8_t i = 0; i < 16; i++) {
             uint8_t r, g, b;
@@ -1398,72 +1404,61 @@ void input_handling() {
                         g * led_brightness / 255, b * led_brightness / 255);
           }
         }
-        WS2812_fill(ws2812,
-                    banks[sel_bank_cur]
-                            ->sample[sel_sample_cur]
-                            .snd[FILEZERO]
-                            ->slice_current %
-                        16,
-                    50 * led_brightness / 255, 190 * led_brightness / 255,
-                    255 * led_brightness / 255);
+        WS2812_fill_color(ws2812,
+                          banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->slice_current %
+                              16,
+                          CYAN);
         if (sf->fx_active[FX_COMB]) {
           for (uint8_t i = 2; i < 14; i += 2) {
-            WS2812_fill(ws2812,
-                        (banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[FILEZERO]
-                             ->slice_current +
-                         i) %
-                            16,
-                        50 / 8 * led_brightness / 255,
-                        190 / 8 * led_brightness / 255,
-                        255 / 8 * led_brightness / 255);
+            WS2812_fill_color_dim(ws2812,
+                                  (banks[sel_bank_cur]
+                                       ->sample[sel_sample_cur]
+                                       .snd[FILEZERO]
+                                       ->slice_current +
+                                   i) %
+                                      16,
+                                  CYAN, 4);
           }
         }
         // add flourishes if effects are on
         if (sf->fx_active[FX_REVERSE]) {
-          WS2812_fill(ws2812,
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[FILEZERO]
-                           ->slice_current +
-                       1) %
-                          16,
-                      50 / 2 * led_brightness / 255,
-                      190 / 2 * led_brightness / 255,
-                      255 / 2 * led_brightness / 255);
-          WS2812_fill(ws2812,
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[FILEZERO]
-                           ->slice_current +
-                       2) %
-                          16,
-                      50 / 4 * led_brightness / 255,
-                      190 / 4 * led_brightness / 255,
-                      255 / 4 * led_brightness / 255);
-          WS2812_fill(ws2812,
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[FILEZERO]
-                           ->slice_current +
-                       3) %
-                          16,
-                      50 / 8 * led_brightness / 255,
-                      190 / 8 * led_brightness / 255,
-                      255 / 8 * led_brightness / 255);
+          WS2812_fill_color_dim(ws2812,
+                                (banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[FILEZERO]
+                                     ->slice_current +
+                                 1) %
+                                    16,
+                                CYAN, 2);
+          WS2812_fill_color_dim(ws2812,
+                                (banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[FILEZERO]
+                                     ->slice_current +
+                                 2) %
+                                    16,
+                                CYAN, 3);
+          WS2812_fill_color_dim(ws2812,
+                                (banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[FILEZERO]
+                                     ->slice_current +
+                                 3) %
+                                    16,
+                                CYAN, 4);
         }
         if (sf->fx_active[FX_DELAY]) {
-          WS2812_fill(ws2812,
-                      (banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[FILEZERO]
-                           ->slice_current +
-                       8) %
-                          16,
-                      50 / 2 * led_brightness / 255,
-                      190 / 2 * led_brightness / 255,
-                      255 / 2 * led_brightness / 255);
+          WS2812_fill_color_dim(ws2812,
+                                (banks[sel_bank_cur]
+                                     ->sample[sel_sample_cur]
+                                     .snd[FILEZERO]
+                                     ->slice_current +
+                                 8) %
+                                    16,
+                                CYAN, 2);
         }
         if (sf->fx_active[FX_TIMESTRETCH]) {
           led_brightness_direction = -1;
