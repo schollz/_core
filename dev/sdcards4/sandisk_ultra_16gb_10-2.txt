@@ -1,0 +1,754 @@
+[0;37m[info]	[0m2024/10/13 07:40:10 switch to baud 1200 by `curl localhost:7083`
+sdcard52.8 1252 3000 3 0
+sdcard51.4 816 1500 3 2
+sdcard50.1 3587 1500 3 2
+sdcard49.3 3573 1500 1 1
+sdcard48.2 3638 1500 2 1
+[ectocore] btn_bank 1
+sdcard48.7 792 1500 4 3
+[ectocore] btn_bank 0
+[ectocore] switch bank 1
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 3860
+[audio_callback] do_open_file f_lseek: 873
+[audio_callback] do_open_file f_read: 726
+sdcard3.1 5459 1500 4 2
+sdcard52.9 3623 1588 1 1
+sdcard56.7 3439 1376 1 1
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 2
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 3873
+[audio_callback] do_open_file f_lseek: 878
+[audio_callback] do_open_file f_read: 713
+sdcard13.6 5464 1296 4 4
+sdcard59.1 3634 1716 2 1
+sdcard59.8 800 1572 4 3
+sdcard60.1 819 1816 4 1
+sdcard60.1 3585 1816 2 1
+sdcard60.6 3656 2040 3 2
+version=v6.0.5
+sdcard63.0 791 2724 1 3
+sdcard60.9 3745 1444 2 1
+sdcard57.5 3607 1144 2 1
+sdcard60.1 3796 1816 2 1
+sdcard61.2 852 1816 1 2
+sdcard61.6 3769 1816 2 1
+sdcard61.2 4664 1816 4 2
+sdcard60.7 3714 1816 2 1
+sdcard61.0 831 1816 4 1
+sdcard61.3 3820 1816 2 1
+sdcard59.8 3662 1816 3 1
+sdcard59.8 3556 1816 2 1
+sdcard60.4 855 1816 2 2
+sdcard60.6 3676 1816 2 1
+sdcard60.3 3696 1816 2 0
+sdcard60.2 3655 1816 1 1
+sdcard60.2 851 1816 2 2
+sdcard60.3 745 1816 3 4
+sdcard59.9 3589 1816 1 0
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 3
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 962
+[audio_callback] do_open_file f_lseek: 925
+[audio_callback] do_open_file f_read: 804
+sdcard25.5 2691 1816 5 5
+sdcard65.7 4698 2144 5 2
+sdcard63.1 3586 2144 4 4
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 4
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 850
+[audio_callback] do_open_file f_lseek: 898
+[audio_callback] do_open_file f_read: 821
+sdcard58.0 2569 2404 3 2
+sdcard65.6 3668 2804 2 1
+sdcard77.1 2632 5000 3 3
+sdcard64.2 4179 2648 3 2
+sdcard66.3 3858 3148 4 2
+sdcard68.4 3820 3536 2 1
+sdcard68.3 905 2500 2 2
+sdcard64.7 3768 2500 4 1
+sdcard64.3 3679 2500 1 1
+sdcard63.8 3732 2500 2 1
+sdcard63.5 911 2500 2 2
+sdcard64.8 3744 2500 3 2
+sdcard64.5 4856 2500 4 2
+sdcard64.8 3606 2500 2 1
+sdcard65.6 864 2500 3 1
+sdcard66.6 5006 2500 6 1
+sdcard63.6 3668 2500 4 1
+sdcard64.4 3774 2500 2 1
+sdcard63.3 1125 2500 0 2
+sdcard65.0 3816 2500 4 2
+sdcard65.1 3760 2500 2 0
+sdcard64.6 3864 2500 4 1
+sdcard64.4 1247 2500 1 2
+sdcard64.0 981 2500 2 2
+sdcard79.0 1365 5000 3 4
+sdcard64.3 968 2500 5 1
+sdcard64.6 867 2500 1 2
+sdcard63.4 3697 2500 3 0
+sdcard64.0 3737 2500 1 0
+sdcard64.0 3706 2500 2 1
+sdcard63.3 971 2500 2 1
+sdcard64.0 4075 2500 2 1
+sdcard63.4 4931 2500 5 0
+sdcard62.0 3861 2500 2 0
+sdcard63.5 913 2500 4 4
+sdcard64.6 3867 2500 1 0
+sdcard63.4 4138 2500 2 1
+sdcard65.5 3987 2500 4 1
+sdcard65.9 843 2500 2 1
+sdcard65.7 3848 2500 1 1
+sdcard65.6 3878 2500 2 1
+sdcard64.5 3963 2500 2 0
+sdcard64.7 880 2500 1 2
+sdcard66.2 5298 2500 3 2
+sdcard65.2 3844 2500 1 0
+sdcard64.6 886 2500 2 2
+sdcard65.0 962 2500 0 2
+sdcard65.9 3910 2500 3 1
+sdcard64.8 3854 2500 2 1
+sdcard64.3 3637 2500 2 0
+sdcard62.0 1091 2500 3 2
+sdcard62.9 3666 2500 1 0
+sdcard62.8 3811 2500 4 2
+sdcard65.7 3808 2500 2 2
+sdcard65.7 807 2428 2 4
+sdcard62.3 3707 2500 1 0
+sdcard63.5 3809 2500 1 1
+sdcard64.4 3761 2500 2 0
+sdcard64.6 941 2500 0 2
+sdcard63.9 3768 2500 2 1
+sdcard64.5 3759 2500 1 1
+sdcard64.0 3697 2500 2 2
+sdcard65.1 887 2500 1 2
+sdcard63.9 4900 2500 4 2
+sdcard63.3 3725 2500 4 0
+sdcard63.7 3695 2228 2 1
+sdcard63.5 875 2100 4 2
+sdcard61.5 3687 1668 2 1
+sdcard61.4 812 1984 2 2
+sdcard59.0 3243 992 1 3
+sdcard54.3 413 624 3 5
+sdcard64.1 4086 3060 2 0
+sdcard71.2 3835 3968 2 1
+sdcard68.0 3860 2500 3 2
+sdcard65.5 1021 2500 3 5
+sdcard64.7 3646 2500 3 2
+sdcard63.5 3747 2500 2 1
+sdcard64.7 3949 2500 2 0
+sdcard64.8 923 2500 2 3
+sdcard65.8 3968 2500 4 2
+sdcard66.2 3894 2500 2 1
+sdcard64.6 3851 2500 2 1
+sdcard64.9 962 2500 3 4
+sdcard62.2 4440 624 3 1
+sdcard64.5 3886 2500 3 1
+sdcard64.9 798 2500 3 2
+sdcard63.0 910 2500 0 1
+sdcard63.0 3631 2500 3 3
+sdcard69.2 3885 4204 4 2
+sdcard77.1 3959 5000 3 1
+sdcard68.7 770 2500 2 1
+sdcard64.7 3824 2500 3 1
+sdcard64.5 3658 2500 4 2
+sdcard64.7 3810 2500 1 0
+sdcard65.1 921 2500 2 1
+sdcard66.9 5871 2500 5 1
+sdcard65.7 3744 2500 3 2
+sdcard64.1 3779 2500 2 1
+sdcard65.2 863 2500 2 1
+sdcard63.3 3782 2500 2 0
+sdcard63.9 3739 2500 2 1
+sdcard64.2 3956 2500 3 2
+sdcard65.6 931 2500 1 2
+sdcard64.8 3763 2500 2 1
+sdcard62.2 3681 2500 1 1
+sdcard62.5 806 2500 4 3
+sdcard62.7 807 2500 2 2
+sdcard65.4 3774 2500 3 1
+sdcard63.2 4336 2500 3 0
+sdcard65.1 3956 2500 3 1
+sdcard66.0 1015 2500 2 2
+sdcard66.0 3892 2500 2 1
+sdcard64.4 4001 2500 2 1
+sdcard63.9 3724 2500 1 0
+sdcard64.8 2196 2500 5 4
+sdcard65.1 3923 2500 2 1
+sdcard66.2 969 2500 3 1
+sdcard64.1 4203 2500 2 1
+sdcard64.4 874 2500 2 2
+sdcard65.2 3868 2500 3 2
+sdcard65.4 3814 2500 2 1
+sdcard64.5 3907 2500 2 1
+sdcard62.3 959 2500 2 2
+sdcard64.9 3832 3148 1 0
+sdcard72.8 6445 5000 3 1
+sdcard74.1 6301 5000 4 1
+sdcard67.3 835 2500 2 2
+sdcard65.6 3963 2500 4 1
+sdcard66.5 3938 2500 5 0
+sdcard65.7 3986 2500 2 1
+sdcard65.8 958 2500 1 2
+sdcard66.8 3919 2500 2 1
+sdcard64.7 3909 2500 2 1
+sdcard64.6 3756 2500 2 1
+sdcard64.8 919 2500 1 2
+sdcard64.2 3774 2500 3 1
+sdcard63.9 930 2500 5 1
+sdcard64.3 3678 2500 1 1
+sdcard64.2 948 2500 1 1
+sdcard64.0 3940 2500 2 1
+sdcard63.0 3824 2500 1 0
+sdcard61.7 3685 2500 2 1
+sdcard62.5 789 2500 1 2
+sdcard65.3 3833 2500 2 1
+sdcard63.3 3775 2500 2 1
+sdcard65.4 5436 2500 3 3
+sdcard65.6 975 2500 3 2
+sdcard66.1 3865 2500 3 2
+sdcard65.3 3931 2500 2 1
+sdcard64.6 3805 2500 2 1
+sdcard64.0 900 2500 0 1
+sdcard65.6 3935 2500 2 1
+sdcard65.9 3885 2500 2 0
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 0
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 3984
+[audio_callback] do_open_file f_lseek: 1013
+[audio_callback] do_open_file f_read: 868
+sdcard52.2 5865 2500 4 1
+sdcard61.2 3813 1684 4 1
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 1
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 4025
+[audio_callback] do_open_file f_lseek: 908
+[audio_callback] do_open_file f_read: 842
+sdcard18.5 5775 1684 4 1
+sdcard66.9 671 1376 3 2
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 2
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 1044
+[audio_callback] do_open_file f_lseek: 865
+[audio_callback] do_open_file f_read: 704
+sdcard34.1 2613 1500 5 4
+sdcard62.1 3759 2040 2 1
+sdcard68.2 3933 3636 4 1
+sdcard71.5 3942 3636 2 3
+sdcard68.5 809 1816 2 2
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 3
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 3924
+[audio_callback] do_open_file f_lseek: 902
+[audio_callback] do_open_file f_read: 736
+sdcard38.9 5562 1816 5 3
+sdcard62.5 871 2144 2 3
+sdcard63.2 3762 2144 4 2
+sdcard62.3 3723 2144 3 1
+sdcard63.2 3618 2144 3 1
+sdcard62.0 752 2144 2 2
+sdcard63.2 3692 2144 4 2
+sdcard63.0 4908 2144 4 2
+sdcard63.1 3768 2144 4 2
+sdcard63.7 857 2144 2 4
+sdcard63.3 3689 2144 4 1
+sdcard63.0 3712 2144 3 2
+sdcard63.4 3822 2144 2 1
+sdcard63.0 836 2144 5 3
+sdcard62.0 3575 2144 2 1
+sdcard62.3 3642 2144 3 2
+sdcard62.1 3650 2144 3 1
+sdcard63.0 785 2144 4 3
+sdcard63.1 765 2144 4 2
+[ectocore] btn_bank 1
+[ectocore] btn_bank 0
+[ectocore] switch bank 4
+[ectocore] switch sample 0
+[audio_callback] do_open_file f_close+f_open: 834
+[audio_callback] do_open_file f_lseek: 1209
+[audio_callback] do_open_file f_read: 863
+sdcard47.8 2906 2144 3 1
+sdcard63.7 835 2500 2 0
+sdcard66.1 3698 3852 2 1
+sdcard74.9 3870 5000 1 1
+sdcard76.0 3788 5000 2 0
+sdcard64.7 1005 2500 1 1
+sdcard65.0 934 2500 4 4
+sdcard64.9 3934 2500 1 1
+sdcard63.8 3809 1768 2 1
+sdcard58.5 718 1052 1 2
+sdcard61.0 3927 2500 2 1
+sdcard64.7 3905 2500 2 2
+sdcard64.8 3873 2500 1 0
+sdcard64.9 826 2500 2 2
+sdcard65.0 3815 2500 2 0
+sdcard62.7 4912 2500 4 2
+sdcard61.1 3697 2500 2 2
+sdcard62.4 507 2500 2 4
+sdcard64.6 3690 2500 2 0
+sdcard63.6 3652 2500 2 0
+sdcard63.5 3878 2500 1 1
+sdcard65.3 942 2500 0 1
+sdcard67.2 3941 2888 3 2
+sdcard66.9 3978 2724 2 1
+sdcard66.3 3910 2648 2 0
+sdcard66.2 904 2500 2 1
+sdcard64.5 900 2500 2 1
+sdcard66.6 1063 3968 2 5
+sdcard70.3 3723 2500 2 1
+sdcard65.1 1001 3536 3 5
+sdcard76.9 3691 2500 2 0
+sdcard63.8 3687 2500 2 0
+sdcard63.8 3695 2500 1 1
+sdcard62.7 851 2500 1 2
+sdcard62.5 3637 2500 2 1
+sdcard61.8 4845 2500 3 2
+sdcard62.2 3676 2500 0 1
+sdcard62.2 832 2500 1 2
+sdcard64.5 3842 2500 2 1
+sdcard65.0 3738 2500 3 2
+sdcard64.5 3806 2500 1 1
+sdcard64.6 954 2500 0 1
+sdcard63.8 3792 2500 1 1
+sdcard63.6 3776 2500 2 1
+sdcard64.7 988 2500 4 1
+sdcard62.7 963 2500 4 3
+sdcard64.2 5089 2500 4 1
+sdcard63.7 3989 2500 4 2
+sdcard63.8 3901 2500 2 1
+sdcard63.6 784 2500 2 2
+sdcard64.0 3651 2500 2 0
+sdcard65.2 3777 3240 2 1
+sdcard63.9 4115 908 3 0
+sdcard57.8 851 2500 2 1
+sdcard64.0 3643 2500 5 1
+sdcard62.8 3674 2500 2 0
+sdcard63.6 3821 2500 1 1
+sdcard65.5 1001 2500 2 5
+sdcard64.8 3763 2500 3 1
+sdcard66.3 3780 2500 3 1
+sdcard65.8 4078 2500 2 0
+sdcard63.6 947 2500 1 1
+sdcard64.8 3769 2500 3 1
+sdcard64.2 3830 2500 3 0
+sdcard63.1 3683 2500 2 1
+sdcard60.8 687 1404 2 3
+sdcard62.0 6716 5000 4 1
+sdcard76.4 1196 5000 5 5
+sdcard71.6 967 2500 2 1
+sdcard62.9 794 2500 1 2
+sdcard63.0 3803 2500 2 1
+sdcard62.9 3887 2500 2 1
+sdcard64.6 3776 2500 2 1
+sdcard63.2 862 2500 2 2
+sdcard65.1 3969 2500 2 1
+sdcard66.1 3992 2500 3 1
+sdcard65.8 4012 2500 2 0
+sdcard66.2 939 2500 3 4
+sdcard63.8 3743 2500 3 1
+sdcard63.7 3804 2500 1 0
+sdcard63.9 3718 2500 3 2
+sdcard64.8 949 2500 3 2
+sdcard63.7 3685 2500 2 1
+sdcard63.3 3704 2500 2 2
+sdcard64.3 3692 2500 2 1
+sdcard64.3 903 2500 1 2
+sdcard64.5 6168 2500 6 2
+sdcard62.4 3782 2500 2 1
+sdcard62.2 841 2500 2 3
+sdcard62.5 957 2500 0 2
+sdcard65.2 3861 2500 4 2
+sdcard63.5 3810 2500 1 0
+sdcard64.6 4033 2500 2 0
+sdcard66.1 931 2500 0 1
+sdcard66.3 3977 2500 2 1
+sdcard65.4 3916 2500 2 0
+sdcard64.2 3739 2500 3 1
+sdcard64.5 2262 2500 4 3
+sdcard71.9 3803 5000 2 1
+sdcard73.3 3776 2500 3 2
+sdcard63.4 3703 2500 2 1
+sdcard63.1 836 2500 2 3
+sdcard64.8 3723 2360 2 0
+sdcard60.7 3595 1576 1 1
+sdcard56.9 3471 1052 2 1
+sdcard61.2 833 2500 2 2
+sdcard62.8 3822 2500 2 1
+sdcard61.8 3705 2500 2 0
+sdcard63.3 824 2500 5 2
+sdcard62.5 895 2500 2 2
+sdcard64.6 3818 2500 3 0
+[ectocore] knob select sample 2/16 (82)
+[ectocore] knob select sample 2/16 (89)
+[ectocore] knob select sample 2/16 (98)
+[ectocore] knob select sample 2/16 (110)
+[ectocore] knob select sample 2/16 (116)
+[ectocore] knob select sample 2/16 (127)
+[ectocore] knob select sample 2/16 (142)
+[ectocore] knob select sample 2/16 (151)
+[ectocore] knob select sample 2/16 (162)
+[ectocore] knob select sample 3/16 (171)
+[ectocore] knob select sample 3/16 (181)
+[ectocore] knob select sample 3/16 (192)
+[ectocore] knob select sample 3/16 (202)
+[ectocore] knob select sample 3/16 (213)
+[ectocore] knob select sample 3/16 (226)
+[ectocore] knob select sample 3/16 (231)
+[ectocore] knob select sample 3/16 (239)
+[ectocore] knob select sample 4/16 (246)
+[ectocore] knob select sample 4/16 (254)
+[ectocore] knob select sample 4/16 (264)
+[ectocore] knob select sample 4/16 (268)
+[ectocore] knob select sample 4/16 (275)
+version=v6.0.5
+[ectocore] knob select sample 4/16 (294)
+[ectocore] knob select sample 4/16 (298)
+[ectocore] knob select sample 4/16 (302)
+[ectocore] knob select sample 4/16 (309)
+[ectocore] knob select sample 4/16 (313)
+[ectocore] knob select sample 4/16 (318)
+[ectocore] knob select sample 4/16 (324)
+[ectocore] knob select sample 5/16 (327)
+[ectocore] knob select sample 5/16 (332)
+[ectocore] knob select sample 5/16 (338)
+[ectocore] knob select sample 5/16 (345)
+[ectocore] knob select sample 5/16 (347)
+[ectocore] knob select sample 5/16 (351)
+[ectocore] knob select sample 5/16 (353)
+[ectocore] knob select sample 5/16 (356)
+[ectocore] knob select sample 5/16 (360)
+[ectocore] knob select sample 5/16 (367)
+[ectocore] knob select sample 5/16 (370)
+[ectocore] knob select sample 5/16 (374)
+[ectocore] knob select sample 5/16 (377)
+[ectocore] knob select sample 5/16 (379)
+[ectocore] knob select sample 5/16 (383)
+[ectocore] knob select sample 5/16 (387)
+[ectocore] knob select sample 5/16 (390)
+[ectocore] knob select sample 5/16 (393)
+[ectocore] knob select sample 5/16 (396)
+[ectocore] knob select sample 5/16 (399)
+[ectocore] knob select sample 5/16 (405)
+[ectocore] knob select sample 5/16 (406)
+[ectocore] knob select sample 5/16 (408)
+[ectocore] knob select sample 5/16 (412)
+[ectocore] knob select sample 6/16 (414)
+[ectocore] knob select sample 6/16 (416)
+[ectocore] knob select sample 6/16 (419)
+[ectocore] knob select sample 6/16 (421)
+[ectocore] knob select sample 6/16 (425)
+[ectocore] knob select sample 6/16 (428)
+[ectocore] knob select sample 6/16 (430)
+[ectocore] knob select sample 6/16 (432)
+[ectocore] knob select sample 6/16 (437)
+[ectocore] knob select sample 6/16 (439)
+[ectocore] knob select sample 6/16 (442)
+[ectocore] knob select sample 6/16 (447)
+[ectocore] knob select sample 6/16 (450)
+[ectocore] knob select sample 6/16 (453)
+[ectocore] knob select sample 6/16 (455)
+[ectocore] knob select sample 6/16 (459)
+[ectocore] knob select sample 6/16 (463)
+[ectocore] knob select sample 6/16 (464)
+[ectocore] knob select sample 6/16 (468)
+[ectocore] knob select sample 6/16 (471)
+[ectocore] knob select sample 6/16 (473)
+[ectocore] knob select sample 6/16 (477)
+[ectocore] knob select sample 6/16 (479)
+[ectocore] knob select sample 6/16 (483)
+[ectocore] knob select sample 6/16 (486)
+[ectocore] knob select sample 6/16 (487)
+[ectocore] knob select sample 6/16 (490)
+[ectocore] knob select sample 7/16 (493)
+[ectocore] knob select sample 7/16 (495)
+[ectocore] knob select sample 7/16 (496)
+[ectocore] knob select sample 7/16 (498)
+[ectocore] knob select sample 7/16 (502)
+[ectocore] knob select sample 7/16 (503)
+[ectocore] knob select sample 7/16 (506)
+[ectocore] knob select sample 7/16 (507)
+[ectocore] knob select sample 7/16 (510)
+[ectocore] knob select sample 7/16 (511)
+[ectocore] knob select sample 7/16 (513)
+[ectocore] knob select sample 7/16 (515)
+[ectocore] knob select sample 7/16 (518)
+[ectocore] knob select sample 7/16 (519)
+[ectocore] knob select sample 7/16 (522)
+[ectocore] knob select sample 7/16 (525)
+[ectocore] knob select sample 7/16 (525)
+[ectocore] knob select sample 7/16 (527)
+[ectocore] knob select sample 7/16 (528)
+[ectocore] knob select sample 7/16 (530)
+[ectocore] knob select sample 7/16 (531)
+[ectocore] knob select sample 7/16 (534)
+[ectocore] knob select sample 7/16 (534)
+[ectocore] knob select sample 7/16 (535)
+[ectocore] knob select sample 7/16 (535)
+[ectocore] knob select sample 7/16 (535)
+[ectocore] knob select sample 7/16 (537)
+[ectocore] knob select sample 7/16 (539)
+[ectocore] knob select sample 7/16 (540)
+[ectocore] knob select sample 7/16 (542)
+[ectocore] knob select sample 7/16 (543)
+[ectocore] knob select sample 7/16 (544)
+[ectocore] knob select sample 7/16 (545)
+[ectocore] knob select sample 7/16 (546)
+[ectocore] knob select sample 7/16 (548)
+[ectocore] knob select sample 7/16 (549)
+[ectocore] knob select sample 7/16 (549)
+[ectocore] knob select sample 7/16 (549)
+[ectocore] knob select sample 7/16 (551)
+[ectocore] knob select sample 7/16 (553)
+[ectocore] knob select sample 7/16 (554)
+[ectocore] knob select sample 7/16 (556)
+[ectocore] knob select sample 7/16 (559)
+[ectocore] knob select sample 7/16 (560)
+[ectocore] knob select sample 7/16 (561)
+[ectocore] knob select sample 7/16 (562)
+[ectocore] knob select sample 7/16 (563)
+[ectocore] knob select sample 7/16 (563)
+[ectocore] knob select sample 7/16 (564)
+[ectocore] knob select sample 7/16 (565)
+[ectocore] knob select sample 7/16 (566)
+[ectocore] knob select sample 7/16 (569)
+[ectocore] knob select sample 7/16 (570)
+sdcard68.0 3861 2500 1 3
+[ectocore] knob select sample 7/16 (570)
+[ectocore] knob select sample 7/16 (571)
+[ectocore] knob select sample 7/16 (573)
+[ectocore] knob select sample 7/16 (575)
+[ectocore] knob select sample 7/16 (576)
+[ectocore] knob select sample 7/16 (576)
+[ectocore] knob select sample 8/16 (577)
+[ectocore] knob select sample 8/16 (578)
+[ectocore] knob select sample 8/16 (578)
+[ectocore] knob select sample 8/16 (579)
+[ectocore] knob select sample 8/16 (580)
+[ectocore] knob select sample 8/16 (581)
+[ectocore] knob select sample 8/16 (581)
+[ectocore] knob select sample 8/16 (582)
+[ectocore] knob select sample 8/16 (583)
+[ectocore] knob select sample 8/16 (583)
+[ectocore] knob select sample 8/16 (584)
+[ectocore] knob select sample 8/16 (584)
+[ectocore] knob select sample 8/16 (585)
+[ectocore] knob select sample 8/16 (586)
+[ectocore] knob select sample 8/16 (586)
+[ectocore] knob select sample 8/16 (586)
+[ectocore] knob select sample 8/16 (587)
+[ectocore] knob select sample 8/16 (587)
+[ectocore] knob select sample 8/16 (587)
+[ectocore] knob select sample 8/16 (586)
+[ectocore] switch sample 7
+[audio_callback] do_open_file f_close+f_open: 2323
+[audio_callback] do_open_file f_lseek: 806
+[audio_callback] do_open_file f_read: 791
+sdcard14.2 3920 2500 5 4
+sdcard62.9 777 2500 2 1
+[ectocore] knob select sample 7/16 (570)
+[ectocore] knob select sample 7/16 (570)
+[ectocore] knob select sample 7/16 (569)
+[ectocore] knob select sample 7/16 (569)
+[ectocore] knob select sample 7/16 (568)
+[ectocore] knob select sample 7/16 (567)
+[ectocore] knob select sample 7/16 (565)
+[ectocore] knob select sample 7/16 (564)
+[ectocore] knob select sample 7/16 (564)
+[ectocore] knob select sample 7/16 (564)
+[ectocore] knob select sample 7/16 (562)
+[ectocore] knob select sample 7/16 (562)
+[ectocore] knob select sample 7/16 (561)
+[ectocore] knob select sample 7/16 (559)
+[ectocore] knob select sample 7/16 (558)
+[ectocore] knob select sample 7/16 (556)
+[ectocore] knob select sample 7/16 (556)
+[ectocore] knob select sample 7/16 (553)
+[ectocore] knob select sample 7/16 (552)
+[ectocore] knob select sample 7/16 (550)
+[ectocore] knob select sample 7/16 (549)
+[ectocore] knob select sample 7/16 (548)
+[ectocore] knob select sample 7/16 (546)
+[ectocore] knob select sample 7/16 (545)
+[ectocore] knob select sample 7/16 (543)
+[ectocore] knob select sample 7/16 (540)
+[ectocore] knob select sample 7/16 (539)
+[ectocore] knob select sample 7/16 (538)
+[ectocore] knob select sample 7/16 (535)
+[ectocore] knob select sample 7/16 (535)
+[ectocore] knob select sample 7/16 (534)
+[ectocore] knob select sample 7/16 (532)
+[ectocore] knob select sample 7/16 (531)
+[ectocore] knob select sample 7/16 (530)
+[ectocore] knob select sample 7/16 (528)
+[ectocore] knob select sample 7/16 (527)
+[ectocore] knob select sample 7/16 (526)
+[ectocore] knob select sample 7/16 (525)
+[ectocore] knob select sample 7/16 (523)
+[ectocore] knob select sample 7/16 (522)
+[ectocore] knob select sample 7/16 (521)
+[ectocore] knob select sample 7/16 (521)
+[ectocore] knob select sample 7/16 (519)
+[ectocore] knob select sample 7/16 (519)
+[ectocore] knob select sample 7/16 (518)
+[ectocore] knob select sample 7/16 (517)
+[ectocore] knob select sample 7/16 (517)
+[ectocore] knob select sample 7/16 (516)
+[ectocore] knob select sample 7/16 (515)
+[ectocore] knob select sample 7/16 (515)
+[ectocore] knob select sample 7/16 (515)
+[ectocore] knob select sample 7/16 (514)
+[ectocore] knob select sample 7/16 (514)
+[ectocore] knob select sample 7/16 (514)
+[ectocore] switch sample 6
+[audio_callback] do_open_file f_close+f_open: 5132
+[audio_callback] do_open_file f_lseek: 780
+[audio_callback] do_open_file f_read: 711
+sdcard52.2 6623 2500 4 2
+sdcard64.2 3645 2648 2 1
+sdcard70.9 809 2500 2 4
+sdcard63.0 3845 2500 1 0
+[ectocore] knob select sample 8/16 (574)
+[ectocore] knob select sample 8/16 (573)
+[ectocore] knob select sample 8/16 (575)
+[ectocore] knob select sample 8/16 (575)
+[ectocore] knob select sample 8/16 (576)
+[ectocore] knob select sample 8/16 (576)
+[ectocore] knob select sample 8/16 (577)
+[ectocore] knob select sample 8/16 (577)
+[ectocore] knob select sample 8/16 (578)
+[ectocore] knob select sample 8/16 (579)
+[ectocore] switch sample 7
+[ectocore] knob select sample 8/16 (581)
+[ectocore] knob select sample 8/16 (580)
+[ectocore] knob select sample 8/16 (581)
+[ectocore] knob select sample 8/16 (581)
+version=v6.0.5
+[ectocore] knob select sample 8/16 (582)
+[audio_callback] do_open_file f_close+f_open: 5330
+[audio_callback] do_open_file f_lseek: 814
+[audio_callback] do_open_file f_read: 709
+sdcard54.4 6853 2500 4 3
+sdcard64.1 3787 2360 3 2
+sdcard67.0 798 2500 4 4
+sdcard61.8 3811 2500 4 1
+sdcard64.7 3723 2500 3 0
+sdcard65.1 4848 2500 5 3
+sdcard62.1 717 2500 3 2
+sdcard62.6 3558 2500 3 1
+sdcard72.0 972 5000 2 2
+sdcard62.4 3543 2500 3 1
+sdcard63.3 772 2500 3 1
+sdcard63.5 3614 2500 1 0
+sdcard63.8 849 2500 5 2
+sdcard63.1 3638 2500 2 1
+sdcard63.3 764 2500 3 3
+sdcard63.8 3580 2500 3 1
+sdcard62.2 801 2500 4 2
+sdcard63.5 3718 2500 3 1
+sdcard64.5 492 2500 3 3
+sdcard64.7 3781 2500 2 1
+sdcard64.2 3811 2500 2 2
+sdcard64.8 4004 2500 3 2
+sdcard64.5 823 2500 1 3
+sdcard65.0 3766 2500 4 2
+sdcard64.3 3699 2500 3 1
+sdcard63.6 4851 2500 3 3
+sdcard64.0 704 2500 2 1
+sdcard64.9 3752 2500 4 1
+sdcard64.5 3790 2500 2 1
+sdcard64.2 3841 2500 2 1
+sdcard64.4 776 2500 2 2
+sdcard64.9 3789 2500 3 0
+sdcard64.3 3736 2500 4 2
+sdcard64.1 3597 2500 3 1
+sdcard61.9 964 2500 0 0
+sdcard63.9 3767 2500 3 1
+sdcard64.9 4704 2500 5 1
+sdcard62.6 3625 2500 2 1
+sdcard62.7 817 2500 4 2
+sdcard64.0 3629 2500 5 1
+sdcard63.5 3589 2500 3 1
+sdcard63.0 3571 2500 3 2
+sdcard63.3 775 2500 2 3
+sdcard62.7 3720 2500 2 1
+sdcard65.4 3704 2500 3 3
+sdcard65.7 753 2500 5 1
+sdcard63.8 843 2500 1 2
+sdcard63.5 764 2500 4 2
+sdcard63.5 3663 2500 4 1
+sdcard63.5 3607 2500 2 1
+sdcard63.2 811 2500 3 3
+sdcard63.9 3802 2500 3 2
+sdcard63.8 3716 2500 4 2
+sdcard64.5 3738 2500 3 1
+sdcard64.3 745 2500 5 3
+sdcard63.7 3666 2500 2 1
+sdcard63.4 4704 2500 5 1
+sdcard63.1 3620 2500 3 2
+sdcard63.5 743 2500 3 6
+sdcard63.7 3599 2500 4 2
+sdcard63.2 3826 2500 3 1
+sdcard62.1 3519 2500 2 1
+sdcard62.9 433 2500 1 2
+sdcard64.5 3706 2500 4 1
+sdcard64.5 3778 2500 2 1
+sdcard64.2 3766 2500 1 0
+sdcard64.7 791 2500 3 3
+sdcard65.1 797 2500 4 2
+sdcard63.8 3721 2500 1 1
+sdcard64.0 3745 2500 3 1
+sdcard63.1 776 2500 1 1
+sdcard65.1 3720 2500 3 1
+sdcard63.3 3585 2500 4 1
+sdcard63.9 3780 2500 2 0
+sdcard64.0 835 2500 0 2
+sdcard65.2 3771 2500 4 1
+sdcard65.0 4803 2500 4 1
+sdcard63.9 3787 2500 4 2
+sdcard64.4 724 2500 4 4
+sdcard63.3 3556 2500 2 0
+sdcard63.7 3617 2500 4 1
+sdcard63.4 3523 2500 4 1
+sdcard74.1 756 2500 3 2
+sdcard64.5 3764 2500 2 1
+sdcard64.5 3784 2500 3 2
+sdcard64.5 3762 2500 2 1
+sdcard64.5 780 2500 2 4
+sdcard65.2 4830 2500 5 3
+sdcard62.9 3726 2500 1 1
+sdcard64.4 747 2500 3 1
+sdcard64.4 940 2500 4 4
+sdcard63.8 3551 2572 3 2
+sdcard66.2 3591 3148 3 3
+sdcard70.5 3714 3852 4 1
+sdcard63.8 797 2500 1 1
+sdcard63.9 3601 2500 4 1
+sdcard62.5 3626 2500 3 1
+sdcard62.6 3730 2500 2 1
+sdcard64.6 747 2500 4 4
+sdcard64.2 3936 2500 5 2
+sdcard64.0 3685 2500 4 1
+sdcard63.0 3614 2500 2 1
+sdcard63.5 797 2500 3 3
+sdcard64.0 3659 2500 2 1
+sdcard64.1 3641 3148 3 0
+sdcard75.0 4121 5000 1 1
+sdcard77.2 967 5000 1 2
+sdcard64.6 4614 2500 4 1
+sdcard62.7 3552 2500 3 2
+sdcard64.1 745 2500 2 2
+sdcard63.9 787 2500 1 1
