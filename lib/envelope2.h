@@ -65,6 +65,8 @@ float Envelope2_update(Envelope2 *envelope2) {
   // return exp(envelope2->curr);
 }
 
+float Envelope2_get(Envelope2 *envelope2) { return (envelope2->curr); }
+
 void Envelope2_destroy(Envelope2 *envelope2) { free(envelope2); }
 
 #endif /* Envelope2_LIB */

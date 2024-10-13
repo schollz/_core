@@ -1423,6 +1423,21 @@ void input_handling() {
                                   CYAN, 4);
           }
         }
+        if (sf->fx_active[FX_TAPE_STOP]) {
+          float val = Envelope2_get(envelope_pitch);
+          uint8_t r, g, b;
+          hue_to_rgb((uint16_t)round(val * 255) % 256, &r, &g, &b);
+          for (int8_t i = -1; i < 2; i++) {
+            WS2812_fill(ws2812,
+                        (banks[sel_bank_cur]
+                             ->sample[sel_sample_cur]
+                             .snd[FILEZERO]
+                             ->slice_current +
+                         i) %
+                            16,
+                        r, g, b);
+          }
+        }
         // add flourishes if effects are on
         if (sf->fx_active[FX_REVERSE]) {
           WS2812_fill_color_dim(ws2812,

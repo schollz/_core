@@ -77,6 +77,10 @@ bool Envelope2_is_active(Envelope2 *envelope2) {
   return envelope2->t < envelope2->duration_samples;
 }
 
+float Envelope2_get(Envelope2 *envelope2) {
+  return q16_16_fp_to_float(envelope2->curr);
+}
+
 void Envelope2_destroy(Envelope2 *envelope2) { free(envelope2); }
 
 #endif
