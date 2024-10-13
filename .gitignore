@@ -14,6 +14,7 @@ amen_bpm170_beats16.wav
 lib/selectx.h
 lib/transfer_doublesine.h
 dev/*.uf2
+lib/fuzz.h
 *.uf2
 lib/transfer_tanh.h
 amen_bpm165_beats8_mono.wav
