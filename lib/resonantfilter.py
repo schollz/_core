@@ -61,7 +61,7 @@ def design_filter(fc, fs, db, q, filter_type):
 # produce a multidimensional array, indexed by q and frequency
 # for C-code generation
 qs = [1.5]
-notes = list(range(42, 130))
+notes = list(range(42, 135))
 # notes = [x / 1 for x in range(44 * 1, 130 * 1)]
 filter_types = ["FILTER_LOWPASS", "FILTER_HIGHPASS"]
 # filter_types = ["FILTER_LOWPASS"]
@@ -83,7 +83,7 @@ for filter_type in filter_types:
         print("{")
         for j, note in enumerate(notes):
             if filter_type == "FILTER_HIGHPASS":
-                note = note - 12
+                note = note
             freq = midi_to_freq(note)
             print(f"// note = {note}, frequency = {freq}")
             b0, b1, b2, a0, a1, a2 = design_filter(freq, 44100, 0, q, filter_type)
