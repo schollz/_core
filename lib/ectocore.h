@@ -1403,8 +1403,10 @@ void input_handling() {
         for (uint8_t i = 0; i < 17; i++) {
           WS2812_fill(ws2812, i, 0, 0, 0);
         }
-        WS2812_fill_color(ws2812, 16, CYAN);
-        WS2812_fill_color(ws2812, 17, CYAN);
+        vu_meter_level = vu_meter_readout(vu_meter_samples, 32);
+        WS2812_fill(ws2812, 16, vu_meter_level, vu_meter_level, vu_meter_level);
+        // WS2812_fill_color(ws2812, 16, CYAN);
+        // WS2812_fill_color(ws2812, 17, CYAN);
         if (retrig_beat_num > 0 && retrig_beat_num % 2 == 0) {
           for (uint8_t i = 0; i < 16; i++) {
             uint8_t r, g, b;

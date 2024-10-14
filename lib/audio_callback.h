@@ -835,6 +835,12 @@ BREAKOUT_OF_MUTE:
   give_audio_buffer_time = (time_us_32() - t0);
 #endif
 
+#ifdef INCLUDE_ECTOCORE
+  for (uint8_t i = 0; i < 32; i++) {
+    vu_meter_samples[i] = samples[i];
+  }
+#endif
+
   if (trigger_button_mute) {
     button_mute = true;
     trigger_button_mute = false;

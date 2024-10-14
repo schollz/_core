@@ -163,6 +163,8 @@ uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
 
 // add variable to keep track of variation
+uint8_t vu_meter_level = 0;
+int32_t vu_meter_samples[32];
 uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 bool sel_variation_fadeout = false;
