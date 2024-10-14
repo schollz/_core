@@ -76,7 +76,7 @@ for filter_type in filter_types:
     print(f"// {filter_type}")
     print("{")
     for i, q in enumerate(qs):
-        if filter_type == "FILTER_HIGH_PASS":
+        if filter_type == "FILTER_HIGHPASS":
             q = 1.05
         print(f"// q = {q}")
         print("{")
