@@ -77,7 +77,7 @@ SampleList *list_files(const char *dir) {
       }
       filelist_count++;
     } else {
-      printf("[list_files] %s: %s\n", fname, FRESULT_str(fr));
+      // printf("[list_files] %s: %s\n", fname, FRESULT_str(fr));
     }
   }
 

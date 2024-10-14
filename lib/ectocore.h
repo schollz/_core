@@ -565,6 +565,9 @@ void input_handling() {
   uint16_t debounce_startup = 8000;
   uint32_t btn_mult_on_time = 0;
   uint32_t btn_mult_hold_time = 0;
+  uint32_t debounce_file_switching = 0;
+  uint8_t sel_bank_next_new = 0;
+  uint8_t sel_sample_next_new = 0;
 
   for (uint8_t i = 0; i < 64; i++) {
     random_sequence_arr[i] = random_integer_in_range(0, 64);
@@ -767,29 +770,40 @@ void input_handling() {
           break_set(linlin(val, -512, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
           // printf("[ectocore] cv_sample %d\n", val);
-          sel_sample_next =
+          sel_sample_next_new =
               linlin(val, -512, 512, 0, banks[sel_bank_cur]->num_samples);
-          if (debounce_file_change == 0 && sel_sample_cur != sel_sample_next) {
+          if (debounce_file_change == 0 &&
+              sel_sample_cur != sel_sample_next_new) {
             debounce_file_change = DEBOUNCE_FILE_SWITCH;
           }
         }
       }
     }
-    if (debounce_file_change > 0) {
-      debounce_file_change--;
-      if (sf->fx_active[FX_TIMESTRETCH]) {
-        debounce_file_change = DEBOUNCE_FILE_SWITCH;
-      }
-      if (debounce_file_change == 0 && fil_current_change == false &&
-          (sel_sample_next != sel_sample_cur ||
-           sel_bank_cur != sel_bank_next)) {
-        printf("[ectocore] switch bank/sample %d/%d\n", sel_bank_next,
-               sel_sample_next);
-        fil_current_change = true;
-      }
-    }
 
     uint32_t current_time = to_ms_since_boot(get_absolute_time());
+
+    if (debounce_file_change > 0) {
+      if (debounce_file_switching > 0) {
+        if (current_time - debounce_file_switching > 100) {
+          debounce_file_switching = 0;
+        }
+      } else {
+        debounce_file_change--;
+        if (sf->fx_active[FX_TIMESTRETCH]) {
+          debounce_file_change = DEBOUNCE_FILE_SWITCH;
+        }
+        if (debounce_file_change == 0 && fil_current_change == false &&
+            (sel_sample_next_new != sel_sample_cur ||
+             sel_bank_cur != sel_bank_next_new)) {
+          sel_sample_next = sel_sample_next_new;
+          sel_bank_next = sel_bank_next_new;
+          printf("[ectocore] switch bank/sample %d/%d\n", sel_bank_next,
+                 sel_sample_next);
+          fil_current_change = true;
+          debounce_file_switching = current_time;
+        }
+      }
+    }
 
     // turn off trigout after 50 ms
     if (ecto_trig_out_last > 0) {
@@ -910,26 +924,30 @@ void input_handling() {
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0 && fil_current_change == false) {
           // bank selection
-          val = (val * banks_with_samples_num) / 1024;
+          uint8_t bank_i =
+              roundf((float)(val * (banks_with_samples_num - 1)) / 1024.0);
           // printf("[ectocore] switch bank %d\n", val);
-          uint8_t bank_num = 0;
-          for (uint8_t j = 0; j < banks_with_samples_num; j++) {
-            if (banks[j]->num_samples > 0) {
-              if (bank_num == val && sel_bank_next != j) {
-                sel_bank_next = j;
-                if (sel_bank_next != sel_bank_cur) {
-                  sel_sample_next =
-                      sel_sample_cur % banks[sel_bank_next]->num_samples;
-                  printf("[ectocore] switch to bank %d, sample %d\n",
-                         sel_bank_next, sel_sample_next);
-                  debounce_file_change = DEBOUNCE_FILE_SWITCH;
-                  ws2812_set_wheel_section(ws2812, j, banks_with_samples_num,
-                                           41, 0, 255);
-                  WS2812_show(ws2812);
-                }
-                break;
+          uint8_t bank_num = banks_with_samples[bank_i];
+          if (banks[bank_num]->num_samples > 0 &&
+              sel_bank_next_new != bank_num && !fil_current_change &&
+              !sync_using_sdcard) {
+            sel_bank_next_new = bank_num;
+            if (sel_bank_next_new != sel_bank_cur) {
+              sel_sample_next_new =
+                  roundf((float)(sel_sample_cur *
+                                 banks[sel_bank_next_new]->num_samples) /
+                         banks[sel_bank_cur]->num_samples);
+              if (sel_sample_next_new >=
+                  banks[sel_bank_next_new]->num_samples) {
+                sel_sample_next_new = banks[sel_bank_next_new]->num_samples - 1;
               }
-              bank_num++;
+              debounce_file_change = DEBOUNCE_FILE_SWITCH;
+              printf("[ectocore] knob switch %d+%d/%d\n", sel_bank_next_new,
+                     sel_sample_next_new,
+                     banks[sel_bank_next_new]->num_samples);
+              ws2812_set_wheel_section(ws2812, bank_i, banks_with_samples_num,
+                                       41, 0, 255);
+              WS2812_show(ws2812);
             }
           }
         } else {
@@ -956,17 +974,17 @@ void input_handling() {
           } else {
             // sample selection
             val = (val * banks[sel_bank_cur]->num_samples) / 1024;
-            if (val != sel_sample_next) {
-              sel_sample_next = val;
+            if (val != sel_sample_next_new) {
+              sel_sample_next_new = val;
               ws2812_wheel_clear(ws2812);
               WS2812_fill_color(
                   ws2812, val * 16 / banks[sel_bank_cur]->num_samples, BLUE);
               WS2812_show(ws2812);
-              if (sel_sample_next != sel_sample_cur) {
+              if (sel_sample_next_new != sel_sample_cur) {
                 debounce_file_change = DEBOUNCE_FILE_SWITCH;
                 printf("[ectocore] knob select sample %d/%d (%d)\n",
-                       sel_sample_next + 1, banks[sel_bank_cur]->num_samples,
-                       raw_val);
+                       sel_sample_next_new + 1,
+                       banks[sel_bank_cur]->num_samples, raw_val);
               }
             }
           }
@@ -1236,31 +1254,44 @@ void input_handling() {
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         printf("[ectocore] btn_bank %d\n", val);
         if (val == 0) {
-          printf("val0");
           if (i < BUTTON_NUM && current_time - gpio_btn_last_pressed[i] < 200 &&
               fil_current_change == false) {
-            printf("inloop0");
             // "tap"
             // switch the bank by one
             if (banks_with_samples_num > 1) {
-              for (uint8_t j = 1; j < banks_with_samples_num; j++) {
-                uint8_t bank_num = (sel_bank_cur + j) % banks_with_samples_num;
-                printf("[ectocore] ok switch bank_num %d\n", bank_num);
-                if (banks[bank_num]->num_samples > 0 &&
-                    sel_bank_next != bank_num) {
-                  sel_bank_next = bank_num;
-                  if (sel_bank_next != sel_bank_cur) {
-                    sel_sample_next = (knob_val[KNOB_SAMPLE] *
-                                       banks[sel_bank_next]->num_samples) /
-                                      1024;
-                    debounce_file_change = DEBOUNCE_FILE_SWITCH;
-                    printf("[ectocore] switch bank %d\n", sel_bank_next);
-                    ws2812_set_wheel_section(ws2812, sel_bank_next,
-                                             banks_with_samples_num, 41, 0,
-                                             255);
-                    WS2812_show(ws2812);
-                  }
+              uint8_t bank_i = 0;
+              for (uint8_t k = 0; k < banks_with_samples_num; k++) {
+                if (sel_bank_cur == banks_with_samples[k]) {
+                  bank_i = k;
                   break;
+                }
+              }
+              bank_i++;
+              if (bank_i >= banks_with_samples_num) {
+                bank_i = 0;
+              }
+              uint8_t bank_num = banks_with_samples[bank_i];
+              printf("[ectocore] btn switch bank_num %d\n", bank_num);
+              if (banks[bank_num]->num_samples > 0 &&
+                  sel_bank_next_new != bank_num) {
+                sel_bank_next_new = bank_num;
+                if (sel_bank_next_new != sel_bank_cur) {
+                  sel_sample_next_new =
+                      roundf((float)(sel_sample_cur *
+                                     banks[sel_bank_next_new]->num_samples) /
+                             banks[sel_bank_cur]->num_samples);
+                  if (sel_sample_next_new >=
+                      banks[sel_bank_next_new]->num_samples) {
+                    sel_sample_next_new =
+                        banks[sel_bank_next_new]->num_samples - 1;
+                  }
+                  debounce_file_change = DEBOUNCE_FILE_SWITCH;
+                  printf("[ectocore] btn switch %d+%d/%d\n", sel_bank_next_new,
+                         sel_sample_next_new,
+                         banks[sel_bank_next_new]->num_samples);
+                  ws2812_set_wheel_section(ws2812, bank_i,
+                                           banks_with_samples_num, 41, 0, 255);
+                  WS2812_show(ws2812);
                 }
               }
             }
@@ -1315,7 +1346,7 @@ void input_handling() {
       if (gpio_btn_state[BTN_BANK] > 0 && gpio_btn_state[BTN_MODE] > 0 &&
           gpio_btn_state[BTN_MULT] > 0) {
         printf("[ectocore] reset\n");
-        sleep_ms(10);
+        // sleep_ms(10);
         watchdog_reboot(0, SRAM_END, 0);
         for (;;) {
           __wfi();
