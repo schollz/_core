@@ -777,8 +777,10 @@ void input_handling() {
     }
     if (debounce_file_change > 0) {
       debounce_file_change--;
+      if (sf->fx_active[FX_TIMESTRETCH]) {
+        debounce_file_change = DEBOUNCE_FILE_SWITCH;
+      }
       if (debounce_file_change == 0 && fil_current_change == false &&
-          sf->fx_active[FX_TIMESTRETCH] == false &&
           (sel_sample_next != sel_sample_cur ||
            sel_bank_cur != sel_bank_next)) {
         printf("[ectocore] switch bank/sample %d/%d\n", sel_bank_next,
@@ -787,9 +789,11 @@ void input_handling() {
       }
     }
 
+    uint32_t current_time = to_ms_since_boot(get_absolute_time());
+
     // turn off trigout after 50 ms
     if (ecto_trig_out_last > 0) {
-      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 50) {
+      if (current_time - ecto_trig_out_last > 50) {
         gpio_put(GPIO_TRIG_OUT, 0);
         ecto_trig_out_last = 0;
       }
@@ -797,8 +801,7 @@ void input_handling() {
 
     // check the clock output if trig mode is active
     if (clock_output_trig && clock_output_trig_time > 0) {
-      if (to_ms_since_boot(get_absolute_time()) - clock_output_trig_time >
-          100) {
+      if (current_time - clock_output_trig_time > 100) {
         gpio_put(GPIO_CLOCK_OUT, 0);
         clock_output_trig_time = 0;
       }
@@ -905,8 +908,7 @@ void input_handling() {
       }
       knob_val[i] = val;
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
-        if (gpio_get(GPIO_BTN_BANK) == 0 && !sf->fx_active[FX_TIMESTRETCH] &&
-            fil_current_change == false) {
+        if (gpio_get(GPIO_BTN_BANK) == 0 && fil_current_change == false) {
           // bank selection
           val = (val * banks_with_samples_num) / 1024;
           // printf("[ectocore] switch bank %d\n", val);
@@ -1103,6 +1105,7 @@ void input_handling() {
     }
 
     // button selection
+
     for (uint8_t i = 0; i < BUTTON_NUM; i++) {
       val = ButtonChange_update(button_change[i], gpio_get(gpio_btns[i]));
       if (val < 0) {
@@ -1111,10 +1114,9 @@ void input_handling() {
       val = 1 - val;
       gpio_btn_state[i] = val;
       if (val) {
-        gpio_btn_last_pressed[i] = to_ms_since_boot(get_absolute_time());
+        gpio_btn_last_pressed[i] = current_time;
       } else {
-        gpio_btn_held_time[i] =
-            to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i];
+        gpio_btn_held_time[i] = current_time - gpio_btn_last_pressed[i];
       }
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
@@ -1234,9 +1236,10 @@ void input_handling() {
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         printf("[ectocore] btn_bank %d\n", val);
         if (val == 0) {
-          if (to_ms_since_boot(get_absolute_time()) - gpio_btn_last_pressed[i] <
-                  200 &&
-              !sf->fx_active[FX_TIMESTRETCH] && fil_current_change == false) {
+          printf("val0");
+          if (i < BUTTON_NUM && current_time - gpio_btn_last_pressed[i] < 200 &&
+              fil_current_change == false) {
+            printf("inloop0");
             // "tap"
             // switch the bank by one
             if (banks_with_samples_num > 1) {
@@ -1284,14 +1287,13 @@ void input_handling() {
           } else {
             printf("[ectocore] btn_mult %d %d\n", val,
                    gpio_btn_state[BTN_TAPTEMPO]);
-            btn_mult_on_time = to_ms_since_boot(get_absolute_time());
+            btn_mult_on_time = current_time;
             btn_mult_hold_time = btn_mult_on_time;
           }
         } else {
           if (gpio_btn_state[BTN_TAPTEMPO]) {
           } else {
-            if (to_ms_since_boot(get_absolute_time()) - btn_mult_on_time <
-                200) {
+            if (current_time - btn_mult_on_time < 200) {
               // tap
               printf("[ectocore] btn_mult tap\n");
               if (ectocore_clock_selected_division > 0)
@@ -1325,8 +1327,8 @@ void input_handling() {
     // every second
     if (gpio_btn_state[BTN_MULT] > 0 && gpio_btn_state[BTN_MODE] == 0 &&
         gpio_btn_state[BTN_BANK] == 0 && gpio_btn_state[BTN_TAPTEMPO] == 0) {
-      if (to_ms_since_boot(get_absolute_time()) - btn_mult_hold_time > 1000) {
-        btn_mult_hold_time = to_ms_since_boot(get_absolute_time());
+      if (current_time - btn_mult_hold_time > 1000) {
+        btn_mult_hold_time = current_time;
         // hold
         if (ectocore_clock_selected_division < ECTOCORE_CLOCK_NUM_DIVISIONS - 1)
           ectocore_clock_selected_division++;
