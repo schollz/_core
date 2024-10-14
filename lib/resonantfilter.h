@@ -49,6 +49,7 @@ typedef struct ResonantFilter {
   uint8_t do_setFc_val;
   bool do_setFilterType;
   uint8_t do_setFilterType_val;
+  bool filter_was_on;
 } ResonantFilter;
 
 void ResonantFilter_reset(ResonantFilter* rf) {
@@ -169,6 +170,7 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   rf->do_setFc_val = 0;
   rf->do_setFilterType = false;
   rf->do_setFilterType_val = 0;
+  rf->filter_was_on = false;
 
   ResonantFilter_reset(rf);
   return rf;
@@ -194,7 +196,7 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     }
     ResonantFilter_reset(rf);
   }
-  if (rf->passthrough) {
+  if (rf->passthrough && !rf->filter_was_on) {
     return;
   }
   int32_t y;
@@ -207,26 +209,23 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->x1_f = samples[i * 2 + channel];
     rf->y2_f = rf->y1_f;
     rf->y1_f = y;
-    if (rf->passthrough_last < 0) {
-      continue;
+    if (rf->passthrough && rf->filter_was_on) {
+      // fade out the filter
+      samples[i * 2 + channel] =
+          q16_16_multiply(y, crossfade3_cos_out[i]) +
+          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_in[i]);
+    } else if (!rf->passthrough && !rf->filter_was_on) {
+      // fade in the filter
+      samples[i * 2 + channel] =
+          q16_16_multiply(y, crossfade3_cos_in[i]) +
+          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_out[i]);
+    } else {
+      samples[i * 2 + channel] = y;
     }
-
-    // TODO -> full block crossfade
-    // if (rf->passthrough_last < CROSSFADE_FILTER) {
-    //   rf->passthrough_last++;
-    //   if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
-    //     // do nothing
-    //     continue;
-    //   } else {
-    //     samples[i * 2 + channel] =
-    //         ((q16_16_fp_to_int32(y) *
-    //           (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
-    //          (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
-    //            (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
-    //           samples[i * 2 + channel])) /
-    //         (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
-    //   }
-    // }
-    samples[i * 2 + channel] = q16_16_fp_to_int32(y);
+  }
+  if (rf->passthrough && rf->filter_was_on) {
+    rf->filter_was_on = false;
+  } else if (!rf->passthrough && !rf->filter_was_on) {
+    rf->filter_was_on = true;
   }
 }

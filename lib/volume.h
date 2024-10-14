@@ -39,7 +39,7 @@ for i,v in enumerate(vals):
 print("};")
 */
 #ifdef INCLUDE_ECTOCORE
-#define VOLUME_STEPS 245
+#define VOLUME_STEPS 254
 #else
 #define VOLUME_STEPS 254
 #endif

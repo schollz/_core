@@ -993,7 +993,7 @@ void input_handling() {
         printf("[ectocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        printf("[ectocore] knob_amen %d\n", val);
+        // printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 12;
@@ -1001,7 +1001,7 @@ void input_handling() {
             // low pass filter
             global_filter_index =
                 val * (resonantfilter_fc_max) / (512 - val_mid);
-            printf("[ectocore] lowpass: %d\n", global_filter_index);
+            // printf("[ectocore] lowpass: %d\n", global_filter_index);
             global_filter_lphp = 0;
             for (uint8_t channel = 0; channel < 2; channel++) {
               ResonantFilter_setFilterType(resFilter[channel],
@@ -1013,7 +1013,7 @@ void input_handling() {
             // high pass filter
             global_filter_index = (val - (512 + val_mid)) *
                                   (resonantfilter_fc_max) / (512 - val_mid);
-            printf("[ectocore] highpass: %d\n", global_filter_index);
+            // printf("[ectocore] highpass: %d\n", global_filter_index);
             global_filter_lphp = 1;
             for (uint8_t channel = 0; channel < 2; channel++) {
               ResonantFilter_setFilterType(resFilter[channel],
