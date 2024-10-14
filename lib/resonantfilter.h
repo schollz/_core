@@ -73,7 +73,7 @@ void ResonantFilter_setFc_(ResonantFilter* rf, uint8_t fc) {
     rf->fc--;
   }
   if (rf->fc >= resonantfilter_fc_max) {
-    rf->fc = fc;
+    rf->fc = resonantfilter_fc_max;
     rf->passthrough = true;
   } else {
     rf->passthrough = false;
@@ -179,7 +179,7 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 
 void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
                            uint16_t num_samples, uint8_t channel) {
-  if (rf->do_setFilterType) {
+  if (rf->do_setFilterType && rf->passthrough) {
     ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
     rf->do_setFilterType = false;
     if (rf->do_setFc) {
@@ -207,8 +207,11 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->x1_f = samples[i * 2 + channel];
     rf->y2_f = rf->y1_f;
     rf->y1_f = y;
-    //     [FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
-    // memory usage: 88.0% (212360/241344)
+    if (rf->passthrough_last < 0) {
+      continue;
+    }
+
+    // TODO -> full block crossfade
     // if (rf->passthrough_last < CROSSFADE_FILTER) {
     //   rf->passthrough_last++;
     //   if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
