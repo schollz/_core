@@ -75,6 +75,9 @@ void ResonantFilter_setFc_(ResonantFilter* rf, uint8_t fc) {
 }
 
 void ResonantFilter_setFc(ResonantFilter* rf, uint8_t fc) {
+  if (rf->fc == fc || (rf->do_setFc && rf->do_setFc_val == fc)) {
+    return;
+  }
   rf->do_setFc = true;
   rf->do_setFc_val = fc;
 }
@@ -99,7 +102,8 @@ void ResonantFilter_setFilterType_(ResonantFilter* rf, uint8_t filter_type) {
 }
 
 void ResonantFilter_setFilterType(ResonantFilter* rf, uint8_t filter_type) {
-  if (rf->filter_type == filter_type) {
+  if (rf->filter_type == filter_type ||
+      (rf->do_setFilterType && rf->do_setFilterType_val == filter_type)) {
     return;
   }
   rf->do_setFilterType = true;

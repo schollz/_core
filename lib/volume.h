@@ -38,7 +38,11 @@ for i,v in enumerate(vals):
         print(f"{v}", end=" ")
 print("};")
 */
+#ifdef INCLUDE_ECTOCORE
+#define VOLUME_STEPS 245
+#else
 #define VOLUME_STEPS 254
+#endif
 const int32_t volume_vals[255] = {
     0,     0,     6,     12,    25,    53,    55,    58,    61,    64,    67,
     70,    74,    77,    81,    85,    89,    93,    98,    102,   107,   112,
