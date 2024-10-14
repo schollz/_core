@@ -60,8 +60,8 @@ def design_filter(fc, fs, db, q, filter_type):
 # for each note, generate a filter
 # produce a multidimensional array, indexed by q and frequency
 # for C-code generation
-qs = [1.5]
-notes = list(range(44, 130))
+qs = [1.303]
+notes = list(range(43, 130))
 filter_types = ["FILTER_LOWPASS", "FILTER_HIGHPASS"]
 # filter_types = ["FILTER_LOWPASS"]
 print(f"const uint8_t resonantfilter_q_max = {len(qs)};")
@@ -77,16 +77,14 @@ for filter_type in filter_types:
     print("{")
     for i, q in enumerate(qs):
         if filter_type == "FILTER_HIGHPASS":
-            q = 1.05
+            q = 0.707
         print(f"// q = {q}")
         print("{")
         for j, note in enumerate(notes):
             freq = midi_to_freq(note)
             print(f"// note = {note}, frequency = {freq}")
-            # print("#", j, note, i, q, freq)
-            if freq > 100 and freq < 20000:
-                b0, b1, b2, a0, a1, a2 = design_filter(freq, 44100, 0, q, filter_type)
-                print("{ %d, %d, %d,  %d, %d }," % (b0, b1, b2, a1, a2))
+            b0, b1, b2, a0, a1, a2 = design_filter(freq, 44100, 0, q, filter_type)
+            print("{ %d, %d, %d,  %d, %d }," % (b0, b1, b2, a1, a2))
         print("},")
     print("},")
 print("};")
