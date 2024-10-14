@@ -410,8 +410,10 @@ BREAKOUT_OF_MUTE:
 
     if (head == 0 && do_open_file) {
       // setup the next
-      sel_sample_cur = sel_sample_next;
       sel_bank_cur = sel_bank_next;
+      sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
+      // printf("[audio_callback] switch bank/sample %d/%d\n", sel_bank_cur,
+      //        sel_sample_cur);
 
       FRESULT fr;
       t0 = time_us_32();
@@ -424,7 +426,7 @@ BREAKOUT_OF_MUTE:
       fr = f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
-#ifdef PRINT_SDCARD_TIMING
+#ifdef PRINT_SDCARD_OPEN_TIMING
       if (do_open_file) {
         MessageSync_printf(messagesync,
                            "[audio_callback] do_open_file f_close+f_open: %d\n",
@@ -467,7 +469,7 @@ BREAKOUT_OF_MUTE:
         return;
       }
       t1 = time_us_32();
-#ifdef PRINT_SDCARD_TIMING
+#ifdef PRINT_SDCARD_OPEN_TIMING
       if (do_open_file) {
         MessageSync_printf(messagesync,
                            "[audio_callback] do_open_file f_lseek: %d\n",
