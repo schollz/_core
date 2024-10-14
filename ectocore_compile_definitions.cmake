@@ -56,6 +56,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # PRINT_MEMORY_USAGE=1
     # PRINT_SDCARD_TIMING=1
     # PRINT_AUDIOBLOCKDROPS=1
+    # PRINT_SDCARD_OPEN_TIMING=1
 
     # turn off gpio for leds
     LEDS_NO_GPIO=1
