@@ -53,6 +53,9 @@ typedef struct ResonantFilter {
 
 void ResonantFilter_reset(ResonantFilter* rf) {
   if (!rf->passthrough) {
+    if (rf->fc >= resonantfilter_fc_max) {
+      rf->fc = resonantfilter_fc_max - 1;
+    }
     rf->b0 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][0];
     rf->b1 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][1];
     rf->b2 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][2];
@@ -62,22 +65,22 @@ void ResonantFilter_reset(ResonantFilter* rf) {
 }
 
 void ResonantFilter_setFc_(ResonantFilter* rf, uint8_t fc) {
-  if (fc >= resonantfilter_fc_max) {
-    fc = resonantfilter_fc_max - 1;
+  if (rf->fc == fc) {
+    rf->do_setFc = false;
+  } else if (rf->fc < fc) {
+    rf->fc++;
+  } else {
+    rf->fc--;
+  }
+  if (rf->fc >= resonantfilter_fc_max) {
+    rf->fc = fc;
     rf->passthrough = true;
   } else {
     rf->passthrough = false;
   }
-  if (rf->fc == fc) {
-    return;
-  }
-  rf->fc = fc;
 }
 
 void ResonantFilter_setFc(ResonantFilter* rf, uint8_t fc) {
-  if (rf->fc == fc || (rf->do_setFc && rf->do_setFc_val == fc)) {
-    return;
-  }
   rf->do_setFc = true;
   rf->do_setFc_val = fc;
 }
@@ -181,12 +184,10 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->do_setFilterType = false;
     if (rf->do_setFc) {
       ResonantFilter_setFc_(rf, rf->do_setFc_val);
-      rf->do_setFc = false;
     }
     ResonantFilter_reset(rf);
   } else if (rf->do_setFc) {
     ResonantFilter_setFc_(rf, rf->do_setFc_val);
-    rf->do_setFc = false;
     if (rf->do_setFilterType) {
       ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
       rf->do_setFilterType = false;
@@ -206,21 +207,23 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->x1_f = samples[i * 2 + channel];
     rf->y2_f = rf->y1_f;
     rf->y1_f = y;
-    if (rf->passthrough_last < CROSSFADE_FILTER) {
-      rf->passthrough_last++;
-      if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
-        // do nothing
-        continue;
-      } else {
-        samples[i * 2 + channel] =
-            ((q16_16_fp_to_int32(y) *
-              (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
-             (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
-               (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
-              samples[i * 2 + channel])) /
-            (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
-      }
-    }
+    //     [FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
+    // memory usage: 88.0% (212360/241344)
+    // if (rf->passthrough_last < CROSSFADE_FILTER) {
+    //   rf->passthrough_last++;
+    //   if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
+    //     // do nothing
+    //     continue;
+    //   } else {
+    //     samples[i * 2 + channel] =
+    //         ((q16_16_fp_to_int32(y) *
+    //           (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
+    //          (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
+    //            (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
+    //           samples[i * 2 + channel])) /
+    //         (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
+    //   }
+    // }
     samples[i * 2 + channel] = q16_16_fp_to_int32(y);
   }
 }
