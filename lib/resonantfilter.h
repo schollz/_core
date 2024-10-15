@@ -229,6 +229,3 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->filter_was_on = true;
   }
 }
-
-// TODO: create a filter for low passing and one for high passing and crossfade
-// between them.
