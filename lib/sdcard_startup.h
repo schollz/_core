@@ -191,6 +191,7 @@ void update_reverb() {
   FV_Reverb_set_wet(freeverb, sf->fx_param[FX_EXPAND][1] * Q16_16_1 / 255);
 }
 
+bool filter_was_activated = false;
 void update_fx(uint8_t fx_num) {
 #ifdef INCLUDE_MIDI
   if (midi_input_activated) {
@@ -296,16 +297,20 @@ void update_fx(uint8_t fx_num) {
         printf("fuzz activated!\n");
       }
     case FX_FILTER:
-      if (sf->fx_active[FX_FILTER]) {
+      if (sf->fx_active[FX_FILTER] && !filter_was_activated) {
         // turn on filter
+        filter_was_activated = true;
+        printf("filter activated!\n");
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL),
             linlin(sf->fx_param[FX_FILTER][0], 0, 255, 5,
                    resonantfilter_fc_max),
             linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
-      } else {
+      } else if (filter_was_activated) {
         // turn off filter
+        printf("filter deactivated!\n");
+        filter_was_activated = false;
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL),

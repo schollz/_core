@@ -49,10 +49,14 @@ typedef struct ResonantFilter {
   uint8_t do_setFc_val;
   bool do_setFilterType;
   uint8_t do_setFilterType_val;
+  bool filter_was_on;
 } ResonantFilter;
 
 void ResonantFilter_reset(ResonantFilter* rf) {
   if (!rf->passthrough) {
+    if (rf->fc >= resonantfilter_fc_max) {
+      rf->fc = resonantfilter_fc_max - 1;
+    }
     rf->b0 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][0];
     rf->b1 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][1];
     rf->b2 = resonantfilter_data[rf->filter_type][rf->q][rf->fc][2];
@@ -62,22 +66,22 @@ void ResonantFilter_reset(ResonantFilter* rf) {
 }
 
 void ResonantFilter_setFc_(ResonantFilter* rf, uint8_t fc) {
-  if (fc >= resonantfilter_fc_max) {
-    fc = resonantfilter_fc_max - 1;
+  if (rf->fc == fc) {
+    rf->do_setFc = false;
+  } else if (rf->fc < fc) {
+    rf->fc++;
+  } else {
+    rf->fc--;
+  }
+  if (rf->fc >= resonantfilter_fc_max) {
+    rf->fc = resonantfilter_fc_max;
     rf->passthrough = true;
   } else {
     rf->passthrough = false;
   }
-  if (rf->fc == fc) {
-    return;
-  }
-  rf->fc = fc;
 }
 
 void ResonantFilter_setFc(ResonantFilter* rf, uint8_t fc) {
-  if (rf->fc == fc || (rf->do_setFc && rf->do_setFc_val == fc)) {
-    return;
-  }
   rf->do_setFc = true;
   rf->do_setFc_val = fc;
 }
@@ -166,6 +170,7 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
   rf->do_setFc_val = 0;
   rf->do_setFilterType = false;
   rf->do_setFilterType_val = 0;
+  rf->filter_was_on = false;
 
   ResonantFilter_reset(rf);
   return rf;
@@ -176,24 +181,22 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 
 void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
                            uint16_t num_samples, uint8_t channel) {
-  if (rf->do_setFilterType) {
+  if (rf->do_setFilterType && rf->passthrough) {
     ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
     rf->do_setFilterType = false;
     if (rf->do_setFc) {
       ResonantFilter_setFc_(rf, rf->do_setFc_val);
-      rf->do_setFc = false;
     }
     ResonantFilter_reset(rf);
   } else if (rf->do_setFc) {
     ResonantFilter_setFc_(rf, rf->do_setFc_val);
-    rf->do_setFc = false;
     if (rf->do_setFilterType) {
       ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
       rf->do_setFilterType = false;
     }
     ResonantFilter_reset(rf);
   }
-  if (rf->passthrough) {
+  if (rf->passthrough && !rf->filter_was_on) {
     return;
   }
   int32_t y;
@@ -206,21 +209,26 @@ void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
     rf->x1_f = samples[i * 2 + channel];
     rf->y2_f = rf->y1_f;
     rf->y1_f = y;
-    if (rf->passthrough_last < CROSSFADE_FILTER) {
-      rf->passthrough_last++;
-      if (rf->passthrough_last < CROSSFADE_FILTER_WAIT) {
-        // do nothing
-        continue;
-      } else {
-        samples[i * 2 + channel] =
-            ((q16_16_fp_to_int32(y) *
-              (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) +
-             (((CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT) -
-               (rf->passthrough_last - CROSSFADE_FILTER_WAIT)) *
-              samples[i * 2 + channel])) /
-            (CROSSFADE_FILTER - CROSSFADE_FILTER_WAIT);
-      }
+    if (rf->passthrough && rf->filter_was_on) {
+      // fade out the filter
+      samples[i * 2 + channel] =
+          q16_16_multiply(y, crossfade3_cos_out[i]) +
+          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_in[i]);
+    } else if (!rf->passthrough && !rf->filter_was_on) {
+      // fade in the filter
+      samples[i * 2 + channel] =
+          q16_16_multiply(y, crossfade3_cos_in[i]) +
+          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_out[i]);
+    } else {
+      samples[i * 2 + channel] = y;
     }
-    samples[i * 2 + channel] = q16_16_fp_to_int32(y);
+  }
+  if (rf->passthrough && rf->filter_was_on) {
+    rf->filter_was_on = false;
+  } else if (!rf->passthrough && !rf->filter_was_on) {
+    rf->filter_was_on = true;
   }
 }
+
+// TODO: create a filter for low passing and one for high passing and crossfade
+// between them.
