@@ -996,7 +996,7 @@ void input_handling() {
         // printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
-          const uint16_t val_mid = 12;
+          const uint16_t val_mid = 60;
           if (val < 512 - val_mid) {
             // low pass filter
             global_filter_index =
