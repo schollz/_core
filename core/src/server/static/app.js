@@ -1575,7 +1575,7 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsClockStop', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "When 'off', the incoming clock does not effect ectocore. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
+            content: "When 'off', the incoming clock does not affect ectocore starting/stopping. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
         });
         tippy('#pSettingsClockOutput', {
             zIndex: 9999999,
