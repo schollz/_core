@@ -692,6 +692,15 @@ void button_handler(ButtonMatrix *bm) {
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", led_text_time);
         }
+      } else if (key_pressed[0] == 4 && key_pressed[1] == 7 &&
+                 key_pressed[2] == 16 && key_pressed[3] == 19) {
+        // switch between momentary mode and toggle mode
+        mode_toggle_momentary = !mode_toggle_momentary;
+        if (mode_toggle_momentary) {
+          DebounceDigits_setText(debouncer_digits, "MOMENTARY", led_text_time);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "TOGGLE", led_text_time);
+        }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 19) {
 #ifdef INCLUDE_CUEDSOUNDS
