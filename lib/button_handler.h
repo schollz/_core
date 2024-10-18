@@ -693,7 +693,7 @@ void button_handler(ButtonMatrix *bm) {
           DebounceDigits_setText(debouncer_digits, "MIDI", led_text_time);
         }
       } else if (key_pressed[0] == 4 && key_pressed[1] == 7 &&
-                 key_pressed[2] == 16 && key_pressed[3] == 19) {
+                 key_pressed[2] == 19 && key_pressed[3] == 16) {
         // switch between momentary mode and toggle mode
         mode_toggle_momentary = !mode_toggle_momentary;
         // turn all effects off
