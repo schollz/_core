@@ -167,7 +167,11 @@ void go_update_top() {
 
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
-  sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  if (mode_toggle_momentary) {
+    sf->fx_active[fx_num] = true;
+  } else {
+    sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  }
   if (sequencerhandler[1].recording) {
     if (sf->fx_active[fx_num]) {
       Sequencer_add(sf->sequencers[1][sf->sequence_sel[1]], fx_num,
@@ -180,6 +184,11 @@ void toggle_fx(uint8_t fx_num) {
   update_fx(fx_num);
 }
 
+void toggle_off_fx(uint8_t fx_num) {
+  sf->fx_active[fx_num] = false;
+  update_fx(fx_num);
+}
+
 void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 
 // triggers on ANY key off, used for 1-16 off's
@@ -189,6 +198,14 @@ void button_key_off_any(uint8_t key) {
     key3_activated = false;
   }
   if (key > 3) {
+    // if momentary fx, turn off FX
+    if (mode_toggle_momentary) {
+      // check if in JUMP mode and A is held OR in MASH mode
+      if ((mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_A]) ||
+          mode_buttons16 == MODE_MASH) {
+        toggle_off_fx(key - 4);
+      }
+    }
     // 1-16 off
     // TODO: make this an option?
     if (key_total_pressed == 0) {
@@ -211,6 +228,7 @@ void button_key_off_any(uint8_t key) {
         }
       }
 #endif
+
     } else {
 #ifdef INCLUDE_SINEBASS
       if (mode_buttons16 == MODE_BASS) {
