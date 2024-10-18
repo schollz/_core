@@ -132,6 +132,46 @@ void SaveFile_free(SaveFile *sf) {
   free(sf);
 }
 
+#ifdef NOSDCARD
+bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
+  printf("[SaveFile] loading\n");
+  char fname[32];
+  sprintf(fname, "savefile%d", savefile_index);
+  printf("[SaveFile] reading %s\n", fname);
+  // load from the file on the file system
+  FILE *file = fopen(fname, "rb");
+  if (file == NULL) {
+    printf("[SaveFile] no save file, skipping ");
+    return false;
+  }
+  fread(sf, sizeof(SaveFile), 1, file);
+  // print everything in the savefile
+  printf("[SaveFile] vol: %d\n", sf->vol);
+  printf("[SaveFile] bpm_tempo: %d\n", sf->bpm_tempo);
+  printf("[SaveFile] bank: %d\n", sf->bank);
+  printf("[SaveFile] sample: %d\n", sf->sample);
+  // print which effects are on
+  for (int i = 0; i < 16; i++) {
+    printf("[SaveFile] fx_active[%d]: %d\n", i, sf->fx_active[i]);
+  }
+  // print stay in sync
+  printf("[SaveFile] stay_in_sync: %d\n", sf->stay_in_sync);
+  // print pitch_val_index
+  printf("[SaveFile] pitch_val_index: %d\n", sf->pitch_val_index);
+  // print do_retrig_pitch_changes
+  printf("[SaveFile] do_retrig_pitch_changes: %d\n",
+         sf->do_retrig_pitch_changes);
+
+  // read sequencers
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 16; j++) {
+      fread(sf->sequencers[i][j], sizeof(Sequencer), 1, file);
+    }
+  }
+  fclose(file);
+  return true;
+}
+#endif
 #ifndef NOSDCARD
 
 bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {

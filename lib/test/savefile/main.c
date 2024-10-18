@@ -28,14 +28,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NOSDCARD
+#define NOSDCARD 1
 
+#include "../../definitions.h"
 #include "../../savefile.h"
 
 int main() {
   SaveFile *sf;
   sf = SaveFile_malloc();
 
+  SaveFile_load(sf, 0);
   printf("bpm: %d\n", sf->bpm_tempo);
 
   SaveFile_free(sf);
