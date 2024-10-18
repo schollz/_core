@@ -49,6 +49,13 @@ void load_settings(const char *dir_name) {
       clock_start_stop_sync = true;
     }
 
+    // check for the mash_mode_momentary
+    if (strcmp(fno.fname, "mash_mode_momentary-on") == 0) {
+      mode_toggle_momentary = true;
+    } else if (strcmp(fno.fname, "mash_mode_momentary-off") == 0) {
+      mode_toggle_momentary = false;
+    }
+
     // check for clock output trig/gate
     if (strcmp(fno.fname, "clock_output_trig-on") == 0) {
       clock_output_trig = true;
