@@ -210,7 +210,6 @@ bool playback_restarted = false;
 bool audio_callback_in_mute = false;
 bool do_calibration_mode = false;
 bool mode_amiga = false;
-// TODO: make this an option in the zeptocore settings
 bool mode_toggle_momentary = false;
 
 #ifdef INCLUDE_BASS
