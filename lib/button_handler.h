@@ -696,6 +696,10 @@ void button_handler(ButtonMatrix *bm) {
                  key_pressed[2] == 16 && key_pressed[3] == 19) {
         // switch between momentary mode and toggle mode
         mode_toggle_momentary = !mode_toggle_momentary;
+        // turn all effects off
+        for (uint8_t i = 0; i < 16; i++) {
+          toggle_off_fx(i);
+        }
         if (mode_toggle_momentary) {
           DebounceDigits_setText(debouncer_digits, "MOMENTARY", led_text_time);
         } else {
