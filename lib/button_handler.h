@@ -167,7 +167,11 @@ void go_update_top() {
 
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
-  sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  if (mode_toggle_momentary) {
+    sf->fx_active[fx_num] = true;
+  } else {
+    sf->fx_active[fx_num] = !sf->fx_active[fx_num];
+  }
   if (sequencerhandler[1].recording) {
     if (sf->fx_active[fx_num]) {
       Sequencer_add(sf->sequencers[1][sf->sequence_sel[1]], fx_num,
@@ -180,6 +184,11 @@ void toggle_fx(uint8_t fx_num) {
   update_fx(fx_num);
 }
 
+void toggle_off_fx(uint8_t fx_num) {
+  sf->fx_active[fx_num] = false;
+  update_fx(fx_num);
+}
+
 void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
 
 // triggers on ANY key off, used for 1-16 off's
@@ -189,6 +198,10 @@ void button_key_off_any(uint8_t key) {
     key3_activated = false;
   }
   if (key > 3) {
+    // if momentary fx, turn off FX
+    if (mode_toggle_momentary && mode_buttons16 == MODE_MASH) {
+      toggle_off_fx(key - 4);
+    }
     // 1-16 off
     // TODO: make this an option?
     if (key_total_pressed == 0) {
@@ -211,6 +224,7 @@ void button_key_off_any(uint8_t key) {
         }
       }
 #endif
+
     } else {
 #ifdef INCLUDE_SINEBASS
       if (mode_buttons16 == MODE_BASS) {
@@ -677,6 +691,19 @@ void button_handler(ButtonMatrix *bm) {
           // DebounceDigits_setText(debouncer_digits, "CLOCK", led_text_time);
         } else {
           DebounceDigits_setText(debouncer_digits, "MIDI", led_text_time);
+        }
+      } else if (key_pressed[0] == 4 && key_pressed[1] == 7 &&
+                 key_pressed[2] == 16 && key_pressed[3] == 19) {
+        // switch between momentary mode and toggle mode
+        mode_toggle_momentary = !mode_toggle_momentary;
+        // turn all effects off
+        for (uint8_t i = 0; i < 16; i++) {
+          toggle_off_fx(i);
+        }
+        if (mode_toggle_momentary) {
+          DebounceDigits_setText(debouncer_digits, "MOMENTARY", led_text_time);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "TOGGLE", led_text_time);
         }
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 19) {

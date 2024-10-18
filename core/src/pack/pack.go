@@ -25,6 +25,7 @@ type Data struct {
 	SettingsClockOutput       bool     `json:"settingsClockOutput"`
 	SettingsClockBehaviorSync bool     `json:"settingsClockBehaviorSync"`
 	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
+	SettingsMashMdoe          bool     `json:"settingsMashMode"`
 	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
 	Banks                     []struct {
 		Files []string `json:"files"`
@@ -141,6 +142,13 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		os.Create(path.Join(settingsFolder, "knobx_select_sample-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "knobx_select_sample-off"))
+	}
+
+	// mash mode
+	if data.SettingsMashMdoe {
+		os.Create(path.Join(settingsFolder, "mash_mode_momentary-on"))
+	} else {
+		os.Create(path.Join(settingsFolder, "mash_mode_momentary-off"))
 	}
 	// brightness
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))

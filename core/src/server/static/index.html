@@ -110,6 +110,11 @@
                 <input id="settingsKnobXSample" type="checkbox" v-model="settingsKnobXSample">
                 <span v-if="settingsKnobXSample">on</span><span v-else>off</span>
             </p>
+            <p id="pSettingsMashMode">
+                <label for="settingsMashMode" style="padding-right:1em;">MASH mode buttons</label>
+                <input id="settingsMashMode" type="checkbox" v-model="settingsMashMode">
+                <span v-if="settingsMashMode">momentary</span><span v-else>toggle</span>
+            </p>
             [[ else ]]
             <p id="pSettingsClockStop">
                 <label for="settingsClockStop" style="padding-right:1em;">Incoming clock start/stop sync</label><input

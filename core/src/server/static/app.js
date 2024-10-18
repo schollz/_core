@@ -323,6 +323,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
+        if (savedState.settingsMashMode) {
+            app.settingsMashMode = savedState.settingsMashMode;
+        }
         if (savedState.oversampling) {
             app.oversampling = savedState.oversampling;
         }
@@ -515,6 +518,7 @@ app = new Vue({
         settingsClockOutput: false,
         settingsClockBehaviorSync: false,
         settingsKnobXSample: false,
+        settingsMashMode: false,
         progressBarWidth: '0px',
         dropaudiofilemode: 'default',
         oversampling: '1x', // Default to '1x'
@@ -564,6 +568,7 @@ app = new Vue({
         settingsClockBehaviorSync: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
+        settingsMashMode: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
@@ -961,6 +966,7 @@ app = new Vue({
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
+                settingsMashMode: app.settingsMashMode,
             };
             if (!hasSavedToCookie) {
                 saveCurrentPage();
@@ -1249,6 +1255,7 @@ app = new Vue({
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
+                settingsMashMode: app.settingsMashMode,
                 banks: [],
             };
             for (var i = 0; i < this.banks.length; i++) {
@@ -1576,6 +1583,11 @@ window.addEventListener('load', (event) => {
             zIndex: 9999999,
             appendTo: "parent",
             content: "When 'off', the incoming clock does not affect ectocore starting/stopping. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
+        });
+        tippy('#pSettingsMashMode', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: 'When set to "toggle", buttons in MASH mode toggle effects. When set to "momentary" the effects are only active while the button is held.'
         });
         tippy('#pSettingsClockOutput', {
             zIndex: 9999999,
