@@ -831,3 +831,8 @@ footer select {
     top: 2.5px;
     position: relative;
 }
+
+#dialog-settings>p>label,
+#dialog-settings>p>input {
+    cursor: pointer;
+}
