@@ -199,12 +199,8 @@ void button_key_off_any(uint8_t key) {
   }
   if (key > 3) {
     // if momentary fx, turn off FX
-    if (mode_toggle_momentary) {
-      // check if in JUMP mode and A is held OR in MASH mode
-      if ((mode_buttons16 == MODE_JUMP && key_on_buttons[KEY_A]) ||
-          mode_buttons16 == MODE_MASH) {
-        toggle_off_fx(key - 4);
-      }
+    if (mode_toggle_momentary && mode_buttons16 == MODE_MASH) {
+      toggle_off_fx(key - 4);
     }
     // 1-16 off
     // TODO: make this an option?
