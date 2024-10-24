@@ -38,6 +38,7 @@ bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 int32_t reverb_fade = 0;
 bool reverb_activated = false;
+bool mute_soft_activated = false;
 
 inline int32_t scale16to32_fixed_dither(int16_t val) {
   return (((int32_t)val) << 16);  // + ((rand() & 1) - 1);
@@ -677,8 +678,36 @@ BREAKOUT_OF_MUTE:
     phases[head] += (values_to_read * (phase_forward * 2 - 1));
   }
 
+#ifdef INCLUDE_ECTOCORE
+  if (mute_soft) {
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      samples[i * 2 + 0] = 0;
+      samples[i * 2 + 1] = 0;
+    }
+    mute_soft_activated = true;
+  } else if (mute_soft_activated) {
+    // fade in
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      samples[i * 2 + 0] =
+          q16_16_multiply(samples[i * 2 + 0], crossfade3_cos_in[i]);
+      samples[i * 2 + 1] =
+          q16_16_multiply(samples[i * 2 + 1], crossfade3_cos_in[i]);
+    }
+    mute_soft_activated = false;
+  }
+#endif
+
 #ifdef INCLUDE_CUEDSOUNDS
+#ifdef INCLUDE_ECTOCORE
+  bool cuedsounds_played =
+      cuedsounds_audio_update(samples, buffer->max_sample_count, vol_main);
+  if (cuedsounds_played) {
+    mute_soft = false;
+  }
+#endif
+#ifdef INCLUDE_ZEPTOCORE
   cuedsounds_audio_update(samples, buffer->max_sample_count, vol_main);
+#endif
 #endif
 
 // apply filter
