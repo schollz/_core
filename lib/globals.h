@@ -211,6 +211,7 @@ bool audio_callback_in_mute = false;
 bool do_calibration_mode = false;
 bool mode_amiga = false;
 bool mode_toggle_momentary = false;
+bool mute_soft = false;
 
 #ifdef INCLUDE_BASS
 Bass *bass;
