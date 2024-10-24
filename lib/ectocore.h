@@ -573,6 +573,10 @@ void input_handling() {
     random_sequence_arr[i] = random_integer_in_range(0, 64);
   }
 
+#ifdef INCLUDE_CUEDSOUNDS
+  mute_soft = true;
+#endif
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -587,7 +591,7 @@ void input_handling() {
         printf("global_brightness: %d\n", global_brightness);
       } else if (debounce_startup == 7) {
 #ifdef INCLUDE_CUEDSOUNDS
-        cuedsounds_do_play = 0;
+        cuedsounds_do_play = random_integer_in_range(0, CUEDSOUNDS_FILES - 1);
 #endif
       } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
