@@ -997,7 +997,7 @@ void input_handling() {
         printf("[ectocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        // printf("[ectocore] knob_amen %d\n", val);
+        printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1052,14 +1052,17 @@ void input_handling() {
               uint8_t sequence_lengths[12] = {
                   1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 32,
               };
-              random_sequence_length =
+              uint8_t new_random_sequence_length =
                   sequence_lengths[((int16_t)(val - 57) * 12 / (966 - 57)) %
                                    12];
-              ws2812_set_wheel_euclidean(ws2812, random_sequence_length, 123,
-                                         32, 12);
-              printf("[ectocore] random_sequence_length %d\n",
-                     random_sequence_length);
-              do_retrig_at_end_of_phrase = false;
+              if (new_random_sequence_length != random_sequence_length) {
+                random_sequence_length = new_random_sequence_length;
+                ws2812_set_wheel_euclidean(ws2812, random_sequence_length, 123,
+                                           32, 12);
+                printf("[ectocore] random_sequence_length %d\n",
+                       random_sequence_length);
+                do_retrig_at_end_of_phrase = false;
+              }
             } else {
               printf("[ectocore] regen sequence\n");
               // generative mode + generate new sequence
