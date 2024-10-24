@@ -1322,6 +1322,13 @@ void input_handling() {
               button_mute = false;
             }
             TapTempo_reset(taptempo);
+          } else if (gpio_btn_state[BTN_MODE]) {
+#ifdef INCLUDE_CUEDSOUNDS
+            // play a random sound
+            if (CUEDSOUNDS_FILES >= 4) {
+              cuedsounds_do_play = random_integer_in_range(0, 3);
+            }
+#endif
           } else {
             printf("[ectocore] btn_mult %d %d\n", val,
                    gpio_btn_state[BTN_TAPTEMPO]);
@@ -1330,6 +1337,7 @@ void input_handling() {
           }
         } else {
           if (gpio_btn_state[BTN_TAPTEMPO]) {
+          } else if (gpio_btn_state[BTN_MODE]) {
           } else {
             if (current_time - btn_mult_on_time < 200) {
               // tap
