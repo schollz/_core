@@ -187,6 +187,7 @@ clean:
 	rm -rf build
 	rm -rf *.wav
 	rm -rf lib/biquad.h
+	rm -rf *.uf2
 
 debug:
 	sudo minicom -b 115200 -o -D /dev/ttyACM
