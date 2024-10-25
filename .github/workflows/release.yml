@@ -86,7 +86,7 @@ jobs:
       - name: Build ectocore_v3.uf2
         run: |
           make ectocore_v3
-          cp ectocore.uf2 ectocore_v0.3_${{ github.event.release.name }}.uf2
+          cp ectocore_v3.uf2 ectocore_v0.3_${{ github.event.release.name }}.uf2
       - name: Build zeptoboard.uf2
         run: |
           make zeptoboard
