@@ -460,7 +460,7 @@ void input_handling() {
       {0, 0, 1, 0, 1, 1, 0, 0, 1, 1},
       {1, 0, 0, 1, 0, 1, 0, 1, 1, 1},
   };
-  bgitool cv_was_unplugged[3] = {false, false, false};
+  bool cv_was_unplugged[3] = {false, false, false};
 
   // update the knobs
 #define KNOB_NUM 5
