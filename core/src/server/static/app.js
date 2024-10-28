@@ -508,6 +508,7 @@ app = new Vue({
         selectedBank: 0,
         selectedFile: null,
         deviceType: "",
+        isReady: false,
         transientDoAdd: [false, false, false],
         latestVersion: "",
         deviceVersion: "",
@@ -586,6 +587,9 @@ app = new Vue({
             }
             return total;
         }
+    },
+    mounted: function () {
+        this.isReady = true;
     },
     methods: {
         waveformClick(seconds) {

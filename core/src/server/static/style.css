@@ -45,7 +45,6 @@ body {
     display: flex;
     flex-direction: column;
     /* min-height: 100vh; */
-    border-right: 5px solid var(--header-footer-background);
     border-radius: 12px;
 }
 
@@ -154,6 +153,7 @@ a:hover {
     flex: 1;
     display: flex;
     flex-direction: column;
+    border-right: 5px solid var(--header-footer-background);
 }
 
 .file-uploader,
@@ -835,4 +835,15 @@ footer select {
 #dialog-settings>p>label,
 #dialog-settings>p>input {
     cursor: pointer;
+}
+
+#app {
+    visibility: hidden;
+    /* or you can use opacity: 0 */
+}
+
+#app.ready {
+    visibility: visible;
+    transition: visibility 0.5s ease-in;
+    /* Optional transition for smooth appearance */
 }
