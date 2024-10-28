@@ -44,7 +44,7 @@ ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore.uf2
 
-ectocore_v3: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_v0.3: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_v0.3.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore_v0.3.uf2
