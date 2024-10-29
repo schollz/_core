@@ -544,6 +544,9 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					} else {
 						onsets, err = onsetdetect.OnsetDetectAPI(f.PathToFile+".ogg", int(message.Number))
 					}
+					if len(onsets) > 120 {
+						onsets = onsets[:120]
+					}
 					if err == nil {
 						log.Tracef("onsets: %+v", onsets)
 						c.WriteJSON(Message{
