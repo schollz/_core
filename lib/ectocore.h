@@ -562,7 +562,10 @@ void input_handling() {
   int8_t led_brightness_direction = 0;
   bool clock_input_absent = true;
 
-  uint16_t debounce_startup = 8000;
+  uint16_t debounce_startup = 400;
+  if (do_calibration_mode) {
+    debounce_startup = 110;
+  }
   uint32_t btn_mult_on_time = 0;
   uint32_t btn_mult_hold_time = 0;
   uint32_t debounce_file_switching = 0;
@@ -627,15 +630,26 @@ void input_handling() {
                                             sf->center_calibration[7],
                                         }};
 
-            // make the LEDS go RED
-            ws2812_wheel_clear(ws2812);
-            for (uint8_t j = 0; j < 18; j++) {
-              WS2812_fill(ws2812, j, 255, 0, 0);
-            }
-            WS2812_show(ws2812);
-            sleep_ms(10);
             printf("[ectocore] write calibration\n");
-            sleep_ms(1);
+            uint16_t flash_time = 250;
+            for (uint8_t ii = 0; ii < 20; ii++) {
+              // make the LEDS go RED
+              for (uint8_t j = 0; j < 20; j++) {
+                WS2812_fill(ws2812, j, 0, 255, 0);
+              }
+              WS2812_show(ws2812);
+              sleep_ms(flash_time);
+              for (uint8_t j = 0; j < 20; j++) {
+                WS2812_fill(ws2812, j, 0, 0, 0);
+              }
+              WS2812_show(ws2812);
+              sleep_ms(flash_time);
+
+              flash_time = flash_time * 90 / 100;
+              if (flash_time < 10) {
+                break;
+              }
+            }
             watchdog_reboot(0, SRAM_END, 1900);
             sleep_ms(10);
             write_struct_to_flash(&write_data, sizeof(write_data));
