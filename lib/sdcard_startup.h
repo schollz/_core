@@ -522,7 +522,7 @@ void sdcard_startup() {
     if (started) {
       break;
     }
-    sleep_ms(100);
+    sleep_ms(1);
   }
   if (!started) {
     printf("[sdcard_startup] could not mount\n");
