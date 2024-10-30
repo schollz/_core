@@ -43,12 +43,12 @@ bool run_mount() {
   arg1 = sd_get_by_num(0)->pcName;
   FATFS *p_fs = sd_get_fs_by_name(arg1);
   if (!p_fs) {
-    printf("Unknown logical drive number: \"%s\"\n", arg1);
+    // printf("Unknown logical drive number: \"%s\"\n", arg1);
     return false;
   }
   FRESULT fr = f_mount(p_fs, arg1, 1);
   if (FR_OK != fr) {
-    printf("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
+    // printf("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
     return false;
   }
   sd_card_t *pSD = sd_get_by_name(arg1);

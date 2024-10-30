@@ -1,3 +1,81 @@
+#ifdef INCLUDE_ZEPTOCORE
+void printStringWithDelay2(char *str) {
+  int len = strlen(str);
+  for (int i = 0; i < len; i++) {
+    char currentChar = str[i];
+    for (int j = 0; j < sizeof(led_text_5x4) / sizeof(led_text_5x4[0]); j++) {
+      if (led_text_5x4[j].character == currentChar) {
+        int led = 0;
+        for (int row = 0; row < 5; row++) {
+          for (int col = 0; col < 4; col++) {
+            bool is_one = (led_text_5x4[j].dots[row] >> (3 - col)) & 1;
+            if (is_one) {
+              LEDS_set(leds, led, LED_BRIGHT);
+            } else {
+              LEDS_set(leds, led, 0);
+            }
+            led++;
+          }
+          printf("\n");
+        }
+        printf("\n");
+        LEDS_render(leds);
+        if (currentChar == '.') {
+          sleep_ms(50);
+        } else {
+          sleep_ms(200);
+        }
+        break;
+      }
+    }
+  }
+}
+#endif
+
+void flash_no_sdcard() {
+  bool started = false;
+#ifdef INCLUDE_ECTOCORE
+  WS2812 *ws2812;
+  ws2812 = WS2812_new(GPIO_WS2812, pio0, 2);
+  WS2812_set_brightness(ws2812, 50);
+#endif
+  while (true) {
+#ifdef INCLUDE_ECTOCORE
+    for (uint8_t i = 0; i < 18; i++) {
+      WS2812_fill(ws2812, i, 255, 0, 0);
+    }
+    WS2812_show(ws2812);
+#endif
+#ifdef INCLUDE_ZEPTOCORE
+    LEDS_clear(leds);
+    printStringWithDelay2("NO SDCARD");
+#endif
+    sleep_ms(500);
+    started = run_mount();
+    if (started) {
+      // reset
+      watchdog_reboot(0, SRAM_END, 0);
+    }
+
+#ifdef INCLUDE_ECTOCORE
+    for (uint8_t i = 0; i < 18; i++) {
+      WS2812_fill(ws2812, i, 0, 0, 0);
+    }
+    WS2812_show(ws2812);
+#endif
+#ifdef INCLUDE_ZEPTOCORE
+    LEDS_clear(leds);
+    printStringWithDelay2("NO SDCARD");
+#endif
+    sleep_ms(500);
+    started = run_mount();
+    if (started) {
+      // reset
+      watchdog_reboot(0, SRAM_END, 0);
+    }
+  }
+}
+
 int extractNumber(const char *str) {
   // Pointer to traverse the string
   const char *p = str;
@@ -438,8 +516,18 @@ void sdcard_startup() {
     sleep_us(100);
   }
   sync_using_sdcard = true;
-  while (!run_mount()) {
-    sleep_ms(10);
+  bool started = false;
+  for (uint8_t i = 0; i < 10; i++) {
+    started = run_mount();
+    if (started) {
+      break;
+    }
+    sleep_ms(100);
+  }
+  if (!started) {
+    printf("[sdcard_startup] could not mount\n");
+    flash_no_sdcard();
+    sleep_ms(1000000);
   }
   envelope_volume = Envelope2_create(BLOCKS_PER_SECOND, 0, 1, 4);
   envelope_pitch = Envelope2_create(BLOCKS_PER_SECOND, 0.5, 1.0, 1.5);
