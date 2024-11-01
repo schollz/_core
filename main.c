@@ -512,7 +512,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
         if (cv_beat_current_override > 0) {
           beat_current = cv_beat_current_override;
           cv_beat_current_override = -1;
-          printf("[main] cv_beat_current_override: %d\n", beat_current);
+          // printf("[main] cv_beat_current_override: %d\n", beat_current);
         }
 #endif
         // printf("beat_current: %d\n", beat_current);
