@@ -580,6 +580,8 @@ void input_handling() {
   mute_soft = true;
 #endif
 
+  int cv_amen_last_value = 0;
+
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -769,19 +771,39 @@ void input_handling() {
               val -= 512;
             }
           }
-          cv_beat_current_override = linlin(val, -512, 512,
-                                            cv_start *
-                                                banks[sel_bank_cur]
-                                                    ->sample[sel_sample_cur]
-                                                    .snd[FILEZERO]
-                                                    ->slice_num /
-                                                1000,
-                                            cv_stop *
-                                                banks[sel_bank_cur]
-                                                    ->sample[sel_sample_cur]
-                                                    .snd[FILEZERO]
-                                                    ->slice_num /
-                                                1000);
+          if (val >= 0) {
+            if (cv_amen_last_value - val > 3 || val - cv_amen_last_value > 3) {
+              printf("CV_AMEN val: %d\n", val);
+              cv_amen_last_value = val;
+              cv_beat_current_override = linlin(val, 0, 512,
+                                                cv_start *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000,
+                                                cv_stop *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000);
+            }
+          } else {
+            cv_beat_current_override = linlin(val, -512, 0,
+                                              cv_start *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000,
+                                              cv_stop *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000);
+          }
 
         } else if (i == CV_BREAK) {
           // printf("[ectocore] cv_break %d\n", val);
