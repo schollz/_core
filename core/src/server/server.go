@@ -209,7 +209,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		b, _ := json.Marshal(map[string]string{"version": "v6.1.0"})
+		b, _ := json.Marshal(map[string]string{"version": "v6.2.0"})
 		w.Write(b)
 		return nil
 	} else if r.URL.Path == "/ws" {
@@ -301,7 +301,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				GenURL2        string
 			}{
 				IsMain:         r.URL.Path == "/",
-				VersionCurrent: "v6.1.0",
+				VersionCurrent: "v6.2.0",
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 				IsEctocore:     isEctocore,
