@@ -21,12 +21,15 @@ type Data struct {
 	StereoMono                string   `json:"stereoMono"`
 	Resampling                string   `json:"resampling"`
 	SettingsBrightness        int      `json:"settingsBrightness"`
-	SettingsClockStop         bool     `json:"settingsClockStop"`
-	SettingsClockOutput       bool     `json:"settingsClockOutput"`
-	SettingsClockBehaviorSync bool     `json:"settingsClockBehaviorSync"`
+	SettingsClockStop         string   `json:"settingsClockStop"`
+	SettingsClockOutput       string   `json:"settingsClockOutput"`
+	SettingsClockBehaviorSync string   `json:"settingsClockBehaviorSync"`
 	SettingsAmenCV            string   `json:"settingsAmenCV"`
+	SettingsAmenBehavior      string   `json:"settingsAmenBehavior"`
+	SettingsBreakCV           string   `json:"settingsBreakCV"`
+	SettingsSampleCV          string   `json:"settingsSampleCV"`
 	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
-	SettingsMashMdoe          bool     `json:"settingsMashMode"`
+	SettingsMashMode          bool     `json:"settingsMashMode"`
 	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
 	Banks                     []struct {
 		Files []string `json:"files"`
@@ -121,25 +124,27 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	} else {
 		os.Create(path.Join(settingsFolder, "resampling_quadratic-on"))
 	}
-	if data.SettingsClockStop {
+	if data.SettingsClockStop == "sync" {
 		os.Create(path.Join(settingsFolder, "clock_stop_sync-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "clock_stop_sync-off"))
 	}
-	if data.SettingsClockOutput {
+	if data.SettingsClockOutput == "trig" {
 		os.Create(path.Join(settingsFolder, "clock_output_trig-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "clock_output_trig-off"))
 	}
 
-	if data.SettingsClockBehaviorSync {
+	if data.SettingsClockBehaviorSync == "slice" {
 		os.Create(path.Join(settingsFolder, "clock_behavior_sync_slice-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "clock_behavior_sync_slice-off"))
 	}
 
-	// amen cv settings
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("amen_cv-%s", data.SettingsAmenCV)))
+	os.Create(path.Join(settingsFolder, fmt.Sprintf("amen_behavior-%s", data.SettingsAmenBehavior)))
+	os.Create(path.Join(settingsFolder, fmt.Sprintf("break_cv-%s", data.SettingsBreakCV)))
+	os.Create(path.Join(settingsFolder, fmt.Sprintf("sample_cv-%s", data.SettingsSampleCV)))
 
 	// knob x
 	if data.SettingsKnobXSample {
@@ -149,7 +154,7 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	}
 
 	// mash mode
-	if data.SettingsMashMdoe {
+	if data.SettingsMashMode {
 		os.Create(path.Join(settingsFolder, "mash_mode_momentary-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "mash_mode_momentary-off"))
