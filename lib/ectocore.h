@@ -672,8 +672,17 @@ void input_handling() {
     }
 
     ClockInput_update(clockinput);
-    if (clock_in_do) {
-      clock_input_absent = ClockInput_timeSinceLast(clockinput) > 1000000;
+    if (clock_in_do || !clock_input_absent) {
+      bool clock_input_absent_new =
+          ClockInput_timeSinceLast(clockinput) > 1000000;
+      if (clock_input_absent_new != clock_input_absent) {
+        clock_input_absent = clock_input_absent_new;
+        if (clock_input_absent) {
+          printf("[ectocore] clock input absent\n");
+        } else {
+          printf("[ectocore] clock input present\n");
+        }
+      }
     }
     Onewiremidi_receive(onewiremidi);
 
