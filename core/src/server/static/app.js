@@ -320,6 +320,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsClockBehaviorSync) {
             app.settingsClockBehaviorSync = savedState.settingsClockBehaviorSync;
         }
+        if (savedState.settingsAmenCV) {
+            app.settingsAmenCV = savedState.settingsAmenCV;
+        }
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
@@ -518,6 +521,7 @@ app = new Vue({
         settingsClockStop: false,
         settingsClockOutput: false,
         settingsClockBehaviorSync: false,
+        settingsAmenCV: "0",
         settingsKnobXSample: false,
         settingsMashMode: false,
         progressBarWidth: '0px',
@@ -567,6 +571,7 @@ app = new Vue({
         settingsClockStop: 'saveState',
         settingsClockOutput: 'saveState',
         settingsClockBehaviorSync: 'saveState',
+        settingsAmenCV: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         settingsMashMode: 'saveState',
@@ -968,6 +973,7 @@ app = new Vue({
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
+                settingsAmenCV: app.settingsAmenCV,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
@@ -1257,6 +1263,7 @@ app = new Vue({
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
+                settingsAmenCV: app.settingsAmenCV,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
