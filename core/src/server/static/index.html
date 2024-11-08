@@ -131,6 +131,18 @@
                     id="settingsClockBehaviorSync" type="checkbox" v-model="settingsClockBehaviorSync">
                 <span v-if="settingsClockBehaviorSync">sync with slice</span><span v-else>sync with tempo</span>
             </p>
+            <p id="pSettingsAmenCV">
+                <label for="settingsAmenCV" style="padding-right:1em;">Amen CV sample jumping</label>
+                <!-- drop down menu -->
+                <select id="settingsAmenCV" v-model="settingsAmenCV" style="padding:0.25em;">
+                    <option value="0">0 to 5v, on change</option>
+                    <option value="1">-5 to 5v, on change</option>
+                    <option value="2">0 to 5v, on trig</option>
+                    <option value="3">-5 to 5v, on trig</option>
+                    <option value="4">&lt;0v, on change; &ge;0v on trig</option>
+                    <option value="5">&lt;0v, on trig; &ge;0v on change</option>
+                </select>
+            </p>
             <!-- slider for brightness-->
             <p style="display: flex; align-items: center;" id="pSettingsBrightness">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>
@@ -1115,6 +1127,9 @@
                     }));
                 }
             });
+
+            // show settings dialog (for debugging)
+            document.getElementById("dialog-settings").showModal();
 
 
         };
