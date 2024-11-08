@@ -167,7 +167,13 @@ uint8_t sel_variation = 0;
 int8_t sel_variation_next = 0;
 bool sel_variation_fadeout = false;
 uint8_t global_brightness = 50;  // 0 - 100
-uint8_t global_amen_cv_option = 5;
+bool global_amen_cv_bipolar = true;
+#define AMEN_CV_BEHAVIOR_JUMP 0
+#define AMEN_CV_BEHAVIOR_REPEAT 1
+#define AMEN_CV_BEHAVIOR_SPLIT 2
+uint8_t global_amen_cv_behavior = AMEN_CV_BEHAVIOR_JUMP;
+bool global_break_cv_bipolar = true;
+bool global_sample_cv_bipolar = true;
 bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 bool clock_behavior_sync_slice = false;

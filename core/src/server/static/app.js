@@ -323,6 +323,15 @@ const socketMessageListener = (e) => {
         if (savedState.settingsAmenCV) {
             app.settingsAmenCV = savedState.settingsAmenCV;
         }
+        if (savedState.settingsAmenBehavior) {
+            app.settingsAmenBehavior = savedState.settingsAmenBehavior;
+        }
+        if (savedState.settingsBreakCV) {
+            app.settingsBreakCV = savedState.settingsBreakCV;
+        }
+        if (savedState.settingsSampleCV) {
+            app.settingsSampleCV = savedState.settingsSampleCV;
+        }
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
@@ -518,10 +527,13 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         settingsBrightness: 50,
-        settingsClockStop: false,
-        settingsClockOutput: false,
-        settingsClockBehaviorSync: false,
-        settingsAmenCV: "0",
+        settingsClockStop: "continue",
+        settingsClockOutput: "gate",
+        settingsClockBehaviorSync: "tempo",
+        settingsAmenCV: "bipolar",
+        settingsAmenBehavior: "split",
+        settingsBreakCV: "bipolar",
+        settingsSampleCV: "bipolar",
         settingsKnobXSample: false,
         settingsMashMode: false,
         progressBarWidth: '0px',
@@ -572,6 +584,9 @@ app = new Vue({
         settingsClockOutput: 'saveState',
         settingsClockBehaviorSync: 'saveState',
         settingsAmenCV: 'saveState',
+        settingsAmenBehavior: 'saveState',
+        settingsBreakCV: 'saveState',
+        settingsSampleCV: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         settingsMashMode: 'saveState',
@@ -962,6 +977,9 @@ app = new Vue({
             this.lastSelectedFile = this.selectedFile;
         },
         saveState() {
+            if (app.settingsAmenCV == "unipolar" && app.settingsAmenBehavior == "split") {
+                app.settingsAmenBehavior = "jump";
+            }
             const savedState = {
                 banks: app.banks,
                 oversampling: app.oversampling,
@@ -974,6 +992,9 @@ app = new Vue({
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsAmenCV: app.settingsAmenCV,
+                settingsAmenBehavior: app.settingsAmenBehavior,
+                settingsBreakCV: app.settingsBreakCV,
+                settingsSampleCV: app.settingsSampleCV,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
@@ -1264,6 +1285,9 @@ app = new Vue({
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
                 settingsAmenCV: app.settingsAmenCV,
+                settingsAmenBehavior: app.settingsAmenBehavior,
+                settingsBreakCV: app.settingsBreakCV,
+                settingsSampleCV: app.settingsSampleCV,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
@@ -1594,6 +1618,26 @@ window.addEventListener('load', (event) => {
             zIndex: 9999999,
             appendTo: "parent",
             content: "When 'off', the incoming clock does not affect ectocore starting/stopping. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
+        });
+        tippy('#pSettingsAmenBehavior', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Setting 'jump on change' will change slices on CV changes > 1/12v. Setting 'repeat' will repeat the current slice on each trig. Setting 'split' will have both behaviors (bipolar only).",
+        });
+        tippy('#pSettingsAmenCV', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
+        });
+        tippy('#pSettingsBreakCV', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
+        });
+        tippy('#pSettingsSampleCV', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
         });
         tippy('#pSettingsMashMode', {
             zIndex: 9999999,
