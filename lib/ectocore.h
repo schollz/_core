@@ -55,6 +55,12 @@
 
 #define KNOB_ATTEN_ZERO_WIDTH 80
 #define DEBOUNCE_FILE_SWITCH 10
+#define AMEN_CV_OPTION_UNIPOLAR_CHANGE 0
+#define AMEN_CV_OPTION_BIPOLAR_CHANGE 1
+#define AMEN_CV_OPTION_UNIPOLAR_TRIG 2
+#define AMEN_CV_OPTION_BIPOLAR_TRIG 3
+#define AMEN_CV_OPTION_BIPOLAR_TRIG_CHANGE 4
+#define AMEN_CV_OPTION_BIPOLAR_CHANGE_TRIG 5
 
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
@@ -771,10 +777,58 @@ void input_handling() {
               val -= 512;
             }
           }
-          if (val >= 0) {
-            if (cv_amen_last_value - val > 3 || val - cv_amen_last_value > 3) {
-              printf("CV_AMEN val: %d\n", val);
-              cv_amen_last_value = val;
+          bool has_changed =
+              (cv_amen_last_value - val > 3 || val - cv_amen_last_value > 3);
+          cv_amen_last_value = val;
+          if ((global_amen_cv_option == AMEN_CV_OPTION_BIPOLAR_CHANGE &&
+               has_changed) ||
+              global_amen_cv_option == AMEN_CV_OPTION_BIPOLAR_TRIG) {
+            cv_beat_current_override = linlin(val, -512, 512,
+                                              cv_start *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000,
+                                              cv_stop *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000);
+          } else if ((global_amen_cv_option == AMEN_CV_OPTION_UNIPOLAR_CHANGE &&
+                      has_changed) ||
+                     global_amen_cv_option == AMEN_CV_OPTION_UNIPOLAR_TRIG) {
+            cv_beat_current_override = linlin(val, 0, 512,
+                                              cv_start *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000,
+                                              cv_stop *
+                                                  banks[sel_bank_cur]
+                                                      ->sample[sel_sample_cur]
+                                                      .snd[FILEZERO]
+                                                      ->slice_num /
+                                                  1000);
+          } else if (global_amen_cv_option ==
+                     AMEN_CV_OPTION_BIPOLAR_CHANGE_TRIG) {
+            if (val < 0 && has_changed) {
+              cv_beat_current_override = linlin(val, -512, 0,
+                                                cv_start *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000,
+                                                cv_stop *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000);
+            } else if (val >= 0) {
               cv_beat_current_override = linlin(val, 0, 512,
                                                 cv_start *
                                                     banks[sel_bank_cur]
@@ -789,20 +843,37 @@ void input_handling() {
                                                         ->slice_num /
                                                     1000);
             }
-          } else {
-            cv_beat_current_override = linlin(val, -512, 0,
-                                              cv_start *
-                                                  banks[sel_bank_cur]
-                                                      ->sample[sel_sample_cur]
-                                                      .snd[FILEZERO]
-                                                      ->slice_num /
-                                                  1000,
-                                              cv_stop *
-                                                  banks[sel_bank_cur]
-                                                      ->sample[sel_sample_cur]
-                                                      .snd[FILEZERO]
-                                                      ->slice_num /
-                                                  1000);
+          } else if (global_amen_cv_option ==
+                     AMEN_CV_OPTION_BIPOLAR_TRIG_CHANGE) {
+            if (val < 0) {
+              cv_beat_current_override = linlin(val, -512, 0,
+                                                cv_start *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000,
+                                                cv_stop *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000);
+            } else if (val >= 0 && has_changed) {
+              cv_beat_current_override = linlin(val, 0, 512,
+                                                cv_start *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000,
+                                                cv_stop *
+                                                    banks[sel_bank_cur]
+                                                        ->sample[sel_sample_cur]
+                                                        .snd[FILEZERO]
+                                                        ->slice_num /
+                                                    1000);
+            }
           }
 
         } else if (i == CV_BREAK) {
