@@ -148,6 +148,13 @@ void load_settings(const char *dir_name) {
       clock_behavior_sync_slice = false;
     }
 
+    // check for amen cv behavior
+    if (strcmp(fno.fname, "amen_cv") == 0) {
+      global_amen_cv_option = extractNumber(fno.fname);
+      printf("[sdcard_startup] '%s' amen_cv: %d\n", fno.fname,
+             global_amen_cv_option);
+    }
+
     // check if a file has the prefix "brightness"
     if (strncmp(fno.fname, "brightness-", 11) == 0) {
       global_brightness = extractNumber(fno.fname);

@@ -24,6 +24,7 @@ type Data struct {
 	SettingsClockStop         bool     `json:"settingsClockStop"`
 	SettingsClockOutput       bool     `json:"settingsClockOutput"`
 	SettingsClockBehaviorSync bool     `json:"settingsClockBehaviorSync"`
+	SettingsAmenCV            string   `json:"settingsAmenCV"`
 	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
 	SettingsMashMdoe          bool     `json:"settingsMashMode"`
 	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
@@ -136,6 +137,9 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	} else {
 		os.Create(path.Join(settingsFolder, "clock_behavior_sync_slice-off"))
 	}
+
+	// amen cv settings
+	os.Create(path.Join(settingsFolder, fmt.Sprintf("amen_cv-%s", data.SettingsAmenCV)))
 
 	// knob x
 	if data.SettingsKnobXSample {
