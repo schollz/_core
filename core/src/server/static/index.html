@@ -117,32 +117,58 @@
             </p>
             [[ else ]]
             <p id="pSettingsClockStop">
-                <label for="settingsClockStop" style="padding-right:1em;">Incoming clock start/stop sync</label><input
-                    id="settingsClockStop" type="checkbox" v-model="settingsClockStop">
-                <span v-if="settingsClockStop">on</span><span v-else>off</span>
-            </p>
-            <p id="pSettingsClockOutput">
-                <label for="settingsClockOutput" style="padding-right:1em;">Outgoing clock type</label><input
-                    id="settingsClockOutput" type="checkbox" v-model="settingsClockOutput">
-                <span v-if="settingsClockOutput">trig</span><span v-else>gate</span>
-            </p>
-            <p id="pSettingsClockBehaviorSync">
-                <label for="settingsClockBehaviorSync" style="padding-right:1em;">Outgoing clock behavior</label><input
-                    id="settingsClockBehaviorSync" type="checkbox" v-model="settingsClockBehaviorSync">
-                <span v-if="settingsClockBehaviorSync">sync with slice</span><span v-else>sync with tempo</span>
-            </p>
-            <p id="pSettingsAmenCV">
-                <label for="settingsAmenCV" style="padding-right:1em;">Amen CV sample jumping</label>
-                <!-- drop down menu -->
-                <select id="settingsAmenCV" v-model="settingsAmenCV" style="padding:0.25em;">
-                    <option value="0">0 to 5v, on change</option>
-                    <option value="1">-5 to 5v, on change</option>
-                    <option value="2">0 to 5v, on trig</option>
-                    <option value="3">-5 to 5v, on trig</option>
-                    <option value="4">&lt;0v, on change; &ge;0v on trig</option>
-                    <option value="5">&lt;0v, on trig; &ge;0v on change</option>
+                <label for="settingsClockStop" style="padding-right:1em;">Incoming clock behavior</label>
+                <select id="settingsClockStop" v-model="settingsClockStop">
+                    <option value="continue">continue if clock stops</option>
+                    <option value="sync">stop if clock stops</option>
                 </select>
             </p>
+            <p id="pSettingsClockOutput">
+                <label for="settingsClockOutput" style="padding-right:1em;">Outgoing clock type</label>
+                <select id="settingsClockOutput" v-model="settingsClockOutput">
+                    <option value="trig">trig</option>
+                    <option value="gate">gate</option>
+                </select>
+            </p>
+            <p id="pSettingsClockBehaviorSync">
+                <label for="settingsClockBehaviorSync" style="padding-right:1em;">Outgoing clock behavior</label>
+                <select id="settingsClockBehaviorSync" v-model="settingsClockBehaviorSync">
+                    <option value="tempo">sync with tempo</option>
+                    <option value="slice">sync with slice</option>
+                </select>
+            </p>
+            <p id="pSettingsAmenCV">
+                <label for="settingsAmenCV" style="padding-right:1em;">Amen CV polarity</label>
+                <!-- drop down menu -->
+                <select id="settingsAmenCV" v-model="settingsAmenCV">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsAmenBehavior">
+                <label for="settingsAmenBehavior" style="padding-right:1em;">Amen CV behavior</label>
+                <!-- drop down menu -->
+                <select id="settingsAmenBehavior" v-model="settingsAmenBehavior">
+                    <option value="jump">jump on change</option>
+                    <option value="repeat">repeat at CV</option>
+                    <option v-if="settingsAmenCV=='bipolar'" value="split">split: &lt;0v repeat, &ge;0v jump</option>
+                </select>
+            </p>
+            <p id="pSettingsBreakCV">
+                <label for="settingsBreakCV" style="padding-right:1em;">Break CV polarity</label>
+                <select id="settingsBreakCV" v-model="settingsBreakCV">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsSampleCV">
+                <label for="settingsSampleCV" style="padding-right:1em;">Sample CV polarity</label>
+                <select id="settingsSampleCV" v-model="settingsSampleCV">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+
             <!-- slider for brightness-->
             <p style="display: flex; align-items: center;" id="pSettingsBrightness">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>
@@ -1128,8 +1154,8 @@
                 }
             });
 
-            // show settings dialog (for debugging)
-            document.getElementById("dialog-settings").showModal();
+            // // show settings dialog (for debugging)
+            // document.getElementById("dialog-settings").showModal();
 
 
         };
