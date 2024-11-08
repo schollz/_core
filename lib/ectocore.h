@@ -836,11 +836,19 @@ void input_handling() {
           }
         } else if (i == CV_BREAK) {
           // printf("[ectocore] cv_break %d\n", val);
-          break_set(linlin(val, -512, 512, 0, 1024), true, false);
+          int16_t cv_min = 0;
+          if (global_break_cv_bipolar) {
+            cv_min = -512;
+          }
+          break_set(linlin(val, cv_min, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
           // printf("[ectocore] cv_sample %d\n", val);
+          int16_t cv_min = 0;
+          if (global_sample_cv_bipolar) {
+            cv_min = -512;
+          }
           sel_sample_next_new =
-              linlin(val, -512, 512, 0, banks[sel_bank_cur]->num_samples);
+              linlin(val, cv_min, 512, 0, banks[sel_bank_cur]->num_samples);
           if (debounce_file_change == 0 &&
               sel_sample_cur != sel_sample_next_new) {
             debounce_file_change = DEBOUNCE_FILE_SWITCH;
