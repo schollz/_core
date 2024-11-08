@@ -148,11 +148,34 @@ void load_settings(const char *dir_name) {
       clock_behavior_sync_slice = false;
     }
 
+    // check for amen cv polarity
+    if (strcmp(fno.fname, "amen_cv-unipolar") == 0) {
+      global_amen_cv_bipolar = false;
+    } else if (strcmp(fno.fname, "amen_cv-bipolar") == 0) {
+      global_amen_cv_bipolar = true;
+    }
+
     // check for amen cv behavior
-    if (strcmp(fno.fname, "amen_cv") == 0) {
-      global_amen_cv_option = extractNumber(fno.fname);
-      printf("[sdcard_startup] '%s' amen_cv: %d\n", fno.fname,
-             global_amen_cv_option);
+    if (strcmp(fno.fname, "amen_behavior-jump") == 0) {
+      global_amen_cv_behavior = AMEN_CV_BEHAVIOR_JUMP;
+    } else if (strcmp(fno.fname, "amen_behavior-repeat") == 0) {
+      global_amen_cv_behavior = AMEN_CV_BEHAVIOR_REPEAT;
+    } else if (strcmp(fno.fname, "amen_behavior-split") == 0) {
+      global_amen_cv_behavior = AMEN_CV_BEHAVIOR_SPLIT;
+    }
+
+    // check for break cv polarity
+    if (strcmp(fno.fname, "break_cv-unipolar") == 0) {
+      global_break_cv_bipolar = false;
+    } else if (strcmp(fno.fname, "break_cv-bipolar") == 0) {
+      global_break_cv_bipolar = true;
+    }
+
+    // check for sample cv polarity
+    if (strcmp(fno.fname, "sample_cv-unipolar") == 0) {
+      global_sample_cv_bipolar = false;
+    } else if (strcmp(fno.fname, "sample_cv-bipolar") == 0) {
+      global_sample_cv_bipolar = true;
     }
 
     // check if a file has the prefix "brightness"

@@ -832,10 +832,6 @@ footer select {
     position: relative;
 }
 
-#dialog-settings>p>label,
-#dialog-settings>p>input {
-    cursor: pointer;
-}
 
 #app {
     visibility: hidden;
@@ -846,4 +842,8 @@ footer select {
     visibility: visible;
     transition: visibility 0.5s ease-in;
     /* Optional transition for smooth appearance */
+}
+
+#dialog-settings>p>select {
+    padding: 0.25em;
 }
