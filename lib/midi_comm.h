@@ -188,7 +188,7 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
       sleep_ms(10);
       reset_usb_boot(0, 0);
     } else if (status == 176 && channel == 0 && note == 1) {
-      send_text_as_sysex("version=v6.2.1");
+      send_text_as_sysex("version=v6.2.2");
     }
     if (callback != NULL) {
       callback(status, channel, note, velocity);
