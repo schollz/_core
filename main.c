@@ -31,7 +31,8 @@ bool repeating_timer_callback_playback_stopped = false;
 uint64_t repeating_timer_callback_playback_counter = 0;
 int32_t phase_sample_old = 0;
 // timer
-bool repeating_timer_callback(struct repeating_timer *t) {
+
+bool timer_step() {
   if (!fil_is_open) {
     return true;
   }
@@ -622,6 +623,10 @@ bool repeating_timer_callback(struct repeating_timer *t) {
   }
 
   return true;
+}
+
+bool repeating_timer_callback(struct repeating_timer *t) {
+  return timer_step();
 }
 
 #ifdef INCLUDE_ZEPTOCORE
