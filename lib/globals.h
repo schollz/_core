@@ -25,6 +25,9 @@
 #ifndef GLOBALS_LIB
 #define GLOBALS_LIB 1
 
+bool repeating_timer_callback(struct repeating_timer *t);
+bool timer_step();
+struct repeating_timer timer;
 // audio_pool.h
 audio_buffer_pool_t *ap;
 
@@ -64,7 +67,7 @@ void set_audio_variant(uint8_t x) {
 }
 
 FRESULT fil_result;
-struct repeating_timer timer;
+
 bool phase_forward = 1;
 bool sync_using_sdcard = false;
 
