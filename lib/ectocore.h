@@ -902,7 +902,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.2.2\n");
+        printf("version=v6.2.3\n");
       }
     }
 
@@ -1391,7 +1391,11 @@ void input_handling() {
               do_stop_playback = true;
             } else if (playback_stopped && !do_restart_playback) {
               printf("[ectocore] ectocore start\n");
+              cancel_repeating_timer(&timer);
               do_restart_playback = true;
+              timer_step();
+              add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
+                                     repeating_timer_callback, NULL, &timer);
               button_mute = false;
             }
             TapTempo_reset(taptempo);
@@ -1424,7 +1428,11 @@ void input_handling() {
         printf("[ectocore] btn_taptempo %d\n", val);
         if (val == 1) {
           if (playback_stopped && !do_restart_playback) {
+            cancel_repeating_timer(&timer);
             do_restart_playback = true;
+            timer_step();
+            add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
+                                   repeating_timer_callback, NULL, &timer);
             button_mute = false;
             TapTempo_reset(taptempo);
           }
