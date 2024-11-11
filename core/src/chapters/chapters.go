@@ -16,6 +16,7 @@ func GetSliceMarkers(filePath string) (start []float64, end []float64, err error
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic: %v", r)
+			log.Error(err)
 		}
 	}()
 

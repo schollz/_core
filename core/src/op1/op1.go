@@ -3,13 +3,23 @@ package op1
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"math"
 	"os"
 
+	"github.com/anacrolix/log"
 	"github.com/schollz/_core/core/src/sox"
 )
 
 func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, err error) {
+	// catch panic
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+			log.Error(err)
+		}
+	}()
+
 	b, err := os.ReadFile(fname)
 	if err != nil {
 		return
