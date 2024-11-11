@@ -42,6 +42,10 @@ void clock_handling_start() {
     clock_in_last_time = time_us_32();
     clock_in_beat_total = 0;
     clock_in_ready = true;
+    cancel_repeating_timer(&timer);
     do_restart_playback = true;
+    timer_step();
+    add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
+                           repeating_timer_callback, NULL, &timer);
   }
 }

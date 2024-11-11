@@ -51,7 +51,11 @@ void midi_start() {
   printf("[midicallback] midi start\n");
 #endif
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
+  cancel_repeating_timer(&timer);
   do_restart_playback = true;
+  timer_step();
+  add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
+                         repeating_timer_callback, NULL, &timer);
   button_mute = false;
   trigger_button_mute = false;
 }

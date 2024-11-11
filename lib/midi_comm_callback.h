@@ -49,7 +49,12 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
     } else if (note == 112) {
       // stop/play
       if (playback_stopped) {
+        cancel_repeating_timer(&timer);
         do_restart_playback = true;
+        timer_step();
+        add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
+                               repeating_timer_callback, NULL, &timer);
+
         button_mute = false;
       } else {
         if (!button_mute) trigger_button_mute = true;
