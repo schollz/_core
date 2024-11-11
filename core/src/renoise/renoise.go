@@ -15,6 +15,14 @@ import (
 var DebugMode = false
 
 func GetSliceMarkers(fname string) (filename string, start []float64, end []float64, err error) {
+	// catch panic
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+			log.Error(err)
+		}
+	}()
+
 	files, err := unzipFile(fname)
 	if err != nil {
 		log.Error(err)
