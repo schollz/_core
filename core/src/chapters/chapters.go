@@ -12,6 +12,13 @@ import (
 var DebugMode = false
 
 func GetSliceMarkers(filePath string) (start []float64, end []float64, err error) {
+	// catch panic
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
+
 	// Open the audio file
 	file, err := os.Open(filePath)
 	if err != nil {
