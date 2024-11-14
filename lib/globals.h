@@ -107,6 +107,12 @@ int64_t bpm_timer_counter = 0;
 int64_t bpm_timer_counter_last = 0;
 uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
+uint16_t retrig_timer_reset_total = 28;
+uint16_t retrig_timer_reset_arr[32] = {
+    96, 48, 32, 24, 16, 12, 8, 6, 4,  3,  2,  1,  96, 48, 32, 24,
+    16, 12, 8,  6,  4,  3,  2, 1, 96, 48, 32, 24, 16, 12, 8,  6,
+};
+uint8_t retrig_timer_reset_count = 0;
 bool retrig_first = false;
 bool retrig_ready = false;
 float retrig_vol = 1.0;

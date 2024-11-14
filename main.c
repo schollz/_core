@@ -237,7 +237,11 @@ bool timer_step() {
     }
   }
   if (retrig_beat_num > 0) {
-    if (bpm_timer_counter % retrig_timer_reset == 0) {
+    if (bpm_timer_counter % retrig_timer_reset_arr[retrig_timer_reset_count %
+                                                   retrig_timer_reset_total] ==
+        0) {
+      retrig_timer_reset_count++;
+      // if (bpm_timer_counter % retrig_timer_reset == 0) {
       if (retrig_ready) {
         if (retrig_first) {
           // generate random value between 0 and 1
@@ -257,7 +261,7 @@ bool timer_step() {
             retrig_pitch_change = 0;
           }
           retrig_filter_change = 0;
-          if (random_integer_in_range(1, 100) < 35) {
+          if (random_integer_in_range(1, 100) < 20) {
             // create filter ramp
             if (retrig_filter_original == 0) {
               retrig_filter_original = global_filter_index;

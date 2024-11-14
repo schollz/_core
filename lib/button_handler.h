@@ -100,6 +100,17 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   retrig_first = true;
   retrig_beat_num = random_integer_in_range(4, 16) * 2;
   retrig_timer_reset = retrig_times[key2 - 4];
+  retrig_timer_reset_count = 0;
+  // bouncing ball effect
+  uint16_t starting = retrig_timer_reset * 2;
+  retrig_timer_reset_total = random_integer_in_range(4, 32);
+  for (uint8_t i = 0; i < retrig_timer_reset_total; i++) {
+    retrig_timer_reset_arr[i] = starting;
+    if (starting > 24 && random_integer_in_range(0, 100) < 40) {
+      starting = starting * 3 / 4;
+    }
+  }
+
   // 96 * random_integer_in_range(1, 6) / random_integer_in_range(2, 12);
   float total_time = (float)(retrig_beat_num * retrig_timer_reset * 60) /
                      (float)(96 * sf->bpm_tempo);
