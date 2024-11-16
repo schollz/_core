@@ -7,8 +7,8 @@ import (
 	"math"
 	"os"
 
-	"github.com/anacrolix/log"
 	"github.com/schollz/_core/core/src/sox"
+	log "github.com/schollz/logger"
 )
 
 func GetSliceMarkers(fname string) (spliceStart []float64, spliceEnd []float64, err error) {
