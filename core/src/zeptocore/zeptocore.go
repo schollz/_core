@@ -209,7 +209,7 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	var bpm float64
 	beats, bpm, err = sox.GetBPM(f.PathToAudio)
 	f.BPM = int(math.Round(bpm))
-	log.Infof("beats: %d", beats)
+	log.Infof("beats: %f", beats)
 	if len(f.SliceStart) == 0 || errSliceDetect != nil {
 		if f.Duration > 2 {
 			// determine programmatically
@@ -584,7 +584,7 @@ func (f *File) SetSpliceTrigger(spliceTrigger int) {
 func (f *File) SetSpliceVariable(spliceVariable bool) {
 	mu.Lock()
 	defer mu.Unlock()
-	log.Tracef("setting splice variable to %d", spliceVariable)
+	log.Tracef("setting splice variable to %v", spliceVariable)
 	different := f.SpliceVariable != spliceVariable
 	f.SpliceVariable = spliceVariable
 	f.SaveNoDebounce()
