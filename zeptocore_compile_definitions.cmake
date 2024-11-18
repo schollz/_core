@@ -3,6 +3,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     USE_AUDIO_I2S=1
     SDCARD_USE_CD=false
     SDCARD_CD_GPIO=21 # not used...
+    PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # weact
     SDCARD_CMD_GPIO=11
