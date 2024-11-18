@@ -79,7 +79,7 @@ void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
           val = -65536 - val;
         }
         self->ringbuffer[ch][self->index] = val;
-        samples[ii * 2 + ch] = (int64_t)self->ringbuffer[ch][self->index] / 3;
+        samples[ii * 2 + ch] = (int64_t)self->ringbuffer[ch][self->index] / 4;
       }
     }
     self->index++;
