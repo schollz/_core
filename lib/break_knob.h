@@ -196,13 +196,19 @@ void break_fx_toggle(uint8_t effect, bool on) {
       // time-synced delay
       if (on) {
         uint8_t faster = 1;
+        uint32_t duration = 1000;
         if (random_integer_in_range(0, 100) < 25) {
           faster = 2;
         }
         if (sf->bpm_tempo > 140) {
-          Delay_setDuration(delay, (30 * 44100) / sf->bpm_tempo / faster);
-        } else {
-          Delay_setDuration(delay, (15 * 44100) / sf->bpm_tempo / faster);
+          duration = 30 * 44100 / sf->bpm_tempo / faster;
+        }
+        for (uint8_t i = 0; i < 4; i++) {
+          if (duration > 10000) {
+            duration = duration / 2;
+          } else {
+            break;
+          }
         }
         uint8_t feedback = random_integer_in_range(1, 4);
         if (break_fx_beat_activated[effect] > 6) {
