@@ -20,6 +20,21 @@ typedef struct Delay {
   bool on;
 } Delay;
 
+void Delay_setFeedback(Delay *self, uint8_t feedback) {
+  self->feedback = 0.5f + (float)feedback / 500.0f;
+  if (self->feedback > 0.99f) {
+    self->feedback = 0.99f;
+  }
+  Slew_set_target(&self->feedback_slew, self->feedback,
+                  random_integer_in_range(10, 200));
+}
+
+void Delay_setDuration(Delay *tapeDelay, float delay_time) {
+  tapeDelay->delay_time = delay_time;
+  Slew_set_target(&tapeDelay->delay_slew, delay_time,
+                  random_integer_in_range(10, 300));
+}
+
 Delay *Delay_malloc() {
   Delay *tapeDelay = (Delay *)malloc(sizeof(Delay));
   if (tapeDelay == NULL) {
@@ -29,7 +44,6 @@ Delay *Delay_malloc() {
   tapeDelay->buffer_size = 10000;  // Fixed buffer size
   tapeDelay->delay_time = tapeDelay->buffer_size;
   tapeDelay->write_index = 0;
-  tapeDelay->feedback = 0;
   tapeDelay->on = false;
 
   // Initialize the buffer to zero
@@ -38,9 +52,10 @@ Delay *Delay_malloc() {
   }
 
   Slew_init(&tapeDelay->feedback_slew, 94230, 0);
-  Slew_set_target(&tapeDelay->feedback_slew, tapeDelay->feedback, 94230);
   Slew_init(&tapeDelay->delay_slew, 94230, 0);
-  Slew_set_target(&tapeDelay->delay_slew, tapeDelay->delay_time, 94230);
+
+  Delay_setDuration(tapeDelay, tapeDelay->buffer_size / 2);
+  Delay_setFeedback(tapeDelay, 200);
 
   return tapeDelay;
 }
@@ -49,23 +64,8 @@ void Delay_setWet(Delay *self, uint8_t wet) {
   // do nothing
 }
 
-void Delay_setFeedback(Delay *self, uint8_t feedback) {
-  self->feedback = (float)feedback / 240.0f;
-  if (self->feedback > 0.99f) {
-    self->feedback = 0.99f;
-  }
-  Slew_set_target(&self->feedback_slew, self->feedback,
-                  random_integer_in_range(1, 4) * 100);
-}
-
 void Delay_setLength(Delay *self, uint8_t length) {
   // do nothing
-}
-
-void Delay_setDuration(Delay *tapeDelay, float delay_time) {
-  tapeDelay->delay_time = delay_time;
-  Slew_set_target(&tapeDelay->delay_slew, delay_time,
-                  random_integer_in_range(1, 4) * 100);
 }
 
 // Linear interpolation helper
