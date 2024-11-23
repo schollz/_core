@@ -9,10 +9,11 @@
 #include "slew.h"
 
 typedef struct Delay {
-  int32_t buffer[10000];  // Fixed circular buffer of 22000 samples
-  size_t buffer_size;     // Size of the circular buffer
-  size_t write_index;     // Current write index
-  float delay_time;       // Delay time in samples (can be fractional)
+  int32_t buffer[10000];      // Fixed circular buffer
+  size_t buffer_size;         // Size of the circular buffer
+  size_t write_index;         // Current write index
+  float delay_time;           // Delay time in samples (can be fractional)
+  float smoothed_delay_time;  // Smoothed delay time for interpolation
   float feedback;
   int32_t feedback_fp;
   uint8_t wet;
@@ -44,6 +45,7 @@ Delay *Delay_malloc() {
 
   tapeDelay->buffer_size = 10000;  // Fixed buffer size
   tapeDelay->delay_time = tapeDelay->buffer_size;
+  tapeDelay->smoothed_delay_time = tapeDelay->delay_time;
   tapeDelay->write_index = 0;
   tapeDelay->on = false;
 
@@ -72,18 +74,15 @@ static inline int32_t linear_interpolation(int32_t y1, int32_t y2, float frac) {
 }
 
 // Soft clip function for int32_t range
+const int64_t range = (int64_t)INT32_MAX * 7 / 8;
 static inline int32_t softclip(int64_t x) {
-  int64_t range = (int64_t)INT32_MAX;
-
-  // Clamp values out of bounds directly to INT32_MAX or INT32_MIN
   if (x > range) {
     return (int32_t)range;
   } else if (x < -range) {
     return (int32_t)(-range);
   } else {
-    // More aggressive soft clipping: f(x) = x / (1 + |x| / range)
-    int64_t abs_x = (x < 0) ? -x : x;           // Absolute value of x
-    return (int32_t)(x / (1 + abs_x / range));  // Apply aggressive compression
+    return x;
+    // return (int32_t)(x / (1 + abs(x) / range));  // Smoother compression
   }
 }
 
@@ -94,17 +93,17 @@ static inline int32_t add_and_softclip(int64_t a, int64_t b) {
 
 void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
                    uint8_t channel) {
-  if (tapeDelay == NULL) {
-    return;
-  }
-  if (tapeDelay->on == false) {
+  if (tapeDelay == NULL || !tapeDelay->on) {
     return;
   }
 
   for (unsigned int i = 0; i < nr_samples; i++) {
-    // If delay time changes, introduce abrupt changes to fractional index
+    // Smooth the delay time for gradual transitions
+    tapeDelay->smoothed_delay_time +=
+        0.01f * (tapeDelay->delay_time - tapeDelay->smoothed_delay_time);
+
     float fractional_read_index =
-        (float)tapeDelay->write_index - tapeDelay->delay_time;
+        (float)tapeDelay->write_index - tapeDelay->smoothed_delay_time;
     if (fractional_read_index < 0) {
       fractional_read_index += tapeDelay->buffer_size;
     }
