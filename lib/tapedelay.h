@@ -51,7 +51,11 @@ void Delay_setWet(Delay *self, uint8_t wet) {
 
 void Delay_setFeedback(Delay *self, uint8_t feedback) {
   self->feedback = (float)feedback / 240.0f;
-  Slew_set_target(&self->feedback_slew, self->feedback, 94230);
+  if (self->feedback > 0.99f) {
+    self->feedback = 0.99f;
+  }
+  Slew_set_target(&self->feedback_slew, self->feedback,
+                  random_integer_in_range(1, 4) * 100);
 }
 
 void Delay_setLength(Delay *self, uint8_t length) {
@@ -60,7 +64,8 @@ void Delay_setLength(Delay *self, uint8_t length) {
 
 void Delay_setDuration(Delay *tapeDelay, float delay_time) {
   tapeDelay->delay_time = delay_time;
-  Slew_set_target(&tapeDelay->delay_slew, delay_time, 94230);
+  Slew_set_target(&tapeDelay->delay_slew, delay_time,
+                  random_integer_in_range(1, 4) * 100);
 }
 
 // Linear interpolation helper
@@ -99,13 +104,12 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
   }
   float previous_delay_time =
       Slew_process(&tapeDelay->delay_slew);  // Get initial delay time
+  // Update feedback and delay time dynamically
+  int32_t feedback =
+      q16_16_float_to_fp(Slew_process(&tapeDelay->feedback_slew));
+  float delay_time = Slew_process(&tapeDelay->delay_slew);
 
   for (unsigned int i = 0; i < nr_samples; i++) {
-    // Update feedback and delay time dynamically
-    int32_t feedback =
-        q16_16_float_to_fp(Slew_process(&tapeDelay->feedback_slew));
-    float delay_time = Slew_process(&tapeDelay->delay_slew);
-
     // If delay time changes, introduce abrupt changes to fractional index
     float fractional_read_index = (float)tapeDelay->write_index - delay_time;
     if (fractional_read_index < 0) {
