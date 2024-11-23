@@ -348,6 +348,30 @@ void update_fx(uint8_t fx_num) {
       }
       break;
     case FX_DELAY:
+#ifdef INCLUDE_ZEPTOCORE
+      if (sf->fx_active[fx_num]) {
+        uint32_t duration = 1000;
+        uint8_t faster = 1;
+        if (random_integer_in_range(0, 100) < 25) {
+          faster = 2;
+        } else if (random_integer_in_range(0, 100) < 25) {
+          faster = 4;
+        }
+        if (sf->bpm_tempo > 140) {
+          duration = 30 * 44100 / sf->bpm_tempo / faster;
+        }
+        for (uint8_t i = 0; i < 4; i++) {
+          if (duration > 10000) {
+            duration = duration / 2;
+          } else {
+            break;
+          }
+        }
+        Delay_setDuration(delay, duration);
+        Delay_setFeedbackf(delay,
+                           (float)random_integer_in_range(500, 900) / 1000.0f);
+      }
+#endif
       Delay_setActive(delay, sf->fx_active[fx_num]);
       break;
     case FX_EXPAND:
