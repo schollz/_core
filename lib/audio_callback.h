@@ -171,10 +171,10 @@ void i2s_callback_func() {
       if (freeverb != NULL) {
         FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
       }
+    } else {
+      // apply delay
+      Delay_process(delay, samples, buffer->max_sample_count, 0);
     }
-
-    // apply delay
-    Delay_process(delay, samples, buffer->max_sample_count, 0);
 
     give_audio_buffer(ap, buffer);
 
@@ -797,18 +797,12 @@ BREAKOUT_OF_MUTE:
         first_loop_ever = false;
       }
     }
+  } else {
+    Delay_process(delay, samples, buffer->max_sample_count, 0);
   }
 
   // apply comb
   Comb_process(combfilter, samples, buffer->max_sample_count);
-
-// apply delay
-#ifdef INCLUDE_ECTOCORE
-#else
-  // Delay_setFeedback(delay, 8 - linlin(sf->fx_param[FX_DELAY][0], 0, 240, 2,
-  // 8)); Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
-#endif
-  Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
   // apply bass
