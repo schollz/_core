@@ -1,5 +1,5 @@
-#ifndef TapeDelay_LIB
-#define TapeDelay_LIB 1
+#ifndef Delay_LIB
+#define Delay_LIB 1
 
 #include <math.h>
 #include <stdint.h>
@@ -8,26 +8,29 @@
 #include "fixedpoint.h"
 #include "slew.h"
 
-typedef struct TapeDelay {
+typedef struct Delay {
   int32_t buffer[22000];  // Fixed circular buffer of 22000 samples
   size_t buffer_size;     // Size of the circular buffer
   size_t write_index;     // Current write index
   float delay_time;       // Delay time in samples (can be fractional)
   float feedback;
+  uint8_t wet;
   Slew feedback_slew;
   Slew delay_slew;
-} TapeDelay;
+  bool on;
+} Delay;
 
-TapeDelay *TapeDelay_malloc(float feedback, float delay_time) {
-  TapeDelay *tapeDelay = (TapeDelay *)malloc(sizeof(TapeDelay));
+Delay *Delay_malloc() {
+  Delay *tapeDelay = (Delay *)malloc(sizeof(Delay));
   if (tapeDelay == NULL) {
     return NULL;
   }
 
-  tapeDelay->delay_time = delay_time;
   tapeDelay->buffer_size = 22000;  // Fixed buffer size
+  tapeDelay->delay_time = tapeDelay->buffer_size;
   tapeDelay->write_index = 0;
-  tapeDelay->feedback = feedback;
+  tapeDelay->feedback = 0;
+  tapeDelay->on = false;
 
   // Initialize the buffer to zero
   for (size_t i = 0; i < tapeDelay->buffer_size; i++) {
@@ -35,19 +38,27 @@ TapeDelay *TapeDelay_malloc(float feedback, float delay_time) {
   }
 
   Slew_init(&tapeDelay->feedback_slew, 94230, 0);
-  Slew_set_target(&tapeDelay->feedback_slew, feedback, 94230);
+  Slew_set_target(&tapeDelay->feedback_slew, tapeDelay->feedback, 94230);
   Slew_init(&tapeDelay->delay_slew, 94230, 0);
-  Slew_set_target(&tapeDelay->delay_slew, delay_time, 94230);
+  Slew_set_target(&tapeDelay->delay_slew, tapeDelay->delay_time, 94230);
 
   return tapeDelay;
 }
 
-void TapeDelay_set_feedback(TapeDelay *tapeDelay, float feedback) {
-  tapeDelay->feedback = feedback;
-  Slew_set_target(&tapeDelay->feedback_slew, feedback, 94230);
+void Delay_setWet(Delay *self, uint8_t wet) {
+  // do nothing
 }
 
-void TapeDelay_set_delay_time(TapeDelay *tapeDelay, float delay_time) {
+void Delay_setFeedback(Delay *self, uint8_t feedback) {
+  self->feedback = (float)feedback / 240.0f;
+  Slew_set_target(&self->feedback_slew, self->feedback, 94230);
+}
+
+void Delay_setLength(Delay *self, uint8_t length) {
+  // do nothing
+}
+
+void Delay_setDuration(Delay *tapeDelay, float delay_time) {
   tapeDelay->delay_time = delay_time;
   Slew_set_target(&tapeDelay->delay_slew, delay_time, 94230);
 }
@@ -57,37 +68,35 @@ static inline int32_t linear_interpolation(int32_t y1, int32_t y2, float frac) {
   return y1 + (int32_t)((y2 - y1) * frac);
 }
 
-// Soft clipping function
-static inline int32_t soft_clip(int32_t x, int32_t threshold) {
-  if (x > threshold) {
-    return threshold +
-           ((x - threshold) >> 3);  // Gradual saturation above threshold
-  } else if (x < -threshold) {
-    return -threshold +
-           ((x + threshold) >> 3);  // Gradual saturation below threshold
+// Soft clip function for int32_t range
+static inline int32_t softclip(int64_t x) {
+  int64_t range = (int64_t)INT32_MAX;
+
+  // Clamp values out of bounds directly to INT32_MAX or INT32_MIN
+  if (x > range) {
+    return (int32_t)range;
+  } else if (x < -range) {
+    return (int32_t)(-range);
   } else {
-    return x;  // No saturation within the threshold
+    // More aggressive soft clipping: f(x) = x / (1 + |x| / range)
+    int64_t abs_x = (x < 0) ? -x : x;           // Absolute value of x
+    return (int32_t)(x / (1 + abs_x / range));  // Apply aggressive compression
   }
 }
 
-// Tanh-like saturation function
-static inline int32_t tanh_saturation(int32_t x) {
-  float normalized = x / (float)INT32_MAX;  // Normalize to range -1 to 1
-  float saturated = tanh(normalized);       // Apply tanh for smooth compression
-  return (int32_t)(saturated * INT32_MAX);  // Scale back to int32 range
+// Function to add two int64_t values with soft clipping
+static inline int32_t add_and_softclip(int64_t a, int64_t b) {
+  return softclip(a + b);
 }
 
-// Fast tanh-like approximation
-static inline int32_t tanh_approx(int32_t x) {
-  float normalized = x / (float)INT32_MAX;  // Normalize to range -1 to 1
-  float saturated =
-      normalized * (27.0f + normalized * normalized) /
-      (27.0f + 9.0f * normalized * normalized);  // Polynomial approximation
-  return (int32_t)(saturated * INT32_MAX);       // Scale back to int32 range
-}
-
-void TapeDelay_process(TapeDelay *tapeDelay, int32_t *buf,
-                       unsigned int nr_samples) {
+void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
+                   uint8_t channel) {
+  if (tapeDelay == NULL) {
+    return;
+  }
+  if (tapeDelay->on == false) {
+    return;
+  }
   float previous_delay_time =
       Slew_process(&tapeDelay->delay_slew);  // Get initial delay time
 
@@ -122,12 +131,9 @@ void TapeDelay_process(TapeDelay *tapeDelay, int32_t *buf,
                              tapeDelay->buffer[next_read_index], frac);
 
     // Add feedback to the current sample and write it to the buffer
-    int32_t input_sample = buf[i];
-    int32_t processed_sample =
-        input_sample + q16_16_multiply(feedback, delayed_sample);
-
-    // Apply tanh-like saturation to prevent harsh distortion
-    processed_sample = tanh_approx(processed_sample);
+    int32_t input_sample = samples[i * 2 + channel];
+    int32_t feedback_sample = q16_16_multiply(feedback, delayed_sample);
+    int32_t processed_sample = add_and_softclip(input_sample, feedback_sample);
 
     tapeDelay->buffer[tapeDelay->write_index] = processed_sample;
 
@@ -136,11 +142,22 @@ void TapeDelay_process(TapeDelay *tapeDelay, int32_t *buf,
         (tapeDelay->write_index + 1) % tapeDelay->buffer_size;
 
     // Store the processed sample back in the buffer
-    buf[i] = processed_sample;
+    samples[i * 2 + channel] = processed_sample;
+    samples[i * 2 + 1] = add_and_softclip(samples[i * 2 + 1], feedback_sample);
   }
 }
 
-void TapeDelay_free(TapeDelay *tapeDelay) {
+void Delay_setActive(Delay *self, bool on) {
+  if (on) {
+    // reset the delay buffer
+    for (size_t i = 0; i < self->buffer_size; i++) {
+      self->buffer[i] = 0;
+    }
+  }
+  self->on = on;
+}
+
+void Delay_free(Delay *tapeDelay) {
   if (tapeDelay != NULL) {
     free(tapeDelay);
   }
