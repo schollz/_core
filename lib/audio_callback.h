@@ -166,15 +166,15 @@ void i2s_callback_func() {
     }
 #endif
 
-    // apply delay
-    Delay_process(delay, samples, buffer->max_sample_count, 0);
-
     // apply reverb
     if (sf->fx_active[FX_EXPAND]) {
       if (freeverb != NULL) {
         FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
       }
     }
+
+    // apply delay
+    Delay_process(delay, samples, buffer->max_sample_count, 0);
 
     give_audio_buffer(ap, buffer);
 
@@ -755,14 +755,6 @@ BREAKOUT_OF_MUTE:
     }
   }
 
-// apply delay
-#ifdef INCLUDE_ECTOCORE
-#else
-  Delay_setFeedback(delay, 8 - linlin(sf->fx_param[FX_DELAY][0], 0, 240, 2, 8));
-  Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
-#endif
-  Delay_process(delay, samples, buffer->max_sample_count, 0);
-
   // apply reverb
   if (sf->fx_active[FX_EXPAND] || reverb_fade > 0 || reverb_activated) {
     if (freeverb != NULL) {
@@ -809,6 +801,14 @@ BREAKOUT_OF_MUTE:
 
   // apply comb
   Comb_process(combfilter, samples, buffer->max_sample_count);
+
+// apply delay
+#ifdef INCLUDE_ECTOCORE
+#else
+  // Delay_setFeedback(delay, 8 - linlin(sf->fx_param[FX_DELAY][0], 0, 240, 2,
+  // 8)); Delay_setLength(delay, sf->fx_param[FX_DELAY][1]);
+#endif
+  Delay_process(delay, samples, buffer->max_sample_count, 0);
 
 #ifdef INCLUDE_SINEBASS
   // apply bass

@@ -82,7 +82,6 @@ bool is_arcade_box = false;
 #include "fuzz.h"
 #include "saturation.h"
 #include "shaper.h"
-#include "tapedelay.h"
 //
 #include "random.h"
 //
@@ -117,7 +116,7 @@ bool usb_midi_present = false;
 #endif
 #endif
 #include "debounce.h"
-#include "delay.h"
+// #include "delay.h"
 #include "dust.h"
 #include "envelope2_fp.h"
 #include "envelope_linear_integer.h"
@@ -129,6 +128,7 @@ bool usb_midi_present = false;
 #include "knob_change.h"
 #include "messagesync.h"
 #include "sequencehandler.h"
+#include "tapedelay.h"
 #include "taptempo.h"
 #ifdef INCLUDE_ECTOCORE
 #include "dazzle.h"

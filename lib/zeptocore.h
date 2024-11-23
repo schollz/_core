@@ -408,6 +408,7 @@ void input_handling() {
     // knob X
     uint16_t adc_raw = adc_read();
     adc = FilterExp_update(adcs[0], adc_raw);
+    Delay_setWet(delay, adc * 255 / 4096);
     if (abs(adc_last[0] - adc) > adc_threshold) {
       adc_debounce[0] = adc_debounce_max;
     }
@@ -549,6 +550,7 @@ void input_handling() {
     // knob Y
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
+    Delay_setDuration(delay, adc * 10000 / 4096);
     if (abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
     }
@@ -696,6 +698,7 @@ void input_handling() {
     // knob Z
     adc_select_input(0);
     adc = FilterExp_update(adcs[2], adc_read());
+    Delay_setFeedback(delay, adc * 255 / 4096);
     if (abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
     }
