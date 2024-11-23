@@ -141,6 +141,24 @@ float LFNoise2(Noise *noise, int32_t freq) {
   return noise->level;
 }
 
+float LFNoise2_period(Noise *noise, int32_t freqmult) {
+  if (noise->counter <= 0) {
+    float value = noise->m_nextvalue;
+    noise->m_nextvalue = frand2(noise);
+    noise->level = noise->m_nextmidpt;
+    noise->m_nextmidpt = (noise->m_nextvalue + value) * 0.5;
+    noise->counter = (int32_t)(noise->mSampleRate * freqmult);
+    float fseglen = (float)noise->counter;
+    noise->curve =
+        2.0 * (noise->m_nextmidpt - noise->level - fseglen * noise->slope) /
+        (fseglen * fseglen + fseglen);
+  }
+  noise->counter -= 1;
+  noise->slope += noise->curve;
+  noise->level += noise->slope;
+  return noise->level;
+}
+
 void Noise_destroy(Noise *noise) { free(noise); }
 
 #endif /* NOISE_LIB */

@@ -90,6 +90,8 @@ Envelope2 *envelope_volume;
 Envelope2 *envelope_pitch;
 EnvelopeLinearInteger *envelope_filter;
 Noise *noise_wobble;
+Noise *noise_feedback;
+Noise *noise_duration;
 BeatRepeat *beatrepeat;
 Delay *delay;
 Comb *combfilter;

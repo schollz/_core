@@ -564,6 +564,8 @@ void sdcard_startup() {
   envelope_filter = EnvelopeLinearInteger_create(BLOCKS_PER_SECOND, 1,
                                                  resonantfilter_fc_max, 0.3);
   noise_wobble = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
+  noise_feedback = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
+  noise_duration = Noise_create(time_us_64(), BLOCKS_PER_SECOND);
   audio_gate = Gate_create(BLOCKS_PER_SECOND, 165);
 #ifdef INCLUDE_BASS
   bass = Bass_create();
