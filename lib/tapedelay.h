@@ -112,29 +112,13 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
   if (tapeDelay->on == false) {
     return;
   }
-  int32_t feedback = tapeDelay->feedback_fp;
-  float delay_time = tapeDelay->delay_time;
-  float previous_delay_time = delay_time;
-  //  float previous_delay_time =
-  //     Slew_process(&tapeDelay->delay_slew);  // Get initial delay time
-  // // Update feedback and delay time dynamically
-  // int32_t feedback =
-  //     q16_16_float_to_fp(Slew_process(&tapeDelay->feedback_slew));
-  // float delay_time = Slew_process(&tapeDelay->delay_slew);
 
   for (unsigned int i = 0; i < nr_samples; i++) {
     // If delay time changes, introduce abrupt changes to fractional index
-    float fractional_read_index = (float)tapeDelay->write_index - delay_time;
+    float fractional_read_index =
+        (float)tapeDelay->write_index - tapeDelay->delay_time;
     if (fractional_read_index < 0) {
       fractional_read_index += tapeDelay->buffer_size;
-    }
-
-    // Adjust fractional read index aggressively for pitchy artifacts
-    if (fabs(delay_time - previous_delay_time) >
-        0.01f) {  // Threshold to detect significant change
-      fractional_read_index +=
-          (delay_time - previous_delay_time) * 0.5f;  // Emphasize pitch change
-      previous_delay_time = delay_time;
     }
 
     size_t base_read_index =
@@ -149,7 +133,8 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
 
     // Add feedback to the current sample and write it to the buffer
     int32_t input_sample = samples[i * 2 + channel];
-    int32_t feedback_sample = q16_16_multiply(feedback, delayed_sample);
+    int32_t feedback_sample =
+        q16_16_multiply(tapeDelay->feedback_fp, delayed_sample);
     int32_t processed_sample = add_and_softclip(input_sample, feedback_sample);
 
     tapeDelay->buffer[tapeDelay->write_index] = processed_sample;

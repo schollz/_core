@@ -422,6 +422,8 @@ void input_handling() {
         printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_BEATREPEAT + 4] && do_update_beat_repeat == 0) {
           debounce_beat_repeat = 30;
+        } else if (key_on_buttons[FX_DELAY + 4]) {
+          Delay_setFeedbackf(delay, (float)adc / 8192.0f + 0.49f);
         } else if (key_on_buttons[FX_TIGHTEN + 4]) {
           printf("updating gate\n");
           Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
@@ -560,6 +562,9 @@ void input_handling() {
         printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_EXPAND + 4]) {
           update_reverb();
+        } else if (key_on_buttons[FX_DELAY + 4]) {
+          Delay_setDuration(
+              delay, powf(2, linlin((float)adc, 0.0f, 4095.0f, 6.64f, 13.28f)));
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
