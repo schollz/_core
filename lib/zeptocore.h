@@ -553,7 +553,6 @@ void input_handling() {
       adc_debounce[1] = adc_debounce_max;
     }
     if (adc_debounce[1] > 0) {
-      Delay_setDuration(delay, 100 + adc * 9900 / 4096);
       adc_last[1] = adc;
       adc_debounce[1]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
@@ -701,7 +700,6 @@ void input_handling() {
       adc_debounce[2] = adc_debounce_max;
     }
     if (adc_debounce[2] > 0) {
-      Delay_setFeedback(delay, adc * 250 / 4096);
       adc_last[2] = adc;
       adc_debounce[2]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {

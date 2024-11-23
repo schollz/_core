@@ -798,6 +798,12 @@ BREAKOUT_OF_MUTE:
       }
     }
   } else {
+    if (sf->fx_active[FX_DELAY]) {
+      Delay_setFeedbackf(delay,
+                         Range(LFNoise2_period(noise_feedback, 3), 0.4, 1.09));
+      Delay_setDuration(delay,
+                        Range(LFNoise2_period(noise_duration, 3), 100, 10000));
+    }
     Delay_process(delay, samples, buffer->max_sample_count, 0);
   }
 

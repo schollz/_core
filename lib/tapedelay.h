@@ -14,6 +14,7 @@ typedef struct Delay {
   size_t write_index;     // Current write index
   float delay_time;       // Delay time in samples (can be fractional)
   float feedback;
+  int32_t feedback_fp;
   uint8_t wet;
   Slew feedback_slew;
   Slew delay_slew;
@@ -25,20 +26,23 @@ void Delay_setFeedback(Delay *self, uint8_t feedback) {
   if (self->feedback > 0.99f) {
     self->feedback = 0.99f;
   }
-  Slew_set_target(&self->feedback_slew, self->feedback,
-                  random_integer_in_range(10, 200));
+  self->feedback_fp = q16_16_float_to_fp(self->feedback);
+
+  // Slew_set_target(&self->feedback_slew, self->feedback,
+  //                 random_integer_in_range(10, 200));
 }
 
 void Delay_setFeedbackf(Delay *self, float feedback) {
   self->feedback = feedback;
-  Slew_set_target(&self->feedback_slew, self->feedback,
-                  random_integer_in_range(10, 200));
+  self->feedback_fp = q16_16_float_to_fp(self->feedback);
+  // Slew_set_target(&self->feedback_slew, self->feedback,
+  //                 random_integer_in_range(10, 200));
 }
 
 void Delay_setDuration(Delay *tapeDelay, float delay_time) {
   tapeDelay->delay_time = delay_time;
-  Slew_set_target(&tapeDelay->delay_slew, delay_time,
-                  random_integer_in_range(10, 300));
+  // Slew_set_target(&tapeDelay->delay_slew, delay_time,
+  //                 random_integer_in_range(10, 300));
 }
 
 Delay *Delay_malloc() {
@@ -108,12 +112,15 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
   if (tapeDelay->on == false) {
     return;
   }
-  float previous_delay_time =
-      Slew_process(&tapeDelay->delay_slew);  // Get initial delay time
-  // Update feedback and delay time dynamically
-  int32_t feedback =
-      q16_16_float_to_fp(Slew_process(&tapeDelay->feedback_slew));
-  float delay_time = Slew_process(&tapeDelay->delay_slew);
+  int32_t feedback = tapeDelay->feedback_fp;
+  float delay_time = tapeDelay->delay_time;
+  float previous_delay_time = delay_time;
+  //  float previous_delay_time =
+  //     Slew_process(&tapeDelay->delay_slew);  // Get initial delay time
+  // // Update feedback and delay time dynamically
+  // int32_t feedback =
+  //     q16_16_float_to_fp(Slew_process(&tapeDelay->feedback_slew));
+  // float delay_time = Slew_process(&tapeDelay->delay_slew);
 
   for (unsigned int i = 0; i < nr_samples; i++) {
     // If delay time changes, introduce abrupt changes to fractional index
