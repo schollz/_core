@@ -12,7 +12,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_DIN_GPIO=23
     INCLUDE_ECTOCORE=1
     INCLUDE_FILTER=1
-    INCLUDE_MIDI=1
+    # INCLUDE_MIDI=1
     INCLUDE_RGBLED=1
 
     # utilize core1 for audio to avoid dropouts
@@ -74,15 +74,15 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 
-# uncomment these lines to include midi
-target_link_libraries(${PROJECT_NAME} 
-    tinyusb_device
-    tinyusb_board
-)
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-
-
-# pico_enable_stdio_usb(${PROJECT_NAME} 1)
+# # uncomment these lines to include midi
+# target_link_libraries(${PROJECT_NAME} 
+#     tinyusb_device
+#     tinyusb_board
+# )
+# pico_enable_stdio_usb(${PROJECT_NAME} 0)
 # pico_enable_stdio_uart(${PROJECT_NAME} 1)
+# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+
+
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
