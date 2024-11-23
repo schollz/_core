@@ -29,6 +29,12 @@ void Delay_setFeedback(Delay *self, uint8_t feedback) {
                   random_integer_in_range(10, 200));
 }
 
+void Delay_setFeedbackf(Delay *self, float feedback) {
+  self->feedback = feedback;
+  Slew_set_target(&self->feedback_slew, self->feedback,
+                  random_integer_in_range(10, 200));
+}
+
 void Delay_setDuration(Delay *tapeDelay, float delay_time) {
   tapeDelay->delay_time = delay_time;
   Slew_set_target(&tapeDelay->delay_slew, delay_time,
