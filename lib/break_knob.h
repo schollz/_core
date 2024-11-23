@@ -69,7 +69,7 @@ uint8_t break_fx_beat_after_activated[16] = {
 //                     random_integer_in_range(0, 15));
 // }
 
-const uint8_t retrig_timer_dividers[15] = {8, 6, 4, 4, 4, 4, 3, 2,
+const uint8_t retrig_timer_dividers[15] = {8, 6, 4, 4, 4, 3, 2, 2,
                                            2, 2, 2, 2, 2, 1, 1};
 void do_do_retrigger(uint8_t effect, bool on, bool pitch_changes) {
   // retrigger no pitch
