@@ -74,10 +74,17 @@ void Delay_setLength(Delay *self, uint8_t length) {
 }
 
 void Delay_setFeedback(Delay *self, uint8_t feedback) {
+  if (feedback > 16) {
+    feedback = 16;
+  }
   if (feedback != self->feedback) {
     printf("[delay] feedback %d\n", feedback);
     self->feedback = feedback;
   }
+}
+
+void Delay_setFeedbackf(Delay *self, float feedback) {
+  Delay_setFeedback(self, (uint8_t)(feedback * 8.0f));
 }
 
 void Delay_process(Delay *self, int32_t *samples, uint16_t num_samples,
