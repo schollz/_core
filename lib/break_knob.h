@@ -24,7 +24,7 @@ uint8_t break_fx_beat_duration_min_max[32] = {
     2, 4,   // bitcrush
     4, 8,   // filter
     4, 32,  // time stretch
-    4, 16,  // delay
+    4, 96,  // delay
     2, 6,   // comb
     1, 4,   // beat repeat
     8, 36,  // reverb
@@ -49,7 +49,7 @@ uint8_t break_fx_probability_scaling[16] = {
     50,  // autopan
     40,  // pitch down
     30,  // pitch up
-    70,  // reverse
+    90,  // reverse
     50,  // retirgger no pitch
     30,  // retrigger with pitch,
     10,  // tape sotp
