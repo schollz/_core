@@ -69,26 +69,28 @@ uint8_t break_fx_beat_after_activated[16] = {
 //                     random_integer_in_range(0, 15));
 // }
 
-void do_do_retrigger(uint8_t effect, bool on, bool pitch_chanes) {
+const uint8_t retrig_timer_dividers[15] = {8, 6, 4, 4, 4, 4, 3, 2,
+                                           2, 2, 2, 2, 2, 1, 1};
+void do_do_retrigger(uint8_t effect, bool on, bool pitch_changes) {
   // retrigger no pitch
   if (on && retrig_beat_num == 0) {
-    sf->do_retrig_pitch_changes = pitch_chanes;
+    sf->do_retrig_pitch_changes = pitch_changes;
     debounce_quantize = 0;
     retrig_first = true;
     retrig_beat_num = break_fx_beat_activated[effect];
-    uint8_t retrig_timer_dividers[6] = {8, 6, 4, 3, 2, 1};
-    uint8_t divider = retrig_timer_dividers[random_integer_in_range(0, 5)];
+    uint8_t divider = retrig_timer_dividers[random_integer_in_range(0, 14)];
+    printf("retrig_beat_num=%d, divider=%d\n", retrig_beat_num, divider);
     retrig_timer_reset = 96 / divider;
     retrig_beat_num = retrig_beat_num * divider;
-    if (divider > 4) {
-      retrig_beat_num = retrig_beat_num / 2;
-    }
     if (retrig_beat_num == 0) {
       retrig_beat_num = 2;
     }
-    retrig_vol = 0.02;
-    retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
-                      ((float)retrig_beat_num);
+    retrig_vol = 1.0;
+    if (random_integer_in_range(0, 100) < 25) {
+      retrig_vol = 0.02;
+      retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
+                        ((float)retrig_beat_num);
+    }
     if (random_integer_in_range(0, 100) < 50) {
       beat_current = beat_current_last;
     }

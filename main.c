@@ -170,8 +170,8 @@ bool timer_step() {
             beat_total % 32 == (32 - beat_start_retrig))) &&
           !retrig_ready && !retrig_first) {
         // do retriggering if beat_current is at the end of 32 beats
-        uint8_t time_multiplier[3] = {1, 2, 4};
-        uint8_t time_multiplier_index = random_integer_in_range(0, 2);
+        uint8_t time_multiplier[6] = {1, 2, 2, 2, 4, 4};
+        uint8_t time_multiplier_index = random_integer_in_range(0, 5);
         debounce_quantize = 0;
         retrig_first = true;
         retrig_beat_num =
