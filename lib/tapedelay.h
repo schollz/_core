@@ -16,8 +16,6 @@ typedef struct Delay {
   float feedback;
   int32_t feedback_fp;
   uint8_t wet;
-  Slew feedback_slew;
-  Slew delay_slew;
   bool on;
 } Delay;
 
@@ -27,22 +25,15 @@ void Delay_setFeedback(Delay *self, uint8_t feedback) {
     self->feedback = 0.99f;
   }
   self->feedback_fp = q16_16_float_to_fp(self->feedback);
-
-  // Slew_set_target(&self->feedback_slew, self->feedback,
-  //                 random_integer_in_range(10, 200));
 }
 
 void Delay_setFeedbackf(Delay *self, float feedback) {
   self->feedback = feedback;
   self->feedback_fp = q16_16_float_to_fp(self->feedback);
-  // Slew_set_target(&self->feedback_slew, self->feedback,
-  //                 random_integer_in_range(10, 200));
 }
 
 void Delay_setDuration(Delay *tapeDelay, float delay_time) {
   tapeDelay->delay_time = delay_time;
-  // Slew_set_target(&tapeDelay->delay_slew, delay_time,
-  //                 random_integer_in_range(10, 300));
 }
 
 Delay *Delay_malloc() {
@@ -60,9 +51,6 @@ Delay *Delay_malloc() {
   for (size_t i = 0; i < tapeDelay->buffer_size; i++) {
     tapeDelay->buffer[i] = 0;
   }
-
-  Slew_init(&tapeDelay->feedback_slew, 94230, 0);
-  Slew_init(&tapeDelay->delay_slew, 94230, 0);
 
   Delay_setDuration(tapeDelay, tapeDelay->buffer_size / 2);
   Delay_setFeedback(tapeDelay, 200);
