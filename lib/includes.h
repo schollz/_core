@@ -72,6 +72,7 @@ bool is_arcade_box = false;
 #include "memusage.h"
 //
 #include "fixedpoint.h"
+#include "slew.h"
 #include "utils.h"
 #include "volume.h"
 //
@@ -81,6 +82,7 @@ bool is_arcade_box = false;
 #include "fuzz.h"
 #include "saturation.h"
 #include "shaper.h"
+#include "tapedelay.h"
 //
 #include "random.h"
 //
