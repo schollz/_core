@@ -150,7 +150,7 @@ void input_handling() {
   int adc_last[3] = {0, 0, 0};
   int adc_debounce[3] = {0, 0, 0};
   const int adc_threshold = 200;
-  const int adc_debounce_max = 250;
+  const int adc_debounce_max = 25;
   uint16_t adc_startup = 300;
   // TODO add debounce for the adc detection
   for (uint8_t i = 0; i < 3; i++) {
@@ -553,7 +553,7 @@ void input_handling() {
       adc_debounce[1] = adc_debounce_max;
     }
     if (adc_debounce[1] > 0) {
-      Delay_setDuration(delay, adc * 10000 / 4096);
+      Delay_setDuration(delay, 100 + adc * 9900 / 4096);
       adc_last[1] = adc;
       adc_debounce[1]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
@@ -701,7 +701,7 @@ void input_handling() {
       adc_debounce[2] = adc_debounce_max;
     }
     if (adc_debounce[2] > 0) {
-      Delay_setFeedback(delay, adc * 255 / 4096);
+      Delay_setFeedback(delay, 110 + adc * 145 / 4096);
       adc_last[2] = adc;
       adc_debounce[2]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {

@@ -9,7 +9,7 @@
 #include "slew.h"
 
 typedef struct Delay {
-  int32_t buffer[22000];  // Fixed circular buffer of 22000 samples
+  int32_t buffer[10000];  // Fixed circular buffer of 22000 samples
   size_t buffer_size;     // Size of the circular buffer
   size_t write_index;     // Current write index
   float delay_time;       // Delay time in samples (can be fractional)
@@ -26,7 +26,7 @@ Delay *Delay_malloc() {
     return NULL;
   }
 
-  tapeDelay->buffer_size = 22000;  // Fixed buffer size
+  tapeDelay->buffer_size = 10000;  // Fixed buffer size
   tapeDelay->delay_time = tapeDelay->buffer_size;
   tapeDelay->write_index = 0;
   tapeDelay->feedback = 0;
