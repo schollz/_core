@@ -809,7 +809,7 @@ BREAKOUT_OF_MUTE:
     }
     Delay_process(delay, samples, buffer->max_sample_count, 0);
 #else
-    if (sf->fx_active[FX_DELAY] && sf->fx_param[FX_DELAY][2] > 0) {
+    if (sf->fx_active[FX_DELAY] && sf->fx_param[FX_DELAY][2] > 30) {
       Delay_setFeedbackf(delay,
                          Range(LFNoise2_period(noise_feedback, 2), 0.49, 0.99));
       float v = Range(LFNoise2_period(noise_duration, 2), 100, 10000);
