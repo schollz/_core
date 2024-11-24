@@ -65,4 +65,7 @@ int16_t KnobChange_update(KnobChange *self, int16_t val) {
   return -1;
 }
 
+// reset debounce
+void KnobChange_reset(KnobChange *self) { self->debounce = 0; }
+
 #endif
