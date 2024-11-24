@@ -149,7 +149,8 @@ void input_handling() {
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
   int adc_debounce[3] = {0, 0, 0};
-  const int adc_threshold = 200;
+  const int adc_threshold_const = 200;
+  int adc_threshold = adc_threshold_const;
   const int adc_debounce_max = 25;
   uint16_t adc_startup = 300;
   // TODO add debounce for the adc detection
@@ -271,7 +272,15 @@ void input_handling() {
 
 #ifdef BTN_COL_START
     // button handler
-    button_handler(bm);
+    if (button_handler(bm)) {
+      // reset knob debouncers
+      adc_threshold = 10000;
+      for (uint8_t i = 0; i < 3; i++) {
+        adc_debounce[i] = 0;
+      }
+    } else {
+      adc_threshold = adc_threshold_const;
+    }
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT

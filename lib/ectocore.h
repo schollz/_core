@@ -1216,6 +1216,10 @@ void input_handling() {
       } else {
         gpio_btn_held_time[i] = current_time - gpio_btn_last_pressed[i];
       }
+      // reset all knobchange debouncers
+      for (uint8_t j = 0; j < KNOB_NUM; j++) {
+        KnobChange_reset(knob_change[j]);
+      }
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed

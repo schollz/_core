@@ -37,6 +37,7 @@ int32_t key_timer_on = 0;
 uint8_t key_pressed[100];
 uint8_t key_pressed_num = 0;
 uint8_t key_total_pressed = 0;
+uint8_t key_total_pressed_last = 0;
 int16_t key_on_buttons[BUTTONMATRIX_BUTTONS_MAX];
 int16_t key_on_buttons_last[BUTTONMATRIX_BUTTONS_MAX];
 bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
@@ -543,7 +544,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
   }
 }
 
-void button_handler(ButtonMatrix *bm) {
+bool button_handler(ButtonMatrix *bm) {
+  bool buttons_changed = false;
   if (key_total_pressed == 0) {
     key_timer++;
   }
@@ -1001,6 +1003,11 @@ void button_handler(ButtonMatrix *bm) {
     single_key_on = -1;
   }
 
+  if (key_total_pressed != key_total_pressed_last) {
+    buttons_changed = true;
+  }
+  key_total_pressed_last = key_total_pressed;
+
   // rendering!
 
   // leds
@@ -1039,7 +1046,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   }
 
   // check debouncers
@@ -1065,7 +1072,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_GRIMOIRE])) {
     for (uint8_t j = 0; j < 16; j++) {
@@ -1077,7 +1084,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1])) {
     // show an LED bar
@@ -1101,7 +1108,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM1])) {
     // show an LED bar
@@ -1126,7 +1133,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2])) {
     // show an LED bar
@@ -1150,7 +1157,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE])) {
     uint8_t val =
@@ -1200,7 +1207,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(
                  debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL])) {
     // show an LED bar
@@ -1225,7 +1232,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceDigits_active(debouncer_digits)) {
     char digit = DebounceDigits_get(debouncer_digits);
 
@@ -1249,7 +1256,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (DebounceUint8_active(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL])) {
     // show an LED bar
     const uint8_t led_bar_ordering[32] = {
@@ -1272,7 +1279,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else if (key_pressed_num > 0 && key_on_buttons[KEY_D]) {
     // show the current save file is pressed
     LEDS_set(leds, KEY_D, LED_BRIGHT);
@@ -1293,7 +1300,7 @@ void button_handler(ButtonMatrix *bm) {
     }
     do_button_lights(bm);
     LEDS_render(leds);
-    return;
+    return buttons_changed;
   } else {
     if ((key_on_buttons[KEY_B] || key_did_go_off[KEY_B]) &&
         !(key_on_buttons[KEY_A] || key_did_go_off[KEY_A])) {
@@ -1326,7 +1333,7 @@ void button_handler(ButtonMatrix *bm) {
         }
         do_button_lights(bm);
         LEDS_render(leds);
-        return;
+        return buttons_changed;
       } else {
         KEY_C_sample_select = false;
       }
@@ -1406,4 +1413,5 @@ void button_handler(ButtonMatrix *bm) {
   }
 
   LEDS_render(leds);
+  return buttons_changed;
 }
