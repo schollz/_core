@@ -1115,7 +1115,7 @@ void input_handling() {
           if (!cv_plugged[CV_AMEN]) {
             if (val < 57) {
               for (uint8_t i = 0; i < 16; i++) {
-                WS2812_fill(ws2812, i, 123, 32, 12);
+                WS2812_fill(ws2812, i, 30, 250, 12);
               }
               WS2812_show(ws2812);
               // disable random sequence mode
@@ -1130,8 +1130,13 @@ void input_handling() {
                                    12];
               if (new_random_sequence_length != random_sequence_length) {
                 random_sequence_length = new_random_sequence_length;
-                ws2812_set_wheel_euclidean(ws2812, random_sequence_length, 123,
-                                           32, 12);
+                if (random_sequence_length % 2 == 0) {
+                  ws2812_set_wheel_euclidean(ws2812, random_sequence_length, 30,
+                                             250, 00);
+                } else {
+                  ws2812_set_wheel_euclidean(ws2812, random_sequence_length,
+                                             123, 32, 12);
+                }
                 printf("[ectocore] random_sequence_length %d\n",
                        random_sequence_length);
                 do_retrig_at_end_of_phrase = false;
