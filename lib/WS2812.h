@@ -41,7 +41,7 @@ RGBColor colors_defs[] = {
     {0, 0, 255},    // blue
     {41, 0, 255},   // magenta
     {0, 0, 0},      // blank
-
+    {255, 74, 0},   // yellow
 };
 
 // create enum for colors
@@ -53,6 +53,7 @@ typedef enum {
   BLUE = 4,
   MAGENTA = 5,
   BLANK = 6,
+  YELLOW = 7,
 } Color;
 
 #define NUM_LEDS 18

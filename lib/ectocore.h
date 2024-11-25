@@ -341,6 +341,16 @@ void ws2812_set_wheel_left_half(WS2812 *ws2812, uint16_t val, bool r, bool g,
   WS2812_show(ws2812);
 }
 
+void ws2812_mode_color() {
+  if (mode_amiga) {
+    WS2812_fill_color(ws2812, 16, YELLOW);
+    WS2812_fill_color(ws2812, 17, YELLOW);
+  } else {
+    WS2812_fill_color(ws2812, 16, CYAN);
+    WS2812_fill_color(ws2812, 17, CYAN);
+  }
+}
+
 void go_retrigger_2key(uint8_t key1, uint8_t key2) {
   if (retrig_vol != 1.0) {
     return;
@@ -1536,14 +1546,14 @@ void input_handling() {
                                   ->slice_current %
                               16,
                           CYAN);
+        ws2812_mode_color();
         WS2812_show(ws2812);
       } else {
         // highlight the current sample in the leds
         for (uint8_t i = 0; i < 17; i++) {
           WS2812_fill(ws2812, i, 0, 0, 0);
         }
-        WS2812_fill_color(ws2812, 16, CYAN);
-        WS2812_fill_color(ws2812, 17, CYAN);
+        ws2812_mode_color();
         if (retrig_beat_num > 0 && retrig_beat_num % 2 == 0) {
           for (uint8_t i = 0; i < 16; i++) {
             uint8_t r, g, b;
