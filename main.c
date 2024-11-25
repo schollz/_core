@@ -826,13 +826,6 @@ int main() {
 #ifdef INCLUDE_FILTER
   resFilter[0] = ResonantFilter_create(0);
   resFilter[1] = ResonantFilter_create(0);
-  amigaFilter[0] = ResonantFilter_create(0);
-  amigaFilter[1] = ResonantFilter_create(0);
-  // set amiga filter to 12khz
-  ResonantFilter_setFc(amigaFilter[0], 68);
-  ResonantFilter_setFc(amigaFilter[1], 68);
-  ResonantFilter_setFilterType(amigaFilter[0], 0);
-  ResonantFilter_setFilterType(amigaFilter[1], 0);
 #endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(23, pio0, 2);
