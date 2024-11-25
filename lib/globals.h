@@ -134,6 +134,18 @@ uint8_t tunneling_original_sample = 0;
 uint8_t tunneling_is_on = 0;
 uint8_t random_sequence_length = 0;
 uint8_t random_sequence_arr[64];
+void regenerate_random_sequence_arr() {
+  uint8_t sequence_probability = random_integer_in_range(1, 50);
+  for (uint8_t i = 0; i < 64; i++) {
+    random_sequence_arr[i] = random_integer_in_range(0, 64);
+    if (random_integer_in_range(1, 100) < sequence_probability && i < 60 &&
+        random_sequence_arr[i] < 60) {
+      random_sequence_arr[i + 1] = random_sequence_arr[i] + 1;
+      random_sequence_arr[i + 2] = random_sequence_arr[i] + 2;
+      i += 2;
+    }
+  }
+}
 
 // buttons
 // mode toggles
@@ -543,9 +555,7 @@ void step_sequencer_stop() { printf("stop\n"); }
 uint8_t do_random_sequence(bool on) {
   if (on) {
     uint8_t sequence_length = random_integer_in_range(1, 8) * 2;
-    for (uint8_t i = 0; i < sequence_length; i++) {
-      random_sequence_arr[i] = random_integer_in_range(0, 64);
-    }
+    regenerate_random_sequence_arr();
     random_sequence_length = sequence_length;
   } else {
     random_sequence_length = 0;
@@ -554,9 +564,7 @@ uint8_t do_random_sequence(bool on) {
 }
 
 void do_random_sequence_len(uint8_t len) {
-  for (uint8_t i = 0; i < len; i++) {
-    random_sequence_arr[i] = random_integer_in_range(0, 64);
-  }
+  regenerate_random_sequence_arr();
   random_sequence_length = len;
 }
 

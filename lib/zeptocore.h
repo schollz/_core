@@ -88,9 +88,7 @@ void make_random_sequence(uint8_t adcValue) {
         sequence_lengths[((int16_t)(adcValue - 32) * 11 / (255 - 32)) % 11];
   } else {
     // new random sequence
-    for (uint8_t i = 0; i < 64; i++) {
-      random_sequence_arr[i] = random_integer_in_range(0, 64);
-    }
+    regenerate_random_sequence_arr();
     random_sequence_length = 8;
     do_retrig_at_end_of_phrase = true;
   }
@@ -198,9 +196,7 @@ void input_handling() {
   probability_of_random_tunnel = 60;
 #endif
 
-  for (uint8_t i = 0; i < 64; i++) {
-    random_sequence_arr[i] = random_integer_in_range(0, 64);
-  }
+  regenerate_random_sequence_arr();
 
   KnobChange *knob_change_arcade[8];
   ADS7830 *arcade_ads7830 = NULL;

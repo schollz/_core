@@ -572,9 +572,7 @@ void input_handling() {
   uint8_t sel_bank_next_new = 0;
   uint8_t sel_sample_next_new = 0;
 
-  for (uint8_t i = 0; i < 64; i++) {
-    random_sequence_arr[i] = random_integer_in_range(0, 64);
-  }
+  regenerate_random_sequence_arr();
 
 #ifdef INCLUDE_CUEDSOUNDS
   mute_soft = true;
@@ -1067,10 +1065,10 @@ void input_handling() {
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
-        printf("[ectocore] knob_break %d\n", val);
+        // printf("[ectocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        printf("[ectocore] knob_amen %d\n", val);
+        // printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1144,9 +1142,7 @@ void input_handling() {
             } else {
               printf("[ectocore] regen sequence\n");
               // generative mode + generate new sequence
-              for (uint8_t i = 0; i < 64; i++) {
-                random_sequence_arr[i] = random_integer_in_range(0, 64);
-              }
+              regenerate_random_sequence_arr();
               debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
               for (uint8_t i = 0; i < 16; i++) {
                 uint8_t r, g, b;
@@ -1169,7 +1165,7 @@ void input_handling() {
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
-        printf("[ectocore] knob_break_atten %d\n", val);
+        // printf("[ectocore] knob_break_atten %d\n", val);
         // change the grimoire rune
         grimoire_rune = val * 7 / 1024;
         // show the current effects toggled for this rune
@@ -1182,7 +1178,7 @@ void input_handling() {
         WS2812_show(ws2812);
 
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
-        printf("[ectocore] knob_amen_atten %d\n", val);
+        // printf("[ectocore] knob_amen_atten %d\n", val);
         // check if CV is plugged in for AMEN
         if (!cv_plugged[CV_AMEN]) {
           if (val < 512 - 24) {
