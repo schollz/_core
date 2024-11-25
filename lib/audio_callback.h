@@ -857,19 +857,21 @@ BREAKOUT_OF_MUTE:
 #endif
 
   if (mode_amiga) {
-    // apply amiga
+    // apply amiga: 8-bit 22.05 kHz
     for (uint8_t channel = 0; channel < 2; channel++) {
       ResonantFilter_update(amigaFilter[channel], samples,
                             buffer->max_sample_count, channel);
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      if (i % 2 == 1) {
-        // copy last
+      if (i % 2 == 0) {
+        // convert 32-bit to 8-bit
+        samples[i * 2 + 0] = (int32_t)((int8_t)(samples[i * 2 + 0] >> 24))
+                             << 24;
+        samples[i * 2 + 1] = (int32_t)((int8_t)(samples[i * 2 + 1] >> 24))
+                             << 24;
+      } else {
         samples[i * 2 + 0] = samples[i * 2 - 2];
         samples[i * 2 + 1] = samples[i * 2 - 1];
-      } else {
-        samples[i * 2 + 0] = (samples[i * 2 + 0] >> 16) << 16;
-        samples[i * 2 + 1] = (samples[i * 2 + 1] >> 16) << 16;
       }
     }
   }
