@@ -417,7 +417,12 @@ bool timer_step() {
                                             ->sample[sel_sample_cur]
                                             .snd[FILEZERO]
                                             ->slice_num;
-        } else if (sf->stay_in_sync) {
+        } else if (sf->stay_in_sync &&
+                   // not variable mode
+                   !banks[sel_bank_cur]
+                           ->sample[sel_sample_cur]
+                           .snd[FILEZERO]
+                           ->splice_variable > 0) {
           beat_current = beat_total % banks[sel_bank_cur]
                                           ->sample[sel_sample_cur]
                                           .snd[FILEZERO]
