@@ -183,12 +183,8 @@ bool timer_step() {
         do_random_jump = true;
       }
       if (beat_total % 64 == 0 && random_sequence_length > 0) {
-        // regenerate the random sequence
-        uint8_t sequence_length = random_integer_in_range(1, 16) * 4;
-        for (uint8_t i = 0; i < sequence_length; i++) {
-          random_sequence_arr[i] = random_integer_in_range(0, 64);
-        }
-        random_sequence_length = sequence_length;
+        regenerate_random_sequence_arr();
+        random_sequence_length = random_integer_in_range(1, 16) * 4;
       }
     }
     Gate_reset(audio_gate);
