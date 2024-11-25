@@ -37,6 +37,7 @@ bool do_open_file_ready = false;
 bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 int32_t reverb_fade = 0;
+int32_t amiga_previous_value[2];
 bool reverb_activated = false;
 bool mute_soft_activated = false;
 
@@ -857,18 +858,28 @@ BREAKOUT_OF_MUTE:
 #endif
 
   if (mode_amiga) {
-    // apply amiga: 8-bit 22.05 kHz
-    for (uint8_t channel = 0; channel < 2; channel++) {
-      ResonantFilter_update(amigaFilter[channel], samples,
-                            buffer->max_sample_count, channel);
-    }
+    // simple filter
+    int32_t v[2];
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      for (uint8_t j = 0; j < 2; j++) {
+        // one-pole filter converted to fixed point
+        // static const float RC = 1.0 / (2.0 * 3.14159265359 * CUTOFF_FREQ);
+        // static const float alpha = RC / (RC + (1.0 / SAMPLE_RATE));
+        // float output = alpha * (*prev_output) + (1.0 - alpha) * input;
+        // 1 = 65536
+        // filtering at 10khz
+        v[j] = samples[i * 2 + j];
+        // add a random value (-1 to 1)
+        // v[j] += (rand() % 3) - 1;
+        v[j] = q16_16_multiply(27027, amiga_previous_value[j]) +
+               q16_16_multiply(39329, v[j]);
+        amiga_previous_value[j] = v[j];
+      }
+
       if (i % 2 == 0) {
         // convert 32-bit to 8-bit
-        samples[i * 2 + 0] = (int32_t)((int8_t)(samples[i * 2 + 0] >> 24))
-                             << 24;
-        samples[i * 2 + 1] = (int32_t)((int8_t)(samples[i * 2 + 1] >> 24))
-                             << 24;
+        samples[i * 2 + 0] = (int32_t)((int8_t)(v[0] >> 24)) << 24;
+        samples[i * 2 + 1] = (int32_t)((int8_t)(v[1] >> 24)) << 24;
       } else {
         samples[i * 2 + 0] = samples[i * 2 - 2];
         samples[i * 2 + 1] = samples[i * 2 - 1];

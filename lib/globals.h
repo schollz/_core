@@ -246,7 +246,6 @@ WaveBass *wavebass;
 #endif
 
 ResonantFilter *resFilter[2];
-ResonantFilter *amigaFilter[2];
 Gate *audio_gate;
 TapTempo *taptempo;
 Saturation *saturation;
