@@ -1120,12 +1120,12 @@ void input_handling() {
               random_sequence_length = 0;
               do_retrig_at_end_of_phrase = false;
             } else if (val < 966) {
-              uint8_t sequence_lengths[12] = {
-                  1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 32,
+              uint8_t sequence_lengths[15] = {
+                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 24, 32,
               };
               uint8_t new_random_sequence_length =
-                  sequence_lengths[((int16_t)(val - 57) * 12 / (966 - 57)) %
-                                   12];
+                  sequence_lengths[((int16_t)(val - 57) * 15 / (966 - 57)) %
+                                   15];
               if (new_random_sequence_length != random_sequence_length) {
                 random_sequence_length = new_random_sequence_length;
                 if (random_sequence_length % 2 == 0) {
