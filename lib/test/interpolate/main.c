@@ -112,13 +112,14 @@ void benchmark_function(void (*function)(), const char *function_name) {
 }
 
 int main() {
+  int iterations = 10;
   float freq = 100;
   int points_per_segment = 40;
-  float factor = 2.0f;
+  float factor = 2.8f;
   float t_inc = 2 * M_PI / points_per_segment * 1.3;
-  float t = -1 * t_inc;
   int x = -1;
-  for (uint8_t k = 0; k < 4; k++) {
+  float t = -1 * t_inc;
+  for (uint8_t k = 0; k < iterations; k++) {
     int16_t arr[points_per_segment];
     for (int i = 0; i < points_per_segment; i++) {
       x++;
@@ -127,9 +128,10 @@ int main() {
       printf("%d,%d\n", x, arr[i]);
     }
   }
+
   x = -1;
   t = -1 * t_inc;
-  for (uint8_t k = 0; k < 4; k++) {
+  for (uint8_t k = 0; k < iterations; k++) {
     int16_t arr[points_per_segment + 1];
     for (int i = 0; i < points_per_segment + 1; i++) {
       t += t_inc;
@@ -146,7 +148,7 @@ int main() {
   }
   x = -1;
   t = -1 * t_inc;
-  for (uint8_t k = 0; k < 4; k++) {
+  for (uint8_t k = 0; k < iterations; k++) {
     int16_t arr[points_per_segment + 1];
     for (int i = 0; i < points_per_segment + 1; i++) {
       t += t_inc;
