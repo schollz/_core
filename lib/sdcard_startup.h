@@ -116,7 +116,7 @@ void load_settings(const char *dir_name) {
       quadratic_resampling = true;
       printf("[sdcard_startup] quadratic resampling on\n");
     } else if (strcmp(fno.fname, "resampling_quadratic-off") == 0) {
-      quadratic_resampling = true;
+      quadratic_resampling = false;
       printf("[sdcard_startup] quadratic resampling off\n");
     }
 

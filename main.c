@@ -37,7 +37,8 @@ bool timer_step() {
     return true;
   }
   if (bpm_last != sf->bpm_tempo) {
-    printf("updating bpm timer: %d-> %d\n", bpm_last, sf->bpm_tempo);
+    printf("updating bpm timer: %d-> %d (%d)\n", bpm_last, sf->bpm_tempo,
+           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm);
     bpm_last = sf->bpm_tempo;
     cancel_repeating_timer(&timer);
     add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
