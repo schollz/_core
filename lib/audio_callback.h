@@ -57,7 +57,6 @@ uint32_t sine_wave_counter = 0;
 #endif
 
 void i2s_callback_func() {
-  uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
 #ifdef PRINT_SDCARD_TIMING
@@ -310,7 +309,12 @@ BREAKOUT_OF_MUTE:
       (samples_to_read + 1) *
       (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
        1);
-  values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
+  uint32_t values_len_minus_peek =
+      (samples_to_read) *
+      (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
+       1);
+  uint32_t values_to_read_minus_peek = values_len_minus_peek * 2;
+  uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
   int32_t vol_main =
       round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
@@ -671,7 +675,7 @@ BREAKOUT_OF_MUTE:
       }
       first_loop = false;
     }
-    phases[head] += (values_to_read * (phase_forward * 2 - 1));
+    phases[head] += (values_to_read_minus_peek * (phase_forward * 2 - 1));
   }
 
 #ifdef INCLUDE_ECTOCORE
