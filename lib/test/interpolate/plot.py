@@ -40,9 +40,25 @@ def plot_datas(datas):
         x = data[:, 0]
         y = data[:, 1]
         if i == 0:
-            plt.plot(x, y, marker=".", color=c[i], label=interp[i], linewidth=2)
+            plt.plot(
+                x,
+                y,
+                marker=".",
+                color=c[i],
+                label=interp[i],
+                linewidth=2,
+                markersize=20,
+            )
         else:
-            plt.plot(x, y, color=c[i], label=interp[i], linewidth=2)
+            plt.plot(
+                x,
+                y,
+                marker=".",
+                color=c[i],
+                label=interp[i],
+                linewidth=2,
+                markersize=10,
+            )
 
     plt.xlabel("x")
     plt.ylabel("y")
