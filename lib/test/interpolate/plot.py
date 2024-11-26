@@ -34,15 +34,15 @@ def plot_datas(datas):
       data: A numpy array containing the data, with the first column being the x-values and the second column being the y-values.
     """
 
-    c = ["gray", "red", "blue", "green","yellow"]
-    interp = ["original", "linear", "linear2", "quadratic","hermite"]
+    c = ["gray", "red", "blue", "green", "yellow"]
+    interp = ["original", "linear", "quadratic", "linear2", "hermite"]
     for i, data in enumerate(datas):
         x = data[:, 0]
         y = data[:, 1]
-        if i==0:
-          plt.plot(x, y, marker=".", color=c[i], label=interp[i], linewidth=1)
+        if i == 0:
+            plt.plot(x, y, marker=".", color=c[i], label=interp[i], linewidth=2)
         else:
-          plt.plot(x, y, color=c[i], label=interp[i], linewidth=1)
+            plt.plot(x, y, color=c[i], label=interp[i], linewidth=2)
 
     plt.xlabel("x")
     plt.ylabel("y")
