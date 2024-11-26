@@ -307,7 +307,7 @@ BREAKOUT_OF_MUTE:
   }
 
   uint32_t values_len =
-      samples_to_read *
+      (samples_to_read + 1) *
       (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
        1);
   values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
@@ -316,8 +316,14 @@ BREAKOUT_OF_MUTE:
       round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
 
   if (!phase_change) {
-    const int32_t next_phase =
-        phases[0] + values_to_read * (phase_forward * 2 - 1);
+    const int32_t next_phase = phases[0] + ((samples_to_read) *
+                                            (banks[sel_bank_cur]
+                                                 ->sample[sel_sample_cur]
+                                                 .snd[FILEZERO]
+                                                 ->num_channels +
+                                             1) *
+                                            2) *
+                                               (phase_forward * 2 - 1);
     const int32_t splice_start = banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
                                      .snd[FILEZERO]
