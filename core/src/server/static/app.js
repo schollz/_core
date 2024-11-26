@@ -1584,6 +1584,9 @@ window.addEventListener('load', (event) => {
     }
 
     setTimeout(() => {
+        tippy("#manualDownloadLink", {
+            content: "Click to download the manual.",
+        });
         tippy("#editingSplice", {
             content: "Click waveform and drag splice regions or double click to add splice."
         });
