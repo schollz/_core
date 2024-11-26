@@ -590,7 +590,12 @@ BREAKOUT_OF_MUTE:
       // mono
       int16_t *newArray;
       // TODO: use a function pointer that will change the function
-      if (quadratic_resampling || sf->fx_active[FX_SCRATCH]) {
+      if (quadratic_resampling || sf->fx_active[FX_SCRATCH] ||
+          (sf->bpm_tempo * 100) / banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->bpm <
+              60) {
         newArray = array_resample_quadratic_fp(values, samples_to_read,
                                                buffer->max_sample_count);
       } else {

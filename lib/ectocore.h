@@ -1237,15 +1237,7 @@ void input_handling() {
         // check if taptempo button is pressed
         if (!val && gpio_btn_held_time[i] > 2000) {
           // easter egg..toggle lo-fi mode
-          if (!mode_amiga) {
-            printf("amiga mode on\n");
-            mode_amiga = true;
-            // set_audio_variant(0);
-          } else {
-            printf("amiga mode off\n");
-            mode_amiga = false;
-            // set_audio_variant(audio_variant_num);
-          }
+          mode_amiga = !mode_amiga;
         } else if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
           if (val == 1) {
             // TAP + MODE resets to original bpm if no clock is present
