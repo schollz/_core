@@ -788,14 +788,6 @@ bool button_handler(ButtonMatrix *bm) {
         }
       } else if (key_pressed[0] == 12 && key_pressed[1] == 15 &&
                  key_pressed[2] == 13 && key_pressed[3] == 14) {
-        quadratic_resampling = !quadratic_resampling;
-        if (quadratic_resampling) {
-          printf("combo: change resampling to quadratic\n");
-          DebounceDigits_setText(debouncer_digits, "QUAD", led_text_time);
-        } else {
-          printf("combo: change resampling to linear\n");
-          DebounceDigits_setText(debouncer_digits, "LINEAR", led_text_time);
-        }
       } else if (key_pressed[0] == 8 && key_pressed[1] == 9 &&
                  key_pressed[2] == 10 && key_pressed[3] == 11) {
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->tempo_match =
