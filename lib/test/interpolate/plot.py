@@ -35,10 +35,12 @@ def plot_datas(datas):
     """
 
     c = ["gray", "red", "blue", "green", "yellow"]
-    interp = ["original", "linear", "quadratic", "linear2", "hermite"]
+    interp = ["original", "linear(lookahead)", "linear(old)", "linear2", "hermite"]
     for i, data in enumerate(datas):
         x = data[:, 0]
         y = data[:, 1]
+        # normalize x to [0, 1]
+        x = (x - x.min()) / (x.max() - x.min())
         if i == 0:
             plt.plot(
                 x,
