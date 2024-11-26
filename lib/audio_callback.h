@@ -57,7 +57,6 @@ uint32_t sine_wave_counter = 0;
 #endif
 
 void i2s_callback_func() {
-  uint32_t values_to_read;
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
 #ifdef PRINT_SDCARD_TIMING
@@ -307,17 +306,28 @@ BREAKOUT_OF_MUTE:
   }
 
   uint32_t values_len =
-      samples_to_read *
+      (samples_to_read + 1) *
       (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
        1);
-  values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
+  uint32_t values_len_minus_peek =
+      (samples_to_read) *
+      (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels +
+       1);
+  uint32_t values_to_read_minus_peek = values_len_minus_peek * 2;
+  uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
   int16_t values[values_len];
   int32_t vol_main =
       round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
 
   if (!phase_change) {
-    const int32_t next_phase =
-        phases[0] + values_to_read * (phase_forward * 2 - 1);
+    const int32_t next_phase = phases[0] + ((samples_to_read) *
+                                            (banks[sel_bank_cur]
+                                                 ->sample[sel_sample_cur]
+                                                 .snd[FILEZERO]
+                                                 ->num_channels +
+                                             1) *
+                                            2) *
+                                               (phase_forward * 2 - 1);
     const int32_t splice_start = banks[sel_bank_cur]
                                      ->sample[sel_sample_cur]
                                      .snd[FILEZERO]
@@ -589,19 +599,8 @@ BREAKOUT_OF_MUTE:
             ->num_channels == 0) {
       // mono
       int16_t *newArray;
-      // TODO: use a function pointer that will change the function
-      if (quadratic_resampling || sf->fx_active[FX_SCRATCH] ||
-          (sf->bpm_tempo * 100) / banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->bpm <
-              60) {
-        newArray = array_resample_quadratic_fp(values, samples_to_read,
-                                               buffer->max_sample_count);
-      } else {
-        newArray = array_resample_linear(values, samples_to_read,
-                                         buffer->max_sample_count);
-      }
+      newArray = array_resample_linear(values, samples_to_read,
+                                       buffer->max_sample_count);
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade && !do_fade_in) {
@@ -641,7 +640,7 @@ BREAKOUT_OF_MUTE:
                    ->num_channels == 1) {
       // stereo
       for (uint8_t channel = 0; channel < 2; channel++) {
-        int16_t valuesC[samples_to_read];  // max limit
+        int16_t valuesC[values_len / 2];  // max limit
         for (uint16_t i = 0; i < values_len; i++) {
           if (i % 2 == channel) {
             valuesC[i / 2] = values[i];
@@ -649,13 +648,8 @@ BREAKOUT_OF_MUTE:
         }
 
         int16_t *newArray;
-        if (quadratic_resampling) {
-          newArray = array_resample_quadratic_fp(valuesC, samples_to_read,
-                                                 buffer->max_sample_count);
-        } else {
-          newArray = array_resample_linear(valuesC, samples_to_read,
-                                           buffer->max_sample_count);
-        }
+        newArray = array_resample_linear(valuesC, samples_to_read,
+                                         buffer->max_sample_count);
 
         // TODO: function pointer for audio block here?
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -681,7 +675,7 @@ BREAKOUT_OF_MUTE:
       }
       first_loop = false;
     }
-    phases[head] += (values_to_read * (phase_forward * 2 - 1));
+    phases[head] += (values_to_read_minus_peek * (phase_forward * 2 - 1));
   }
 
 #ifdef INCLUDE_ECTOCORE
