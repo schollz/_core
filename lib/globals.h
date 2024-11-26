@@ -197,7 +197,6 @@ bool clock_behavior_sync_slice = false;
 uint32_t clock_output_trig_time = 0;
 bool grimoire_rune_effect[7][16];
 uint8_t grimoire_rune = 0;
-bool quadratic_resampling = false;
 bool clock_out_do = false;
 bool clock_out_ready = false;
 uint32_t ecto_trig_out_last = 0;

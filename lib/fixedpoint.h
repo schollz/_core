@@ -93,7 +93,7 @@ int32_t q16_16_int32_to_fp(int32_t value) {
 }
 
 /* Multiplies two Q16.16 fixed-point values. */
-inline int32_t q16_16_multiply(int32_t a, int32_t b) {
+int32_t q16_16_multiply(int32_t a, int32_t b) {
   return (int32_t)((((int64_t)a) * b) >> Q16_16_Q_BITS);
 }
 

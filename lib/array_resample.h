@@ -138,8 +138,8 @@ int16_t *array_resample_quadratic_fp(int16_t *arr, int16_t arr_size,
   return newArr;
 }
 
-int16_t *array_resample_linear(int16_t *arr, int16_t arr_size,
-                               int16_t newSize) {
+int16_t *array_resample_linear_old(int16_t *arr, int16_t arr_size,
+                                   int16_t newSize) {
   int16_t *newArray;
   newArray = malloc(sizeof(int16_t) * newSize);
   if (arr_size == newSize) {
@@ -170,6 +170,40 @@ int16_t *array_resample_linear(int16_t *arr, int16_t arr_size,
       newArray[i] = arr[arr_size - 1];
     }
   }
+  return newArray;
+}
+
+int16_t *array_resample_linear(int16_t *arr, int16_t arr_size,
+                               int16_t newSize) {
+  // Allocate memory for the new array
+  int16_t *newArray = malloc(sizeof(int16_t) * newSize);
+  if (!newArray) {
+    // Handle memory allocation failure
+    return NULL;
+  }
+
+  // If the sizes match, simply copy the input array
+  if (arr_size == newSize) {
+    for (int16_t i = 0; i < newSize; i++) {
+      newArray[i] = arr[i];
+    }
+    return newArray;
+  }
+
+  // Calculate step size in fixed-point format
+  uint32_t stepSize = (arr_size)*INTERPOLATE_VALUE / (newSize);
+
+  for (int16_t i = 0; i < newSize; i++) {
+    uint32_t indexFixed = i * stepSize;               // Fixed-point index
+    uint32_t index = indexFixed / INTERPOLATE_VALUE;  // Integer part
+    uint32_t frac = indexFixed % INTERPOLATE_VALUE;   // Fractional part
+
+    // Perform fixed-point linear interpolation
+    int32_t x = ((int32_t)arr[index] * (INTERPOLATE_VALUE - frac)) +
+                ((int32_t)arr[index + 1] * frac);
+    newArray[i] = x / INTERPOLATE_VALUE;
+  }
+
   return newArray;
 }
 

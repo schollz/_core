@@ -112,14 +112,6 @@ void load_settings(const char *dir_name) {
     return;
   }
   while (fr == FR_OK && fno.fname[0]) { /* Repeat while an item is found */
-    if (strcmp(fno.fname, "resampling_quadratic-on") == 0) {
-      quadratic_resampling = true;
-      printf("[sdcard_startup] quadratic resampling on\n");
-    } else if (strcmp(fno.fname, "resampling_quadratic-off") == 0) {
-      quadratic_resampling = false;
-      printf("[sdcard_startup] quadratic resampling off\n");
-    }
-
     // check for the clock_start_stop_sync
     if (strcmp(fno.fname, "clock_stop_sync-off") == 0) {
       clock_start_stop_sync = false;
