@@ -33,7 +33,7 @@ typedef struct {
   int blue;
 } RGBColor;
 
-RGBColor colors_defs[] = {
+RGBColor colors_defs[8] = {
     {255, 0, 0},    // red
     {254, 255, 0},  // orange/yellow
     {0, 255, 0},    // green
