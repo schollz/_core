@@ -113,8 +113,8 @@ void benchmark_function(void (*function)(), const char *function_name) {
 
 int main() {
   float freq = 100;
-  int points_per_segment = 10;
-  float factor = 0.5f;
+  int points_per_segment = 40;
+  float factor = 2.0f;
   float t_inc = 2 * M_PI / points_per_segment * 1.3;
   float t = -1 * t_inc;
   int x = -1;
