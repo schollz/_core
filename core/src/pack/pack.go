@@ -119,11 +119,11 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		log.Error(err)
 		return
 	}
-	if data.Resampling == "linear" {
-		os.Create(path.Join(settingsFolder, "resampling_quadratic-off"))
-	} else {
-		os.Create(path.Join(settingsFolder, "resampling_quadratic-on"))
-	}
+	// if data.Resampling == "linear" {
+	// 	os.Create(path.Join(settingsFolder, "resampling_quadratic-off"))
+	// } else {
+	// 	os.Create(path.Join(settingsFolder, "resampling_quadratic-on"))
+	// }
 	if data.SettingsClockStop == "sync" {
 		os.Create(path.Join(settingsFolder, "clock_stop_sync-on"))
 	} else {

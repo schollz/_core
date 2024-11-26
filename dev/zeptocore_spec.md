@@ -77,7 +77,6 @@ holding an effect and using a knob will change its parameters.
 - [x] **4**,**5**,**4** -> toggle one-shot mode
 - [ ] **6**,**7**,**6** -> toggle play mode
 - [x] **5**, **8**, **7**, **6** -> toggle tempo match mode
-- [x] **9**,**12**,**10**,**11** -> change resampling (linear or quadratic)
 - [ ] ?? -> toggle sync mode?
 
 
