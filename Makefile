@@ -136,7 +136,7 @@ copysamples:
 	# sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples2
 	# sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples_kero
 	#sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/pikocore-starting
-	sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples_v4
+	sudo XDG_RUNTIME_DIR=/run/user/1000 ./dev/copysamples/copysamples -src dev/starting_samples_v5
 
 minicom:
 	cd dev/minicom && go build -v
