@@ -36,6 +36,7 @@ def plot_datas(datas):
 
     c = ["gray", "red", "blue", "green", "yellow"]
     interp = ["original", "linear(lookahead)", "linear(old)", "linear2", "hermite"]
+    marker_size = 30
     for i, data in enumerate(datas):
         x = data[:, 0]
         y = data[:, 1]
@@ -49,7 +50,7 @@ def plot_datas(datas):
                 color=c[i],
                 label=interp[i],
                 linewidth=2,
-                markersize=20,
+                markersize=marker_size,
             )
         else:
             plt.plot(
@@ -59,8 +60,9 @@ def plot_datas(datas):
                 color=c[i],
                 label=interp[i],
                 linewidth=2,
-                markersize=10,
+                markersize=marker_size,
             )
+        marker_size -= 10
 
     plt.xlabel("x")
     plt.ylabel("y")
