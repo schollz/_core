@@ -66,7 +66,7 @@ void array_resample_linear_benchmark() {
                    10309, 6301,  2171,  650,   2136,  4150,  4507};
   int16_t arr_size = sizeof(arr) / sizeof(arr[0]);
   int16_t arr_new_size = 80;
-  for (int i = 0; i < 10000000; i++) {
+  for (int i = 0; i < 1000000; i++) {
     int16_t *newArray = array_resample_linear(arr, arr_size, arr_new_size);
     free(newArray);
   }
@@ -103,7 +103,7 @@ int main() {
   int16_t arr[] = {11821, 11620, 10309, 6301,  2171,  650,  2136,
                    4150,  4507,  8000,  10402, 12321, 11821};
   int16_t arr_size = 12;
-  float factor = 1.5f;
+  float factor = 2.0f;
   int16_t arr_new_size = arr_size * factor;
   int16_t j = 0;
   for (uint8_t k = 0; k < 3; k++) {
