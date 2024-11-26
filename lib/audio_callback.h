@@ -589,19 +589,8 @@ BREAKOUT_OF_MUTE:
             ->num_channels == 0) {
       // mono
       int16_t *newArray;
-      // TODO: use a function pointer that will change the function
-      if (quadratic_resampling || sf->fx_active[FX_SCRATCH] ||
-          (sf->bpm_tempo * 100) / banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->bpm <
-              60) {
-        newArray = array_resample_quadratic_fp(values, samples_to_read,
-                                               buffer->max_sample_count);
-      } else {
-        newArray = array_resample_linear(values, samples_to_read,
-                                         buffer->max_sample_count);
-      }
+      newArray = array_resample_linear(values, samples_to_read,
+                                       buffer->max_sample_count);
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade && !do_fade_in) {
@@ -641,7 +630,7 @@ BREAKOUT_OF_MUTE:
                    ->num_channels == 1) {
       // stereo
       for (uint8_t channel = 0; channel < 2; channel++) {
-        int16_t valuesC[samples_to_read];  // max limit
+        int16_t valuesC[values_len / 2];  // max limit
         for (uint16_t i = 0; i < values_len; i++) {
           if (i % 2 == channel) {
             valuesC[i / 2] = values[i];
@@ -649,13 +638,8 @@ BREAKOUT_OF_MUTE:
         }
 
         int16_t *newArray;
-        if (quadratic_resampling) {
-          newArray = array_resample_quadratic_fp(valuesC, samples_to_read,
-                                                 buffer->max_sample_count);
-        } else {
-          newArray = array_resample_linear(valuesC, samples_to_read,
-                                           buffer->max_sample_count);
-        }
+        newArray = array_resample_linear(valuesC, samples_to_read,
+                                         buffer->max_sample_count);
 
         // TODO: function pointer for audio block here?
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
