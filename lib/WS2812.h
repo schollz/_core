@@ -33,15 +33,17 @@ typedef struct {
   int blue;
 } RGBColor;
 
-RGBColor colors_defs[8] = {
-    {255, 0, 0},    // red
-    {254, 255, 0},  // orange/yellow
-    {0, 255, 0},    // green
-    {0, 57, 255},   // cyan
-    {0, 0, 255},    // blue
-    {41, 0, 255},   // magenta
-    {0, 0, 0},      // blank
-    {255, 74, 0},   // yellow
+RGBColor colors_defs[10] = {
+    {255, 0, 0},     // red
+    {254, 255, 0},   // orange/yellow
+    {0, 255, 0},     // green
+    {0, 57, 255},    // cyan
+    {0, 0, 255},     // blue
+    {41, 0, 255},    // magenta
+    {0, 0, 0},       // blank
+    {255, 74, 0},    // yellow
+    {255, 150, 33},  // FFD82D
+    {255, 0, 140},   // FF6B8E
 };
 
 // create enum for colors
@@ -54,6 +56,8 @@ typedef enum {
   MAGENTA = 5,
   BLANK = 6,
   YELLOW = 7,
+  FFD82D = 8,
+  FF6B8E = 9,
 } Color;
 
 #define NUM_LEDS 18
