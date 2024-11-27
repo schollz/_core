@@ -54,7 +54,7 @@
 #include "break_knob.h"
 
 #define KNOB_ATTEN_ZERO_WIDTH 80
-#define DEBOUNCE_FILE_SWITCH 1000
+#define DEBOUNCE_FILE_SWITCH 2000
 
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
