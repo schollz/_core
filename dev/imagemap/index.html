@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Home</title>
+    <style>
+        /* Ensure the image fills the screen while maintaining aspect ratio and cropping */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            /* Full viewport height */
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Ensure the image fills the screen and crops excess */
+            position: absolute;
+        }
+
+        /* Image map clickable */
+        area {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Image Map -->
+    <img id="mainImage" src="/ectocore_1.20.1.jpg" usemap="#image-map">
+    <map name="image-map">
+        <area target="" alt="" title="" href="#" coords="885,579,1219,1603" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1297,977,1466,1162" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="742,379,926,542" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="661,553,840,712" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1282,1417,1413,1564" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1378,1719,1505,1588" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1189,1768,1356,1623" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="430,1117,634,1311" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1360,604,1472,712" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1278,377,1395,495" shape="rect"></area>
+        <area target="" alt="" title="" href="#" coords="1478,420,1572,522" shape="rect"></area>
+    </map>
+    <script>
+        // for eac area add a mouse over and a click event
+        const areas = document.querySelectorAll('area');
+        areas.forEach((area, index) => {
+            area.addEventListener('mouseover', () => {
+                if (index == 0) {
+                    // change the image
+                    document.getElementById('mainImage').src = '/1.jpg';
+                }
+                console.log(`Mouse over area at index ${index}`, area);
+            });
+            area.addEventListener('mouseout', () => {
+                if (index == 0) {
+                    // change the image
+                    document.getElementById('mainImage').src = '/ectocore_1.20.1.jpg';
+                }
+                console.log(`Mouse out area at index ${index}`, area);
+            });
+            area.addEventListener('click', () => {
+                console.log(`Clicked area at index ${index}`, area);
+            });
+        });
+
+
+        function adjustImageMap() {
+            const img = document.getElementById('mainImage');
+
+            // Use helper function to get offset and scaled dimensions
+            const { offsetX, offsetY, width: displayWidth, height: displayHeight } = getImageOffsetAndSize(img);
+
+            const originalWidth = 2147; // Original width of the image
+            const originalHeight = 2147; // Original height of the image
+
+            // Calculate the scaling factor
+            const scaleX = displayWidth / originalWidth;
+            const scaleY = displayHeight / originalHeight;
+
+            // Adjust each area based on scaling and offsets
+            const areas = document.querySelectorAll('area');
+            areas.forEach(area => {
+                // Get the original coordinates stored in a data attribute
+                const originalCoords = area.dataset.originalCoords.split(',').map(Number);
+                const adjustedCoords = originalCoords.map((coord, index) => {
+                    if (index % 2 === 0) {
+                        // Adjust X coordinate
+                        return Math.round((coord * scaleX) + offsetX);
+                    } else {
+                        // Adjust Y coordinate
+                        return Math.round((coord * scaleY) + offsetY);
+                    }
+                });
+                area.setAttribute('coords', adjustedCoords.join(','));
+            });
+        }
+
+        function getImageOffsetAndSize(img) {
+            const containerWidth = img.parentElement.offsetWidth;
+            const containerHeight = img.parentElement.offsetHeight;
+            const imgWidth = img.naturalWidth;
+            const imgHeight = img.naturalHeight;
+
+            let offsetX = 0;
+            let offsetY = 0;
+            let displayWidth = containerWidth;
+            let displayHeight = containerHeight;
+
+            // Calculate the aspect ratios of the container and the image
+            const containerAspectRatio = containerWidth / containerHeight;
+            const imgAspectRatio = imgWidth / imgHeight;
+
+            // Determine if the image is wider or taller than the container
+            if (imgAspectRatio > containerAspectRatio) {
+                // Image is wider, so we need to crop the sides
+                displayWidth = containerHeight * imgAspectRatio;
+                offsetX = (displayWidth - containerWidth) / 2 * -1;
+            } else {
+                // Image is taller, so we need to crop the top and bottom
+                displayHeight = containerWidth / imgAspectRatio;
+                offsetY = (displayHeight - containerHeight) / 2 * -1;
+            }
+
+            return {
+                offsetX,
+                offsetY,
+                width: displayWidth,
+                height: displayHeight
+            };
+        }
+
+        // Store the original coordinates when the page loads
+        function storeOriginalCoords() {
+            const areas = document.querySelectorAll('area');
+            areas.forEach(area => {
+                if (!area.dataset.originalCoords) {
+                    area.dataset.originalCoords = area.getAttribute('coords');
+                }
+            });
+        }
+
+        // Initialize the image map adjustment
+        window.addEventListener('load', () => {
+            storeOriginalCoords();
+            adjustImageMap();
+        });
+        window.addEventListener('resize', adjustImageMap);
+
+    </script>
+</body>
+
+</html>
