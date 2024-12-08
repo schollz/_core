@@ -527,7 +527,7 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         settingsBrightness: 50,
-        settingsClockStop: "continue",
+        settingsClockStop: "sync",
         settingsClockOutput: "gate",
         settingsClockBehaviorSync: "tempo",
         settingsAmenCV: "bipolar",
@@ -1620,7 +1620,7 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsClockStop', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "When 'off', the incoming clock does not affect ectocore starting/stopping. When 'on' the ectocore stops when incoming clock stops and starts when incoming clock starts.",
+            content: "When 'stop' the ectocore stops when incoming clock stops and starts when incoming clock starts. When 'continue', the incoming clock does not affect ectocore starting/stopping.",
         });
         tippy('#pSettingsAmenBehavior', {
             zIndex: 9999999,
