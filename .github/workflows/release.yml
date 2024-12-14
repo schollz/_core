@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
       - name: Install sox
         run: |
           sudo apt update
@@ -32,7 +32,7 @@ jobs:
         with:
           version: "0.11.0"
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v5.2.0
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
@@ -47,7 +47,7 @@ jobs:
         run: uv pip install -r requirements.txt
       - run: uv pip freeze
       - name: Checkout pico-sdk
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
         with:
           repository: raspberrypi/pico-sdk
           path: pico-sdk
@@ -118,14 +118,8 @@ jobs:
           files: |
             _core_${{ github.event.release.name }}_src.tar.gz
             zeptocore_${{ github.event.release.name }}.uf2
-            ectocore_${{ github.event.release.name }}.uf2
-            ectocore_v0.3_${{ github.event.release.name }}.uf2
             zeptoboard_${{ github.event.release.name }}.uf2
             core_windows_${{ github.event.release.name }}.exe
             core_linux_amd64_${{ github.event.release.name }}
             core_macos_aarch64_${{ github.event.release.name }}
             core_macos_amd64_${{ github.event.release.name }}
-            ectocore_windows_${{ github.event.release.name }}.exe
-            ectocore_linux_amd64_${{ github.event.release.name }}
-            ectocore_macos_aarch64_${{ github.event.release.name }}
-            ectocore_macos_amd64_${{ github.event.release.name }}
