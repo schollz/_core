@@ -123,3 +123,10 @@ jobs:
             core_linux_amd64_${{ github.event.release.name }}
             core_macos_aarch64_${{ github.event.release.name }}
             core_macos_amd64_${{ github.event.release.name }}
+            ectocore_windows_${{ github.event.release.name }}.exe
+            ectocore_linux_amd64_${{ github.event.release.name }}
+            ectocore_macos_aarch64_${{ github.event.release.name }}
+            ectocore_macos_amd64_${{ github.event.release.name }}
+            ectocore_${{ github.event.release.name }}.uf2
+            ectocore_v0.3_${{ github.event.release.name }}.uf2
+            
