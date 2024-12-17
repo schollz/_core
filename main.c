@@ -733,7 +733,8 @@ int main() {
   gpio_init(GPIO_BTN_TAPTEMPO);
   gpio_set_dir(GPIO_BTN_TAPTEMPO, GPIO_IN);
   gpio_pull_up(GPIO_BTN_TAPTEMPO);
-  sleep_ms(1);
+  sleep_ms(1000);
+  printf("checking calibration mode\n");
   do_calibration_mode =
       (gpio_get(GPIO_BTN_BANK) == 0 && gpio_get(GPIO_BTN_TAPTEMPO) == 0);
   if (do_calibration_mode) {
@@ -741,6 +742,7 @@ int main() {
     do_calibration_mode =
         do_calibration_mode &&
         (gpio_get(GPIO_BTN_BANK) == 0 && gpio_get(GPIO_BTN_TAPTEMPO) == 0);
+        printf("entering calibration mode\n");
   }
 #endif
   if (!do_calibration_mode) {
