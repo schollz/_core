@@ -2,11 +2,8 @@
 #define FLASHMEM_LIB 1
 
 #define PICO_FLASH_SECTOR_SIZE 4096
-#define PICO_FLASH_ORIGIN 0x10000000
 #define PICO_FLASH_LENGTH (2 * 1024 * 1024)
-#define PICO_FLASH_LAST_SECTOR \
-  (PICO_FLASH_ORIGIN + PICO_FLASH_LENGTH - PICO_FLASH_SECTOR_SIZE)
-#define FLASH_TARGET_OFFSET (PICO_FLASH_LAST_SECTOR)
+#define FLASH_TARGET_OFFSET (PICO_FLASH_LENGTH - PICO_FLASH_SECTOR_SIZE)
 
 // Function to write arbitrary C struct to flash memory
 void write_struct_to_flash(const void* data, size_t size) {
