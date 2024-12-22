@@ -53,6 +53,10 @@ the source code is located in the [core folder](https://github.com/schollz/_core
 
 The ectocore.rocks sample loading tool can be used offline by following the instructions for your system.
 
+<div align="center">
+<img src="docs/static/img/ectocore_screenshot.png" width="70%">
+</div>
+
 <details><summary>Windows</summary>
 
 #### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.2.13/core_windows_v6.2.13.exe)**
