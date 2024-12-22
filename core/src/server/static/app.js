@@ -1587,6 +1587,9 @@ window.addEventListener('load', (event) => {
         tippy("#manualDownloadLink", {
             content: "Click to download the manual.",
         });
+        tippy("#getLink", {
+            content: "Click to get an ectocore.",
+        });
         tippy("#editingSplice", {
             content: "Click waveform and drag splice regions or double click to add splice."
         });

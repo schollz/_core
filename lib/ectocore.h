@@ -617,7 +617,7 @@ void input_handling() {
           if (read_data.center_calibration[i] < 0 ||
               read_data.center_calibration[i] > 1024) {
             data_corrupted = true;
-          printf("data is corrupted in calibration\n");
+            printf("data is corrupted in calibration\n");
           }
         }
         if (!data_corrupted) {
@@ -914,7 +914,7 @@ void input_handling() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.2.10\n");
+        printf("version=v6.2.14\n");
       }
     }
 
@@ -1220,11 +1220,15 @@ void input_handling() {
     // button selection
 
     for (uint8_t i = 0; i < BUTTON_NUM; i++) {
-      val = ButtonChange_update(button_change[i], gpio_get(gpio_btns[i]));
-      if (val < 0) {
+      // ButtonChange_update(button_change[i], gpio_get(gpio_btns[i]));
+      // if (val < 0) {
+      //   continue;
+      // }
+      val = gpio_get(gpio_btns[i]);
+      val = 1 - val;
+      if (val == gpio_btn_state[i]) {
         continue;
       }
-      val = 1 - val;
       gpio_btn_state[i] = val;
       if (val) {
         gpio_btn_last_pressed[i] = current_time;
@@ -1395,6 +1399,7 @@ void input_handling() {
           WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
+        printf("[ectocore] btn_mult %d\n", val);
         if (val == 1) {
           if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
             // A+C

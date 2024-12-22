@@ -205,6 +205,8 @@ release:
 server:
 	cd core && air
 
+web: server
+
 resetpico: .venv
 	.venv/bin/python dev/reset_pico.py
 

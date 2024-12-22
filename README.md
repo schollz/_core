@@ -41,7 +41,7 @@ this is currently under development and will be released soon. more info at http
 
 ## sample loading tool
 
-the sample loading tool is a web-based tool (available at [zeptocore.com/tool](https://zeptocore.com/tool)) that allows you to load samples onto the *_core* devices. it is built with Go, and Vue.
+the sample loading tool is a web-based tool (available at [zeptocore.com/tool](https://zeptocore.com/tool) or [ectocore.rocks](https://ectocore.rocks)) that allows you to load samples onto the *_core* devices. it is built with Go, and Vue.
 
 <div align="center">
 <img src="docs/static/img/core_tool.webp" width="70%">
@@ -49,8 +49,60 @@ the sample loading tool is a web-based tool (available at [zeptocore.com/tool](h
 
 the source code is located in the [core folder](https://github.com/schollz/_core/tree/main/core), and information for building the tool is located can be found in [the documentation](https://zeptocore.com/#building-from-source).
 
+### ectocore.rocks offline usage
+
+The ectocore.rocks sample loading tool can be used offline by following the instructions for your system.
+
+<details><summary>Windows</summary>
+
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.2.13/core_windows_v6.2.13.exe)**
+
+Once downloaded, double click on the executable file to run it.
+
+</details>
 
 
+<details><summary>macOS</summary>
+
+To install the tool on macOS, first open a terminal.
+
+Then, if you are on an Intel-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v6.2.13/core_macos_amd64_v6.2.13 > core_macos
+```
+
+Or, if you are on a M1/M2-based mac install with:
+
+```
+curl -L https://github.com/schollz/_core/releases/download/v6.2.13/core_macos_aarch64_v6.2.13 > core_macos
+```
+
+Then to enable the program by entering this into the terminal:
+
+```
+chmod +x core_macos 
+xattrc -c core_macos
+```
+
+Now to run, you can just type
+
+```
+./core_macos
+```
+
+A window should pop up in the browser with the offline version of the tool.
+
+</details>
+
+
+<details><summary>Linux</summary>
+
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.2.13/core_linux_amd64_v6.2.13)**
+
+After downloading, run it directly from the terminal.
+
+</details>
 
 # license
 

@@ -63,6 +63,10 @@
 </head>
 
 <body>
+    <div id="browserBanner"
+        style="display: none; background-color: #ffcccb; color: black; padding: 10px; text-align: center;">
+        This site is best viewed in Chrome. Some features may not work correctly in other browsers.
+    </div>
     [[ if .IsZeptocore ]]
     <div class="ear leftear"><a href="/docs" style="left:30px; position:relative;"><i class="fas fa-book fa-rotate-by"
                 style="--fa-rotate-angle: -45deg; " aria-hidden="true"></i></a></div>
@@ -546,6 +550,10 @@
                     <a href="https://ectocore.rocks/quickstart" target="_blank" id="manualDownloadLink"
                         style="font-size:1.0em;"><i class="fa-solid fa-book"></i></a>
                 </span>
+                <span>
+                    <a href="https://getectocore.com" target="_blank" id="getLink" style="font-size:1.0em;"><i
+                            class="fa-solid fa-shopping-cart"></i></a>
+                </span>
             </span>
 
         </header>
@@ -589,8 +597,8 @@
 
                 [[ if .IsMain ]]
                 <div class="help-banner"
-                    style="box-shadow: 12px 12px 2px 1px var(--hover-color-light); background: var(--banks-background);">
-                    <h2>Welcome to the [[ if .IsEctocore]] ectocore [[else]] zeptocore [[end]] tool.</h2>
+                    style="box-shadow: 12px 12px 2px 1px var(--hover-color-light); background: var(--background-color);">
+                    <h2>Welcome to [[ if .IsEctocore]] ectocore.rocks[[else]] the zeptocore tool[[end]]</h2>
                     <p v-if="previousPages.length>0">
                         Previous workspaces: <span v-for="link in previousPages"><a
                                 :href="window.location.protocol+'//'+window.location.host +'/'+ link">{{link}}</a>&nbsp</span>
@@ -598,7 +606,7 @@
                     <p>
                         Use this website to allocate audio files onto the [[ if .IsZeptocore ]]<a
                             href="https://zeptocore.com">zeptocore</a>[[end]][[ if .IsEctocore ]]<a
-                            href="https://ectocore.rocks">ectocore</a>[[end]].
+                            href="https://getectocore.com" target="_blank">ectocore</a>[[end]].
                     </p>
                     <p>There is no
                         login necessary*. To get started, simply type in a name that you can remember and
@@ -613,19 +621,13 @@
                         <a href="/[[.GenURL2]]">[[.GenURL2]]</a>.
                     </p>
                     <p>
-                        <small><em>*Note: since there is no login nessecary, anyone with your URL can access your
-                                data. To use offline click these links to download the tool: <a id="windows_core"
-                                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_windows_'+latestVersion+'.exe'">
-                                    <i class="fa-brands fa-windows"></i>
-                                </a>
-                                <a id="macos_core"
-                                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_macos_aarch64_'+latestVersion">
-                                    <i class="fa-brands fa-apple"></i>
-                                </a>
-                                <a id="linux_core"
-                                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_linux_amd64_'+latestVersion">
-                                    <i class="fa-brands fa-linux"></i>
-                                </a></em></small>
+                        Keep in mind: anyone with your URL can access your
+                        data. This makes it easy to share with friends, but if you need to keep your data private by
+                        you should choose a URL that no one can guess, or use the tool offline by
+                        following <a
+                            href="https://github.com/schollz/_core?tab=readme-ov-file#ectocorerocks-offline-usage"
+                            target="_blank">these
+                            instructions</a>.
                     </p>
 
                     <div v-if="showCookiePolicy">
@@ -1109,7 +1111,16 @@
                 $("#dialog2").dialog("open");
             });
         });
+        function isChrome() {
+            return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+        }
+
         window.onload = function () {
+
+            // Display the browser banner if not using Chrome
+            if (!isChrome()) {
+                document.getElementById('browserBanner').style.display = 'block';
+            }
             let consent = localStorage.getItem('cookieConsent');
             if (!consent) {
                 document.getElementById('cookieConsentContainer').style.display = 'block';
