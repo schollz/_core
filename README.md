@@ -17,6 +17,7 @@ The digital signal processing for all the *core things was written by Zack, from
 - [simple delay](https://github.com/schollz/_core/blob/main/lib/delay.h)
 - [reverb stereo](https://github.com/schollz/_core/blob/main/lib/freeverb_fp.h) and [reverb mono](https://github.com/schollz/_core/blob/main/lib/freeverb_fp_mono.h) (stereo takes too much cpu)
 - [distortion/fuzz](https://github.com/schollz/_core/blob/main/lib/fuzz.py), this is a meta code file that generates the header
+- [reampling](https://github.com/schollz/_core/blob/main/lib/array_resample.h) with linear and quadratic forms
 - [resonant filter](https://github.com/schollz/_core/blob/main/lib/resonantfilter.h) which has a fade-in/out
 - [saturation](https://github.com/schollz/_core/blob/main/lib/saturation.h)
 - [shapers](https://github.com/schollz/_core/blob/main/lib/shaper.h) for a loss-type effect
