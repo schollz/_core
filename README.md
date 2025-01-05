@@ -7,6 +7,22 @@ this is the monorepo for [zeptocore](https://zeptocore.com), [zeptoboard](https:
 
 for information about purchasing and documentation, visit [zeptocore.com](https://zeptocore.com). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
 
+## dsp
+
+The digital signal processing for all the *core things was written by Zack, from scratch, in C. This was done partially to have strict control over the sound/utility, but also because the RP2040 is fixed-point based and needed special care in all the DSP. The libraries are written with modularity in mind, so [they can be used in other programs](https://github.com/schollz/fpfx). Here are the DSP header files:
+
+- [beat repeat](https://github.com/schollz/_core/blob/main/lib/beatrepeat.h) based on zero-crossings
+- [bit crush](https://github.com/schollz/_core/blob/main/lib/bitcrush.h) with sample rate and bit rate modulation
+- [comb filter](https://github.com/schollz/_core/blob/main/lib/comb.h) tuned for some cool chaotic sounds and stereo field
+- [simple delay](https://github.com/schollz/_core/blob/main/lib/delay.h)
+- [reverb stereo](https://github.com/schollz/_core/blob/main/lib/freeverb_fp.h) and [reverb mono](https://github.com/schollz/_core/blob/main/lib/freeverb_fp_mono.h) (stereo takes too much cpu)
+- [distortion/fuzz](https://github.com/schollz/_core/blob/main/lib/fuzz.py), this is a meta code file that generates the header
+- [resonant filter](https://github.com/schollz/_core/blob/main/lib/resonantfilter.h) which has a fade-in/out
+- [saturation](https://github.com/schollz/_core/blob/main/lib/saturation.h)
+- [shapers](https://github.com/schollz/_core/blob/main/lib/shaper.h) for a loss-type effect
+- [tape delay](https://github.com/schollz/_core/blob/main/lib/tapedelay.h) 
+- [transfer](https://github.com/schollz/_core/blob/main/lib/transfer.h) which can also be used for wave shaping
+
 ## zeptocore
 
 the zeptocore device is a versatile, open-source, handmade audio player and synthesizer, featuring stereo playback of 16-bit audio files at a 44.1 kHz sampling rate. 
