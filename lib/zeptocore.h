@@ -97,7 +97,7 @@ void make_random_sequence(uint8_t adcValue) {
                     200);
 }
 
-void input_handling() {
+void __not_in_flash_func(input_handling)() {
   printf("core1 running!\n");
   // flash bad signs
   while (!fil_is_open) {

@@ -29,8 +29,8 @@ void Saturation_setActive(Saturation *self, bool on) {
   }
 }
 
-void Saturation_process(Saturation *self, int16_t *samples,
-                        uint16_t num_samples) {
+void __not_in_flash_func(Saturation_process)(Saturation *self, int16_t *samples,
+                                             uint16_t num_samples) {
   for (int ii = 0; ii < num_samples; ii++) {
     if (self->crossfade_in < CROSSFADE3_LIMIT) {
       samples[ii] = q16_16_fp_to_int16(

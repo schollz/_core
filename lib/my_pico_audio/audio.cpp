@@ -235,7 +235,8 @@ void audio_complete_connection(audio_connection_t *connection,
   connection->consumer_pool = consumer_pool;
 }
 
-void give_audio_buffer(audio_buffer_pool_t *ac, audio_buffer_t *buffer) {
+void __not_in_flash_func(give_audio_buffer)(audio_buffer_pool_t *ac,
+                                            audio_buffer_t *buffer) {
   buffer->user_data = 0;
   assert(ac->connection);
   if (ac->type == audio_buffer_pool::ac_producer)

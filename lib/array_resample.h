@@ -173,8 +173,9 @@ int16_t *array_resample_linear_old(int16_t *arr, int16_t arr_size,
   return newArray;
 }
 
-int16_t *array_resample_linear(int16_t *arr, int16_t arr_size,
-                               int16_t newSize) {
+int16_t *__not_in_flash_func(array_resample_linear)(int16_t *arr,
+                                                    int16_t arr_size,
+                                                    int16_t newSize) {
   // Allocate memory for the new array
   int16_t *newArray = malloc(sizeof(int16_t) * newSize);
   if (!newArray) {
