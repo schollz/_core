@@ -45,7 +45,7 @@ inline int32_t scale16to32_fixed_dither(int16_t val) {
   return (((int32_t)val) << 16);  // + ((rand() & 1) - 1);
 }
 
-void update_filter_from_envelope(int32_t val) {
+void __not_in_flash_func(update_filter_from_envelope)(int32_t val) {
   for (uint8_t channel = 0; channel < 2; channel++) {
     ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
     ResonantFilter_setFc(resFilter[channel], val);
@@ -56,7 +56,8 @@ void update_filter_from_envelope(int32_t val) {
 uint32_t sine_wave_counter = 0;
 #endif
 
-void i2s_callback_func() {
+void __not_in_flash_func(i2s_callback_func)() {
+  // void i2s_callback_func() {
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
 #ifdef PRINT_SDCARD_TIMING
@@ -916,16 +917,13 @@ BREAKOUT_OF_MUTE:
       cpu_utilization = cpu_utilization + cpu_utilizations[i];
     }
 #ifdef PRINT_AUDIO_CPU_USAGE
-    MessageSync_printf(messagesync, "average cpu utilization: %2.1f\n",
-                       ((float)cpu_utilization) / (float)cpu_utilizations_i);
-
-#endif
-#ifdef PRINT_MEMORY_USAGE
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
-    MessageSync_printf(messagesync, "memory usage: %2.1f%% (%ld/%ld)\n",
+    MessageSync_printf(messagesync, "cpu [mem]: %2.1f [ %2.1f%% (%ld/%ld)]\n",
+                       ((float)cpu_utilization) / (float)cpu_utilizations_i,
                        (float)(used_heap) / (float)(total_heap) * 100.0,
                        used_heap, total_heap);
+
 #endif
     cpu_utilizations_i = 0;
 #ifdef PRINT_SDCARD_TIMING

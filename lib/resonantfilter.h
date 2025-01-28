@@ -179,8 +179,10 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 #define CROSSFADE_FILTER 8
 #define CROSSFADE_FILTER_WAIT 4
 
-void ResonantFilter_update(ResonantFilter* rf, int32_t* samples,
-                           uint16_t num_samples, uint8_t channel) {
+void __not_in_flash_func(ResonantFilter_update)(ResonantFilter* rf,
+                                                int32_t* samples,
+                                                uint16_t num_samples,
+                                                uint8_t channel) {
   if (rf->do_setFilterType && rf->passthrough) {
     ResonantFilter_setFilterType_(rf, rf->do_setFilterType_val);
     rf->do_setFilterType = false;

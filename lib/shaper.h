@@ -2,10 +2,8 @@
 #define LIB_SHAPER_LIB 1
 #include "shapers.h"
 
-void Shaper_expandOver_compressUnder_process(int16_t *values,
-                                             uint16_t num_values,
-                                             int16_t threshold,
-                                             uint8_t post_amp) {
+void __not_in_flash_func(Shaper_expandOver_compressUnder_process)(
+    int16_t *values, uint16_t num_values, int16_t threshold, uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
     if (abs(values[i]) > threshold) {
       if (values[i] < 0) {
@@ -28,10 +26,8 @@ void Shaper_expandOver_compressUnder_process(int16_t *values,
   }
 }
 
-void Shaper_expandUnder_compressOver_process(int16_t *values,
-                                             uint16_t num_values,
-                                             int16_t threshold,
-                                             uint8_t post_amp) {
+void __not_in_flash_func(Shaper_expandUnder_compressOver_process)(
+    int16_t *values, uint16_t num_values, int16_t threshold, uint8_t post_amp) {
   for (uint16_t i = 0; i < num_values; i++) {
     if (abs(values[i]) > threshold) {
       // compress
