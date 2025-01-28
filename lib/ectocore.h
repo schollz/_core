@@ -435,7 +435,7 @@ void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
 
-void input_handling() {
+void __not_in_flash_func(input_handling)() {
   // flash bad signs
   while (!fil_is_open) {
     printf("waiting to start\n");
