@@ -32,7 +32,6 @@ import (
 	"github.com/schollz/_core/core/src/zeptocore"
 	"github.com/schollz/codename"
 	log "github.com/schollz/logger"
-	bolt "go.etcd.io/bbolt"
 )
 
 // embed the static files
@@ -43,11 +42,13 @@ var staticFiles embed.FS
 //go:embed docs/*
 var docsFiles embed.FS
 
+// mutex for reading/writing storage files
+var mutexStorage sync.Mutex
+
 var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
 var mutex sync.Mutex
-var keystore *bolt.DB
 var serverID string
 var useFilesOnDisk bool
 var isPluggedIn bool
@@ -59,6 +60,30 @@ var deviceVersion string
 var deviceType string
 var isEctocore bool
 
+func stateSave(place string, state string) (err error) {
+	mutexStorage.Lock()
+	defer mutexStorage.Unlock()
+	// save state by writing to file
+	// remove beginning slash if it exists in place
+	place = strings.TrimPrefix(place, "/")
+	err = os.WriteFile(path.Join(StorageFolder, "states", place+".json"), []byte(state), 0777)
+	return
+}
+
+func stateLoad(place string) (state string, err error) {
+	mutexStorage.Lock()
+	defer mutexStorage.Unlock()
+	// load state by reading from file
+	// remove beginning slash if it exists in place
+	place = strings.TrimPrefix(place, "/")
+	stateBytes, err := os.ReadFile(path.Join(StorageFolder, "states", place+".json"))
+	if err != nil {
+		return
+	}
+	state = string(stateBytes)
+	return
+}
+
 func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
 	isEctocore = useEctocore
 	useFilesOnDisk = useFiles
@@ -68,13 +93,6 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 	log.Trace("setting up server")
 	os.MkdirAll(StorageFolder, 0777)
 
-	log.Trace("opening bolt db")
-	keystore, err = bolt.Open(path.Join(StorageFolder, "states.db"), 0600, &bolt.Options{
-		Timeout: 1 * time.Second,
-	})
-	if err != nil {
-		return
-	}
 	// generate a random integer for the session
 	rng, err := codename.DefaultRNG()
 	if err != nil {
@@ -83,40 +101,8 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 	serverID = codename.Generate(rng, 0)
 	log.Tracef("serverID: %s", serverID)
 
-	log.Trace("creating bucket for bolt db")
-	err = keystore.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("states"))
-		if err != nil {
-			return fmt.Errorf("create bucket: %s", err)
-		}
-		return nil
-	})
-	if err != nil {
-		return
-	}
-	// make sure that the keystore doesn't have entries that don't exist
-	// iterate through all the keys and delete if the file doesn't exist
-	err = keystore.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("states"))
-		c := b.Cursor()
-
-		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			folder := strings.TrimPrefix(string(k), "/")
-			if _, err := os.Stat(path.Join(StorageFolder, folder)); os.IsNotExist(err) {
-				log.Tracef("folder %s does not exist, deleting", folder)
-				err = b.Delete(k)
-				if err != nil {
-					log.Error(err)
-					return err
-				}
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	// make keystore folder if it doesn't exist
+	os.MkdirAll(path.Join(StorageFolder, "states"), 0777)
 
 	if !flagDontConnect {
 		go func() {
@@ -661,10 +647,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		} else if message.Action == "updatestate" {
 			// save into the keystore the message.State for message.Place
 			// log.Debugf("updating state for %s: %s", message.Place, message.State)
-			err = keystore.Update(func(tx *bolt.Tx) error {
-				b := tx.Bucket([]byte("states"))
-				return b.Put([]byte(message.Place), []byte(message.State))
-			})
+			err = stateSave(message.Place, message.State)
 			if err != nil {
 				log.Error(err)
 			}
@@ -701,22 +684,11 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 									return nil
 								})
 								// update the states
-								var previousState []byte
-								err = keystore.View(func(tx *bolt.Tx) error {
-									b := tx.Bucket([]byte("states"))
-									previousState = b.Get([]byte(messagePlace))
-									if previousState == nil {
-										return fmt.Errorf("no state for %s", message.Place)
-									}
-									return nil
-								})
+								stateString, err := stateLoad(messagePlace)
 								if err != nil {
 									log.Error(err)
 								} else {
-									err = keystore.Update(func(tx *bolt.Tx) error {
-										b := tx.Bucket([]byte("states"))
-										return b.Put([]byte("/"+message.Message), previousState)
-									})
+									err = stateSave(message.Message, stateString)
 									if err != nil {
 										log.Error(err)
 									}
@@ -733,15 +705,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			c.WriteJSON(message)
 		} else if message.Action == "getstate" {
 			// return message.State based for message.Place
-			err = keystore.View(func(tx *bolt.Tx) error {
-				b := tx.Bucket([]byte("states"))
-				v := b.Get([]byte(message.Place))
-				if v == nil {
-					return fmt.Errorf("no state for %s", message.Place)
-				}
-				message.State = string(v)
-				return nil
-			})
+			message.State, err = stateLoad(message.Place)
 			if err != nil {
 				log.Trace(err)
 			} else {
