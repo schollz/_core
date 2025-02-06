@@ -5,4 +5,4 @@ weight = 50
 +++
 
 
-The web tool only supports Firefox and Chrome. If you are using a different browser, you may experience issues with the waveform display. Please try using Firefox or Chrome to see the waveforms correctly.
+The web tool only supports Chrome. If you are using a different browser, you may experience issues with the waveform display. 

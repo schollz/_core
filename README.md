@@ -125,6 +125,59 @@ After downloading, run it directly from the terminal.
 
 </details>
 
+
+## faq
+
+
+### Why is it freezing?
+
+Normally, ectocore and zeptocore should not freeze. 
+
+If you encounter a freeze, it would be helpful to know the following:
+
+> What SD card are you using? If you are using a custom SD card, please try using the stock SD card to see if the issue persists. If it does, please answer the following questions.
+
+> Were effects on or off during the freeze? Try turning off all effects (Break knob fully CCW) and see if the issue persists.
+
+> Are you using custom samples or the stock samples? Try using the [stock samples](https://infinitedigits.co/zeptocore_default_samples_v6.zip) and see if the issue persists.
+
+> Is it a particular sample that causes a freeze or any sample? If a particular sample, please provide the original sample if you can.
+
+> What was the BPM set to?
+
+Please email submit and Issue by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) to report that information or send an email to zack@infinitedigits.co.
+
+
+If, however, you want to return the device, I completely understand. Please reach out to the seller for a return.
+
+
+
+### Which SD Card can I use?
+
+Please note that not all SD cards are equal. Terms like "high-speed," "A1," or "U3" on the card do not necessarily indicate its actual speed performance.
+
+Below is a list of known good and bad cards:
+
+#### Known bad cards
+
+Do *not* use these cards! They may appear to work, but they can cause spurious glitches.
+
+- Lexar brand
+- Kootion brand
+- Sandisk Ultra
+- Kingston brand
+- 5% of JUANWE cards
+
+#### Known good cards
+
+- Gigastone 16GB + 32GB
+- SP Elite
+- SanDisk Extreme
+- Samsung EVO
+- PNY Elite
+- MicroCenter
+
+
 # license
 
 - Apache License 2.0 for no-OS-FatFS (Copyright 2021 Carl John Kugler III)
