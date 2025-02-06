@@ -135,7 +135,7 @@ Normally, ectocore and zeptocore should not freeze.
 
 If you encounter a freeze, it would be helpful to know the following:
 
-> What SD card are you using? If you are using a custom SD card, please try using the stock SD card to see if the issue persists. If it does, please answer the following questions.
+> What SD card are you using? If you are using a custom SD card, please try using the stock SD (or [approved SD card](https://github.com/schollz/_core?tab=readme-ov-file#which-sd-card-can-i-use)) card to see if the issue persists. If it does, please answer the following questions.
 
 > Were effects on or off during the freeze? Try turning off all effects (Break knob fully CCW) and see if the issue persists.
 
