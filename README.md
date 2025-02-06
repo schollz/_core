@@ -145,8 +145,7 @@ If you encounter a freeze, it would be helpful to know the following:
 
 > What was the BPM set to?
 
-Please email submit and Issue by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) to report that information or send an email to zack@infinitedigits.co.
-
+Please submit an issue with responses to these questions by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
 If, however, you want to return the device, I completely understand. Please reach out to the seller for a return.
 
