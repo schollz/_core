@@ -105,7 +105,8 @@ void __not_in_flash_func(i2s_callback_func)() {
     return;
   }
 
-  int32_t *samples = (int32_t *)buffer->buffer->bytes;
+  int32_t samples[buffer->max_sample_count * 2];
+  int16_t *samples16 = (int16_t *)buffer->buffer->bytes;
 
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -117,6 +118,10 @@ void __not_in_flash_func(i2s_callback_func)() {
     samples[i * 2 + 1] = value0;
   }
   buffer->sample_count = buffer->max_sample_count;
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
+    samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
+  }
   give_audio_buffer(ap, buffer);
   return;
 #endif
@@ -204,6 +209,10 @@ void __not_in_flash_func(i2s_callback_func)() {
       Delay_process(delay, samples, buffer->max_sample_count, 0);
     }
 
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
+      samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
+    }
     give_audio_buffer(ap, buffer);
 
     // audio muted flag to ensure a fade in occurs when
@@ -503,6 +512,10 @@ BREAKOUT_OF_MUTE:
           samples[i * 2 + 1] = samples[i * 2 + 0];        // R = L
         }
         buffer->sample_count = buffer->max_sample_count;
+        for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+          samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
+          samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
+        }
         give_audio_buffer(ap, buffer);
         sync_using_sdcard = false;
         // sdcard_startup();
@@ -910,6 +923,10 @@ BREAKOUT_OF_MUTE:
 
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
+  for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+    samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
+    samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
+  }
   give_audio_buffer(ap, buffer);
 #ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);

@@ -36,12 +36,12 @@
 #define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / SAMPLE_RATE
 
 audio_buffer_pool_t *init_audio() {
-  static audio_format_t audio_format = {.pcm_format = AUDIO_PCM_FORMAT_S32,
+  static audio_format_t audio_format = {.pcm_format = AUDIO_PCM_FORMAT_S16,
                                         .sample_freq = SAMPLE_RATE,
                                         .channel_count = 2};
 
   static audio_buffer_format_t producer_format = {.format = &audio_format,
-                                                  .sample_stride = 8};
+                                                  .sample_stride = 4};
 
   audio_buffer_pool_t *producer_pool =
       audio_new_producer_pool(&producer_format, 3,
@@ -62,7 +62,7 @@ audio_buffer_pool_t *init_audio() {
   assert(ok);
   {  // initial buffer data
     audio_buffer_t *buffer = take_audio_buffer(producer_pool, true);
-    int32_t *samples = (int32_t *)buffer->buffer->bytes;
+    int16_t *samples = (int16_t *)buffer->buffer->bytes;
     for (uint i = 0; i < buffer->max_sample_count; i++) {
       samples[i * 2 + 0] = 0;
       samples[i * 2 + 1] = 0;
