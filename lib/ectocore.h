@@ -54,7 +54,7 @@
 #include "break_knob.h"
 
 #define KNOB_ATTEN_ZERO_WIDTH 80
-#define DEBOUNCE_FILE_SWITCH 2000
+#define DEBOUNCE_FILE_SWITCH 500
 
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
@@ -590,6 +590,7 @@ void __not_in_flash_func(input_handling)() {
 #endif
 
   int cv_amen_last_value = 0;
+  uint8_t knob_selector = 0;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -976,7 +977,14 @@ void __not_in_flash_func(input_handling)() {
       gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
 
+    knob_selector++;
+    if (knob_selector >= KNOB_NUM) {
+      knob_selector = 0;
+    }
     for (uint8_t i = 0; i < KNOB_NUM; i++) {
+      if (i != knob_selector) {
+        continue;
+      }
       int16_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
       val = KnobChange_update(knob_change[i], raw_val);
       if (debounce_startup == 15 + i) {
