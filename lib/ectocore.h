@@ -487,7 +487,7 @@ void __not_in_flash_func(input_handling)() {
   int16_t knob_val[KNOB_NUM] = {0, 0, 0, 0, 0};
   KnobChange *knob_change[KNOB_NUM];
   for (uint8_t i = 0; i < KNOB_NUM; i++) {
-    knob_change[i] = KnobChange_malloc(6);
+    knob_change[i] = KnobChange_malloc(12);
   }
 
 #define BUTTON_NUM 4
@@ -1079,10 +1079,10 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
-        // printf("[ectocore] knob_break %d\n", val);
+        printf("[ectocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        // printf("[ectocore] knob_amen %d\n", val);
+        printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
