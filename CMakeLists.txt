@@ -68,8 +68,8 @@ add_compile_definitions(USE_PRINTF)
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--print-memory-usage")
 target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall
-    -Wextra
+    # -Wall
+    # -Wextra
     -O3
 )
 
