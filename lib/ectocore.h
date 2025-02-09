@@ -429,7 +429,6 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     hue_to_rgb2(val2, &r, &g, &b);
     ws2812_set_wheel2(ws2812, val, r, g, b);
   }
-  return false;
 }
 
 void dust_1() {
@@ -460,7 +459,7 @@ void __not_in_flash_func(input_handling)() {
   sf->fx_active[FX_SATURATE] = true;
   sf->pitch_val_index = PITCH_VAL_MID;
   sf->stay_in_sync = true;
-  // uint8_t debounce_trig = 0;
+  uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
   uint16_t debounce_input_detection = 0;
@@ -505,12 +504,12 @@ void __not_in_flash_func(input_handling)() {
   uint32_t gpio_btn_last_pressed[BUTTON_NUM] = {0, 0, 0, 0};
   uint32_t gpio_btn_held_time[BUTTON_NUM] = {0, 0, 0, 0};
   uint8_t gpio_btn_state[BUTTON_NUM] = {0, 0, 0, 0};
-  // ButtonChange *button_change[BUTTON_NUM];
+  ButtonChange *button_change[BUTTON_NUM];
   for (uint8_t i = 0; i < BUTTON_NUM; i++) {
     gpio_init(gpio_btns[i]);
     gpio_set_dir(gpio_btns[i], GPIO_IN);
     gpio_pull_up(gpio_btns[i]);
-    // button_change[i] = ButtonChange_malloc();
+    button_change[i] = ButtonChange_malloc();
   }
 
 #ifdef ECTOCORE_VERSION_3
@@ -725,7 +724,7 @@ void __not_in_flash_func(input_handling)() {
       debounce_input_detection--;
     } else if (mean_signal > 0) {
       // input detection
-      // bool found_change = false;
+      bool found_change = false;
       int16_t val_input;
       uint8_t response_signal[3][10] = {
           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -915,7 +914,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.2.16\n");
+        printf("version=v6.2.17\n");
       }
     }
 
@@ -1255,9 +1254,9 @@ void __not_in_flash_func(input_handling)() {
               // pressing clock while clock is active will reset to beat 1
               // after determining whether the press is closer to the last
               // clock or the next clock (i.e. we are either early or late)
-              // uint32_t next_time =
-              //     clock_in_last_time +
-              //     (clock_in_last_time - clock_in_last_last_time);
+              uint32_t next_time =
+                  clock_in_last_time +
+                  (clock_in_last_time - clock_in_last_last_time);
               uint32_t now_time = time_us_32();
               // ---|-----------|-----------|-------
               // --lastlast----last---NOW--next
