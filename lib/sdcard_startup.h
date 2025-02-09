@@ -427,6 +427,7 @@ void update_fx(uint8_t fx_num) {
       if (sf->fx_active[FX_FUZZ]) {
         printf("fuzz activated!\n");
       }
+      break;
     case FX_FILTER:
       if (sf->fx_active[FX_FILTER] && !filter_was_activated) {
         // turn on filter
