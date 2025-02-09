@@ -83,6 +83,10 @@ jobs:
         run: |
           make ectocore
           cp ectocore.uf2 ectocore_${{ github.event.release.name }}.uf2
+      - name: Build ectocore_noclock.uf2
+        run: |
+          make ectocore_noclock
+          cp ectocore.uf2 ectocore_no_overclocking_${{ github.event.release.name }}.uf2
       - name: Build ectocore_v0.3.uf2
         run: |
           make ectocore_v0.3
@@ -128,5 +132,6 @@ jobs:
             ectocore_macos_aarch64_${{ github.event.release.name }}
             ectocore_macos_amd64_${{ github.event.release.name }}
             ectocore_${{ github.event.release.name }}.uf2
+            ectocore_no_overclocking_${{ github.event.release.name }}.uf2
             ectocore_v0.3_${{ github.event.release.name }}.uf2
             
