@@ -34,22 +34,22 @@ audio_buffer_pool_t *ap;
 clock_t time_of_initialization;
 FIL fil_current;
 char fil_current_name[32];
-bool fil_is_open;
+volatile bool fil_is_open;
 uint8_t cpu_utilization;
-int32_t phases[2];
-int32_t phases_old[2];
-int32_t phase_new;
+volatile int32_t phases[2];
+volatile int32_t phases_old[2];
+volatile int32_t phase_new;
 uint16_t mem_index[2];
 bool mem_use;
-bool phase_change;
+volatile bool phase_change;
 unsigned int fil_bytes_read;
 unsigned int fil_bytes_read2;
 // uint16_t sf->bpm_tempo = 185;
 uint16_t bpm_last = 185;
-uint8_t sel_sample_cur = 0;
-uint8_t sel_sample_next = 0;
-uint8_t sel_bank_cur = 0;
-uint8_t sel_bank_next = 0;
+volatile uint8_t sel_sample_cur = 0;
+volatile uint8_t sel_sample_next = 0;
+volatile uint8_t sel_bank_cur = 0;
+volatile uint8_t sel_bank_next = 0;
 uint8_t sel_bank_select = 0;
 bool fil_current_change = false;
 SampleList *banks[16];
@@ -68,13 +68,13 @@ void set_audio_variant(uint8_t x) {
 
 FRESULT fil_result;
 
-bool phase_forward = 1;
-bool sync_using_sdcard = false;
+volatile bool phase_forward = 1;
+volatile bool sync_using_sdcard = false;
 
 uint16_t total_number_samples = 0;
 
 // one wire midi
-bool use_onewiremidi = false;
+volatile bool use_onewiremidi = false;
 
 bool do_switch_between_clock_and_midi = false;
 bool playback_was_stopped_clock = false;
@@ -111,9 +111,9 @@ uint8_t retrig_beat_num = 0;
 uint16_t retrig_timer_reset = 96;
 bool retrig_first = false;
 bool retrig_ready = false;
-float retrig_vol = 1.0;
+volatile float retrig_vol = 1.0;
 float retrig_vol_step = 0;
-uint8_t retrig_pitch = 48;
+volatile uint8_t retrig_pitch = 48;
 int8_t retrig_pitch_change = 0;
 int16_t retrig_filter_change = 0;
 int16_t retrig_filter_original = 0;
@@ -180,8 +180,8 @@ uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
 
 // add variable to keep track of variation
-uint8_t sel_variation = 0;
-int8_t sel_variation_next = 0;
+volatile uint8_t sel_variation = 0;
+volatile int8_t sel_variation_next = 0;
 bool sel_variation_fadeout = false;
 uint8_t global_brightness = 50;  // 0 - 100
 bool global_amen_cv_bipolar = true;
@@ -191,7 +191,7 @@ bool global_amen_cv_bipolar = true;
 uint8_t global_amen_cv_behavior = AMEN_CV_BEHAVIOR_JUMP;
 bool global_break_cv_bipolar = true;
 bool global_sample_cv_bipolar = true;
-bool clock_start_stop_sync = false;
+volatile bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 bool clock_behavior_sync_slice = false;
 uint32_t clock_output_trig_time = 0;
@@ -200,13 +200,13 @@ uint8_t grimoire_rune = 0;
 bool clock_out_do = false;
 bool clock_out_ready = false;
 uint32_t ecto_trig_out_last = 0;
-bool clock_in_do = false;
+volatile bool clock_in_do = false;
 bool clock_input_absent_zeptocore = false;
 bool clock_in_ready = false;
 uint8_t clock_in_activator = 0;
 int32_t clock_in_beat_total = 0;
-uint32_t clock_in_diff_2x = 0;
-uint32_t clock_in_last_time = 0;
+volatile uint32_t clock_in_diff_2x = 0;
+volatile uint32_t clock_in_last_time = 0;
 uint32_t clock_in_last_last_time = 0;
 uint8_t led_text_time = 200;
 
@@ -230,7 +230,7 @@ bool do_stop_playback = false;
 bool do_restart_playback = true;
 bool playback_stopped = true;
 bool playback_restarted = false;
-bool audio_callback_in_mute = false;
+volatile bool audio_callback_in_mute = false;
 bool do_calibration_mode = false;
 bool mode_amiga = false;
 bool mode_toggle_momentary = false;
@@ -265,7 +265,7 @@ DebounceDigits *debouncer_digits;
 
 MessageSync *messagesync;
 bool sdcard_startup_is_starting = false;
-bool button_mute = false;
+volatile bool button_mute = false;
 bool trigger_button_mute = false;
 
 // reverb

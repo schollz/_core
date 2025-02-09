@@ -18,8 +18,11 @@
 #include "hardware/pio.h"
 #include "hardware/regs/dreq.h"
 #include "hardware/structs/dma.h"
+#include "hardware/watchdog.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
+
+uint32_t fifo_full_counter = 0;
 
 // #define CORE1_PROCESS_I2S_CALLBACK  // Multi-Core Processing Mode
 //(Experimentally Single-Core seems better) #define WATCH_DMA_TRANSFER_INTERVAL
@@ -655,6 +658,13 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
                                               FIFO_TIMEOUT);
     if (!flg) {
       printf("Core0 -> Core1 FIFO Full\n");
+      fifo_full_counter++;
+      if (fifo_full_counter == 50) {
+        watchdog_reboot(0, SRAM_END, 1900);
+        sleep_ms(10);
+      }
+    } else {
+      fifo_full_counter = 0;
     }
 #else
     i2s_callback_func();
@@ -696,6 +706,13 @@ void audio_i2s_set_enabled(bool enabled) {
       flg = multicore_fifo_push_timeout_us(NOTIFY_I2S_DISABLED, FIFO_TIMEOUT);
       if (!flg) {
         printf("Core0 -> Core1 FIFO Full\n");
+        fifo_full_counter++;
+        if (fifo_full_counter == 50) {
+          watchdog_reboot(0, SRAM_END, 1900);
+          sleep_ms(10);
+        }
+      } else {
+        fifo_full_counter = 0;
       }
       flg = multicore_fifo_pop_timeout_us(FIFO_TIMEOUT, &msg);
       if (!flg || msg != RESPONSE_CORE1_THREAD_TERMINATED) {
