@@ -70,7 +70,7 @@ set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-Wl,--pri
 target_compile_options(${PROJECT_NAME} PRIVATE
     # -Wall
     # -Wextra
-    -O3
+    -O2
 )
 
 include(target_compile_definitions.cmake)
