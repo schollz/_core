@@ -52,6 +52,33 @@ void __not_in_flash_func(update_filter_from_envelope)(int32_t val) {
   }
 }
 
+#define INTERPOLATE_VALUE 512
+int16_t newArray[SAMPLES_PER_BUFFER];
+
+void __not_in_flash_func(array_resample_linear441)(int16_t *arr,
+                                                   int16_t arr_size) {
+  // If the sizes match, simply copy the input array
+  if (arr_size == SAMPLES_PER_BUFFER) {
+    for (int16_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
+      newArray[i] = arr[i];
+    }
+  }
+
+  // Calculate step size in fixed-point format
+  uint32_t stepSize = (arr_size)*INTERPOLATE_VALUE / (SAMPLES_PER_BUFFER);
+
+  for (int16_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
+    uint32_t indexFixed = i * stepSize;               // Fixed-point index
+    uint32_t index = indexFixed / INTERPOLATE_VALUE;  // Integer part
+    uint32_t frac = indexFixed % INTERPOLATE_VALUE;   // Fractional part
+
+    // Perform fixed-point linear interpolation
+    int32_t x = ((int32_t)arr[index] * (INTERPOLATE_VALUE - frac)) +
+                ((int32_t)arr[index + 1] * frac);
+    newArray[i] = x / INTERPOLATE_VALUE;
+  }
+}
+
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
 uint32_t sine_wave_counter = 0;
 #endif
@@ -599,9 +626,7 @@ BREAKOUT_OF_MUTE:
             .snd[FILEZERO]
             ->num_channels == 0) {
       // mono
-      int16_t *newArray;
-      newArray = array_resample_linear(values, samples_to_read,
-                                       buffer->max_sample_count);
+      array_resample_linear441(values, samples_to_read);
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade && !do_fade_in) {
@@ -634,7 +659,6 @@ BREAKOUT_OF_MUTE:
       if (first_loop) {
         first_loop = false;
       }
-      free(newArray);
     } else if (banks[sel_bank_cur]
                    ->sample[sel_sample_cur]
                    .snd[FILEZERO]
@@ -648,9 +672,7 @@ BREAKOUT_OF_MUTE:
           }
         }
 
-        int16_t *newArray;
-        newArray = array_resample_linear(valuesC, samples_to_read,
-                                         buffer->max_sample_count);
+        array_resample_linear441(valuesC, samples_to_read);
 
         // TODO: function pointer for audio block here?
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -672,7 +694,6 @@ BREAKOUT_OF_MUTE:
           samples[i * 2 + channel] +=
               q16_16_multiply(((int32_t)newArray[i]) << 16, vol_main);
         }
-        free(newArray);
       }
       first_loop = false;
     }
@@ -919,10 +940,11 @@ BREAKOUT_OF_MUTE:
 #ifdef PRINT_AUDIO_CPU_USAGE
     uint32_t total_heap = getTotalHeap();
     uint32_t used_heap = total_heap - getFreeHeap();
-    MessageSync_printf(messagesync, "cpu [mem]: %2.1f [ %2.1f%% (%ld/%ld)]\n",
+    MessageSync_printf(messagesync,
+                       "cpu [mem]: %2.1f [ %2.1f%% (%ld/%ld)] %d\n",
                        ((float)cpu_utilization) / (float)cpu_utilizations_i,
                        (float)(used_heap) / (float)(total_heap) * 100.0,
-                       used_heap, total_heap);
+                       used_heap, total_heap, buffer->max_sample_count);
 
 #endif
     cpu_utilizations_i = 0;
