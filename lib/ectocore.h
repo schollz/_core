@@ -435,6 +435,7 @@ void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
 
+bool dont_wait = false;
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
   while (!fil_is_open) {
@@ -862,9 +863,9 @@ void __not_in_flash_func(input_handling)() {
           }
           sel_sample_next_new =
               linlin(val, cv_min, 512, 0, banks[sel_bank_cur]->num_samples);
-          if (debounce_file_change == 0 &&
-              sel_sample_cur != sel_sample_next_new) {
-            debounce_file_change = DEBOUNCE_FILE_SWITCH;
+          if (sel_sample_cur != sel_sample_next_new) {
+            debounce_file_change = 1;
+            dont_wait = true;
           }
         }
       }
@@ -1496,7 +1497,11 @@ void __not_in_flash_func(input_handling)() {
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
       bool do_try_change = false;
-      if (!audio_callback_in_mute) {
+      if (dont_wait) {
+        do_try_change = true;
+        dont_wait = false;
+      }
+      if (!audio_callback_in_mute && !do_try_change) {
         // uint32_t time_start = time_us_32();
         sleep_us(100);
         while (!sync_using_sdcard) {
