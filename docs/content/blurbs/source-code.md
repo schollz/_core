@@ -8,7 +8,7 @@ weight = 12
 
 Periodically, new firmwares are released with updated effects or improved performance. If you have the tool installed, you can connect your device to your computer and automatically update the firmware. You can also download the latest release directly from this link:
 
-### Latest firmware: **[zeptocore v6.2.18](https://github.com/schollz/_core/releases/download/v6.2.18/zeptocore_v6.2.18.uf2)**
+### Latest firmware: **[zeptocore v6.2.19](https://github.com/schollz/_core/releases/download/v6.2.19/zeptocore_v6.2.19.uf2)**
 
 ## Instructions
 
@@ -17,7 +17,7 @@ To update your zeptocore to the latest version, follow these steps:
 1. Connect a USB-C cable to the device and hold the `BOOTSEL` button (located near the USB-C jack).
 2. While holding the `BOOTSEL` button, press the `NRST` button (also near the USB-C jack).
 3. After a few seconds, a new drive named `RPI-RP2` should appear on your computer.
-4. Drag and drop the downloaded **zeptocore_v6.2.18.uf2** file onto the `RPI-RP2` drive.
+4. Drag and drop the downloaded **zeptocore_v6.2.19.uf2** file onto the `RPI-RP2` drive.
 5. Wait momentarily for the drive to disappear, indicating the update is complete, and the device will turn on automatically.
 
 
@@ -30,7 +30,7 @@ To update your zeptocore to the latest version, follow these steps:
 
 Congratulations, your zeptocore has been successfully updated to the latest version. 
 
-(_Note:_ If using [zeptoboard](#zeptoboard), follow the same instructions but ensure you download the latest [zeptoboard_v6.2.18.uf2](https://github.com/schollz/_core/releases/download/v6.2.18/zeptoboard_v6.2.18.uf2)).
+(_Note:_ If using [zeptoboard](#zeptoboard), follow the same instructions but ensure you download the latest [zeptoboard_v6.2.19.uf2](https://github.com/schollz/_core/releases/download/v6.2.19/zeptoboard_v6.2.19.uf2)).
 
 ### Tool uploader
 
