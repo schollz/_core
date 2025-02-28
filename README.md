@@ -137,6 +137,9 @@ If you encounter a freeze, it would be helpful to know the following:
 
 > What SD card are you using? If you are using a custom SD card, please try using the stock SD (or [approved SD card](https://github.com/schollz/_core?tab=readme-ov-file#which-sd-card-can-i-use)) card to see if the issue persists. If it does, please answer the following questions.
 
+> How many samples did you load? Even though all 16 banks can be used, the ectocore currently only supports about 150 samples due to recent firmware changes. If you exceed 
+> this limit, the device may freeze on start.
+
 > Were effects on or off during the freeze? Try turning off all effects (Break knob fully CCW) and see if the issue persists.
 
 > Are you using custom samples or the stock samples? Try using the [stock samples](https://infinitedigits.co/zeptocore_default_samples_v6.zip) and see if the issue persists.
@@ -149,7 +152,29 @@ Please submit an issue with responses to these questions by [clicking here](http
 
 If, however, you want to return the device, I completely understand. Please reach out to the seller for a return.
 
+### Why is the ectocore not playing in time?
 
+The ectocore is very good at putting out what you put into it. In many cases, users that experience timing issues are due 
+to their samples not being in time (e.g. if you have a sound sample that is 8 beats at 120 bpm it should be 8*60/120 = 4 seconds long) or due to the sample not being sliced well (slices should ideally go right before transients).
+
+The stability of the ectocore varies based on whether you use the internal clock, with or without oversampling, or externally clocked.
+
+In order of stability:
+
+1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.2.19/ectocore_no_overclocking_v6.2.19.uf2)). This is more stable than Pam's.
+2) Externally clock Ectocore using a clock source. Even when Ectocore is overclocked, it follows the clock source very well.
+3) Internally clock Ectocore using the overclocking firmware (the default). This is about two times less stable than Pam's clock source.
+
+You can visualize this ordering in the data I collected below, where Ectocore was clocked internally (with or without overclocking) or externally (with Pam's clock source). 
+
+![Clocking](/dev/clocking.png)
+
+1) Pam's, by itself, without Ectocore, starts to slowly drag (Red line).
+2) Ectocore, clocked by Pam's, will stay very close to Pam's (which means it will slowly drag) (Blue line).
+3) Ectocore, with the normal firmware (overclocked), internally clocked, will start to get ahead of the tempo, worse than Pam's but not terribly bad (Green line).
+4) Ectocore, with the non-overclocked firmware, internally clocked, will be rock steady, more than Pam's or anything else (Purple line). Rock steady means deviating by only 0.5 ms after almost 20 minutes.
+
+If you are still having issues, please submit an issue  by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
 ### Which SD Card can I use?
 
