@@ -178,6 +178,14 @@ You can visualize this ordering in the data I collected below, where Ectocore wa
 
 If you are still having issues, please submit an issue  by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
+### Why is the ectocore have lag?
+
+Ectocore is extremely responsive to start/stop triggers. When started from an external clock (e.g. Pam's) or started from a stop position using the Tap button, the ectocore will begin playing within milliseconds:
+
+![Start](/dev/lag.png)
+
+If you are experiencing lag, it is likely due to the sample you are using. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
+
 ### Which SD Card can I use?
 
 Please note that not all SD cards are equal. Terms like "high-speed," "A1," or "U3" on the card do not necessarily indicate its actual speed performance.
