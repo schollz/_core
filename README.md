@@ -163,7 +163,7 @@ The stability of the ectocore varies based on whether you use the internal clock
 
 In order of stability:
 
-1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.2.19/ectocore_no_overclocking_v6.2.19.uf2)). This is more stable than Pam's.
+1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.2.19/ectocore_no_overclocking_v6.2.19.uf2)). This is more stable than my external clock source (Pam's new workout).
 2) Externally clock Ectocore using a clock source. Even when Ectocore is overclocked, it follows the clock source very well.
 3) Internally clock Ectocore using the overclocking firmware (the default). This is about two times less stable than Pam's clock source.
 
