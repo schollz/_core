@@ -54,7 +54,7 @@
 #include "break_knob.h"
 
 #define KNOB_ATTEN_ZERO_WIDTH 80
-#define DEBOUNCE_FILE_SWITCH 2000
+#define DEBOUNCE_FILE_SWITCH 500
 
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
@@ -435,6 +435,7 @@ void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
 
+bool dont_wait = false;
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
   while (!fil_is_open) {
@@ -487,7 +488,7 @@ void __not_in_flash_func(input_handling)() {
   int16_t knob_val[KNOB_NUM] = {0, 0, 0, 0, 0};
   KnobChange *knob_change[KNOB_NUM];
   for (uint8_t i = 0; i < KNOB_NUM; i++) {
-    knob_change[i] = KnobChange_malloc(6);
+    knob_change[i] = KnobChange_malloc(12);
   }
 
 #define BUTTON_NUM 4
@@ -590,6 +591,7 @@ void __not_in_flash_func(input_handling)() {
 #endif
 
   int cv_amen_last_value = 0;
+  uint8_t knob_selector = 0;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -861,9 +863,9 @@ void __not_in_flash_func(input_handling)() {
           }
           sel_sample_next_new =
               linlin(val, cv_min, 512, 0, banks[sel_bank_cur]->num_samples);
-          if (debounce_file_change == 0 &&
-              sel_sample_cur != sel_sample_next_new) {
-            debounce_file_change = DEBOUNCE_FILE_SWITCH;
+          if (sel_sample_cur != sel_sample_next_new) {
+            debounce_file_change = 1;
+            dont_wait = true;
           }
         }
       }
@@ -914,7 +916,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.2.16\n");
+        printf("version=v6.2.19\n");
       }
     }
 
@@ -976,7 +978,14 @@ void __not_in_flash_func(input_handling)() {
       gpio_put(GPIO_LED_TAPTEMPO, 1);
     }
 
+    knob_selector++;
+    if (knob_selector >= KNOB_NUM) {
+      knob_selector = 0;
+    }
     for (uint8_t i = 0; i < KNOB_NUM; i++) {
+      if (i != knob_selector) {
+        continue;
+      }
       int16_t raw_val = MCP3208_read(mcp3208, knob_gpio[i], false);
       val = KnobChange_update(knob_change[i], raw_val);
       if (debounce_startup == 15 + i) {
@@ -1079,10 +1088,10 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
-        // printf("[ectocore] knob_break %d\n", val);
+        printf("[ectocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        // printf("[ectocore] knob_amen %d\n", val);
+        printf("[ectocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1488,7 +1497,11 @@ void __not_in_flash_func(input_handling)() {
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
       bool do_try_change = false;
-      if (!audio_callback_in_mute) {
+      if (dont_wait) {
+        do_try_change = true;
+        dont_wait = false;
+      }
+      if (!audio_callback_in_mute && !do_try_change) {
         // uint32_t time_start = time_us_32();
         sleep_us(100);
         while (!sync_using_sdcard) {

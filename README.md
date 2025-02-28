@@ -148,6 +148,8 @@ If you encounter a freeze, it would be helpful to know the following:
 
 > What was the BPM set to?
 
+If it happens a lot, please try using [this firmware](https://github.com/schollz/_core/releases/download/v6.2.19/ectocore_no_overclocking_v6.2.19.uf2) which disables overclocking, allows fewer fx, but should increase the stability.
+
 Please submit an issue with responses to these questions by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
 If, however, you want to return the device, I completely understand. Please reach out to the seller for a return.

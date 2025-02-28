@@ -49,11 +49,18 @@ ectocore_v0.3: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h 
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore_v0.3.uf2
 
+ectocore_noclock: copyectonoclock pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	make -C build -j$(NPROCS)
+	mv build/_core.uf2 ectocore.uf2
+
 copyzepto:
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 
 copyecto:
 	cp ectocore_compile_definitions.cmake target_compile_definitions.cmake
+
+copyectonoclock:
+	cp ectocore_compile_definitions_nooverclock.cmake target_compile_definitions.cmake
 
 copyboard:
 	cp zeptoboard_compile_definitions.cmake target_compile_definitions.cmake

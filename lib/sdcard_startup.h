@@ -223,13 +223,13 @@ void load_settings(const char *dir_name) {
         sprintf(effect_name_off, "effect%d-off", effect);
         if (strcmp(fno.fname, effect_name_on) == 0) {
           grimoire_rune_effect[rune - 1][effect - 1] = true;
-          printf("[%d][%d]=%d\n", rune - 1, effect - 1,
-                 grimoire_rune_effect[rune - 1][effect - 1]);
+          // printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+          //        grimoire_rune_effect[rune - 1][effect - 1]);
           break;
         } else if (strcmp(fno.fname, effect_name_off) == 0) {
           grimoire_rune_effect[rune - 1][effect - 1] = false;
-          printf("[%d][%d]=%d\n", rune - 1, effect - 1,
-                 grimoire_rune_effect[rune - 1][effect - 1]);
+          // printf("[%d][%d]=%d\n", rune - 1, effect - 1,
+          //        grimoire_rune_effect[rune - 1][effect - 1]);
           break;
         }
       }
@@ -427,6 +427,7 @@ void update_fx(uint8_t fx_num) {
       if (sf->fx_active[FX_FUZZ]) {
         printf("fuzz activated!\n");
       }
+      break;
     case FX_FILTER:
       if (sf->fx_active[FX_FILTER] && !filter_was_activated) {
         // turn on filter
