@@ -156,7 +156,7 @@ If, however, you want to return the device, I completely understand. Please reac
 
 ### Why is the ectocore not playing in time?
 
-The ectocore is very good at putting out what you put into it. In many cases, users that experience timing issues are due 
+The ectocore is very good at putting out what you put into it, and it is *incredibly* stable if you need it to be. In many cases, users that experience timing issues are due 
 to their samples not being in time (e.g. if you have a sound sample that is 8 beats at 120 bpm it should be 8*60/120 = 4 seconds long) or due to the sample not being sliced well (slices should ideally go right before transients).
 
 The stability of the ectocore varies based on whether you use the internal clock, with or without oversampling, or externally clocked.
