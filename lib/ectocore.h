@@ -609,6 +609,8 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_CUEDSOUNDS
         cuedsounds_do_play = random_integer_in_range(0, CUEDSOUNDS_FILES - 1);
 #endif
+        // reset probabilities
+        probability_of_random_jump = 0;
       } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
         // read flash data
@@ -1421,8 +1423,7 @@ void __not_in_flash_func(input_handling)() {
               cancel_repeating_timer(&timer);
               do_restart_playback = true;
               timer_step();
-              add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                                     repeating_timer_callback, NULL, &timer);
+              update_repeating_timer_to_bpm(sf->bpm_tempo);
               button_mute = false;
             }
             TapTempo_reset(taptempo);
@@ -1458,8 +1459,7 @@ void __not_in_flash_func(input_handling)() {
             cancel_repeating_timer(&timer);
             do_restart_playback = true;
             timer_step();
-            add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                                   repeating_timer_callback, NULL, &timer);
+            update_repeating_timer_to_bpm(sf->bpm_tempo);
             button_mute = false;
             TapTempo_reset(taptempo);
           }

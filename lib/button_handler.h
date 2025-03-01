@@ -415,8 +415,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         cancel_repeating_timer(&timer);
         do_restart_playback = true;
         timer_step();
-        add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                               repeating_timer_callback, NULL, &timer);
+        update_repeating_timer_to_bpm(sf->bpm_tempo);
         button_mute = false;
       } else {
         if (!button_mute) trigger_button_mute = true;

@@ -569,4 +569,20 @@ void do_random_sequence_len(uint8_t len) {
   random_sequence_length = len;
 }
 
+void update_repeating_timer_to_bpm(float bpm) {
+  // calibrated
+  // BPM	Beats	Time	  Measured BPM	Difference
+  // 90	  160	  106.022	90.54724491	1.006080499
+  // 120	96	  47.705	120.7420606	1.006183838
+  // 160	160	  59.625	161.0062893	1.006289308
+  // 180	160	  53	    181.1320755	1.006289308
+  // average difference = 1.006210738
+  // 312500 * 1.006210738 = 314441.043
+  add_repeating_timer_us(-(round(314441.0f / bpm)), repeating_timer_callback,
+                         NULL, &timer);
+  // original
+  // add_repeating_timer_us(-(round(312500.0f / bpm)), repeating_timer_callback,
+  //                        NULL, &timer);
+}
+
 #endif
