@@ -1656,7 +1656,7 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsOverrideWithReset', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
+            content: "Select the CV to use as a 'Reset' to reset the ectocore to the first slice. This will disable the selected CV and use the reset CV instead.",
         });
         tippy('#pSettingsMashMode', {
             zIndex: 9999999,
