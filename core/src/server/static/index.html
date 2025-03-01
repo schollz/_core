@@ -121,8 +121,10 @@
             </p>
             [[ else ]]
             <p id="pSettingsClockStop">
-                <label for="settingsClockStop" style="padding-right:1em;">Incoming clock behavior</label>
-                <select id="settingsClockStop" v-model="settingsClockStop">
+                <label for="settingsClockStop" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'clk' }">Incoming clock behavior</label>
+                <select id="settingsClockStop" v-model="settingsClockStop"
+                    :disabled="settingsOverrideWithReset === 'clk'">
                     <option value="sync">stop if clock stops</option>
                     <option value="continue">continue if clock stops</option>
                 </select>
@@ -142,34 +144,51 @@
                 </select>
             </p>
             <p id="pSettingsAmenCV">
-                <label for="settingsAmenCV" style="padding-right:1em;">Amen CV polarity</label>
+                <label for="settingsAmenCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'amen' }">Amen CV polarity</label>
                 <!-- drop down menu -->
-                <select id="settingsAmenCV" v-model="settingsAmenCV">
+                <select id="settingsAmenCV" v-model="settingsAmenCV" :disabled="settingsOverrideWithReset === 'amen'">
                     <option value="bipolar">bipolar (-5 to +5v)</option>
                     <option value="unipolar">unipolar (0 to +5v)</option>
                 </select>
             </p>
             <p id="pSettingsAmenBehavior">
-                <label for="settingsAmenBehavior" style="padding-right:1em;">Amen CV behavior</label>
+                <label for="settingsAmenBehavior" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'amen' }">Amen CV behavior</label>
                 <!-- drop down menu -->
-                <select id="settingsAmenBehavior" v-model="settingsAmenBehavior">
+                <select id="settingsAmenBehavior" v-model="settingsAmenBehavior"
+                    :disabled="settingsOverrideWithReset === 'amen'">
                     <option value="jump">jump on change</option>
                     <option value="repeat">repeat at CV</option>
                     <option v-if="settingsAmenCV=='bipolar'" value="split">split: &lt;0v repeat, &ge;0v jump</option>
                 </select>
             </p>
             <p id="pSettingsBreakCV">
-                <label for="settingsBreakCV" style="padding-right:1em;">Break CV polarity</label>
-                <select id="settingsBreakCV" v-model="settingsBreakCV">
+                <label for="settingsBreakCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'break' }">Break CV polarity</label>
+                <select id="settingsBreakCV" v-model="settingsBreakCV"
+                    :disabled="settingsOverrideWithReset === 'break'">
                     <option value="bipolar">bipolar (-5 to +5v)</option>
                     <option value="unipolar">unipolar (0 to +5v)</option>
                 </select>
             </p>
             <p id="pSettingsSampleCV">
-                <label for="settingsSampleCV" style="padding-right:1em;">Sample CV polarity</label>
-                <select id="settingsSampleCV" v-model="settingsSampleCV">
+                <label for="settingsSampleCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'sample' }">Sample CV polarity</label>
+                <select id="settingsSampleCV" v-model="settingsSampleCV"
+                    :disabled="settingsOverrideWithReset === 'sample'">
                     <option value="bipolar">bipolar (-5 to +5v)</option>
                     <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsOverrideWithReset">
+                <label for="settingsOverrideWithReset" style="padding-right:1em;">Reset CV (Override)</label>
+                <select id="settingsOverrideWithReset" v-model="settingsOverrideWithReset">
+                    <option value="none">None</option>
+                    <option value="amen">Amen CV</option>
+                    <option value="break">Break CV</option>
+                    <option value="sample">Sample CV</option>
+                    <option value="clk">Incoming Clock</option>
                 </select>
             </p>
 
@@ -1171,8 +1190,6 @@
 
             // // show settings dialog (for debugging)
             // document.getElementById("dialog-settings").showModal();
-
-
         };
     </script>
 

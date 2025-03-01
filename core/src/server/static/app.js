@@ -332,6 +332,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsSampleCV) {
             app.settingsSampleCV = savedState.settingsSampleCV;
         }
+        if (savedState.settingsOverrideWithReset) {
+            app.settingsOverrideWithReset = savedState.settingsOverrideWithReset;
+        }
         if (savedState.settingsKnobXSample) {
             app.settingsKnobXSample = savedState.settingsKnobXSample;
         }
@@ -534,6 +537,7 @@ app = new Vue({
         settingsAmenBehavior: "split",
         settingsBreakCV: "bipolar",
         settingsSampleCV: "bipolar",
+        settingsOverrideWithReset: "none",
         settingsKnobXSample: false,
         settingsMashMode: false,
         progressBarWidth: '0px',
@@ -587,6 +591,7 @@ app = new Vue({
         settingsAmenBehavior: 'saveState',
         settingsBreakCV: 'saveState',
         settingsSampleCV: 'saveState',
+        settingsOverrideWithReset: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         settingsMashMode: 'saveState',
@@ -995,10 +1000,12 @@ app = new Vue({
                 settingsAmenBehavior: app.settingsAmenBehavior,
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
+                settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
             };
+            console.log(`settingsOverrideWithReset: ${app.settingsOverrideWithReset}`);
             if (!hasSavedToCookie) {
                 saveCurrentPage();
                 hasSavedToCookie = true;
@@ -1288,6 +1295,7 @@ app = new Vue({
                 settingsAmenBehavior: app.settingsAmenBehavior,
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
+                settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
@@ -1644,6 +1652,11 @@ window.addEventListener('load', (event) => {
             zIndex: 9999999,
             appendTo: "parent",
             content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
+        });
+        tippy('#pSettingsOverrideWithReset', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Select the CV to use as a 'Reset' to reset the ectocore to the first slice. This will disable the selected CV and use the reset CV instead.",
         });
         tippy('#pSettingsMashMode', {
             zIndex: 9999999,

@@ -133,6 +133,32 @@ void load_settings(const char *dir_name) {
       clock_output_trig = false;
     }
 
+    cv_reset_override = CV_RESET_NONE;
+    // switch data.SettingsOverrideWithReset {
+    //   case "none":
+    //     os.Create(path.Join(settingsFolder, "override_with_reset-none"))
+    //   case "sample":
+    //     os.Create(path.Join(settingsFolder, "override_with_reset-sample"))
+    //   case "break":
+    //     os.Create(path.Join(settingsFolder, "override_with_reset-break"))
+    //   case "amen":
+    //     os.Create(path.Join(settingsFolder, "override_with_reset-amen"))
+    //   case "clk":
+    //     os.Create(path.Join(settingsFolder, "override_with_reset-clk"))
+    //   }
+    // check for cv reset override
+    if (strcmp(fno.fname, "override_with_reset-none") == 0) {
+      cv_reset_override = CV_RESET_NONE;
+    } else if (strcmp(fno.fname, "override_with_reset-sample") == 0) {
+      cv_reset_override = CV_SAMPLE;
+    } else if (strcmp(fno.fname, "override_with_reset-break") == 0) {
+      cv_reset_override = CV_BREAK;
+    } else if (strcmp(fno.fname, "override_with_reset-amen") == 0) {
+      cv_reset_override = CV_AMEN;
+    } else if (strcmp(fno.fname, "override_with_reset-clk") == 0) {
+      cv_reset_override = CV_CLOCK;
+    }
+
     // check for clock output behavior (sync with tempo or sync with slice)
     if (strcmp(fno.fname, "clock_behavior_sync_slice-on") == 0) {
       clock_behavior_sync_slice = true;

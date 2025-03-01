@@ -52,8 +52,7 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
         cancel_repeating_timer(&timer);
         do_restart_playback = true;
         timer_step();
-        add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                               repeating_timer_callback, NULL, &timer);
+        update_repeating_timer_to_bpm(sf->bpm_tempo);
 
         button_mute = false;
       } else {

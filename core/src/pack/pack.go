@@ -31,6 +31,7 @@ type Data struct {
 	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
 	SettingsMashMode          bool     `json:"settingsMashMode"`
 	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
+	SettingsOverrideWithReset string   `json:"settingsOverrideWithReset"`
 	Banks                     []struct {
 		Files []string `json:"files"`
 	} `json:"banks"`
@@ -133,6 +134,19 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		os.Create(path.Join(settingsFolder, "clock_output_trig-on"))
 	} else {
 		os.Create(path.Join(settingsFolder, "clock_output_trig-off"))
+	}
+
+	switch data.SettingsOverrideWithReset {
+	case "none":
+		os.Create(path.Join(settingsFolder, "override_with_reset-none"))
+	case "sample":
+		os.Create(path.Join(settingsFolder, "override_with_reset-sample"))
+	case "break":
+		os.Create(path.Join(settingsFolder, "override_with_reset-break"))
+	case "amen":
+		os.Create(path.Join(settingsFolder, "override_with_reset-amen"))
+	case "clk":
+		os.Create(path.Join(settingsFolder, "override_with_reset-clk"))
 	}
 
 	if data.SettingsClockBehaviorSync == "slice" {

@@ -41,8 +41,7 @@ bool timer_step() {
            banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm);
     bpm_last = sf->bpm_tempo;
     cancel_repeating_timer(&timer);
-    add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                           repeating_timer_callback, NULL, &timer);
+    update_repeating_timer_to_bpm(sf->bpm_tempo);
   }
   if (do_restart_playback) {
     do_restart_playback = false;
@@ -742,7 +741,7 @@ int main() {
     do_calibration_mode =
         do_calibration_mode &&
         (gpio_get(GPIO_BTN_BANK) == 0 && gpio_get(GPIO_BTN_TAPTEMPO) == 0);
-        printf("entering calibration mode\n");
+    printf("entering calibration mode\n");
   }
 #endif
   if (!do_calibration_mode) {
@@ -767,9 +766,7 @@ int main() {
   // it again 500ms later regardless of how long the callback took to execute
   // add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
   // cancel_repeating_timer(&timer);
-  add_repeating_timer_us(-(round(30000000 / sf->bpm_tempo / 96)),
-                         repeating_timer_callback, NULL, &timer);
-
+  update_repeating_timer_to_bpm(sf->bpm_tempo);
   // initialize random library
   random_initialize();
 
