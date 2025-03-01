@@ -194,6 +194,7 @@ bool global_sample_cv_bipolar = true;
 volatile bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 int8_t cv_reset_override = -1;
+bool cv_reset_override_active = false;
 bool clock_behavior_sync_slice = false;
 uint32_t clock_output_trig_time = 0;
 bool grimoire_rune_effect[7][16];
@@ -585,4 +586,11 @@ void update_repeating_timer_to_bpm(float bpm) {
   //                        NULL, &timer);
 }
 
+void timer_reset() {
+  cancel_repeating_timer(&timer);
+  do_restart_playback = true;
+  timer_step();
+  update_repeating_timer_to_bpm(sf->bpm_tempo);
+  button_mute = false;
+}
 #endif
