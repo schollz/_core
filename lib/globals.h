@@ -193,6 +193,7 @@ bool global_break_cv_bipolar = true;
 bool global_sample_cv_bipolar = true;
 volatile bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
+int8_t cv_reset_override = -1;
 bool clock_behavior_sync_slice = false;
 uint32_t clock_output_trig_time = 0;
 bool grimoire_rune_effect[7][16];
@@ -408,9 +409,11 @@ float pitch_vals[PITCH_VAL_MAX] = {
 uint8_t ectocore_trigger_mode = 0;
 uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
 uint8_t cv_attenuate[2] = {MCP_ATTEN_AMEN, MCP_ATTEN_BREAK};
+#define CV_RESET_NONE -1
 #define CV_AMEN 0
 #define CV_BREAK 1
 #define CV_SAMPLE 2
+#define CV_CLOCK 3
 bool cv_plugged[3] = {false, false, false};
 int8_t cv_beat_current_override = -1;
 
