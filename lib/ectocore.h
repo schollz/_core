@@ -545,10 +545,10 @@ void __not_in_flash_func(input_handling)() {
   Dust_setCallback(dust[0], dust_1);
   Dust_setDuration(dust[0], 1000 * 8);
 
-  // create clock/midi
-  Onewiremidi *onewiremidi =
-      Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
-                      midi_start, midi_continue, midi_stop, midi_timing);
+  // // create clock/midi
+  // Onewiremidi *onewiremidi =
+  //     Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
+  //                     midi_start, midi_continue, midi_stop, midi_timing);
   ClockInput *clockinput =
       ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
                         clock_handling_start);
@@ -681,20 +681,38 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    ClockInput_update(clockinput);
-    if (clock_in_do || !clock_input_absent) {
-      bool clock_input_absent_new =
-          ClockInput_timeSinceLast(clockinput) > 1000000;
-      if (clock_input_absent_new != clock_input_absent) {
-        clock_input_absent = clock_input_absent_new;
-        if (clock_input_absent) {
-          printf("[ectocore] clock input absent\n");
-        } else {
-          printf("[ectocore] clock input present\n");
+    if (cv_reset_override == CV_CLOCK) {
+      // check GPIO_CLOCK_IN
+      if (!gpio_get(GPIO_CLOCK_IN)) {
+        if (!cv_reset_override_active) {
+          cv_reset_override_active = true;
+          timer_reset();
+          // printf("[ectocore] cv_reset_override %d\n",
+          // cv_reset_override_active);
+        }
+      } else {
+        if (cv_reset_override_active) {
+          cv_reset_override_active = false;
+          // printf("[ectocore] cv_reset_override %d\n",
+          // cv_reset_override_active);
         }
       }
+    } else {
+      ClockInput_update(clockinput);
+      if (clock_in_do || !clock_input_absent) {
+        bool clock_input_absent_new =
+            ClockInput_timeSinceLast(clockinput) > 1000000;
+        if (clock_input_absent_new != clock_input_absent) {
+          clock_input_absent = clock_input_absent_new;
+          if (clock_input_absent) {
+            printf("[ectocore] clock input absent\n");
+          } else {
+            printf("[ectocore] clock input present\n");
+          }
+        }
+      }
+      // Onewiremidi_receive(onewiremidi);
     }
-    Onewiremidi_receive(onewiremidi);
 
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
@@ -780,6 +798,17 @@ void __not_in_flash_func(input_handling)() {
       if (cv_plugged[i]) {
         // collect out CV values
         val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
+        if (cv_reset_override == i) {
+          if (cv_reset_override_active && val < 128) {
+            cv_reset_override_active = false;
+            // printf("[ectocore] cv_reset_override %d\n",
+            //        cv_reset_override_active);
+          } else if (!cv_reset_override_active && val > 250) {
+            cv_reset_override_active = true;
+            timer_reset();
+          }
+          continue;
+        }
         // then do something based on the CV value
         if (i == CV_AMEN) {
           if (cv_start == -1 || cv_stop == -1) {
@@ -1420,11 +1449,7 @@ void __not_in_flash_func(input_handling)() {
               do_stop_playback = true;
             } else if (playback_stopped && !do_restart_playback) {
               printf("[ectocore] ectocore start\n");
-              cancel_repeating_timer(&timer);
-              do_restart_playback = true;
-              timer_step();
-              update_repeating_timer_to_bpm(sf->bpm_tempo);
-              button_mute = false;
+              timer_reset();
             }
             TapTempo_reset(taptempo);
           } else if (gpio_btn_state[BTN_MODE]) {
