@@ -1402,7 +1402,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         hideScrollbar: false,
         autoScroll: false,
         autoCenter: true,
-        url: filename + ".ogg",
+        url: encodeURIComponent(filename) + ".ogg",
     });
     // resize whenever a zoom
     wsf.on('zoom', () => {
