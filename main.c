@@ -392,11 +392,21 @@ bool timer_step() {
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (clock_in_do) {
-          beat_current = clock_in_beat_total % banks[sel_bank_cur]
-                                                   ->sample[sel_sample_cur]
-                                                   .snd[FILEZERO]
-                                                   ->slice_num;
-          // printf("[main] beat_current from clock in: %d\n", beat_current);
+          beat_current = (int)roundf((float)clock_in_beat_total * 96.0f /
+                                     (float)banks[sel_bank_cur]
+                                         ->sample[sel_sample_cur]
+                                         .snd[FILEZERO]
+                                         ->splice_trigger) %
+                         banks[sel_bank_cur]
+                             ->sample[sel_sample_cur]
+                             .snd[FILEZERO]
+                             ->slice_num;
+          // printf("[main] beat_current from clock in: %d (%d)\n",
+          // beat_current,
+          //        banks[sel_bank_cur]
+          //            ->sample[sel_sample_cur]
+          //            .snd[FILEZERO]
+          //            ->splice_trigger);
         } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
           uint8_t lo = key3_pressed_keys[0] - 4;
           uint8_t hi = key3_pressed_keys[1] - 4;
