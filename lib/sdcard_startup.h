@@ -147,7 +147,6 @@ void load_settings(const char *dir_name) {
 //   }
 // check for cv reset override
 #ifdef INCLUDE_ECTOCORE
-    cv_reset_override = CV_RESET_NONE;
     if (strcmp(fno.fname, "override_with_reset-none") == 0) {
       cv_reset_override = CV_RESET_NONE;
     } else if (strcmp(fno.fname, "override_with_reset-sample") == 0) {
