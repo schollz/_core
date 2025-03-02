@@ -1,3 +1,15 @@
+#!/usr/bin/env -S uv --quiet run --script
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "matplotlib",
+#     "numpy",
+#     "scikit-image",
+#     "plotly",
+#     "kaleido",
+# ]
+# ///
+
 # sudo minicom -b 115200 -o -D /dev/ttyACM0 | tee dev/sdcards/micro_center_10_64gb_xc.txt
 # mogrify -resize 440x560! *.png
 
@@ -8,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.patches as patches
+import matplotlib
 from skimage.transform import resize
 
 
