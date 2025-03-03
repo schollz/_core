@@ -82,6 +82,14 @@ jobs:
         run: |
           make ectocore
           cp ectocore.uf2 ectocore_${{ github.event.release.name }}.uf2
+      - name: Build ectocore_128.uf2
+        run: |
+          make ectocore_128
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}_128.uf2
+      - name: Build ectocore_256.uf2
+        run: |
+          make ectocore_256
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}_256.uf2
       - name: Build ectocore_v0.3.uf2
         run: |
           make ectocore_v0.3
