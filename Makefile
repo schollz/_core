@@ -7,7 +7,7 @@ GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
 
-dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 
 chowdsp:
@@ -25,31 +25,31 @@ install_go21:
 		$(GOINSTALLPATH) download; \
 	fi
 
-zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptoboard: copyboard pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptoboard.uf2
 
-zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptocore.uf2
 
-zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptocore_nooverclock.uf2
 
-ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore: copyecto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore.uf2
 
-ectocore_v0.3: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_v0.3: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_v0.3.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore_v0.3.uf2
 
-ectocore_noclock: copyectonoclock pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_noclock: copyectonoclock pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore.uf2
 
@@ -94,16 +94,19 @@ lib/sinewaves2.h: .venv
 	.venv/bin/python lib/sinewaves2.py > lib/sinewaves2.h
 	clang-format -i lib/sinewaves2.h
 
-lib/crossfade4.h: .venv
-	# set block size to 441
-	cd lib && ../.venv/bin/python crossfade4.py 441 > crossfade4.h
-	clang-format -i --style=google lib/crossfade4.h
+lib/crossfade4_441.h: .venv
+	cd lib && ../.venv/bin/python crossfade4.py 128 > crossfade4_128.h
+	clang-format -i --style=google lib/crossfade4_128.h
+	cd lib && ../.venv/bin/python crossfade4.py 256 > crossfade4_256.h
+	clang-format -i --style=google lib/crossfade4_256.h
+	cd lib && ../.venv/bin/python crossfade4.py 441 > crossfade4_441.h
+	clang-format -i --style=google lib/crossfade4_441.h
 
 lib/selectx2.h: .venv
 	cd lib && ../.venv/bin/python selectx2.py > selectx2.h
 	clang-format -i --style=google lib/selectx2.h
 
-lib/crossfade.h: .venv lib/crossfade4.h
+lib/crossfade.h: .venv lib/crossfade4_441.h
 	cd lib && ../.venv/bin/python transfer_saturate.py > transfer_saturate.h
 	clang-format -i --style=google lib/transfer_saturate.h
 	cd lib && ../.venv/bin/python transfer_distortion.py > transfer_distortion.h

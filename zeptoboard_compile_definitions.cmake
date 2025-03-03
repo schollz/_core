@@ -6,6 +6,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # utilize core1 for audio to avoid dropouts
+    SAMPLES_PER_BUFFER=441
     SDCARD_CMD_GPIO=11
     SDCARD_D0_GPIO=12 
     AUDIO_CLK_GPIO=16 

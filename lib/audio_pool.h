@@ -25,14 +25,6 @@
 #define WAV_HEADER 44
 #define SAMPLE_RATE 44100
 
-// SAMPLES_PER_BUFFER is a compromise on latency and processing power
-// sd-card reading of 880 samples (~20 ms) takes ~3.6 ms
-// sd-card reading of 441 samples (~10 ms) takes ~3.4 ms
-// sd-card reading of 330 samples (~7.5 ms) takes ~3.1 ms
-// SO ~3-4 ms is spent every block on reading
-// which means whatever is left is all that is left for processing
-#define SAMPLES_PER_BUFFER 441  // Samples / channel
-
 #define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / SAMPLE_RATE
 
 audio_buffer_pool_t *init_audio() {
