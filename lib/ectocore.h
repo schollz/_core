@@ -1167,7 +1167,8 @@ void __not_in_flash_func(input_handling)() {
             WS2812_show(ws2812);
           }
         } else {
-          if (!cv_plugged[CV_AMEN]) {
+          if (!cv_plugged[CV_AMEN] ||
+              (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
             if (val < 57) {
               for (uint8_t i = 0; i < 16; i++) {
                 WS2812_fill(ws2812, i, 250, 0, 140);
@@ -1237,7 +1238,8 @@ void __not_in_flash_func(input_handling)() {
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         // printf("[ectocore] knob_amen_atten %d\n", val);
         // check if CV is plugged in for AMEN
-        if (!cv_plugged[CV_AMEN]) {
+        if (!cv_plugged[CV_AMEN] ||
+            (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
           if (val < 512 - 24) {
             sf->stay_in_sync = false;
             probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
