@@ -59,6 +59,11 @@ ectocore_128: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h l
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 ectocore.uf2
 
+ectocore_64: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp ectocore_compile_definitions_64.cmake target_compile_definitions.cmake
+	make -C build -j$(NPROCS)
+	mv build/_core.uf2 ectocore.uf2
+
 ectocore_256: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
@@ -125,8 +130,14 @@ lib/sinewaves2.h: .venv
 	clang-format -i lib/sinewaves2.h
 
 lib/crossfade4_441.h: .venv
+	cd lib && ../.venv/bin/python crossfade4.py 64 > crossfade4_64.h
+	clang-format -i --style=google lib/crossfade4_64.h
 	cd lib && ../.venv/bin/python crossfade4.py 128 > crossfade4_128.h
 	clang-format -i --style=google lib/crossfade4_128.h
+	cd lib && ../.venv/bin/python crossfade4.py 160 > crossfade4_160.h
+	clang-format -i --style=google lib/crossfade4_160.h
+	cd lib && ../.venv/bin/python crossfade4.py 192 > crossfade4_192.h
+	clang-format -i --style=google lib/crossfade4_192.h
 	cd lib && ../.venv/bin/python crossfade4.py 256 > crossfade4_256.h
 	clang-format -i --style=google lib/crossfade4_256.h
 	cd lib && ../.venv/bin/python crossfade4.py 441 > crossfade4_441.h

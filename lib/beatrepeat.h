@@ -28,8 +28,17 @@
 #define BEATREPEAT_ZEROCROSSING_SIZE 1000
 #include "fixedpoint.h"
 //
+#if SAMPLES_PER_BUFFER == 64
+#include "crossfade4_64.h"
+#endif
 #if SAMPLES_PER_BUFFER == 128
 #include "crossfade4_128.h"
+#endif
+#if SAMPLES_PER_BUFFER == 160
+#include "crossfade4_160.h"
+#endif
+#if SAMPLES_PER_BUFFER == 192
+#include "crossfade4_192.h"
 #endif
 #if SAMPLES_PER_BUFFER == 256
 #include "crossfade4_256.h"
