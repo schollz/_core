@@ -186,6 +186,21 @@ Ectocore is extremely responsive to start/stop triggers. When started from an ex
 
 If you are experiencing lag, it is likely due to the sample you are using. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
 
+### Which firmware should I use?
+
+That depends on your needs. The firmware is divided into categories: normal latency, low latency, and ultra-low latency; overclocking and non-overclocking. The normal latency firmware is the default and has the most cpu overhead, allowing for the most effects. The low latency firmwares have smaller block sizes which means there is less latency but also less cpu overhead. The non-overclocking firmwares have the most temporal stability but reduced cpu overhead. 
+
+If you want the most fx and aren't externally clocking, you might use the normal latency overclocking firmware.
+
+If you are externally clocking and want the most stability, you might want to use a low latency firmware.
+
+
+|                  | Normal Latency | Low Latency | Ultra-Low Latency |
+| ---------------- | -------------- | ----------- | ----------------- |
+| Overclocking     |                |             |                   |
+| Non-Overclocking |                |             |                   |
+
+
 ### Which SD Card can I use?
 
 Please note that not all SD cards are equal. Terms like "high-speed," "A1," or "U3" on the card do not necessarily indicate its actual speed performance.
