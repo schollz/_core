@@ -194,12 +194,10 @@ If you want the most fx and aren't externally clocking, you might use the normal
 
 If you are externally clocking and want the most stability, you might want to use a low latency firmware.
 
-
-|                  | Normal Latency                                                                                          | Low Latency                                                                                         | Ultra-Low Latency                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4.uf2)                 | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_low_latency.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_ultralow_latency.uf2)            |
-| Non-Overclocking | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking.uf2) |                                                                                                     | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_low_latency.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_ultralow_latency.uf2) |
-
+|                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Overclocking     | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4.uf2)                 | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_low_latency.uf2)                 | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_ultralow_latency.uf2)                 |
+| Non-Overclocking | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_low_latency.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_ultralow_latency.uf2) |
 
 ### Which SD Card can I use?
 
