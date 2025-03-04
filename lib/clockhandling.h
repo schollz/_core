@@ -1,6 +1,10 @@
 
 void clock_in_do_update() {
+#ifdef INCLUDE_ECTOCORE
+  if (clock_in_activator < 0) {
+#else
   if (clock_in_activator < 3) {
+#endif
     clock_in_activator++;
   } else {
     clock_in_do = true;
@@ -34,7 +38,11 @@ void clock_handling_down(int time_diff) {
 
 void clock_handling_start() {
   // printf("[clockhandling] clock_handling_start\n");
+#ifdef INCLUDE_ECTOCORE
+  if (clock_in_activator < 0) {
+#else
   if (clock_in_activator < 3) {
+#endif
     clock_in_activator++;
   } else {
     clock_in_do = true;
