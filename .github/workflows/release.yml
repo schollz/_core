@@ -102,15 +102,15 @@ jobs:
       - name: Build ectocore no overclock
         run: |
           make ectocore_noclock
-          cp ectocore.uf2 ectocore_no_overclocking_${{ github.event.release.name }}.uf2
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}_no_overclocking.uf2
       - name: Build ectocore no overclock
         run: |
           make ectocore_noclock_128
-          cp ectocore.uf2 ectocore_no_overclocking_${{ github.event.release.name }}_ultralow_latency.uf2
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}_no_overclocking_ultralow_latency.uf2
       - name: Build ectocore no overclock
         run: |
           make ectocore_noclock_256
-          cp ectocore.uf2 ectocore_no_overclocking_${{ github.event.release.name }}_low_latency.uf2
+          cp ectocore.uf2 ectocore_${{ github.event.release.name }}_no_overclocking_low_latency.uf2
       - name: Build ectocore_v0.3.uf2
         run: |
           make ectocore_v0.3
@@ -146,6 +146,8 @@ jobs:
           files: |
             _core_${{ github.event.release.name }}_src.tar.gz
             zeptocore_${{ github.event.release.name }}.uf2
+            zeptocore_${{ github.event.release.name }}_ultralow_latency.uf2
+            zeptocore_${{ github.event.release.name }}_low_latency.uf2
             zeptoboard_${{ github.event.release.name }}.uf2
             core_windows_${{ github.event.release.name }}.exe
             core_linux_amd64_${{ github.event.release.name }}
@@ -158,8 +160,8 @@ jobs:
             ectocore_${{ github.event.release.name }}.uf2
             ectocore_${{ github.event.release.name }}_ultralow_latency.uf2
             ectocore_${{ github.event.release.name }}_low_latency.uf2
-            ectocore_no_overclocking_${{ github.event.release.name }}.uf2
-            ectocore_no_overclocking_${{ github.event.release.name }}_ultralow_latency.uf2
-            ectocore_no_overclocking_${{ github.event.release.name }}_low_latency.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking_ultralow_latency.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking_low_latency.uf2
             ectocore_v0.3_${{ github.event.release.name }}.uf2
             
