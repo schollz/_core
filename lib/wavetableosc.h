@@ -2,7 +2,15 @@
 #define LIB_WAVETABLEOSC_H 1
 #include "fixedpoint.h"
 //
-#include "crossfade4.h"
+#if SAMPLES_PER_BUFFER == 128
+#include "crossfade4_128.h"
+#endif
+#if SAMPLES_PER_BUFFER == 256
+#include "crossfade4_256.h"
+#endif
+#if SAMPLES_PER_BUFFER == 441
+#include "crossfade4_441.h"
+#endif
 #include "stdbool.h"
 #include "wavetable_data.h"
 
