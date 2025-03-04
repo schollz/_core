@@ -804,7 +804,7 @@ void __not_in_flash_func(input_handling)() {
           } else if (!cv_reset_override_active && val > 250) {
             cv_reset_override_active = true;
             // check if clock is active
-            if (clock_input_absent && clock_in_activator >= 3) {
+            if (clock_input_absent && clock_in_activator >= 0) {
               timer_reset();
             } else {
               clock_handling_start();
@@ -991,7 +991,7 @@ void __not_in_flash_func(input_handling)() {
       }
     }
     if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
-      if (clock_input_absent && clock_in_activator >= 3) {
+      if (clock_input_absent && clock_in_activator >= 0) {
         // printf("reseting clock\n");
         clock_in_ready = false;
         clock_in_activator = 0;
