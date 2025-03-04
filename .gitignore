@@ -59,7 +59,9 @@ lib/sox/README*
 *.flac
 gui*
 *.png
-
+lib/crossfade4_128.h
+lib/crossfade4_256.h
+lib/crossfade4_441.h
 # Object files
 *.o
 *.ko

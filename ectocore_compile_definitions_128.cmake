@@ -6,7 +6,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # # ecto
-    SAMPLES_PER_BUFFER=441
+    SAMPLES_PER_BUFFER=128
     SDCARD_CMD_GPIO=25
     SDCARD_D0_GPIO=26 
     AUDIO_CLK_GPIO=21 # LCK=17
@@ -18,7 +18,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
-    # DO_OVERCLOCK=1
+    DO_OVERCLOCK=1
     
     # pin definitions
     MCP_KNOB_AMEN=0
