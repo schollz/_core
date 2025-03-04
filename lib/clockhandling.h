@@ -3,7 +3,7 @@ void clock_in_do_update() {
 #ifdef INCLUDE_ECTOCORE
   if (clock_in_activator < 0) {
 #else
-  if (clock_in_activator < 3) {
+  if (clock_in_activator < 1) {
 #endif
     clock_in_activator++;
   } else {
@@ -41,7 +41,7 @@ void clock_handling_start() {
 #ifdef INCLUDE_ECTOCORE
   if (clock_in_activator < 0) {
 #else
-  if (clock_in_activator < 3) {
+  if (clock_in_activator < 1) {
 #endif
     clock_in_activator++;
   } else {

@@ -79,6 +79,14 @@ jobs:
         run: |
           make zeptocore
           cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}.uf2
+      - name: Build zeptocore.uf2
+        run: |
+          make zeptocore_128
+          cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}_ultralow_latency.uf2
+      - name: Build zeptocore.uf2
+        run: |
+          make zeptocore_256
+          cp zeptocore.uf2 zeptocore_${{ github.event.release.name }}_low_latency.uf2
       - name: Build ectocore.uf2
         run: |
           make ectocore

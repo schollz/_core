@@ -34,6 +34,16 @@ zeptocore: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewav
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptocore.uf2
 
+zeptocore_128: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp zeptocore_compile_definitions_128.cmake target_compile_definitions.cmake
+	make -C build -j$(NPROCS)
+	mv build/_core.uf2 zeptocore.uf2
+
+zeptocore_256: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp zeptocore_compile_definitions_256.cmake target_compile_definitions.cmake
+	make -C build -j$(NPROCS)
+	mv build/_core.uf2 zeptocore.uf2
+
 zeptocore_nooverclock: copyzepto pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
