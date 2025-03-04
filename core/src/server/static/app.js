@@ -1408,6 +1408,9 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
     wsf.on('zoom', () => {
         console.log('zoom');
     });
+    wsf.on('finish', () => {
+        app.playingSample = false;
+    });
 
     wsf.on('interaction', () => {
         const progress = wsf.getCurrentTime() / wsf.getDuration();  // Get the progress as a percentage
