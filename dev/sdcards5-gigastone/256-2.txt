@@ -1,0 +1,199 @@
+[0;37m[info]	[0m2025/03/04 07:18:16 switch to baud 1200 by `curl localhost:7083`
+checking calibration mode
+Connecting PIO I2S audio
+setting PIO freq for target sampling freq = 44100 Hz
+System clock at 225000000 Hz, I2S clock divider 79: PIO freq 2848101.2500 Hz: sampling freq 44501.5820 Hz
+Copying stereo to stereo at 44100 Hz
+initializing!
+initializing!
+[sdcard_startup] checking grimoire/rune1
+[sdcard_startup] checking grimoire/rune2
+[sdcard_startup] checking grimoire/rune3
+[sdcard_startup] checking grimoire/rune4
+[sdcard_startup] checking grimoire/rune5
+[sdcard_startup] checking grimoire/rune6
+[sdcard_startup] checking grimoire/rune7
+[sdcard_startup] 'brightness-50' brightness: 50
+[sdcard_startup] checking settings/grimoire/rune1
+[sdcard_startup] checking settings/grimoire/rune2
+[sdcard_startup] checking settings/grimoire/rune3
+[sdcard_startup] checking settings/grimoire/rune4
+[sdcard_startup] checking settings/grimoire/rune5
+[sdcard_startup] checking settings/grimoire/rune6
+[sdcard_startup] checking settings/grimoire/rune7
+[sdcard_startup] bank 0 has 1 samples
+[sdcard_startup] bank 1 has 16 samples
+[sdcard_startup] bank 2 has 16 samples
+[sdcard_startup] bank 3 has 16 samples
+[sdcard_startup] bank 4 has 16 samples
+[sdcard_startup] bank 5 has 16 samples
+memory usage: 75.0% (165232/220312)
+[FV_Reverb_malloc] heap_size: 5484 (0 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 9976 (1 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 16232 (2 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 21012 (3 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 27004 (4 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 32456 (5 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 37592 (6 combs, 3 allpasses)
+[FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
+memory usage: 87.3% (192320/220312)
+updating bpm timer: 185-> 170 (98)
+[ectocore] startup
+[ectocore] calibrate 7=773,
+[ectocore] calibrate 6=675,
+[ectocore] calibrate 5=770,
+[ectocore] calibrate 4=662,
+[ectocore] calibrate 3=646,
+[ectocore] calibrate 2=770,
+[ectocore] calibrate 1=670,
+[ectocore] calibrate 0=682,
+sdcard46.4 707 1848 25 1
+sdcard45.9 682 1588 25 1
+sdcard45.7 638 1260 24 0
+sdcard40.6 2161 892 25 3
+sdcard34.9 617 688 24 1
+sdcard31.2 324 488 24 1
+sdcard41.5 685 1780 24 1
+sdcard44.0 720 1780 24 0
+sdcard36.2 713 1780 25 1
+sdcard35.9 967 1780 24 1
+sdcard36.0 728 1780 25 1
+sdcard35.9 721 1780 25 1
+sdcard35.8 727 1780 24 1
+sdcard36.6 1664 1780 25 1
+sdcard35.5 729 1884 24 1
+sdcard39.1 725 2244 24 1
+sdcard43.1 766 2664 24 3
+sdcard49.2 2384 1780 26 0
+sdcard36.5 644 1780 24 1
+sdcard35.7 712 1780 25 1
+sdcard36.6 723 1780 25 1
+sdcard36.0 706 1780 25 1
+sdcard36.1 724 1780 23 1
+sdcard35.8 733 1780 23 4
+sdcard36.0 711 1780 24 3
+sdcard35.9 687 1780 24 2
+sdcard35.8 678 1780 24 1
+sdcard36.8 914 1780 23 1
+sdcard36.3 678 1780 25 0
+sdcard35.7 721 1780 24 1
+sdcard36.0 683 1780 24 1
+sdcard35.8 717 1780 23 1
+sdcard36.0 723 1780 24 1
+sdcard35.7 681 1780 25 1
+sdcard36.5 723 1780 25 1
+sdcard36.0 704 1780 23 2
+sdcard36.0 684 1780 25 1
+sdcard35.9 687 1780 25 1
+sdcard36.1 682 1780 24 1
+sdcard35.7 720 1780 23 1
+sdcard36.7 1746 1780 25 1
+sdcard36.0 697 1780 24 2
+sdcard35.7 675 1780 25 1
+sdcard36.0 668 1780 24 0
+sdcard36.1 684 1780 25 2
+sdcard36.0 648 1780 24 0
+sdcard36.0 714 1780 24 1
+sdcard36.6 2881 1780 26 1
+sdcard35.8 725 1780 25 1
+sdcard36.0 718 1780 25 1
+sdcard35.6 684 1780 23 0
+sdcard36.0 680 1780 23 1
+sdcard36.2 722 1780 25 1
+sdcard35.9 740 1780 25 1
+sdcard36.5 2313 1780 25 1
+version=v6.3.4
+sdcard36.0 689 1780 25 1
+sdcard35.6 651 1780 24 1
+sdcard35.8 684 1780 25 0
+sdcard36.0 662 1780 24 1
+sdcard36.1 673 1780 24 1
+sdcard36.0 680 1780 23 1
+sdcard36.6 680 1780 24 1
+sdcard35.9 918 1780 25 2
+sdcard36.0 720 1780 24 2
+sdcard35.8 726 1780 25 1
+sdcard35.5 700 1780 24 2
+sdcard36.6 687 1780 25 1
+sdcard35.7 684 1780 24 1
+sdcard36.5 964 1780 24 1
+sdcard36.0 684 1780 24 1
+sdcard35.7 721 1780 24 2
+sdcard37.1 660 1780 24 1
+sdcard35.5 648 1780 24 0
+sdcard35.6 678 1780 23 1
+sdcard38.9 729 1940 26 1
+sdcard50.2 762 2308 24 1
+sdcard54.1 804 2744 23 1
+version=v6.3.4
+sdcard59.4 767 3260 23 1
+sdcard56.5 721 1780 24 1
+sdcard35.6 720 1780 24 1
+sdcard35.8 720 1780 24 1
+sdcard39.5 769 2516 24 1
+sdcard57.2 865 3556 25 2
+sdcard58.0 882 3556 26 2
+sdcard46.2 658 1780 25 1
+sdcard35.7 648 1780 24 1
+sdcard38.3 757 2308 24 0
+sdcard44.5 781 2992 25 1
+sdcard52.6 847 3556 26 2
+sdcard38.0 690 1780 24 1
+sdcard36.1 678 1780 24 1
+sdcard35.9 686 1780 24 3
+sdcard36.1 738 1780 24 3
+sdcard35.8 689 1780 24 0
+sdcard36.1 686 1780 24 1
+sdcard36.5 2335 1780 26 1
+sdcard36.2 741 1780 25 1
+sdcard35.4 688 1780 24 1
+sdcard36.2 685 1780 23 1
+sdcard35.9 684 1780 24 1
+sdcard36.0 716 1780 24 1
+sdcard35.7 653 1780 24 1
+sdcard36.8 1732 1780 26 3
+sdcard36.0 913 1780 24 0
+sdcard35.7 683 1780 23 1
+sdcard36.4 720 1780 24 1
+sdcard36.3 720 1780 25 1
+sdcard36.2 673 1780 24 1
+sdcard35.7 742 1780 24 1
+sdcard36.9 730 1780 25 1
+sdcard35.6 996 1884 26 1
+sdcard35.5 713 1996 24 4
+sdcard38.3 733 2244 23 1
+sdcard39.0 473 2376 24 1
+sdcard41.2 785 2516 24 1
+sdcard44.4 788 2824 24 1
+sdcard40.2 692 1780 25 1
+sdcard36.0 732 1780 24 4
+sdcard35.5 909 1780 25 1
+sdcard35.7 678 1780 24 1
+sdcard35.8 682 1780 24 0
+sdcard36.1 721 1780 24 1
+sdcard35.9 683 1780 24 0
+sdcard36.8 697 1780 24 1
+sdcard35.7 687 1780 25 1
+sdcard36.2 686 1780 25 1
+sdcard35.6 688 1780 24 1
+sdcard35.5 684 1780 25 0
+sdcard35.7 677 1780 23 1
+sdcard36.3 692 1780 27 1
+sdcard36.9 700 1780 25 1
+sdcard35.8 723 1780 23 1
+sdcard65.2 1193 3556 26 1
+sdcard62.1 986 2376 24 1
+sdcard52.4 688 1780 23 1
+sdcard33.2 676 1372 25 3
+sdcard29.1 636 1156 23 4
+version=v6.3.4
+sdcard26.4 593 892 24 1
+sdcard22.2 585 752 23 1
+sdcard22.0 679 1540 25 1
+sdcard30.3 606 1156 24 2
+sdcard26.0 590 868 24 1
+sdcard21.3 318 652 24 0
+sdcard27.2 647 1540 23 1
+sdcard29.7 600 1156 24 3
+sdcard29.3 685 1780 25 1
+sdcard36.1 683 1780 25 1
