@@ -56,23 +56,6 @@ the ectocore is the eurorack version of the zeptocore.
 
 this is currently under development and will be released soon. more info at https://getectocore.com/
 
-### how to update ectocore firmware
-
-The latest firmware version can be downloaded from [ectocore.rocks](https://ectocore.rocks/).
-
-1. **Power Connection:** Ensure your ectocore is connected to case power, not just USB power, to avoid potential damage.
-2. **Access the USB-C Port:** Remove the EctoCore from your rack or create space to access the USB-C port.
-3. **Connect to Computer:** Plug a USB-C cable from the EctoCore to your computer.
-4. **Enter Bootloader Mode:**
-   - Locate the two buttons on the back: "_Boot_" (right) and "_Reset_" (left).
-   - Hold the "_Boot_" button and tap the "_Reset_" button.
-   - The module lights will indicate success: all lights on and buttons are unresponsive. A drive named "RPI-RP2" will appear on your computer.
-5. **Transfer Firmware:**
-   - Copy the firmware file (ending in .uf2, around 3 MB) to the "RPI-RP2" drive.
-   - The module will reset automatically once the file is copied.
-6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the EctoCore into your case.
-
-Specific firmware information, in case of issues, can be found further down in this document.
 
 ## sample loading tool
 
@@ -216,6 +199,25 @@ If you are externally clocking and want the most stability, you might want to us
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Overclocking     | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4.uf2)                 | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_low_latency.uf2)                 | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_ultralow_latency.uf2)                 |
 | Non-Overclocking | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_low_latency.uf2) | [v6.3.4](https://github.com/schollz/_core/releases/download/v6.3.4/ectocore_v6.3.4_no_overclocking_ultralow_latency.uf2) |
+
+### How do I update the ectocore?
+
+The latest firmware version can be downloaded from [any of the available firmwares](https://github.com/schollz/_core?tab=readme-ov-file#which-firmware-should-i-use).
+
+1. **Power Connection:** Ensure your ectocore is connected to case power, not just USB power, to avoid potential damage.
+2. **Access the USB-C Port:** Remove the EctoCore from your rack or create space to access the USB-C port.
+3. **Connect to Computer:** Plug a USB-C cable from the EctoCore to your computer.
+4. **Enter Bootloader Mode:**
+   - Locate the two buttons on the back: "_Boot_" (right) and "_Reset_" (left).
+   - Hold the "_Boot_" button and tap the "_Reset_" button.
+   - The module lights will indicate success: all lights on and buttons are unresponsive. A drive named "RPI-RP2" will appear on your computer.
+5. **Transfer Firmware:**
+   - Copy the firmware file (ending in .uf2, around 3 MB) to the "RPI-RP2" drive.
+   - The module will reset automatically once the file is copied.
+6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the EctoCore into your case.
+
+Specific firmware information, in case of issues, can be found further down in this document.
+
 
 ### Which SD Card can I use?
 
