@@ -216,8 +216,6 @@ The latest firmware version can be downloaded from [any of the available firmwar
    - The module will reset automatically once the file is copied.
 6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the EctoCore into your case.
 
-Specific firmware information, in case of issues, can be found further down in this document.
-
 
 ### Which SD Card can I use?
 
