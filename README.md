@@ -56,6 +56,24 @@ the ectocore is the eurorack version of the zeptocore.
 
 this is currently under development and will be released soon. more info at https://getectocore.com/
 
+### how to update ectocore firmware
+
+The latest firmware version can be downloaded from [ectocore.rocks](https://ectocore.rocks/).
+
+1. **Power Connection:** Ensure your ectocore is connected to case power, not just USB power, to avoid potential damage.
+2. **Access the USB-C Port:** Remove the EctoCore from your rack or create space to access the USB-C port.
+3. **Connect to Computer:** Plug a USB-C cable from the EctoCore to your computer.
+4. **Enter Bootloader Mode:**
+   - Locate the two buttons on the back: "_Boot_" (right) and "_Reset_" (left).
+   - Hold the "_Boot_" button and tap the "_Reset_" button.
+   - The module lights will indicate success: all lights on and buttons are unresponsive. A drive named "RPI-RP2" will appear on your computer.
+5. **Transfer Firmware:**
+   - Copy the firmware file (ending in .uf2, around 3 MB) to the "RPI-RP2" drive.
+   - The module will reset automatically once the file is copied.
+6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the EctoCore into your case.
+
+Specific firmware information, in case of issues, can be found further down in this document.
+
 ## sample loading tool
 
 the sample loading tool is a web-based tool (available at [zeptocore.com/tool](https://zeptocore.com/tool) or [ectocore.rocks](https://ectocore.rocks)) that allows you to load samples onto the *_core* devices. it is built with Go, and Vue.
