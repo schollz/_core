@@ -991,17 +991,16 @@ void __not_in_flash_func(input_handling)() {
       }
     }
     if (gpio_btn_taptempo_val == 0 && !btn_taptempo_on) {
-      if (clock_input_absent && clock_in_activator >= 0) {
-        // printf("reseting clock\n");
+      if (clock_in_do && clock_input_absent && clock_in_activator >= 0) {
         clock_in_ready = false;
         clock_in_activator = 0;
         clock_in_do = false;
+        timer_reset();
       } else if (!clock_input_absent) {
         // do nothing (this is handled in TAP+MODE now)
       } else {
         val = TapTempo_tap(taptempo);
         if (val > 0) {
-          // printf("[ectocore] tap bpm -> %d\n", val);
           sf->bpm_tempo = val;
         }
       }
