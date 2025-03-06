@@ -303,3 +303,7 @@ dev/starting_samples_v4/
 requirements.txt
 test.c
 storage.zip
+lib/crossfade4_64.h
+.gitignore
+lib/crossfade4_192.h
+lib/crossfade4_160.h
