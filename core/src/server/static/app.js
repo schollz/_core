@@ -1402,7 +1402,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         hideScrollbar: false,
         autoScroll: false,
         autoCenter: true,
-        url: encodeURIComponent(filename) + ".ogg",
+        url: encodeURIComponent(filename),
     });
     // resize whenever a zoom
     wsf.on('zoom', () => {
@@ -1424,7 +1424,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
     wsf.on('decode', () => {
 
 
-        console.log("wsf.on('decode')");
+        console.log(`duration: ${wsf.getDuration()}`);
         // Regions
         for (var i = 0; i < sliceStart.length; i++) {
             wsRegions.addRegion({
