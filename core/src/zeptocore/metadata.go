@@ -26,10 +26,10 @@ func SetMetadata(fname string, metadata Metadata) (err error) {
 	}
 	// millisecond precision
 	for i, v := range metadata.SliceStart {
-		metadata.SliceStart[i] = toFixed(v, 3)
+		metadata.SliceStart[i] = toFixed(v, 5)
 	}
 	for i, v := range metadata.SliceStop {
-		metadata.SliceStop[i] = toFixed(v, 3)
+		metadata.SliceStop[i] = toFixed(v, 5)
 	}
 
 	b, err := json.Marshal(metadata)

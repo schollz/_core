@@ -245,8 +245,8 @@ const socketMessageListener = (e) => {
     if (data.action == "processed") {
         console.log("processed");
         for (var i = 0; i < data.file.SliceStart.length; i++) {
-            data.file.SliceStart[i] = parseFloat(data.file.SliceStart[i].toFixed(3));
-            data.file.SliceStop[i] = parseFloat(data.file.SliceStop[i].toFixed(3));
+            data.file.SliceStart[i] = parseFloat(data.file.SliceStart[i].toFixed(5));
+            data.file.SliceStop[i] = parseFloat(data.file.SliceStop[i].toFixed(5));
         }
         // append data.file to bank
         app.banks[app.selectedBank].files.push(data.file);
@@ -495,8 +495,8 @@ const updateAllRegions = () => {
         // console.log(`updateAllRegions: ${i} ${regions[i].start} ${regions[i].end}`);
         if (sliceStart.length == 0 || regions[i].start > sliceStart[sliceStart.length - 1]) {
             // console.log(`updateAllRegions: added`);
-            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(3)));
-            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(3)));
+            sliceStart.push(parseFloat((regions[i].start / wsf.getDuration()).toFixed(5)));
+            sliceStop.push(parseFloat((regions[i].end / wsf.getDuration()).toFixed(5)));
         }
     }
     // console.log(`updateAllRegions: ${sliceStart.length} slices`);

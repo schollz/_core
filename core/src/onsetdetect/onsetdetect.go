@@ -302,7 +302,7 @@ func findWindows(data []float64, numOnsets int) (top16 []float64, err error) {
 	}
 
 	for i, v := range top16 {
-		top16[i] = toFixed(v, 3)
+		top16[i] = toFixed(v, 5)
 	}
 
 	return
