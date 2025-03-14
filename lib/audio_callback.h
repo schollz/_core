@@ -29,7 +29,7 @@ uint32_t reduce_cpu_usage = 0;
 uint32_t cpu_usage_flag_total = 0;
 uint8_t cpu_usage_flag = 0;
 uint16_t cpu_flag_counter = 0;
-const uint8_t cpu_usage_flag_limit = 10;
+const uint8_t cpu_usage_flag_limit = 60;
 const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;

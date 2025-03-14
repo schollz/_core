@@ -76,8 +76,8 @@ void ws2812_mode_color(WS2812 *ws2812) {
     WS2812_fill_color(ws2812, 16, YELLOW);
     WS2812_fill_color(ws2812, 17, YELLOW);
   } else {
-    WS2812_fill_color(ws2812, 16, CYAN);
-    WS2812_fill_color(ws2812, 17, CYAN);
+    WS2812_fill_color(ws2812, 16, BLANK);
+    WS2812_fill_color(ws2812, 17, BLANK);
   }
 }
 
