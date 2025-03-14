@@ -1705,7 +1705,7 @@ void __not_in_flash_func(input_handling)() {
                           CYAN);
         WS2812_show(ws2812);
       }
-      // sleep_ms(1);
+      sleep_ms(1);
     }
   }
 }
