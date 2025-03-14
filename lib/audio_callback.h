@@ -29,7 +29,7 @@ uint32_t reduce_cpu_usage = 0;
 uint32_t cpu_usage_flag_total = 0;
 uint8_t cpu_usage_flag = 0;
 uint16_t cpu_flag_counter = 0;
-const uint8_t cpu_usage_flag_limit = 3;
+const uint8_t cpu_usage_flag_limit = 10;
 const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
@@ -974,7 +974,8 @@ BREAKOUT_OF_MUTE:
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
-    reduce_cpu_usage = BLOCKS_PER_SECOND * 120 / sf->bpm_tempo;
+    reduce_cpu_usage = BLOCKS_PER_SECOND * 30 / sf->bpm_tempo;
+    MessageSync_printf(messagesync, "cpu_usage_flag: %d\n", reduce_cpu_usage);
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
 #ifdef PRINT_SDCARD_TIMING
@@ -996,18 +997,23 @@ BREAKOUT_OF_MUTE:
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }
-      char fx_string[17];
+      // char fx_string[17];
+      // for (uint8_t i = 0; i < 16; i++) {
+      //   if (sf->fx_active[i]) {
+      //     fx_string[i] = '1';
+      //   } else {
+      //     fx_string[i] = '0';
+      //   }
+      // }
+      // fx_string[16] = retrig_beat_num > 0 ? '1' : '0';
+      // MessageSync_printf(messagesync, "cpu: %d, flag: %d, fx: %s\n",
+      //                    cpu_utilizations[cpu_utilizations_i],
+      //                    cpu_usage_flag, fx_string);
+      // turn off all fx
       for (uint8_t i = 0; i < 16; i++) {
-        if (sf->fx_active[i]) {
-          fx_string[i] = '1';
-        } else {
-          fx_string[i] = '0';
-        }
+        sf->fx_active[i] = false;
+        update_fx(i);
       }
-      fx_string[16] = retrig_beat_num > 0 ? '1' : '0';
-      MessageSync_printf(messagesync, "cpu: %d, flag: %d, fx: %s\n",
-                         cpu_utilizations[cpu_utilizations_i], cpu_usage_flag,
-                         fx_string);
     } else {
       if (cpu_flag_counter > 0) {
         cpu_flag_counter--;
