@@ -202,11 +202,11 @@ If you are externally clocking and want the most stability, you might want to us
 
 ### How do I update the ectocore?
 
-The latest firmware version can be downloaded from [any of the available firmwares](https://github.com/schollz/_core?tab=readme-ov-file#which-firmware-should-i-use).
+The latest firmware version can be downloaded from [any of the available firmwares](https://github.com/schollz/_core?tab=readme-ov-file#which-firmware-should-i-use). After downloading the firmware, follow these instructions ([click here for a video version](https://www.youtube.com/watch?v=9Ql57oJBMQM)):
 
 1. **Power Connection:** Ensure your ectocore is connected to case power, not just USB power, to avoid potential damage.
-2. **Access the USB-C Port:** Remove the EctoCore from your rack or create space to access the USB-C port.
-3. **Connect to Computer:** Plug a USB-C cable from the EctoCore to your computer.
+2. **Access the USB-C Port:** Remove the ectocore from your rack or create space to access the USB-C port.
+3. **Connect to Computer:** Plug a USB-C cable from the ectocore to your computer.
 4. **Enter Bootloader Mode:**
    - Locate the two buttons on the back: "_Boot_" (right) and "_Reset_" (left).
    - Hold the "_Boot_" button and tap the "_Reset_" button.
@@ -214,7 +214,7 @@ The latest firmware version can be downloaded from [any of the available firmwar
 5. **Transfer Firmware:**
    - Copy the firmware file (ending in .uf2, around 3 MB) to the "RPI-RP2" drive.
    - The module will reset automatically once the file is copied.
-6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the EctoCore into your case.
+6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the ectocore into your case.
 
 
 ### Which SD Card can I use?
