@@ -435,6 +435,43 @@ void dust_1() {
   // printf("[ectocore] dust_1\n");
 }
 
+bool clock_input_absent = true;
+
+void __not_in_flash_func(do_check_clock)(ClockInput *clockinput) {
+  if (cv_reset_override == CV_CLOCK) {
+    // check GPIO_CLOCK_IN
+    if (!gpio_get(GPIO_CLOCK_IN)) {
+      if (!cv_reset_override_active) {
+        cv_reset_override_active = true;
+        timer_reset();
+        // printf("[ectocore] cv_reset_override %d\n",
+        // cv_reset_override_active);
+      }
+    } else {
+      if (cv_reset_override_active) {
+        cv_reset_override_active = false;
+        // printf("[ectocore] cv_reset_override %d\n",
+        // cv_reset_override_active);
+      }
+    }
+  } else {
+    ClockInput_update(clockinput);
+    if (clock_in_do || !clock_input_absent) {
+      bool clock_input_absent_new =
+          ClockInput_timeSinceLast(clockinput) > 1000000;
+      if (clock_input_absent_new != clock_input_absent) {
+        clock_input_absent = clock_input_absent_new;
+        if (clock_input_absent) {
+          // printf("[ectocore] clock input absent\n");
+        } else {
+          // printf("[ectocore] clock input present\n");
+        }
+      }
+    }
+    // Onewiremidi_receive(onewiremidi);
+  }
+}
+
 bool dont_wait = false;
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
@@ -572,7 +609,6 @@ void __not_in_flash_func(input_handling)() {
   Dazzle *dazzle = Dazzle_malloc();
   uint8_t led_brightness = 255;
   int8_t led_brightness_direction = 0;
-  bool clock_input_absent = true;
 
   uint16_t debounce_startup = 400;
   if (do_calibration_mode) {
@@ -681,38 +717,7 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    if (cv_reset_override == CV_CLOCK) {
-      // check GPIO_CLOCK_IN
-      if (!gpio_get(GPIO_CLOCK_IN)) {
-        if (!cv_reset_override_active) {
-          cv_reset_override_active = true;
-          timer_reset();
-          // printf("[ectocore] cv_reset_override %d\n",
-          // cv_reset_override_active);
-        }
-      } else {
-        if (cv_reset_override_active) {
-          cv_reset_override_active = false;
-          // printf("[ectocore] cv_reset_override %d\n",
-          // cv_reset_override_active);
-        }
-      }
-    } else {
-      ClockInput_update(clockinput);
-      if (clock_in_do || !clock_input_absent) {
-        bool clock_input_absent_new =
-            ClockInput_timeSinceLast(clockinput) > 1000000;
-        if (clock_input_absent_new != clock_input_absent) {
-          clock_input_absent = clock_input_absent_new;
-          if (clock_input_absent) {
-            // printf("[ectocore] clock input absent\n");
-          } else {
-            // printf("[ectocore] clock input present\n");
-          }
-        }
-      }
-      // Onewiremidi_receive(onewiremidi);
-    }
+    do_check_clock(clockinput);
 
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
@@ -1534,14 +1539,18 @@ void __not_in_flash_func(input_handling)() {
       if (!audio_callback_in_mute && !do_try_change) {
         // uint32_t time_start = time_us_32();
         sleep_us(100);
+        do_check_clock(clockinput);
         while (!sync_using_sdcard) {
           sleep_us(100);
+          do_check_clock(clockinput);
         }
         // printf("sync1: %ld\n", time_us_32() - time_start);
         uint32_t time_start = time_us_32();
         sleep_us(100);
+        do_check_clock(clockinput);
         while (sync_using_sdcard) {
           sleep_us(100);
+          do_check_clock(clockinput);
         }
         // printf("sync2: %ld\n", time_us_32() - time_start);
         // make sure the audio block was faster than usual
@@ -1697,7 +1706,7 @@ void __not_in_flash_func(input_handling)() {
                           CYAN);
         WS2812_show(ws2812);
       }
-      sleep_ms(1);
+      // sleep_ms(1);
     }
   }
 }
