@@ -76,8 +76,8 @@ void ws2812_mode_color(WS2812 *ws2812) {
     WS2812_fill_color(ws2812, 16, YELLOW);
     WS2812_fill_color(ws2812, 17, YELLOW);
   } else {
-    WS2812_fill_color(ws2812, 16, CYAN);
-    WS2812_fill_color(ws2812, 17, CYAN);
+    WS2812_fill_color(ws2812, 16, BLANK);
+    WS2812_fill_color(ws2812, 17, BLANK);
   }
 }
 
@@ -437,10 +437,13 @@ void dust_1() {
 
 bool clock_input_absent = true;
 
-void __not_in_flash_func(do_check_clock)(ClockInput *clockinput) {
+ClockInput *clockinput;
+void gpio_callback(uint gpio, uint32_t events) {
+  if (gpio != GPIO_CLOCK_IN) return;
+  bool clock_up = events & 4;
   if (cv_reset_override == CV_CLOCK) {
     // check GPIO_CLOCK_IN
-    if (!gpio_get(GPIO_CLOCK_IN)) {
+    if (clock_up) {
       if (!cv_reset_override_active) {
         cv_reset_override_active = true;
         timer_reset();
@@ -455,20 +458,10 @@ void __not_in_flash_func(do_check_clock)(ClockInput *clockinput) {
       }
     }
   } else {
-    ClockInput_update(clockinput);
-    if (clock_in_do || !clock_input_absent) {
-      bool clock_input_absent_new =
-          ClockInput_timeSinceLast(clockinput) > 1000000;
-      if (clock_input_absent_new != clock_input_absent) {
-        clock_input_absent = clock_input_absent_new;
-        if (clock_input_absent) {
-          // printf("[ectocore] clock input absent\n");
-        } else {
-          // printf("[ectocore] clock input present\n");
-        }
-      }
+    if (clock_up && clock_input_absent) {
+      clock_input_present_first = true;
     }
-    // Onewiremidi_receive(onewiremidi);
+    ClockInput_update_raw(clockinput, clock_up);
   }
 }
 
@@ -586,9 +579,11 @@ void __not_in_flash_func(input_handling)() {
   // Onewiremidi *onewiremidi =
   //     Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
   //                     midi_start, midi_continue, midi_stop, midi_timing);
-  ClockInput *clockinput =
-      ClockInput_create(GPIO_CLOCK_IN, clock_handling_up, clock_handling_down,
-                        clock_handling_start);
+  clockinput = ClockInput_create(GPIO_CLOCK_IN, clock_handling_up,
+                                 clock_handling_down, clock_handling_start);
+  gpio_set_irq_enabled_with_callback(GPIO_CLOCK_IN,
+                                     GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
+                                     true, &gpio_callback);
 
   WS2812 *ws2812;
   ws2812 = WS2812_new(GPIO_WS2812, pio0, 2);
@@ -717,11 +712,22 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    do_check_clock(clockinput);
-
     // update dusts
     for (uint8_t i = 0; i < DUST_NUM; i++) {
       Dust_update(dust[i]);
+    }
+
+    if (clock_in_do || !clock_input_absent) {
+      bool clock_input_absent_new =
+          ClockInput_timeSinceLast(clockinput) > 1000000;
+      if (clock_input_absent_new != clock_input_absent) {
+        clock_input_absent = clock_input_absent_new;
+        if (clock_input_absent) {
+          printf("[ectocore] clock input absent\n");
+        } else {
+          printf("[ectocore] clock input present\n");
+        }
+      }
     }
 
     if (debounce_mean_signal > 0 && mean_signal > 0) {
@@ -1539,18 +1545,14 @@ void __not_in_flash_func(input_handling)() {
       if (!audio_callback_in_mute && !do_try_change) {
         // uint32_t time_start = time_us_32();
         sleep_us(100);
-        do_check_clock(clockinput);
         while (!sync_using_sdcard) {
           sleep_us(100);
-          do_check_clock(clockinput);
         }
         // printf("sync1: %ld\n", time_us_32() - time_start);
         uint32_t time_start = time_us_32();
         sleep_us(100);
-        do_check_clock(clockinput);
         while (sync_using_sdcard) {
           sleep_us(100);
-          do_check_clock(clockinput);
         }
         // printf("sync2: %ld\n", time_us_32() - time_start);
         // make sure the audio block was faster than usual
@@ -1706,7 +1708,7 @@ void __not_in_flash_func(input_handling)() {
                           CYAN);
         WS2812_show(ws2812);
       }
-      // sleep_ms(1);
+      sleep_ms(1);
     }
   }
 }

@@ -81,11 +81,8 @@ int32_t ClockInput_timeSinceLast(ClockInput *ci) {
   return time_us_32() - ci->last_time;
 }
 
-void ClockInput_update(ClockInput *ci) {
-  uint8_t clock_pin = 1 - gpio_get(ci->gpio);
-  //   code to verify polarity
+void ClockInput_update_raw(ClockInput *ci, uint8_t clock_pin) {
   if (clock_pin == 1 && ci->last_state == 0) {
-    // printf("[clock_input] clock pin: %d\n", clock_pin);
     uint32_t now_time = time_us_32();
     if (now_time > ci->last_time) {
       uint32_t time_diff = now_time - ci->last_time;
@@ -103,12 +100,16 @@ void ClockInput_update(ClockInput *ci) {
     }
     ci->last_time = now_time;
   } else if (clock_pin == 0 && ci->last_state == 1) {
-    // printf("[clock_input] clock pin: %d\n", clock_pin);
     if (ci->callback_down != NULL) {
       ci->callback_down(time_us_32() - ci->last_time);
     }
   }
   ci->last_state = clock_pin;
+}
+
+void ClockInput_update(ClockInput *ci) {
+  uint8_t clock_pin = 1 - gpio_get(ci->gpio);
+  ClockInput_update_raw(ci, clock_pin);
 }
 
 #endif

@@ -57,6 +57,7 @@ uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;
 uint8_t audio_variant = 0;
 uint8_t audio_variant_num = 0;
+bool clock_input_present_first = false;
 bool fil_current_change_force = false;
 
 void set_audio_variant(uint8_t x) {
