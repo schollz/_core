@@ -191,8 +191,8 @@ If you are experiencing lag, it is likely due to the sample you are using. The e
 
 That depends on your needs. The firmware is divided into two categories: overclocking and non-overclocking. The non-overclocking firmwares have the most temporal stability but reduced cpu overhead. The overclocking firmwares have the most CPU bandwidth for FX but has a slight drift in the clock *if it is not being externally synced*.
 
-- Overclocking firmware (great if you are externally clocking): [v6.3.6](https://github.com/schollz/_core/releases/download/v6.3.6/ectocore_v6.3.6.uf2)
-- Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v6.3.6](https://github.com/schollz/_core/releases/download/v6.3.6/ectocore_v6.3.6_no_overclocking.uf2)
+- Overclocking firmware (great if you are externally clocking): [v6.3.7](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_v6.3.7.uf2)
+- Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v6.3.7](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_v6.3.7_no_overclocking.uf2)
 
 ### How do I update the ectocore?
 
