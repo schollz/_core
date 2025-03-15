@@ -916,45 +916,78 @@ func GetBPM(name string) (beats float64, bpm float64, err error) {
 	return
 }
 
+// parseName attempts to parse BPM and beats from the filename.
 func parseName(name string) (beats float64, bpm float64, err error) {
 	_, fname := filepath.Split(name)
 	fname = strings.ToLower(fname)
-	rBeats, _ := regexp.Compile(`\w+[beats](\d+)`)
-	rBPM, _ := regexp.Compile(`\w+[bpm]([0-9]+)`)
-	rBPM2 := regexp.MustCompile("[0-9]+")
-	foo := rBPM.FindStringSubmatch(fname)
+
+	// regex for BPM detection, 3 digits and flexible placement.
+	bpmRegex := regexp.MustCompile(`(?i)(bpm\s*(\d{3})|(\d{3})\s*bpm)`)
+	bpmMatches := bpmRegex.FindStringSubmatch(fname)
+
 	duration, err := Length(name)
 	if err != nil {
 		return
 	}
 
-	if len(foo) < 2 {
-		err = fmt.Errorf("could not find bpm: %s", name)
-		for _, num := range rBPM2.FindAllString(fname, -1) {
+	if len(bpmMatches) < 3 {
+		// BPM fallback using all numbers, then validating
+		bpmRegexFallback := regexp.MustCompile("[0-9]+")
+		for _, num := range bpmRegexFallback.FindAllString(fname, -1) {
 			bpm, err = strconv.ParseFloat(num, 64)
-			if err == nil && (bpm >= 100 && bpm <= 200 && math.Mod(bpm, 5) == 0) {
+
+			if err == nil && (bpm >= 70 && bpm <= 300) {
 				break
 			} else {
 				err = fmt.Errorf("no bpm detected")
 			}
 		}
+
 		if err != nil {
 			return
 		}
 	} else {
-		bpm, err = strconv.ParseFloat(foo[1], 64)
+		bpmStr := bpmMatches[2]
+		if bpmStr == "" {
+			bpmStr = bpmMatches[3]
+		}
+		bpm, err = strconv.ParseFloat(bpmStr, 64)
+
+		if err != nil {
+			err = fmt.Errorf("could not parse bpm: %s", name)
+			return
+		}
 	}
-	if err != nil {
-		err = fmt.Errorf("could not parse bpm: %s", name)
-		return
+
+	// regex for beats detection with flexible placement.
+	beatsRegex := regexp.MustCompile(`(?i)(beats\s*(\d+)|(\d+)\s*beats)`)
+	beatsMatches := beatsRegex.FindStringSubmatch(fname)
+
+	if len(beatsMatches) > 2 {
+		beatsStr := beatsMatches[2]
+		if beatsStr == "" {
+			beatsStr = beatsMatches[3]
+		}
+		beats, _ = strconv.ParseFloat(beatsStr, 64)
 	}
-	foo = rBeats.FindStringSubmatch(fname)
-	if len(foo) > 1 {
-		beats, _ = strconv.ParseFloat(foo[1], 64)
+
+	// 'bars' fallback
+	barsRegex := regexp.MustCompile(`(?i)((\d+)\s*bars|(\d+)bars)`)
+	barsMatches := barsRegex.FindStringSubmatch(fname)
+
+	if beats == 0 && len(barsMatches) > 2 {
+		barsStr := barsMatches[2]
+		if barsStr == "" {
+			barsStr = barsMatches[3]
+		}
+		bars, _ := strconv.ParseFloat(barsStr, 64)
+		beats = bars * 4 // 1 bar = 4 beats
 	}
+
 	if beats == 0 {
 		beats = math.Round(duration / (60 / bpm))
 	}
+
 	return
 }
 
