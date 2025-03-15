@@ -181,11 +181,13 @@ If you are still having issues, please submit an issue  by [clicking here](https
 
 ### Why is the ectocore have lag?
 
-Ectocore is extremely responsive to start/stop triggers. When started from an external clock (e.g. Pam's) or started from a stop position using the Tap button, the ectocore will begin playing within milliseconds:
+Ectocore is extremely responsive to start/stop triggers. When started from an external clock (e.g. Pam's) or started from a stop position using the Tap button.
 
-![Start](/dev/lag.png)
+Previous versions of ectocore did have problems with latency, but this has been fixed in v6.3.7+.
 
-If you are experiencing lag, it is likely due to the sample you are using. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
+![Latency](/dev/latency/20250315.png)
+
+If you are still experiencing lag, it is likely due to the sample splicing. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
 
 ### Which firmware should I use?
 
