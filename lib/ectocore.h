@@ -458,6 +458,9 @@ void gpio_callback(uint gpio, uint32_t events) {
       }
     }
   } else {
+    if (clock_up && clock_input_absent) {
+      clock_input_present_first = true;
+    }
     ClockInput_update_raw(clockinput, clock_up);
   }
 }

@@ -491,8 +491,18 @@ BREAKOUT_OF_MUTE:
     // phases[head]
     if (phases[head] != last_seeked || do_open_file) {
       t0 = time_us_32();
+#ifdef INCLUDE_ECTOCORE
       int negative_latency =
           values_len_minus_peek * 6 * (phase_forward * 2 - 1);
+      if (clock_input_present_first) {
+        clock_input_present_first = false;
+        negative_latency = 0;
+        MessageSync_printf(messagesync,
+                           "[audio_callback] clock_input_present_first\n");
+      }
+#else
+      int negative_latency = 0;
+#endif
       if (f_lseek(&fil_current,
                   WAV_HEADER +
                       ((banks[sel_bank_cur]
