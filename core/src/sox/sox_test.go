@@ -334,6 +334,37 @@ func TestStutter(t *testing.T) {
 	}
 }
 
+func TestParseName(t *testing.T) {
+	testDir := "test-filenames"
+	testCases := []struct {
+		filename      string
+		expectedBeats float64
+		expectedBPM   float64
+	}{
+		{"172 jigsaw break.wav", 8, 172},
+		{"03_juke_172bpm_2bars.wav", 8, 172},
+		{"ExP_HipHop02_bpm172_beats8.wav", 8, 172},
+		{"03_floating_172bpm_2bars.wav", 8, 172},
+		{"172 a greek break less boom 172 2 layer.wav", 8, 172},
+		{"172 950 ts.wav", 8, 172},
+		{"DivKid_ImpeachThePresident_bpm172_beats8.wav", 8, 172},
+		{"Raja_trnql_bpm172_beats8.wav", 8, 172},
+		{"CelestialGlitters.wav", 0, 0},
+		{"Metronome 172 BPM 2 bars.wav", 8, 172},
+		{"Metronome 172 BPM 8 beats.wav", 8, 172},
+		{"110 Metronome 172BPM 2 bars.wav", 8, 172},
+		{"Metronome 172 BPM - 8 beats.wav", 8, 172},
+	}
+
+	for _, tc := range testCases {
+		fullPath := filepath.Join(testDir, tc.filename)
+		beats, bpm, err := parseName(fullPath)
+		assert.Nil(t, err, "Error parsing %s", fullPath)
+		assert.Equal(t, tc.expectedBeats, beats, "Beats mismatch for %s", fullPath)
+		assert.Equal(t, tc.expectedBPM, bpm, "BPM mismatch for %s", fullPath)
+	}
+}
+
 // keep this last
 func TestClean(t *testing.T) {
 	assert.Nil(t, Clean())
