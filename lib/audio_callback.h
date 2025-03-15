@@ -492,7 +492,7 @@ BREAKOUT_OF_MUTE:
     if (phases[head] != last_seeked || do_open_file) {
       t0 = time_us_32();
       int negative_latency =
-          values_len_minus_peek * 5 * (phase_forward * 2 - 1);
+          values_len_minus_peek * 6 * (phase_forward * 2 - 1);
       if (f_lseek(&fil_current,
                   WAV_HEADER +
                       ((banks[sel_bank_cur]
