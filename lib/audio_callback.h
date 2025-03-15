@@ -491,20 +491,23 @@ BREAKOUT_OF_MUTE:
     // phases[head]
     if (phases[head] != last_seeked || do_open_file) {
       t0 = time_us_32();
-      if (f_lseek(&fil_current, WAV_HEADER +
-                                    ((banks[sel_bank_cur]
-                                          ->sample[sel_sample_cur]
-                                          .snd[FILEZERO]
-                                          ->num_channels +
-                                      1) *
-                                     (banks[sel_bank_cur]
-                                          ->sample[sel_sample_cur]
-                                          .snd[FILEZERO]
-                                          ->oversampling +
-                                      1) *
-                                     44100) +
-                                    (phases[head] / PHASE_DIVISOR) *
-                                        PHASE_DIVISOR) != FR_OK) {
+      int negative_latency =
+          values_len_minus_peek * 5 * (phase_forward * 2 - 1);
+      if (f_lseek(&fil_current,
+                  WAV_HEADER +
+                      ((banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[FILEZERO]
+                            ->num_channels +
+                        1) *
+                       (banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[FILEZERO]
+                            ->oversampling +
+                        1) *
+                       44100) +
+                      ((phases[head] + negative_latency) / PHASE_DIVISOR) *
+                          PHASE_DIVISOR) != FR_OK) {
         printf("problem seeking to phase (%d)\n", phases[head]);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           int32_t value0 = 0;
