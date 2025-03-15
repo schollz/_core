@@ -493,7 +493,7 @@ BREAKOUT_OF_MUTE:
       t0 = time_us_32();
 #ifdef INCLUDE_ECTOCORE
       int negative_latency =
-          values_len_minus_peek * 6 * (phase_forward * 2 - 1);
+          roundf((float)values_len_minus_peek * 5.6f) * (phase_forward * 2 - 1);
       if (clock_input_present_first) {
         clock_input_present_first = false;
         negative_latency = 0;
