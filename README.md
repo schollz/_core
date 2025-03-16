@@ -181,17 +181,17 @@ If you are still having issues, please submit an issue  by [clicking here](https
 
 ### Why is the ectocore lagging?
 
-Ectocore is extremely responsive to start/stop triggers - i.e. when started from an external clock (e.g. Pam's) or started from a stop position using the Tap button.
+Ectocore is highly responsive to start/stop triggers. It seamlessly starts when receiving an external clock signal (e.g., from Pamela's New Workout) or when triggered manually from a stopped position using the Tap button. Earlier versions of Ectocore had issues with latency, but these have been resolved in version 6.3.7 and later. 
 
-Previous versions of ectocore did have problems with latency, but this has been fixed in v6.3.7+. Here is how latency (or lag) is measured. Latency is measured by using two outputs from the Pamela's New Workout, both at 150bpm at 2x. One output is used to clock the ectocore and the ectocore's output goes to the first channel output module. The second Pam's output goes to the second channel of the output module. The latency is measured as the difference between the two channels at the peak of the Pam's signal. For example, here is a measurement of 4.9 ms:
+Here’s how latency (or lag) is measured for testing purposes: Two outputs from Pamela's New Workout are set to 150 BPM at 2x speed. One output clocks Ectocore, whose signal is then sent to the first channel of an output module. The second output from Pam’s is routed to the second channel of the same module. Latency is determined by measuring the difference between the two channels at the peak of Pamela’s signal. For example, here is a case where the measured latency is 4.9 ms:
 
 ![Latency](/dev/latency/how.png)
 
-After measuring many different instances of latency, it can build up a distribution of latency:
+By collecting multiple measurements, I can generate a latency distribution:
 
 ![Latency](/dev/latency/20250315.png)
 
-If you are still experiencing lag, it is likely due to the sample splicing. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
+If you are still experiencing lag, it is likely due to sample splicing rather than actual system latency. Ectocore is designed for maximum responsiveness, but if a sample’s splice points are placed ahead of the transient, it may create the perception of lag. If you need assistance optimizing your sample splicing, feel free to email me with a link to your workspace, and I’ll be happy to take a look.
 
 ### Which firmware should I use?
 
