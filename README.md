@@ -185,6 +185,12 @@ Ectocore is extremely responsive to start/stop triggers. When started from an ex
 
 Previous versions of ectocore did have problems with latency, but this has been fixed in v6.3.7+.
 
+Latency is measured by using two outputs from the Pamela's New Workout, both at 150bpm at 2x. One output is used to clock the ectocore and the ectocore's output goes to the first channel output module. The second Pam's output goes to the second channel of the output module. The latency is measured as the difference between the two channels at the peak of the Pam's signal. For example, here is a measurement of 4.9 ms:
+
+![Latency](/dev/latency/how.png)
+
+After measuring many different instances of latency, it can build up a distribution of latency:
+
 ![Latency](/dev/latency/20250315.png)
 
 If you are still experiencing lag, it is likely due to the sample splicing. The ectocore is designed to be very responsive, but if you are using a sample where splices are ahead of the transient, it will sound like there is a lag. If you have questions about how to best splice your samples, please feel free to email me and include a link to your workspace so I can check out your sample splicing.
