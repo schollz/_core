@@ -179,13 +179,11 @@ You can visualize this ordering in the data I collected below, where Ectocore wa
 
 If you are still having issues, please submit an issue  by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
-### Why is the ectocore have lag?
+### Why is the ectocore lagging?
 
-Ectocore is extremely responsive to start/stop triggers. When started from an external clock (e.g. Pam's) or started from a stop position using the Tap button.
+Ectocore is extremely responsive to start/stop triggers - i.e. when started from an external clock (e.g. Pam's) or started from a stop position using the Tap button.
 
-Previous versions of ectocore did have problems with latency, but this has been fixed in v6.3.7+.
-
-Latency is measured by using two outputs from the Pamela's New Workout, both at 150bpm at 2x. One output is used to clock the ectocore and the ectocore's output goes to the first channel output module. The second Pam's output goes to the second channel of the output module. The latency is measured as the difference between the two channels at the peak of the Pam's signal. For example, here is a measurement of 4.9 ms:
+Previous versions of ectocore did have problems with latency, but this has been fixed in v6.3.7+. Here is how latency (or lag) is measured. Latency is measured by using two outputs from the Pamela's New Workout, both at 150bpm at 2x. One output is used to clock the ectocore and the ectocore's output goes to the first channel output module. The second Pam's output goes to the second channel of the output module. The latency is measured as the difference between the two channels at the peak of the Pam's signal. For example, here is a measurement of 4.9 ms:
 
 ![Latency](/dev/latency/how.png)
 
