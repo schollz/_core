@@ -689,6 +689,7 @@ int main() {
   gpio_put(PIN_DCDC_PSM_CTRL, 1);  // PWM mode for less Audio noise
 
 #ifdef INCLUDE_ZEPTOCORE
+  sleep_ms(3000);
   i2c_init(i2c_default, 50 * 1000);
   gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
   gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
@@ -733,6 +734,23 @@ int main() {
 #ifdef LED_TOP_GPIO
   gpio_init(LED_TOP_GPIO);
   gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
+#endif
+
+#ifdef INCLUDE_ZEPTOMECH
+  // BLUELED
+  gpio_init(BLUELED);
+  gpio_set_dir(BLUELED, GPIO_OUT);
+  gpio_put(BLUELED, 0);
+  // 5v enable
+  gpio_init(FIVEVENABLE);
+  gpio_set_dir(FIVEVENABLE, GPIO_OUT);
+  gpio_put(FIVEVENABLE, 1);
+
+  ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
+  sleep_ms(1);
+  WS2812_fill(ws2812, 0, 0, 0, 0);
+  sleep_ms(1);
+  WS2812_show(ws2812);
 #endif
 
 #ifdef INCLUDE_ECTOCORE

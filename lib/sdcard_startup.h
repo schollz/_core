@@ -691,6 +691,7 @@ void sdcard_startup() {
       }
     }
   }  // bank loop
+  printf("[sdcard_startup] total_number_samples: %d\n", total_number_samples);
 
   // check to see if bank0/0.*2+x).wav exists
   // if it does, then we are in audio variant mode

@@ -104,6 +104,33 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   bm->mapping[18] = 12;
   bm->mapping[19] = 16;
 
+#ifdef INCLUDE_ZEPTOMECH
+  bm->mapping[0] = 0;
+  bm->mapping[1] = 4;
+  bm->mapping[2] = 8;
+  bm->mapping[3] = 12;
+  bm->mapping[4] = 16;
+
+  bm->mapping[5] = 1;
+  bm->mapping[6] = 5;
+  bm->mapping[7] = 9;
+  bm->mapping[8] = 13;
+  bm->mapping[9] = 17;
+
+  bm->mapping[10] = 2;
+  bm->mapping[11] = 6;
+  bm->mapping[12] = 10;
+  bm->mapping[13] = 14;
+  bm->mapping[14] = 18;
+
+  bm->mapping[15] = 3;
+  bm->mapping[16] = 7;
+  bm->mapping[17] = 11;
+  bm->mapping[18] = 15;
+  bm->mapping[19] = 19;
+
+#endif
+
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     bm->button_on[i] = false;  // -1 == off
     bm->button_on_last[i] = false;

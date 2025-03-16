@@ -111,15 +111,19 @@ LEDS *LEDS_create() {
     uint8_t col_map[] = {
         3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0,
     };
+#ifndef INCLUDE_ZEPTOMECH
     leds->pca = PCA9552_create(0x61, i2c_default, row_map, col_map);
+#endif
   }
 
+#ifndef INCLUDE_ZEPTOMECH
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }
   sleep_ms(1);
   PCA9552_clear(leds->pca);
   PCA9552_render(leds->pca);
+#endif
 
   // setup GPIO leds
   for (uint8_t i = 0; i < 4; i++) {
@@ -148,6 +152,10 @@ void LEDS_clear(LEDS *leds) {
 }
 
 void LEDS_render(LEDS *leds) {
+#ifdef INCLUDE_ZEPTOMECH
+  // TODO
+  return;
+#endif
   // light up the PCA9552
   for (uint8_t i = 1; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
