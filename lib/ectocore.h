@@ -1598,7 +1598,7 @@ void __not_in_flash_func(input_handling)() {
                           banks[sel_bank_cur]
                                   ->sample[sel_sample_cur]
                                   .snd[FILEZERO]
-                                  ->slice_current %
+                                  ->slice_current * 2 %
                               16,
                           CYAN);
         ws2812_mode_color(ws2812);
