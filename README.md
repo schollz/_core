@@ -77,7 +77,7 @@ The ectocore.rocks sample loading tool can be used offline by following the inst
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.2.13/core_windows_v6.2.13.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_windows_v6.3.7.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -91,13 +91,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.2.13/core_macos_amd64_v6.2.13 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_macos_amd64_v6.3.7 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.2.13/core_macos_aarch64_v6.2.13 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_macos_aarch64_v6.3.7 > core_macos
 ```
 
 Then to enable the program by entering this into the terminal:
@@ -120,7 +120,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.2.13/core_linux_amd64_v6.2.13)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_linux_amd64_v6.3.7)**
 
 After downloading, run it directly from the terminal.
 
