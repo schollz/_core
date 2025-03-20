@@ -77,7 +77,7 @@ The ectocore.rocks sample loading tool can be used offline by following the inst
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_windows_v6.3.7.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_windows_v.6.3.8.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -91,13 +91,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_macos_amd64_v6.3.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_macos_amd64_v.6.3.8 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_macos_aarch64_v6.3.7 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_macos_aarch64_v.6.3.8 > core_macos
 ```
 
 Then to enable the program by entering this into the terminal:
@@ -120,7 +120,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_linux_amd64_v6.3.7)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_linux_amd64_v.6.3.8)**
 
 After downloading, run it directly from the terminal.
 
@@ -197,8 +197,8 @@ If you are still experiencing lag, it is likely due to sample splicing rather th
 
 That depends on your needs. The firmware is divided into two categories: overclocking and non-overclocking. The non-overclocking firmwares have the most temporal stability but reduced cpu overhead. The overclocking firmwares have the most CPU bandwidth for FX but has a slight drift in the clock *if it is not being externally synced*.
 
-- Overclocking firmware (great if you are externally clocking): [v6.3.7](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_v6.3.7.uf2)
-- Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v6.3.7](https://github.com/schollz/_core/releases/download/v6.3.7/ectocore_v6.3.7_no_overclocking.uf2)
+- Overclocking firmware (great if you are externally clocking): [v.6.3.8](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_v.6.3.8.uf2)
+- Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v.6.3.8](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_v.6.3.8_no_overclocking.uf2)
 
 ### How do I update the ectocore?
 
