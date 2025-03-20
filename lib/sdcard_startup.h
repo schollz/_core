@@ -119,6 +119,16 @@ void load_settings(const char *dir_name) {
       clock_start_stop_sync = true;
     }
 
+    if (strcmp(fno.fname, "clock_ppqn_2") == 0) {
+        clock_ppqn = 2;
+    } else if (strcmp(fno.fname, "clock_ppqn_4") == 0) {
+        clock_ppqn = 4;
+    } else if (strcmp(fno.fname, "clock_ppqn_16") == 0) {
+        clock_ppqn = 16;
+    } else if (strcmp(fno.fname, "clock_ppqn_24") == 0) {
+        clock_ppqn = 24;
+        }
+
     // check for the mash_mode_momentary
     if (strcmp(fno.fname, "mash_mode_momentary-on") == 0) {
       mode_toggle_momentary = true;
