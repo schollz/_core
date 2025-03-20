@@ -961,7 +961,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v.6.3.8\n");
+        printf("version=v6.3.9\n");
       }
     }
 
