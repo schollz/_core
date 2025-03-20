@@ -200,6 +200,14 @@ That depends on your needs. The firmware is divided into two categories: overclo
 - Overclocking firmware (great if you are externally clocking): [v.6.3.8](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_v.6.3.8.uf2)
 - Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v.6.3.8](https://github.com/schollz/_core/releases/download/v.6.3.8/ectocore_v.6.3.8_no_overclocking.uf2)
 
+If you are still experiencing latency issues, you can try the low latency version of the firmware. Keep in mind the lower latency firmwares might have less bandwidth for fx:
+
+|                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Overclocking     | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8.uf2)                 | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8_low_latency.uf2)                 | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8_ultralow_latency.uf2)                 |
+| Non-Overclocking | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8_no_overclocking.uf2) | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8_no_overclocking_low_latency.uf2) | [v6.3.8](https://github.com/schollz/_core/releases/download/v6.3.8/ectocore_v6.3.8_no_overclocking_ultralow_latency.uf2) |
+
+
 ### How do I update the ectocore?
 
 The latest firmware version can be downloaded from [any of the available firmwares](https://github.com/schollz/_core?tab=readme-ov-file#which-firmware-should-i-use). After downloading the firmware, follow these instructions ([click here for a video version](https://www.youtube.com/watch?v=9Ql57oJBMQM)):
