@@ -1,0 +1,670 @@
+[0;37m[info]	[0m2025/03/04 07:38:28 switch to baud 1200 by `curl localhost:7083`
+checking calibration mode
+Connecting PIO I2S audio
+setting PIO freq for target sampling freq = 44100 Hz
+System clock at 225000000 Hz, I2S clock divider 79: PIO freq 2848101.2500 Hz: sampling freq 44501.5820 Hz
+Copying stereo to stereo at 44100 Hz
+initializing!
+initializing!
+[sdcard_startup] checking grimoire/rune1
+[sdcard_startup] checking grimoire/rune2
+[sdcard_startup] checking grimoire/rune3
+[sdcard_startup] checking grimoire/rune4
+[sdcard_startup] checking grimoire/rune5
+[sdcard_startup] checking grimoire/rune6
+[sdcard_startup] checking grimoire/rune7
+[sdcard_startup] 'brightness-50' brightness: 50
+[sdcard_startup] checking settings/grimoire/rune1
+[sdcard_startup] checking settings/grimoire/rune2
+[sdcard_startup] checking settings/grimoire/rune3
+[sdcard_startup] checking settings/grimoire/rune4
+[sdcard_startup] checking settings/grimoire/rune5
+[sdcard_startup] checking settings/grimoire/rune6
+[sdcard_startup] checking settings/grimoire/rune7
+[sdcard_startup] bank 0 has 16 samples
+[sdcard_startup] bank 1 has 16 samples
+[sdcard_startup] bank 2 has 8 samples
+[sdcard_startup] bank 3 has 8 samples
+[sdcard_startup] bank 4 has 8 samples
+[sdcard_startup] bank 5 has 8 samples
+[sdcard_startup] bank 6 has 8 samples
+[sdcard_startup] bank 7 has 8 samples
+[FV_Reverb_malloc] heap_size: 5484 (0 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 9976 (1 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 16232 (2 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 21012 (3 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 27004 (4 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 32456 (5 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 37592 (6 combs, 3 allpasses)
+[FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
+memory usage: 89.9% (198256/220440)
+version=v6.3.4
+updating bpm timer: 185-> 170 (100)
+[audio_callback] do_open_file f_read: 536
+sdcard4.4 5806 1164 21 1
+[ectocore] startup
+[ectocore] calibrate 7=773,
+[ectocore] calibrate 6=675,
+[ectocore] calibrate 5=770,
+sdcard158 586 776 18 0
+cpu: 158, flag: 1, fx: 10000000000000000¦Ô ¿¯ìÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ¡á
+[ectocore] calibrate 4=662,
+[ectocore] calibrate 3=646,
+[ectocore] calibrate 2=770,
+[ectocore] calibrate 1=670,
+[ectocore] calibrate 0=682,
+sdcard35.7 544 1012 18 1
+sdcard45.6 558 868 19 1
+sdcard42.1 547 868 19 1
+sdcard41.9 281 868 18 1
+sdcard41.7 541 868 19 1
+sdcard30.8 549 868 18 1
+sdcard28.6 534 868 19 1
+sdcard28.5 544 868 18 3
+sdcard27.6 296 868 17 1
+sdcard28.1 295 868 19 1
+sdcard28.3 597 868 18 1
+sdcard27.6 552 868 18 1
+sdcard28.0 315 868 19 1
+sdcard27.8 540 868 17 1
+version=v6.3.4
+sdcard28.2 546 868 18 1
+sdcard27.5 532 868 17 0
+sdcard28.2 547 868 19 1
+sdcard27.9 536 868 19 1
+sdcard27.4 284 868 19 1
+sdcard28.2 600 868 19 1
+sdcard27.6 555 868 18 1
+sdcard28.2 597 868 18 0
+sdcard27.7 542 868 17 1
+sdcard28.1 545 868 18 0
+sdcard27.6 528 868 18 1
+sdcard28.2 545 868 19 0
+sdcard28.2 583 868 18 0
+sdcard27.5 295 868 18 1
+sdcard28.1 580 868 19 0
+sdcard27.6 548 868 18 2
+sdcard28.2 593 868 17 2
+sdcard27.6 542 868 18 1
+sdcard28.1 543 868 18 1
+sdcard27.4 274 868 17 0
+sdcard28.2 552 868 18 0
+sdcard28.3 566 868 18 1
+sdcard27.5 282 868 18 1
+sdcard28.2 302 868 18 1
+sdcard27.5 546 868 18 1
+sdcard28.2 599 868 18 0
+sdcard27.5 535 868 17 0
+sdcard28.2 278 868 18 1
+sdcard28.0 287 868 18 1
+version=v6.3.4
+sdcard27.4 522 868 18 1
+sdcard27.9 585 868 17 1
+sdcard27.0 541 868 18 2
+sdcard28.0 297 868 18 1
+sdcard27.6 545 868 18 1
+sdcard28.2 583 868 18 1
+sdcard27.5 548 868 19 1
+sdcard28.1 277 868 18 1
+sdcard27.4 277 868 18 1
+sdcard28.2 280 868 18 1
+sdcard28.0 586 868 18 2
+sdcard28.2 545 868 17 0
+sdcard27.7 301 868 19 1
+sdcard27.7 549 868 18 2
+sdcard28.2 575 868 18 1
+sdcard26.8 283 868 18 0
+sdcard28.2 281 868 19 2
+sdcard28.0 275 868 18 1
+sdcard27.7 280 868 18 1
+sdcard27.9 589 868 18 1
+sdcard27.7 550 868 18 1
+sdcard28.0 575 868 19 1
+version=v6.3.4
+sdcard27.6 307 868 19 1
+sdcard27.4 267 868 18 1
+sdcard27.7 540 868 18 2
+sdcard28.2 539 868 18 1
+sdcard33.2 1612 1228 21 2
+sdcard40.3 732 1588 18 1
+sdcard46.1 861 1732 18 1
+sdcard45.3 773 1732 18 1
+sdcard39.0 579 868 19 0
+sdcard27.6 301 868 19 1
+sdcard28.1 582 868 19 1
+sdcard27.6 568 868 18 1
+sdcard28.2 545 868 17 0
+sdcard27.5 541 868 18 0
+sdcard28.2 285 868 18 1
+sdcard28.0 1180 868 20 1
+sdcard27.6 555 868 18 1
+sdcard28.1 576 868 18 2
+sdcard27.4 534 868 19 1
+sdcard28.1 300 868 19 1
+sdcard27.6 554 868 18 1
+sdcard28.2 540 868 17 0
+sdcard27.5 546 868 18 1
+sdcard28.2 546 868 18 1
+sdcard27.9 1168 868 24 1
+sdcard28.2 536 868 18 1
+sdcard27.1 582 868 18 1
+sdcard27.6 550 868 19 0
+sdcard28.0 300 868 20 1
+version=v6.3.4
+sdcard27.6 550 868 18 1
+sdcard28.2 550 868 18 1
+sdcard27.7 542 868 18 0
+sdcard28.2 545 868 20 1
+sdcard27.9 1208 868 21 1
+sdcard27.1 533 868 17 0
+sdcard28.0 591 868 17 1
+sdcard27.6 554 868 19 1
+sdcard28.1 300 868 18 1
+sdcard27.6 543 868 18 1
+sdcard28.1 615 868 18 3
+sdcard27.6 541 868 18 1
+sdcard28.2 543 868 17 1
+sdcard27.3 271 868 20 1
+sdcard28.4 283 868 19 0
+sdcard28.2 579 868 17 1
+sdcard27.6 553 868 18 1
+sdcard28.1 586 868 19 1
+sdcard27.6 281 868 18 1
+sdcard28.3 621 868 18 1
+sdcard28.0 1377 868 20 1
+sdcard27.6 538 868 18 1
+sdcard27.4 541 868 18 1
+sdcard28.2 288 868 18 0
+sdcard28.0 580 868 18 0
+sdcard27.6 543 868 19 1
+sdcard28.2 584 868 18 1
+sdcard27.4 286 868 18 1
+sdcard28.3 617 868 18 1
+sdcard27.5 273 868 18 1
+sdcard28.2 547 868 18 1
+sdcard27.4 550 868 18 1
+sdcard28.3 286 868 17 1
+sdcard28.1 299 868 18 1
+sdcard27.7 550 868 19 1
+sdcard28.1 582 868 18 0
+sdcard27.6 282 868 18 1
+sdcard28.3 318 868 18 0
+sdcard27.6 279 868 17 0
+sdcard28.3 548 868 18 1
+sdcard27.4 547 868 18 0
+sdcard28.3 544 868 18 1
+sdcard27.9 294 868 18 1
+sdcard27.7 548 868 19 0
+sdcard28.1 589 868 18 1
+sdcard27.7 559 868 18 1
+sdcard28.0 312 868 18 0
+sdcard27.5 280 868 18 1
+sdcard28.3 548 868 17 1
+sdcard27.4 535 868 17 1
+sdcard28.3 540 868 19 1
+sdcard28.0 293 868 18 1
+sdcard27.7 554 868 19 1
+sdcard28.1 580 868 18 0
+sdcard27.7 550 868 18 1
+sdcard28.0 316 868 18 2
+sdcard27.6 277 868 18 1
+sdcard28.3 547 868 18 1
+sdcard27.6 531 868 18 0
+sdcard28.3 549 868 17 1
+sdcard28.0 583 868 19 3
+sdcard27.6 294 868 18 1
+sdcard28.2 575 868 19 1
+sdcard27.6 556 868 19 1
+sdcard28.1 601 868 17 0
+sdcard27.6 537 868 18 1
+sdcard28.1 540 868 17 1
+sdcard27.5 530 868 18 1
+sdcard28.2 541 868 18 0
+sdcard27.5 572 868 18 1
+sdcard27.5 299 868 17 2
+sdcard28.2 587 868 18 1
+sdcard27.5 548 868 18 1
+version=v6.3.4
+sdcard28.2 600 868 17 1
+sdcard27.4 534 868 17 1
+sdcard28.1 547 868 17 1
+sdcard31.3 614 976 17 1
+sdcard35.2 538 920 18 1
+sdcard28.0 580 868 18 2
+sdcard27.5 281 868 18 1
+sdcard28.2 312 868 19 1
+sdcard27.6 550 868 19 1
+sdcard28.2 599 868 17 1
+sdcard27.5 543 868 18 1
+sdcard28.2 282 868 17 4
+sdcard27.4 280 868 18 1
+sdcard28.2 541 868 18 0
+sdcard28.3 579 868 17 0
+sdcard27.3 282 868 18 0
+sdcard28.3 296 868 18 0
+sdcard27.6 540 868 18 2
+sdcard28.1 600 868 18 0
+sdcard27.4 540 868 18 1
+sdcard28.4 280 868 18 1
+sdcard27.5 275 868 17 1
+sdcard28.2 546 868 19 0
+sdcard27.5 602 868 18 1
+sdcard27.7 550 868 19 2
+sdcard28.0 306 868 18 0
+sdcard27.6 547 868 18 1
+sdcard28.2 585 868 18 1
+sdcard27.4 544 868 18 1
+sdcard28.4 277 868 18 0
+sdcard27.8 535 868 18 1
+sdcard26.9 285 868 18 1
+sdcard28.0 588 868 18 1
+sdcard27.8 551 868 18 1
+sdcard28.0 580 868 18 1
+sdcard28.2 592 868 19 1
+sdcard27.3 579 868 18 1
+sdcard27.6 546 868 18 0
+sdcard28.2 554 868 17 1
+sdcard28.7 590 976 18 2
+sdcard32.5 547 1092 18 1
+sdcard36.1 785 1300 19 1
+sdcard38.8 708 1460 19 0
+sdcard42.8 1875 1732 20 1
+sdcard44.5 778 1732 19 1
+sdcard44.1 754 1732 20 1
+sdcard28.5 548 868 18 1
+sdcard28.2 544 868 17 0
+sdcard27.5 547 868 17 1
+sdcard28.2 285 868 18 2
+sdcard28.1 1444 868 19 0
+version=v6.3.4
+sdcard27.8 545 868 18 1
+sdcard28.0 587 868 18 1
+sdcard28.7 583 976 18 1
+sdcard30.1 624 1092 17 1
+sdcard32.6 689 1228 18 1
+sdcard32.8 553 976 20 1
+sdcard30.2 552 1092 18 1
+sdcard28.6 581 976 18 1
+sdcard29.5 276 976 17 0
+sdcard30.5 572 1092 18 1
+sdcard29.7 576 868 18 1
+sdcard27.5 552 868 17 0
+sdcard28.0 298 868 19 0
+sdcard27.7 567 868 19 1
+sdcard28.3 543 868 18 0
+sdcard27.5 547 868 18 1
+sdcard28.2 541 868 18 1
+sdcard28.1 1177 868 21 1
+sdcard27.7 551 868 18 0
+sdcard28.2 582 868 17 1
+sdcard27.6 546 868 18 1
+sdcard28.2 299 868 19 1
+version=v6.3.4
+sdcard27.5 547 868 18 1
+sdcard28.3 624 868 18 1
+sdcard27.5 546 868 18 1
+sdcard28.3 542 868 20 0
+sdcard27.4 277 868 20 1
+sdcard28.4 289 868 19 0
+sdcard28.1 578 868 18 1
+sdcard27.6 550 868 18 1
+sdcard28.3 600 868 18 1
+sdcard27.5 280 868 18 0
+sdcard28.2 616 868 18 1
+sdcard27.5 536 868 18 0
+sdcard28.3 548 868 18 4
+sdcard27.5 540 868 18 2
+sdcard28.1 284 868 18 0
+sdcard28.1 582 868 18 1
+sdcard27.5 549 868 18 1
+sdcard28.5 292 868 18 0
+sdcard27.6 284 868 19 1
+sdcard28.2 620 868 18 1
+sdcard27.5 546 868 19 1
+sdcard28.4 540 868 18 0
+sdcard27.5 539 868 18 1
+sdcard28.7 550 868 19 3
+sdcard27.0 297 868 18 1
+sdcard27.7 553 868 19 1
+sdcard28.2 588 868 18 1
+sdcard27.5 282 868 18 1
+sdcard28.2 302 868 18 1
+version=v6.3.4
+sdcard27.5 282 868 18 1
+sdcard28.2 542 868 17 1
+sdcard27.5 549 868 17 1
+sdcard28.3 548 868 18 1
+sdcard28.0 291 868 17 0
+sdcard27.8 541 868 19 1
+sdcard28.1 588 868 18 0
+sdcard27.7 555 868 18 1
+sdcard28.1 320 868 19 1
+sdcard27.6 276 868 18 1
+sdcard28.3 542 868 18 1
+sdcard27.5 533 868 18 1
+sdcard28.8 543 868 18 1
+sdcard31.6 557 1124 19 1
+sdcard36.0 583 1336 17 1
+sdcard42.3 728 1732 18 1
+sdcard45.4 699 1732 18 2
+sdcard44.5 774 1732 18 1
+sdcard45.3 730 1732 19 3
+sdcard44.5 818 1732 18 1
+sdcard45.3 719 1732 19 1
+sdcard37.3 571 868 18 1
+version=v6.3.4
+sdcard28.1 298 868 17 1
+sdcard27.7 280 868 18 1
+sdcard28.1 598 868 18 1
+sdcard28.0 314 820 19 1
+sdcard26.1 293 652 17 1
+sdcard22.6 287 520 17 0
+sdcard25.1 547 868 17 1
+sdcard28.5 548 868 19 2
+sdcard27.2 552 868 18 1
+sdcard28.1 575 868 18 1
+sdcard27.6 282 868 17 2
+sdcard28.2 586 868 19 1
+sdcard27.7 555 868 19 0
+sdcard28.3 584 868 18 1
+sdcard27.9 871 488 19 1
+sdcard35.3 297 868 18 1
+sdcard28.3 1443 868 19 0
+sdcard27.7 558 868 18 1
+sdcard28.2 588 868 18 1
+sdcard27.5 292 868 18 1
+sdcard28.2 301 868 17 1
+sdcard27.8 549 868 18 0
+sdcard28.4 547 868 18 1
+sdcard27.5 546 868 18 0
+sdcard28.3 550 868 18 1
+sdcard28.1 1172 868 21 0
+sdcard27.7 561 868 19 1
+sdcard28.2 588 868 18 0
+sdcard27.7 542 868 18 1
+sdcard28.0 301 868 19 1
+sdcard31.8 783 1336 18 1
+sdcard47.3 776 1732 20 1
+sdcard48.5 828 1732 18 0
+sdcard36.5 549 868 18 1
+sdcard28.5 544 868 18 1
+sdcard27.3 546 868 18 4
+sdcard28.2 578 868 18 0
+sdcard27.7 549 868 18 1
+sdcard28.0 308 868 20 3
+sdcard27.5 544 868 18 1
+sdcard28.4 623 868 20 1
+sdcard27.5 541 868 18 1
+sdcard28.4 548 868 19 0
+sdcard28.0 1162 868 20 2
+sdcard27.8 283 868 18 1
+sdcard25.8 295 564 17 0
+sdcard21.0 13 368 18 1
+sdcard25.8 10 240 17 0
+sdcard42.9 721 1732 19 1
+sdcard45.4 776 1732 18 1
+sdcard45.3 749 1732 19 1
+sdcard32.1 544 776 18 0
+sdcard36.2 295 616 18 1
+sdcard36.0 531 776 18 1
+sdcard26.8 271 616 17 1
+sdcard20.0 522 548 18 1
+sdcard20.1 261 436 18 1
+sdcard23.6 264 388 17 1
+version=v6.3.4
+sdcard27.9 297 868 18 1
+sdcard28.1 1462 868 19 1
+sdcard27.6 553 868 19 2
+sdcard28.0 581 868 18 1
+sdcard27.5 291 868 18 1
+sdcard28.1 299 868 19 1
+sdcard27.7 551 868 19 1
+sdcard28.3 554 868 18 0
+sdcard27.5 546 868 18 1
+sdcard28.2 548 868 18 1
+sdcard27.9 1217 868 21 1
+sdcard27.7 552 868 19 2
+sdcard28.2 593 868 17 1
+sdcard27.6 551 868 19 1
+sdcard28.2 304 868 18 2
+sdcard27.5 550 868 18 1
+sdcard28.2 551 868 17 2
+sdcard27.6 541 868 18 2
+sdcard28.3 552 868 17 0
+sdcard27.9 1179 868 20 1
+sdcard27.6 568 868 18 1
+sdcard27.8 586 868 19 1
+version=v6.3.4
+sdcard27.7 554 868 19 1
+sdcard28.1 301 868 18 1
+sdcard27.6 554 868 18 2
+sdcard28.3 617 868 18 0
+sdcard27.5 542 868 18 0
+sdcard28.2 543 868 18 1
+sdcard27.8 536 868 17 1
+sdcard27.3 281 868 18 1
+sdcard28.1 585 868 19 0
+sdcard28.2 301 868 17 1
+sdcard27.1 301 868 18 1
+sdcard27.5 285 868 19 2
+sdcard28.4 617 868 17 0
+sdcard27.5 545 868 18 1
+sdcard28.4 551 868 18 0
+sdcard27.5 545 868 19 1
+sdcard28.0 562 868 18 1
+sdcard28.1 583 868 18 1
+sdcard27.7 548 868 18 1
+sdcard28.1 612 868 18 0
+sdcard27.5 279 868 19 1
+sdcard28.5 621 868 18 1
+sdcard27.5 547 868 17 1
+sdcard28.3 543 868 18 2
+sdcard27.2 583 868 18 1
+sdcard28.3 282 868 18 1
+sdcard28.1 295 868 17 1
+sdcard27.7 551 868 18 1
+sdcard28.1 587 868 18 1
+version=v6.3.4
+sdcard27.6 287 868 19 0
+sdcard28.2 311 868 18 1
+sdcard27.4 277 868 18 1
+sdcard28.3 545 868 17 0
+sdcard27.5 541 868 18 1
+sdcard28.8 540 868 19 1
+sdcard27.5 298 868 17 0
+sdcard27.8 549 868 19 0
+sdcard28.1 589 868 18 1
+sdcard27.7 555 868 18 1
+sdcard28.2 314 868 21 0
+sdcard27.5 284 868 17 1
+sdcard28.2 547 868 18 0
+sdcard27.6 543 868 20 1
+sdcard28.5 547 868 17 0
+sdcard28.0 296 868 17 1
+sdcard27.7 550 868 18 1
+sdcard28.1 584 868 19 1
+sdcard27.7 551 868 20 1
+sdcard28.2 314 868 19 1
+sdcard27.5 279 868 17 1
+sdcard28.3 548 868 19 0
+sdcard35.1 533 868 18 0
+sdcard40.3 548 868 18 1
+sdcard40.4 568 868 18 1
+sdcard31.8 528 868 19 1
+sdcard27.2 580 868 18 1
+sdcard26.8 266 868 18 1
+sdcard27.6 534 868 17 2
+sdcard27.4 540 868 18 1
+sdcard28.1 545 868 18 1
+sdcard27.6 528 868 17 0
+sdcard28.2 545 868 19 1
+sdcard28.1 577 868 18 1
+sdcard27.5 301 868 18 1
+sdcard28.1 543 868 19 1
+sdcard27.2 555 868 19 1
+sdcard28.3 584 868 18 1
+sdcard27.5 537 868 18 1
+sdcard28.2 540 868 17 3
+sdcard27.5 531 868 17 1
+sdcard28.3 545 868 19 0
+sdcard28.1 572 868 18 2
+sdcard27.7 293 868 18 1
+sdcard28.2 299 868 19 1
+sdcard27.7 552 868 18 1
+sdcard28.2 601 868 18 1
+sdcard27.5 535 868 18 1
+sdcard28.2 278 868 18 0
+sdcard27.5 275 868 18 1
+sdcard28.3 547 868 17 1
+version=v6.3.4
+sdcard28.2 572 868 18 4
+sdcard27.5 277 868 19 1
+sdcard28.2 301 868 19 1
+sdcard27.6 545 868 18 2
+sdcard28.1 590 868 18 0
+sdcard27.4 541 868 18 1
+sdcard28.2 276 868 18 0
+sdcard27.5 278 868 18 1
+sdcard28.3 540 868 17 0
+sdcard28.0 587 868 19 1
+sdcard27.8 580 868 18 1
+sdcard28.0 301 868 18 0
+sdcard27.6 547 868 17 1
+sdcard28.1 582 868 17 1
+sdcard27.8 540 868 18 1
+sdcard27.9 287 868 19 1
+sdcard33.8 578 692 17 1
+sdcard34.0 295 488 18 0
+sdcard36.9 298 308 18 1
+sdcard32.1 572 868 18 1
+sdcard28.0 299 868 17 0
+sdcard27.6 292 868 18 1
+sdcard28.2 582 868 19 0
+sdcard27.6 538 868 17 1
+sdcard28.1 282 868 18 1
+sdcard28.0 539 868 18 1
+sdcard26.9 277 868 18 0
+sdcard28.2 586 868 18 1
+sdcard27.8 564 868 18 1
+sdcard28.2 585 868 19 0
+sdcard27.5 296 868 18 1
+sdcard28.2 576 868 17 1
+sdcard27.6 541 868 20 1
+sdcard28.2 548 868 18 1
+sdcard27.6 544 868 17 1
+sdcard28.2 284 868 17 1
+sdcard28.2 1448 868 19 0
+sdcard27.7 550 868 18 1
+sdcard28.0 585 868 18 1
+sdcard27.6 292 868 18 0
+sdcard28.1 582 868 17 1
+sdcard27.6 548 868 17 1
+sdcard28.2 547 868 18 1
+sdcard27.5 546 868 18 1
+sdcard28.1 280 868 18 1
+sdcard28.0 1171 868 21 0
+sdcard27.6 552 868 18 1
+sdcard28.2 578 868 18 1
+sdcard27.5 290 868 19 1
+sdcard28.2 303 868 20 1
+sdcard27.6 546 868 18 1
+sdcard28.2 540 868 18 1
+sdcard27.5 542 868 18 1
+sdcard28.3 551 868 19 0
+sdcard28.0 1174 868 20 1
+sdcard27.7 555 868 18 0
+sdcard28.1 581 868 17 1
+sdcard27.8 553 868 19 1
+sdcard28.2 314 868 18 1
+sdcard27.6 568 868 18 1
+sdcard28.8 572 844 17 0
+sdcard40.0 276 776 17 0
+sdcard38.1 586 692 18 4
+sdcard36.5 293 616 18 1
+sdcard34.4 293 548 18 2
+sdcard32.8 289 504 18 1
+sdcard32.1 583 868 18 1
+sdcard28.4 296 868 18 1
+sdcard27.4 564 868 19 1
+sdcard28.2 615 868 18 1
+sdcard30.1 304 868 18 1
+sdcard41.1 1427 868 20 1
+sdcard40.5 283 868 18 0
+version=v6.3.4
+sdcard41.2 541 868 19 1
+sdcard29.1 533 868 18 1
+sdcard27.8 540 868 18 0
+sdcard27.7 593 868 19 1
+sdcard27.5 284 868 19 1
+sdcard28.2 624 868 18 0
+sdcard27.5 543 868 18 1
+sdcard28.5 549 868 18 1
+sdcard27.4 568 868 19 0
+sdcard27.8 533 868 18 1
+sdcard27.9 580 868 18 1
+sdcard27.7 296 868 18 0
+sdcard28.3 586 868 18 0
+sdcard27.5 283 868 19 1
+sdcard28.4 618 868 18 0
+sdcard27.5 279 868 17 0
+sdcard28.3 546 868 18 0
+sdcard27.4 542 868 17 1
+sdcard28.2 284 868 20 0
+sdcard29.5 544 976 18 1
+sdcard35.7 631 1228 18 1
+sdcard40.5 1840 1544 20 0
+sdcard44.6 734 1732 18 1
+sdcard44.5 532 920 17 0
+sdcard30.5 576 868 18 1
+sdcard27.7 543 868 18 1
+sdcard27.5 541 868 17 0
+sdcard28.3 548 868 18 0
+sdcard28.0 560 868 19 1
+version=v6.3.4
+sdcard27.8 275 868 19 0
+sdcard28.1 583 868 19 1
+sdcard27.6 553 868 17 1
+sdcard28.3 538 868 17 1
+sdcard27.8 284 868 18 1
+sdcard28.2 541 868 17 2
+sdcard27.4 538 868 19 1
+sdcard28.4 542 868 18 1
+sdcard28.1 297 868 18 1
+sdcard27.6 281 868 17 1
+sdcard28.2 586 868 18 0
+sdcard27.5 555 868 18 1
+sdcard28.1 316 868 18 2
+sdcard27.0 537 868 18 0
+sdcard28.2 548 868 18 1
+sdcard28.1 537 868 18 0
+sdcard27.0 548 868 18 2
+sdcard28.2 574 868 18 0
+sdcard27.6 292 868 18 3
+sdcard28.2 585 868 19 0
+sdcard27.5 557 868 17 0
+sdcard27.5 532 868 17 0
+version=v6.3.4
+sdcard27.4 538 868 18 1
+sdcard28.1 545 868 18 1
+sdcard29.6 298 868 19 1
+sdcard40.6 540 868 17 1
+sdcard27.4 539 868 17 1
+sdcard27.9 275 868 18 1
+sdcard27.8 585 868 18 1
+sdcard26.5 538 868 19 1
+sdcard28.2 617 868 17 1
+sdcard27.5 542 868 17 1
+sdcard28.2 542 868 18 1
+sdcard27.4 278 868 17 3
+sdcard28.2 545 868 19 3
+sdcard28.2 285 868 17 2
+sdcard30.0 297 868 19 1
+sdcard30.0 293 868 17 1
+sdcard29.4 549 868 18 1
+sdcard30.1 585 868 18 1
+sdcard29.9 586 868 18 1
+sdcard28.5 281 868 18 1
+sdcard27.5 275 868 17 0
+sdcard28.4 545 868 18 0
+sdcard28.1 1432 868 20 1
+sdcard30.7 605 868 18 0

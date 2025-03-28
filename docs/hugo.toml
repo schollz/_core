@@ -1,0 +1,21 @@
+baseURL = 'https://docs.zeptocore.com/'
+languageCode = 'en-us'
+title = 'zeptocore'
+theme = 'zeptocore'
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+
+[server]
+  [[server.headers]]
+    for = '/**'
+    [server.headers.values]
+      Content-Security-Policy = "default-src * 'unsafe-inline' 'unsafe-eval'; img-src * data: blob:; connect-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline';"
+      Referrer-Policy = "no-referrer"
+      X-Content-Type-Options = "nosniff"
+      X-Frame-Options = "SAMEORIGIN"
+      X-XSS-Protection = "0"
+
+
