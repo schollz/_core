@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            padding-top: 20px;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            margin-top: 1em;
+        }
+
+        #codeSnippet {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #fff;
+            border: 1px solid #000;
+            padding: 6px;
+            width: 244px;
+            /* Adjust width as needed */
+            height: 150px;
+            /* Adjust height as needed */
+            overflow-y: auto;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>easing</h1>
+    <div id="p5Canvas"></div> <!-- Placeholder for the p5.js canvas -->
+    <textarea id="codeSnippet"></textarea> <!-- Text box underneath the canvas -->
+
+    <script>
+        // create 256 point array
+        let lineY = new Array(256).fill(0);
+        let lastMouse = null;
+
+        document.getElementById("codeSnippet").addEventListener("keyup", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+            }
+            console.log("key up");
+
+            // use regex to get every number in the text area
+            let codeSnippet = document.getElementById("codeSnippet").value;
+            // remove 'int8' from string 
+            codeSnippet = codeSnippet.replace("int8", "");
+            let matches = codeSnippet.match(/\d+/g);
+            if (matches) {
+                matches = matches.map(Number);
+                // remove matches that are less than 0
+                matches = matches.filter(match => match >= 0);
+                // remove matches that are greater than 255
+                matches = matches.filter(match => match <= 255);
+                // invert matches 
+                matches = matches.map(match => 255 - match);
+                console.log(matches);
+                // pad with 0's if matches is less than 256
+                if (matches.length < 256) {
+                    let padding = new Array(256 - matches.length).fill(0);
+                    matches = matches.concat(padding);
+                }
+                lineY = matches;
+                draw();
+            }
+        });
+
+        function mouseReleased() {
+            console.log("mouseReleased");
+            lastMouse = null;
+            // fill text area with lineY
+            let valuesString = lineY.join(",");
+            let lineYInverse = lineY.map(y => 255 - y);
+            let codeSnippet = "const uint8_t lineY[256] = {" + lineYInverse.join(", ") + "};";
+            document.getElementById("codeSnippet").value = codeSnippet;
+        }
+
+        function setup() {
+            let cnv = createCanvas(256, 256);
+            cnv.mouseReleased(mouseReleased);
+        }
+
+        function draw() {
+            background(255); // Clear the background each frame to update the line positions
+
+            if (mouseIsPressed) {
+                if (mouseX >= -1 && mouseX <= width && mouseY >= -1 && mouseY <= height) {
+                    if (lastMouse != null) {
+                        let [lastX, lastY] = lastMouse;
+                        let dx = mouseX - lastX;
+                        let dy = mouseY - lastY;
+                        let steps = Math.max(Math.abs(dx), Math.abs(dy));
+                        for (let i = 0; i < steps; i++) {
+                            let x = Math.round(lastX + i * dx / steps);
+                            let y = Math.round(lastY + i * dy / steps);
+                            if (x >= 0 && x < width) { // Ensure x is within bounds before updating
+                                lineY[x] = Math.round(y);
+                            }
+                        }
+                    }
+                    if (mouseX >= 0 && mouseX < width) { // Ensure mouseX is within bounds before updating
+                        lineY[mouseX] = mouseY;
+                    }
+                    lastMouse = [mouseX, mouseY];
+                }
+            }
+
+            // Draw the lines
+            for (let i = 1; i < width; i++) { // Start from 1 to avoid accessing index -1
+                if (lineY[i] != -1 && lineY[i - 1] != -1) { // Check if both current and previous positions are valid
+                    stroke(0); // Set the line color to black
+                    line(i - 1, lineY[i - 1], i, lineY[i]); // Draw a line from the previous point to the current point
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

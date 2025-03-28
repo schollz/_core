@@ -1,0 +1,6 @@
+<h{{ .Level }} id="{{ .Text | anchorize  }}">{{ .Text | safeHTML }}<a href="#{{ .Text | anchorize }}"><i
+            class="fas fa-link" aria-hidden="true"></i></a>{{ if eq .Level 1}}<a
+        href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+        target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+    </a>{{end}}
+</h{{ .Level }}>

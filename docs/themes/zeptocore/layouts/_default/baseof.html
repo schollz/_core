@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
+    dir="{{ or site.Language.LanguageDirection `ltr` }}">
+
+<head>
+    {{ partial "head.html" . }}
+</head>
+
+<body>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p class="modal-info">
+                <span id="keyboard-bank">bank 1</span>
+                <span id="keyboard-sample" style="padding-left:2em;">sample 1</span>
+                <span id="keyboard-volume" style="float:right;padding-left:2em;">volume 10</span>
+                <span id="keyboard-tempo" style="float:right;">120 bpm</span>
+            </p>
+            <div class=" simple-keyboard">
+            </div>
+        </div>
+    </div>
+    <script src="/static/plyr.js"></script>
+    <script src="/static/keyboard.js"></script>
+    <script src="/static/midistuff.js"></script>
+    <script src="/static/splash.js"></script>
+    <script src="/static/shopify.js"></script>
+    <div class="ear leftear"><a href="/tool" style="left:30px; position:relative;"><i class="fas fa-wrench fa-rotate-by"
+                style="--fa-rotate-angle: -45deg; " aria-hidden="true"></i></a></div>
+    <div class="ear rightear"><a style="positionleft:6px;" href="javascript:if(window.print)window.print()"><i
+                class="fas fa-print" aria-hidden="true"></i></a></div>
+    <div class="hero">
+        <div class="hero-inner hero-title">
+            <p><strong>zeptocore</strong></p>
+            <p><img src="/img/zepto3.webp"></p>
+            <!-- <p class="hero-small"><a href="#changelog" style="text-decoration: none;color:inherit;">v6.3.9</a></p> -->
+            <!-- <p class="hero-small">boundless beats in a finite footprint.</p> -->
+            <p class="hero-small" style="margin-bottom: 1em;">a handmade, handheld sample player.</p>
+            <p class="hero-small"><a class="buybutton" href="#buy">buy</a></p>
+        </div>
+    </div>
+    <div class="sticky-banner">
+        <a href="#buy">zeptocore is here.</a>
+        <!-- <a href="https://github.com/schollz/_core/releases/download/v6.3.9/zeptocore_v6.3.9.uf2">click here to download the
+      latest zeptocore firmware v6.3.9.</a> -->
+    </div>
+    <!-- make a sticky menu on the left side -->
+    <div class="sticky-menu fade-out">
+        <!-- <div style=" display: flex;
+    justify-content: center;
+    align-items: center;">
+      <img src="/static/apple-icon-180x180.webp" style="width:100px; padding-bottom:1em;">
+    </div> -->
+        <div class=" sticky-item">
+            <a href="#about" style="font-weight:800;">
+                <i class=" fas fa-z" aria-hidden="true"></i>
+                zeptocore</a>
+        </div>
+        <div class=" sticky-item">
+            <a href="#buy">
+                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                Buy</a>
+        </div>
+        <div class="sticky-item">
+            <a href="/tool">
+                <i class="fas fa-wrench" aria-hidden="true"></i>
+                Sample tool</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#outline">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                Outline</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#quickstart">
+                <i class="fas fa-rocket" aria-hidden="true"></i>
+                Quickstart</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#combos">
+                <i class="fas fa-keyboard" aria-hidden="true"></i>
+                Combos</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#effects">
+                <i class="fas fa-music" aria-hidden="true"></i>
+                Effects</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#questions">
+                <i class="fas fa-question" aria-hidden="true"></i>
+                Questions</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#combo-list"><i class="fas fa-list-ul" aria-hidden="true"></i> Combo list</a>
+        </div>
+        <div class="sticky-item">
+            <a href="#effect-list"> <i class="fas fa-list" aria-hidden="true"></i> Effect list</a>
+        </div>
+        <div class="sticky-item">
+            <a href="https://zeptocore.com/diy" target="_blank"><i class="fas fa-tools" aria-hidden="true"></i> DIY
+                guide</a>
+        </div>
+        <div class="sticky-item">
+            <a href="https://github.com/schollz/_core/releases/download/v6.3.9/zeptocore_v6.3.9.uf2">
+                <i class="fas fa-download" aria-hidden="true"></i>
+                Firmware
+            </a>
+        </div>
+    </div>
+    <div class="hero2">
+        <div class="hero-inner2" style="max-width: 800px; width:100%;">
+            <div style="padding-top:4em">
+                <hr class="hrgreen">
+            </div>
+            <div id="outline">
+                <hr class="hrgreen">
+            </div>
+            {{ $sections := slice "blurbs" "combos" "effects" "questions" }}
+            {{ range $sections }}
+            {{ $sectionPath := . }}
+            {{ $section := site.GetPage (print "/" $sectionPath) }}
+            <div class="section">
+                <h3><a href="#{{ $section.Title | anchorize }}">{{ $section.Title }}</a></h3>
+                <p class="list">
+                    {{ range $section.RegularPages }}
+                    {{ if isset .Params "noshow"}}{{else}}
+                    <a class="clade" href="#{{ .Title | anchorize | lower }}">{{ .Title }}</a>
+                    {{end}}
+                    {{ end }}
+                </p>
+            </div>
+            {{ end }}
+            <div class="section">
+                <h3><a href="">Reference</a></h3>
+                <p class="list"> <a href="#combo-list" class="clade">Combos</a> <a href="#effect-list"
+                        class="clade">Effects</a>
+                    <a href="#contact" class="clade">Contact</a>
+                    <a href="#version-history" class="clade">Version history</a>
+                </p>
+            </div>
+            <div>
+                <hr class="hrgreen">
+            </div>
+            <div>
+                <hr class="hrgreen">
+            </div>
+        </div>
+    </div>
+    {{ range where .Site.RegularPages "Section" "blurbs" }}
+    {{ if isset .Params "noshow"}}{{else}}
+    <section class="blurbs">
+        <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
+    {{ $indexPage.Content }} -->
+        <div>
+            {{ .Content }}
+        </div>
+    </section>
+    {{ end }}
+    {{ end }}
+    <section class="combos">
+        {{ $indexPage := .Site.GetPage "/combos/" }}
+        <div>
+            {{ $indexPage.Content }}
+        </div>
+        {{ range where .Site.RegularPages "Section" "combos" }}
+        {{ if isset .Params "noshow"}}{{else}}
+        <div class="box">
+            <div class="boxl">
+                <div class="command-icon">
+                    <div>
+                        <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="boxr">
+                <h2 id="{{ .Title | anchorize }}">{{ .Title }}<span style="float:right;opacity: 50%;"><a
+                            href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a><a
+                            href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+                            target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+                        </a></span></h2>
+                <p>
+                    Key combo: {{ $length := len .Params.buttons }}
+                    {{ range $index, $element := .Params.buttons }}
+                    <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                    {{ end }}
+                    from <code>{{.Params.mode }}</code> mode
+                </p>
+                {{ if isset .Params "mode_alt" }}
+                <p>
+                    Key combo: {{ $length := len .Params.buttons_alt }}
+                    {{ range $index, $element := .Params.buttons_alt }}
+                    <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                    {{ end }}
+                    from <code>{{.Params.mode_alt }}</code> mode
+                </p>
+                {{ end }}
+                {{.Content}}
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+    </section>
+    <section class="effects">
+        {{ $indexPage := .Site.GetPage "/effects/" }}
+        <div>
+            {{ $indexPage.Content }}
+        </div>
+        {{ range where .Site.RegularPages "Section" "effects" }}
+        {{ if isset .Params "noshow"}}{{else}}
+        <div class="box">
+            <div class="boxl">
+                <div class="command-icon">
+                    <div>
+                        <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="boxr">
+                <h2 id="{{ .Title | anchorize }}">{{ .Title }}<span style="float:right;opacity: 50%;"><a
+                            href="#{{ .Title | anchorize }}"><i class="fas fa-link" aria-hidden="true"></i></a><a
+                            href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+                            target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+                        </a></span></h2>
+                <p>
+                    Key combo: {{ $length := len .Params.buttons }}
+                    {{ range $index, $element := .Params.buttons }}
+                    <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                    {{ end }}
+                    from <code>{{.Params.mode }}</code> mode
+                    {{ if isset .Params "mode_alt" }} (or {{ $length := len .Params.buttons_alt }}
+                    {{ range $index, $element := .Params.buttons_alt }}
+                    <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                    {{ end }}
+                    from <code>{{.Params.mode_alt }}</code> mode)
+                </p>
+                {{ if isset .Params "knobx" }}
+                {{ if isset .Params "knoby"}}
+                <p>Knob X / Y: <strong>{{.Params.knobx}}</strong> / <strong>{{.Params.knoby}}</strong></p>
+                {{ else }}
+                <p>Knob X: <strong>{{.Params.knobx}}</strong></p>
+                {{end}}
+                {{ end}}
+                {{ end }}
+                {{.Content}}
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+    </section>
+    <section class="help faq">
+        <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
+    {{ $indexPage.Content }} -->
+        <h1 id="questions">Questions<a href="#questions"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
+        {{ range where .Site.RegularPages "Section" "questions" }}
+        <details id="{{ .Title | anchorize }}">
+            <summary>{{ .Title }}<span style="float:right;"><a href="#{{ .Title | anchorize }}"><i class="fas fa-link"
+                            aria-hidden="true"></i></a><a
+                        href='{{ printf "https://github.com/schollz/_core/edit/main/docs/content/%s" .Page.File.Path }}'
+                        target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
+                    </a></span>
+            </summary>
+            {{ .Content }}
+        </details>
+        {{ end }}
+    </section>
+    <section class="reference">
+        <h1 id="reference">Reference <a href="#reference"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
+        <img src="/img/numbers.webp" class="centerimage">
+        <h2 id="combo-list" style="padding-left:0.75em;">Combo list</h2>
+        <table class=" pb">
+            <tbody>
+                <tr class="hrw hrt topline">
+                    <td class="w2">Action</td>
+                    <td class="w1">Combo</td>
+                    <td class="w4">Description</td>
+                    <td class="w3">Mode</td>
+                </tr>
+                {{ $modes := slice "jump" "mash" "bass" "any" }}
+                {{ range $modes }}
+                {{ $modeName := . }}
+                {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
+                {{ $combos := where $pages "Section" "combos" }}
+                {{ range $combos }}
+                <tr class="hrw hrt">
+                    <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
+                    <td class="w1">
+                        {{ $length := len .Params.buttons }}
+                        {{ range $index, $element := .Params.buttons }}
+                        <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                        {{ end }}
+                    </td>
+                    <td class="w4">{{ .Params.short | markdownify }}</td>
+                    <td class="w3"><code>{{ .Params.mode }}</code></td>
+                </tr>
+                {{ if isset .Params "mode_alt" }}
+                <tr class="hrw hrt">
+                    <td class="w2"><a href="#{{ .Title | anchorize }}">{{ .Title }}</a></td>
+                    <td class="w1">
+                        {{ $length := len .Params.buttons_alt }}
+                        {{ range $index, $element := .Params.buttons_alt }}
+                        <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                        {{ end }}
+                    </td>
+                    {{ if isset .Params "short_alt" }}
+                    <td class="w4">{{ .Params.short_alt | markdownify }}</td>
+                    {{else}}
+                    <td class="w4">{{ .Params.short | markdownify }}</td>
+                    {{end}}
+                    <td class="w3"><code>{{ .Params.mode_alt }}</code></td>
+                </tr>
+                {{end}}
+                {{end}}
+                {{end}}
+            </tbody>
+        </table>
+        <img src="/img/effects.webp" class="centerimage">
+        <h2 id="effect-list" style="padding-left:0.75em;">Effect list</h2>
+        <table class="pb" style="margin-top:2em;">
+            <tbody>
+                <tr class="hrw hrt topline">
+                    <td class="fx2">Effect</td>
+                    <td class="fx1">Key</td>
+                    <td class="fx3">Knob X</td>
+                    <td class="fx4">Knob Y</td>
+                    <td class="fx5">Description</td>
+                </tr>
+                {{ $modes := slice "any" "jump" "mash" "bass" }}
+                {{ range $modes }}
+                {{ $modeName := . }}
+                {{ $pages := where $.Site.RegularPages "Params.mode" $modeName }}
+                {{ $combos := where $pages "Section" "effects" }}
+                {{ range $combos }}
+                <tr class="hrw hrt">
+                    <td class="fx2"> <i class="fas fa-{{ .Params.icon }}" aria-hidden="true"></i>
+                        <a href="#{{ .Title | anchorize }}">{{ .Title }}</a>
+                    </td>
+                    <td class="fx1">
+                        {{ $length := len .Params.buttons }}
+                        {{ range $index, $element := .Params.buttons }}
+                        <strong>{{ $element }}</strong>{{ if lt $index (sub $length 1) }} +{{ end }}
+                        {{ end }}
+                    </td>
+                    <td class="fx3">{{ .Params.knobx }}</td>
+                    <td class="fx4">{{ .Params.knoby }}</td>
+                    <td class="fx5">{{ .Params.short | markdownify }}</td>
+                </tr>
+                {{end}}
+                {{end}}
+            </tbody>
+        </table>
+    </section>
+    <section class="help faq">
+        {{ range where .Site.RegularPages "Section" "contact" }}
+        {{ .Content }}
+        {{ end }}
+    </section>
+    <section class="help faq">
+        {{ range where .Site.RegularPages "Section" "versions" }}
+
+        {{ .Content }}
+        {{ end }}
+    </section>
+    <footer>
+        <div class="footer-inner">
+            <p>zeptocore v6.3.9</p>
+            <p>© 2023-2024 <a href="https://infinitedigits.co">infinitedigits.co</a></p>
+        </div>
+    </footer>
+    <script>
+        function handleBeforePrint() {
+            // hide the ears
+            document.querySelectorAll('.rightear, .leftear').forEach(function (el) {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('details').forEach(function (detail) {
+                detail.setAttribute('data-original-state', detail.open); // Save original state
+                detail.open = true; // Open all details elements
+            });
+        }
+
+        function handleAfterPrint() {
+            document.querySelectorAll('details').forEach(function (detail) {
+                // Revert to original state
+                const originalState = detail.getAttribute('data-original-state') === 'true';
+                detail.open = originalState;
+            });
+        }
+
+        // Listen for print events
+        window.onbeforeprint = handleBeforePrint;
+        window.onafterprint = handleAfterPrint;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // add a href link to each figure > img so that clicking the image will open it in a new tab
+            document.querySelectorAll('figure > img').forEach(function (img) {
+                const src = img.getAttribute('src');
+                const a = document.createElement('a');
+                a.setAttribute('href', src);
+                a.setAttribute('target', '_blank');
+                img.parentNode.insertBefore(a, img);
+                a.appendChild(img);
+            });
+
+            document.querySelectorAll('a').forEach(function (anchor) {
+                anchor.addEventListener('click', function (e) {
+                    const href = anchor.getAttribute('href');
+                    if (href.startsWith('#')) {
+                        const detailsId = href.substring(1);
+                        const detailsElement = document.getElementById(detailsId);
+                        if (detailsElement && detailsElement.tagName === 'DETAILS') {
+                            detailsElement.open = true;
+                        }
+                    }
+                });
+            });
+
+
+            // get anchor of page
+            var anchor = window.location.hash;
+            if (anchor) {
+                var element = document.querySelector(anchor);
+                if (element) {
+                    // open the details element
+                    if (element.tagName === 'DETAILS') {
+                        element.open = true;
+                    }
+                }
+            }
+
+            // check if mobile
+            if (window.innerWidth <= 600) {
+                var earElements = document.querySelectorAll('.rightear, .leftear');
+                earElements.forEach(function (el) {
+                    el.style.display = 'none';
+                });
+            }
+            window.addEventListener('scroll', function () {
+                var banner = document.querySelector('.sticky-banner');
+
+                if (window.scrollY > 50) {
+                    banner.style.bottom = `-${banner.offsetHeight}px`;
+                } else {
+                    banner.style.bottom = '0';
+                }
+                if (window.innerWidth > 600) { // Check if this condition is necessary for your case
+                    var earElements = document.querySelectorAll('.rightear, .leftear');
+                    var menuElements = document.querySelectorAll('.sticky-menu');
+
+
+
+                    if (window.scrollY > 100) { // Adjust this value based on your needs
+                        earElements.forEach(function (el) {
+                            el.classList.add('fade-out');
+                            el.classList.remove('fade-in');
+                        });
+                        menuElements.forEach(function (el) {
+                            el.classList.add('fade-in');
+                            el.classList.remove('fade-out');
+                        });
+                    } else {
+                        earElements.forEach(function (el) {
+                            el.classList.add('fade-in');
+                            el.classList.remove('fade-out');
+                        });
+                        menuElements.forEach(function (el) {
+                            el.classList.add('fade-out');
+                            el.classList.remove('fade-in');
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
