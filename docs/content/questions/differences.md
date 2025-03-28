@@ -1,0 +1,21 @@
++++
+title = 'How does the zeptocore compare?'
+date = 2024-02-01T12:33:06-08:00
+weight = 50
++++
+
+
+<div class="compare">
+
+|               | zeptocore                                                                                                                                                                | [pikocore](https://pikocore.com)                                                | PO-33 K.O.                                                      | Volca Sample                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
+| Open-source   | [Yes](https://github.com/schollz/_core)                                                                                                                                  | [Yes](https://github.com/schollz/pikocore)                                      | No                                                              | No                                      |
+| Voices        | 1 stereo, 1 mono                                                                                                                                                         | 1 mono                                                                          | 4 mono                                                          | 8 mono                                  |
+| Audio quality | 16-bit, 44.1 khz                                                                                                                                                         | 8-bit, 33 khz                                                                   | 8-bit, 23 khz                                                   | 12-bit, 32 khz                          |
+| Effects       | <small>loop, distortion, saturation, bitcrusher, beat repeat, delay, comb, reverb, timestretch, <br>filter, reverse, autopan, reverse, stutter, scratch, repitch</small> | <small>distortion, timestretch, filter, reverse, stutter, loop, repitch</small> | <small>loop, unions, stutter, scratch, reverse, repitch</small> | <small>reverb, reverse, repitch</small> |
+| Sample limit  | 256                                                                                                                                                                      | 100                                                                             | 16                                                              | 100                                     |
+| Memory limit  | 32 GB                                                                                                                                                                    | 16 MB                                                                           | 1 MB                                                            | 4 MB                                    |
+| Record audio  | No                                                                                                                                                                       | No                                                                              | Yes                                                             | No                                      |
+| Sync          | In/Out                                                                                                                                                                   | In/Out                                                                          | In/Out                                                          | In/Out                                  |
+| MIDI          | In/Out                                                                                                                                                                   | In                                                                              | No                                                              | In                                      |
+</div>

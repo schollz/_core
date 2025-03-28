@@ -1,0 +1,176 @@
+[0;37m[info]	[0m2025/03/04 07:25:56 switch to baud 1200 by `curl localhost:7083`
+sdcard38.4 903 1336 18 0
+sdcard38.3 644 1336 18 1
+sdcard37.9 650 1336 19 5
+checking calibration mode
+Connecting PIO I2S audio
+setting PIO freq for target sampling freq = 44100 Hz
+System clock at 225000000 Hz, I2S clock divider 79: PIO freq 2848101.2500 Hz: sampling freq 44501.5820 Hz
+Copying stereo to stereo at 44100 Hz
+initializing!
+initializing!
+[sdcard_startup] checking grimoire/rune1
+[sdcard_startup] checking grimoire/rune2
+[sdcard_startup] checking grimoire/rune3
+[sdcard_startup] checking grimoire/rune4
+[sdcard_startup] checking grimoire/rune5
+[sdcard_startup] checking grimoire/rune6
+[sdcard_startup] checking grimoire/rune7
+[sdcard_startup] 'brightness-50' brightness: 50
+[sdcard_startup] checking settings/grimoire/rune1
+[sdcard_startup] checking settings/grimoire/rune2
+[sdcard_startup] checking settings/grimoire/rune3
+[sdcard_startup] checking settings/grimoire/rune4
+[sdcard_startup] checking settings/grimoire/rune5
+[sdcard_startup] checking settings/grimoire/rune6
+[sdcard_startup] checking settings/grimoire/rune7
+[sdcard_startup] bank 0 has 1 samples
+[sdcard_startup] bank 1 has 16 samples
+[sdcard_startup] bank 2 has 16 samples
+[sdcard_startup] bank 3 has 16 samples
+[sdcard_startup] bank 4 has 16 samples
+[sdcard_startup] bank 5 has 16 samples
+memory usage: 74.4% (164080/220504)
+[FV_Reverb_malloc] heap_size: 5484 (0 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 9976 (1 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 16232 (2 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 21012 (3 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 27004 (4 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 32456 (5 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 37592 (6 combs, 3 allpasses)
+[FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
+memory usage: 86.7% (191168/220504)
+version=v6.3.4
+updating bpm timer: 185-> 170 (98)
+[ectocore] startup
+[ectocore] calibrate 7=773,
+[ectocore] calibrate 6=675,
+[ectocore] calibrate 5=770,
+[ectocore] calibrate 4=662,
+[ectocore] calibrate 3=646,
+[ectocore] calibrate 2=770,
+[ectocore] calibrate 1=670,
+[ectocore] calibrate 0=682,
+sdcard52.3 610 1176 15 1
+sdcard55.5 597 1108 15 2
+sdcard41.3 586 884 16 1
+sdcard31.8 587 704 16 1
+sdcard27.0 317 500 15 1
+sdcard21.9 13 396 15 1
+sdcard38.4 333 884 15 1
+sdcard39.0 606 1116 15 1
+sdcard41.3 613 1116 15 1
+sdcard40.2 594 1116 15 0
+sdcard19.0 43461 1116 16 1
+sdcard1.9 67641 1116 18 2
+sdcard196 600 1116 15 2
+cpu: 196, flag: 1, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard41.2 596 1116 16 1
+sdcard41.2 601 1116 16 0
+sdcard40.9 599 1116 15 0
+sdcard40.1 629 1116 16 1
+sdcard40.2 648 1116 15 1
+sdcard40.5 379 1116 17 2
+sdcard40.4 596 1116 15 3
+sdcard40.1 594 1116 16 1
+sdcard40.6 593 1116 16 1
+sdcard39.7 625 1116 15 1
+sdcard40.4 592 1116 16 1
+sdcard40.5 604 1116 16 1
+sdcard40.1 592 1116 15 0
+sdcard40.3 629 1116 16 1
+sdcard40.4 598 1116 15 1
+sdcard40.1 682 1116 15 0
+sdcard40.3 591 1116 16 1
+sdcard40.7 602 1116 16 1
+sdcard39.4 594 1116 15 1
+sdcard40.5 591 1116 16 2
+sdcard40.6 673 1116 15 2
+sdcard39.8 667 1116 15 1
+sdcard40.7 591 1116 15 0
+sdcard49.7 612 500 17 0
+sdcard42.4 667 1116 16 1
+sdcard39.2 628 1116 15 1
+sdcard40.6 617 1116 15 1
+sdcard40.8 636 1116 16 1
+sdcard39.6 635 1116 15 1
+sdcard40.3 666 1116 15 0
+sdcard39.4 666 1116 15 1
+sdcard40.9 593 1116 16 1
+sdcard40.6 674 1116 16 3
+sdcard39.6 596 1116 14 1
+sdcard40.5 599 1116 15 1
+sdcard40.4 681 1116 17 1
+sdcard40.0 598 1116 16 1
+sdcard40.2 598 1116 17 0
+sdcard40.5 596 1116 16 1
+sdcard39.7 600 1116 15 1
+sdcard40.3 592 1116 15 1
+sdcard40.2 1248 1116 17 1
+sdcard39.5 596 1116 16 1
+sdcard41.0 609 1116 15 1
+sdcard40.6 602 1116 16 1
+sdcard39.9 594 1116 15 1
+sdcard40.7 604 1116 15 1
+sdcard40.5 599 1116 15 1
+sdcard40.0 667 1116 15 1
+sdcard40.2 636 1116 16 2
+sdcard42.8 900 444 15 1
+sdcard39.6 593 1116 16 1
+sdcard40.7 625 1116 15 1
+sdcard40.6 594 1116 14 1
+sdcard40.2 1581 1116 17 5
+sdcard39.7 605 1116 16 1
+sdcard40.6 587 1116 15 1
+sdcard40.7 599 1116 15 2
+sdcard39.7 605 1116 15 1
+sdcard40.4 591 1116 16 1
+sdcard40.2 597 1116 16 2
+sdcard44.0 632 1116 16 0
+sdcard45.4 625 1116 15 1
+sdcard40.6 598 1116 18 1
+sdcard40.0 373 1116 15 1
+sdcard39.8 606 1116 15 1
+sdcard40.8 369 1116 17 1
+sdcard40.7 599 1116 16 1
+sdcard39.5 593 1116 16 1
+sdcard40.9 672 1116 16 1
+sdcard41.6 604 1116 15 1
+sdcard52.5 731 1768 15 1
+sdcard75.0 716 2224 17 1
+sdcard151 664 1116 16 1
+cpu: 151, flag: 1, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard152 598 1116 15 1
+cpu: 152, flag: 2, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard153 589 1116 14 1
+cpu: 153, flag: 3, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard151 381 1116 16 1
+cpu: 151, flag: 1, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard48.7 600 1116 15 1
+sdcard159 600 1116 15 1
+cpu: 159, flag: 2, fx: 10000000000000000¦Ì ¿îüÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ­á
+sdcard40.5 595 1116 16 1
+sdcard40.3 603 1116 15 1
+sdcard39.8 594 1116 15 0
+sdcard40.8 627 1116 15 1
+sdcard40.7 595 1116 16 1
+sdcard39.6 673 1116 15 0
+sdcard41.0 605 1116 17 1
+sdcard40.4 594 1116 15 1
+sdcard44.2 671 1404 15 1
+sdcard50.2 675 1768 18 1
+sdcard58.1 727 2224 14 1
+sdcard62.9 744 2224 16 3
+sdcard61.6 747 2224 18 1
+sdcard49.0 626 1116 15 1
+sdcard40.2 625 1116 15 1
+sdcard40.6 609 1116 15 1
+sdcard40.4 596 1116 15 1
+sdcard39.8 595 1116 15 1
+sdcard40.4 593 1116 16 1
+sdcard40.7 664 1116 18 0
+sdcard39.6 590 1116 16 1
+sdcard40.2 601 1116 16 2
+sdcard40.6 940 1116 16 1
+sdcard39.7 598 1116 16 1
+sdcard40.4 597 1116 15 1

@@ -1,0 +1,4 @@
+github.com/schollz/logger v1.2.0 h1:5WXfINRs3lEUTCZ7YXhj0uN+qukjizvITLm3Ca2m0Ho=
+github.com/schollz/logger v1.2.0/go.mod h1:P6F4/dGMGcx8wh+kG1zrNEd4vnNpEBY/mwEMd/vn6AM=
+gitlab.com/gomidi/midi/v2 v2.1.7 h1:lIjVXH+bnGG04j/kUVOFILt0BQvBeGz8Kyz0l6aM830=
+gitlab.com/gomidi/midi/v2 v2.1.7/go.mod h1:Cj6K9VH5GhYvPgL2JddxHBmZiP3nxKxB5XyTxiXvL9U=

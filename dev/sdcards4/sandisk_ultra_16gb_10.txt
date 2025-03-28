@@ -1,0 +1,856 @@
+[0;37m[info]	[0m2024/10/13 07:19:26 switch to baud 1200 by `curl localhost:7083`
+average cpu utilization: 62.0
+sdcard62.0 3735 2308 2 1
+average cpu utilization: 62.3
+sdcard62.3 3757 2308 2 3
+average cpu utilization: 61.6
+sdcard61.6 3732 2308 3 1
+average cpu utilization: 62.9
+sdcard62.9 879 2308 2 1
+average cpu utilization: 63.1
+sdcard63.1 3707 2308 2 1
+average cpu utilization: 62.4
+sdcard62.4 3694 2308 1 1
+sdcard58.5 479 1996 3 1
+[ectocore] startup
+[ectocore] calibrate 7=773,
+[ectocore] calibrate 6=653,
+[ectocore] calibrate 5=770,
+[ectocore] calibrate 4=693,
+[ectocore] calibrate 3=645,
+[ectocore] calibrate 2=770,
+[ectocore] calibrate 1=672,
+[ectocore] calibrate 0=661,
+[ectocore] knob 4=0
+[ectocore] knob 3=707
+[ectocore] knob_amen_atten 563
+[ectocore] knob 2=1
+[ectocore] knob_amen 0
+[ectocore] knob 1=0
+[ectocore] knob_break_atten 0
+[ectocore] knob 0=0
+[ectocore] knob_break 0
+clock_start_stop_sync: 1
+global_brightness: 100
+sdcard55.0 3860 2056 1 1
+sdcard59.8 3568 2308 1 0
+sdcard66.3 828 2308 2 1
+sdcard53.5 833 2308 2 0
+sdcard54.0 3662 2308 1 1
+sdcard51.9 3641 2308 1 1
+sdcard53.2 3758 2308 2 1
+sdcard53.3 826 2308 2 1
+sdcard54.3 3832 2308 2 1
+sdcard53.6 3799 2308 2 0
+sdcard53.3 3823 2308 1 1
+sdcard53.3 2001 2308 5 2
+sdcard53.7 763 2308 3 2
+sdcard55.0 3878 2664 3 1
+sdcard58.2 3911 3264 3 2
+sdcard61.1 721 2376 1 2
+sdcard53.3 3681 2308 1 1
+sdcard53.0 3678 2308 4 1
+sdcard52.1 3738 2308 1 1
+sdcard58.3 969 4232 3 2
+sdcard56.8 3665 2308 2 1
+sdcard52.8 3669 2308 2 0
+sdcard52.5 878 2308 2 2
+sdcard52.9 728 2308 3 0
+sdcard53.8 3790 2308 2 1
+sdcard53.1 3772 2308 2 0
+sdcard53.1 3822 2308 3 2
+sdcard52.4 818 2308 2 0
+sdcard53.2 3746 2308 2 0
+sdcard52.5 3738 2308 1 1
+sdcard52.8 3711 2308 2 2
+sdcard53.3 1761 2308 4 8
+sdcard52.6 4084 2308 2 1
+sdcard52.5 736 2308 3 2
+sdcard52.2 3957 2308 4 0
+sdcard52.2 707 2308 2 1
+sdcard53.4 3701 2308 2 1
+sdcard52.7 3679 2308 1 2
+sdcard55.1 3686 2376 3 1
+sdcard52.7 886 2308 4 2
+sdcard62.4 4199 2308 3 1
+sdcard64.6 4973 2308 5 1
+sdcard63.5 3764 2308 3 2
+sdcard62.7 810 2308 3 1
+sdcard63.4 3743 2308 3 1
+sdcard62.0 3749 2308 1 1
+sdcard62.5 3744 2308 2 1
+sdcard62.3 752 2308 3 2
+sdcard63.0 3720 2308 3 1
+sdcard62.2 3747 2308 2 1
+sdcard62.0 3725 2308 2 2
+sdcard62.6 1760 2056 6 1
+sdcard59.3 3675 1452 1 1
+sdcard56.6 559 968 4 1
+sdcard60.9 3849 2308 3 1
+sdcard63.4 914 2308 3 3
+sdcard63.8 3843 2308 1 0
+sdcard63.3 3869 2308 5 2
+sdcard62.9 3792 2308 2 1
+sdcard62.8 786 2308 2 2
+sdcard63.9 3774 2308 1 0
+sdcard64.0 3796 2308 1 1
+sdcard62.2 5088 2308 4 1
+sdcard62.8 837 2308 3 2
+sdcard63.1 3794 2308 2 1
+sdcard62.6 3764 2308 3 0
+sdcard62.3 3748 2308 3 1
+sdcard62.1 700 2308 2 2
+sdcard62.2 3734 2308 3 1
+sdcard62.7 3713 2308 2 0
+sdcard61.5 3694 2308 1 1
+sdcard62.8 896 2308 2 2
+sdcard62.6 3685 2308 2 1
+sdcard62.2 905 2308 4 1
+sdcard62.1 3676 2308 1 0
+sdcard62.3 518 2308 2 3
+sdcard61.7 3667 2308 2 1
+sdcard61.8 4724 1728 3 1
+sdcard61.6 3624 2308 3 1
+sdcard61.5 745 2308 5 2
+sdcard61.9 3602 2308 2 0
+sdcard61.6 3553 2308 3 1
+sdcard61.7 4754 2308 5 1
+sdcard60.7 763 2308 2 1
+sdcard62.5 783 2308 3 2
+sdcard61.1 3524 2308 2 0
+sdcard60.7 3581 2308 4 1
+sdcard61.1 794 2308 3 2
+sdcard61.0 3574 2308 1 1
+sdcard62.1 3890 2308 2 1
+sdcard63.4 3856 2308 1 1
+sdcard63.2 866 2308 3 2
+sdcard63.7 3820 2308 3 1
+sdcard63.0 4857 2308 5 0
+sdcard62.6 3869 2308 2 0
+sdcard62.5 837 2308 4 2
+sdcard63.7 3780 2308 4 1
+sdcard62.9 3762 2308 2 1
+sdcard62.7 3832 2308 2 0
+sdcard62.4 822 2308 2 2
+sdcard62.8 3729 2308 1 0
+sdcard63.2 3761 2308 3 1
+sdcard62.1 3751 2308 3 0
+sdcard62.3 764 2308 3 1
+sdcard62.2 765 2308 4 2
+sdcard62.2 3728 2308 3 0
+sdcard61.5 3701 2308 1 1
+sdcard62.9 871 2308 2 2
+sdcard62.0 3508 1452 3 1
+sdcard55.8 3163 816 1 1
+sdcard62.0 3736 2308 3 1
+sdcard61.7 855 2308 2 3
+sdcard63.2 3846 2308 2 0
+sdcard62.9 5004 2308 5 1
+sdcard62.8 3795 2308 2 1
+sdcard62.7 796 2308 3 2
+sdcard63.1 3766 2308 3 0
+sdcard62.4 3791 2308 2 1
+sdcard62.3 3768 2308 1 1
+sdcard62.4 1048 2308 2 4
+sdcard62.8 3962 2308 2 1
+sdcard62.4 3709 2308 2 0
+sdcard61.5 3732 2308 3 1
+sdcard62.5 754 2308 2 3
+sdcard62.1 731 2308 3 1
+sdcard62.5 4200 2308 1 1
+sdcard63.5 3922 2308 2 1
+sdcard62.8 816 2308 2 2
+sdcard63.8 3838 2308 4 1
+sdcard62.5 3660 2308 3 1
+sdcard63.4 3762 2308 3 1
+sdcard62.5 785 2308 3 1
+sdcard63.6 3849 2308 2 1
+sdcard63.3 4937 2308 5 1
+sdcard62.2 3793 2308 2 1
+[list_files] bank1/6.0.wav.info: Could not find the file
+[list_files] bank1/7.0.wav.info: Could not find the file
+[list_files] bank1/8.0.wav.info: Could not find the file
+[list_files] bank1/9.0.wav.info: Could not find the file
+[list_files] bank1/10.0.wav.info: Could not find the file
+[list_files] bank1/11.0.wav.info: Could not find the file
+[list_files] bank1/12.0.wav.info: Could not find the file
+[list_files] bank1/13.0.wav.info: Could not find the file
+[list_files] bank1/14.0.wav.info: Could not find the file
+[list_files] bank1/15.0.wav.info: Could not find the file
+[sdcard_startup] bank 0 has 1 samples
+bank2: 0
+bank3: 0
+bank4: 0
+bank5: 0
+bank6: 0
+bank7: 0
+bank8: 0
+bank9: 0
+bank10: 0
+bank11: 0
+bank12: 0
+bank13: 0
+bank14: 0
+bank15: 0
+bank16: 0
+memory usage: 59.5% (143500/241348)
+[FV_Reverb_malloc] heap_size: 5484 (0 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 9976 (1 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 16232 (2 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 21012 (3 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 27004 (4 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 32456 (5 combs, 3 allpasses)
+[FV_Reverb_malloc] heap_size: 37592 (6 combs, 3 allpasses)
+[FV_Reverb_malloc] num_combs: 4, num_allpasses: 3
+memory usage: 70.7% (170588/241348)
+[ectocore] knob_break 0
+[ectocore] knob_break_atten 0
+[ectocore] knob_amen 0
+[ectocore] knob_amen_atten 707
+updating bpm timer: 185-> 170
+[ectocore] btn_mode 0
+[ectocore] btn_bank 0
+[ectocore] btn_taptempo 0
+sdcard56.5 811 1720 4 3
+[ectocore] startup
+[ectocore] calibrate 7=773,
+[ectocore] calibrate 6=653,
+[ectocore] calibrate 5=770,
+[ectocore] calibrate 4=693,
+[ectocore] calibrate 3=645,
+[ectocore] calibrate 2=770,
+[ectocore] calibrate 1=672,
+[ectocore] calibrate 0=661,
+[ectocore] knob 4=0
+[ectocore] knob 3=707
+[ectocore] knob_amen_atten 563
+[ectocore] knob 2=0
+[ectocore] knob_amen 0
+[ectocore] knob 1=0
+[ectocore] knob_break_atten 0
+[ectocore] knob 0=0
+[ectocore] knob_break 0
+clock_start_stop_sync: 1
+global_brightness: 100
+sdcard54.2 4769 2308 5 1
+sdcard53.1 3855 2308 2 0
+sdcard54.1 831 2308 3 1
+sdcard53.5 793 2308 3 2
+sdcard53.9 3770 2308 2 1
+sdcard53.1 3828 2308 1 1
+sdcard53.3 3782 2308 1 1
+sdcard57.3 936 4112 2 4
+sdcard67.8 3954 4612 2 1
+sdcard59.6 3772 2308 2 1
+sdcard52.9 3766 2308 1 1
+sdcard53.1 795 2308 3 5
+sdcard52.3 3762 2308 1 0
+sdcard52.5 3726 2308 2 1
+sdcard52.8 3746 2308 1 0
+sdcard53.2 716 2308 3 1
+sdcard52.2 3709 2308 1 1
+sdcard54.0 3881 2308 3 1
+sdcard53.3 3792 2308 1 0
+sdcard53.8 847 2308 2 2
+sdcard54.8 4970 2308 5 0
+sdcard52.9 3842 2308 1 1
+sdcard53.3 865 2308 4 2
+sdcard51.8 786 2308 2 1
+sdcard52.4 3592 2308 1 1
+sdcard52.2 3630 2308 3 1
+sdcard52.2 3638 2308 2 1
+sdcard51.0 831 2308 2 1
+sdcard52.2 3645 2308 1 0
+sdcard51.3 3547 2308 0 1
+sdcard51.7 3602 2308 2 1
+sdcard52.9 1762 2308 4 1
+sdcard52.8 3910 2308 1 0
+sdcard52.0 3610 2308 1 1
+sdcard51.9 3509 2308 2 1
+sdcard53.0 814 2308 3 3
+sdcard52.3 3676 2308 1 1
+sdcard52.7 3689 2308 0 1
+sdcard52.3 3715 2308 3 0
+sdcard52.8 909 2308 4 4
+sdcard53.5 3624 2308 2 1
+sdcard52.1 3608 2308 2 1
+sdcard53.0 3621 2308 2 2
+sdcard52.0 847 2308 3 2
+sdcard52.2 3615 2308 3 1
+sdcard51.4 3608 2308 0 0
+sdcard51.7 3594 2308 1 0
+sdcard51.3 731 2308 3 1
+sdcard52.0 3554 2308 3 2
+sdcard51.1 3580 2308 1 0
+sdcard51.2 3524 2308 2 2
+sdcard58.2 1841 2308 5 1
+sdcard59.5 3492 2308 1 1
+sdcard62.9 897 2308 4 2
+sdcard62.9 3899 2308 2 1
+sdcard63.4 909 2308 1 3
+sdcard63.7 3817 2308 1 0
+sdcard63.0 3845 2308 4 2
+sdcard62.8 3771 2308 3 1
+sdcard63.3 864 2308 4 5
+sdcard62.7 3769 2308 2 0
+sdcard62.6 3733 2308 3 1
+sdcard63.1 3812 2308 2 0
+sdcard62.7 814 2308 3 2
+sdcard63.4 3782 2308 3 1
+sdcard62.8 3829 2308 2 1
+sdcard62.4 3726 2308 3 2
+sdcard62.4 757 2308 3 3
+sdcard60.3 3694 1832 1 0
+sdcard57.1 3671 2308 1 1
+sdcard61.1 3774 2992 3 0
+sdcard67.1 819 3880 2 4
+sdcard74.4 4953 2308 5 0
+sdcard61.5 913 2308 4 1
+sdcard62.1 3679 2308 2 1
+sdcard62.1 763 2308 2 2
+sdcard62.9 3812 2308 1 1
+sdcard62.6 3840 2308 4 2
+sdcard63.2 3770 2308 4 1
+sdcard62.3 756 2308 3 1
+sdcard61.9 3600 2308 2 1
+sdcard61.3 3598 2308 1 1
+sdcard61.7 4729 2308 5 1
+sdcard60.8 766 2308 2 2
+sdcard61.6 3721 2308 3 1
+sdcard61.6 3554 2308 1 1
+sdcard60.6 3586 2308 2 1
+sdcard61.2 774 2308 3 2
+sdcard59.8 3656 1832 1 1
+sdcard58.0 3653 1372 2 1
+sdcard59.9 3839 2308 2 1
+sdcard63.1 854 2308 2 2
+sdcard63.9 3869 2308 1 1
+sdcard63.4 873 2308 5 2
+sdcard62.9 3802 2308 1 1
+sdcard62.6 841 2308 4 2
+sdcard63.6 3781 2308 4 1
+sdcard62.7 3766 2308 2 1
+sdcard62.2 3833 2308 1 0
+sdcard62.4 809 2308 2 2
+sdcard62.7 3733 2308 1 1
+sdcard62.4 3704 2308 2 0
+sdcard62.7 4751 2308 4 1
+sdcard61.7 755 2308 3 1
+sdcard62.0 750 2308 4 2
+sdcard62.3 3706 2308 3 3
+sdcard61.7 3720 2308 1 1
+sdcard62.9 847 2308 3 2
+sdcard64.0 3858 2308 1 0
+sdcard63.6 3872 2308 1 1
+sdcard62.5 3683 2308 2 1
+sdcard63.3 892 2308 2 3
+sdcard64.0 3551 2308 2 1
+sdcard63.0 4921 2308 5 1
+sdcard61.9 3788 2308 2 1
+sdcard63.7 828 2308 2 1
+sdcard64.5 4878 2308 4 0
+sdcard63.7 4000 2308 3 1
+sdcard65.2 3831 2308 1 0
+sdcard62.4 732 2308 2 3
+sdcard62.6 3696 2308 1 0
+sdcard62.4 3705 2308 2 0
+sdcard61.8 3776 2308 3 1
+sdcard62.4 754 2308 2 2
+sdcard62.1 732 2308 3 2
+sdcard62.9 4036 2308 2 0
+sdcard62.3 3742 2308 3 1
+sdcard62.0 855 2308 2 2
+sdcard62.6 3668 2308 3 1
+sdcard62.4 3804 2308 1 1
+sdcard62.2 4045 2308 1 0
+sdcard61.1 780 2308 2 1
+sdcard62.8 3606 2308 2 0
+sdcard62.0 4730 2308 4 0
+sdcard60.6 761 1452 4 2
+sdcard54.9 644 648 2 1
+sdcard54.2 3774 2308 2 1
+sdcard62.2 3749 2308 4 1
+sdcard62.4 3956 2308 0 0
+sdcard61.9 694 2308 3 2
+sdcard62.4 3708 2308 2 1
+sdcard62.4 3706 2308 3 1
+sdcard60.1 3528 1780 1 0
+sdcard57.7 528 1256 3 3
+sdcard54.5 303 888 4 1
+sdcard59.5 3676 2308 2 1
+sdcard62.2 1152 2308 3 1
+sdcard62.2 861 2308 2 1
+sdcard63.6 3819 2308 2 1
+sdcard62.5 3783 2308 1 1
+sdcard63.6 3726 2308 2 1
+sdcard63.6 741 2308 3 2
+sdcard62.9 3741 2308 2 1
+sdcard62.8 4938 2308 6 1
+sdcard62.3 3903 2308 2 1
+sdcard63.5 2149 2308 5 5
+sdcard62.6 3389 2308 2 1
+sdcard62.4 3704 2308 2 1
+sdcard62.2 3764 2308 1 1
+sdcard62.4 787 2308 2 3
+sdcard63.0 777 2908 3 2
+sdcard67.7 861 4112 1 4
+sdcard71.5 3678 2308 1 1
+sdcard62.3 860 2308 2 2
+sdcard63.0 4921 2308 5 1
+sdcard62.2 3882 2308 2 1
+sdcard63.2 830 2308 3 1
+sdcard62.4 794 2308 1 2
+sdcard63.8 3800 2308 4 1
+sdcard62.3 3717 2308 2 1
+sdcard62.8 3783 2308 2 0
+sdcard62.2 739 2308 3 1
+sdcard63.1 3732 2308 2 1
+sdcard62.0 3720 2308 3 1
+sdcard62.6 3974 2308 2 1
+sdcard62.9 755 2308 4 3
+sdcard67.6 5014 2664 5 1
+sdcard71.8 3993 4612 2 0
+sdcard76.4 3950 4612 3 1
+sdcard76.1 1004 4612 2 2
+sdcard66.0 3850 2308 1 1
+sdcard62.9 3788 2308 1 1
+sdcard62.9 3837 2308 1 1
+sdcard64.4 821 2308 3 2
+sdcard64.5 4612 2308 5 1
+sdcard61.8 4018 2308 2 0
+sdcard62.7 802 2308 4 2
+sdcard62.9 810 2308 3 3
+sdcard63.3 3825 2308 2 1
+sdcard62.2 3786 2308 2 1
+sdcard62.4 4030 2308 1 1
+sdcard62.0 728 2308 1 1
+sdcard63.0 3765 2308 2 1
+sdcard62.4 3763 2308 3 1
+sdcard61.5 3711 2308 2 2
+sdcard62.7 749 2308 4 5
+sdcard61.7 3701 2308 1 1
+sdcard59.3 3630 1496 1 1
+sdcard60.1 3744 2116 2 2
+sdcard61.2 699 1632 2 1
+sdcard60.3 3726 2308 2 1
+sdcard63.0 3675 2308 3 2
+sdcard62.2 3689 2308 2 1
+sdcard61.2 812 2308 2 5
+sdcard58.4 3371 1152 4 1
+sdcard53.1 3116 576 2 1
+sdcard53.8 769 2308 3 3
+sdcard61.0 780 2308 2 1
+sdcard61.9 3606 2308 2 2
+sdcard61.3 3570 2308 2 0
+sdcard61.3 3565 2308 4 2
+sdcard61.3 707 2308 2 1
+sdcard60.8 3562 2308 2 1
+sdcard61.0 3599 2308 2 1
+sdcard61.2 3589 2308 2 1
+sdcard62.1 2111 2308 4 2
+sdcard62.1 3680 2308 1 1
+sdcard64.2 3791 3556 4 1
+sdcard68.6 3679 2308 2 1
+sdcard62.1 867 2308 3 2
+sdcard62.6 3647 2308 2 1
+sdcard61.4 3639 2308 2 2
+sdcard62.0 3595 2308 3 1
+sdcard61.8 810 2308 2 1
+sdcard61.9 3664 2308 3 1
+sdcard61.4 3651 2308 1 2
+sdcard61.7 800 2308 4 2
+sdcard61.7 763 2444 2 2
+sdcard63.2 3627 3080 2 0
+sdcard67.8 3836 3880 3 1
+sdcard73.6 3908 4612 3 2
+sdcard65.4 742 2308 2 1
+sdcard62.3 3724 2308 2 1
+sdcard62.2 3837 2308 1 0
+sdcard63.4 3799 2308 3 0
+sdcard63.8 2175 2308 5 3
+sdcard63.0 3873 2308 3 1
+sdcard63.2 857 2308 4 1
+sdcard63.1 3822 2308 2 0
+sdcard62.3 832 2308 3 2
+sdcard63.5 3799 2308 3 0
+sdcard63.1 3766 2308 2 0
+sdcard62.3 3768 2308 2 0
+sdcard62.5 767 2308 3 2
+sdcard62.7 3727 2308 2 0
+sdcard62.6 3734 2308 2 1
+sdcard62.9 4817 2308 4 1
+sdcard62.2 712 2308 3 2
+sdcard62.0 3689 2308 2 1
+sdcard62.5 3758 2308 3 0
+sdcard62.0 3726 2308 3 0
+sdcard62.5 911 2308 2 2
+sdcard62.9 3722 2308 1 1
+sdcard65.6 999 3880 2 5
+sdcard67.4 3718 2308 3 1
+sdcard62.4 863 2308 2 1
+sdcard63.2 4676 1540 5 1
+sdcard55.0 326 684 3 2
+sdcard59.0 3591 2308 3 2
+sdcard62.0 777 2308 3 2
+sdcard62.0 3625 2308 2 1
+sdcard61.5 3613 2308 3 0
+sdcard61.1 3613 2308 2 1
+sdcard61.2 776 2308 2 2
+sdcard61.5 3535 2308 2 1
+sdcard61.6 3548 2308 2 1
+sdcard60.9 4540 2308 4 1
+sdcard60.5 727 2308 2 1
+sdcard60.8 3579 2308 4 1
+sdcard61.5 3698 2308 1 0
+sdcard63.3 3839 2308 2 2
+sdcard64.0 882 2308 1 2
+sdcard64.6 876 2308 4 1
+sdcard64.0 3830 2308 3 1
+sdcard62.2 1172 2308 5 2
+sdcard61.2 784 1728 2 1
+sdcard61.4 3618 2308 1 0
+sdcard62.0 780 2308 4 2
+sdcard61.5 3583 2308 2 1
+sdcard61.7 761 2308 3 1
+sdcard61.7 3618 2308 3 2
+sdcard61.2 3589 2308 2 1
+sdcard60.9 3542 2308 2 1
+sdcard61.5 772 2308 4 3
+sdcard61.1 3535 2308 2 1
+sdcard61.0 3582 2308 1 0
+sdcard61.2 4536 2308 5 1
+sdcard60.2 872 2308 2 1
+sdcard64.1 1137 2308 6 2
+sdcard63.3 3877 2308 2 1
+sdcard63.3 3850 2308 1 0
+sdcard62.4 858 2308 4 2
+sdcard63.3 3823 2308 4 1
+sdcard62.3 3758 2308 1 1
+sdcard63.0 3808 2308 2 0
+sdcard62.7 786 2308 2 2
+version=v6.0.5
+sdcard63.4 3732 2308 2 1
+sdcard62.9 4853 2308 5 1
+sdcard61.8 3768 2308 1 1
+sdcard62.5 757 2308 3 2
+sdcard62.5 3758 2308 3 1
+sdcard63.0 3919 2308 3 1
+sdcard60.7 3547 2308 1 1
+sdcard61.0 719 2308 2 1
+sdcard61.1 3544 2308 1 1
+sdcard61.5 3707 2308 2 1
+sdcard63.2 3881 2308 2 0
+sdcard63.4 873 2308 1 1
+sdcard63.8 874 2308 3 1
+sdcard63.0 3832 2308 2 1
+sdcard62.9 3827 2308 4 2
+sdcard62.5 830 2308 5 2
+sdcard63.6 3768 2308 2 1
+sdcard62.8 3779 2308 2 1
+sdcard62.2 3583 2308 2 1
+sdcard61.9 840 2308 2 2
+sdcard62.1 3899 2308 3 1
+sdcard61.8 4660 2308 5 0
+sdcard60.4 3535 2308 2 0
+sdcard61.4 732 2308 5 4
+sdcard60.9 3551 2308 1 1
+sdcard61.2 3803 2308 3 1
+sdcard60.8 3674 2308 2 0
+sdcard59.9 656 1496 3 4
+sdcard58.4 748 1632 3 1
+sdcard57.9 3595 2308 2 0
+sdcard62.3 3674 2308 2 0
+sdcard62.0 1227 2308 2 1
+sdcard63.1 521 2308 4 1
+sdcard61.3 3603 2308 2 1
+sdcard62.1 827 2308 3 1
+sdcard61.7 786 2308 2 1
+sdcard62.2 3839 2308 2 1
+sdcard61.4 3626 2308 1 1
+sdcard61.2 3613 2308 4 0
+sdcard61.1 723 2308 3 1
+sdcard61.4 3546 2308 1 1
+sdcard62.0 4575 2308 5 1
+sdcard60.2 3525 2308 1 0
+sdcard61.4 734 2308 4 5
+sdcard60.6 3588 2308 2 1
+version=v6.0.5
+sdcard70.0 4060 4612 1 1
+sdcard73.5 3585 2308 1 1
+sdcard61.9 1155 2308 3 1
+sdcard62.4 3701 2308 1 1
+sdcard62.0 3833 2308 2 1
+sdcard62.8 3809 2308 2 0
+sdcard62.7 816 2308 2 2
+sdcard62.4 3820 2308 4 1
+sdcard62.9 3810 2308 2 0
+sdcard62.8 764 2308 4 1
+sdcard62.5 780 2308 2 1
+sdcard62.9 3770 2308 2 1
+sdcard62.3 3722 2308 2 1
+sdcard62.1 3712 2308 1 1
+sdcard62.3 764 2308 2 1
+sdcard62.4 3700 2308 3 0
+sdcard62.0 3744 2308 2 1
+sdcard62.0 3700 2308 2 1
+sdcard63.0 859 2308 4 5
+sdcard62.5 3687 2308 1 1
+sdcard62.1 3742 2308 2 1
+sdcard61.7 3674 2308 2 1
+sdcard62.1 818 2308 3 2
+sdcard62.2 3644 2308 1 1
+sdcard61.3 3647 2308 2 1
+sdcard61.6 3663 2308 2 1
+sdcard61.9 774 2308 2 2
+sdcard62.6 4708 2308 3 1
+sdcard60.9 3613 2308 1 1
+sdcard61.0 796 2308 3 1
+sdcard61.4 1018 2308 2 2
+sdcard61.5 3633 2308 2 0
+sdcard61.0 3534 2308 1 1
+sdcard60.8 3525 2308 2 1
+sdcard60.8 725 2308 2 4
+sdcard61.2 3879 2308 2 1
+sdcard61.0 3747 2308 2 1
+sdcard62.5 3739 2308 1 1
+sdcard62.5 880 2308 4 5
+sdcard62.3 3674 2308 3 1
+sdcard62.6 3973 1940 4 3
+sdcard62.1 3726 2308 2 1
+sdcard61.6 863 2308 3 1
+sdcard62.7 3638 2308 4 2
+sdcard62.0 3604 2308 3 1
+sdcard61.6 3607 2308 2 1
+sdcard61.3 744 2308 3 2
+sdcard62.1 4684 2308 4 0
+sdcard61.0 3594 2308 2 1
+sdcard61.2 778 2308 4 2
+sdcard61.2 730 2308 2 1
+sdcard61.3 3541 2308 2 3
+sdcard60.8 3569 2308 3 1
+sdcard60.9 3548 2308 2 1
+sdcard61.6 850 2308 2 1
+sdcard62.6 3703 2308 0 1
+sdcard61.9 3669 2308 1 1
+sdcard62.4 3645 2308 2 1
+sdcard62.5 2108 2308 4 2
+sdcard62.4 3650 2308 2 1
+sdcard61.6 3658 2308 3 2
+sdcard61.7 3609 2308 1 1
+sdcard61.9 862 2308 3 3
+sdcard62.1 3593 2308 2 0
+sdcard61.7 3573 2308 1 1
+sdcard60.9 3619 2308 2 1
+sdcard61.5 774 2308 1 3
+sdcard61.5 3547 2308 3 1
+sdcard61.3 3575 2308 2 1
+sdcard60.8 750 2308 4 1
+sdcard60.8 731 2308 3 1
+sdcard61.4 3522 2308 3 1
+sdcard61.0 3700 2308 2 1
+sdcard62.9 3705 2308 1 1
+sdcard61.8 834 2308 3 1
+sdcard62.8 3697 2308 4 1
+sdcard62.0 3690 2308 1 1
+sdcard62.8 3819 2308 2 1
+sdcard63.0 1931 2308 7 2
+sdcard62.8 3793 2308 2 1
+sdcard63.0 826 2308 4 2
+sdcard62.9 3739 2308 1 0
+sdcard62.7 761 2308 2 2
+sdcard66.5 5470 4232 5 0
+sdcard60.5 3788 2308 5 2
+sdcard62.4 3755 2308 2 0
+sdcard62.5 731 2308 2 2
+sdcard62.6 3709 2308 1 0
+sdcard62.7 5195 2308 3 1
+sdcard62.0 4717 2308 4 2
+sdcard61.9 865 2308 0 2
+sdcard63.4 3563 2308 2 1
+sdcard61.7 3715 2308 4 1
+sdcard62.5 3696 2308 2 1
+sdcard61.9 843 2308 3 0
+sdcard62.9 3627 2308 1 1
+sdcard61.5 3597 2308 2 1
+sdcard61.9 3695 2308 1 0
+sdcard61.9 739 2308 3 1
+sdcard62.4 3584 2308 2 1
+sdcard61.7 799 2308 3 1
+sdcard60.8 3645 2308 2 0
+sdcard61.3 817 2308 2 3
+sdcard61.5 3543 2308 1 1
+sdcard61.3 3584 2308 2 1
+sdcard60.7 3551 2308 0 1
+sdcard60.9 750 2308 2 2
+sdcard75.5 879 2664 4 2
+sdcard62.0 3688 2308 3 1
+sdcard63.7 4994 2308 4 1
+sdcard62.3 872 2308 2 1
+sdcard63.8 3852 2308 4 2
+sdcard63.1 3799 2308 2 1
+sdcard64.8 3759 3556 3 1
+sdcard74.4 927 4612 3 2
+sdcard73.0 3637 2308 2 0
+sdcard62.0 3597 2308 2 1
+sdcard61.8 3648 2308 3 2
+sdcard61.4 826 2308 2 3
+sdcard61.3 3591 2308 2 1
+sdcard61.4 818 2308 4 1
+sdcard61.2 3578 2308 2 1
+sdcard61.0 717 2308 3 1
+sdcard61.0 3523 2308 2 0
+sdcard61.1 3521 2308 2 0
+sdcard61.2 3563 2308 2 1
+sdcard60.9 870 2308 2 4
+sdcard63.5 3857 2308 2 0
+sdcard62.6 4161 2308 1 1
+sdcard64.5 3890 2992 3 1
+sdcard74.8 1214 2308 4 4
+sdcard62.8 886 2308 4 1
+sdcard61.6 3639 2308 2 1
+sdcard61.9 4036 2308 3 1
+sdcard61.7 769 2308 2 2
+sdcard62.2 3601 2308 3 1
+sdcard61.5 3629 2308 1 1
+sdcard60.9 3606 2308 2 1
+sdcard61.2 758 2308 2 1
+sdcard62.3 3600 2308 1 0
+sdcard61.8 4679 2308 5 0
+sdcard60.3 3518 2308 2 1
+sdcard60.7 700 2308 2 0
+sdcard61.0 3544 2308 3 0
+sdcard61.2 3982 2308 3 1
+sdcard63.1 3868 2308 2 1
+sdcard62.9 855 2308 3 1
+sdcard63.7 3788 2308 2 0
+sdcard63.4 3820 2308 2 1
+sdcard62.7 799 2308 4 1
+sdcard61.7 747 1940 2 2
+sdcard60.6 3717 1728 2 1
+sdcard59.0 3688 1452 4 0
+sdcard58.2 3767 2308 2 1
+sdcard62.5 789 2308 2 3
+sdcard62.6 3760 2308 2 1
+sdcard62.3 3788 2308 2 1
+sdcard62.7 3755 2308 2 1
+sdcard62.0 723 2308 2 2
+sdcard62.4 3676 2308 1 0
+sdcard62.4 4739 2308 4 1
+sdcard61.7 3739 2308 2 0
+sdcard61.6 865 2308 3 3
+sdcard63.7 3761 2308 3 1
+sdcard61.9 3655 2308 1 2
+sdcard62.2 3636 2308 2 1
+sdcard62.3 844 2308 2 1
+sdcard63.0 3702 2308 1 0
+sdcard61.8 3699 2308 1 1
+sdcard62.2 3650 2664 2 1
+sdcard74.5 2355 4612 4 2
+sdcard75.6 978 4612 3 6
+sdcard68.5 3634 2308 2 1
+sdcard61.1 750 2308 2 0
+sdcard61.2 764 2308 3 2
+sdcard61.8 3583 2308 2 0
+sdcard61.2 3541 2308 2 1
+sdcard61.0 3790 2308 2 1
+sdcard63.7 703 2308 4 5
+sdcard61.6 3547 2308 1 1
+sdcard60.8 4723 2308 4 1
+sdcard62.7 3818 2308 2 0
+sdcard63.3 902 2308 3 4
+sdcard63.2 3835 2308 1 0
+sdcard63.5 3905 2308 3 2
+sdcard62.9 3664 2308 2 1
+sdcard61.8 819 2308 3 2
+sdcard62.0 3627 2308 2 1
+sdcard62.2 4537 1496 4 1
+sdcard57.7 3632 2308 1 1
+sdcard61.9 761 2308 3 2
+sdcard61.9 4663 2308 4 1
+sdcard60.8 3596 2308 2 0
+sdcard61.4 1001 2308 3 1
+sdcard61.2 723 2308 2 1
+sdcard61.2 3528 2308 2 0
+sdcard60.7 3604 2308 1 0
+sdcard60.9 3541 2308 2 0
+sdcard60.4 707 2308 2 2
+sdcard63.0 3730 2308 2 1
+sdcard61.9 3669 2308 2 1
+sdcard62.3 3676 2308 3 1
+sdcard62.8 889 2308 4 4
+sdcard62.2 3663 2308 2 0
+sdcard61.9 3647 2308 4 0
+sdcard62.0 3660 2308 3 1
+sdcard62.1 825 2308 2 2
+sdcard62.2 3593 2308 2 0
+sdcard61.8 3603 2308 3 1
+sdcard60.9 3591 2308 2 1
+sdcard61.4 771 2308 2 1
+sdcard62.3 4703 2308 5 0
+sdcard60.8 3544 2308 2 1
+sdcard60.8 3744 2308 2 0
+sdcard60.8 731 2308 2 0
+sdcard61.5 3545 2308 1 2
+sdcard60.8 3581 2308 2 1
+sdcard62.6 3674 2308 3 2
+sdcard72.0 1039 4612 4 3
+sdcard76.6 3698 4612 3 0
+sdcard65.7 3681 2308 1 0
+sdcard62.8 3676 2308 2 1
+sdcard62.1 864 2308 4 5
+sdcard61.5 3611 2308 1 0
+sdcard62.0 3644 2308 2 1
+sdcard61.5 3593 2308 3 1
+sdcard61.6 813 2308 2 3
+sdcard61.5 3646 2308 2 1
+sdcard61.2 3649 2308 1 1
+sdcard61.7 3579 2308 3 1
+sdcard61.5 749 2308 4 4
+sdcard61.8 4579 2308 4 1
+sdcard60.2 3572 2308 0 0
+sdcard61.1 745 2308 5 1
+sdcard60.3 710 2308 3 2
+sdcard62.8 3566 2308 2 1
+sdcard61.5 3675 2308 2 1
+sdcard62.4 3657 2308 1 1
+sdcard62.0 810 2308 2 2
+sdcard63.0 3808 2308 3 1
+sdcard62.7 3793 2308 2 0
+version=v6.0.5
+sdcard62.8 3792 2308 2 1
+sdcard63.7 1940 2308 4 2
+sdcard62.7 3830 2308 3 1
+sdcard63.9 3767 2308 2 0
+sdcard62.6 3753 2308 3 1
+sdcard62.5 743 2308 3 2
+sdcard62.7 3738 2308 2 1
+sdcard63.1 3821 2308 3 1
+sdcard62.0 3693 2308 2 1
+sdcard61.8 703 2308 1 4
+sdcard63.0 3732 2308 1 1
+sdcard61.5 3693 2308 1 1
+sdcard63.6 892 2308 4 1
+sdcard63.1 909 2308 3 2
+sdcard64.1 3828 2308 3 2
+sdcard63.2 3804 2308 1 1
+sdcard63.0 3942 2308 3 1
+sdcard63.9 864 2308 3 4
+sdcard63.0 3854 2308 3 1
+sdcard62.8 3755 2308 3 1
+sdcard62.6 3731 2308 2 0
+sdcard63.3 1866 2308 4 2
+sdcard62.3 3743 2308 2 1
+sdcard62.5 800 2308 4 1
+sdcard62.1 3770 2308 2 0
+sdcard62.3 763 2308 3 3
+sdcard62.5 3688 2308 1 1
+sdcard61.7 3685 2308 4 0
+sdcard62.2 3703 2308 2 1
+sdcard61.5 734 2308 3 1
+sdcard63.8 3905 2308 2 1
+sdcard63.3 3810 2308 2 1
+sdcard63.9 5002 2308 5 0
+sdcard62.8 830 2308 3 2
+sdcard63.2 4004 2308 5 1
+sdcard61.9 3656 2308 1 0
+sdcard61.7 3664 2308 5 1
