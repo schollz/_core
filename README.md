@@ -36,6 +36,20 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building the firmware are in the [documentation](https://zeptocore.com/#firmware-development).
 
+### zeptocore diy
+
+
+## diy
+
+- [Website](https://zeptocore.com/)
+- [Schematic](https://zeptocore.com/#is-a-schematic-available)
+- [Source code](https://github.com/schollz/_core)
+- [Firmware](https://zeptocore.com/#uploading-firmware)
+- [Instructions for uploading firmware](https://zeptocore.com/#instructions) 
+- [Video demonstration](https://www.youtube.com/watch?v=WBvos0TkcSY)
+- [Video DIY guide](https://www.youtube.com/watch?v=FH1R4RCh0vU)
+
+
 ## zeptoboard
 
 the zeptoboard is the breadboard version of the zeptocore. 
