@@ -29,6 +29,11 @@ zeptoboard: pico-extras copyboard lib/fuzz.h lib/transfer_saturate2.h lib/sinewa
 	make -C build -j$(NPROCS)
 	mv build/_core.uf2 zeptoboard.uf2
 
+zeptomech: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp zeptomech_compile_definitions.cmake target_compile_definitions.cmake
+	make -C build -j$(NPROCS)
+	cp build/_core.uf2 zeptomech.uf2
+
 zeptocore: pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)

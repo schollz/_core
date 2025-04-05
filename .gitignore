@@ -1,0 +1,17 @@
+.DS_Store
+/pico-extras
+/pico-sdk
+/build
+dev/audio2flash/audio2flash
+lib/crossfade4_128.h
+lib/crossfade4_160.h
+lib/crossfade4_192.h
+lib/crossfade4_256.h
+lib/crossfade4_441.h
+lib/crossfade4_64.h
+lib/cuedsounds_ectocore.h
+lib/cuedsounds_zeptocore.h
+lib/fuzz.h
+lib/resonantfilter_data.h
+zeptomech.uf2
+target_compile_definitions.cmake

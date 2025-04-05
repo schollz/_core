@@ -28,6 +28,7 @@ typedef struct LEDS {
   int8_t gpio_leds_pin[4];
   uint8_t gpio_leds_set;
   uint8_t gpio_leds_set_last;
+  uint16_t rgb_leds_counter[LED_COUNT];
 } LEDS;
 
 LEDS *LEDS_create() {
@@ -89,15 +90,19 @@ LEDS *LEDS_create() {
     uint8_t col_map[] = {
         3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0,
     };
+#ifndef INCLUDE_ZEPTOMECH
     leds->pca = PCA9552_create(0x61, i2c_default, row_map, col_map);
+#endif
   }
 
+#ifndef INCLUDE_ZEPTOMECH
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }
   sleep_ms(1);
   PCA9552_clear(leds->pca);
   PCA9552_render(leds->pca);
+#endif
 
   // setup GPIO leds
   for (uint8_t i = 0; i < 4; i++) {
@@ -124,8 +129,13 @@ void LEDS_clear(LEDS *leds) {
     }
   }
 }
+#ifdef INCLUDE_ZEPTOMECH
+extern void LEDS_render_forward_zeptomech(LEDS* leds);
+#endif
 
 void LEDS_render(LEDS *leds) {
+
+#ifndef INCLUDE_ZEPTOMECH
   // light up the PCA9552
   for (uint8_t i = 1; i < LEDS_ROWS; i++) {
     for (uint8_t j = 0; j < LEDS_COLS; j++) {
@@ -163,6 +173,9 @@ void LEDS_render(LEDS *leds) {
       }
     }
   }
+#else
+  LEDS_render_forward_zeptomech(leds);
+#endif
 
   if (is_arcade_box) {
     if (leds->gpio_leds_set != leds->gpio_leds_set_last) {

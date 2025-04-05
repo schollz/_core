@@ -2,6 +2,48 @@
 
 #include "lib/includes.h"
 
+#ifdef INCLUDE_ZEPTOMECH
+void LEDS_render_forward_zeptomech(LEDS* leds)
+{
+  // TODO
+  // Light up the leds
+  int k = 0;
+  for (uint8_t i = 0; i < LEDS_ROWS; i++) {
+    for (uint8_t j = 0; j < LEDS_COLS; j++) {
+      // state 0 = off // LED_NONE
+      // state 1 = dim  // LED_DIM
+      // state 2 = bright // LED_BRIGHT
+      // state 3 = blink  // LED_BLINK
+      
+      int val = leds->state[i][j]  * 32;
+
+      // blink leds
+      int blinkval = 64;
+      blink_time = 70;
+      if (leds->state[i][j] == LED_BLINK) {
+        leds->rgb_leds_counter[k]++;
+        if (leds->rgb_leds_counter[k] == blink_time) {
+          // set led
+          WS2812_fill(ws2812, k, blinkval, blinkval, blinkval); 
+        } else if (leds->rgb_leds_counter[j] >= blink_time * 2) {
+          // set led
+          WS2812_fill(ws2812, k, 0, 0, 0); 
+          leds->rgb_leds_counter[k] = 0;
+        }
+      }else {
+        WS2812_fill(ws2812, k, val, val, val); // automatically does NONE/DIM/BRIGHT
+      }
+      k++;
+    }
+  }
+  
+  // sleep_ms(1);
+  WS2812_show(ws2812);
+
+  return;
+}
+#endif
+
 // static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
 // static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
 // static uint8_t dub_step_steps[] = {8, 12, 16, 32, 16, 16};
@@ -708,9 +750,34 @@ int main() {
   }
 #endif
 
+#ifdef INCLUDE_ZEPTOMECH
+    is_zeptomech = true;
+#else
+    is_zeptomech = false;
+#endif
+
 #ifdef LED_TOP_GPIO
   gpio_init(LED_TOP_GPIO);
   gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
+#endif
+
+#ifdef INCLUDE_ZEPTOMECH
+  // BLUELED
+  gpio_init(BLUELED);
+  gpio_set_dir(BLUELED, GPIO_OUT);
+  gpio_put(BLUELED, 0);
+  // 5v enable
+  gpio_init(FIVEVENABLE);
+  gpio_set_dir(FIVEVENABLE, GPIO_OUT);
+  gpio_put(FIVEVENABLE, 1);
+
+  // This is done via INCLUDE_RGBLED
+  // ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
+  // WS2812_set_brightness(ws2812, 50);
+  // sleep_ms(1);
+  // WS2812_fill(ws2812, 0, 0, 0, 0);
+  // sleep_ms(1);
+  // WS2812_show(ws2812);
 #endif
 
 #ifdef INCLUDE_ECTOCORE
@@ -816,7 +883,8 @@ int main() {
   resFilter[1] = ResonantFilter_create(0);
 #endif
 #ifdef INCLUDE_RGBLED
-  ws2812 = WS2812_new(23, pio0, 2);
+  ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
+  WS2812_set_brightness(ws2812, 100);
   sleep_ms(1);
   WS2812_fill(ws2812, 0, 0, 0, 0);
   sleep_ms(1);

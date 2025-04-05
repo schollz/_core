@@ -133,6 +133,14 @@ void __not_in_flash_func(input_handling)() {
   for (uint8_t i = 0; i < 3; i++) {
     adcs[i] = FilterExp_create(10);
   }
+  uint8_t knobX = 2;
+  uint8_t knobY = 1;
+  uint8_t knobZ = 0;
+#ifdef INCLUDE_ZEPTOMECH
+  knobX = 0;
+  knobY = 1;
+  knobZ = 2;
+#endif
 
   uint8_t debounce_beat_repeat = 0;
   uint16_t debounce_sel_variation_next = 0;
@@ -178,7 +186,7 @@ void __not_in_flash_func(input_handling)() {
 
   KnobChange *knob_change_arcade[8];
   ADS7830 *arcade_ads7830 = NULL;
-  if (is_arcade_box) {
+  if (is_arcade_box || is_zeptomech) {
     arcade_ads7830 = ADS7830_malloc(ADS7830_ADDR);
     // create array of knob changes
     for (uint8_t i = 0; i < 8; i++) {
@@ -353,7 +361,7 @@ void __not_in_flash_func(input_handling)() {
                         random_integer_in_range(0, 15));
     }
 
-    adc_select_input(2);
+    adc_select_input(knobX);
 
     // check if a single button is held
     // for purposes of changing the fx params
@@ -426,6 +434,7 @@ void __not_in_flash_func(input_handling)() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+        // A + X  
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 3, adc * 127 / 4096);
@@ -448,6 +457,7 @@ void __not_in_flash_func(input_handling)() {
                             adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
         } else if (button_is_pressed(KEY_B)) {
+        // B + X    
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 6, adc * 127 / 4096);
@@ -462,6 +472,7 @@ void __not_in_flash_func(input_handling)() {
           sample_selection_index = adc_raw * sample_selection_num / 4096;
           printf("sample_selection_index: %d\n", sample_selection_index);
         } else if (button_is_pressed(KEY_D)) {
+        // D + X  
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 12, adc * 127 / 4096);
@@ -532,7 +543,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Y
-    adc_select_input(1);
+    adc_select_input(knobY);
     adc = FilterExp_update(adcs[1], adc_read());
     if (abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
@@ -551,6 +562,7 @@ void __not_in_flash_func(input_handling)() {
         }
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+        // A + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 4, adc * 127 / 4096);
@@ -571,6 +583,7 @@ void __not_in_flash_func(input_handling)() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
                             adc_original * 255 / 4096, 250);
         } else if (button_is_pressed(KEY_B)) {
+        // B + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 7, adc * 127 / 4096);
@@ -682,7 +695,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Z
-    adc_select_input(0);
+    adc_select_input(knobZ);
     adc = FilterExp_update(adcs[2], adc_read());
     if (abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
@@ -695,6 +708,7 @@ void __not_in_flash_func(input_handling)() {
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
+        // A + Z  
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 5, adc * 127 / 4096);
@@ -709,6 +723,7 @@ void __not_in_flash_func(input_handling)() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
+        // B + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 8, adc * 127 / 4096);
@@ -720,6 +735,7 @@ void __not_in_flash_func(input_handling)() {
           WaveBass_set_volume(wavebass, adc);
 #endif
         } else if (button_is_pressed(KEY_C)) {
+        // C + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], 11, adc * 127 / 4096);
@@ -755,7 +771,7 @@ void __not_in_flash_func(input_handling)() {
     }
 #endif
 
-    if (is_arcade_box) {
+    if (is_arcade_box || is_zeptomech) {
       // volume                   tempo
       // sample selection         dj filter
       // grimoire selection       grimoire probability
@@ -771,14 +787,23 @@ void __not_in_flash_func(input_handling)() {
 #endif
           if (i == 0) {
             // change volume
-            new_vol = (255 - adcValue) * VOLUME_STEPS * 6 / 7 / 255;
+            if (is_arcade_box){
+              new_vol = (255 - adcValue) * VOLUME_STEPS * 6 / 7 / 255;
+            }else{
+              new_vol = adcValue *  VOLUME_STEPS * 6 / 7 / 255;
+            }
             if (new_vol != sf->vol) {
               sf->vol = new_vol;
               printf("sf-vol: %d\n", sf->vol);
             }
             clear_debouncers();
-            DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+            if (is_arcade_box){
+              DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                               255 - adcValue, 200);
+              }else{
+                DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
+                  adcValue, 200);
+              }
           } else if (i == 1) {
             // change bpm
             if (adcValue < 16) {

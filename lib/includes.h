@@ -32,7 +32,7 @@
 #endif
 //
 bool is_arcade_box = false;
-
+bool is_zeptomech = false;
 //
 #include "definitions.h"
 //
