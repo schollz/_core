@@ -762,10 +762,10 @@ int main() {
 #endif
 
 #ifdef INCLUDE_ZEPTOMECH
-  // BLUELED
-  gpio_init(BLUELED);
-  gpio_set_dir(BLUELED, GPIO_OUT);
-  gpio_put(BLUELED, 0);
+  // REDLED ON
+  gpio_init(REDLED);
+  gpio_set_dir(REDLED, GPIO_OUT);
+  gpio_put(REDLED, 1);
   // 5v enable
   gpio_init(FIVEVENABLE);
   gpio_set_dir(FIVEVENABLE, GPIO_OUT);
