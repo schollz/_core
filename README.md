@@ -36,18 +36,35 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building the firmware are in the [documentation](https://zeptocore.com/#firmware-development).
 
-### zeptocore diy
-
 
 ## diy
 
 - [Website](https://zeptocore.com/)
-- [Schematic](https://zeptocore.com/#is-a-schematic-available)
+- [Schematic](https://github.com/schollz/_core/blob/main/schematics/zeptocore_v28.pdf)
 - [Source code](https://github.com/schollz/_core)
 - [Firmware](https://zeptocore.com/#uploading-firmware)
 - [Instructions for uploading firmware](https://zeptocore.com/#instructions) 
 - [Video demonstration](https://www.youtube.com/watch?v=WBvos0TkcSY)
 - [Video DIY guide](https://www.youtube.com/watch?v=FH1R4RCh0vU)
+
+
+## ectocore 
+
+the ectocore is the eurorack version of the zeptocore. 
+
+<div align="center">
+<img src="docs/static/img/ectocore_2.png" height="300px">
+</div>
+
+## diy
+
+
+- [Schematic](https://github.com/schollz/_core/blob/main/schematics/ectocore_v1.0.pdf)
+- [Source code](https://github.com/schollz/_core)
+- [Firmware](https://github.com/schollz/_core/releases)
+- [Instructions for uploading samples](https://www.youtube.com/watch?v=NfjjhU1z6Ek) 
+
+
 
 
 ## zeptoboard
@@ -59,17 +76,6 @@ the zeptoboard is the breadboard version of the zeptocore.
 </div>
 
 It retains most of the same functionality but allows you to use your keyboard and a MIDI interface (via [this website](https://zeptocore.com/#computer-keyboard)) instead of the buttons on the handheld device. While this version does require some breadboarding knowledge, it is perfect for developing your ideas based on the firmware.
-
-## ectocore 
-
-the ectocore is the eurorack version of the zeptocore. 
-
-<div align="center">
-<img src="docs/static/img/ectocore.png" height="300px">
-</div>
-
-this is currently under development and will be released soon. more info at https://getectocore.com/
-
 
 ## sample loading tool
 
