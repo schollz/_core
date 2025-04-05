@@ -165,9 +165,9 @@ void __not_in_flash_func(input_handling)() {
     ResonantFilter_setFilterType(resFilter[channel], 0);
     ResonantFilter_setFc(resFilter[channel], global_filter_index);
   }
-#ifdef INCLUDE_MIDI
-  tusb_init();
-#endif
+// #ifdef INCLUDE_MIDI
+//   tusb_init();
+// #endif
 
 #ifdef INCLUDE_SSD1306
   ssd1306_t disp;

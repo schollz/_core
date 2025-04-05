@@ -750,6 +750,10 @@ int main() {
   }
 #endif
 
+#ifdef INCLUDE_MIDI
+  tusb_init();
+#endif
+
 #ifdef INCLUDE_ZEPTOMECH
     is_zeptomech = true;
 #else
