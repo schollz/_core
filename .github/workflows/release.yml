@@ -157,4 +157,12 @@ jobs:
             ectocore_linux_amd64_${{ github.event.release.name }}
             ectocore_macos_aarch64_${{ github.event.release.name }}
             ectocore_macos_amd64_${{ github.event.release.name }}
+            ectocore_${{ github.event.release.name }}.uf2
+            ectocore_${{ github.event.release.name }}_ultralow_latency.uf2
+            ectocore_${{ github.event.release.name }}_low_latency.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking_ultralow_latency.uf2
+            ectocore_${{ github.event.release.name }}_no_overclocking_low_latency.uf2
+            ectocore_beta_hardware_${{ github.event.release.name }}.uf2
+            
             
