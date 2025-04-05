@@ -800,12 +800,12 @@ void __not_in_flash_func(input_handling)() {
             if (is_arcade_box){
               DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                               255 - adcValue, 200);
-              }else{
-                DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
-                  adcValue, 200);
+              }else{ // zeptomech
+                DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],adcValue, 200);
+                // A + Z uses DEBOUNCE_UINT8_LED_WALL
               }
           } else if (i == 1) {
-            // change bpm
+            // change bpm/tempo
             if (adcValue < 16) {
               sf->bpm_tempo = banks[sel_bank_cur]
                                   ->sample[sel_sample_cur]
@@ -815,6 +815,8 @@ void __not_in_flash_func(input_handling)() {
               sf->bpm_tempo = util_clamp(
                   (((adcValue - 16) * (240 - 60) / (255 - 16)) / 2) * 2 + 60,
                   60, 240);
+                  clear_debouncers();
+                  DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],adcValue, 100);
             }
           } else if (i == 2) {
             // <change_sample>
