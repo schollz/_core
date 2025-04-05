@@ -336,7 +336,7 @@ docs: versions.md
 	cd docs && hugo serve -D --bind 0.0.0.0
 
 .venv:
-	uv venv
+	uv venv --python 3.11
 	uv pip install -r requirements.txt
 
 dev/madmom/.venv:
