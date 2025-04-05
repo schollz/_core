@@ -26,6 +26,7 @@
 #ifdef INCLUDE_MIDI
 
 #include "tusb.h"
+#include <pico/unique_id.h>
 
 /* A combination of interfaces must have a unique product id, since PC will save
  * device driver after the first plug. Same VID/PID with different interface e.g
@@ -38,6 +39,15 @@
 #define USB_PID                                                      \
   (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
    _PID_MAP(MIDI, 3) | _PID_MAP(VENDOR, 4))
+
+// String Descriptor Index
+enum {
+  STRING_LANGID = 0,
+  STRING_MANUFACTURER,
+  STRING_PRODUCT,
+  STRING_SERIAL,
+  STRING_LAST,
+};
 
 //--------------------------------------------------------------------+
 // Device Descriptors
@@ -131,15 +141,17 @@ char const* string_desc_arr[] = {
     "zeptoboard",  // 2: Product
 #endif
 #ifdef INCLUDE_ZEPTOCORE
-    "zeptocore",  // 2: Product
+  #ifdef INCLUDE_ZEPTOMECH
+      "zeptomech",  // 2: Product
+  #else
+      "zeptocore",  // 2: Product
+    #endif
 #endif
 #ifdef INCLUDE_ECTOCORE
     "ectocore",  // 2: Product
 #endif
-#ifdef INCLUDE_ZEPTOMECH
-    "zeptomech",  // 2: Product
-#endif
-    "123456",  // 3: Serials, should use chip ID
+
+    NULL,  // 3: Serials
 };
 
 static uint16_t _desc_str[32];
@@ -147,36 +159,37 @@ static uint16_t _desc_str[32];
 // Invoked when received GET STRING DESCRIPTOR request
 // Application return pointer to descriptor, whose contents must exist long
 // enough for transfer to complete
-uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
+uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) 
+{
   (void)langid;
-
   uint8_t chr_count;
-
+  memset(_desc_str, 0, sizeof(_desc_str));
   if (index == 0) {
     memcpy(&_desc_str[1], string_desc_arr[0], 2);
     chr_count = 1;
-  } else {
-    // Note: the 0xEE index string is a Microsoft OS 1.0 Descriptors.
-    // https://docs.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors
-
-    if (!(index < sizeof(string_desc_arr) / sizeof(string_desc_arr[0])))
-      return NULL;
-
-    const char* str = string_desc_arr[index];
-
-    // Cap at max char
+  } else if (index == STRING_SERIAL) {
+    pico_unique_board_id_t id;
+    pico_get_unique_board_id(&id);
+    uint64_t idx = *(uint64_t *)&id.id;
+    int serialnum = ((idx + 1) % 10000000ull);
+    if (serialnum < 1000000)
+      serialnum += 1000000; // 7 digits
+    char temp[16];
+    chr_count = sprintf(temp, "%07d", serialnum);
+    for (uint8_t i = 0; i < chr_count; i++) {
+      _desc_str[1 + i] = temp[i];
+    }
+  } else if (index < STRING_LAST) {
+    const char *str = string_desc_arr[index];
     chr_count = strlen(str);
-    if (chr_count > 31) chr_count = 31;
-
-    // Convert ASCII string into UTF-16
+    if (chr_count > 31)
+      chr_count = 31;
     for (uint8_t i = 0; i < chr_count; i++) {
       _desc_str[1 + i] = str[i];
     }
-  }
-
-  // first byte is length (including header), second byte is string type
+  } else
+  return NULL;
   _desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * chr_count + 2);
-
   return _desc_str;
 }
 

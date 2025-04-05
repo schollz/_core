@@ -49,6 +49,7 @@ target_link_libraries(${PROJECT_NAME}
     pico_stdlib
     pico_multicore
     my_pico_audio_i2s
+    pico_unique_id
     FatFs_SPI
     mcp23017_lib
     hardware_clocks
