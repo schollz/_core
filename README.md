@@ -269,3 +269,9 @@ Do *not* use these cards! They may appear to work, but they can cause spurious g
 - MIT license for the SdFat library (Copyright (c) 2011-2022 Bill Greiman)
 - MIT license for the USB library (Copyright (c) 2019 Ha Thach)
 - GPLv3 for all _core code
+- Hardware: cc-by-sa-3.0
+
+# guidelines for derivative works
+
+The schematics are open-source - you are welcome to utilize them to customize the device according to your preferences. If you intend to produce boards based on my schematics, I kindly ask for your financial support to help sustain the development of future devices.
+Also note - Infinite Digits and Ectocore are registered trademarks. The name "Infinite Digits" and "Ectocore" should not be used on any of the derivative works you create from these files. 
