@@ -841,6 +841,33 @@ void __not_in_flash_func(input_handling)() {
           } else if (i == 3) {
             // <dj_style_filter>
             for (uint8_t channel = 0; channel < 2; channel++) {
+#ifdef INCLUDE_ZEPTOMECH
+              int filter_spacing = 16;
+              for (uint8_t channel = 0; channel < 2; channel++) {
+                if (adcValue < 128 - filter_spacing) {
+                  global_filter_index =
+                    adcValue * (resonantfilter_fc_max) / (128 - filter_spacing);
+                  global_filter_lphp = 0;
+                  ResonantFilter_setFilterType(resFilter[channel],
+                                global_filter_lphp);
+                  ResonantFilter_setFc(resFilter[channel], global_filter_index);
+                } else if (adcValue >= 128 + filter_spacing) {
+                  global_filter_index = (adcValue - (128 + filter_spacing)) *
+                            (resonantfilter_fc_max) /
+                            (128 - filter_spacing);
+                  global_filter_lphp = 1;
+                  ResonantFilter_setFilterType(resFilter[channel],
+                                global_filter_lphp);
+                  ResonantFilter_setFc(resFilter[channel], global_filter_index);
+                } else {
+                  global_filter_index = resonantfilter_fc_max;
+                  global_filter_lphp = 0;
+                  ResonantFilter_setFilterType(resFilter[channel],
+                                global_filter_lphp);
+                  ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
+                }
+              }
+              #else
               if (adcValue < 128) {
                 if (adcValue < 5) {
                   global_filter_index = resonantfilter_fc_max;
@@ -866,6 +893,7 @@ void __not_in_flash_func(input_handling)() {
                                              global_filter_lphp);
                 ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
               }
+              #endif
             }
             clear_debouncers();
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
