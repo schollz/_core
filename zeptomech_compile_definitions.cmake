@@ -66,8 +66,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	REDLED=22
 	LED_COUNT=20
 	NEOPIXPIN=9
-	# UART1_TX=24
-	# UART1_RX=25
+	UART1_TX=24
+	UART1_RX=25
 	# ADC0=26
 	# ADC1=27
 	# ADC2=28
@@ -106,8 +106,8 @@ target_link_libraries(${PROJECT_NAME}
     tinyusb_device
     tinyusb_board
 )
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
 # # uncomment these lines to have normal USB

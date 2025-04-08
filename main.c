@@ -775,6 +775,15 @@ int main() {
   gpio_set_dir(FIVEVENABLE, GPIO_OUT);
   gpio_put(FIVEVENABLE, 1);
 
+  // gpio_init(UART1_TX);
+  // gpio_set_dir(UART1_TX, GPIO_OUT);
+  // gpio_init(UART1_RX);
+  // gpio_set_dir(UART1_RX, GPIO_IN);
+
+  // Setup the PIO for HARDWARE MIDI
+  uint offset_tx = pio_add_program(pio_tx, &uart_tx_program);
+  uart_tx_program_init(pio_tx, sm_tx, offset_tx, UART1_TX, UART_BAUD);
+
   // This is done via INCLUDE_RGBLED
   // ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
   // WS2812_set_brightness(ws2812, 50);

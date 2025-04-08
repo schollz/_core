@@ -3,6 +3,13 @@
 #include <stdarg.h>  // Include this header for va_start, va_end, etc.
 #include <stdio.h>   // Include for vsnprintf
 
+#ifdef INCLUDE_ZEPTOMECH
+#define UART_ID uart1
+#define UART_BAUD 31250
+PIO pio_tx = pio0;
+uint sm_tx = 3;
+#endif
+
 uint32_t send_buffer_as_sysex(char* buffer, uint32_t bufsize) {
   uint8_t sysex_data[bufsize + 2];  // +2 for SysEx start and end bytes
 
@@ -30,60 +37,72 @@ uint32_t send_text_as_sysex(const char* text) {
 }
 
 void send_midi_clock() {
+  // Construct the MIDI message
+  // MIDI Timing Clock message format: 0xF8
+  uint8_t midi_message[1];
+  midi_message[0] = 0xF8;  // Timing Clock command
+
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
-    // Construct the MIDI message
-    // MIDI Timing Clock message format: 0xF8
-    uint8_t midi_message[1];
-    midi_message[0] = 0xF8;  // Timing Clock command
-
     // Send the MIDI message
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
+#ifdef INCLUDE_ZEPTOMECH
+  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+#endif
 }
 
 void send_midi_start() {
+  // Construct the MIDI message
+  // MIDI Start message format: 0xFA
+  uint8_t midi_message[1];
+  midi_message[0] = 0xFA;  // Start command
+
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
-    // Construct the MIDI message
-    // MIDI Start message format: 0xFA
-    uint8_t midi_message[1];
-    midi_message[0] = 0xFA;  // Start command
-
     // Send the MIDI message
-    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
+    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message)); // USBMIDI
   }
+#ifdef INCLUDE_ZEPTOMECH
+  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+#endif
 }
 
 void send_midi_stop() {
+  // Construct the MIDI message
+  // MIDI Stop message format: 0xFC
+  uint8_t midi_message[1];
+  midi_message[0] = 0xFC;  // Stop command
+
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
-    // Construct the MIDI message
-    // MIDI Stop message format: 0xFC
-    uint8_t midi_message[1];
-    midi_message[0] = 0xFC;  // Stop command
-
     // Send the MIDI message
-    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
+    tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message)); // USBMIDI
   }
+#ifdef INCLUDE_ZEPTOMECH
+  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+#endif
 }
 
 void send_midi_note_on(uint8_t note, uint8_t velocity) {
+  // MIDI cable number 0, Note On event, channel 1
+  uint8_t channel = 0;  // MIDI channels are 0-15
+
+  // Construct the MIDI message
+  // MIDI Note On message format: 0x9n, where n is the channel number
+  uint8_t midi_message[3];
+  midi_message[0] = 0x90 | channel;  // Note On command with channel
+  midi_message[1] = note;            // MIDI note number
+  midi_message[2] = velocity;        // Note velocity
+
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
-    // MIDI cable number 0, Note On event, channel 1
-    uint8_t channel = 0;  // MIDI channels are 0-15
-
-    // Construct the MIDI message
-    // MIDI Note On message format: 0x9n, where n is the channel number
-    uint8_t midi_message[3];
-    midi_message[0] = 0x90 | channel;  // Note On command with channel
-    midi_message[1] = note;            // MIDI note number
-    midi_message[2] = velocity;        // Note velocity
-
     // Send the MIDI message
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
+#ifdef INCLUDE_ZEPTOMECH
+  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+#endif
 }
 
 int printf_sysex(const char* format, ...) {

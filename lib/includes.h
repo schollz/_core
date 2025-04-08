@@ -25,6 +25,11 @@
 #include "pico/stdlib.h"
 #include "pico/types.h"
 
+#ifdef INCLUDE_ZEPTOMECH
+// #include "hardware/timer.h"
+// #include "hardware/uart.h"
+#include "uart_tx.pio.h"
+#endif
 //
 #ifdef INCLUDE_MIDI
 #include "bsp/board.h"
