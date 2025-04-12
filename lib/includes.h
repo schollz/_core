@@ -26,8 +26,8 @@
 #include "pico/types.h"
 
 #ifdef INCLUDE_ZEPTOMECH
-// #include "hardware/timer.h"
-// #include "hardware/uart.h"
+#include "hardware/timer.h"
+#include "hardware/uart.h"
 #include "uart_tx.pio.h"
 #endif
 //

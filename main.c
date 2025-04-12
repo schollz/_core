@@ -671,6 +671,7 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 #endif
 
 int main() {
+  #ifndef INCLUDE_ZEPTOMECH
   // Set PLL_USB 96MHz
   const uint32_t main_line = 96;
   pll_init(pll_usb, 1, main_line * 16 * MHZ, 4, 4);
@@ -684,6 +685,7 @@ int main() {
   clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
                   main_line * MHZ, main_line * MHZ);
   // Reinit uart now that clk_peri has changed
+#endif
   stdio_init_all();
 // overclocking!!!
 // note that overclocking >200Mhz requires setting sd_card_sdio
@@ -775,22 +777,28 @@ int main() {
   gpio_set_dir(FIVEVENABLE, GPIO_OUT);
   gpio_put(FIVEVENABLE, 1);
 
-  // gpio_init(UART1_TX);
-  // gpio_set_dir(UART1_TX, GPIO_OUT);
-  // gpio_init(UART1_RX);
+  // HARDWARE UART MIDI - ATTEMPT AT CHANGING TIMING TO WORK WITH 96Mhz
+  // Testing if I can change baud rate to match 96hz thing
+  // uint32_t current_ibrd = uart_get_hw(UART_ID)->ibrd;
+  // uint32_t current_fbrd = uart_get_hw(UART_ID)->fbrd;
+  // int baud = (4 * clock_get_hz(clk_peri)) / (64 * current_ibrd + current_fbrd);
+
+  // UART setup for HW MIDI
+  // gpio_init(UART1_RX); // Its PIO - do I need to set this to init?
   // gpio_set_dir(UART1_RX, GPIO_IN);
+  gpio_init(UART1_TX);
+  gpio_set_dir(UART1_TX, GPIO_OUT);
+  uart_init(UART_ID, UART_BAUD);
+  gpio_set_function(UART1_TX, GPIO_FUNC_UART);
+  uart_set_format(UART_ID, 8, 1, UART_PARITY_NONE);
+  uart_set_fifo_enabled(UART_ID, true);
 
-  // Setup the PIO for HARDWARE MIDI
-  uint offset_tx = pio_add_program(pio_tx, &uart_tx_program);
-  uart_tx_program_init(pio_tx, sm_tx, offset_tx, UART1_TX, UART_BAUD);
+  //   Test Setup PIO for HARDWARE MIDI TX - NOT ENOUGH state machines to use this
+  //   uint offset_tx = pio_add_program(pio_tx, &uart_tx_program);
+  //   // sm_tx = pio_claim_unused_sm(pio_tx, true);
+  //   uart_tx_program_init(pio_tx, 2, offset_tx, UART1_TX, UART_BAUD);
 
-  // This is done via INCLUDE_RGBLED
-  // ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
-  // WS2812_set_brightness(ws2812, 50);
-  // sleep_ms(1);
-  // WS2812_fill(ws2812, 0, 0, 0, 0);
-  // sleep_ms(1);
-  // WS2812_show(ws2812);
+  // ws2812 setup is done via INCLUDE_RGBLED
 #endif
 
 #ifdef INCLUDE_ECTOCORE
@@ -820,6 +828,14 @@ int main() {
   // but called here to set up the GPIOs
   // before enabling the card detect interrupt:
   sd_init_driver();
+
+#ifdef INCLUDE_ZEPTOMECH
+  // Setup the PIO for HARDWARE MIDI TX instead
+  // uint offset_tx = pio_add_program(pio_tx, &uart_tx_program);
+  // sm_tx = pio_claim_unused_sm(pio_tx, false);
+  // uart_tx_program_init(pio_tx, sm_tx, offset_tx, UART1_TX, UART_BAUD);
+
+#endif
 
 #ifdef INCLUDE_ZEPTOCORE
   // initialize adcs
@@ -922,6 +938,17 @@ int main() {
 #endif
 
   fil_current_change = true;
+
+// int used_sms[4] = {};
+//       PIO p = pio1;
+//       for (int sm = 0; sm < 4; sm++) {
+//         if (pio_sm_is_claimed(p, sm)) {
+//           used_sms[sm]=sm;
+//           printf("  State Machine %d: USED\n", sm);
+//         } else {
+//           printf("  State Machine %d: NOT USED\n", sm);
+//       }
+//     }
 
 #ifdef INCLUDE_ZEPTOCORE
 

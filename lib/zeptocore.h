@@ -2,7 +2,11 @@
 #include "clockhandling.h"
 //
 #include "midicallback.h"
+#ifdef INCLUDE_ZEPTOMECH
+#include "onewiremidi2.h"
+#else
 #include "onewiremidi.h"
+#endif
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -115,7 +119,7 @@ void __not_in_flash_func(input_handling)() {
   if (use_onewiremidi) {
     // setup one wire midi
     onewiremidi =
-        Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
+        Onewiremidi_new(pio0, 3, UART1_RX, midi_note_on, midi_note_off,
                         midi_start, midi_continue, midi_stop, midi_timing);
   } else {
     clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,

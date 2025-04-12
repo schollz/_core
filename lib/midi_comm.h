@@ -2,12 +2,13 @@
 #define LIB_MIDI_COMM_H 1
 #include <stdarg.h>  // Include this header for va_start, va_end, etc.
 #include <stdio.h>   // Include for vsnprintf
+#include <hardware/pio.h>
 
 #ifdef INCLUDE_ZEPTOMECH
 #define UART_ID uart1
 #define UART_BAUD 31250
-PIO pio_tx = pio0;
-uint sm_tx = 3;
+// PIO pio_tx = pio0;
+// uint sm_tx = 3;
 #endif
 
 uint32_t send_buffer_as_sysex(char* buffer, uint32_t bufsize) {
@@ -48,7 +49,8 @@ void send_midi_clock() {
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+  uart_write_blocking(UART_ID, midi_message, sizeof(midi_message));
+  // uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
 #endif
 }
 
@@ -64,7 +66,8 @@ void send_midi_start() {
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message)); // USBMIDI
   }
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+  uart_write_blocking(UART_ID, midi_message, sizeof(midi_message));
+  // uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
 #endif
 }
 
@@ -80,7 +83,8 @@ void send_midi_stop() {
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message)); // USBMIDI
   }
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+  uart_write_blocking(UART_ID, midi_message, sizeof(midi_message));
+  // uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
 #endif
 }
 
@@ -101,7 +105,8 @@ void send_midi_note_on(uint8_t note, uint8_t velocity) {
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
+  uart_write_blocking(UART_ID, midi_message, sizeof(midi_message));
+  // uart_tx_program_puts_len(pio_tx, sm_tx, midi_message, sizeof(midi_message)); // HWMIDI
 #endif
 }
 

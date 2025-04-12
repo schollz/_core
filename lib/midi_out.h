@@ -27,14 +27,16 @@ void MidiOut_on(MidiOut *self, uint8_t note, uint8_t velocity) {
     tud_midi_n_stream_write(
         0, 0, (uint8_t[3]){0x80 | (self->channel & 0x0F), self->last, 0}, 3);
 #ifdef INCLUDE_ZEPTOMECH
-    uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x80 | (self->channel & 0x0F), self->last, 0}, 3); // HW MIDI
+    uart_write_blocking(UART_ID, (uint8_t[3]){0x80 | (self->channel & 0x0F), self->last, 0}, 3);
+    // uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x80 | (self->channel & 0x0F), self->last, 0}, 3); // HW MIDI
 #endif
   }
   tud_midi_n_stream_write(
       0, 0, (uint8_t[3]){0x90 | (self->channel & 0x0F), note, velocity}, 3);
   self->last = note;
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x90 | (self->channel & 0x0F), note, velocity}, 3); // HW MIDI
+  uart_write_blocking(UART_ID, (uint8_t[3]){0x90 | (self->channel & 0x0F), note, velocity}, 3);
+  // uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x90 | (self->channel & 0x0F), note, velocity}, 3); // HW MIDI
 #endif
 }
 
@@ -45,7 +47,8 @@ void MidiOut_cc(MidiOut *self, uint8_t cc, uint8_t value) {
   tud_midi_n_stream_write(
       0, 0, (uint8_t[3]){0xB0 | (self->channel & 0x0F), cc, value}, 3);
 #ifdef INCLUDE_ZEPTOMECH
-  uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0xB0 | (self->channel & 0x0F), cc, value}, 3);
+  uart_write_blocking(UART_ID, (uint8_t[3]){0x90 | (self->channel & 0x0F), cc, value}, 3);
+  // uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0xB0 | (self->channel & 0x0F), cc, value}, 3);
 #endif
   self->last_cc_ch = cc;
   self->last_cc_value = value;
@@ -54,8 +57,9 @@ void MidiOut_cc(MidiOut *self, uint8_t cc, uint8_t value) {
 void MidiOut_off(MidiOut *self, uint8_t note) {
   tud_midi_n_stream_write(
       0, 0, (uint8_t[3]){0x80 | (self->channel & 0x0F), note, 0}, 3);
-#ifdef INCLUDE_ZEPTOMECH  
-  uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x80 | (self->channel & 0x0F), note, 0}, 3);
+#ifdef INCLUDE_ZEPTOMECH
+  uart_write_blocking(UART_ID, (uint8_t[3]){0x90 | (self->channel & 0x0F), note, 0}, 3);
+  // uart_tx_program_puts_len(pio_tx, sm_tx, (uint8_t[3]){0x80 | (self->channel & 0x0F), note, 0}, 3);
 #endif
   if (self->last == note) {
     self->last = -1;

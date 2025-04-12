@@ -53,7 +53,11 @@ volatile bool sync_using_sdcard = false;
 uint16_t total_number_samples = 0;
 
 // one wire midi
+#ifdef INCLUDE_ZEPTOMECH
+volatile bool use_onewiremidi = true;
+#else
 volatile bool use_onewiremidi = false;
+#endif
 
 bool do_switch_between_clock_and_midi = false;
 bool playback_was_stopped_clock = false;
