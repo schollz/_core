@@ -308,6 +308,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsBrightness) {
             app.settingsBrightness = savedState.settingsBrightness;
         }
+        if (savedState.settingsLatency) {
+            app.settingsLatency = savedState.settingsLatency;
+        }
         if (savedState.settingsClockStop) {
             app.settingsClockStop = savedState.settingsClockStop;
         }
@@ -530,6 +533,7 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         settingsBrightness: 50,
+        settingsLatency: 0,
         settingsClockStop: "sync",
         settingsClockOutput: "gate",
         settingsClockBehaviorSync: "tempo",
@@ -584,6 +588,7 @@ app = new Vue({
         stereoMono: 'saveState',
         resampling: 'saveState',
         settingsBrightness: 'saveState',
+        settingsLatency: 'saveState',
         settingsClockStop: 'saveState',
         settingsClockOutput: 'saveState',
         settingsClockBehaviorSync: 'saveState',
@@ -993,6 +998,7 @@ app = new Vue({
                 selectedBank: app.selectedBank,
                 selectedFile: app.selectedFile,
                 settingsBrightness: app.settingsBrightness,
+                settingsLatency: app.settingsLatency,
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
@@ -1288,6 +1294,7 @@ app = new Vue({
                 stereoMono: this.stereoMono,
                 resampling: this.resampling,
                 settingsBrightness: parseInt(app.settingsBrightness),
+                settingsLatency: parseInt(app.settingsLatency),
                 settingsClockStop: app.settingsClockStop,
                 settingsClockOutput: app.settingsClockOutput,
                 settingsClockBehaviorSync: app.settingsClockBehaviorSync,
@@ -1680,6 +1687,11 @@ window.addEventListener('load', (event) => {
             zIndex: 9999999,
             appendTo: "parent",
             content: "Increase the brighntess of multicolor LEDs (note this increases power usage of ectocore).",
+        });
+        tippy('#pSettingsLatency', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Increase the negative latency to better align with external gear.",
         });
         tippy('#bDownloadSettings', {
             zIndex: 9999999,

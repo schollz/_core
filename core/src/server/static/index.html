@@ -191,7 +191,12 @@
                     <option value="clk">Incoming Clock</option>
                 </select>
             </p>
-
+            <!-- slider for brightness-->
+            <p style="display: flex; align-items: center;" id="pSettingsLatency">
+                <label for="latency" style="padding-right:1em;">Negative latency</label>
+                <input type="range" id="latency" name="latency" min="-40" max="0" value="0" v-model="settingsLatency">
+                {{ settingsLatency }} ms
+            </p>
             <!-- slider for brightness-->
             <p style="display: flex; align-items: center;" id="pSettingsBrightness">
                 <label for="brightness" style="padding-right:1em;">Brightness</label>

@@ -212,6 +212,7 @@ bool do_restart_playback = true;
 bool playback_stopped = true;
 bool playback_restarted = false;
 volatile bool audio_callback_in_mute = false;
+float latency_factor = 5.6f;
 bool do_calibration_mode = false;
 bool mode_amiga = false;
 bool mode_toggle_momentary = false;

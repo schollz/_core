@@ -21,6 +21,7 @@ type Data struct {
 	StereoMono                string   `json:"stereoMono"`
 	Resampling                string   `json:"resampling"`
 	SettingsBrightness        int      `json:"settingsBrightness"`
+	SettingsLatency           int      `json:"settingsLatency"`
 	SettingsClockStop         string   `json:"settingsClockStop"`
 	SettingsClockOutput       string   `json:"settingsClockOutput"`
 	SettingsClockBehaviorSync string   `json:"settingsClockBehaviorSync"`
@@ -175,6 +176,13 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	}
 	// brightness
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("brightness-%d", data.SettingsBrightness)))
+
+	// latency
+	// convert to absolute value
+	if data.SettingsLatency < 0 {
+		data.SettingsLatency = -data.SettingsLatency
+	}
+	os.Create(path.Join(settingsFolder, fmt.Sprintf("negativelatency-%d", data.SettingsLatency)))
 
 	// grimoire effects
 	for i, effect := range data.SettingsGrimoireEffects {

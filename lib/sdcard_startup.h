@@ -207,6 +207,14 @@ void load_settings(const char *dir_name) {
              global_brightness);
     }
 
+    // check if a file has the prefix "brightness"
+    if (strncmp(fno.fname, "negativelatency-", 16) == 0) {
+      float negativeLatencyNumber = (float)extractNumber(fno.fname);
+      latency_factor = latency_factor * negativeLatencyNumber / 20.0f;
+      printf("[sdcard_startup] '%s' negative latency: %d (%3.2f)\n", fno.fname,
+             negativeLatencyNumber, latency_factor);
+    }
+
     // check for the clock_start_stop_sync
     if (strcmp(fno.fname, "knobx_select_sample-on") == 0) {
       global_knobx_sample_selector = true;
