@@ -16,7 +16,7 @@ import plotly.express as px
 import soundfile as sf  # Replaces librosa
 from scipy.signal import find_peaks
 
-file_paths = ["v6.3.5", "v6.3.6_lowlatency", "v6.3.9"]
+file_paths = ["v6.3.5", "v6.3.6_lowlatency", "v6.4.0"]
 df_data = []
 
 for file_path in file_paths:
