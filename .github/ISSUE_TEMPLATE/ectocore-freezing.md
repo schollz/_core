@@ -9,7 +9,7 @@ assignees: schollz
 
 Normally, ectocore and zeptocore should not freeze. 
 
-If you are encountering a freeze, you might first try to upload this [new firmware that disables overclocking](https://github.com/schollz/_core/releases/download/v6.3.9/ectocore_no_overclocking_v6.3.9.uf2).
+If you are encountering a freeze, you might first try to upload this [new firmware that disables overclocking](https://github.com/schollz/_core/releases/download/v6.4.0/ectocore_no_overclocking_v6.4.0.uf2).
 
 If you still encounter a freeze, it would be helpful to know the following:
 
