@@ -533,7 +533,7 @@ app = new Vue({
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
         settingsBrightness: 50,
-        settingsLatency: 0,
+        settingsLatency: -20,
         settingsClockStop: "sync",
         settingsClockOutput: "gate",
         settingsClockBehaviorSync: "tempo",
