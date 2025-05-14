@@ -142,6 +142,9 @@ bool usb_midi_present = false;
 #include "noise.h"
 #include "resonantfilter.h"
 #include "sdcard.h"
+#ifdef INCLUDE_ZEPTOMECH
+#include "zeptomech_leds.h"
+#endif
 #ifdef INCLUDE_SINEBASS
 #include "wavetablebass.h"
 #endif

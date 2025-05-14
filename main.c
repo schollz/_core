@@ -3,8 +3,10 @@
 #include "lib/includes.h"
 
 #ifdef INCLUDE_ZEPTOMECH
+
 void LEDS_render_forward_zeptomech(LEDS* leds)
 {
+  #ifdef INCLUDE_RGBLED
   // TODO
   // Light up the leds
   int k = 0;
@@ -41,8 +43,10 @@ void LEDS_render_forward_zeptomech(LEDS* leds)
   WS2812_show(ws2812);
 
   return;
+  #endif
 }
 #endif
+
 
 // static uint8_t dub_step_numerator[] = {1, 1, 1, 1, 1, 1, 1, 1};
 // static uint8_t dub_step_denominator[] = {2, 3, 4, 8, 8, 12, 12, 16};
@@ -670,8 +674,38 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 #include "lib/zeptoboard.h"
 #endif
 
+// Invoked when the device is mounted
+void tud_mount_cb(void)
+{
+}
+// Invoked when the device is unmounted
+void tud_umount_cb(void)
+{
+}
+// Invoked when the device is suspended
+void tud_suspend_cb(bool remote_wakeup_en)
+{
+}
+// Invoked when the USB bus is resumed
+void tud_resume_cb(void)
+{
+}
+
 int main() {
-  #ifndef INCLUDE_ZEPTOMECH
+  stdio_init_all();
+  #ifdef INCLUDE_MIDI
+  tusb_init();
+  // manually init USB instead
+  //  sleep_ms(250);
+  //   tud_init(0);
+  //   // just sit and pump the usb stack for 100-200ms
+  //   uint32_t t0 = time_us_32();
+  //   while (time_us_32() - t0 < 100000) {
+  //     tud_task();
+  //  }
+  //  sleep_ms(250);
+  #endif
+    
   // Set PLL_USB 96MHz
   const uint32_t main_line = 96;
   pll_init(pll_usb, 1, main_line * 16 * MHZ, 4, 4);
@@ -685,7 +719,7 @@ int main() {
   clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
                   main_line * MHZ, main_line * MHZ);
   // Reinit uart now that clk_peri has changed
-#endif
+
   stdio_init_all();
 // overclocking!!!
 // note that overclocking >200Mhz requires setting sd_card_sdio
@@ -699,7 +733,7 @@ int main() {
   set_sys_clock_khz(225000, true);
 #endif
 #else
-  set_sys_clock_khz(125000, true);
+  // set_sys_clock_khz(125000, true);
 #endif
   sleep_ms(75);
 
@@ -752,9 +786,6 @@ int main() {
   }
 #endif
 
-#ifdef INCLUDE_MIDI
-  tusb_init();
-#endif
 
 #ifdef INCLUDE_ZEPTOMECH
     is_zeptomech = true;
@@ -820,6 +851,7 @@ int main() {
     printf("entering calibration mode\n");
   }
 #endif
+
   if (!do_calibration_mode) {
     ap = init_audio();
   }
@@ -828,6 +860,12 @@ int main() {
   // but called here to set up the GPIOs
   // before enabling the card detect interrupt:
   sd_init_driver();
+
+  // sleep before sd
+  sleep_ms(100);
+  // printf("startup!\n");
+  sdcard_startup();
+
 
 #ifdef INCLUDE_ZEPTOMECH
   // Setup the PIO for HARDWARE MIDI TX instead
@@ -875,45 +913,16 @@ int main() {
   for (uint8_t i = 0; i < DEBOUNCE_UINT8_NUM; i++) {
     debouncer_uint8[i] = DebounceUint8_malloc();
   }
+  
 
 #ifdef INCLUDE_ZEPTOCORE
   debouncer_digits = DebounceDigits_malloc();
   leds = LEDS_create();
   ledtext = LEDText_create();
 #endif
-
-#ifdef INCLUDE_SINEBASS
-  // init_sinewaves();
-  wavebass = WaveBass_malloc();
-#endif
-
-  // intialize tap tempo
-  taptempo = TapTempo_malloc();
-
-  // LEDText_display(ledtext, "HELLO");
-  // show X in case the files aren't loaded
-  // LEDS_show_blinking_z(leds, 2);
-
-  sel_sample_next = 0;
-  sel_variation_next = 0;
-  sel_bank_cur = 0;
-  sel_sample_cur = 0;
-  sel_variation = 0;
-
-  // printf("startup!\n");
-  sdcard_startup();
-
-  // TODO
-  // load chain from SD card
-  //   Chain_load(chain, &sync_using_sdcard);
-
-#ifdef INCLUDE_FILTER
-  resFilter[0] = ResonantFilter_create(0);
-  resFilter[1] = ResonantFilter_create(0);
-#endif
 #ifdef INCLUDE_RGBLED
   ws2812 = WS2812_new(NEOPIXPIN, pio0, 2);
-  WS2812_set_brightness(ws2812, 100);
+  WS2812_set_brightness(ws2812, global_brightness);
   sleep_ms(1);
   WS2812_fill(ws2812, 0, 0, 0, 0);
   sleep_ms(1);
@@ -935,6 +944,34 @@ int main() {
   // }
   // WS2812_fill(ws2812, 20, 20, 0);
   // WS2812_show(ws2812);
+#endif
+
+#ifdef INCLUDE_SINEBASS
+  // init_sinewaves();
+  wavebass = WaveBass_malloc();
+#endif
+
+  // intialize tap tempo
+  taptempo = TapTempo_malloc();
+
+  // LEDText_display(ledtext, "HELLO");
+  // show X in case the files aren't loaded
+  // LEDS_show_blinking_z(leds, 2);
+
+  sel_sample_next = 0;
+  sel_variation_next = 0;
+  sel_bank_cur = 0;
+  sel_sample_cur = 0;
+  sel_variation = 0;
+
+
+  // TODO
+  // load chain from SD card
+  //   Chain_load(chain, &sync_using_sdcard);
+
+#ifdef INCLUDE_FILTER
+  resFilter[0] = ResonantFilter_create(0);
+  resFilter[1] = ResonantFilter_create(0);
 #endif
 
   fil_current_change = true;

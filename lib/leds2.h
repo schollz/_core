@@ -58,6 +58,7 @@ LEDS *LEDS_create() {
   leds->gpio_leds_pin[3] = LED_4_GPIO;
 #endif
 
+#ifndef INCLUDE_ZEPTOMECH
   if (!is_arcade_box) {
     // my unique PCA9552 wiring requires a unique mapping
     uint8_t row_map[] = {// row 1
@@ -90,19 +91,15 @@ LEDS *LEDS_create() {
     uint8_t col_map[] = {
         3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0,
     };
-#ifndef INCLUDE_ZEPTOMECH
     leds->pca = PCA9552_create(0x61, i2c_default, row_map, col_map);
-#endif
   }
 
-#ifndef INCLUDE_ZEPTOMECH
   if (leds->pca->error != PCA9552_OK) {
     printf("PCA9552_ERROR: %02x\n", leds->pca->error);
   }
   sleep_ms(1);
   PCA9552_clear(leds->pca);
   PCA9552_render(leds->pca);
-#endif
 
   // setup GPIO leds
   for (uint8_t i = 0; i < 4; i++) {
@@ -113,6 +110,7 @@ LEDS *LEDS_create() {
     gpio_set_dir(leds->gpio_leds_pin[i], GPIO_OUT);
     gpio_put(leds->gpio_leds_pin[i], 0);
   }
+#endif
 
   return leds;
 }

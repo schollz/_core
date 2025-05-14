@@ -87,7 +87,7 @@ void __not_in_flash_func(input_handling)() {
     sleep_ms(10);
   }
   LEDS_clear(leds);
-  LEDS_render(leds);
+  // LEDS_render(leds);
 
 #ifdef BTN_COL_START
   ButtonMatrix *bm;
@@ -153,10 +153,10 @@ void __not_in_flash_func(input_handling)() {
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv6.3.9");
+  // printStringWithDelay("zv6.3.9");
 
   // print to screen
-  printf("version=v6.3.9\n");
+  // printf("version=v6.3.9\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -200,6 +200,8 @@ void __not_in_flash_func(input_handling)() {
 
   bool sel_sample_knob_ready = false;
   clock_start_stop_sync = true;
+
+  // WHILE LOOP
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -316,16 +318,16 @@ void __not_in_flash_func(input_handling)() {
     if (clock_did_activate) {
       clock_did_activate = false;
       for (uint8_t i = 0; i < 16; i++) {
-        if (sf->fx_param[i][2] > 0) {
+        if (sf->fx_param[i][knobZ] > 0) {
           if (sf->fx_active[i]) {
             if (random_integer_in_range(0, 96) <
-                probability_max_values_off[sf->fx_param[i][2] >> 4]) {
+                probability_max_values_off[sf->fx_param[i][knobZ] >> 4]) {
               toggle_fx(i);
               printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
             }
           } else {
             if (random_integer_in_range(0, 96) <
-                probability_max_values[sf->fx_param[i][2] >> 4]) {
+                probability_max_values[sf->fx_param[i][knobZ] >> 4]) {
               toggle_fx(i);
               // TODO: also randomize the parameters?
               printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
@@ -391,7 +393,7 @@ void __not_in_flash_func(input_handling)() {
       debounce_beat_repeat--;
       if (debounce_beat_repeat == 10) {
         BeatRepeat_repeat(beatrepeat,
-                          sf->fx_param[FX_BEATREPEAT][0] * 19000 / 255 + 100);
+                          sf->fx_param[FX_BEATREPEAT][knobX] * 19000 / 255 + 100);
       } else if (debounce_beat_repeat == 100) {
         BeatRepeat_repeat(beatrepeat, 20);
       }
@@ -402,36 +404,37 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_KNOBS
     // knob X
     uint16_t adc_raw = adc_read();
-    adc = FilterExp_update(adcs[0], adc_raw);
-    if (abs(adc_last[0] - adc) > adc_threshold) {
-      adc_debounce[0] = adc_debounce_max;
+    adc = FilterExp_update(adcs[knobX], adc_raw);
+    if (abs(adc_last[knobX] - adc) > adc_threshold) {
+      adc_debounce[knobX] = adc_debounce_max;
     }
-    if (adc_debounce[0]) {
-      adc_last[0] = adc;
-      adc_debounce[0]--;
+    if (adc_debounce[knobX]) {
+      adc_last[knobX] = adc;
+      adc_debounce[knobX]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][0] = adc * 255 / 4096;
+        // 1-16 + X  
+        sf->fx_param[single_key - 4][knobX] = adc * 255 / 4096;
         clear_debouncers();
         DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
-                          sf->fx_param[single_key - 4][0], 100);
-        printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
+                          sf->fx_param[single_key - 4][knobX], 100);
+        printf("fx_param %d: %d %d\n", knobX, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_BEATREPEAT + 4] && do_update_beat_repeat == 0) {
           debounce_beat_repeat = 30;
         } else if (key_on_buttons[FX_DELAY + 4]) {
           Delay_setFeedbackf(delay, (float)adc / 8192.0f + 0.49f);
         } else if (key_on_buttons[FX_TIGHTEN + 4]) {
           printf("updating gate\n");
-          Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
+          Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][knobX]);
           // deactivated
           // } else if (key_on_buttons[FX_TREMELO + 4]) {
           //   lfo_tremelo_step =
-          //       Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) *
+          //       Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][knobX]) *
           //       2);
         } else if (key_on_buttons[FX_PAN + 4]) {
           lfo_pan_step =
-              Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
+              Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][knobX]) * 2);
         } else if (key_on_buttons[FX_SCRATCH + 4]) {
-          scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
+          scratch_lfo_hz = sf->fx_param[FX_SCRATCH][knobX] / 255.0 * 4.0 + 0.1;
           scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
         } else if (key_on_buttons[FX_EXPAND + 4]) {
           update_reverb();
@@ -548,16 +551,17 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_KNOBS
     // knob Y
     adc_select_input(knobY);
-    adc = FilterExp_update(adcs[1], adc_read());
-    if (abs(adc_last[1] - adc) > adc_threshold) {
-      adc_debounce[1] = adc_debounce_max;
+    adc = FilterExp_update(adcs[knobY], adc_read());
+    if (abs(adc_last[knobY] - adc) > adc_threshold) {
+      adc_debounce[knobY] = adc_debounce_max;
     }
-    if (adc_debounce[1] > 0) {
-      adc_last[1] = adc;
-      adc_debounce[1]--;
+    if (adc_debounce[knobY] > 0) {
+      adc_last[knobY] = adc;
+      adc_debounce[knobY]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
-        printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
+        // 1-16 + Y
+        sf->fx_param[single_key - 4][knobY] = adc * 255 / 4096;
+        printf("fx_param %d: %d %d\n", knobY, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_EXPAND + 4]) {
           update_reverb();
         } else if (key_on_buttons[FX_DELAY + 4]) {
@@ -627,7 +631,8 @@ void __not_in_flash_func(input_handling)() {
           MidiOut_cc(midiout[0], 10, adc * 127 / 4096);
 #endif
           probability_of_random_tunnel = adc * 1000 / 4096;
-          if (probability_of_random_tunnel < 100) {
+          // if (probability_of_random_tunnel < 100) {
+          if ((adc * 127 / 4096) < 20) {
             probability_of_random_tunnel = 0;
           }
           clear_debouncers();
@@ -700,16 +705,23 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_KNOBS
     // knob Z
     adc_select_input(knobZ);
-    adc = FilterExp_update(adcs[2], adc_read());
-    if (abs(adc_last[2] - adc) > adc_threshold) {
-      adc_debounce[2] = adc_debounce_max;
+    adc = FilterExp_update(adcs[knobZ], adc_read());
+    if (adc < 55){
+      adc = 0;
     }
-    if (adc_debounce[2] > 0) {
-      adc_last[2] = adc;
-      adc_debounce[2]--;
+    if (abs(adc_last[knobZ] - adc) > adc_threshold) {
+      adc_debounce[knobZ] = adc_debounce_max;
+    }
+    if (adc_debounce[knobZ] > 0) {
+      adc_last[knobZ] = adc;
+      adc_debounce[knobZ]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
-        sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
-        printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
+        // 1-16 + Z
+        sf->fx_param[single_key - 4][knobZ] = adc * 255 / 4096;
+        printf("fx_param %d: %d %d\n", knobZ, single_key - 4, adc * 255 / 4096);
+
+        MessageSync_printf(messagesync, "fx_param ADC: %d\n", adc );
+
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
         // A + Z  
@@ -771,10 +783,13 @@ void __not_in_flash_func(input_handling)() {
           MidiOut_cc(midiout[0], 2, adc * 127 / 4096);
 #endif
         }
+      } else {
+        ws2812_set_wheel(ws2812, adc * 4, 255, 255, 0);
       }
     }
 #endif
 
+    // ARCADE KNOBS
     if (is_arcade_box || is_zeptomech) {
       // volume                   tempo
       // sample selection         dj filter
@@ -944,7 +959,7 @@ void __not_in_flash_func(input_handling)() {
     // update the text if any
     LEDText_update(ledtext, leds);
     // TODO: redundant code?
-    LEDS_render(leds);
+    // LEDS_render(leds);
 
 #ifdef BTN_COL_START
     if (!is_arcade_box) button_handler(bm);
@@ -970,25 +985,25 @@ void __not_in_flash_func(input_handling)() {
     }
 #endif
 
-#ifdef INCLUDE_CLOCKINPUT
-    if (!use_onewiremidi) {
-      // clock input handler
-      ClockInput_update(clockinput);
-      if (clock_in_do) {
-        clock_input_absent_zeptocore =
-            ClockInput_timeSinceLast(clockinput) > 1000000;
-      }
-      if (!clock_start_stop_sync && clock_in_do) {
-        if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
-          clock_in_ready = false;
-          clock_in_do = false;
-          clock_in_activator = 0;
-        }
-      }
-    } else {
-      Onewiremidi_receive(onewiremidi);
-    }
-#endif
+// #ifdef INCLUDE_CLOCKINPUT
+//     if (!use_onewiremidi) {
+//       // clock input handler
+//       ClockInput_update(clockinput);
+//       if (clock_in_do) {
+//         clock_input_absent_zeptocore =
+//             ClockInput_timeSinceLast(clockinput) > 1000000;
+//       }
+//       if (!clock_start_stop_sync && clock_in_do) {
+//         if ((time_us_32() - clock_in_last_time) > 2 * clock_in_diff_2x) {
+//           clock_in_ready = false;
+//           clock_in_do = false;
+//           clock_in_activator = 0;
+//         }
+//       }
+//     } else {
+//       Onewiremidi_receive(onewiremidi);
+//     }
+// #endif
 
 #ifdef INCLUDE_KEYBOARD
     // check keyboard
