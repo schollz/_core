@@ -109,7 +109,7 @@ typedef struct sd_card_state_t {
 #endif
 } sd_card_state_t;
 
-typedef struct 	 sd_card_t;
+typedef struct sd_card_t sd_card_t;
 
 // "Class" representing SD Cards
 struct sd_card_t {
