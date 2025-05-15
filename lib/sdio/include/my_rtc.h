@@ -1,4 +1,4 @@
-/* hw_config.h
+/* my_rtc.h
 Copyright 2021 Carl John Kugler III
 
 Licensed under the Apache License, Version 2.0 (the License); you may not use 
@@ -13,21 +13,15 @@ specific language governing permissions and limitations under the License.
 */
 #pragma once
 
-#include "ff.h"
-#include "sd_card.h"    
-    
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    size_t sd_get_num();
-    sd_card_t *sd_get_by_num(size_t num);
-    
-    size_t spi_get_num();
-    spi_t *spi_get_by_num(size_t num);
+extern time_t epochtime;
+void time_init();
 
 #ifdef __cplusplus
 }
 #endif
-
-/* [] END OF FILE */
