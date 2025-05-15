@@ -1,14 +1,19 @@
 # Makefile
-export PICO_EXTRAS_PATH ?= $(CURDIR)/pico-extras
-export PICO_SDK_PATH ?= $(CURDIR)/pico-sdk
+export PICO_EXTRAS_PATH=$(CURDIR)/pico-extras
+export PICO_SDK_PATH=$(CURDIR)/pico-sdk
 NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
 
 GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
 
-dobuild: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+dobuild: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
+
+pico-sdk:
+	git clone https://github.com/raspberrypi/pico-sdk
+	cd pico-sdk && git checkout 2.1.1
+	cd pico-sdk && git submodule update --init --recursive
 
 chowdsp:
 	sudo apt install -y lv2file
@@ -179,7 +184,7 @@ lib/cuedsounds_ectocore.h:
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
-	cd pico-extras && git checkout sdk-1.5.1
+	cd pico-extras && git checkout sdk-2.1.1
 	cd pico-extras && git submodule update --init --recursive
 
 copysamples:
