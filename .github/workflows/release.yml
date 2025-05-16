@@ -24,7 +24,7 @@ jobs:
         with:
           hugo-version: "0.135.0"
       - name: Set up Python
-        uses: actions/setup-python@v5.2.0
+        uses: actions/setup-python@v5.6.0
         with:
           python-version: "3.11"
       - name: Set up Zig
@@ -52,7 +52,14 @@ jobs:
           repository: raspberrypi/pico-sdk
           path: pico-sdk
           submodules: true
-          ref: 1.5.1
+          ref: 2.1.1
+      - name: Checkout pico-extras
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: raspberrypi/pico-extras
+          path: pico-extras
+          submodules: true
+          ref: sdk-2.1.1
       - name: Patch tinyusb
         run: |
           sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
