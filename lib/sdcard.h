@@ -9,7 +9,7 @@ static sd_card_t *sd_get_by_name(const char *const name) {
 static FATFS *sd_get_fs_by_name(const char *name) {
   for (size_t i = 0; i < sd_get_num(); ++i)
     if (0 == strcmp(sd_get_by_num(i)->pcName, name))
-      return &sd_get_by_num(i)->fatfs;
+      return &sd_get_by_num(i)->state.fatfs;
   DBG_PRINTF("%s: unknown name %s\n", __func__, name);
   return NULL;
 }
@@ -31,7 +31,7 @@ bool run_mount() {
   }
   sd_card_t *pSD = sd_get_by_name(arg1);
   myASSERT(pSD);
-  pSD->mounted = true;
+  pSD->state.mounted = true;
   return true;
 }
 
