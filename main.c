@@ -652,7 +652,7 @@ int main() {
 #ifdef INCLUDE_BOARDCORE
   set_sys_clock_khz(150000, true);
 #else
-  set_sys_clock_khz(225000, true);
+  set_sys_clock_khz(200000, true);
 #endif
 #else
   set_sys_clock_khz(125000, true);
