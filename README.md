@@ -59,7 +59,7 @@ the ectocore is the eurorack version of the zeptocore.
 ## diy
 
 
-- [Schematic](https://github.com/schollz/_core/blob/main/schematics/ectocore_v1.0.pdf)
+- [Schematic](https://github.com/schollz/_core/blob/main/schematics/ectocore_v1.0.1.pdf)
 - [Source code](https://github.com/schollz/_core)
 - [Firmware](https://github.com/schollz/_core/releases)
 - [Instructions for uploading samples](https://www.youtube.com/watch?v=NfjjhU1z6Ek) 
