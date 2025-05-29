@@ -52,6 +52,7 @@ def folder_ages(base_directory):
         for f in os.listdir(base_directory)
         if os.path.isdir(os.path.join(base_directory, f))
     ]
+    print(f"Found {len(folders)} folders in {base_directory}")
     for folder in folders:
         folder_path = os.path.join(base_directory, folder)
         newest_file_time = get_newest_file_time(folder_path)
@@ -82,6 +83,9 @@ def main(directory, delete, age):
 
     total_size_deleted = 0
     for folder, folder_age in folder_ages_dict.items():
+        print(
+            f"Folder: {folder}, Age: {pretty_print_age(folder_age)}, Size: {pretty_print_filesize(get_folder_size(os.path.join(directory, folder)))}"
+        )
         if folder_age > age_threshold:
             folder_path = os.path.join(directory, folder)
             try:
