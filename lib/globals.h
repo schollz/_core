@@ -149,6 +149,12 @@ LEDText *ledtext;
 #define MIDIOUTS 6
 MidiOut *midiout[6];
 bool midi_input_activated = false;
+int midi_potx = 0;
+int midi_poty = 0;
+int midi_potz = 0;
+//int cc3,cc4,cc5,cc6,cc7,cc8,cc9,cc10,cc11,cc12,cc13,cc14;
+bool midi_buttons[BUTTONMATRIX_BUTTONS_MAX];
+int fx_button = -1;
 #endif
 
 bool toggle_chain_play = false;

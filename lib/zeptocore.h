@@ -91,6 +91,13 @@ void __not_in_flash_func(input_handling)() {
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 #endif
 
+#ifdef MIDI_NOTE_KEY
+  for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
+    midi_buttons[i] = false;
+  }
+#endif
+
+
 #ifdef INCLUDE_MIDI
   // initialize the midi
   for (uint8_t i = 0; i < 3; i++) {
@@ -191,7 +198,7 @@ void __not_in_flash_func(input_handling)() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
+    midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off, midi_cc,
                    midi_start, midi_continue, midi_stop, midi_timing);
 #endif
 
@@ -246,7 +253,9 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef BTN_COL_START
     // button handler
+    // #ifndef MIDI_NOTE_KEY
     if (button_handler(bm)) {
+
       // reset knob debouncers
       adc_threshold = 10000;
       for (uint8_t i = 0; i < 3; i++) {
@@ -255,6 +264,7 @@ void __not_in_flash_func(input_handling)() {
     } else {
       adc_threshold = adc_threshold_const;
     }
+    // #endif
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -389,15 +399,47 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob X
+    #ifndef MIDI_CC
     uint16_t adc_raw = adc_read();
     adc = FilterExp_update(adcs[0], adc_raw);
+    #else
+    uint16_t adc_raw = midi_potx * 4096 / 127;
+    adc = FilterExp_update(adcs[0], adc_raw);
+
+    #endif
     if (abs(adc_last[0] - adc) > adc_threshold) {
       adc_debounce[0] = adc_debounce_max;
     }
     if (adc_debounce[0]) {
       adc_last[0] = adc;
       adc_debounce[0]--;
+      if(fx_button != -1){
+        sf->fx_param[fx_button][0] = adc * 255 / 4096;
+        if (fx_button == FX_BEATREPEAT && do_update_beat_repeat == 0) {
+          debounce_beat_repeat = 30;
+        } else if (fx_button == FX_DELAY) {
+          Delay_setFeedbackf(delay, (float)adc / 8192.0f + 0.49f);
+        } else if (fx_button == FX_TIGHTEN) {
+          printf("updating gate\n");
+          Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
+          // deactivated
+          // } else if (key_on_buttons[FX_TREMELO + 4]) {
+          //   lfo_tremelo_step =
+          //       Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) *
+          //       2);
+        } else if (fx_button == FX_PAN) {
+          lfo_pan_step =
+              Q16_16_2PI / (12 + (255 - sf->fx_param[single_key - 4][0]) * 2);
+        } else if (fx_button == FX_SCRATCH) {
+          scratch_lfo_hz = sf->fx_param[FX_SCRATCH][0] / 255.0 * 4.0 + 0.1;
+          scratch_lfo_inc = round(SCRATCH_LFO_1_HZ * scratch_lfo_hz);
+        } else if (fx_button == FX_EXPAND) {
+          update_reverb();
+        }
+        
+      }
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
+
         sf->fx_param[single_key - 4][0] = adc * 255 / 4096;
         clear_debouncers();
         DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
@@ -532,14 +574,29 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Y
+    #ifndef MIDI_CC
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
+    #else
+    adc = FilterExp_update(adcs[1], midi_poty * 4096 / 127);
+    #endif
+
     if (abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
     }
     if (adc_debounce[1] > 0) {
       adc_last[1] = adc;
       adc_debounce[1]--;
+      if(fx_button != -1){
+        sf->fx_param[fx_button][1] = adc * 255 / 4096;
+        if (fx_button == FX_EXPAND) {
+          update_reverb();
+        } else if (fx_button == FX_DELAY) {
+          Delay_setDuration(
+              delay, powf(2, linlin((float)adc, 0.0f, 4095.0f, 6.64f, 13.28f)));
+        }
+
+      }
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
@@ -682,14 +739,21 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Z
+    #ifndef MIDI_CC
     adc_select_input(0);
     adc = FilterExp_update(adcs[2], adc_read());
+    #else
+    adc = FilterExp_update(adcs[2], midi_potz * 4096 / 127);
+    #endif
     if (abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
     }
     if (adc_debounce[2] > 0) {
       adc_last[2] = adc;
       adc_debounce[2]--;
+      if(fx_button != -1){
+        sf->fx_param[fx_button][2] = adc * 255 / 4096;
+      }
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);

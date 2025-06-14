@@ -99,7 +99,6 @@ bool usb_midi_present = false;
 #include "ads7830.h"
 #include "beatrepeat.h"
 #include "button_change.h"
-#include "buttonmatrix3.h"
 #include "charlieplex.h"
 #include "clock_input.h"
 #include "comb.h"
@@ -154,6 +153,10 @@ bool usb_midi_present = false;
 //
 #include "audio_callback.h"
 //
+
+#include "buttonmatrix3.h"
+
 #ifdef INCLUDE_ZEPTOCORE
 #include "button_handler.h"
 #endif
+

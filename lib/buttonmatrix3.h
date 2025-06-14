@@ -3,7 +3,7 @@
 #include "buttonmatrix3.pio.h"
 #include "sort.h"
 
-#define BUTTONMATRIX_BUTTONS_MAX 20
+
 #define BUTTONMATRIX_ROWS 5
 #define BUTTONMATRIX_COLS 4
 
@@ -21,6 +21,18 @@ typedef struct ButtonMatrix {
   uint32_t held_time[BUTTONMATRIX_BUTTONS_MAX];
   uint32_t off_time[BUTTONMATRIX_BUTTONS_MAX];
 } ButtonMatrix;
+
+
+uint32_t bitArrayToInt32(bool arr[], int count)
+{
+    uint32_t ret = 0;
+    uint32_t tmp;
+    for (int i = 0; i < count; i++) {
+        tmp = arr[i];
+        ret |= tmp << (count - i - 1);
+    }
+    return ret;
+}
 
 void ButtonMatrix_dec_to_binary(ButtonMatrix *bm, uint32_t num) {
   if (num == 0) {
@@ -179,6 +191,10 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
 
   // read new value;
   uint32_t value = 0;
+  #ifdef MIDI_NOTE_KEY
+  uint32_t midi_value = 0;
+  midi_value = bitArrayToInt32(midi_buttons,BUTTONMATRIX_BUTTONS_MAX);
+  #endif
   pio_sm_clear_fifos(bm->pio, bm->sm);
   sleep_ms(1);
   if (pio_sm_is_rx_fifo_empty(bm->pio, bm->sm)) {
@@ -187,6 +203,10 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   }
   value = pio_sm_get(bm->pio, bm->sm);
 
+  #ifdef MIDI_NOTE_KEY
+  value = value | midi_value;
+  #endif
+  
   if (value == bm->last_value) {
     return;
   }
