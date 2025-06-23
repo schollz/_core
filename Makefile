@@ -224,7 +224,7 @@ autoload: dobuild bootreset upload
 build:
 	rm -rf build
 	mkdir build
-	cd build && cmake ..
+	cd build && cmake -DPICO_BOARD=pico2 .. 
 	make -C build -j$(NPROCS)
 	echo "build success"
 
