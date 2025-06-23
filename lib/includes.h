@@ -14,7 +14,6 @@
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
 #include "hardware/pll.h"
-#include "hardware/rtc.h"
 #include "hardware/structs/clocks.h"
 #include "hardware/sync.h"
 #include "hardware/watchdog.h"
