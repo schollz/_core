@@ -40,7 +40,6 @@ target_link_libraries(FatFs_SPI INTERFACE
     hardware_spi
     hardware_sync
     pico_aon_timer
-    hardware_rtc
     pico_stdlib
     cmsis_core
 )

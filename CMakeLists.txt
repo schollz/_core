@@ -13,6 +13,9 @@ project(_core C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+# Set the board to PICO2
+set(PICO_BOARD pico2)
+
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
 
