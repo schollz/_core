@@ -3,6 +3,6 @@ export GOPATH=$HOME/go
 export PATH=$HOME/bin:$PATH:/usr/local/go/bin/:$HOME/go/bin:$HOME/node/bin:$HOME/.cargo/bin
 export PATH="$HOME/zig-linux-x86_64-0.11.0:$PATH"
 
-cd /mnt/HC_Volume_102173864/ectocore/ && /usr/bin/make core_server
+cd /www/ectocore/ && /usr/bin/make core_server
 /usr/bin/systemctl restart zns.ectocore.service
 
