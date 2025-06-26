@@ -239,12 +239,12 @@ class FolderAnalyzer:
                     if not dry_run:
                         shutil.rmtree(folder_path)
                         self.console.print(
-                            f"[red]🗑️  Deleted:[/red] {folder_name} "
+                            f"[red]Deleted:[/red] {folder_name} "
                             f"([dim]{self.format_filesize(size)}, {self.format_age(age)} old[/dim])"
                         )
                     else:
                         self.console.print(
-                            f"[yellow]📋 Would delete:[/yellow] {folder_name} "
+                            f"[yellow]Would delete:[/yellow] {folder_name} "
                             f"([dim]{self.format_filesize(size)}, {self.format_age(age)} old[/dim])"
                         )
 
@@ -253,7 +253,7 @@ class FolderAnalyzer:
 
                 except Exception as e:
                     self.console.print(
-                        f"[red]❌ Failed to delete {folder_name}: {e}[/red]"
+                        f"[red]Failed to delete {folder_name}: {e}[/red]"
                     )
 
                 progress.advance(task)
