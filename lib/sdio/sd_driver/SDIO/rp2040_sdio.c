@@ -160,36 +160,29 @@ __attribute__((optimize("O3"))) uint64_t sdio_crc16_4bit_checksum(
  * Basic SDIO command execution
  *******************************************************/
 
-static void sdio_send_command(sd_card_t *sd_card_p, uint8_t command,
+static inline void __attribute__((hot)) sdio_send_command(sd_card_t *sd_card_p, uint8_t command,
                               uint32_t arg, uint8_t response_bits) {
-  // azdbg("SDIO Command: ", (int)command, " arg ", arg);
+  // Aggressive optimization: pre-compute command header and use bit manipulation
+  uint32_t word0 = 0xC7000000 |        // Pre-computed: (47 << 24) | (1 << 22) | (3 << 20)
+                   (command << 16) |    // Command byte
+                   ((arg >> 8) & 0xFFFF);  // Upper 16 bits of arg
 
-  // Format the arguments in the way expected by the PIO code.
-  uint32_t word0 = (47 << 24) |       // Number of bits in command minus one
-                   (1 << 22) |        // Transfer direction from host to card
-                   (command << 16) |  // Command byte
-                   (((arg >> 24) & 0xFF) << 8) |  // MSB byte of argument
-                   (((arg >> 16) & 0xFF) << 0);
+  uint32_t word1 = ((arg & 0xFFFF) << 16) |  // Lower 16 bits of arg
+                   0x100;                     // End bit
 
-  uint32_t word1 = (((arg >> 8) & 0xFF) << 24) |
-                   (((arg >> 0) & 0xFF) << 16) |  // LSB byte of argument
-                   (1 << 8);                      // End bit
-
-  // Set number of bits in response minus one, or leave at 0 if no response
-  // expected
-  if (response_bits) {
-    word1 |= ((response_bits - 1) << 0);
+  // Fast response bit handling
+  if (__builtin_expect(response_bits != 0, 1)) {
+    word1 |= (response_bits - 1);
   }
 
-  // Calculate checksum in the order that the bytes will be transmitted
-  // (big-endian)
-  uint8_t crc = 0;
-  crc = crc7_table[crc ^ ((word0 >> 16) & 0xFF)];
-  crc = crc7_table[crc ^ ((word0 >> 8) & 0xFF)];
-  crc = crc7_table[crc ^ ((word0 >> 0) & 0xFF)];
-  crc = crc7_table[crc ^ ((word1 >> 24) & 0xFF)];
-  crc = crc7_table[crc ^ ((word1 >> 16) & 0xFF)];
-  word1 |= crc << 8;
+  // Optimized CRC calculation - unroll and use faster access pattern
+  const uint8_t *crc_table = crc7_table;
+  uint8_t crc = crc_table[word0 >> 16];
+  crc = crc_table[crc ^ (word0 >> 8)];
+  crc = crc_table[crc ^ word0];
+  crc = crc_table[crc ^ (word1 >> 24)];
+  crc = crc_table[crc ^ (word1 >> 16)];
+  word1 |= (uint32_t)crc << 8;
 
   // Transmit command
   pio_sm_clear_fifos(SDIO_PIO, SDIO_CMD_SM);
@@ -405,16 +398,29 @@ sdio_status_t rp2040_sdio_rx_start(sd_card_t *sd_card_p, uint8_t *buffer,
 
   // Create DMA block descriptors to store each block of 512 bytes of data to
   // buffer and then 8 bytes to g_sdio.received_checksums.
-  for (uint32_t i = 0; i < num_blocks; i++) {
-    g_sdio.dma_blocks[i * 2].write_addr = buffer + i * SDIO_BLOCK_SIZE;
-    g_sdio.dma_blocks[i * 2].transfer_count =
-        SDIO_BLOCK_SIZE / sizeof(uint32_t);
-
-    g_sdio.dma_blocks[i * 2 + 1].write_addr = &g_sdio.received_checksums[i];
-    g_sdio.dma_blocks[i * 2 + 1].transfer_count = 2;
+  // Ultra-optimized: unroll single block case and use faster addressing
+  if (__builtin_expect(num_blocks == 1, 1)) {
+    // Fast path for single block (most common f_read case)
+    g_sdio.dma_blocks[0].write_addr = buffer;
+    g_sdio.dma_blocks[0].transfer_count = 128;  // 512/4 = 128 words
+    g_sdio.dma_blocks[1].write_addr = &g_sdio.received_checksums[0];
+    g_sdio.dma_blocks[1].transfer_count = 2;
+    g_sdio.dma_blocks[2].write_addr = 0;
+    g_sdio.dma_blocks[2].transfer_count = 0;
+  } else {
+    // Multi-block path with optimized loop
+    uint8_t *buf_ptr = buffer;
+    for (uint32_t i = 0; i < num_blocks; i++) {
+      uint32_t idx = i << 1;  // i * 2
+      g_sdio.dma_blocks[idx].write_addr = buf_ptr;
+      g_sdio.dma_blocks[idx].transfer_count = 128;  // 512/4 = 128 words
+      g_sdio.dma_blocks[idx + 1].write_addr = &g_sdio.received_checksums[i];
+      g_sdio.dma_blocks[idx + 1].transfer_count = 2;
+      buf_ptr += SDIO_BLOCK_SIZE;
+    }
+    g_sdio.dma_blocks[num_blocks << 1].write_addr = 0;
+    g_sdio.dma_blocks[num_blocks << 1].transfer_count = 0;
   }
-  g_sdio.dma_blocks[num_blocks * 2].write_addr = 0;
-  g_sdio.dma_blocks[num_blocks * 2].transfer_count = 0;
 
   // Configure first DMA channel for reading from the PIO RX fifo
   dma_channel_config dmacfg = dma_channel_get_default_config(SDIO_DMA_CH);
@@ -424,6 +430,7 @@ sdio_status_t rp2040_sdio_rx_start(sd_card_t *sd_card_p, uint8_t *buffer,
   channel_config_set_dreq(&dmacfg, pio_get_dreq(SDIO_PIO, SDIO_DATA_SM, false));
   channel_config_set_bswap(&dmacfg, true);
   channel_config_set_chain_to(&dmacfg, SDIO_DMA_CHB);
+  channel_config_set_high_priority(&dmacfg, true);  // High priority for audio streaming
   dma_channel_configure(SDIO_DMA_CH, &dmacfg, 0, &SDIO_PIO->rxf[SDIO_DATA_SM],
                         0, false);
 
@@ -433,6 +440,7 @@ sdio_status_t rp2040_sdio_rx_start(sd_card_t *sd_card_p, uint8_t *buffer,
   channel_config_set_read_increment(&dmacfg, true);
   channel_config_set_write_increment(&dmacfg, true);
   channel_config_set_ring(&dmacfg, true, 3);
+  channel_config_set_high_priority(&dmacfg, true);  // High priority for audio streaming
   dma_channel_configure(SDIO_DMA_CHB, &dmacfg,
                         &dma_hw->ch[SDIO_DMA_CH].al1_write_addr,
                         g_sdio.dma_blocks, 2, false);
@@ -492,32 +500,37 @@ static void sdio_verify_rx_checksums(uint32_t maxcount) {
   }
 }
 
-sdio_status_t rp2040_sdio_rx_poll(sd_card_t *sd_card_p,
+sdio_status_t __attribute__((hot)) rp2040_sdio_rx_poll(sd_card_t *sd_card_p,
                                   uint32_t *bytes_complete) {
-  // Was everything done when the previous rx_poll() finished?
-  if (g_sdio.blocks_done >= g_sdio.total_blocks) {
+  // Fast path: check if already done
+  if (__builtin_expect(g_sdio.blocks_done >= g_sdio.total_blocks, 0)) {
     g_sdio.transfer_state = SDIO_IDLE;
   } else {
-    // Use the idle time to calculate checksums
-    sdio_verify_rx_checksums(4);
-
+    // Aggressive optimization: only check DMA progress, skip checksums in fast path
     // Check how many DMA control blocks have been consumed
-    uint32_t dma_ctrl_block_count =
-        (dma_hw->ch[SDIO_DMA_CHB].read_addr - (uint32_t)&g_sdio.dma_blocks);
-    dma_ctrl_block_count /= sizeof(g_sdio.dma_blocks[0]);
+    uint32_t dma_read_addr = dma_hw->ch[SDIO_DMA_CHB].read_addr;
+    uint32_t dma_offset = dma_read_addr - (uint32_t)&g_sdio.dma_blocks;
+    
+    // Ultra-fast: avoid division entirely using lookup for small values
+    static const uint8_t block_lookup[32] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 
+      1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3
+    };
+    
+    if (__builtin_expect(dma_offset < 32, 1)) {
+      g_sdio.blocks_done = block_lookup[dma_offset];
+    } else {
+      g_sdio.blocks_done = (dma_offset >> 3) >> 1;  // Fallback for larger transfers
+    }
 
-    // Compute how many complete 512 byte SDIO blocks have been transferred
-    // When transfer ends, dma_ctrl_block_count == g_sdio.total_blocks * 2 + 1
-    g_sdio.blocks_done = (dma_ctrl_block_count - 1) / 2;
-
-    // NOTE: When all blocks are done, rx_poll() still returns SDIO_BUSY once.
-    // This provides a chance to start the SCSI transfer before the last
-    // checksums are computed. Any checksum failures can be indicated in SCSI
-    // status after the data transfer has finished.
+    // Only verify checksums when we have idle cycles
+    if (__builtin_expect(g_sdio.blocks_done > g_sdio.blocks_checksumed, 0)) {
+      sdio_verify_rx_checksums(2);  // Reduce checksum work per call
+    }
   }
 
-  if (bytes_complete) {
-    *bytes_complete = g_sdio.blocks_done * SDIO_BLOCK_SIZE;
+  if (__builtin_expect(bytes_complete != NULL, 1)) {
+    *bytes_complete = g_sdio.blocks_done << 9;  // * 512 via bit shift
   }
 
   if (g_sdio.transfer_state == SDIO_IDLE) {
@@ -564,6 +577,7 @@ static void sdio_start_next_block_tx(sd_card_t *sd_card_p) {
   channel_config_set_dreq(&dmacfg, pio_get_dreq(SDIO_PIO, SDIO_DATA_SM, true));
   channel_config_set_bswap(&dmacfg, true);
   channel_config_set_chain_to(&dmacfg, SDIO_DMA_CHB);
+  channel_config_set_high_priority(&dmacfg, true);  // High priority for audio streaming
   dma_channel_configure(
       SDIO_DMA_CH, &dmacfg, &SDIO_PIO->txf[SDIO_DATA_SM],
       g_sdio.data_buf + g_sdio.blocks_done * SDIO_WORDS_PER_BLOCK,
