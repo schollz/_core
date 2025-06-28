@@ -52,7 +52,7 @@ Comb *Comb_malloc() {
   return self;
 }
 
-void Comb_process(Comb *self, int32_t *samples, uint16_t num_samples) {
+void __not_in_flash_func(Comb_process)(Comb *self, int32_t *samples, uint16_t num_samples) {
   for (int ii = 0; ii < num_samples; ii++) {
     if (!self->on) {
       self->ringbuffer[0][self->index] = samples[ii * 2 + 0];

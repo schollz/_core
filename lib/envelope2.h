@@ -31,7 +31,7 @@ Envelope2 *Envelope2_create(uint32_t mSampleRate, float start, float stop,
   return envelope2;
 }
 
-float Envelope2_update(Envelope2 *envelope2) {
+float __not_in_flash_func(Envelope2_update)(Envelope2 *envelope2) {
   if (envelope2->t < envelope2->duration_samples) {
     envelope2->t++;
     envelope2->curr = cos(M_PI * (envelope2->t) / envelope2->duration_samples);
