@@ -56,11 +56,13 @@ static sd_sdio_if_t sdio_if = {
     .DMA_IRQ_num = DMA_IRQ_0,
 #if PICO_RP2040
     // The default system clock frequency for SDK is 125MHz.
-    .baud_rate = 125 * 1000 * 1000 / 4  // 31250000 Hz
+    .baud_rate = 125 * 1000 * 1000 /
+                 4  // 31250000 Hz
 #endif
 #if PICO_RP2350
-    //◦The default system clock on RP2350 is 150Mhz.
-    .baud_rate = 150 * 1000 * 1000 / 6  // 25000000 Hz, clk_div = 1.5
+                     // ◦The default system clock on RP2350 is 150Mhz.
+                     .baud_rate =
+                     150 * 1000 * 1000 / 6  // 25000000 Hz, clk_div = 1.5
 #endif
 };
 
@@ -69,7 +71,7 @@ static sd_card_t sd_cards[] = {  // One for each SD card
     {
         .pcName = "0:",  // Name used to mount device
         .type = SD_IF_SDIO,
-        .sdio_if_p = &sdio_if, 
+        .sdio_if_p = &sdio_if,
         // SD Card detect:
         .use_card_detect = SDCARD_USE_CD,
         .card_detect_gpio = SDCARD_CD_GPIO,  // Card detect
