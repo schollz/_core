@@ -95,25 +95,40 @@ uint64_t sdio_crc16_4bit_checksum(uint32_t *data, uint32_t num_words)
 {
     uint64_t crc = 0;
     uint32_t *end = data + num_words;
+    
+    // Optimize: unroll loop further and reduce memory access overhead
+    uint32_t *batch_end = data + ((num_words >> 3) << 3); // Process 8 words at a time
+    
+    while (data < batch_end)
+    {
+        // Process 8 words per iteration for better cache utilization
+        for (int batch = 0; batch < 8; batch++)
+        {
+            for (int unroll = 0; unroll < 4; unroll++)
+            {
+                uint32_t data_in = __builtin_bswap32(*data++);
+                uint32_t data_out = crc >> 32;
+                crc <<= 32;
+                data_out ^= (data_out >> 16);
+                data_out ^= (data_in >> 16);
+                uint64_t xorred = data_out ^ data_in;
+                crc ^= xorred;
+                crc ^= xorred << (5 * 4);
+                crc ^= xorred << (12 * 4);
+            }
+        }
+    }
+    
+    // Handle remaining words
     while (data < end)
     {
         for (int unroll = 0; unroll < 4; unroll++)
         {
-            // Each 32-bit word contains 8 bits per line.
-            // Reverse the bytes because SDIO protocol is big-endian.
             uint32_t data_in = __builtin_bswap32(*data++);
-
-            // Shift out 8 bits for each line
             uint32_t data_out = crc >> 32;
             crc <<= 32;
-
-            // XOR outgoing data to itself with 4 bit delay
             data_out ^= (data_out >> 16);
-
-            // XOR incoming data to outgoing data with 4 bit delay
             data_out ^= (data_in >> 16);
-
-            // XOR outgoing and incoming data to accumulator at each tap
             uint64_t xorred = data_out ^ data_in;
             crc ^= xorred;
             crc ^= xorred << (5 * 4);
