@@ -410,13 +410,19 @@ sdio_status_t rp2040_sdio_rx_start(sd_card_t *sd_card_p, uint8_t *buffer, uint32
     return SDIO_OK;
 }
 
-// Check checksums for received blocks
+// Check checksums for received blocks with batch optimization
 static void sdio_verify_rx_checksums(sd_card_t *sd_card_p, uint32_t maxcount, size_t block_size_words)
 {
-    while (STATE.blocks_checksumed < STATE.blocks_done && maxcount-- > 0)
-    {
+    // Batch process checksums for better cache efficiency
+    uint32_t batch_start = STATE.blocks_checksumed;
+    uint32_t batch_end = STATE.blocks_done;
+    if (batch_end - batch_start > maxcount) {
+        batch_end = batch_start + maxcount;
+    }
+    
+    // Process multiple blocks without function call overhead
+    for (uint32_t blockidx = batch_start; blockidx < batch_end; blockidx++) {
         // Calculate checksum from received data
-        int blockidx = STATE.blocks_checksumed++;
         uint64_t checksum = sdio_crc16_4bit_checksum(STATE.data_buf + blockidx * block_size_words,
                                                      block_size_words);
 
@@ -425,57 +431,52 @@ static void sdio_verify_rx_checksums(sd_card_t *sd_card_p, uint32_t maxcount, si
         uint32_t bottom = __builtin_bswap32(STATE.received_checksums[blockidx].bottom);
         uint64_t expected = ((uint64_t)top << 32) | bottom;
 
-        if (checksum != expected)
-        {
+        if (checksum != expected) {
             STATE.checksum_errors++;
-            if (STATE.checksum_errors == 1)
-            {
+            if (STATE.checksum_errors == 1) {
                 EMSG_PRINTF("SDIO checksum error in reception: block %d calculated 0x%llx expected 0x%llx\n",
                     blockidx, checksum, expected);
                 dump_bytes(block_size_words, (uint8_t *)STATE.data_buf + blockidx * block_size_words);
             }
         }
     }
+    
+    STATE.blocks_checksumed = batch_end;
 }
 
 sdio_status_t rp2040_sdio_rx_poll(sd_card_t *sd_card_p, size_t block_size_words)
 {
-    // Was everything done when the previous rx_poll() finished?
-    if (STATE.blocks_done >= STATE.total_blocks)
-    {
+    // Fast path: check if everything is already done
+    if (STATE.blocks_done >= STATE.total_blocks) {
         STATE.transfer_state = SDIO_IDLE;
-    }
-    else
-    {
-        // Use the idle time to calculate checksums
-        sdio_verify_rx_checksums(sd_card_p, 4, block_size_words);
-
-        // Check how many DMA control blocks have been consumed
+    } else {
+        // Check DMA progress first (most efficient)
         uint32_t dma_ctrl_block_count = (dma_hw->ch[SDIO_DMA_CHB].read_addr - (uint32_t)&STATE.dma_blocks);
         dma_ctrl_block_count /= sizeof(STATE.dma_blocks[0]);
-
-        // Compute how many complete SDIO blocks have been transferred
-        // When transfer ends, dma_ctrl_block_count == STATE.total_blocks * 2 + 1
-        STATE.blocks_done = (dma_ctrl_block_count - 1) / 2;
-
-        // NOTE: When all blocks are done, rx_poll() still returns SDIO_BUSY once.
-        // This provides a chance to start the SCSI transfer before the last checksums
-        // are computed. Any checksum failures can be indicated in SCSI status after
-        // the data transfer has finished.
+        
+        // Compute complete blocks transferred
+        uint32_t new_blocks_done = (dma_ctrl_block_count > 0) ? ((dma_ctrl_block_count - 1) / 2) : 0;
+        
+        // Only update if we have new blocks
+        if (new_blocks_done > STATE.blocks_done) {
+            STATE.blocks_done = new_blocks_done;
+            
+            // Use idle time for progressive checksum verification
+            // Process more checksums when we have more blocks available
+            uint32_t checksum_batch = (STATE.blocks_done - STATE.blocks_checksumed > 8) ? 8 : 4;
+            sdio_verify_rx_checksums(sd_card_p, checksum_batch, block_size_words);
+        }
     }
 
-    if (STATE.transfer_state == SDIO_IDLE)
-    {
-        // Verify all remaining checksums.
+    if (STATE.transfer_state == SDIO_IDLE) {
+        // Final checksum verification for remaining blocks
         sdio_verify_rx_checksums(sd_card_p, STATE.total_blocks, block_size_words);
 
-        if (STATE.checksum_errors == 0)
-            return SDIO_OK;
-        else
-            return SDIO_ERR_DATA_CRC;
+        return (STATE.checksum_errors == 0) ? SDIO_OK : SDIO_ERR_DATA_CRC;
     }
-    else if (millis() - STATE.transfer_start_time >= sd_timeouts.rp2040_sdio_rx_poll)
-    {
+    
+    // Timeout check (moved to end for better performance)
+    if (millis() - STATE.transfer_start_time >= sd_timeouts.rp2040_sdio_rx_poll) {
         azdbg("rp2040_sdio_rx_poll() timeout, "
             "PIO PC: ", (int)pio_sm_get_pc(SDIO_PIO, SDIO_DATA_SM) - (int)STATE.pio_data_rx_offset,
             " RXF: ", (int)pio_sm_get_rx_fifo_level(SDIO_PIO, SDIO_DATA_SM),
