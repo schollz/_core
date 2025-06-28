@@ -411,93 +411,124 @@ bool sd_sdio_writeSectors(sd_card_t *sd_card_p, uint32_t sector,
   }
 }
 
-bool sd_sdio_readSector(sd_card_t *sd_card_p, uint32_t sector, uint8_t *dst) {
+bool __attribute__((hot)) sd_sdio_readSector(sd_card_t *sd_card_p, uint32_t sector, uint8_t *dst) {
   uint8_t *real_dst = dst;
-  if (((uint32_t)dst & 3) != 0) {
-    // Buffer is not aligned, need to memcpy() the data from a temporary buffer.
+  uint32_t dst_addr = (uint32_t)dst;
+  bool is_aligned = (dst_addr & 3) == 0;
+  
+  if (__builtin_expect(!is_aligned, 0)) {
+    // Buffer is not aligned, need to use temporary buffer
     dst = (uint8_t *)g_sdio_dma_buf;
   }
 
   sd_callback_t callback = get_stream_callback(dst, 512, "readSector", sector);
 
   uint32_t reply;
-  if (/* !checkReturnOk(rp2040_sdio_command_R1(sd_card_p, 16, 512, &reply)) ||
-         // SET_BLOCKLEN */
-      !checkReturnOk(
-          rp2040_sdio_rx_start(sd_card_p, dst, 1)) ||  // Prepare for reception
-      !checkReturnOk(rp2040_sdio_command_R1(sd_card_p, CMD17, sector,
-                                            &reply)))  // READ_SINGLE_BLOCK
-  {
+  // Aggressive inline error checking
+  g_sdio_error = rp2040_sdio_rx_start(sd_card_p, dst, 1);
+  if (__builtin_expect(g_sdio_error != SDIO_OK, 0)) {
+    return false;
+  }
+  
+  g_sdio_error = rp2040_sdio_command_R1(sd_card_p, CMD17, sector, &reply);
+  if (__builtin_expect(g_sdio_error != SDIO_OK, 0)) {
     return false;
   }
 
+  // Ultra-tight polling loop
   do {
     uint32_t bytes_done;
     g_sdio_error = rp2040_sdio_rx_poll(sd_card_p, &bytes_done);
 
-    if (callback) {
+    if (__builtin_expect(callback != NULL, 0)) {
       callback(m_stream_count_start + bytes_done);
     }
-  } while (g_sdio_error == SDIO_BUSY);
+  } while (__builtin_expect(g_sdio_error == SDIO_BUSY, 1));
 
-  if (g_sdio_error != SDIO_OK) {
-    // azlog("sd_sdio_readSector(", sector, ") failed: ", (int)g_sdio_error);
-    printf("%s,%d sd_sdio_readSector(%lu) failed: %d\n", __func__, __LINE__,
-           sector, g_sdio_error);
+  // Fast path for aligned reads
+  if (__builtin_expect(is_aligned, 1)) {
+    return g_sdio_error == SDIO_OK;
   }
 
-  if (dst != real_dst) {
-    memcpy(real_dst, g_sdio_dma_buf, sizeof(g_sdio_dma_buf));
-  }
-
-  return g_sdio_error == SDIO_OK;
-}
-
-bool sd_sdio_readSectors(sd_card_t *sd_card_p, uint32_t sector, uint8_t *dst,
-                         size_t n) {
-  if (((uint32_t)dst & 3) != 0 || sector + n >= g_sdio_sector_count) {
-    // Unaligned read or end-of-drive read, execute sector-by-sector
-    for (size_t i = 0; i < n; i++) {
-      if (!sd_sdio_readSector(sd_card_p, sector + i, dst + 512 * i)) {
-        return false;
+  // Unaligned path - copy data
+  if (__builtin_expect(g_sdio_error == SDIO_OK, 1)) {
+    // Optimized copy: use 32-bit transfers when possible
+    uint32_t *src32 = (uint32_t *)g_sdio_dma_buf;
+    uint32_t *dst32 = (uint32_t *)real_dst;
+    if (((uint32_t)real_dst & 3) == 0) {
+      // Destination is aligned, use fast 32-bit copy
+      for (int i = 0; i < 128; i++) {  // 512/4 = 128
+        dst32[i] = src32[i];
       }
+    } else {
+      memcpy(real_dst, g_sdio_dma_buf, 512);
     }
     return true;
   }
 
-  sd_callback_t callback =
-      get_stream_callback(dst, n * 512, "readSectors", sector);
+  return false;
+}
 
-  uint32_t reply;
-  if (/* !checkReturnOk(rp2040_sdio_command_R1(sd_card_p, 16, 512, &reply)) ||
-         // SET_BLOCKLEN */
-      !checkReturnOk(
-          rp2040_sdio_rx_start(sd_card_p, dst, n)) ||  // Prepare for reception
-      !checkReturnOk(rp2040_sdio_command_R1(sd_card_p, CMD18, sector,
-                                            &reply)))  // READ_MULTIPLE_BLOCK
-  {
-    return false;
+bool __attribute__((hot)) sd_sdio_readSectors(sd_card_t *sd_card_p, uint32_t sector, uint8_t *dst,
+                         size_t n) {
+  // Ultra-fast alignment check and single sector optimization
+  uint32_t dst_addr = (uint32_t)dst;
+  if (__builtin_expect((dst_addr & 3) != 0, 0)) {
+    // Unaligned read - fall back to single sector reads  
+    goto unaligned_fallback;
+  }
+  
+  // Bounds check with likely prediction
+  if (__builtin_expect(sector + n >= g_sdio_sector_count, 0)) {
+    goto unaligned_fallback;
   }
 
+  // Fast path for single sector (common case for small f_read)
+  if (__builtin_expect(n == 1, 0)) {
+    return sd_sdio_readSector(sd_card_p, sector, dst);
+  }
+
+  // Optimized multi-sector read path
+  sd_callback_t callback = get_stream_callback(dst, n << 9, "readSectors", sector);
+
+  uint32_t reply;
+  // Aggressive: inline error checking to reduce function call overhead
+  g_sdio_error = rp2040_sdio_rx_start(sd_card_p, dst, n);
+  if (__builtin_expect(g_sdio_error != SDIO_OK, 0)) {
+    goto error_exit;
+  }
+  
+  g_sdio_error = rp2040_sdio_command_R1(sd_card_p, CMD18, sector, &reply);
+  if (__builtin_expect(g_sdio_error != SDIO_OK, 0)) {
+    goto error_exit;
+  }
+
+  // Tight polling loop with minimal overhead
   do {
     uint32_t bytes_done;
     g_sdio_error = rp2040_sdio_rx_poll(sd_card_p, &bytes_done);
 
-    if (callback) {
+    if (__builtin_expect(callback != NULL, 0)) {
       callback(m_stream_count_start + bytes_done);
     }
-  } while (g_sdio_error == SDIO_BUSY);
+  } while (__builtin_expect(g_sdio_error == SDIO_BUSY, 1));
 
-  if (g_sdio_error != SDIO_OK) {
-    // azlog("sd_sdio_readSectors(", sector, ",...,", (int)n, ") failed: ",
-    // (int)g_sdio_error);
-    printf("sd_sdio_readSectors(%ld,...,%d)  failed: %d\n", sector, n,
-           g_sdio_error);
-    sd_sdio_stopTransmission(sd_card_p, true);
-    return false;
-  } else {
+  if (__builtin_expect(g_sdio_error == SDIO_OK, 1)) {
     return sd_sdio_stopTransmission(sd_card_p, true);
   }
+
+error_exit:
+  sd_sdio_stopTransmission(sd_card_p, true);
+  return false;
+
+unaligned_fallback:
+  // Unaligned or boundary case - use sector-by-sector
+  for (size_t i = 0; i < n; i++) {
+    if (__builtin_expect(!sd_sdio_readSector(sd_card_p, sector + i, dst + (i << 9)), 0)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 static int sd_sdio_init(sd_card_t *sd_card_p) {
