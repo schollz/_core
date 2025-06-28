@@ -33,7 +33,7 @@
 #define Q16_16_FRACTIONAL_BITS (1 << Q16_16_Q_BITS)
 
 /* Converts a Q16.16 fixed-point value to an int16. */
-int16_t q16_16_fp_to_int16(int32_t fixedValue) {
+int16_t __not_in_flash_func(q16_16_fp_to_int16)(int32_t fixedValue) {
   /* Shift the fixed-point value right by the number of Q-bits to obtain the
      integral part of the value. */
   return (int16_t)(fixedValue >> Q16_16_Q_BITS);
@@ -71,7 +71,7 @@ int32_t q16_16_int32_to_fp(int32_t value) {
 }
 
 /* Multiplies two Q16.16 fixed-point values. */
-int32_t q16_16_multiply(int32_t a, int32_t b) {
+int32_t __not_in_flash_func(q16_16_multiply)(int32_t a, int32_t b) {
   return (int32_t)((((int64_t)a) * b) >> Q16_16_Q_BITS);
 }
 
@@ -80,7 +80,7 @@ int32_t q16_16_divide(int32_t a, int32_t b) {
   return (int32_t)(((int64_t)a << Q16_16_Q_BITS) / b);
 }
 
-int32_t q16_16_sin(int32_t fixedValue) {
+int32_t __not_in_flash_func(q16_16_sin)(int32_t fixedValue) {
   uint8_t negative = 0;
   while (fixedValue < Q16_16_0) {
     fixedValue += Q16_16_PI;
@@ -112,7 +112,7 @@ int32_t q16_16_sin01(int32_t fixedValue) {
   return q16_16_multiply(Q16_16_0_5, sin5) + Q16_16_0_5;
 }
 
-int32_t q16_16_cos(int32_t fixedValue) {
+int32_t __not_in_flash_func(q16_16_cos)(int32_t fixedValue) {
   return q16_16_multiply(Q16_16_MINUS_1,
                          q16_16_sin(fixedValue - Q16_16_PI_OVER_2));
 }

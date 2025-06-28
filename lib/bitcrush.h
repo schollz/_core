@@ -1,7 +1,7 @@
 #ifndef LIB_BITCRUSH_H_
 #define LIB_BITCRUSH_H_
 
-void Bitcrush_process(int16_t *values, uint16_t num_values, uint8_t sample_rate,
+void __not_in_flash_func(Bitcrush_process)(int16_t *values, uint16_t num_values, uint8_t sample_rate,
                       uint8_t bitrate) {
   sample_rate = linlin(sample_rate, 0, 255, 1, 8);
   bitrate = linlin(bitrate, 0, 255, 0, 12);
