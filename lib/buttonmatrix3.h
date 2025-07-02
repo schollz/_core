@@ -92,6 +92,8 @@ ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   uint offset = pio_add_program(bm->pio, &button_matrix_program);
   pio_sm_config c = button_matrix_program_get_default_config(offset);
   sm_config_set_in_pins(&c, base_input);
+  sm_config_set_clkdiv(&c,256);
+
   pio_sm_set_consecutive_pindirs(bm->pio, bm->sm, base_output,
                                  BUTTONMATRIX_COLS, true);
   sm_config_set_set_pins(&c, base_output, BUTTONMATRIX_COLS);
