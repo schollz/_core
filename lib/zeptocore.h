@@ -91,7 +91,7 @@ void __not_in_flash_func(input_handling)() {
   bm = ButtonMatrix_create(BTN_ROW_START, BTN_COL_START);
 #endif
 
-#ifdef MIDI_NOTE_KEY
+#ifdef INCLUDE_MIDICONTROLS
   for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
     midi_buttons[i] = false;
   }
@@ -253,7 +253,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef BTN_COL_START
     // button handler
-    // #ifndef MIDI_NOTE_KEY
+    // #ifndef INCLUDE_MIDICONTROLS
     if (button_handler(bm)) {
 
       // reset knob debouncers
@@ -399,7 +399,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob X
-    #ifndef MIDI_CC
+    #ifndef INCLUDE_MIDICONTROLS
     uint16_t adc_raw = adc_read();
     adc = FilterExp_update(adcs[0], adc_raw);
     #else
@@ -574,7 +574,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Y
-    #ifndef MIDI_CC
+    #ifndef INCLUDE_MIDICONTROLS
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
     #else
@@ -739,7 +739,7 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_KNOBS
     // knob Z
-    #ifndef MIDI_CC
+    #ifndef INCLUDE_MIDICONTROLS
     adc_select_input(0);
     adc = FilterExp_update(adcs[2], adc_read());
     #else

@@ -38,7 +38,7 @@ void midi_note_off(int note) {
 #ifdef DEBUG_MIDI
   printf("note_off: %d\n", note);
 #endif
-#ifdef MIDI_NOTE_KEY
+#ifdef INCLUDE_MIDICONTROLS
 
 if(note > 35 && note < 56){
   midi_buttons[midi_note_mapping[note - 36]] = false;
@@ -71,7 +71,7 @@ void midi_note_on(int note, int velocity) {
 #ifdef DEBUG_MIDI
   printf("note_on: %d\n", note);
 #endif
-#ifdef MIDI_NOTE_KEY
+#ifdef INCLUDE_MIDICONTROLS
 
 if(velocity == 0){
   midi_note_off(note);

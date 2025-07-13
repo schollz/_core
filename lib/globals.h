@@ -149,6 +149,9 @@ LEDText *ledtext;
 #define MIDIOUTS 6
 MidiOut *midiout[6];
 bool midi_input_activated = false;
+#endif
+
+#ifdef INCLUDE_MIDICONTROLS
 int midi_potx = 0;
 int midi_poty = 0;
 int midi_potz = 0;

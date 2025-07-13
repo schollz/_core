@@ -191,7 +191,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
 
   // read new value;
   uint32_t value = 0;
-  #ifdef MIDI_NOTE_KEY
+  #ifdef INCLUDE_MIDICONTROLS
   uint32_t midi_value = 0;
   midi_value = bitArrayToInt32(midi_buttons,BUTTONMATRIX_BUTTONS_MAX);
   #endif
@@ -203,7 +203,7 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   }
   value = pio_sm_get(bm->pio, bm->sm);
 
-  #ifdef MIDI_NOTE_KEY
+  #ifdef INCLUDE_MIDICONTROLS
   value = value | midi_value;
   #endif
   
