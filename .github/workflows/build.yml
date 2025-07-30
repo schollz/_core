@@ -51,14 +51,14 @@ jobs:
           repository: raspberrypi/pico-sdk
           path: pico-sdk
           submodules: true
-          ref: 2.1.1
+          ref: 2.2.0
       - name: Checkout pico-extras
         uses: actions/checkout@v4.2.2
         with:
           repository: raspberrypi/pico-extras
           path: pico-extras
           submodules: true
-          ref: sdk-2.1.1
+          ref: sdk-2.2.0
       - name: Patch tinyusb
         run: |
           sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
