@@ -106,7 +106,7 @@ int printf_sysex(const char* format, ...) {
 typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 
 void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
-                    callback_int midi_note_off, callback_void midi_start,
+                    callback_int midi_note_off, callback_int_int midi_cc,  callback_void midi_start,
                     callback_void midi_continue, callback_void midi_stop,
                     callback_void midi_timing) {
   uint8_t midi_buffer[3];
@@ -161,14 +161,23 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     // note on received
     usb_midi_present = true;
     if (midi_note_on != NULL) {
-      if (bytes_read == 3) {
+      // if (bytes_read == 3) {
         // TODO: for some reason this is not working
         midi_note_on(midi_buffer[1], midi_buffer[2]);
-      } else {
-        midi_note_on(midi_buffer[1], 0);
-      }
+      // } else {
+        // midi_note_on(midi_buffer[1], 0);
+      // }
     }
     return;
+
+  } else if (midi_buffer[0] == 0xB0 && bytes_read > 2) {
+    // note on received
+    usb_midi_present = true;
+    if (midi_cc != NULL) {
+        midi_cc(midi_buffer[1], midi_buffer[2]);
+    }
+    return;
+
   }
   // for (int i = 0; i < bytes_read; i++) {
   //   printf_sysex("[midi_comm_task] midi_buffer[%d]: %x\n", i,
