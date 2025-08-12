@@ -754,7 +754,7 @@ int main() {
   // it again 500ms later regardless of how long the callback took to execute
   // add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
   // cancel_repeating_timer(&timer);
-  update_repeating_timer_to_bpm(sf->bpm_tempo);
+ 
   // initialize random library
   random_initialize();
 
@@ -806,6 +806,7 @@ int main() {
 
   // printf("startup!\n");
   sdcard_startup();
+  update_repeating_timer_to_bpm(sf->bpm_tempo); // has to come after sdcard_startup()
 
   // TODO
   // load chain from SD card
