@@ -880,6 +880,11 @@ bool button_handler(ButtonMatrix *bm) {
       // send out midi notes
       MidiOut_off(midiout[mode_buttons16], bm->off[i] - 4);
 #endif
+#ifdef INCLUDE_SINEBASS
+        if (mode_buttons16 == MODE_BASS) {
+          WaveBass_release(wavebass);
+        }
+#endif
     }
   }
 
