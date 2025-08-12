@@ -141,10 +141,10 @@ void __not_in_flash_func(input_handling)() {
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv6.4.2");
+  printStringWithDelay("zv6.4.3");
 
   // print to screen
-  printf("version=v6.4.2\n");
+  printf("version=v6.4.3\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -240,7 +240,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.4.2\n");
+        printf("version=v6.4.3\n");
       }
     }
 
