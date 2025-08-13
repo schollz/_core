@@ -17,33 +17,80 @@ uint32_t midi_delta_count = 0;
 #define MIDI_DELTA_COUNT_MAX 32
 uint32_t midi_timing_count = 0;
 const uint8_t midi_timing_modulus = 24;
+int fx_mapping[16] = {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3 };
+
+int midi_note_mapping[20] = {
+  0, 5, 10, 15,
+  1, 6, 11, 16, 
+  2, 7, 12, 17, 
+  3, 8, 13, 18, 
+  4, 9, 14, 19
+                            };
+
 
 void midi_note_off(int note) {
 #ifdef DEBUG_MIDI
   printf("note_off: %d\n", note);
 #endif
-#if MIDI_NOTE_KEY == 1
-  input_button[note % NUM_BUTTONS].Set(false);
-  if (midi_button2 > -1) {
-    midi_button2 = -1;
-  } else {
-    midi_button1 = -1;
+#ifdef INCLUDE_MIDICONTROLS
+
+if(note > 35 && note < 56){
+  midi_buttons[midi_note_mapping[note - 36]] = false;
+}
+if(note > 59 && note < 76){   // midi notes
+  sf->fx_active[fx_mapping[note-60]] = false;
+  if(fx_mapping[note-60] == fx_button){
+    fx_button = -1;
   }
+  update_fx(fx_mapping[note-60]);
+}
+
 #endif
 }
+
 
 void midi_note_on(int note, int velocity) {
 #ifdef DEBUG_MIDI
   printf("note_on: %d\n", note);
 #endif
-#if MIDI_NOTE_KEY == 1
-  if (midi_button1 > -1) {
-    midi_button2 = note % NUM_BUTTONS;
-  } else {
-    midi_button1 = note % NUM_BUTTONS;
-  }
-  input_button[note % NUM_BUTTONS].Set(true);
+#ifdef INCLUDE_MIDICONTROLS
+
+if(velocity == 0){
+  midi_note_off(note);
+  return;
+}
+if(note > 35 && note < 56){   // midi notes
+  midi_buttons[midi_note_mapping[note - 36]] = true;
+}
+
+if(note > 59 && note < 76){   // midi notes
+  sf->fx_active[fx_mapping[note-60]] = true;
+  fx_button = fx_mapping[note-60];
+  update_fx(fx_mapping[note-60]);
+}
+
 #endif
+}
+
+void midi_cc(int control, int value) {
+  #ifdef DEBUG_MIDI
+    printf("cc: %d - %d\n", control, value);
+  #endif
+  switch (control) {
+    case 16:
+      midi_potx = value;
+      break;
+    case 17:
+      midi_poty = value;
+      break;
+    case 18:
+      midi_potz = value;
+      break;
+
+
+    default:
+      break;
+  }
 }
 
 void midi_start() {

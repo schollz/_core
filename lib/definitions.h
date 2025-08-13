@@ -51,4 +51,8 @@ static const int8_t sel_variation_scale[2] = {1, 8};
 #define LED_BRIGHT 2
 #define LED_BLINK 3
 
+#define BUTTONMATRIX_BUTTONS_MAX 20
+
+
+
 #endif
