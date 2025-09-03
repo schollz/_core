@@ -65,22 +65,6 @@ jobs:
           cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
-      - name: Build core_macos_amd64
-        run: |
-          make core_macos_amd64
-          cp core_macos_amd64 core_macos_amd64_${{ github.event.release.name }}
-      - name: Build ectocore_macos_aarch64
-        run: |
-          make ectocore_macos_aarch64
-          cp ectocore_macos_aarch64 ectocore_macos_aarch64_${{ github.event.release.name }}
-      - name: Build core_macos_aarch64
-        run: |
-          make core_macos_aarch64
-          cp core_macos_aarch64 core_macos_aarch64_${{ github.event.release.name }}
-      - name: Build ectocore_macos_aarch64
-        run: |
-          make ectocore_macos_amd64
-          cp ectocore_macos_amd64 ectocore_macos_amd64_${{ github.event.release.name }}
       - name: Build zeptocore.uf2
         run: |
           make zeptocore
@@ -117,19 +101,3 @@ jobs:
         run: |
           make zeptoboard
           cp zeptoboard.uf2 zeptoboard_${{ github.event.release.name }}.uf2
-      - name: Build core_windows.exe
-        run: |
-          make core_windows.exe
-          cp core_windows.exe core_windows_${{ github.event.release.name }}.exe
-      - name: Build core_linux_amd64
-        run: |
-          make core_linux_amd64
-          cp core_linux_amd64 core_linux_amd64_${{ github.event.release.name }}
-      - name: Build ectocore_windows.exe
-        run: |
-          make ectocore_windows.exe
-          cp ectocore_windows.exe ectocore_windows_${{ github.event.release.name }}.exe
-      - name: Build ectocore_linux_amd64
-        run: |
-          make ectocore_linux_amd64
-          cp ectocore_linux_amd64 ectocore_linux_amd64_${{ github.event.release.name }}
