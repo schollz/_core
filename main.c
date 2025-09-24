@@ -74,10 +74,19 @@ bool __not_in_flash_func(timer_step)() {
 
   bpm_timer_counter++;
 
+#ifdef INCLUDE_ECTOCORE
+  bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
+                                                     ->sample[sel_sample_cur]
+                                                     .snd[FILEZERO]
+                                                     ->splice_trigger *
+                                                 ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+                                                 8)) == 0;
+#else
   bool do_splice_trigger = (bpm_timer_counter % (banks[sel_bank_cur]
                                                      ->sample[sel_sample_cur]
                                                      .snd[FILEZERO]
                                                      ->splice_trigger)) == 0;
+#endif
 
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
