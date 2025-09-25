@@ -486,7 +486,7 @@ void __not_in_flash_func(input_handling)() {
     if (sample_selection_index_last != sample_selection_index) {
       printf("sample_selection_index: %d\n", sample_selection_index);
       sample_selection_index_last = sample_selection_index;
-      debounce_sample_selection = 4;
+      debounce_sample_selection = 40;
     } else if (debounce_sample_selection > 0) {
       debounce_sample_selection--;
       if (debounce_sample_selection == 0) {
