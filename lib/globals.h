@@ -149,6 +149,23 @@ LEDText *ledtext;
 #define MIDIOUTS 6
 MidiOut *midiout[6];
 bool midi_input_activated = false;
+
+ // setup some constants for CCs
+const uint8_t cc_knobx = 0;
+const uint8_t cc_knoby= 1;
+const uint8_t cc_knobz = 2;
+const uint8_t cc_tempo = 3;
+const uint8_t cc_pitch = 4;
+const uint8_t cc_volume = 5;
+const uint8_t cc_randsequence = 6;
+const uint8_t cc_djfilter = 7;
+const uint8_t cc_bassvolume = 8;
+const uint8_t cc_sampleselect = 9;
+const uint8_t cc_randtunnel = 10;
+const uint8_t cc_quantize = 11;
+const uint8_t cc_randjump = 12;
+const uint8_t cc_randfx = 13;
+const uint8_t cc_randfxbank = 14;
 #endif
 
 bool toggle_chain_play = false;

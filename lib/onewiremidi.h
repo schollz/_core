@@ -55,6 +55,7 @@ typedef struct Onewiremidi {
   callback_void midi_continue;
   callback_void midi_stop;
   callback_void midi_timing;
+  callback_uint8_uint8_uint8 midi_control_change;
 } Onewiremidi;
 
 Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
@@ -63,7 +64,9 @@ Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
                              callback_void midi_start,
                              callback_void midi_continue,
                              callback_void midi_stop,
-                             callback_void midi_timing) {
+                             callback_void midi_timing,
+                             callback_uint8_uint8_uint8 midi_control_change
+                            ) {
   Onewiremidi *self = (Onewiremidi *)malloc(sizeof(Onewiremidi));
   self->pio = pio;
   self->sm = sm;

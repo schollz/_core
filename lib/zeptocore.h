@@ -1,6 +1,7 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 #include "clockhandling.h"
 //
+#include "break_knob.h"
 #include "midicallback.h"
 #include "onewiremidi.h"
 #ifdef INCLUDE_MIDI
@@ -10,7 +11,7 @@
 #include "image.h"
 #include "ssd1306.h"
 #endif
-#include "break_knob.h"
+
 
 void printStringWithDelay(char *str) {
   int len = strlen(str);
@@ -116,7 +117,7 @@ void __not_in_flash_func(input_handling)() {
     // setup one wire midi
     onewiremidi =
         Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
-                        midi_start, midi_continue, midi_stop, midi_timing);
+                        midi_start, midi_continue, midi_stop, midi_timing, midi_control_change);
   } else {
     clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
                                    clock_handling_down, clock_handling_start);
@@ -192,7 +193,7 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
-                   midi_start, midi_continue, midi_stop, midi_timing);
+                   midi_start, midi_continue, midi_stop, midi_timing, midi_control_change);
 #endif
 
     if (do_switch_between_clock_and_midi) {
@@ -209,7 +210,7 @@ void __not_in_flash_func(input_handling)() {
         ClockInput_destroy(clockinput);
         onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on,
                                       midi_note_off, midi_start, midi_continue,
-                                      midi_stop, midi_timing);
+                                      midi_stop, midi_timing, midi_control_change);
       }
       use_onewiremidi = !use_onewiremidi;
     }
@@ -428,7 +429,7 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 3, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_tempo, adc * 127 / 4096);
 #endif
           uint16_t bpm_new_tempo =
               banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
@@ -450,21 +451,21 @@ void __not_in_flash_func(input_handling)() {
         } else if (button_is_pressed(KEY_B)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 6, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_randsequence, adc * 127 / 4096);
 #endif
           make_random_sequence(adc * 255 / 4096);
         } else if (button_is_pressed(KEY_C)) {
           // C + X
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 9, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_sampleselect, adc * 127 / 4096);
 #endif
           sample_selection_index = adc_raw * sample_selection_num / 4096;
           printf("sample_selection_index: %d\n", sample_selection_index);
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 12, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_randjump, adc * 127 / 4096);
 #endif
           probability_of_random_jump = adc * 100 / 4096;
           clear_debouncers();
@@ -476,7 +477,7 @@ void __not_in_flash_func(input_handling)() {
           }
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 0, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_knobx, adc * 127 / 4096);
 #endif
         }
       }
@@ -553,7 +554,7 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 4, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_pitch, adc * 127 / 4096);
 #endif
 
           int16_t adc_original = adc;
@@ -573,7 +574,7 @@ void __not_in_flash_func(input_handling)() {
         } else if (button_is_pressed(KEY_B)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 7, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_djfilter, adc * 127 / 4096);
 #endif
           for (uint8_t channel = 0; channel < 2; channel++) {
 #define FILTER_ZERO_SPACING 500
@@ -607,7 +608,7 @@ void __not_in_flash_func(input_handling)() {
           // C + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 10, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_randtunnel, adc * 127 / 4096);
 #endif
           probability_of_random_tunnel = adc * 1000 / 4096;
           if (probability_of_random_tunnel < 100) {
@@ -620,7 +621,7 @@ void __not_in_flash_func(input_handling)() {
           // D + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 13, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_randfx, adc * 127 / 4096);
 #endif
           break_knob_set_point = adc * 1024 / 4096;
           clear_debouncers();
@@ -629,7 +630,7 @@ void __not_in_flash_func(input_handling)() {
         } else {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 1, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_knoby, adc * 127 / 4096);
 #endif
         }
       }
@@ -697,7 +698,7 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 5, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_volume, adc * 127 / 4096);
 #endif
           new_vol = adc * VOLUME_STEPS / 4096;
           // new_vol = 100;
@@ -711,7 +712,7 @@ void __not_in_flash_func(input_handling)() {
         } else if (button_is_pressed(KEY_B)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 8, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_bassvolume, adc * 127 / 4096);
 #endif
           // set the bass volume
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
@@ -722,7 +723,7 @@ void __not_in_flash_func(input_handling)() {
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 11, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_quantize, adc * 127 / 4096);
 #endif
 
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
@@ -738,7 +739,7 @@ void __not_in_flash_func(input_handling)() {
           // D + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 14, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_randfxbank, adc * 127 / 4096);
 #endif
           // change the grimoire rune
           grimoire_rune = adc * 7 / 4096;
@@ -748,7 +749,7 @@ void __not_in_flash_func(input_handling)() {
         } else {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], 2, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_knobz, adc * 127 / 4096);
 #endif
         }
       }
@@ -761,13 +762,14 @@ void __not_in_flash_func(input_handling)() {
       // grimoire selection       grimoire probability
       // random sequencer         random jump
       // read the arcade box knobs
+      int arcadeknobmap[8] = {cc_volume,cc_tempo,cc_sampleselect,cc_djfilter,cc_randfxbank,cc_randfx,cc_randsequence,cc_randjump};
       for (uint8_t i = 0; i < 8; i++) {
         int16_t adcValue = KnobChange_update(
             knob_change_arcade[i], (int16_t)ADS7830_read(arcade_ads7830, i));
         if (adcValue > -1) {
 // printf("knob %d: %d\n", i, adcValue);
 #ifdef INCLUDE_MIDI
-          MidiOut_cc(midiout[0], i + 60, adcValue * 127 / 255);
+          MidiOut_cc(midiout[0], arcadeknobmap[i], adcValue * 127 / 255);
 #endif
           if (i == 0) {
             // change volume
