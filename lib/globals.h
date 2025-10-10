@@ -149,6 +149,7 @@ LEDText *ledtext;
 #define MIDIOUTS 6
 MidiOut *midiout[6];
 bool midi_input_activated = false;
+#endif
 
  // setup some constants for CCs
 const uint8_t cc_knobx = 0;
@@ -166,7 +167,6 @@ const uint8_t cc_quantize = 11;
 const uint8_t cc_randjump = 12;
 const uint8_t cc_randfx = 13;
 const uint8_t cc_randfxbank = 14;
-#endif
 
 bool toggle_chain_play = false;
 bool toggle_chain_rec = false;
