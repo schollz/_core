@@ -3,12 +3,12 @@
 #include "clockhandling.h"
 //
 #include "mcp3208.h"
+#include "break_knob.h"
 #include "midicallback.h"
 #include "onewiremidi2.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
-#include "break_knob.h"
 
 #define KNOB_ATTEN_ZERO_WIDTH 80
 #define DEBOUNCE_FILE_SWITCH 500

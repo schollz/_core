@@ -78,6 +78,7 @@ Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
   self->midi_continue = midi_continue;
   self->midi_stop = midi_stop;
   self->midi_timing = midi_timing;
+  self->midi_control_change = midi_control_change;
 
   uint offset = pio_add_program(pio, &midi_rx_program);
   pio_sm_config c = midi_rx_program_get_default_config(offset);
