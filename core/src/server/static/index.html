@@ -778,14 +778,28 @@
                         selected files</button>
                     <ul>
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
-                            @click="openFileModal(fileIndex)"
-                            :class="{ 'selected': isSelected(fileIndex), 'selected_on':isSelectedAndOpen(fileIndex) }"
+                            draggable="true"
+                            @dragstart="handleDragStart($event, fileIndex)"
+                            @dragend="handleDragEnd"
+                            @dragover.prevent="handleDragOver($event, fileIndex)"
+                            @dragleave="handleDragLeave"
+                            @drop="handleDrop($event, fileIndex)"
+                            @mousedown="handleMouseDown(fileIndex)"
+                            @mouseup="handleMouseUp(fileIndex)"
+                            :class="{
+                                'selected': isSelected(fileIndex),
+                                'selected_on':isSelectedAndOpen(fileIndex),
+                                'dragging': draggedIndex === fileIndex,
+                                'drag-over': dragOverIndex === fileIndex && draggedIndex !== fileIndex
+                            }"
                             :data-file-number="fileIndex + 1">
-                            <!-- checkbox and file movers on left -->
-                            <input type="checkbox" @click.stop="toggleFileSelection(fileIndex)" :checked="isSelected(fileIndex)"
+                            <!-- checkbox on left -->
+                            <input type="checkbox"
+                                @click.stop="toggleFileSelection(fileIndex)"
+                                @mousedown.stop
+                                @mouseup.stop
+                                :checked="isSelected(fileIndex)"
                                 class="file-checkbox">
-                            <a @click.stop="moveFileUpIndex(fileIndex)" class="file-arrow hideIfMobile">▲</a>
-                            <a @click.stop="moveFileDownIndex(fileIndex)" class="file-arrow hideIfMobile">▼</a>
                             <span class="file-name">{{ file.Filename }}</span>
                             <i v-if="isSelectedAndOpen(fileIndex)" class="fas fa-eye"></i>
                         </li>

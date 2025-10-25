@@ -561,6 +561,10 @@ app = new Vue({
             [true, false, true, false, true, true, true, true, false, true, false, false, true, true, true, false],
         ],
         regionClickBehavior: 'clickCreateRegion',
+        draggedIndex: null,
+        dragOverIndex: null,
+        isDragging: false,
+        clickedIndex: null,
     },
     watch: {
         // Watch for changes in app properties and save state to cookies
@@ -1210,6 +1214,66 @@ app = new Vue({
             } else {
                 this.selectedFiles.splice(index, 1); // File is selected, so remove it
             }
+        },
+        handleMouseDown(fileIndex) {
+            this.clickedIndex = fileIndex;
+            this.isDragging = false;
+        },
+        handleMouseUp(fileIndex) {
+            // Only open modal if we didn't drag
+            if (!this.isDragging && this.clickedIndex === fileIndex) {
+                this.openFileModal(fileIndex);
+            }
+            this.clickedIndex = null;
+        },
+        handleDragStart(event, fileIndex) {
+            this.isDragging = true;
+            this.draggedIndex = fileIndex;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/html', event.target.innerHTML);
+        },
+        handleDragEnd() {
+            this.isDragging = false;
+            this.draggedIndex = null;
+            this.dragOverIndex = null;
+        },
+        handleDragOver(event, fileIndex) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            this.dragOverIndex = fileIndex;
+            event.dataTransfer.dropEffect = 'move';
+            return false;
+        },
+        handleDragLeave() {
+            this.dragOverIndex = null;
+        },
+        handleDrop(event, dropIndex) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            const dragIndex = this.draggedIndex;
+            if (dragIndex !== null && dragIndex !== dropIndex) {
+                // Reorder the files
+                const files = this.banks[this.selectedBank].files;
+                const draggedFile = files[dragIndex];
+
+                // Remove the dragged file
+                files.splice(dragIndex, 1);
+
+                // Insert at new position
+                if (dropIndex > dragIndex) {
+                    files.splice(dropIndex - 1, 0, draggedFile);
+                } else {
+                    files.splice(dropIndex, 0, draggedFile);
+                }
+
+                // Update the banks array to trigger reactivity
+                this.$set(this.banks[this.selectedBank], 'files', files);
+            }
+
+            return false;
         },
         removeSelectedFile() {
             if (this.selectedFile !== null) {

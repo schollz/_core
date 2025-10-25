@@ -216,32 +216,33 @@ a:hover {
 .file-list li .file-checkbox {
     cursor: pointer;
     flex-shrink: 0;
-    order: -3;
-}
-
-.file-list li .file-arrow {
-    cursor: pointer;
-    flex-shrink: 0;
-    text-decoration: none;
-    color: inherit;
-}
-
-.file-list li .file-arrow:first-of-type {
-    order: -2;
-}
-
-.file-list li .file-arrow:last-of-type {
-    order: -1;
 }
 
 .file-list li .file-name {
     flex-grow: 1;
-    order: 0;
 }
 
 .file-list li .fa-eye {
     order: 1;
     margin-left: auto;
+}
+
+.file-list li.dragging {
+    opacity: 0.5;
+    background-color: var(--hover-color);
+}
+
+.file-list li.drag-over {
+    border-top: 3px solid var(--highlight-color-border);
+    padding-top: calc(0.5rem - 3px);
+}
+
+.file-list li {
+    transition: background-color 0.2s ease, border-top 0.1s ease, padding-top 0.1s ease;
+}
+
+.file-list li:active {
+    cursor: grab;
 }
 
 .file-list li::before {
