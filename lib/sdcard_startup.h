@@ -708,6 +708,9 @@ void sdcard_startup() {
     // Successfully restored from flash
     sel_bank_cur = restored_bank;
     sel_sample_cur = restored_sample;
+    // Also set _next values to keep them in sync
+    sel_bank_next = restored_bank;
+    sel_sample_next = restored_sample;
     printf("[sdcard_startup] Restored to bank %d, sample %d from flash\n", 
            sel_bank_cur, sel_sample_cur);
   } else {
