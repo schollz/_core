@@ -20,7 +20,7 @@ typedef struct {
 } PersistentState;
 
 // Calculate a simple checksum for the state
-uint16_t PersistentState_calculate_checksum(PersistentState *state) {
+uint16_t __not_in_flash_func(PersistentState_calculate_checksum)(PersistentState *state) {
   uint16_t sum = 0;
   sum += state->magic & 0xFFFF;
   sum += (state->magic >> 16) & 0xFFFF;
@@ -30,7 +30,7 @@ uint16_t PersistentState_calculate_checksum(PersistentState *state) {
 }
 
 // Save the current bank and sample to flash
-void PersistentState_save(uint8_t bank, uint8_t sample) {
+void __not_in_flash_func(PersistentState_save)(uint8_t bank, uint8_t sample) {
   PersistentState state;
   state.magic = PERSISTENT_STATE_MAGIC;
   state.bank = bank;
