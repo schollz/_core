@@ -777,38 +777,29 @@
                     <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 1" style="margin-left: 0;">Merge
                         selected files</button>
                     <ul>
-                        <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
-                            draggable="true"
-                            @dragstart="handleDragStart($event, fileIndex)"
-                            @dragend="handleDragEnd"
-                            @dragover.prevent="handleDragOver($event, fileIndex)"
-                            @dragleave="handleDragLeave"
-                            @drop="handleDrop($event, fileIndex)"
-                            @mousedown="handleMouseDown(fileIndex)"
-                            @mouseup="handleMouseUp(fileIndex)"
-                            :class="{
+                        <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex" draggable="true"
+                            @dragstart="handleDragStart($event, fileIndex)" @dragend="handleDragEnd"
+                            @dragover.prevent="handleDragOver($event, fileIndex)" @dragleave="handleDragLeave"
+                            @drop="handleDrop($event, fileIndex)" @mousedown="handleMouseDown(fileIndex)"
+                            @mouseup="handleMouseUp(fileIndex)" :class="{
                                 'selected': isSelected(fileIndex),
                                 'selected_on':isSelectedAndOpen(fileIndex),
                                 'dragging': draggedIndex === fileIndex,
                                 'drag-over': dragOverIndex === fileIndex && draggedIndex !== fileIndex
-                            }"
-                            :data-file-number="fileIndex + 1">
+                            }" :data-file-number="fileIndex + 1">
                             <!-- checkbox on left -->
-                            <input type="checkbox"
-                                @click.stop="toggleFileSelection(fileIndex)"
-                                @mousedown.stop
-                                @mouseup.stop
-                                :checked="isSelected(fileIndex)"
-                                class="file-checkbox">
+                            <input type="checkbox" @click.stop="toggleFileSelection(fileIndex)" @mousedown.stop
+                                @mouseup.stop :checked="isSelected(fileIndex)" class="file-checkbox">
                             <span class="file-name">{{ file.Filename }}</span>
                             <i v-if="isSelectedAndOpen(fileIndex)" class="fas fa-eye"></i>
                         </li>
                     </ul>
                 </div>
 
-                <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected" @click="selectedFile=null"></div>
+                <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected"
+                    @click="selectedFile=null"></div>
                 <div class="file-details" v-if="selectedFile!=null && !disconnected" @click.stop>
-                    <p style="margin-top:0; padding-top: 0.5rem; padding-bottom: 0; margin-bottom: 0;
+                    <p style="margin-top:0; margin-bottom: 0;
                     text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
                         banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
                         {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(5)*1000)}})

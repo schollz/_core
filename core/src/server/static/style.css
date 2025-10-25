@@ -36,9 +36,15 @@ body {
     border-radius: 2em;
     border-color: var(--header-footer-background);
     border-style: solid;
-    box-shadow: var(--highlight-color) 12px 12px 2px 1px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     background: var(--background-color);
-    padding: 1em;
+    padding: 2em;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+#dialog-settings::backdrop {
+    background: rgba(0, 0, 0, 0.7);
 }
 
 #app {
@@ -166,7 +172,7 @@ a:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 3px solid var(--highlight-color-border);
+    border: 4px solid var(--highlight-color-border);
     border-radius: 10px;
     padding: 2em;
     background: var(--background-color);
@@ -174,7 +180,14 @@ a:hover {
     max-width: 90vw;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 20px var(--shadow-color)
+}
+
+.file-details>p:nth-child(1)>strong {
+    background: var(--highlight-color-border);
+    border-radius: 1em;
+    padding: 1em;
+    display: inline-block;
 }
 
 .file-details-backdrop {
@@ -318,6 +331,17 @@ button:hover {
     background-color: var(--highlight-color);
     /* Slightly darker purple on button hover */
     color: white;
+}
+
+#downloadZipButton {
+    background-color: var(--highlight-color-border);
+    color: black;
+    font-weight: bold;
+}
+
+#downloadZipButton:hover {
+    background-color: var(--highlight-color-border);
+    opacity: 0.8;
 }
 
 .footer-item {
