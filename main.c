@@ -62,8 +62,10 @@ bool __not_in_flash_func(timer_step)() {
 #ifdef INCLUDE_MIDI
       send_midi_stop();
 #endif
+#ifdef INCLUDE_ECTOCORE
       // Save current bank and sample to flash when playback stops
       PersistentState_save(sel_bank_cur, sel_sample_cur);
+#endif
     }
     return true;
   }

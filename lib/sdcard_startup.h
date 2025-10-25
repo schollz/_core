@@ -700,6 +700,7 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+#ifdef INCLUDE_ECTOCORE
   // Try to restore last used bank and sample from flash
   uint8_t restored_bank = 0;
   uint8_t restored_sample = 0;
@@ -716,6 +717,7 @@ void sdcard_startup() {
   } else {
     printf("[sdcard_startup] Using default bank 0, sample 0\n");
   }
+#endif
 
   // check to see if bank0/0.*2+x).wav exists
   // if it does, then we are in audio variant mode
@@ -819,6 +821,7 @@ void sdcard_startup() {
 
   savefile_do_load();
   
+#ifdef INCLUDE_ECTOCORE
   // If no savefile was loaded, restore bank/sample from flash by triggering file change
   // This happens after savefile_do_load so that savefiles take precedence
   if (!savefile_has_data[savefile_current]) {
@@ -828,6 +831,7 @@ void sdcard_startup() {
     fil_current_change = true;
     printf("[sdcard_startup] No savefile loaded, applying flash-restored bank/sample\n");
   }
+#endif
 
   fil_is_open = true;
   time_of_initialization = time_us_64();
