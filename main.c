@@ -399,45 +399,62 @@ bool __not_in_flash_func(timer_step)() {
     if (sequencerhandler[0].playing) {
       // already done
     } else if ((clock_in_do && clock_in_ready) || do_splice_trigger) {
+#ifdef INCLUDE_ECTOCORE
+      // Handle variable slices with clock input (ectocore only)
+      // Check early if we should skip processing this clock pulse
+      bool should_skip_clock_pulse = false;
+      if (clock_in_do && clock_in_ready && 
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->splice_variable > 0) {
+        // Calculate expected pulses for current slice if not already set
+        if (clock_in_expected_pulses_for_slice <= 0.0f) {
+          clock_in_expected_pulses_for_slice = 
+              calculate_expected_pulses_for_slice(beat_current);
+        }
+        
+        // Accumulate incoming clock pulse
+        clock_in_pulse_accumulator++;
+        
+        // Check if we've accumulated enough pulses to advance to next slice
+        if (clock_in_pulse_accumulator >= clock_in_expected_pulses_for_slice) {
+          // Advance to next slice
+          beat_current++;
+          if (beat_current >= banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->slice_num) {
+            beat_current = 0;
+          }
+          
+          // Reset accumulator and calculate expected pulses for new slice
+          clock_in_pulse_accumulator = 0;
+          clock_in_expected_pulses_for_slice = 
+              calculate_expected_pulses_for_slice(beat_current);
+          // Allow this pulse to trigger the slice
+        } else {
+          // Not enough pulses yet, skip this clock pulse
+          should_skip_clock_pulse = true;
+          clock_in_ready = false;
+        }
+      }
+      
+      if (should_skip_clock_pulse) {
+        // Don't process this clock pulse, just consume it
+      } else {
+#endif
       clock_in_ready = false;
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (clock_in_do) {
 #ifdef INCLUDE_ECTOCORE
-          // Handle variable slices with clock input (ectocore only)
+          // For ectocore: non-variable mode still uses original calculation
           if (banks[sel_bank_cur]
                   ->sample[sel_sample_cur]
                   .snd[FILEZERO]
-                  ->splice_variable > 0) {
-            // Variable mode: accumulate pulses and advance when threshold reached
-            
-            // Calculate expected pulses for current slice if not already set
-            if (clock_in_expected_pulses_for_slice <= 0.0f) {
-              clock_in_expected_pulses_for_slice = 
-                  calculate_expected_pulses_for_slice(beat_current);
-            }
-            
-            // Accumulate incoming clock pulse
-            clock_in_pulse_accumulator++;
-            
-            // Check if we've accumulated enough pulses to advance to next slice
-            if (clock_in_pulse_accumulator >= clock_in_expected_pulses_for_slice) {
-              // Advance to next slice
-              beat_current++;
-              if (beat_current >= banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->slice_num) {
-                beat_current = 0;
-              }
-              
-              // Reset accumulator and calculate expected pulses for new slice
-              clock_in_pulse_accumulator = 0;
-              clock_in_expected_pulses_for_slice = 
-                  calculate_expected_pulses_for_slice(beat_current);
-            }
-          } else {
+                  ->splice_variable == 0) {
 #endif
             // Non-variable mode: use original calculation
             beat_current = (int)roundf((float)clock_in_beat_total * 96.0f /
@@ -590,6 +607,9 @@ bool __not_in_flash_func(timer_step)() {
       if (debounce_quantize > 0) {
         debounce_quantize--;
       }
+#ifdef INCLUDE_ECTOCORE
+      }  // end if (!should_skip_clock_pulse)
+#endif
     }
   }
   // update lfos
