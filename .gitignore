@@ -12,11 +12,15 @@ lib/crossfade4_441.h
 lib/crossfade4_64.h
 lib/cuedsounds_ectocore.h
 lib/cuedsounds_zeptocore.h
+lib/cuedsounds.h
 lib/fuzz.h
 lib/resonantfilter_data.h
+lib/sinewaves2.h
+lib/transfer_saturate2.h
 zeptomech.uf2
 target_compile_definitions.cmake
 .vscode/settings.json
+.venv/
 /.vscode
 core/src/server/docs/_core.fzz
 core/src/server/docs/_core_bb.webp
