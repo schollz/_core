@@ -1560,7 +1560,7 @@ window.addEventListener('load', (event) => {
     const url = window.location.href;
     const root = document.documentElement;
 
-    ccolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background') + "33";
+    ccolor = "rgba(0, 0, 0, 0)";
     ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "00";
     wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background');
     selected_color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color') + "44";
