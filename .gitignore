@@ -69,3 +69,8 @@ soxstatic/
 zeptocore.uf2
 pico-examples
 ectocore.uf2
+core/storage/*
+core/tmp/*
+core/*zip
+*.wav.info
+*wav.json
