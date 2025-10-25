@@ -360,12 +360,39 @@ bool __not_in_flash_func(timer_step)() {
         //        num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
         bpm_timer_counter_last = bpm_timer_counter;
       }
+
+      // In variable mode with clock input, check if enough pulses accumulated
+      if (clock_in_do && clock_in_ready) {
+        // Calculate expected pulses for this slice based on num_slices
+        // num_slices is in timer ticks (192 per quarter note)
+        // splice_trigger is pulses per quarter note (typically 24)
+        float expected_pulses = num_slices *
+                                (float)banks[sel_bank_cur]
+                                    ->sample[sel_sample_cur]
+                                    .snd[FILEZERO]
+                                    ->splice_trigger / 192.0f;
+        int32_t pulses_accumulated = clock_in_beat_total - clock_in_beat_last;
+
+        if (pulses_accumulated < (int32_t)roundf(expected_pulses)) {
+          // Not enough pulses accumulated for this slice yet
+          should_skip_clock_pulse = true;
+        } else {
+          // Enough pulses accumulated, allow trigger and reset counter
+          should_skip_clock_pulse = false;
+          clock_in_beat_last = clock_in_beat_total;
+        }
+      }
+    } else {
+      // Not in variable mode, reset the skip flag
+      should_skip_clock_pulse = false;
     }
 
     if (sequencerhandler[0].playing) {
       // already done
-    } else if ((clock_in_do && clock_in_ready) || do_splice_trigger) {
+    } else if (((clock_in_do && clock_in_ready && !should_skip_clock_pulse) ||
+                do_splice_trigger)) {
       clock_in_ready = false;
+      should_skip_clock_pulse = false;
       mem_use = false;
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {

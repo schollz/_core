@@ -100,6 +100,7 @@ void midi_timing() {
     printf("[midicallback] midi resetting\n");
 #endif
     clock_in_beat_total = -1;
+    clock_in_beat_last = -1;
   }
   if (midi_timing_count % (midi_timing_modulus / MIDI_CLOCK_MULTIPLIER) == 0) {
     // soft sync
