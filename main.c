@@ -363,7 +363,10 @@ bool __not_in_flash_func(timer_step)() {
       } else if (clock_in_do && clock_in_ready) {
         // In variable mode, skip clock pulses that haven't accumulated enough counts
         should_skip_clock_pulse = true;
-        clock_in_ready = false;  // Reset flag even when skipping
+        // Reset flag to prevent it from remaining true on next timer_step call
+        // This is necessary because the main processing path (line 373) won't
+        // execute when we skip the pulse
+        clock_in_ready = false;
       }
     }
 
