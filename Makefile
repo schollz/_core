@@ -206,6 +206,7 @@ changebaud:
 	-curl localhost:7083
 
 resetpico2:
+	-timeout 1 sudo minicom -b 1200 -o -D /dev/ttyACM0
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
@@ -214,7 +215,6 @@ resetpico2:
 	sleep 0.1
 
 upload: resetpico2 changebaud dobuild
-	-timeout 1 sudo minicom -b 1200 -o -D /dev/ttyACM0
 	./dev/upload.sh
 
 bootreset: .venv dobuild
@@ -247,7 +247,7 @@ clean:
 	rm -rf *.uf2
 
 debug:
-	sudo minicom -b 115200 -o -D /dev/ttyACM
+	sudo minicom -b 115200 -o -D /dev/ttyACM0
 
 cloc:
 	cloc --exclude-list-file=dev/.clocignore --exclude-lang="make,CMake,D,Markdown,JSON,INI,Bourne Shell,TOML,TypeScript,YAML,Assembly" *
