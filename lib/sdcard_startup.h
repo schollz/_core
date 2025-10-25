@@ -815,6 +815,16 @@ void sdcard_startup() {
   sdcard_startup_is_starting = false;
 
   savefile_do_load();
+  
+  // If no savefile was loaded, restore bank/sample from flash by triggering file change
+  // This happens after savefile_do_load so that savefiles take precedence
+  if (!savefile_has_data[savefile_current]) {
+    // Use the restored values from flash
+    sel_bank_next = sel_bank_cur;
+    sel_sample_next = sel_sample_cur;
+    fil_current_change = true;
+    printf("[sdcard_startup] No savefile loaded, applying flash-restored bank/sample\n");
+  }
 
   fil_is_open = true;
   time_of_initialization = time_us_64();
