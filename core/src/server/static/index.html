@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[[ if .IsEctocore]]ectocore[[else]]zeptocore[[end]] tool</title>
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"
+        href="/static/[[ if .IsEctocore]]ecto/[[ end]]android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/static/[[ if .IsEctocore]]ecto/[[ end]]ms-icon-144x144.png">
+    <link rel="manifest" href="/static/manifest.json">
+    [[ if .IsZeptocore ]]
+    <meta name="msapplication-TileColor" content="#f0f4ff">
+    <meta name="theme-color" content="#f0f4ff">
+    <style>
+        /** zeptocore **/
+        :root {
+            --background-color: #f4f0ff;
+            --header-footer-background: #bdafeb;
+            --banks-background: #dcd6f7;
+            --highlight-color: #c3b8e6;
+            --highlight-color-darker: #afa2db;
+            --highlight-color-darkerer: #be81dca;
+            --hover-color: #d2cde9;
+            --hover-color-light: #e6e3f4;
+            --other-color: #6d51c9;
+        }
+    </style>
+    [[ else ]]
+    <meta name="msapplication-TileColor" content="#94acda">
+    <meta name="theme-color" content="#94acda">
+    <style>
+        /** ectocore **/
+        :root {
+            --background-color: #e6eeff;
+            --header-footer-background: #5282d9;
+            --banks-background: #94acda;
+            --highlight-color: #94acda;
+            --highlight-color-darker: #7799d6;
+            --highlight-color-darkerer: #5577c6;
+            --hover-color: #93a6c9;
+            --hover-color-light: #c3d1f0;
+            --other-color: #3478ff;
+        }
+    </style>
+    [[ end ]]
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/all.min.css">
+    <link rel="stylesheet" href="/static/jquery-ui.css">
+
+</head>
+
+<body>
+    <!--
+        <div id="browserBanner"
+        style="display: none; background-color: #ffcccb; color: black; padding: 10px; text-align: center;">
+        This site is best viewed in Chrome. Some features may not work correctly in other browsers.
+    </div>
+    -->
+    [[ if .IsZeptocore ]]
+    <div class="ear leftear"><a href="/docs" style="left:30px; position:relative;"><i class="fas fa-book fa-rotate-by"
+                style="--fa-rotate-angle: -45deg; " aria-hidden="true"></i></a></div>
+    <div class="ear rightear"><a href="/#buy">buy</a></div>
+    [[ end ]]
+
+
+    <div id="fadeCircle"></div>
+    <div id="app" v-cloak :class="{ready:isReady}">
+        <div id=" dialog2" title="console">
+            <div id="scrollable-content" style="overflow-y:auto;">
+                <p id="consoleprint"></p>
+            </div>
+        </div>
+        <div id="dialog3">
+
+        </div>
+
+
+
+
+        <dialog id="dialog">
+            <form method="dialog">
+                <p>
+                    <label>
+                        Copy {{title}} -> /
+                        <input type="text" id="dialogtext" required />
+                    </label>
+                </p>
+                <div>
+                    <input type="submit" id="js-close" value="Make copy" formnovalidate
+                        style="font-family: inherit; padding:0.5em;" />
+                </div>
+            </form>
+        </dialog>
+
+
+        <dialog id="dialog-settings">
+            <!-- X in right corner -->
+            <button id="close-settings" style="position: absolute; right: 2em; top: 2em; padding: 0.5em;">X</button>
+            <h2>Settings</h2>
+            [[ if .IsZeptocore ]]
+            <p>
+                <label for="settingsKnobXSample" style="padding-right:1em;">Knob X switches samples</label>
+                <input id="settingsKnobXSample" type="checkbox" v-model="settingsKnobXSample">
+                <span v-if="settingsKnobXSample">on</span><span v-else>off</span>
+            </p>
+            <p id="pSettingsMashMode">
+                <label for="settingsMashMode" style="padding-right:1em;">MASH mode buttons</label>
+                <input id="settingsMashMode" type="checkbox" v-model="settingsMashMode">
+                <span v-if="settingsMashMode">momentary</span><span v-else>toggle</span>
+            </p>
+            [[ else ]]
+            <p id="pSettingsClockStop">
+                <label for="settingsClockStop" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'clk' }">Incoming clock behavior</label>
+                <select id="settingsClockStop" v-model="settingsClockStop"
+                    :disabled="settingsOverrideWithReset === 'clk'">
+                    <option value="sync">stop if clock stops</option>
+                    <option value="continue">continue if clock stops</option>
+                </select>
+            </p>
+            <p id="pSettingsClockOutput">
+                <label for="settingsClockOutput" style="padding-right:1em;">Outgoing clock type</label>
+                <select id="settingsClockOutput" v-model="settingsClockOutput">
+                    <option value="trig">trig</option>
+                    <option value="gate">gate</option>
+                </select>
+            </p>
+            <p id="pSettingsClockBehaviorSync">
+                <label for="settingsClockBehaviorSync" style="padding-right:1em;">Outgoing clock behavior</label>
+                <select id="settingsClockBehaviorSync" v-model="settingsClockBehaviorSync">
+                    <option value="tempo">sync with tempo</option>
+                    <option value="slice">sync with slice</option>
+                </select>
+            </p>
+            <p id="pSettingsAmenCV">
+                <label for="settingsAmenCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'amen' }">Amen CV polarity</label>
+                <!-- drop down menu -->
+                <select id="settingsAmenCV" v-model="settingsAmenCV" :disabled="settingsOverrideWithReset === 'amen'">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsAmenBehavior">
+                <label for="settingsAmenBehavior" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'amen' }">Amen CV behavior</label>
+                <!-- drop down menu -->
+                <select id="settingsAmenBehavior" v-model="settingsAmenBehavior"
+                    :disabled="settingsOverrideWithReset === 'amen'">
+                    <option value="jump">jump on change</option>
+                    <option value="repeat">repeat at CV</option>
+                    <option v-if="settingsAmenCV=='bipolar'" value="split">split: &lt;0v repeat, &ge;0v jump</option>
+                </select>
+            </p>
+            <p id="pSettingsBreakCV">
+                <label for="settingsBreakCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'break' }">Break CV polarity</label>
+                <select id="settingsBreakCV" v-model="settingsBreakCV"
+                    :disabled="settingsOverrideWithReset === 'break'">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsSampleCV">
+                <label for="settingsSampleCV" style="padding-right:1em;"
+                    :class="{ 'grayed': settingsOverrideWithReset === 'sample' }">Sample CV polarity</label>
+                <select id="settingsSampleCV" v-model="settingsSampleCV"
+                    :disabled="settingsOverrideWithReset === 'sample'">
+                    <option value="bipolar">bipolar (-5 to +5v)</option>
+                    <option value="unipolar">unipolar (0 to +5v)</option>
+                </select>
+            </p>
+            <p id="pSettingsOverrideWithReset">
+                <label for="settingsOverrideWithReset" style="padding-right:1em;">Reset CV (Override)</label>
+                <select id="settingsOverrideWithReset" v-model="settingsOverrideWithReset">
+                    <option value="none">None</option>
+                    <option value="amen">Amen CV</option>
+                    <option value="break">Break CV</option>
+                    <option value="sample">Sample CV</option>
+                    <option value="clk">Incoming Clock</option>
+                </select>
+            </p>
+
+            <!-- slider for brightness-->
+            <p style="display: flex; align-items: center;" id="pSettingsBrightness">
+                <label for="brightness" style="padding-right:1em;">Brightness</label>
+                <input type="range" id="brightness" name="brightness" min="0" max="100" value="50"
+                    v-model="settingsBrightness">
+                {{ settingsBrightness }}%
+            </p>
+            [[ end ]]
+
+            <p>
+                [[ if .IsZeptocore ]]
+                Random effect banks (<a href="/#random-effects-banks"
+                    style="color:inherit;z-index:99999999;position:relative;" target="_blank"><strong>D+Z</strong></a>
+                to
+                select and
+                <a href="/#random-effects" style="color:inherit;z-index:99999999;position:relative;"
+                    target="_blank"><strong>D+Y</strong></a> to activate):
+                [[else]]
+                Grimoire of Breaks:
+                [[end]]
+            <div class="grimoire-container">
+                <div class="circle-container">
+                    <div id="grimoire0" class="circle-icon" @click="grimoireClick(0);"
+                        :class="{bright: grimoireSelected==0 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="amalgam">
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M232.275,457.876L232.275,476.84"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M224.112,463.113L240.438,463.113"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M226.7,468.748L237.85,468.748"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M221.325,487.305C225.333,473.18 238.896,473.523 243.226,487.305"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+
+                    </div>
+                    <div id="grimoire1" class="circle-icon" @click="grimoireClick(1);"
+                        :class="{bright: grimoireSelected==1 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="alum-inert" serif:id="alum inert">
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M243.339,550.932L221.437,550.932"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M232.388,554.351L232.388,536.573"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M237.763,536.573L226.613,536.573"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M243.339,551.02C234.235,554.634 237.705,566.785 243.339,561.151"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M221.212,551.02C230.315,554.634 226.846,566.785 221.212,561.151"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+
+                    </div>
+
+                    <div id="grimoire2" class="circle-icon" @click="grimoireClick(2);"
+                        :class="{bright: grimoireSelected==2 }">
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                    </div>
+
+                    <div id="grimoire3" class="circle-icon" @click="grimoireClick(3);"
+                        :class="{bright: grimoireSelected==3 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="azurite" transform="matrix(1,0,0,1,-0.25,0.111111)">
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,861.027L226.923,886.355"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,869.715L242.693,869.715"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path
+                                        d="M242.693,869.715C242.693,869.715 235.243,879.001 235.243,883.816C235.243,893.689 247.575,893.689 247.575,883.816"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <div id="grimoire4" class="circle-icon" @click="grimoireClick(4);"
+                        :class="{bright: grimoireSelected==4 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="hermate" transform="matrix(1,0,0,1,0.125121,0)">
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <circle cx="232.275" cy="632.156" r="6.843"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M232.275,625.314L232.275,614.279"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M232.275,639.204L232.275,650.239"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M239.118,618.96L225.433,618.96"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M239.118,645.559L225.433,645.559"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+
+                    </div>
+
+                    <div id="grimoire5" class="circle-icon" @click="grimoireClick(5);"
+                        :class="{bright: grimoireSelected==5 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="sulphur">
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M221.325,432.985L243.226,432.985L232.475,420.103L221.325,432.985Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M232.275,432.985L232.275,447.535"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M225.195,442.308L239.355,442.308"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+
+                    </div>
+
+                    <div id="grimoire6" class="circle-icon" @click="grimoireClick(6);"
+                        :class="{bright: grimoireSelected==6 }">
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="brimstone">
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path
+                                        d="M234.819,799.598C234.819,799.598 241.608,795.07 243.904,795.07C250.341,795.07 250.499,805.177 243.445,805.177C241.15,805.177 234.819,799.598 234.819,799.598Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path
+                                        d="M234.819,799.598C234.819,799.598 228.03,795.07 225.734,795.07C219.297,795.07 219.139,805.177 226.193,805.177C228.489,805.177 234.819,799.598 234.819,799.598Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M234.819,800.124L234.819,778.846"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M230.521,782.496L239.118,782.496"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M227.862,788.862L241.777,788.862"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+
+                    </div>
+
+                    <!-- change knob degrees by Vue2.0 variable grimoireKnobDegrees -->
+                    <div class="knob-icon" id="knob"
+                        :style="{ transform: 'translate(97.5%, 100%) rotate(' + grimoireKnobDegrees + 'deg)' }">
+                        <svg width="100%" height="100%" viewBox="0 0 720 720" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="Trimmer">
+                                <circle cx="360.278" cy="360.732" r="333.008" style="fill:white;" />
+                                <path
+                                    d="M27.407,346.386C27.106,346.359 26.803,346.327 26.5,346.29C11.797,344.478 1.332,331.069 3.144,316.366C5.541,296.92 9.491,277.953 14.866,259.592C19.028,245.374 33.95,237.21 48.168,241.372C48.463,241.458 48.756,241.549 49.045,241.645C48.767,241.523 48.49,241.395 48.213,241.263C34.855,234.858 29.21,218.813 35.615,205.455C44.014,187.937 53.79,171.203 64.801,155.392C73.268,143.236 90.011,140.24 102.168,148.707C102.416,148.879 102.66,149.055 102.9,149.235C102.678,149.034 102.459,148.829 102.243,148.62C91.593,138.322 91.307,121.315 101.605,110.665C115.033,96.779 129.568,83.969 145.068,72.38C156.932,63.508 173.767,65.938 182.638,77.803C182.819,78.045 182.996,78.289 183.167,78.535C183.019,78.272 182.874,78.006 182.733,77.737C175.879,64.604 180.976,48.376 194.109,41.521C211.153,32.625 228.997,25.053 247.504,18.943C261.571,14.298 276.763,21.948 281.408,36.015C281.504,36.307 281.595,36.598 281.68,36.89C281.623,36.593 281.571,36.293 281.523,35.991C279.213,21.358 289.218,7.602 303.852,5.293C322.237,2.391 341.083,0.883 360.278,0.883C379.93,0.883 399.216,2.463 418.017,5.502C432.641,7.866 442.595,21.658 440.231,36.283C440.183,36.585 440.129,36.885 440.07,37.183C440.157,36.891 440.249,36.599 440.347,36.308C445.044,22.258 460.264,14.665 474.314,19.362C492.795,25.54 510.611,33.178 527.624,42.138C540.732,49.041 545.769,65.288 538.865,78.395C538.724,78.664 538.578,78.93 538.429,79.192C538.601,78.947 538.778,78.703 538.96,78.462C547.875,66.63 564.719,64.262 576.551,73.177C592.006,84.822 606.494,97.685 619.872,111.621C630.131,122.309 629.783,139.314 619.095,149.573C618.877,149.782 618.657,149.987 618.434,150.187C618.675,150.008 618.921,149.833 619.17,149.66C631.358,141.238 648.09,144.296 656.512,156.483C667.465,172.333 677.178,189.104 685.513,206.654C691.869,220.036 686.164,236.06 672.783,242.415C672.506,242.547 672.229,242.673 671.95,242.794C672.24,242.7 672.532,242.61 672.827,242.525C687.06,238.415 701.952,246.635 706.061,260.868C711.367,279.247 715.247,298.229 717.572,317.685C719.33,332.395 708.815,345.764 694.106,347.522C693.803,347.559 693.501,347.589 693.2,347.615C693.498,347.618 693.797,347.625 694.097,347.637C708.9,348.238 720.429,360.744 719.828,375.546C719.031,395.164 716.659,414.379 712.838,433.068C709.87,447.582 695.677,456.956 681.163,453.989C680.863,453.927 680.566,453.861 680.271,453.791C680.558,453.889 680.845,453.993 681.13,454.102C694.973,459.378 701.928,474.901 696.651,488.744C689.718,506.933 681.352,524.418 671.69,541.059C664.252,553.87 647.811,558.232 635,550.794C634.737,550.641 634.477,550.485 634.222,550.325C634.46,550.507 634.696,550.695 634.93,550.886C646.386,560.279 648.062,577.205 638.67,588.662C626.408,603.617 612.966,617.569 598.486,630.372C587.387,640.185 570.41,639.141 560.597,628.043C560.397,627.817 560.202,627.588 560.01,627.357C560.18,627.606 560.345,627.859 560.507,628.115C568.421,640.639 564.678,657.231 552.155,665.145C535.878,675.43 518.721,684.447 500.823,692.055C487.189,697.851 471.415,691.487 465.619,677.854C465.5,677.572 465.385,677.29 465.276,677.006C465.358,677.299 465.435,677.595 465.508,677.892C469.022,692.284 460.191,706.821 445.799,710.335C427.242,714.866 408.122,717.958 388.566,719.483C373.797,720.635 360.87,709.579 359.719,694.81C359.695,694.509 359.677,694.208 359.663,693.909C359.649,694.208 359.629,694.509 359.605,694.81C358.399,709.575 345.432,720.584 330.667,719.378C311.118,717.781 292.009,714.618 273.466,710.017C259.088,706.45 250.311,691.88 253.879,677.501C253.952,677.204 254.031,676.909 254.114,676.617C254.004,676.899 253.888,677.181 253.767,677.462C247.921,691.074 232.123,697.379 218.511,691.533C200.644,683.859 183.52,674.779 167.28,664.433C154.785,656.474 151.104,639.868 159.064,627.373C159.227,627.118 159.393,626.866 159.563,626.617C159.371,626.847 159.175,627.075 158.974,627.301C149.121,638.363 132.14,639.344 121.078,629.491C106.645,616.635 93.254,602.635 81.047,587.633C71.696,576.142 73.434,559.222 84.925,549.872C85.159,549.681 85.396,549.495 85.634,549.314C85.378,549.473 85.119,549.628 84.856,549.779C72.017,557.171 55.592,552.748 48.201,539.909C38.602,523.233 30.3,505.718 23.434,487.501C18.209,473.638 25.221,458.142 39.083,452.917C39.371,452.809 39.659,452.706 39.947,452.608C39.651,452.678 39.352,452.743 39.052,452.803C24.527,455.717 10.369,446.29 7.455,431.765C3.703,413.064 1.403,393.842 0.677,374.22C0.13,359.415 11.705,346.952 26.509,346.405C26.809,346.394 27.109,346.387 27.407,346.386ZM42.422,451.898C55.35,448.853 68.859,455.809 73.667,468.567C79.505,484.055 86.564,498.947 94.726,513.125C101.534,524.951 98.319,539.819 87.735,547.868C99.035,540.856 114.073,543.165 122.686,553.75C133.084,566.528 144.491,578.454 156.784,589.404C166.977,598.483 168.611,613.612 161.099,624.587C169.613,614.371 184.613,611.824 196.124,619.157C209.936,627.957 224.5,635.679 239.697,642.206C252.224,647.587 258.563,661.396 254.936,674.173C259.768,661.802 273.162,654.631 286.395,657.914C302.163,661.826 318.413,664.514 335.037,665.872C348.65,666.984 359.07,678.093 359.668,691.391C360.315,678.095 370.775,667.024 384.392,665.962C401.023,664.665 417.283,662.037 433.065,658.184C446.309,654.95 459.677,662.171 464.463,674.56C460.884,661.77 467.273,647.984 479.821,642.65C495.043,636.179 509.634,628.51 523.478,619.763C535.015,612.472 550.006,615.075 558.483,625.322C551.01,614.319 552.701,599.196 562.926,590.155C575.26,579.249 586.71,567.365 597.155,554.626C605.807,544.072 620.855,541.818 632.128,548.873C621.574,540.786 618.412,525.905 625.264,514.104C633.479,499.955 640.593,485.089 646.488,469.623C651.344,456.884 664.877,449.978 677.792,453.07C665.232,448.755 657.511,435.671 660.242,422.314C663.494,406.411 665.51,390.06 666.188,373.367C666.743,359.72 677.417,348.854 690.68,347.713C677.374,347.608 665.889,337.614 664.268,324.055C662.292,307.517 658.994,291.381 654.484,275.758C650.702,262.659 657.363,249.001 669.545,243.705C656.912,247.815 642.871,242.002 637.021,229.685C629.93,214.754 621.665,200.487 612.347,187.002C604.587,175.773 606.573,160.685 616.466,151.794C605.778,159.714 590.596,158.645 581.143,148.797C569.749,136.926 557.409,125.971 544.245,116.052C533.347,107.841 530.478,92.903 537.06,81.35C529.413,92.225 514.68,95.994 502.608,89.637C488.147,82.02 473.003,75.527 457.293,70.276C444.362,65.953 436.9,52.717 439.455,39.682C435.667,52.414 422.911,60.674 409.45,58.498C393.44,55.91 377.015,54.566 360.278,54.566C343.93,54.566 327.879,55.848 312.221,58.32C298.753,60.445 286.028,52.139 282.287,39.393C284.793,52.437 277.281,65.645 264.335,69.92C248.604,75.113 233.437,81.55 218.949,89.112C206.854,95.425 192.134,91.601 184.528,80.698C191.067,92.275 188.143,107.202 177.215,115.373C164.014,125.244 151.634,136.155 140.197,147.982C130.709,157.795 115.525,158.809 104.866,150.852C114.725,159.78 116.654,174.873 108.853,186.073C99.485,199.525 91.168,213.761 84.022,228.665C78.126,240.961 64.062,246.722 51.445,242.565C63.607,247.905 70.218,261.588 66.388,274.674C61.819,290.281 58.462,306.404 56.424,322.933C54.754,336.485 43.232,346.437 29.925,346.494C43.185,347.682 53.82,358.587 54.324,372.237C54.941,388.934 56.897,405.293 60.09,421.206C62.771,434.574 55,447.632 42.422,451.898Z"
+                                    style="fill:white;" />
+                                <path d="M360.278,55.388L360.278,360.732"
+                                    style="fill:none;stroke:black;stroke-width:52.92px;" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="icon-grid">
+                    <div id="distortionEffect" class="effect-icon" @click="grimoireEffectClick(0);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][0] }">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div id="lossEffect" class="effect-icon" @click="grimoireEffectClick(1);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][1] }">
+                        <i class="fas fa-radio"></i>
+                    </div>
+                    <div id="bitcrushEffect" class="effect-icon" @click="grimoireEffectClick(2);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][2] }">
+                        <i class="fas fa-wave-square"></i>
+                    </div>
+                    <div id="filterEffect" class="effect-icon" @click="grimoireEffectClick(3);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][3] }">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div id="timestretchEffect" class="effect-icon" @click="grimoireEffectClick(4);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][4] }">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div id="delayEffect" class="effect-icon" @click="grimoireEffectClick(5);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][5] }">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div id="combEffect" class="effect-icon" @click="grimoireEffectClick(6);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][6] }">
+                        <i class="fas fa-brush"></i>
+                    </div>
+                    <div id="beatRepeatEffect" class="effect-icon" @click="grimoireEffectClick(7);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][7] }">
+                        <i class="fas fa-redo-alt"></i>
+                    </div>
+                    <div id="reverbEffect" class="effect-icon" @click="grimoireEffectClick(8);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][8] }">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div id="autopanEffect" class="effect-icon" @click="grimoireEffectClick(9);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][9] }">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div id="slowDownEffect" class="effect-icon" @click="grimoireEffectClick(10);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][10] }">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <div id="speedupEffect" class="effect-icon" @click="grimoireEffectClick(11);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][11] }">
+                        <i class="fas fa-running"> </i>
+                    </div>
+                    <div id="reverseEffect" class="effect-icon" @click="grimoireEffectClick(12);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][12] }">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div id="retriggerEffect" class="effect-icon" @click="grimoireEffectClick(13);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][13] }">
+                        <i class="fas fa-braille"></i>
+                    </div>
+                    <div id="retriggerPitchEffect" class="effect-icon" @click="grimoireEffectClick(14);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][14] }">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div id="tapestopEffect" class="effect-icon" @click="grimoireEffectClick(15);"
+                        :class="{bright: settingsGrimoireEffects[grimoireSelected][15] }">
+                        <i class="fas fa-tape"></i>
+                    </div>
+                </div>
+            </div>
+            </p>
+            <p style="text-align: center;">
+                <button class="js-close">Update</button>
+                <button id="bDownloadSettings" class="js-close" @click="submitForm(true);">Download settings</button>
+            </p>
+        </dialog>
+
+        <header>
+            <a href=" /"><img src="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon.png"
+                    style="filter:brightness(100); max-height: 32px; margin-left: -0.25em;float:right; position:relative;padding-right:1em;"></a>
+            <h1 style="margin:0; padding:0; font-size:1.5em;"><a
+                    :href="window.location.protocol+'//'+window.location.host + title + '/'">[[ if .IsZeptocore
+                    ]]zeptocore.com[[else]]ectocore.rocks[[end]]{{title}}</a>
+            </h1>
+            [[ if .IsMain ]]
+            [[ else ]]
+            &nbsp; <a href="#" id="show-dialog"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" class="feather feather-copy">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg></a>&nbsp; <a href="#" id="show-dialog-settings"><svg xmlns="http://www.w3.org/2000/svg"
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                </svg></a>
+            &nbsp; <a href="#" id="opener" v-show="midiIsSetup">
+                <i class="fas fa-terminal" aria-hidden="true"></i>
+            </a>
+            [[ end ]]
+            <span class="hideIfMobile" id="floater">
+
+                <span v-if="midiIsSetup==true">
+                    {{deviceVersion}}
+                    <span v-if="deviceVersion!=latestVersion">-> {{latestVersion}}</span>
+                    <span class="clickable" @click="resetDevice()">
+                        <i class="fas fa-upload" aria-hidden="true"></i>
+                    </span>
+                </span>
+                <span v-else-if="deviceType==''">
+                    <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank"
+                        id="firmwareDownloadLink" style="font-size:1.0em;">[[.VersionCurrent]] <i
+                            class="fa-solid fa-microchip"></i></a>
+                </span>
+                <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
+                    {{deviceFirmwareUpload}}
+                    ...</span>
+                <span v-else-if="deviceType==''"></span>
+                <span v-else>
+                    {{deviceType}} {{deviceVersion}}
+                    <span v-if="deviceVersion!=latestVersion">-> {{latestVersion}}</span>
+                    <span @click="uploadFirmare()" class="clickable">
+                        <span v-if="deviceType=='zeptocore'">
+                            <i class="fas fa-z" aria-hidden="true"></i>
+                        </span>
+                        <span v-if="deviceType=='ectocore'">
+                            <svg width="24px" height="24px" viewBox="0 0 4 4"
+                                style="position: relative; top: 4px; left: 8px;" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+                                <path
+                                    d="M0.08,2.75c0.335,1.355 2.996,1.031 3.229,0.748c0.809,-0.988 0.451,-2.249 -0.568,-2.981c-1.35,-0.825 -2.4,-0.535 -2.609,0.933c-0,0 -0.121,1.024 -0.052,1.3Zm1.449,-2.158c0.092,-0.16 0.462,-0.119 0.826,0.091c0.363,0.21 0.583,0.51 0.491,0.669c-0.092,0.16 -0.462,0.119 -0.826,-0.09c-0.363,-0.21 -0.583,-0.51 -0.491,-0.67Zm-0.948,1.698c-0.183,-0.021 -0.293,-0.376 -0.245,-0.793c0.048,-0.417 0.235,-0.739 0.418,-0.718c0.184,0.021 0.294,0.377 0.246,0.794c-0.048,0.417 -0.236,0.738 -0.419,0.717Z"
+                                    style="fill:#fff;" />
+                            </svg>
+                        </span>
+                        <i class="fas fa-upload" aria-hidden="true"></i>
+
+                    </span>
+                </span>
+                <span>
+                    <a href="https://ectocore.rocks/quickstart" target="_blank" id="manualDownloadLink"
+                        style="font-size:1.0em;"><i class="fa-solid fa-book"></i></a>
+                </span>
+                <span>
+                    <a href="https://getectocore.com" target="_blank" id="getLink" style="font-size:1.0em;"><i
+                            class="fa-solid fa-shopping-cart"></i></a>
+                </span>
+            </span>
+
+        </header>
+        <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
+        <main>
+            <div class="banks-selector">
+                <ul>
+                    <li v-for="(bank, index) in banks" :key="index" @click="selectBank(index)"
+                        :class="{ 'selected': index === selectedBank }">
+                        <span class="mobile-bank-label" v-if="isMobile"></span>
+                        <span class="desktop-bank-label" v-else> <span class="file-count"
+                                v-if="banks[index].files.length>0">{{ banks[index].files.length
+                                }}</span><span v-else>&nbsp;</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div class="content-area">
+                <div class="help-message" v-if="error_message">
+                    <p>Sorry, an error occurred:</p>
+                    <small><em>"{{error_message}}"</em></small>
+                    <p>
+                        Please <a
+                            :href="'https://github.com/schollz/_core/issues/new?title=' + error_message + '&body=' + window.location.pathname"
+                            target="_blank">click here to let me know</a>.
+                    </p>
+                </div>
+                <div class="help-message" v-if="regular_message" style="line-height:2;">
+                    <!-- show little x -->
+                    <i class="fas fa-times" @click="regular_message=''" style="float:right; cursor: pointer;"></i>
+                    <p v-html="regular_message"></p>
+                </div>
+                [[ if .IsUpload ]]
+                <div v-if="!disconnected">
+                    <h2 style="margin-bottom:0; padding-left:1rem;">Bank {{ selectedBank + 1 }}
+                    </h2>
+                </div>
+                [[ end ]]
+
+                [[ if .IsMain ]]
+                <div class="help-banner"
+                    style="box-shadow: 12px 12px 2px 1px var(--hover-color-light); background: var(--background-color);">
+                    <h2>Welcome to [[ if .IsEctocore]] ectocore.rocks[[else]] the zeptocore tool[[end]]</h2>
+                    <p v-if="previousPages.length>0">
+                        Previous workspaces: <span v-for="link in previousPages"><a
+                                :href="window.location.protocol+'//'+window.location.host +'/'+ link">{{link}}</a>&nbsp</span>
+                    </p>
+                    <p>
+                        Use this website to allocate audio files onto the [[ if .IsZeptocore ]]<a
+                            href="https://zeptocore.com">zeptocore</a>[[end]][[ if .IsEctocore ]]<a
+                            href="https://getectocore.com" target="_blank">ectocore</a>[[end]].
+                    </p>
+                    <p>There is no
+                        login necessary*. To get started, simply type in a name that you can remember and
+                        press
+                        enter:
+                        <input v-on:keyup.enter="newURL">
+
+                    </p>
+                    <p>
+                        <em>or</em> click one of these randomly generated URLs: <a
+                            href="/[[.GenURL1]]">[[.GenURL1]]</a>,
+                        <a href="/[[.GenURL2]]">[[.GenURL2]]</a>.
+                    </p>
+                    <p>
+                        Keep in mind: anyone with your URL can access your
+                        data. This makes it easy to share with friends, but if you need to keep your data private by
+                        you should choose a URL that no one can guess, or use the tool offline by
+                        following <a
+                            href="https://github.com/schollz/_core?tab=readme-ov-file#ectocorerocks-offline-usage"
+                            target="_blank">these
+                            instructions</a>.
+                    </p>
+
+                    <div v-if="showCookiePolicy">
+                        <br>
+                        <br>
+                        <h1>Cookie Policy for tool.zeptocore.com</h1>
+                        <p><strong>Last Updated:</strong> January 22nd, 2024</p>
+
+                        <h2>Understanding Cookies</h2>
+                        <p>A cookie is a small text file that our website places on your computer or device
+                            when you
+                            visit.
+                            Cookies are widely used to make websites work or to work more efficiently, as
+                            well as to
+                            provide
+                            information to the site owners.</p>
+
+                        <h2>Use of Cookies on Our Website</h2>
+                        <p>At tool.zeptocore.com, we use cookies exclusively for navigation purposes. This
+                            means
+                            that
+                            the
+                            cookies are essential to help you move around our website and use its features,
+                            such as
+                            accessing secure areas of the site. Without these cookies, some services you
+                            have asked
+                            for,
+                            like navigation between pages, cannot be provided.</p>
+
+                        <h2>Your Consent</h2>
+                        <p>By using our website, you hereby consent to our Cookie Policy and agree to its
+                            terms.
+                            When
+                            you
+                            visit tool.zeptocore.com for the first time, a cookie consent banner will
+                            appear,
+                            allowing
+                            you
+                            to give explicit consent to this policy.</p>
+
+                        <h2>Managing Cookies</h2>
+                        <p>You can manage or delete cookies as you wish. You can delete all cookies that are
+                            already
+                            on
+                            your
+                            computer, and you can set most browsers to prevent them from being placed.
+                            However, if
+                            you
+                            do
+                            this, you may have to manually adjust some preferences every time you visit a
+                            site, and
+                            some
+                            services and functionalities may not work.</p>
+
+                        <h2>Changes to the Cookie Policy</h2>
+                        <p>We may update our Cookie Policy from time to time. We encourage visitors to
+                            frequently
+                            check
+                            this
+                            page for any changes. Your continued use of our site after any change in this
+                            Cookie
+                            Policy
+                            will
+                            constitute your acceptance of such change.</p>
+
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                    </div>
+                </div>
+                [[ end ]]
+
+                [[ if .IsUpload]]
+                <div id="divFileUploader" class=" file-uploader" v-if="!disconnected"
+                    v-bind:class="{ 'height75' : banks[selectedBank].files.length === 0}">
+                    <!-- Add file input for selecting files -->
+                    <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
+                    <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput"
+                        v-bind:class="{ 'height100' : banks[selectedBank].files.length === 0}">
+                        Drop audio files (mp3, wav, flac, xrni, aif) or click to select
+                    </div>
+                </div>
+                <div v-if=" (disconnected)"
+                    style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                    <svg width="300px" height="300px" viewBox="0 0 187.3 93.7" preserveAspectRatio="xMidYMid meet"
+                        style="margin: 0 auto; text-align: center;">
+                        <path stroke="var(--header-footer-background)" id="outline" fill="none" stroke-width="8"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"
+                            d="M93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 				c-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />
+                        <path id="outline-bg" opacity="0.1" fill="none" stroke="var(--header-footer-background)"
+                            stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"
+                            d="				M93.9,46.4c9.3,9.5,13.8,17.9,23.5,17.9s17.5-7.8,17.5-17.5s-7.8-17.6-17.5-17.5c-9.7,0.1-13.3,7.2-22.1,17.1 				c-8.9,8.8-15.7,17.9-25.4,17.9s-17.5-7.8-17.5-17.5s7.8-17.5,17.5-17.5S86.2,38.6,93.9,46.4z" />
+                    </svg>
+
+                    <!-- <img src="/static/Infinity-2.3s-200px.svg" style="margin: 0 auto; text-align: center;"> -->
+                </div>
+
+                <div class="file-list" v-if="banks[selectedBank].files.length > 0 && !disconnected">
+                    <button @click="clearCurrentBank" v-if="banks[selectedBank].files.length > 0"
+                        style="margin-left: 0.5rem;">Remove all</button>
+                    <button @click="selectBankAll"
+                        v-if="banks[selectedBank].files.length > 0 && selectedFiles.length==0"
+                        style="margin-left: 0.0rem;">Select all</button>
+                    <button @click="selectBankNone"
+                        v-if="banks[selectedBank].files.length > 0 && selectedFiles.length>0"
+                        style="margin-left: 0.0rem;">Select none</button>
+                    <!-- <button @click="clearSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Clear
+                        selected</button> -->
+                    <button @click="removeSelectedFiles" v-if="selectedFiles.length > 0" style="margin-left: 0;">Remove
+                        selected</button>
+                    <button @click="mergeSelectedFiles" v-if="selectedFiles.length > 1" style="margin-left: 0;">Merge
+                        selected files</button>
+                    <ul>
+                        <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
+                            @click="showFileDetails(fileIndex)"
+                            :class="{ 'selected': isSelected(fileIndex), 'selected_on':isSelectedAndOpen(fileIndex) }"
+                            :data-file-number="fileIndex + 1">
+                            {{ file.Filename }}
+                            <i v-if="isSelectedAndOpen(fileIndex)" class="fas fa-eye"></i>
+                            <!-- file movers -->
+                            <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile"
+                                style="float:right; z-index:999;">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)" class="hideIfMobile"
+                                style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="file-details" v-if="selectedFile!=null && !disconnected">
+                    <p style="margin-top:0; padding-top: 0.5rem; padding-bottom: 0; margin-bottom: 0;
+                    text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
+                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
+                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(5)*1000)}})
+                    </p>
+                    <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
+                    <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
+
+                    <!-- <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button> -->
+                    <!-- <span v-if="banks[selectedBank].files.length>1">
+                        <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
+                        <button @click="moveFileDown"
+                            :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
+                            Down</button>
+                    </span> -->
+                    <p>
+                        <input type="checkbox" id="channels" @click="updateChannels"
+                            v-model="banks[selectedBank].files[selectedFile].Channels">
+                        <label for="channels">Channels: <span
+                                v-if="banks[selectedBank].files[selectedFile].Channels>0">stereo</span>
+                            <span v-else>mono</span></label>
+                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==0"
+                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==1"
+                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
+                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
+                            <circle cx="16" cy="12" r="10"></circle>
+                            <circle cx="8" cy="12" r="10"></circle>
+                        </svg>
+                    </p>
+                    [[ if .IsZeptocore ]]
+                    <p>
+                        <input type="checkbox" id="oneshot" @click="updateOneshot"
+                            v-model="banks[selectedBank].files[selectedFile].OneShot">
+                        <label for="oneshot">One-shot: <span
+                                v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
+                            <span v-else>off</span></label>
+                    </p>
+                    [[ end ]]
+                    <p v-if="banks[selectedBank].files[selectedFile].OneShot">
+                        <label for="spliceplayback">One-shot mode:</label>
+                        <select id="spliceplayback" @click="updateSplicePlayback"
+                            v-model="banks[selectedBank].files[selectedFile].SplicePlayback">
+                            <option value=0>play-through</option>
+                            <option value=1>stop at end of slice</option>
+                            <option value=2>loop back at end of slice</option>
+                            <option value=3>stop at end of sample</option>
+                            <option value=4>loop back at end of sample</option>
+                        </select>
+                    </p>
+
+                    <p>
+                        <input type="checkbox" id="tempomatch"
+                            v-model="banks[selectedBank].files[selectedFile].TempoMatch" @click="updateTempomatch">
+                        <label for="tempomatch">Tempo matching: <span
+                                v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm
+                                changes
+                                speed)</span>
+                            <span v-else>off</span></label>
+                    </p>
+                    <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
+                        Source BPM: <input class="numberDisplay" type="number"
+                            v-model="banks[selectedBank].files[selectedFile].BPM" @change.prevent="updateBPM($event)">
+                    </p>
+                    <p>
+                        Waveform editing:
+                        <label id="editingSplice">
+                            <input type="radio" value="clickCreateRegion" v-model="regionClickBehavior" checked>
+                            Slice
+                        </label>
+                        <label id="editingKick">
+                            <input type="radio" value="clickCreateKick" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 1.5;">
+                                <g transform="matrix(1,0,0,1,-24.5,-564.5)">
+                                    <g>
+                                        <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
+                                            <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75"
+                                                style="fill: none; stroke: black; stroke-width: 2.04px;">
+                                            </ellipse>
+                                        </g>
+                                        <g transform="matrix(1,0,0,1.33333,0,-191.5)">
+                                            <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75"
+                                                style="fill: none; stroke: black; stroke-width: 1.7px;">
+                                            </ellipse>
+                                        </g>
+                                        <g transform="matrix(1,0,0,0.857143,0,82.2143)">
+                                            <path d="M34.5,575.5L34.5,582.5"
+                                                style="fill: none; stroke: black; stroke-width: 2.15px;"></path>
+                                        </g>
+                                        <path d="M25.5,581.5L28,579.5"
+                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                        <path d="M43.5,581.5L40.5,579.5"
+                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                    </g>
+                                </g>
+                            </svg>
+                        </label>
+                        <label>
+                            <input type="radio" value="clickCreateSnare" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                <g transform="matrix(1,0,0,1,-57,-564)">
+                                    <g>
+                                        <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
+                                            <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75"
+                                                style="fill:none;stroke:black;stroke-width:1.46px;" />
+                                        </g>
+                                        <path d="M58,579C58,579 65.56,584.338 75.5,579"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M61,580.186L61,571.5"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M66.5,581L66.5,572.5"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;" />
+                                        <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
+                                            <path d="M75.5,578.5L75.5,569"
+                                                style="fill:none;stroke:black;stroke-width:1.95px;" />
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg></span>
+                        </label>
+                        <label>
+                            <input type="radio" value="clickCreateTransient" v-model="regionClickBehavior" />
+                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 21 21" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                <g transform="matrix(1,0,0,1,-87.5,-563)">
+                                    <g>
+                                        <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
+                                            <circle cx="98.5" cy="572.5" r="9.5"
+                                                style="fill:none;stroke:black;stroke-width:2.03px;" />
+                                        </g>
+                                        <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573"
+                                            style="fill:none;stroke:black;stroke-width:2px;" />
+                                    </g>
+                                </g>
+                            </svg></span>
+                        </label>
+                        <span v-if="regionClickBehavior!='clickCreateRegion'">
+                            <button @click="deleteTransientsLast" style="margin-left:0;">Clear last</button>
+                            <button @click="deleteTransients" style="margin-left:0;">Clear all</button>
+                        </span>
+                        <span v-else>
+                            <button @click="deleteRegion" style="margin-left:0;">Clear last played</button>
+                            <button @click="deleteAllRegions" style="margin-left:0;">Clear all</button>
+                        </span>
+                    </p>
+
+                    <p v-if="regionClickBehavior=='clickCreateRegion'">
+                        <label>
+                            Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
+                                style="width:3em;" />
+                        </label>
+                        <button @click="createRegionsEvenly" style="margin-left:0;">Create
+                            evenly</button>
+                        <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
+                            transients</button>
+                    </p>
+
+                    <div id="waveform-parent">
+                        <div id="waveform"></div>
+                        <p style="display: flex; align-items: center;">
+                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="playingSample">Stop
+                                sample</button>
+                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="!playingSample">Play
+                                sample</button>
+                            <label style="margin-left:1em;">Zoom:</label>
+                            <input id="wsfzoom" type="range" min="10" max="5000" value="10">
+                        </p>
+
+                        <p>
+                            <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
+                                v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
+                            <label for="variablesplices">Variable: <span
+                                    v-if="banks[selectedBank].files[selectedFile].SpliceVariable">on</span>
+                                <span v-else>off</span></label>&nbsp;
+                            <label
+                                v-bind:class="(banks[selectedBank].files[selectedFile].SpliceVariable==true)?'grayed':'not-grayed'">
+                                Pulses per slice <small>(192 ppqn)</small>: <input
+                                    :disabled="banks[selectedBank].files[selectedFile].SpliceVariable==true"
+                                    id="slicesPerBeat" type="number" min="1" step="1" value=1 style="width:4em;"
+                                    v-model="banks[selectedBank].files[selectedFile].SpliceTrigger"
+                                    @change.prevent="updateSlicesPerBeat($event)" />
+                            </label>
+
+
+                        </p>
+                    </div>
+                </div>
+
+                [[end ]]
+            </div>
+        </main>
+        <footer>
+            [[ if .IsUpload ]]
+            <form id="downloadForm" @submit.prevent="doSubmitForm">
+                <div class="footer-row">
+                    <!-- <div class="footer-item">
+                        <label for=" oversampling">Oversampling:</label>
+                        <select id="oversampling" v-model="oversampling">
+                            <option value="1x">1x</option>
+                            <option value="2x">2x</option>
+                            <option value="4x">4x</option>
+                        </select>
+                    </div> -->
+                    <!-- <div class="footer-item">
+                        <label for="stereoMono">&nbsp;Mono/Stereo:</label>
+                        <select id="stereoMono" v-model="stereoMono">
+                            <option value="stereo">Stereo</option>
+                            <option value="mono">Mono</option>
+                        </select>
+                    </div> -->
+                    <!-- <div class="footer-item">
+                        <label for="resampling">Resampling:</label>
+                        <select id="resampling" v-model="resampling">
+                            <option value="linear">Linear</option>
+                            <option value="quadratic">Quadratic</option>
+                        </select>
+                    </div> -->
+
+                    <div class="footer-item">
+                        <div v-if="uploading">uploading</div>
+                        <div v-else-if="isworking">computing</div>
+                        <div v-else-if="processing">processing</div>
+                        <div v-else-if="downloading">downloading</div>
+                        <button id="downloadZipButton" type="submit" v-else-if="diskUsage>0">Download .zip to load onto
+                            SD card ({{
+                            formatBytes(diskUsage)
+                            }})</button>
+
+                    </div>
+                    [[ if .IsZeptocore]]
+                    <div class="footer-item footer-right">
+                        <label for="dropaudiofilemode">Drop audio file mode:</label>
+                        <select id="dropaudiofilemode" v-model="dropaudiofilemode">
+                            <option value="default">default</option>
+                            <option value="oneshot">oneshot</option>
+                        </select>
+                    </div>
+                    [[ end ]]
+                </div>
+
+            </form>
+            [[ end ]]
+            <div style="margin-left: auto;">
+                <a id="windows_core"
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_windows_'+latestVersion+'.exe'">
+                    <i class="fa-brands fa-windows"></i>
+                </a>
+                <a id="macos_core"
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_macos_aarch64_'+latestVersion">
+                    <i class="fa-brands fa-apple"></i>
+                </a>
+                <a id="linux_core"
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ecto[[end]]core_linux_amd64_'+latestVersion">
+                    <i class="fa-brands fa-linux"></i>
+                </a>
+            </div>
+        </footer>
+        <div id="cookieConsentContainer" class="cookie-consent-container">
+            <div class="content-container">
+                <p>This website uses cookies to ensure you get the best experience on our website. <a href="#"
+                        @click.prevent="showCookiePolicy=true">Learn
+                        more</a>.</p>
+                <div class="button-container">
+                    <button id="cookieConsentButton" class="cookie-consent-button">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script src="/static/humanize-duration.min.js"></script>
+    <script src="/static/vue.js"></script>
+    <script src="/static/jquery-3.6.0.js"></script>
+    <script src="/static/jquery-ui.js"></script>
+    <script src="/static/popper.min.js"></script>
+    <script src="/static/tippy-bundle.umd.min.js"></script>
+    <script type="module">
+        import { WaveSurferG, RegionsPluginG } from "/static/waves.js";
+        window.WaveSurf = WaveSurferG;
+        window.RegionsPlugin = RegionsPluginG;
+    </script>
+    <script>
+        // global constants
+        const isZeptocore = [[ if .IsZeptocore ]]true[[ else]]false[[end]];
+    </script>
+    <script src="/static/app.js"></script>
+    <script>
+        $(function () {
+            $("#dialog2").dialog({
+                autoOpen: false,
+                resizable: true,
+                width: 350,
+                height: 240, // Initial height
+                open: function () {
+                    var consoleElement = $('#consoleprint');
+                    var scrollableElement = $('#scrollable-content');
+                    var headerHeight = $(this).find(".ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 20; // Adjust based on your dialog's styling
+
+                    // Clear the console when the dialog opens
+                    consoleElement.html('');
+
+                    // Initial max-height setup for scrollable content
+                    var maxContentHeight = $(this).outerHeight() - headerHeight - paddingAndBorderAdjustment;
+                    scrollableElement.css('max-height', maxContentHeight + 'px');
+                    midiGetVersion();
+                },
+                resize: function (event, ui) {
+                    var dialogHeight = ui.size.height;
+                    var headerHeight = $("#dialog2 .ui-dialog-titlebar").outerHeight() || 0;
+                    var paddingAndBorderAdjustment = 60; // Adjust this value based on your dialog's padding and border
+
+                    // Set the max-height of the scrollable content during resize
+                    var maxContentHeight = dialogHeight - headerHeight - paddingAndBorderAdjustment;
+                    $('#scrollable-content').css('max-height', maxContentHeight + 'px');
+                },
+                show: {
+                    effect: "fade",
+                    duration: 200
+                },
+                hide: {
+                    effect: "fade",
+                    duration: 200
+                }
+            });
+
+            $("#opener").on("click", function () {
+                $("#dialog2").dialog("open");
+            });
+        });
+        function isChrome() {
+            return navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+        }
+
+        window.onload = function () {
+
+            // Display the browser banner if not using Chrome
+            if (!isChrome()) {
+                document.getElementById('browserBanner').style.display = 'block';
+            }
+            let consent = localStorage.getItem('cookieConsent');
+            if (!consent) {
+                document.getElementById('cookieConsentContainer').style.display = 'block';
+            }
+
+            document.getElementById('cookieConsentButton').onclick = function () {
+                localStorage.setItem('cookieConsent', 'true');
+                document.getElementById('cookieConsentContainer').style.display = 'none';
+            };
+            document.getElementById("show-dialog").addEventListener("click", () => {
+                document.getElementById("dialog").showModal();
+            });
+            document.getElementById("show-dialog-settings").addEventListener("click", () => {
+                document.getElementById("dialog-settings").showModal();
+            });
+            // close dialog settings when pressing X 
+            document.getElementById("close-settings").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("dialog-settings").close();
+            });
+            // close dialog-settings when clicking outside
+            document.getElementById("dialog-settings").addEventListener("click", (e) => {
+                if (e.target === document.getElementById("dialog-settings")) {
+                    document.getElementById("dialog-settings").close();
+                }
+            });
+            // close dialog when clicking "update"
+            // add to each .js-close in #dialog-settings
+            document.getElementById("dialog-settings").querySelectorAll(".js-close").forEach(closer => {
+                closer.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    document.getElementById("dialog-settings").close();
+                });
+            });
+
+            document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("dialog").close();
+                console.log('closed');
+                if (socket != null && document.getElementById("dialogtext").value != "") {
+                    socket.send(JSON.stringify({
+                        action: "copyworkspace",
+                        place: window.location.pathname,
+                        message: document.getElementById("dialogtext").value,
+                    }));
+                }
+            });
+
+            // // show settings dialog (for debugging)
+            // document.getElementById("dialog-settings").showModal();
+        };
+    </script>
+
+
+
+</body>
+
+</html>
