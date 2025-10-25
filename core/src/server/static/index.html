@@ -48,6 +48,7 @@
             --header-footer-background: #1a1a1a;
             --banks-background: #b0b0b0;
             --highlight-color: #b0b0b0;
+            --highlight-color-border: #d4af37;
             --highlight-color-darker: #808080;
             --highlight-color-darkerer: #505050;
             --hover-color: #909090;
@@ -134,14 +135,16 @@
                     </select>
                 </p>
                 <p id="pSettingsClockOutput" style="margin: 0.25em 0;">
-                    <label for="settingsClockOutput" style="display: block; margin-bottom: 0.25em;">Outgoing clock type</label>
+                    <label for="settingsClockOutput" style="display: block; margin-bottom: 0.25em;">Outgoing clock
+                        type</label>
                     <select id="settingsClockOutput" v-model="settingsClockOutput" style="width: 100%;">
                         <option value="trig">trig</option>
                         <option value="gate">gate</option>
                     </select>
                 </p>
                 <p id="pSettingsClockBehaviorSync" style="margin: 0.25em 0;">
-                    <label for="settingsClockBehaviorSync" style="display: block; margin-bottom: 0.25em;">Outgoing clock behavior</label>
+                    <label for="settingsClockBehaviorSync" style="display: block; margin-bottom: 0.25em;">Outgoing clock
+                        behavior</label>
                     <select id="settingsClockBehaviorSync" v-model="settingsClockBehaviorSync" style="width: 100%;">
                         <option value="tempo">sync with tempo</option>
                         <option value="slice">sync with slice</option>
@@ -150,7 +153,8 @@
                 <p id="pSettingsAmenCV" style="margin: 0.25em 0;">
                     <label for="settingsAmenCV" style="display: block; margin-bottom: 0.25em;"
                         :class="{ 'grayed': settingsOverrideWithReset === 'amen' }">Amen CV polarity</label>
-                    <select id="settingsAmenCV" v-model="settingsAmenCV" :disabled="settingsOverrideWithReset === 'amen'" style="width: 100%;">
+                    <select id="settingsAmenCV" v-model="settingsAmenCV"
+                        :disabled="settingsOverrideWithReset === 'amen'" style="width: 100%;">
                         <option value="bipolar">bipolar (-5 to +5v)</option>
                         <option value="unipolar">unipolar (0 to +5v)</option>
                     </select>
@@ -162,7 +166,8 @@
                         :disabled="settingsOverrideWithReset === 'amen'" style="width: 100%;">
                         <option value="jump">jump on change</option>
                         <option value="repeat">repeat at CV</option>
-                        <option v-if="settingsAmenCV=='bipolar'" value="split">split: &lt;0v repeat, &ge;0v jump</option>
+                        <option v-if="settingsAmenCV=='bipolar'" value="split">split: &lt;0v repeat, &ge;0v jump
+                        </option>
                     </select>
                 </p>
                 <p id="pSettingsBreakCV" style="margin: 0.25em 0;">
@@ -184,15 +189,16 @@
                     </select>
                 </p>
                 <p id="pSettingsOverrideWithReset" style="margin: 0.25em 0;">
-                    <label for="settingsOverrideWithReset" style="display: block; margin-bottom: 0.25em;">Reset CV (Override)</label>
+                    <label for="settingsOverrideWithReset" style="display: block; margin-bottom: 0.25em;">Reset CV
+                        (Override)</label>
                     <select id="settingsOverrideWithReset" v-model="settingsOverrideWithReset" style="width: 100%;">
                         <option value="none">None</option>
                         <option value="amen">Amen CV</option>
                         <option value="break">Break CV</option>
                         <option value="sample">Sample CV</option>
                         <option value="clk">Incoming Clock</option>
-                </select>
-            </p>
+                    </select>
+                </p>
             </div>
 
             <!-- slider for brightness-->
