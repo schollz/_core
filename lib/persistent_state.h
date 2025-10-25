@@ -44,7 +44,7 @@ void __not_in_flash_func(PersistentState_save)(uint8_t bank, uint8_t sample) {
 
 // Load and validate the bank and sample from flash
 // Returns true if valid data was loaded, false otherwise
-bool PersistentState_load(uint8_t *bank, uint8_t *sample, uint8_t max_banks, uint8_t *banks_with_samples, uint8_t banks_with_samples_num, SampleList **banks_list) {
+bool __not_in_flash_func(PersistentState_load)(uint8_t *bank, uint8_t *sample, uint8_t max_banks, uint8_t *banks_with_samples, uint8_t banks_with_samples_num, SampleList **banks_list) {
   PersistentState state;
   read_struct_from_flash(&state, sizeof(PersistentState));
   
