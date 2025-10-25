@@ -44,15 +44,16 @@
     <style>
         /** ectocore **/
         :root {
-            --background-color: #e6eeff;
-            --header-footer-background: #5282d9;
-            --banks-background: #94acda;
-            --highlight-color: #94acda;
-            --highlight-color-darker: #7799d6;
-            --highlight-color-darkerer: #5577c6;
-            --hover-color: #93a6c9;
-            --hover-color-light: #c3d1f0;
-            --other-color: #3478ff;
+            --background-color: #f0f0f0;
+            --header-footer-background: #1a1a1a;
+            --banks-background: #b0b0b0;
+            --highlight-color: #b0b0b0;
+            --highlight-color-darker: #808080;
+            --highlight-color-darkerer: #505050;
+            --hover-color: #909090;
+            --hover-color-light: #d0d0d0;
+            --other-color: #000000;
+            --shadow-color: #00000015;
         }
     </style>
     [[ end ]]
@@ -497,8 +498,9 @@
         </dialog>
 
         <header>
-            <a href=" /"><img src="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon.png"
-                    style="filter:brightness(100); max-height: 32px; margin-left: -0.25em;float:right; position:relative;padding-right:1em;"></a>
+            <a href=" /" id="headerIcon"
+                style="max-height: 32px; margin-left: -0.25em;float:right; position:relative;padding-right:1em;">
+            </a>
             <h1 style="margin:0; padding:0; font-size:1.5em;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">[[ if .IsZeptocore
                     ]]zeptocore.com[[else]]ectocore.rocks[[end]]{{title}}</a>
@@ -968,7 +970,7 @@
                             <input id="wsfzoom" type="range" min="10" max="5000" value="10">
                         </p>
 
-                        <p>
+                        <p style="display:none;">
                             <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
                                 v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
                             <label for="variablesplices">Variable: <span
@@ -1086,6 +1088,46 @@
     <script>
         // global constants
         const isZeptocore = [[ if .IsZeptocore ]]true[[ else]]false[[end]];
+
+        // Simple hash function for strings
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Set header icon based on URL hash
+        function setHeaderIcon() {
+            const url = window.location.pathname;
+            const grimoireIndex = hashCode(url) % 7; // 7 grimoires (0-6)
+
+            // Get the grimoire element
+            const grimoireElement = document.getElementById('grimoire' + grimoireIndex);
+            if (grimoireElement) {
+                const svgClone = grimoireElement.querySelector('svg').cloneNode(true);
+                svgClone.setAttribute('width', '32');
+                svgClone.setAttribute('height', '32');
+                // Change stroke color to white - set on SVG element so inherit works
+                svgClone.style.stroke = 'white';
+
+                const headerIcon = document.getElementById('headerIcon');
+                if (headerIcon) {
+                    headerIcon.innerHTML = '';
+                    headerIcon.appendChild(svgClone);
+                }
+            }
+        }
+
+        // Set icon when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setHeaderIcon);
+        } else {
+            setHeaderIcon();
+        }
     </script>
     <script src="/static/app.js"></script>
     <script>
@@ -1138,19 +1180,24 @@
 
         window.onload = function () {
 
-            // Display the browser banner if not using Chrome
-            if (!isChrome()) {
-                document.getElementById('browserBanner').style.display = 'block';
-            }
             let consent = localStorage.getItem('cookieConsent');
             if (!consent) {
-                document.getElementById('cookieConsentContainer').style.display = 'block';
+                const cookieConsentContainer = document.getElementById('cookieConsentContainer');
+                if (cookieConsentContainer) {
+                    cookieConsentContainer.style.display = 'block';
+                }
             }
 
-            document.getElementById('cookieConsentButton').onclick = function () {
-                localStorage.setItem('cookieConsent', 'true');
-                document.getElementById('cookieConsentContainer').style.display = 'none';
-            };
+            const cookieConsentButton = document.getElementById('cookieConsentButton');
+            if (cookieConsentButton) {
+                cookieConsentButton.onclick = function () {
+                    localStorage.setItem('cookieConsent', 'true');
+                    const cookieConsentContainer = document.getElementById('cookieConsentContainer');
+                    if (cookieConsentContainer) {
+                        cookieConsentContainer.style.display = 'none';
+                    }
+                };
+            }
             document.getElementById("show-dialog").addEventListener("click", () => {
                 document.getElementById("dialog").showModal();
             });

@@ -507,7 +507,7 @@ a {
 }
 
 .file-details {
-    box-shadow: 3px 3px 2px 1px #bdafedaa;
+    box-shadow: 3px 3px 2px 1px var(--shadow-color);
 }
 
 .cookie-consent-container {
@@ -846,4 +846,42 @@ footer select {
 
 #dialog-settings>p>select {
     padding: 0.25em;
+}
+
+/* Override jQuery UI blue colors with theme colors */
+.ui-visual-focus {
+    box-shadow: 0 0 3px 1px var(--header-footer-background) !important;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    border: 1px solid var(--header-footer-background) !important;
+    background: var(--header-footer-background) !important;
+    color: #ffffff !important;
+}
+
+.ui-icon-background,
+.ui-state-active .ui-icon-background {
+    border: var(--header-footer-background) !important;
+    background-color: #ffffff !important;
+}
+
+.ui-state-checked {
+    border: 1px solid var(--header-footer-background) !important;
+    background: var(--header-footer-background) !important;
+}
+
+/* Style checkboxes and radio buttons */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    accent-color: var(--header-footer-background);
+}
+
+/* Style range sliders */
+input[type="range"] {
+    accent-color: var(--header-footer-background);
 }
