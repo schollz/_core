@@ -796,9 +796,15 @@
                     </ul>
                 </div>
 
-                <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected"
-                    @click="selectedFile=null"></div>
-                <div class="file-details" v-if="selectedFile!=null && !disconnected" @click.stop>
+                <transition name="modal-fade">
+                    <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected"
+                        :class="{ 'loaded': waveformLoaded }"
+                        @click="selectedFile=null"></div>
+                </transition>
+                <transition name="modal-fade">
+                    <div class="file-details" v-if="selectedFile!=null && !disconnected"
+                        :class="{ 'loaded': waveformLoaded }"
+                        @click.stop>
                     <p style="margin-top:0; margin-bottom: 0;
                     text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
                         banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
@@ -1001,6 +1007,7 @@
                         </p>
                     </div>
                 </div>
+                </transition>
 
                 [[end ]]
             </div>
