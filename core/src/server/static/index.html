@@ -49,6 +49,7 @@
             --banks-background: #b0b0b0;
             --highlight-color: #b0b0b0;
             --highlight-color-border: #d4af37;
+            --waveform-color: #aaa9ad;
             --highlight-color-darker: #808080;
             --highlight-color-darkerer: #505050;
             --hover-color: #909090;
@@ -798,215 +799,216 @@
 
                 <transition name="modal-fade">
                     <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected"
-                        :class="{ 'loaded': waveformLoaded }"
-                        @click="selectedFile=null"></div>
+                        :class="{ 'loaded': waveformLoaded }" @click="selectedFile=null"></div>
                 </transition>
                 <transition name="modal-fade">
                     <div class="file-details" v-if="selectedFile!=null && !disconnected"
-                        :class="{ 'loaded': waveformLoaded }"
-                        @click.stop>
-                    <p style="margin-top:0; margin-bottom: 0;
+                        :class="{ 'loaded': waveformLoaded }" @click.stop>
+                        <p style="margin-top:0; margin-bottom: 0;
                     text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
-                        banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
-                        {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(5)*1000)}})
-                    </p>
-                    <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
+                            banks[selectedBank].files[selectedFile].SliceStart.length }} slices,
+                            {{humanizeDuration((banks[selectedBank].files[selectedFile].Duration).toFixed(5)*1000)}})
+                        </p>
+                        <!-- <p><strong>Name:</strong> {{ banks[selectedBank].files[selectedFile].Filename }}</p>
                     <p><strong>Duration:</strong> {{ banks[selectedBank].files[selectedFile].Duration }} seconds</p> -->
 
-                    <!-- <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button> -->
-                    <!-- <span v-if="banks[selectedBank].files.length>1">
+                        <!-- <button @click="removeSelectedFile" style="margin-left:0;">Remove sample</button> -->
+                        <!-- <span v-if="banks[selectedBank].files.length>1">
                         <button @click="moveFileUp" :disabled="selectedFile === 0">Move Up</button>
                         <button @click="moveFileDown"
                             :disabled="selectedFile === banks[selectedBank].files.length - 1">Move
                             Down</button>
                     </span> -->
-                    <p>
-                        <input type="checkbox" id="channels" @click="updateChannels"
-                            v-model="banks[selectedBank].files[selectedFile].Channels">
-                        <label for="channels">Channels: <span
-                                v-if="banks[selectedBank].files[selectedFile].Channels>0">stereo</span>
-                            <span v-else>mono</span></label>
-                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==0"
-                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
-                            <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
-                        <svg v-if="banks[selectedBank].files[selectedFile].Channels==1"
-                            style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg" width="32"
-                            height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle">
-                            <circle cx="16" cy="12" r="10"></circle>
-                            <circle cx="8" cy="12" r="10"></circle>
-                        </svg>
-                    </p>
-                    [[ if .IsZeptocore ]]
-                    <p>
-                        <input type="checkbox" id="oneshot" @click="updateOneshot"
-                            v-model="banks[selectedBank].files[selectedFile].OneShot">
-                        <label for="oneshot">One-shot: <span
-                                v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
-                            <span v-else>off</span></label>
-                    </p>
-                    [[ end ]]
-                    <p v-if="banks[selectedBank].files[selectedFile].OneShot">
-                        <label for="spliceplayback">One-shot mode:</label>
-                        <select id="spliceplayback" @click="updateSplicePlayback"
-                            v-model="banks[selectedBank].files[selectedFile].SplicePlayback">
-                            <option value=0>play-through</option>
-                            <option value=1>stop at end of slice</option>
-                            <option value=2>loop back at end of slice</option>
-                            <option value=3>stop at end of sample</option>
-                            <option value=4>loop back at end of sample</option>
-                        </select>
-                    </p>
-
-                    <p>
-                        <input type="checkbox" id="tempomatch"
-                            v-model="banks[selectedBank].files[selectedFile].TempoMatch" @click="updateTempomatch">
-                        <label for="tempomatch">Tempo matching: <span
-                                v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm
-                                changes
-                                speed)</span>
-                            <span v-else>off</span></label>
-                    </p>
-                    <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
-                        Source BPM: <input class="numberDisplay" type="number"
-                            v-model="banks[selectedBank].files[selectedFile].BPM" @change.prevent="updateBPM($event)">
-                    </p>
-                    <p>
-                        Waveform editing:
-                        <label id="editingSplice">
-                            <input type="radio" value="clickCreateRegion" v-model="regionClickBehavior" checked>
-                            Slice
-                        </label>
-                        <label id="editingKick">
-                            <input type="radio" value="clickCreateKick" v-model="regionClickBehavior" />
-                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
-                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
-                                style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 1.5;">
-                                <g transform="matrix(1,0,0,1,-24.5,-564.5)">
-                                    <g>
-                                        <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
-                                            <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75"
-                                                style="fill: none; stroke: black; stroke-width: 2.04px;">
-                                            </ellipse>
-                                        </g>
-                                        <g transform="matrix(1,0,0,1.33333,0,-191.5)">
-                                            <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75"
-                                                style="fill: none; stroke: black; stroke-width: 1.7px;">
-                                            </ellipse>
-                                        </g>
-                                        <g transform="matrix(1,0,0,0.857143,0,82.2143)">
-                                            <path d="M34.5,575.5L34.5,582.5"
-                                                style="fill: none; stroke: black; stroke-width: 2.15px;"></path>
-                                        </g>
-                                        <path d="M25.5,581.5L28,579.5"
-                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
-                                        <path d="M43.5,581.5L40.5,579.5"
-                                            style="fill: none; stroke: black; stroke-width: 2px;"></path>
-                                    </g>
-                                </g>
+                        <p>
+                            <input type="checkbox" id="channels" @click="updateChannels"
+                                v-model="banks[selectedBank].files[selectedFile].Channels">
+                            <label for="channels">Channels: <span
+                                    v-if="banks[selectedBank].files[selectedFile].Channels>0">stereo</span>
+                                <span v-else>mono</span></label>
+                            <svg v-if="banks[selectedBank].files[selectedFile].Channels==0"
+                                style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg"
+                                width="32" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="feather feather-circle">
+                                <circle cx="12" cy="12" r="10"></circle>
                             </svg>
-                        </label>
-                        <label>
-                            <input type="radio" value="clickCreateSnare" v-model="regionClickBehavior" />
-                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
-                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
-                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
-                                <g transform="matrix(1,0,0,1,-57,-564)">
-                                    <g>
-                                        <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
-                                            <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75"
-                                                style="fill:none;stroke:black;stroke-width:1.46px;" />
-                                        </g>
-                                        <path d="M58,579C58,579 65.56,584.338 75.5,579"
-                                            style="fill:none;stroke:black;stroke-width:2px;" />
-                                        <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;" />
-                                        <path d="M61,580.186L61,571.5"
-                                            style="fill:none;stroke:black;stroke-width:2px;" />
-                                        <path d="M66.5,581L66.5,572.5"
-                                            style="fill:none;stroke:black;stroke-width:2px;" />
-                                        <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;" />
-                                        <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
-                                            <path d="M75.5,578.5L75.5,569"
-                                                style="fill:none;stroke:black;stroke-width:1.95px;" />
-                                        </g>
-                                    </g>
-                                </g>
-                            </svg></span>
-                        </label>
-                        <label>
-                            <input type="radio" value="clickCreateTransient" v-model="regionClickBehavior" />
-                            <svg class="svgicon" width="20px" height="19px" viewBox="0 0 21 21" version="1.1"
-                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                xml:space="preserve" xmlns:serif="http://www.serif.com/"
-                                style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
-                                <g transform="matrix(1,0,0,1,-87.5,-563)">
-                                    <g>
-                                        <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
-                                            <circle cx="98.5" cy="572.5" r="9.5"
-                                                style="fill:none;stroke:black;stroke-width:2.03px;" />
-                                        </g>
-                                        <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573"
-                                            style="fill:none;stroke:black;stroke-width:2px;" />
-                                    </g>
-                                </g>
-                            </svg></span>
-                        </label>
-                        <span v-if="regionClickBehavior!='clickCreateRegion'">
-                            <button @click="deleteTransientsLast" style="margin-left:0;">Clear last</button>
-                            <button @click="deleteTransients" style="margin-left:0;">Clear all</button>
-                        </span>
-                        <span v-else>
-                            <button @click="deleteRegion" style="margin-left:0;">Clear last played</button>
-                            <button @click="deleteAllRegions" style="margin-left:0;">Clear all</button>
-                        </span>
-                    </p>
-
-                    <p v-if="regionClickBehavior=='clickCreateRegion'">
-                        <label>
-                            Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
-                                style="width:3em;" />
-                        </label>
-                        <button @click="createRegionsEvenly" style="margin-left:0;">Create
-                            evenly</button>
-                        <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
-                            transients</button>
-                    </p>
-
-                    <div id="waveform-parent">
-                        <div id="waveform"></div>
-                        <p style="display: flex; align-items: center;">
-                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="playingSample">Stop
-                                sample</button>
-                            <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="!playingSample">Play
-                                sample</button>
-                            <label style="margin-left:1em;">Zoom:</label>
-                            <input id="wsfzoom" type="range" min="10" max="5000" value="10">
+                            <svg v-if="banks[selectedBank].files[selectedFile].Channels==1"
+                                style="position:relative;top:7px;left:-6px;" xmlns="http://www.w3.org/2000/svg"
+                                width="32" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--other-color)"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="feather feather-circle">
+                                <circle cx="16" cy="12" r="10"></circle>
+                                <circle cx="8" cy="12" r="10"></circle>
+                            </svg>
+                        </p>
+                        [[ if .IsZeptocore ]]
+                        <p>
+                            <input type="checkbox" id="oneshot" @click="updateOneshot"
+                                v-model="banks[selectedBank].files[selectedFile].OneShot">
+                            <label for="oneshot">One-shot: <span
+                                    v-if="banks[selectedBank].files[selectedFile].OneShot">on</span>
+                                <span v-else>off</span></label>
+                        </p>
+                        [[ end ]]
+                        <p v-if="banks[selectedBank].files[selectedFile].OneShot">
+                            <label for="spliceplayback">One-shot mode:</label>
+                            <select id="spliceplayback" @click="updateSplicePlayback"
+                                v-model="banks[selectedBank].files[selectedFile].SplicePlayback">
+                                <option value=0>play-through</option>
+                                <option value=1>stop at end of slice</option>
+                                <option value=2>loop back at end of slice</option>
+                                <option value=3>stop at end of sample</option>
+                                <option value=4>loop back at end of sample</option>
+                            </select>
                         </p>
 
-                        <p style="display:none;">
-                            <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
-                                v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
-                            <label for="variablesplices">Variable: <span
-                                    v-if="banks[selectedBank].files[selectedFile].SpliceVariable">on</span>
-                                <span v-else>off</span></label>&nbsp;
-                            <label
-                                v-bind:class="(banks[selectedBank].files[selectedFile].SpliceVariable==true)?'grayed':'not-grayed'">
-                                Pulses per slice <small>(192 ppqn)</small>: <input
-                                    :disabled="banks[selectedBank].files[selectedFile].SpliceVariable==true"
-                                    id="slicesPerBeat" type="number" min="1" step="1" value=1 style="width:4em;"
-                                    v-model="banks[selectedBank].files[selectedFile].SpliceTrigger"
-                                    @change.prevent="updateSlicesPerBeat($event)" />
+                        <p>
+                            <input type="checkbox" id="tempomatch"
+                                v-model="banks[selectedBank].files[selectedFile].TempoMatch" @click="updateTempomatch">
+                            <label for="tempomatch">Tempo matching: <span
+                                    v-if="banks[selectedBank].files[selectedFile].TempoMatch">on (changing bpm
+                                    changes
+                                    speed)</span>
+                                <span v-else>off</span></label>
+                        </p>
+                        <p v-if="banks[selectedBank].files[selectedFile].TempoMatch">
+                            Source BPM: <input class="numberDisplay" type="number"
+                                v-model="banks[selectedBank].files[selectedFile].BPM"
+                                @change.prevent="updateBPM($event)">
+                        </p>
+                        <p>
+                            Waveform editing:
+                            <label id="editingSplice">
+                                <input type="radio" value="clickCreateRegion" v-model="regionClickBehavior" checked>
+                                Slice
                             </label>
-
-
+                            <label id="editingKick">
+                                <input type="radio" value="clickCreateKick" v-model="regionClickBehavior" />
+                                <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                    style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 1.5;">
+                                    <g transform="matrix(1,0,0,1,-24.5,-564.5)">
+                                        <g>
+                                            <g transform="matrix(1,0,0,0.957143,-1,23.2786)">
+                                                <ellipse cx="35.25" cy="575.25" rx="8.25" ry="8.75"
+                                                    style="fill: none; stroke: black; stroke-width: 2.04px;">
+                                                </ellipse>
+                                            </g>
+                                            <g transform="matrix(1,0,0,1.33333,0,-191.5)">
+                                                <ellipse cx="34.5" cy="575.25" rx="1" ry="0.75"
+                                                    style="fill: none; stroke: black; stroke-width: 1.7px;">
+                                                </ellipse>
+                                            </g>
+                                            <g transform="matrix(1,0,0,0.857143,0,82.2143)">
+                                                <path d="M34.5,575.5L34.5,582.5"
+                                                    style="fill: none; stroke: black; stroke-width: 2.15px;"></path>
+                                            </g>
+                                            <path d="M25.5,581.5L28,579.5"
+                                                style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                            <path d="M43.5,581.5L40.5,579.5"
+                                                style="fill: none; stroke: black; stroke-width: 2px;"></path>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </label>
+                            <label>
+                                <input type="radio" value="clickCreateSnare" v-model="regionClickBehavior" />
+                                <svg class="svgicon" width="20px" height="19px" viewBox="0 0 20 19" version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                    <g transform="matrix(1,0,0,1,-57,-564)">
+                                        <g>
+                                            <g transform="matrix(1.45833,0,0,1.27273,-34.6042,-156)">
+                                                <ellipse cx="69.5" cy="569.25" rx="6" ry="2.75"
+                                                    style="fill:none;stroke:black;stroke-width:1.46px;" />
+                                            </g>
+                                            <path d="M58,579C58,579 65.56,584.338 75.5,579"
+                                                style="fill:none;stroke:black;stroke-width:2px;" />
+                                            <path d="M58,579L58,569" style="fill:none;stroke:black;stroke-width:2px;" />
+                                            <path d="M61,580.186L61,571.5"
+                                                style="fill:none;stroke:black;stroke-width:2px;" />
+                                            <path d="M66.5,581L66.5,572.5"
+                                                style="fill:none;stroke:black;stroke-width:2px;" />
+                                            <path d="M72,580L72,572" style="fill:none;stroke:black;stroke-width:2px;" />
+                                            <g transform="matrix(1,0,0,1.05263,0,-29.9474)">
+                                                <path d="M75.5,578.5L75.5,569"
+                                                    style="fill:none;stroke:black;stroke-width:1.95px;" />
+                                            </g>
+                                        </g>
+                                    </g>
+                                </svg></span>
+                            </label>
+                            <label>
+                                <input type="radio" value="clickCreateTransient" v-model="regionClickBehavior" />
+                                <svg class="svgicon" width="20px" height="19px" viewBox="0 0 21 21" version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                                    <g transform="matrix(1,0,0,1,-87.5,-563)">
+                                        <g>
+                                            <g transform="matrix(1,0,0,0.973684,-0.5,15.8158)">
+                                                <circle cx="98.5" cy="572.5" r="9.5"
+                                                    style="fill:none;stroke:black;stroke-width:2.03px;" />
+                                            </g>
+                                            <path d="M89,573L94,573L97,567.5L99,579L101,571L103.5,573.25L107,573"
+                                                style="fill:none;stroke:black;stroke-width:2px;" />
+                                        </g>
+                                    </g>
+                                </svg></span>
+                            </label>
+                            <span v-if="regionClickBehavior!='clickCreateRegion'">
+                                <button @click="deleteTransientsLast" style="margin-left:0;">Clear last</button>
+                                <button @click="deleteTransients" style="margin-left:0;">Clear all</button>
+                            </span>
+                            <span v-else>
+                                <button @click="deleteRegion" style="margin-left:0;">Clear last played</button>
+                                <button @click="deleteAllRegions" style="margin-left:0;">Clear all</button>
+                            </span>
                         </p>
+
+                        <p v-if="regionClickBehavior=='clickCreateRegion'">
+                            <label>
+                                Number of slices: <input id="onsetSlices" type="number" min="1" max="127" value=16
+                                    style="width:3em;" />
+                            </label>
+                            <button @click="createRegionsEvenly" style="margin-left:0;">Create
+                                evenly</button>
+                            <button @click="createRegionsAutomatically" style="margin-left:0;">Create from
+                                transients</button>
+                        </p>
+
+                        <div id="waveform-parent">
+                            <div id="waveform"></div>
+                            <p style="display: flex; align-items: center;">
+                                <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="playingSample">Stop
+                                    sample</button>
+                                <button @click="toggleSamplePlayback" style="margin-left:0;" v-if="!playingSample">Play
+                                    sample</button>
+                                <label style="margin-left:1em;">Zoom:</label>
+                                <input id="wsfzoom" type="range" min="10" max="5000" value="10">
+                            </p>
+
+                            <p style="display:none;">
+                                <input type="checkbox" id="variablesplices" @click="updateSpliceVariable"
+                                    v-model="banks[selectedBank].files[selectedFile].SpliceVariable">
+                                <label for="variablesplices">Variable: <span
+                                        v-if="banks[selectedBank].files[selectedFile].SpliceVariable">on</span>
+                                    <span v-else>off</span></label>&nbsp;
+                                <label
+                                    v-bind:class="(banks[selectedBank].files[selectedFile].SpliceVariable==true)?'grayed':'not-grayed'">
+                                    Pulses per slice <small>(192 ppqn)</small>: <input
+                                        :disabled="banks[selectedBank].files[selectedFile].SpliceVariable==true"
+                                        id="slicesPerBeat" type="number" min="1" step="1" value=1 style="width:4em;"
+                                        v-model="banks[selectedBank].files[selectedFile].SpliceTrigger"
+                                        @change.prevent="updateSlicesPerBeat($event)" />
+                                </label>
+
+
+                            </p>
+                        </div>
                     </div>
-                </div>
                 </transition>
 
                 [[end ]]
