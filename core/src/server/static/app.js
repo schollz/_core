@@ -565,6 +565,7 @@ app = new Vue({
         dragOverIndex: null,
         isDragging: false,
         clickedIndex: null,
+        waveformLoaded: false,
     },
     watch: {
         // Watch for changes in app properties and save state to cookies
@@ -1191,6 +1192,7 @@ app = new Vue({
         },
         openFileModal(fileIndex) {
             // Simply open the modal without changing selection
+            this.waveformLoaded = false;
             this.selectedFile = fileIndex;
             if (this.selectedFile != null) {
                 this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
@@ -1470,7 +1472,8 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
 
 
     wsf.on('decode', () => {
-
+        // Waveform is loaded, show the modal
+        app.waveformLoaded = true;
 
         console.log(`duration: ${wsf.getDuration()}`);
         // Regions

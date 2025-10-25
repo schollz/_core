@@ -182,6 +182,25 @@ a:hover {
     max-height: 85vh;
     overflow-y: auto;
     box-shadow: 0 4px 20px var(--shadow-color);
+    opacity: 0;
+}
+
+.file-details.loaded {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Vue transition classes for fade in/out */
+.modal-fade-enter-active {
+    transition: none !important;
+}
+
+.modal-fade-leave-active {
+    transition: opacity 0.3s ease-in-out !important;
+}
+
+.modal-fade-leave-to {
+    opacity: 0 !important;
 }
 
 .file-details>p:nth-child(1)>strong {
@@ -199,6 +218,25 @@ a:hover {
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
     z-index: 999;
+    opacity: 0;
+}
+
+.file-details-backdrop.loaded {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Apply same transition rules to backdrop */
+.file-details-backdrop.modal-fade-enter-active {
+    transition: none !important;
+}
+
+.file-details-backdrop.modal-fade-leave-active {
+    transition: opacity 0.3s ease-in-out !important;
+}
+
+.file-details-backdrop.modal-fade-leave-to {
+    opacity: 0 !important;
 }
 
 .drop-area {
