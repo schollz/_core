@@ -350,20 +350,8 @@ const socketMessageListener = (e) => {
         if (savedState.selectedBank !== undefined) {
             app.selectedBank = savedState.selectedBank;
         }
-        if (savedState.selectedFile !== undefined) {
-            app.selectedFile = savedState.selectedFile;
-        }
-        if (app.selectedFile != null) {
-            setTimeout(() => {
-                showWaveform(app.banks[app.selectedBank].files[app.selectedFile].PathToFile,
-                    app.banks[app.selectedBank].files[app.selectedFile].Duration,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStart,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceStop,
-                    app.banks[app.selectedBank].files[app.selectedFile].SliceType,
-                    app.banks[app.selectedBank].files[app.selectedFile].Transients,
-                );
-            }, 100);
-        }
+        // Don't auto-open the modal on page load
+        // User must explicitly click to open file details
     } else if (data.action == "connected") {
         if (serverID == "" || serverID == data.message) {
             serverID = data.message;
@@ -1197,22 +1185,9 @@ app = new Vue({
             xhr.open('POST', '/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode);
             xhr.send(formData);
         },
-        showFileDetails(fileIndex) {
-            const index = this.selectedFiles.indexOf(fileIndex);
-            // console.log("showFileDetails", fileIndex, index, this.selectedFile);
-            if (index === -1) {
-                this.selectedFile = fileIndex;
-                this.selectedFiles.push(fileIndex); // File is not selected, so add it to the selectedFiles array
-            } else {
-                this.selectedFiles.splice(index, 1); // File is selected, so remove it from the selectedFiles array
-                if (fileIndex == this.selectedFile) {
-                    this.selectedFile = null;
-                    if (this.selectedFiles.length > 0) {
-                        this.selectedFile = this.selectedFiles[0];
-                    }
-                }
-            }
-
+        openFileModal(fileIndex) {
+            // Simply open the modal without changing selection
+            this.selectedFile = fileIndex;
             if (this.selectedFile != null) {
                 this.banks[this.selectedBank].lastSelectedFile = this.selectedFile;
                 // wait 100 milliseconds
@@ -1225,6 +1200,15 @@ app = new Vue({
                         this.banks[this.selectedBank].files[this.selectedFile].Transients,
                     );
                 }, 100);
+            }
+        },
+        toggleFileSelection(fileIndex) {
+            // Toggle selection without opening modal
+            const index = this.selectedFiles.indexOf(fileIndex);
+            if (index === -1) {
+                this.selectedFiles.push(fileIndex); // File is not selected, so add it
+            } else {
+                this.selectedFiles.splice(index, 1); // File is selected, so remove it
             }
         },
         removeSelectedFile() {

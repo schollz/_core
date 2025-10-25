@@ -778,16 +778,16 @@
                         selected files</button>
                     <ul>
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex"
-                            @click="showFileDetails(fileIndex)"
+                            @click="openFileModal(fileIndex)"
                             :class="{ 'selected': isSelected(fileIndex), 'selected_on':isSelectedAndOpen(fileIndex) }"
                             :data-file-number="fileIndex + 1">
-                            {{ file.Filename }}
+                            <!-- checkbox and file movers on left -->
+                            <input type="checkbox" @click.stop="toggleFileSelection(fileIndex)" :checked="isSelected(fileIndex)"
+                                class="file-checkbox">
+                            <a @click.stop="moveFileUpIndex(fileIndex)" class="file-arrow hideIfMobile">▲</a>
+                            <a @click.stop="moveFileDownIndex(fileIndex)" class="file-arrow hideIfMobile">▼</a>
+                            <span class="file-name">{{ file.Filename }}</span>
                             <i v-if="isSelectedAndOpen(fileIndex)" class="fas fa-eye"></i>
-                            <!-- file movers -->
-                            <a @click.stop="moveFileUpIndex(fileIndex)" class="hideIfMobile"
-                                style="float:right; z-index:999;">▲</a>
-                            <a @click.stop="moveFileDownIndex(fileIndex)" class="hideIfMobile"
-                                style="float:right;  z-index:999; margin-right:0.2em;">▼</a>
                         </li>
                     </ul>
                 </div>

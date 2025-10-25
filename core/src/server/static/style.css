@@ -204,9 +204,44 @@ a:hover {
     margin-bottom: 0.5rem;
     margin-left: 0.5rem;
     padding: 0.5rem;
+    padding-left: 0.5rem;
     background-color: var(--highlight-color);
     position: relative;
     border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.file-list li .file-checkbox {
+    cursor: pointer;
+    flex-shrink: 0;
+    order: -3;
+}
+
+.file-list li .file-arrow {
+    cursor: pointer;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.file-list li .file-arrow:first-of-type {
+    order: -2;
+}
+
+.file-list li .file-arrow:last-of-type {
+    order: -1;
+}
+
+.file-list li .file-name {
+    flex-grow: 1;
+    order: 0;
+}
+
+.file-list li .fa-eye {
+    order: 1;
+    margin-left: auto;
 }
 
 .file-list li::before {
