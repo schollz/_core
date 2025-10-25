@@ -700,6 +700,20 @@ void sdcard_startup() {
     }
   }  // bank loop
 
+  // Try to restore last used bank and sample from flash
+  uint8_t restored_bank = 0;
+  uint8_t restored_sample = 0;
+  if (PersistentState_load(&restored_bank, &restored_sample, 16, 
+                           banks_with_samples, banks_with_samples_num, banks)) {
+    // Successfully restored from flash
+    sel_bank_cur = restored_bank;
+    sel_sample_cur = restored_sample;
+    printf("[sdcard_startup] Restored to bank %d, sample %d from flash\n", 
+           sel_bank_cur, sel_sample_cur);
+  } else {
+    printf("[sdcard_startup] Using default bank 0, sample 0\n");
+  }
+
   // check to see if bank0/0.*2+x).wav exists
   // if it does, then we are in audio variant mode
   for (uint8_t i = 2; i < 16; i++) {
