@@ -214,6 +214,7 @@ resetpico2:
 	sleep 0.1
 
 upload: resetpico2 changebaud dobuild
+	timeout 1 sudo minicom -b 1200 -o -D /dev/ttyACM0
 	./dev/upload.sh
 
 bootreset: .venv dobuild
