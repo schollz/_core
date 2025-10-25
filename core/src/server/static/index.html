@@ -1119,6 +1119,19 @@
             return Math.abs(hash);
         }
 
+        // Update document title with project name
+        function updateDocumentTitle() {
+            const pathname = window.location.pathname;
+            const projectName = pathname.split('/').filter(Boolean).pop() || '';
+            const deviceName = '[[ if .IsEctocore]]ectocore[[else]]zeptocore[[end]]';
+
+            if (projectName) {
+                document.title = `${deviceName} · ${projectName}`;
+            } else {
+                document.title = deviceName;
+            }
+        }
+
         // Set header icon based on URL hash
         function setHeaderIcon() {
             const url = window.location.pathname;
@@ -1143,9 +1156,13 @@
 
         // Set icon when DOM is ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setHeaderIcon);
+            document.addEventListener('DOMContentLoaded', () => {
+                setHeaderIcon();
+                updateDocumentTitle();
+            });
         } else {
             setHeaderIcon();
+            updateDocumentTitle();
         }
     </script>
     <script src="/static/app.js"></script>
