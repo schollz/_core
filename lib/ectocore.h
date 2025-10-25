@@ -749,10 +749,10 @@ void __not_in_flash_func(input_handling)() {
       }
       for (uint8_t j = 0; j < 3; j++) {
         if (!is_signal[j] && !cv_plugged[j]) {
-          // printf("[ectocore] cv_%d plugged\n", j);
+          printf("[ectocore] cv_%d plugged\n", j);
           debounce_mean_signal = 10;
         } else if (is_signal[j] && cv_plugged[j]) {
-          // printf("[ectocore] cv_%d unplugged\n", j);
+          printf("[ectocore] cv_%d unplugged\n", j);
           debounce_mean_signal = 10;
           cv_was_unplugged[j] = true;
         }
