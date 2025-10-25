@@ -117,6 +117,7 @@ bool usb_midi_present = false;
 #include "file_list.h"
 #include "filterexp.h"
 #include "flashmem.h"
+#include "persistent_state.h"
 #include "freeverb_fp_mono.h"
 #include "gate.h"
 #include "knob_change.h"

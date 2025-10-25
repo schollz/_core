@@ -6,9 +6,9 @@
 #define FLASH_TARGET_OFFSET (PICO_FLASH_LENGTH - PICO_FLASH_SECTOR_SIZE)
 
 // Function to write arbitrary C struct to flash memory
-void write_struct_to_flash(const void* data, size_t size) {
+void __not_in_flash_func(write_struct_to_flash)(const void* data, size_t size) {
   // Ensure the data size is not larger than a sector (usually 4096 bytes)
-  if (size > FLASH_SECTOR_SIZE) {
+  if (size > PICO_FLASH_SECTOR_SIZE) {
     // Handle error: data size is too large to write in one sector
     return;
   }
@@ -20,7 +20,7 @@ void write_struct_to_flash(const void* data, size_t size) {
   uint32_t interrupt_status = save_and_disable_interrupts();
 
   // Erase the flash sector before writing (sector size is 4096 bytes)
-  flash_range_erase(FLASH_TARGET_OFFSET, FLASH_SECTOR_SIZE);
+  flash_range_erase(FLASH_TARGET_OFFSET, PICO_FLASH_SECTOR_SIZE);
 
   // Write the data to flash
   flash_range_program(FLASH_TARGET_OFFSET, (const uint8_t*)data, size);
