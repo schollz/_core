@@ -23,10 +23,6 @@
 #define MEAN_SIGNAL_INTERVAL_MS 1000  // Time between mean signal recalculations
 #define SIGNAL_ERROR_TOLERANCE 2      // Allow N bit errors in pattern matching
 
-typedef struct EctocoreFlash {
-  uint16_t center_calibration[8];
-} EctocoreFlash;
-
 uint8_t gpio_btn_taptempo_val = 0;
 
 // toggle the fx
@@ -616,22 +612,14 @@ void __not_in_flash_func(input_handling)() {
       } else if (debounce_startup == 108) {
         printf("[ectocore] startup\n");
         // read flash data
-        EctocoreFlash read_data;
-        read_struct_from_flash(&read_data, sizeof(read_data));
-        bool data_corrupted = false;
-        for (uint8_t i = 0; i < 8; i++) {
-          if (read_data.center_calibration[i] < 0 ||
-              read_data.center_calibration[i] > 1024) {
-            data_corrupted = true;
-            printf("data is corrupted in calibration\n");
-          }
-        }
-        if (!data_corrupted) {
+        uint16_t calibration_data[8];
+        if (PersistentState_load_calibration(calibration_data)) {
           for (uint8_t i = 0; i < 8; i++) {
-            sf->center_calibration[i] = read_data.center_calibration[i];
+            sf->center_calibration[i] = calibration_data[i];
           }
+          printf("[ectocore] calibration data loaded from flash\n");
         } else {
-          printf("calibration data is good\n");
+          printf("[ectocore] calibration data is corrupted or missing, using defaults\n");
         }
       } else if (debounce_startup >= 100 && debounce_startup < 108) {
         uint8_t i = debounce_startup - 100;
@@ -639,17 +627,6 @@ void __not_in_flash_func(input_handling)() {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
           if (i == 0) {
-            EctocoreFlash write_data = {.center_calibration = {
-                                            sf->center_calibration[0],
-                                            sf->center_calibration[1],
-                                            sf->center_calibration[2],
-                                            sf->center_calibration[3],
-                                            sf->center_calibration[4],
-                                            sf->center_calibration[5],
-                                            sf->center_calibration[6],
-                                            sf->center_calibration[7],
-                                        }};
-
             printf("[ectocore] write calibration\n");
             uint16_t flash_time = 250;
             for (uint8_t ii = 0; ii < 20; ii++) {
@@ -672,7 +649,7 @@ void __not_in_flash_func(input_handling)() {
             }
             watchdog_reboot(0, SRAM_END, 1900);
             sleep_ms(10);
-            write_struct_to_flash(&write_data, sizeof(write_data));
+            PersistentState_save_calibration(sf->center_calibration);
             sleep_ms(3000);
             for (;;) {
               __wfi();
