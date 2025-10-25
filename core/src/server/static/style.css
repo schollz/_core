@@ -177,10 +177,11 @@ a:hover {
     padding: 2em;
     background: var(--background-color);
     z-index: 1000;
-    max-width: 90vw;
-    max-height: 90vh;
+    width: 85vw;
+    max-width: 1200px;
+    max-height: 85vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px var(--shadow-color)
+    box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .file-details>p:nth-child(1)>strong {
