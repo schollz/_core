@@ -844,8 +844,15 @@ footer select {
     /* Optional transition for smooth appearance */
 }
 
+#dialog-settings select,
 #dialog-settings>p>select {
-    padding: 0.25em;
+    padding: 0.5em;
+    background-color: var(--background-color);
+    border: 1px solid var(--banks-background);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
 }
 
 /* Override jQuery UI blue colors with theme colors */
