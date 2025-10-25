@@ -8,6 +8,37 @@
 bool repeating_timer_callback_playback_stopped = false;
 uint64_t repeating_timer_callback_playback_counter = 0;
 int32_t phase_sample_old = 0;
+
+// Helper function to calculate expected pulses for a slice in variable mode
+// This calculation matches the logic in lines 329-351 of timer_step()
+float calculate_expected_pulses_for_slice(uint16_t slice_index) {
+  if (!fil_is_open || slice_index >= banks[sel_bank_cur]
+                                          ->sample[sel_sample_cur]
+                                          .snd[FILEZERO]
+                                          ->slice_num) {
+    return 0.0f;
+  }
+  
+  float num_slices = (float)(banks[sel_bank_cur]
+                                 ->sample[sel_sample_cur]
+                                 .snd[FILEZERO]
+                                 ->slice_stop[slice_index] -
+                             banks[sel_bank_cur]
+                                 ->sample[sel_sample_cur]
+                                 .snd[FILEZERO]
+                                 ->slice_start[slice_index]);
+  num_slices =
+      round(num_slices /
+            (88200.0 * (banks[sel_bank_cur]
+                            ->sample[sel_sample_cur]
+                            .snd[FILEZERO]
+                            ->num_channels +
+                        1)) *
+            banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
+            60.0 * 192.0);
+  return num_slices;
+}
+
 // timer
 
 bool __not_in_flash_func(timer_step)() {
@@ -32,6 +63,9 @@ bool __not_in_flash_func(timer_step)() {
     retrig_beat_num = 0;
     beat_current = -1;
     playback_stopped = false;
+    // reset variable slice clock pulse tracking
+    clock_in_pulse_accumulator = 0;
+    clock_in_expected_pulses_for_slice = 0.0f;
     // restart the sequencers
     for (uint8_t i = 0; i < 3; i++) {
       if (sequencerhandler[i].playing) {
@@ -370,15 +404,54 @@ bool __not_in_flash_func(timer_step)() {
       // keep to the beat
       if (fil_is_open && debounce_quantize == 0) {
         if (clock_in_do) {
-          beat_current = (int)roundf((float)clock_in_beat_total * 96.0f /
-                                     (float)banks[sel_bank_cur]
-                                         ->sample[sel_sample_cur]
-                                         .snd[FILEZERO]
-                                         ->splice_trigger) %
-                         banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[FILEZERO]
-                             ->slice_num;
+#ifdef INCLUDE_ECTOCORE
+          // Handle variable slices with clock input (ectocore only)
+          if (banks[sel_bank_cur]
+                  ->sample[sel_sample_cur]
+                  .snd[FILEZERO]
+                  ->splice_variable > 0) {
+            // Variable mode: accumulate pulses and advance when threshold reached
+            
+            // Calculate expected pulses for current slice if not already set
+            if (clock_in_expected_pulses_for_slice <= 0.0f) {
+              clock_in_expected_pulses_for_slice = 
+                  calculate_expected_pulses_for_slice(beat_current);
+            }
+            
+            // Accumulate incoming clock pulse
+            clock_in_pulse_accumulator++;
+            
+            // Check if we've accumulated enough pulses to advance to next slice
+            if (clock_in_pulse_accumulator >= clock_in_expected_pulses_for_slice) {
+              // Advance to next slice
+              beat_current++;
+              if (beat_current >= banks[sel_bank_cur]
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->slice_num) {
+                beat_current = 0;
+              }
+              
+              // Reset accumulator and calculate expected pulses for new slice
+              clock_in_pulse_accumulator = 0;
+              clock_in_expected_pulses_for_slice = 
+                  calculate_expected_pulses_for_slice(beat_current);
+            }
+          } else {
+#endif
+            // Non-variable mode: use original calculation
+            beat_current = (int)roundf((float)clock_in_beat_total * 96.0f /
+                                       (float)banks[sel_bank_cur]
+                                           ->sample[sel_sample_cur]
+                                           .snd[FILEZERO]
+                                           ->splice_trigger) %
+                           banks[sel_bank_cur]
+                               ->sample[sel_sample_cur]
+                               .snd[FILEZERO]
+                               ->slice_num;
+#ifdef INCLUDE_ECTOCORE
+          }
+#endif
           // printf("[main] beat_current from clock in: %d (%d)\n",
           // beat_current,
           //        banks[sel_bank_cur]

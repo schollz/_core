@@ -439,6 +439,9 @@ BREAKOUT_OF_MUTE:
       // setup the next
       sel_bank_cur = sel_bank_next;
       sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
+      // reset variable slice clock pulse tracking on sample change
+      clock_in_pulse_accumulator = 0;
+      clock_in_expected_pulses_for_slice = 0.0f;
       // printf("[audio_callback] switch bank/sample %d/%d\n", sel_bank_cur,
       //        sel_sample_cur);
 

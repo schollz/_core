@@ -189,6 +189,9 @@ int32_t clock_in_beat_total = 0;
 volatile uint32_t clock_in_diff_2x = 0;
 volatile uint32_t clock_in_last_time = 0;
 uint32_t clock_in_last_last_time = 0;
+// Variables for tracking variable slice clock pulses
+int32_t clock_in_pulse_accumulator = 0;
+float clock_in_expected_pulses_for_slice = 0.0f;
 uint8_t led_text_time = 200;
 
 typedef struct SampleSelection {

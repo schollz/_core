@@ -16,9 +16,15 @@ void clock_in_do_update() {
   if (playback_stopped) {
     playback_was_stopped_clock = true;
     clock_in_beat_total = 0;
+    // reset variable slice clock pulse tracking
+    clock_in_pulse_accumulator = 0;
+    clock_in_expected_pulses_for_slice = 0.0f;
   } else if (playback_was_stopped_clock) {
     playback_was_stopped_clock = false;
     clock_in_beat_total = 0;
+    // reset variable slice clock pulse tracking
+    clock_in_pulse_accumulator = 0;
+    clock_in_expected_pulses_for_slice = 0.0f;
   }
 }
 
