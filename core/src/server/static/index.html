@@ -792,7 +792,8 @@
                     </ul>
                 </div>
 
-                <div class="file-details" v-if="selectedFile!=null && !disconnected">
+                <div class="file-details-backdrop" v-if="selectedFile!=null && !disconnected" @click="selectedFile=null"></div>
+                <div class="file-details" v-if="selectedFile!=null && !disconnected" @click.stop>
                     <p style="margin-top:0; padding-top: 0.5rem; padding-bottom: 0; margin-bottom: 0;
                     text-align: left;"><strong>{{ banks[selectedBank].files[selectedFile].Filename }}</strong> ({{
                         banks[selectedBank].files[selectedFile].SliceStart.length }} slices,

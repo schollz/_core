@@ -157,16 +157,34 @@ a:hover {
 }
 
 .file-uploader,
-.file-list,
-.file-details {
+.file-list {
     padding: 1rem;
 }
 
 .file-details {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     border: 3px solid var(--highlight-color-border);
     border-radius: 10px;
-    padding: 1em;
-    margin: 1em;
+    padding: 2em;
+    background: var(--background-color);
+    z-index: 1000;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.file-details-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
 }
 
 .drop-area {
