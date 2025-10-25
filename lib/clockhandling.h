@@ -16,9 +16,11 @@ void clock_in_do_update() {
   if (playback_stopped) {
     playback_was_stopped_clock = true;
     clock_in_beat_total = 0;
+    clock_in_beat_last = 0;
   } else if (playback_was_stopped_clock) {
     playback_was_stopped_clock = false;
     clock_in_beat_total = 0;
+    clock_in_beat_last = 0;
   }
 }
 
@@ -49,6 +51,7 @@ void clock_handling_start() {
     clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();
     clock_in_beat_total = 0;
+    clock_in_beat_last = 0;
     clock_in_ready = true;
     cancel_repeating_timer(&timer);
     do_restart_playback = true;
