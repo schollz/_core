@@ -30,68 +30,68 @@ install_go21:
 		$(GOINSTALLPATH) download; \
 	fi
 
-zeptoboard: pico-extras copyboard lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptoboard: pico-sdk pico-extras copyboard lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 zeptoboard.uf2
+	cp build/_core.uf2 zeptoboard.uf2
 
-zeptocore: pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore: pico-sdk pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 zeptocore.uf2
+	cp build/_core.uf2 zeptocore.uf2
 
-zeptocore_128: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions_128.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 zeptocore.uf2
+	cp build/_core.uf2 zeptocore.uf2
 
-zeptocore_256: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 zeptocore.uf2
+	cp build/_core.uf2 zeptocore.uf2
 
-zeptocore_nooverclock: pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+zeptocore_nooverclock: pico-sdk pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 zeptocore_nooverclock.uf2
+	cp build/_core.uf2 zeptocore_nooverclock.uf2
 
-ectocore: pico-extras copyecto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore: pico-sdk pico-extras copyecto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_128: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_128.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_64: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_64: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_64.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_256: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_beta_hardware: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_beta_hardware: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_v0.3.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore_beta_hardware.uf2
+	cp build/_core.uf2 ectocore_beta_hardware.uf2
 
-ectocore_noclock: pico-extras copyectonoclock lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_noclock: pico-sdk pico-extras copyectonoclock lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_noclock_128: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_noclock_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_nooverclock_128.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
-ectocore_noclock_256: pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ectocore_noclock_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ectocore_compile_definitions_nooverclock_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	mv build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ectocore.uf2
 
 copyzepto:
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
