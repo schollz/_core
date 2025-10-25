@@ -321,6 +321,7 @@ bool __not_in_flash_func(timer_step)() {
       retrig_filter_original = 0;
     }
 
+    bool should_skip_clock_pulse = false;
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[FILEZERO]
@@ -359,12 +360,15 @@ bool __not_in_flash_func(timer_step)() {
         //            ->slice_current,
         //        num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
         bpm_timer_counter_last = bpm_timer_counter;
+      } else if (clock_in_do && clock_in_ready) {
+        // In variable mode, skip clock pulses that haven't accumulated enough counts
+        should_skip_clock_pulse = true;
       }
     }
 
     if (sequencerhandler[0].playing) {
       // already done
-    } else if ((clock_in_do && clock_in_ready) || do_splice_trigger) {
+    } else if ((clock_in_do && clock_in_ready && !should_skip_clock_pulse) || do_splice_trigger) {
       clock_in_ready = false;
       mem_use = false;
       // keep to the beat
