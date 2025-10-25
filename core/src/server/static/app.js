@@ -1613,7 +1613,7 @@ window.addEventListener('load', (event) => {
 
     ccolor = "rgba(0, 0, 0, 0)";
     ccolor2 = getComputedStyle(document.documentElement).getPropertyValue('--other-color') + "00";
-    wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--header-footer-background');
+    wavecolor = getComputedStyle(document.documentElement).getPropertyValue('--waveform-color');
     selected_color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color') + "44";
 
 
