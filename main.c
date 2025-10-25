@@ -395,23 +395,33 @@ bool __not_in_flash_func(timer_step)() {
       should_skip_clock_pulse = false;
       mem_use = false;
       // keep to the beat
+      bool should_update_phase = true;
       if (fil_is_open && debounce_quantize == 0) {
         if (clock_in_do) {
-          beat_current = (int)roundf((float)clock_in_beat_total * 96.0f /
-                                     (float)banks[sel_bank_cur]
+          uint16_t splice_trigger_val = banks[sel_bank_cur]
                                          ->sample[sel_sample_cur]
                                          .snd[FILEZERO]
-                                         ->splice_trigger) %
-                         banks[sel_bank_cur]
+                                         ->splice_trigger;
+          uint8_t slice_num_val = banks[sel_bank_cur]
                              ->sample[sel_sample_cur]
                              .snd[FILEZERO]
                              ->slice_num;
-          // printf("[main] beat_current from clock in: %d (%d)\n",
-          // beat_current,
-          //        banks[sel_bank_cur]
-          //            ->sample[sel_sample_cur]
-          //            .snd[FILEZERO]
-          //            ->splice_trigger);
+          // External clock is 2 pulses per beat (quarter note)
+          // Convert: clock_in_beat_total (2 PPQN) -> internal ticks (192 PPQN) -> slices
+          // clock_in_beat_total * (192/2) / splice_trigger = clock_in_beat_total * 96 / splice_trigger
+          float raw_calc = (float)clock_in_beat_total * 96.0f / (float)splice_trigger_val;
+          int new_beat_current = (int)roundf(raw_calc) % slice_num_val;
+
+          // Only update if beat_current actually changed
+          static int last_beat_current = -1;
+          if (new_beat_current != last_beat_current) {
+            beat_current = new_beat_current;
+            last_beat_current = beat_current;
+            beat_did_activate = true;  // Set flag for LED display update
+          } else {
+            // Skip updating phase - same slice
+            should_update_phase = false;
+          }
         } else if (key3_activated && mode_buttons16 == MODE_JUMP) {
           uint8_t lo = key3_pressed_keys[0] - 4;
           uint8_t hi = key3_pressed_keys[1] - 4;
@@ -533,12 +543,14 @@ bool __not_in_flash_func(timer_step)() {
         }
 #endif
         // printf("beat_current: %d\n", beat_current);
-        if (key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
+        if (should_update_phase && key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
           // printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
           //        beat_total);
           do_update_phase_from_beat_current();
         } else {
-          key_jump_debounce--;
+          if (key_jump_debounce > 0) {
+            key_jump_debounce--;
+          }
         }
       }
       if (debounce_quantize > 0) {
