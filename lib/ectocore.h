@@ -579,8 +579,8 @@ void __not_in_flash_func(input_handling)() {
   uint32_t btn_mult_on_time = 0;
   uint32_t btn_mult_hold_time = 0;
   uint32_t debounce_file_switching = 0;
-  uint8_t sel_bank_next_new = 0;
-  uint8_t sel_sample_next_new = 0;
+  uint8_t sel_bank_next_new = sel_bank_cur;
+  uint8_t sel_sample_next_new = sel_sample_cur;
 
   regenerate_random_sequence_arr();
 
