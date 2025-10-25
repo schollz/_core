@@ -13,6 +13,16 @@
 #define KNOB_ATTEN_ZERO_WIDTH 80
 #define DEBOUNCE_FILE_SWITCH 500
 
+// Input detection configuration
+#define SIGNAL_SETTLE_TIME_US 8  // Time for signal to settle
+#define SIGNAL_READ_SAMPLES 1    // Number of samples to average
+#define DETECTION_THRESHOLD 5    // Consecutive matches needed for state change
+#define SIGNAL_THRESHOLD_MARGIN 50  // ADC counts above/below mean for detection
+#define MEAN_ALPHA 0.1f             // EMA coefficient for mean signal
+#define DETECTION_INTERVAL_MS 10    // Minimum time between detection runs
+#define MEAN_SIGNAL_INTERVAL_MS 1000  // Time between mean signal recalculations
+#define SIGNAL_ERROR_TOLERANCE 2      // Allow N bit errors in pattern matching
+
 typedef struct EctocoreFlash {
   uint16_t center_calibration[8];
 } EctocoreFlash;
@@ -450,16 +460,20 @@ void __not_in_flash_func(input_handling)() {
   uint8_t debounce_trig = 0;
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
-  uint16_t debounce_input_detection = 0;
-  uint16_t debounce_mean_signal = 0;
-  uint16_t mean_signal = 0;
-  const uint8_t length_signal = 9;
-  uint8_t magic_signal[3][10] = {
-      {0, 1, 1, 0, 1, 1, 0, 1, 0, 0},
-      {0, 0, 1, 0, 1, 1, 0, 0, 1, 1},
-      {1, 0, 0, 1, 0, 1, 0, 1, 1, 1},
+  uint32_t last_input_detection_time = 0;
+  uint32_t last_mean_signal_time = 0;
+  float mean_signal_ema = 0;
+  const uint8_t length_signal = 16;
+  // Improved magic signals with better Hamming distance
+  uint8_t magic_signal[3][16] = {
+      {0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0},
+      {1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1},
+      {0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1},
   };
   bool cv_was_unplugged[3] = {false, false, false};
+  uint8_t cv_detection_count[3] = {0, 0, 0};
+  uint16_t detection_errors[3] = {0, 0, 0};
+  uint8_t signal_strength[3] = {0, 0, 0};
 
   // update the knobs
 #define KNOB_NUM 5
@@ -687,10 +701,9 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    if (debounce_mean_signal > 0 && mean_signal > 0) {
-      debounce_mean_signal--;
-    } else {
-      // calculate mean signal
+    // Calculate mean signal using exponential moving average
+    uint32_t current_time = to_ms_since_boot(get_absolute_time());
+    if (current_time - last_mean_signal_time >= MEAN_SIGNAL_INTERVAL_MS) {
       int16_t total_mean_signal = 0;
       uint8_t total_signals_sent = 0;
       for (uint8_t j = 0; j < 3; j++) {
@@ -698,70 +711,114 @@ void __not_in_flash_func(input_handling)() {
           total_signals_sent++;
           for (uint8_t i = 0; i < length_signal; i++) {
             gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-            sleep_us(6);
+            sleep_us(SIGNAL_SETTLE_TIME_US);
             total_mean_signal += MCP3208_read(mcp3208, cv_signals[j], false);
           }
         }
       }
       if (total_signals_sent > 0) {
-        mean_signal = total_mean_signal / (total_signals_sent * length_signal);
-        // printf("[ectocore] mean_signal: %d\n", mean_signal);
+        float new_sample =
+            (float)total_mean_signal / (total_signals_sent * length_signal);
+        if (mean_signal_ema == 0) {
+          mean_signal_ema = new_sample;  // Initialize on first run
+        } else {
+          mean_signal_ema =
+              MEAN_ALPHA * new_sample + (1.0f - MEAN_ALPHA) * mean_signal_ema;
+        }
+        // printf("[ectocore] mean_signal_ema: %f\n", mean_signal_ema);
       }
-      debounce_mean_signal = 10000;
+      last_mean_signal_time = current_time;
     }
 
-    if (debounce_input_detection > 0) {
-      debounce_input_detection--;
-    } else if (mean_signal > 0) {
-      // input detection
-      bool found_change = false;
+    // Input detection with time-based debouncing
+    if (mean_signal_ema > 0 &&
+        current_time - last_input_detection_time >= DETECTION_INTERVAL_MS) {
       int16_t val_input;
-      uint8_t response_signal[3][10] = {
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      uint8_t response_signal[3][16] = {
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       };
 
       for (uint8_t j = 0; j < 3; j++) {
+        int16_t total_signal_strength = 0;
         for (uint8_t i = 0; i < length_signal; i++) {
           gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-          sleep_us(6);
+          sleep_us(SIGNAL_SETTLE_TIME_US);
           val_input = MCP3208_read(mcp3208, cv_signals[j], false);
-          if (val_input > mean_signal) {
+
+          // Track signal strength for diagnostics
+          int16_t signal_diff = val_input - (int16_t)mean_signal_ema;
+          total_signal_strength += abs(signal_diff);
+
+          // Threshold with margin to reduce noise sensitivity
+          if (val_input > (int16_t)mean_signal_ema + SIGNAL_THRESHOLD_MARGIN) {
             response_signal[j][i] = 1;
+          } else if (val_input <
+                     (int16_t)mean_signal_ema - SIGNAL_THRESHOLD_MARGIN) {
+            response_signal[j][i] = 0;
+          } else {
+            // Ambiguous reading - use previous state or default to 0
+            response_signal[j][i] = 0;
           }
-          // if (j == 0) {
-          //   printf("%d ", val_input);
-          // }
         }
-        // if (j == 0) {
-        //   printf("\n");
-        // }
+        // Store average signal strength
+        signal_strength[j] = total_signal_strength / length_signal;
       }
+
+      // Validate signals with error correction
       bool is_signal[3] = {true, true, true};
       for (uint8_t j = 0; j < 3; j++) {
+        uint8_t count_matches = 0;
         for (uint8_t i = 0; i < length_signal; i++) {
-          if (response_signal[j][i] != magic_signal[j][i]) {
-            is_signal[j] = false;
-            break;
+          if (response_signal[j][i] == magic_signal[j][i]) {
+            count_matches++;
           }
         }
+        // Allow SIGNAL_ERROR_TOLERANCE bit errors
+        is_signal[j] =
+            (count_matches >= length_signal - SIGNAL_ERROR_TOLERANCE);
+        if (!is_signal[j] &&
+            count_matches < length_signal - SIGNAL_ERROR_TOLERANCE) {
+          detection_errors[j]++;
+        }
       }
+
+      // Hysteresis-based state machine
       for (uint8_t j = 0; j < 3; j++) {
         if (!is_signal[j] && !cv_plugged[j]) {
-          printf("[ectocore] cv_%d plugged\n", j);
-          debounce_mean_signal = 10;
+          // Potential plug-in detected
+          cv_detection_count[j]++;
+          if (cv_detection_count[j] >= DETECTION_THRESHOLD) {
+            cv_plugged[j] = true;
+            cv_detection_count[j] = 0;
+            last_mean_signal_time = 0;  // Trigger mean recalculation
+            printf("[ectocore] cv_%d plugged\n", j);
+          }
         } else if (is_signal[j] && cv_plugged[j]) {
-          printf("[ectocore] cv_%d unplugged\n", j);
-          debounce_mean_signal = 10;
-          cv_was_unplugged[j] = true;
+          // Potential unplug detected
+          cv_detection_count[j]++;
+          if (cv_detection_count[j] >= DETECTION_THRESHOLD) {
+            cv_plugged[j] = false;
+            cv_detection_count[j] = 0;
+            cv_was_unplugged[j] = true;
+            last_mean_signal_time = 0;  // Trigger mean recalculation
+            printf("[ectocore] cv_%d unplugged\n", j);
+          }
+        } else {
+          // State matches expectation - reset counter
+          cv_detection_count[j] = 0;
         }
-        cv_plugged[j] = !is_signal[j];
       }
-      debounce_input_detection = 100;
+
+      last_input_detection_time = current_time;
     }
 
     // update the cv for each channel
+    // Ensure GPIO_INPUTDETECT is LOW to prevent race condition
+    gpio_put(GPIO_INPUTDETECT, 0);
+    sleep_us(SIGNAL_SETTLE_TIME_US);
+
     for (uint8_t i = 0; i < 3; i++) {
       if (cv_plugged[i]) {
         // collect out CV values
@@ -873,7 +930,7 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    uint32_t current_time = to_ms_since_boot(get_absolute_time());
+    current_time = to_ms_since_boot(get_absolute_time());
 
     if (debounce_file_change > 0) {
       if (debounce_file_switching > 0) {
