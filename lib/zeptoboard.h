@@ -14,7 +14,7 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL);
+    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
 
     if (MessageSync_hasMessage(messagesync)) {
