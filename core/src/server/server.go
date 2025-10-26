@@ -48,6 +48,7 @@ var mutexStorage sync.Mutex
 var Port = 8101
 var StorageFolder = "storage"
 var connections map[string]*websocket.Conn
+var activeDebounce map[string]chan bool
 var mutex sync.Mutex
 var serverID string
 var useFilesOnDisk bool
@@ -152,6 +153,7 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 	}()
 
 	connections = make(map[string]*websocket.Conn)
+	activeDebounce = make(map[string]chan bool)
 	if isEctocore {
 		Port = 8100
 	}
@@ -381,8 +383,14 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	defer func() {
 		c.Close()
 		mutex.Lock()
-		if _, ok := connections[query["id"][0]]; ok {
-			delete(connections, query["id"][0])
+		connID := query["id"][0]
+		if _, ok := connections[connID]; ok {
+			delete(connections, connID)
+		}
+		// Cancel any active debounce operation for this connection
+		if cancelChan, exists := activeDebounce[connID]; exists {
+			close(cancelChan)
+			delete(activeDebounce, connID)
 		}
 		mutex.Unlock()
 	}()
@@ -416,17 +424,93 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				})
 			}
 		} else if message.Action == "isprocessing" {
-			newestTime, _ := utils.TimeOfNewestFile(path.Join(StorageFolder, place))
-			duration := time.Since(newestTime).Seconds()
-			if duration < 1.0 {
-				c.WriteJSON(Message{
-					Action: "isworking",
-				})
-			} else {
-				c.WriteJSON(Message{
-					Action: "notworking",
-				})
+			// Cancel any existing debounce operation for this connection
+			mutex.Lock()
+			connID := query["id"][0]
+			if cancelChan, exists := activeDebounce[connID]; exists {
+				close(cancelChan)
+				delete(activeDebounce, connID)
 			}
+			// Create a new cancel channel for this debounce operation
+			cancelChan := make(chan bool)
+			activeDebounce[connID] = cancelChan
+			mutex.Unlock()
+
+			// Implement debouncing: check for file modifications, wait 3 seconds,
+			// and keep waiting until 3 seconds pass with no new modifications
+			go func() {
+				defer func() {
+					mutex.Lock()
+					delete(activeDebounce, connID)
+					mutex.Unlock()
+				}()
+
+				folder := path.Join(StorageFolder, place)
+
+				// Get initial set of recently modified files (within last 3 seconds)
+				checkTime := time.Now().Add(-3 * time.Second)
+				modifiedFiles, err := utils.GetRecentlyModifiedFiles(folder, checkTime)
+
+				if err != nil || len(modifiedFiles) == 0 {
+					// No recent modifications
+					mutex.Lock()
+					if _, ok := connections[connID]; ok {
+						connections[connID].WriteJSON(Message{
+							Action: "notworking",
+						})
+					}
+					mutex.Unlock()
+					return
+				}
+
+				// Files are being modified, enter debouncing loop
+				mutex.Lock()
+				if _, ok := connections[connID]; ok {
+					connections[connID].WriteJSON(Message{
+						Action: "isworking",
+					})
+				}
+				mutex.Unlock()
+
+				// Find the most recent modification time
+				var lastModTime time.Time
+				for _, modTime := range modifiedFiles {
+					if modTime.After(lastModTime) {
+						lastModTime = modTime
+					}
+				}
+
+				// Debouncing loop: wait 3 seconds and check for new modifications
+				for {
+					select {
+					case <-cancelChan:
+						// This debounce was cancelled by a new isprocessing request
+						return
+					case <-time.After(3 * time.Second):
+						// Check if any files were modified since last check
+						newModifiedFiles, err := utils.GetRecentlyModifiedFiles(folder, lastModTime)
+						if err != nil || len(newModifiedFiles) == 0 {
+							// No new modifications in the last 3 seconds, work is done
+							mutex.Lock()
+							if _, ok := connections[connID]; ok {
+								connections[connID].WriteJSON(Message{
+									Action: "notworking",
+								})
+							}
+							mutex.Unlock()
+							return
+						}
+
+						// Update last modification time
+						for _, modTime := range newModifiedFiles {
+							if modTime.After(lastModTime) {
+								lastModTime = modTime
+							}
+						}
+						// Continue waiting (loop will repeat)
+					}
+				}
+			}()
 		} else if message.Action == "uploadfirmware" {
 			var success bool
 			var message string

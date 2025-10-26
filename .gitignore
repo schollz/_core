@@ -74,3 +74,5 @@ core/tmp/*
 core/*zip
 *.wav.info
 *wav.json
+
+core/core
