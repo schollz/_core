@@ -236,3 +236,18 @@ func TimeOfNewestFile(folder string) (t time.Time, err error) {
 	})
 	return
 }
+
+// GetRecentlyModifiedFiles returns files modified after the given time
+func GetRecentlyModifiedFiles(folder string, since time.Time) (files map[string]time.Time, err error) {
+	files = make(map[string]time.Time)
+	err = filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && info.ModTime().After(since) {
+			files[path] = info.ModTime()
+		}
+		return nil
+	})
+	return
+}
