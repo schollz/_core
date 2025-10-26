@@ -283,11 +283,13 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsEctocore     bool
 				IsUpload       bool
 				VersionCurrent string
+				LatestVersion  string
 				GenURL1        string
 				GenURL2        string
 			}{
 				IsMain:         r.URL.Path == "/",
 				VersionCurrent: "v6.4.4",
+				LatestVersion:  latestTag,
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
 				IsEctocore:     isEctocore,

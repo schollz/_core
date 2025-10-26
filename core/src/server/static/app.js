@@ -15,13 +15,9 @@ var hasSavedToCookie = false;
 
 
 function GetLatestReleaseInfo() {
-    fetch("https://zeptocore.com/get_info")
-        .then(response => response.json())
-        .then(json => {
-            app.latestVersion = json.version;
-            console.log(`[GetLatestReleaseInfo] Latest version: ${app.latestVersion}`)
-        })
-        .catch(error => console.error('Error fetching release:', error));
+    // Latest version is now provided by the server via WebSocket
+    // No need to fetch from external API
+    console.log(`[GetLatestReleaseInfo] Using server-provided version`);
 }
 
 var inputMidiDevice = null;
@@ -513,7 +509,7 @@ app = new Vue({
         deviceType: "",
         isReady: false,
         transientDoAdd: [false, false, false],
-        latestVersion: "",
+        latestVersion: window.initialLatestVersion || "",
         deviceVersion: "",
         deviceFirmwareUpload: "",
         lastSelectedFile: null,
