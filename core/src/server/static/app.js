@@ -734,7 +734,7 @@ app = new Vue({
                     let htmlElement = document.createElement('span');
                     htmlElement.innerHTML = span + transient_content[i];
                     htmlElement.style.position = 'relative';
-                    let color = 'rgb(255,255,255,0.3)';
+                    let color = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color-border').trim();
                     if (transients[i][j] > 0) {
                         let start = parseFloat(transients[i][j]) / 44100.0;
                         // console.log(`transient ${i} ${j} ${start}`);
@@ -1565,9 +1565,13 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
             activeRegion = region;
             // print the seconds of the region clicked
             console.log(region.start, region.end, e);
-            // iterate over wsRegions.regions 
+            // iterate over wsRegions.regions
             console.log(activeRegion)
             for (var i = 0; i < wsRegions.regions.length; i++) {
+                // skip transient regions
+                if (wsRegions.regions[i].id.startsWith('transient-')) {
+                    continue;
+                }
                 wsRegions.regions[i].setOptions({
                     color: (activeRegion.id == wsRegions.regions[i].id ? ccolor2 : ccolor),
                     // color: ccolor, // (sliceType[i] == 1 ? ccolor2 : ccolor)
