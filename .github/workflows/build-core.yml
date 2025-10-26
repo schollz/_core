@@ -1,0 +1,167 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - "v*"
+      - "*.*.*"
+  pull_request:
+    branches: [ main ]
+
+env:
+  CGO_CXXFLAGS: "-D__RTMIDI_DEBUG__=0 -D__RTMIDI_QUIET__"
+
+defaults:
+  run:
+    working-directory: core
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install rtmidi dependencies
+        run: |
+          brew update
+          brew install pkg-config
+          brew install rtmidi
+          brew install sox
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+
+      - name: Set up environment variables
+        run: echo "CGO_ENABLED=1" >> $GITHUB_ENV
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build Go project
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core
+
+      - name: Verify binary
+        run: ./core --help
+
+      - name: Zip binary (macOS)
+        run: zip -9 core_macos.zip core
+
+      - name: Upload artifact (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core_macos.zip
+          path: core/core_macos.zip
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev sox zip
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build Go project
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core
+
+      - name: Verify binary
+        run: ./core --help
+
+      - name: Zip binary (Linux)
+        run: zip -9 core_linux.zip core
+
+      - name: Upload artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core_linux.zip
+          path: core/core_linux.zip
+          if-no-files-found: error
+
+ 
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+
+      - name: Install required packages
+        shell: msys2 {0}
+        run: |
+          pacman -S --noconfirm mingw-w64-x86_64-rtmidi mingw-w64-x86_64-toolchain
+
+      - name: Set up environment variables for Go
+        shell: pwsh
+        run: |
+          $env:Path += ";C:\msys64\mingw64\bin"
+          echo "CGO_ENABLED=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CC=x86_64-w64-mingw32-gcc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CGO_LDFLAGS=-static" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CGO_CXXFLAGS=-D__RTMIDI_DEBUG__=0 -D__RTMIDI_QUIET__" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "stable"
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Build Go project
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core.exe
+
+      - name: Verify binary
+        run: .\core.exe --help
+
+      - name: Zip binary (Windows)
+        shell: pwsh
+        run: Compress-Archive -Path core.exe -DestinationPath core_windows.zip -Force
+
+      - name: Upload artifact (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: core_windows.zip
+          path: core/core_windows.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release (on tags)
+    runs-on: ubuntu-latest
+    needs: [macos, linux, alpine, windows]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -l ./dist
+
+      - name: Create Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/core_macos.zip
+            dist/core_linux.zip
+            dist/core_windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
