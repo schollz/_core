@@ -40,7 +40,7 @@ jobs:
       #   run: go test -v ./...
 
       - name: Build Go project
-        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
       - name: Verify binary
         run: ./core --help
@@ -73,7 +73,7 @@ jobs:
       #   run: go test -v ./...
 
       - name: Build Go project
-        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
       - name: Verify binary
         run: ./core --help
@@ -123,7 +123,7 @@ jobs:
       #   run: go test -v ./...
 
       - name: Build Go project
-        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }}" -o core.exe
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core.exe
 
       - name: Verify binary
         run: .\core.exe --help
