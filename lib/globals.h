@@ -151,6 +151,23 @@ MidiOut *midiout[6];
 bool midi_input_activated = false;
 #endif
 
+ // setup some constants for CCs
+const uint8_t cc_knobx = 12;
+const uint8_t cc_knoby= 13;
+const uint8_t cc_knobz = 14;
+const uint8_t cc_tempo = 15;
+const uint8_t cc_pitch = 16;
+const uint8_t cc_volume = 7;
+const uint8_t cc_randsequence = 18;
+const uint8_t cc_djfilter = 19;
+const uint8_t cc_bassvolume = 20;
+const uint8_t cc_sampleselect = 21;
+const uint8_t cc_randtunnel = 22;
+const uint8_t cc_quantize = 23;
+const uint8_t cc_randjump = 24;
+const uint8_t cc_randfx = 25;
+const uint8_t cc_randfxbank = 26;
+
 bool toggle_chain_play = false;
 bool toggle_chain_rec = false;
 
