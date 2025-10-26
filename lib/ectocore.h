@@ -2,8 +2,8 @@
 
 #include "clockhandling.h"
 //
-#include "mcp3208.h"
 #include "break_knob.h"
+#include "mcp3208.h"
 #include "midicallback.h"
 #include "onewiremidi2.h"
 #ifdef INCLUDE_MIDI
@@ -400,6 +400,13 @@ void dust_1() {
 
 bool clock_input_absent = true;
 
+// CV monitoring feature (bank+mode button toggle)
+bool cv_monitor_active = false;
+uint32_t cv_monitor_start_time = 0;
+uint32_t cv_monitor_last_print = 0;
+#define CV_MONITOR_INTERVAL_MS 100
+#define CV_MONITOR_DURATION_MS 60000
+
 ClockInput *clockinput;
 void gpio_callback(uint gpio, uint32_t events) {
   if (gpio != GPIO_CLOCK_IN) return;
@@ -594,7 +601,8 @@ void __not_in_flash_func(input_handling)() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL,
+                   NULL);
 #endif
     int16_t val;
     if (debounce_startup > 0) {
@@ -619,7 +627,9 @@ void __not_in_flash_func(input_handling)() {
           }
           printf("[ectocore] calibration data loaded from flash\n");
         } else {
-          printf("[ectocore] calibration data is corrupted or missing, using defaults\n");
+          printf(
+              "[ectocore] calibration data is corrupted or missing, using "
+              "defaults\n");
         }
       } else if (debounce_startup >= 100 && debounce_startup < 108) {
         uint8_t i = debounce_startup - 100;
@@ -1499,6 +1509,22 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       }
+      // check for CV monitor toggle (bank+mode, but not mult)
+      if (val == 1 && gpio_btn_state[BTN_BANK] > 0 &&
+          gpio_btn_state[BTN_MODE] > 0 && gpio_btn_state[BTN_MULT] == 0 &&
+          gpio_btn_state[BTN_TAPTEMPO] == 0) {
+        if (gpio_btns[i] == GPIO_BTN_BANK || gpio_btns[i] == GPIO_BTN_MODE) {
+          // Toggle CV monitoring feature
+          cv_monitor_active = !cv_monitor_active;
+          if (cv_monitor_active) {
+            cv_monitor_start_time = current_time;
+            cv_monitor_last_print = 0;
+            printf("[ectocore] CV monitor enabled\n");
+          } else {
+            printf("[ectocore] CV monitor disabled\n");
+          }
+        }
+      }
       // check for reset
       if (gpio_btn_state[BTN_BANK] > 0 && gpio_btn_state[BTN_MODE] > 0 &&
           gpio_btn_state[BTN_MULT] > 0) {
@@ -1577,6 +1603,30 @@ void __not_in_flash_func(input_handling)() {
         sel_variation = sel_variation_next;
         sync_using_sdcard = false;
         // printf("[main] sel_variation %d us\n", time_us_32() - time_start);
+      }
+    }
+
+    // CV monitoring - print raw CV values every 100ms for 1 minute
+    if (cv_monitor_active) {
+      uint32_t elapsed = current_time - cv_monitor_start_time;
+
+      // Check if 1 minute has elapsed
+      if (elapsed >= CV_MONITOR_DURATION_MS) {
+        cv_monitor_active = false;
+        printf("[ectocore] CV monitor disabled (timeout)\n");
+      } else if (current_time - cv_monitor_last_print >=
+                 CV_MONITOR_INTERVAL_MS) {
+        // Read raw CV values
+        int16_t cv_amen = MCP3208_read(mcp3208, MCP_CV_AMEN, false);
+        int16_t cv_break = MCP3208_read(mcp3208, MCP_CV_BREAK, false);
+        int16_t cv_clock = gpio_get(GPIO_CLOCK_IN);  // Digital read for clock
+        int16_t cv_sample = MCP3208_read(mcp3208, MCP_CV_SAMPLE, false);
+
+        // Print in requested format: cv1=x,cv2=x,cv3=x,cv4=x
+        printf("cv1=%d,cv2=%d,cv3=%d,cv4=%d\n", cv_amen, cv_break, cv_clock,
+               cv_sample);
+
+        cv_monitor_last_print = current_time;
       }
     }
 
