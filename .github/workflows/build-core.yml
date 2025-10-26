@@ -46,13 +46,13 @@ jobs:
         run: ./core --help
 
       - name: Zip binary (macOS)
-        run: zip -9 core_macos.zip core
+        run: zip -9 ectocore_tool_macos.zip core
 
       - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         with:
-          name: core_macos.zip
-          path: core/core_macos.zip
+          name: ectocore_tool_macos.zip
+          path: core/ectocore_tool_macos.zip
           if-no-files-found: error
 
   linux:
@@ -79,13 +79,13 @@ jobs:
         run: ./core --help
 
       - name: Zip binary (Linux)
-        run: zip -9 core_linux.zip core
+        run: zip -9 ectocore_tool_linux.zip core
 
       - name: Upload artifact (Linux)
         uses: actions/upload-artifact@v4
         with:
-          name: core_linux.zip
-          path: core/core_linux.zip
+          name: ectocore_tool_linux.zip
+          path: core/ectocore_tool_linux.zip
           if-no-files-found: error
 
  
@@ -130,13 +130,13 @@ jobs:
 
       - name: Zip binary (Windows)
         shell: pwsh
-        run: Compress-Archive -Path core.exe -DestinationPath core_windows.zip -Force
+        run: Compress-Archive -Path core.exe -DestinationPath ectocore_tool_windows.zip -Force
 
       - name: Upload artifact (Windows)
         uses: actions/upload-artifact@v4
         with:
-          name: core_windows.zip
-          path: core/core_windows.zip
+          name: ectocore_tool_windows.zip
+          path: core/ectocore_tool_windows.zip
           if-no-files-found: error
 
   release:
@@ -160,8 +160,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/core_macos.zip
-            dist/core_linux.zip
-            dist/core_windows.zip
+            dist/ectocore_tool_macos.zip
+            dist/ectocore_tool_linux.zip
+            dist/ectocore_tool_windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
