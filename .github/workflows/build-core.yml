@@ -39,20 +39,36 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project
+      - name: Build Go project (ectocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
-      - name: Verify binary
+      - name: Verify binary (ectocore)
         run: ./core --help
 
-      - name: Zip binary (macOS)
+      - name: Zip binary (ectocore macOS)
         run: zip -9 ectocore_tool_macos.zip core
 
-      - name: Upload artifact (macOS)
+      - name: Build Go project (zeptocore)
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.ZeptocoreDefault=yes" -o core
+
+      - name: Verify binary (zeptocore)
+        run: ./core --help
+
+      - name: Zip binary (zeptocore macOS)
+        run: zip -9 zeptocore_tool_macos.zip core
+
+      - name: Upload artifact (ectocore macOS)
         uses: actions/upload-artifact@v4
         with:
           name: ectocore_tool_macos.zip
           path: core/ectocore_tool_macos.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (zeptocore macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeptocore_tool_macos.zip
+          path: core/zeptocore_tool_macos.zip
           if-no-files-found: error
 
   linux:
@@ -72,20 +88,36 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project
+      - name: Build Go project (ectocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
-      - name: Verify binary
+      - name: Verify binary (ectocore)
         run: ./core --help
 
-      - name: Zip binary (Linux)
+      - name: Zip binary (ectocore Linux)
         run: zip -9 ectocore_tool_linux.zip core
 
-      - name: Upload artifact (Linux)
+      - name: Build Go project (zeptocore)
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.ZeptocoreDefault=yes" -o core
+
+      - name: Verify binary (zeptocore)
+        run: ./core --help
+
+      - name: Zip binary (zeptocore Linux)
+        run: zip -9 zeptocore_tool_linux.zip core
+
+      - name: Upload artifact (ectocore Linux)
         uses: actions/upload-artifact@v4
         with:
           name: ectocore_tool_linux.zip
           path: core/ectocore_tool_linux.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (zeptocore Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeptocore_tool_linux.zip
+          path: core/zeptocore_tool_linux.zip
           if-no-files-found: error
 
  
@@ -122,21 +154,38 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project
+      - name: Build Go project (ectocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core.exe
 
-      - name: Verify binary
+      - name: Verify binary (ectocore)
         run: .\core.exe --help
 
-      - name: Zip binary (Windows)
+      - name: Zip binary (ectocore Windows)
         shell: pwsh
         run: Compress-Archive -Path core.exe -DestinationPath ectocore_tool_windows.zip -Force
 
-      - name: Upload artifact (Windows)
+      - name: Build Go project (zeptocore)
+        run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.ZeptocoreDefault=yes" -o core.exe
+
+      - name: Verify binary (zeptocore)
+        run: .\core.exe --help
+
+      - name: Zip binary (zeptocore Windows)
+        shell: pwsh
+        run: Compress-Archive -Path core.exe -DestinationPath zeptocore_tool_windows.zip -Force
+
+      - name: Upload artifact (ectocore Windows)
         uses: actions/upload-artifact@v4
         with:
           name: ectocore_tool_windows.zip
           path: core/ectocore_tool_windows.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (zeptocore Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeptocore_tool_windows.zip
+          path: core/zeptocore_tool_windows.zip
           if-no-files-found: error
 
   release:
@@ -166,5 +215,8 @@ jobs:
             dist/ectocore_tool_macos.zip
             dist/ectocore_tool_linux.zip
             dist/ectocore_tool_windows.zip
+            dist/zeptocore_tool_macos.zip
+            dist/zeptocore_tool_linux.zip
+            dist/zeptocore_tool_windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
