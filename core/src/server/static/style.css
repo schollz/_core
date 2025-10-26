@@ -188,6 +188,7 @@ a:hover {
 .file-details.loaded {
     opacity: 1;
     transition: opacity 0.3s ease-in-out;
+    overflow-x: hidden;
 }
 
 /* Vue transition classes for fade in/out */
@@ -625,6 +626,10 @@ a {
 
 .file-details {
     box-shadow: 3px 3px 2px 1px var(--shadow-color);
+}
+
+.feather-circle {
+    stroke: var(--highlight-color-border);
 }
 
 .cookie-consent-container {
