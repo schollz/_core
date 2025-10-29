@@ -77,3 +77,4 @@ core/*zip
 
 core/corehugo
 *.tar.gz
+core/core
