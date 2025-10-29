@@ -75,4 +75,6 @@ core/*zip
 *.wav.info
 *wav.json
 
+core/corehugo
+*.tar.gz
 core/core
