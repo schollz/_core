@@ -207,10 +207,15 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	}
 	var beats float64
 	var bpm float64
-	beats, bpm, err = sox.GetBPM(f.PathToAudio)
-	f.BPM = int(math.Round(bpm))
-	log.Infof("beats: %f", beats)
-	if len(f.SliceStart) == 0 || errSliceDetect != nil {
+	if !f.OneShot {
+		beats, bpm, err = sox.GetBPM(f.PathToAudio)
+		f.BPM = int(math.Round(bpm))
+		log.Infof("beats: %f", beats)
+	} else {
+		// Skip BPM detection for oneshot mode
+		beats = 1
+	}
+	if !f.OneShot && (len(f.SliceStart) == 0 || errSliceDetect != nil) {
 		if f.Duration > 2 {
 			// determine programmatically
 			slices := beats * 2
@@ -235,7 +240,9 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 	slicesPerBeat := float64(len(f.SliceStart)) / beats
 	f.SpliceTrigger = int(math.Round(2*96/slicesPerBeat*4) / 4)
 	f.SliceType = make([]int, len(f.SliceStart))
-	f.UpdateSliceTypes()
+	if !f.OneShot {
+		f.UpdateSliceTypes()
+	}
 
 	// get the folder of the original flie
 	folder, filename := filepath.Split(f.PathToFile)
@@ -260,89 +267,92 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		}
 	}
 
-	go func() {
-		_, errDemucs := exec.LookPath("demucs")
-		if errDemucs == nil {
-			// get transients
-			transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
-			if errTransients == nil {
-				// reload in case its been too long
-				f.Load()
-				// check if transients changed
-				changed := false
-				for i := range transients1 {
-					if f.Transients[0][i] != transients1[i] {
-						changed = true
-						break
-					}
-				}
-				if !changed {
-					for i := range transients2 {
-						if f.Transients[1][i] != transients2[i] {
+	// Skip transient detection for oneshot mode
+	if !f.OneShot {
+		go func() {
+			_, errDemucs := exec.LookPath("demucs")
+			if errDemucs == nil {
+				// get transients
+				transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2(f.PathToAudio)
+				if errTransients == nil {
+					// reload in case its been too long
+					f.Load()
+					// check if transients changed
+					changed := false
+					for i := range transients1 {
+						if f.Transients[0][i] != transients1[i] {
 							changed = true
 							break
 						}
 					}
+					if !changed {
+						for i := range transients2 {
+							if f.Transients[1][i] != transients2[i] {
+								changed = true
+								break
+							}
+						}
+					}
+					if !changed {
+						for i := range transients3 {
+							if f.Transients[2][i] != transients3[i] {
+								changed = true
+								break
+							}
+						}
+					}
+					if changed {
+						f.Transients[0] = transients1
+						f.Transients[1] = transients2
+						f.Transients[2] = transients3
+						log.Debugf("saving transients for %s", f.PathToAudio)
+						f.Save()
+						f.Regenerate()
+					}
 				}
-				if !changed {
-					for i := range transients3 {
-						if f.Transients[2][i] != transients3[i] {
+			} else {
+				// use the public API
+				transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2API(f.PathToAudio)
+				if errTransients == nil {
+					// reload in case its been too long
+					f.Load()
+					// check if transients changed
+					changed := false
+					for i := range transients1 {
+						if f.Transients[0][i] != transients1[i] {
 							changed = true
 							break
 						}
 					}
-				}
-				if changed {
-					f.Transients[0] = transients1
-					f.Transients[1] = transients2
-					f.Transients[2] = transients3
-					log.Debugf("saving transients for %s", f.PathToAudio)
-					f.Save()
-					f.Regenerate()
+					if !changed {
+						for i := range transients2 {
+							if f.Transients[1][i] != transients2[i] {
+								changed = true
+								break
+							}
+						}
+					}
+					if !changed {
+						for i := range transients3 {
+							if f.Transients[2][i] != transients3[i] {
+								changed = true
+								break
+							}
+						}
+					}
+					if changed {
+						f.Transients[0] = transients1
+						f.Transients[1] = transients2
+						f.Transients[2] = transients3
+						log.Debugf("saving transients from API for %s", f.PathToAudio)
+						f.Save()
+						f.Regenerate()
+					}
 				}
 			}
-		} else {
-			// use the public API
-			transients1, transients2, transients3, errTransients := drumextract2.DrumExtract2API(f.PathToAudio)
-			if errTransients == nil {
-				// reload in case its been too long
-				f.Load()
-				// check if transients changed
-				changed := false
-				for i := range transients1 {
-					if f.Transients[0][i] != transients1[i] {
-						changed = true
-						break
-					}
-				}
-				if !changed {
-					for i := range transients2 {
-						if f.Transients[1][i] != transients2[i] {
-							changed = true
-							break
-						}
-					}
-				}
-				if !changed {
-					for i := range transients3 {
-						if f.Transients[2][i] != transients3[i] {
-							changed = true
-							break
-						}
-					}
-				}
-				if changed {
-					f.Transients[0] = transients1
-					f.Transients[1] = transients2
-					f.Transients[2] = transients3
-					log.Debugf("saving transients from API for %s", f.PathToAudio)
-					f.Save()
-					f.Regenerate()
-				}
-			}
-		}
 
-	}()
+		}()
+	}
 
 	return
 }
