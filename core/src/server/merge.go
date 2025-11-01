@@ -15,12 +15,17 @@ func Merge(fnames []string, fnameout string) (err error) {
 
 	filesToMerge := make([]string, len(fnames))
 	totalTime := 0.0
+	allOneshot := true // Track if all files are in oneshot mode
 	for i, fname := range fnames {
 		var f zeptocore.File
 		f, err = zeptocore.Get(fname)
 		if err != nil {
 			log.Error(err)
 			return
+		}
+		// Check if this file is NOT oneshot
+		if !f.OneShot {
+			allOneshot = false
 		}
 		for _, v := range f.SliceStart {
 			metadata.SliceStart = append(metadata.SliceStart, totalTime+v*f.Duration)
@@ -37,6 +42,14 @@ func Merge(fnames []string, fnameout string) (err error) {
 		}
 		defer os.Remove(filesToMerge[i])
 		totalTime += (f.Duration + silenceDuration)
+	}
+
+	// If all files are oneshot, mark the merged file as oneshot too
+	if allOneshot {
+		metadata.OneShot = true
+		metadata.TempoMatch = false
+		metadata.SplicePlayback = 1
+		log.Debugf("all files are oneshot, merged file will be oneshot with tempomatch disabled")
 	}
 
 	for i, v := range metadata.SliceStart {
@@ -80,6 +93,27 @@ func Merge(fnames []string, fnameout string) (err error) {
 	if err != nil {
 		log.Error(err)
 		return
+	}
+
+	// If all merged files were oneshot, set the merged file properties
+	// We save directly without triggering Regenerate() to avoid slow processing
+	if allOneshot {
+		var mergedFile zeptocore.File
+		mergedFile, err = zeptocore.Get(fnameout)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		// Set properties directly and save without regeneration
+		mergedFile.OneShot = true
+		mergedFile.TempoMatch = false
+		mergedFile.SplicePlayback = 1
+		err = mergedFile.SaveNoDebounce()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		log.Debugf("saved merged file with oneshot properties (no regeneration triggered)")
 	}
 
 	return

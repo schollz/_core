@@ -437,17 +437,22 @@ func (f File) Regenerate() {
 
 		log.Tracef("slices: %+v", f.SliceStart)
 		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
-		err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels+1, f.Oversampling)
-		if err != nil {
-			log.Error(err)
-		}
-		log.Trace("-------------------------")
-		log.Tracef("slices: %+v", f.SliceStart)
-		log.Tracef("slice types: %+v", f.SliceType)
-		log.Trace("-------------------------")
-		err = f.updateInfo(fname1)
-		if err != nil {
-			log.Error(err)
+		// Skip time-stretching for oneshot files without tempo matching
+		if !f.OneShot || f.TempoMatch {
+			err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels+1, f.Oversampling)
+			if err != nil {
+				log.Error(err)
+			}
+			log.Trace("-------------------------")
+			log.Tracef("slices: %+v", f.SliceStart)
+			log.Tracef("slice types: %+v", f.SliceType)
+			log.Trace("-------------------------")
+			err = f.updateInfo(fname1)
+			if err != nil {
+				log.Error(err)
+			}
+		} else {
+			log.Debugf("skipping time-stretch for oneshot file: %s", f.PathToFile)
 		}
 
 		// create the variatoins
