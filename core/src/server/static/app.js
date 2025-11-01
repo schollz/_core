@@ -343,6 +343,9 @@ const socketMessageListener = (e) => {
         if (savedState.stereoMono) {
             app.stereoMono = savedState.stereoMono;
         }
+        if (savedState.dropaudiofilemode) {
+            app.dropaudiofilemode = savedState.dropaudiofilemode;
+        }
         if (savedState.selectedBank !== undefined) {
             app.selectedBank = savedState.selectedBank;
         }
@@ -584,6 +587,7 @@ app = new Vue({
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
         settingsMashMode: 'saveState',
+        dropaudiofilemode: 'saveState',
         selectedFile: 'saveState',
         selectedBank: 'saveState',
         selectedFile: 'saveLastSelected',
@@ -993,6 +997,7 @@ app = new Vue({
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
                 settingsMashMode: app.settingsMashMode,
+                dropaudiofilemode: app.dropaudiofilemode,
             };
             console.log(`settingsOverrideWithReset: ${app.settingsOverrideWithReset}`);
             if (!hasSavedToCookie) {
