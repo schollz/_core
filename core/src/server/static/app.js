@@ -1440,6 +1440,13 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
     var banksSelectWidth = document.getElementsByClassName('banks-selector')[0].clientWidth;
     var newWidth = `width:${document.getElementById('waveform-parent').parentElement.clientWidth - 50}px`;
     document.getElementById('waveform-parent').style = newWidth;
+
+    // Use .wav file for wavesurfer if .aif file
+    var audioFilename = filename;
+    if (filename.endsWith('.aif')) {
+        audioFilename = filename.substring(0, filename.length - 4) + '.wav';
+    }
+
     wsf = window.WaveSurf.create({
         container: '#waveform',
         waveColor: wavecolor,
@@ -1448,7 +1455,7 @@ function showWaveform_(filename, duration, sliceStart, sliceEnd, sliceType, tran
         hideScrollbar: false,
         autoScroll: false,
         autoCenter: true,
-        url: encodeURIComponent(filename),
+        url: encodeURIComponent(audioFilename),
     });
     // resize whenever a zoom
     wsf.on('zoom', () => {

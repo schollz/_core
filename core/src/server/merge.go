@@ -73,5 +73,14 @@ func Merge(fnames []string, fnameout string) (err error) {
 	}
 	log.Trace("check2")
 	log.Trace(sox.Length(fnameout))
+
+	// Create a .wav copy for wavesurfer to load in the webview
+	fnameoutWav := fnameout[:len(fnameout)-4] + ".wav"
+	err = sox.Convert(fnameout, fnameoutWav)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	return
 }
