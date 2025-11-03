@@ -374,7 +374,8 @@ bool __not_in_flash_func(timer_step)() {
                                 (float)banks[sel_bank_cur]
                                     ->sample[sel_sample_cur]
                                     .snd[FILEZERO]
-                                    ->splice_trigger / 192.0f;
+                                    ->splice_trigger /
+                                192.0f;
         int32_t pulses_accumulated = clock_in_beat_total - clock_in_beat_last;
 
         if (pulses_accumulated < (int32_t)roundf(expected_pulses)) {
@@ -403,17 +404,19 @@ bool __not_in_flash_func(timer_step)() {
       if (fil_is_open && debounce_quantize == 0) {
         if (clock_in_do) {
           uint16_t splice_trigger_val = banks[sel_bank_cur]
-                                         ->sample[sel_sample_cur]
-                                         .snd[FILEZERO]
-                                         ->splice_trigger;
+                                            ->sample[sel_sample_cur]
+                                            .snd[FILEZERO]
+                                            ->splice_trigger;
           uint8_t slice_num_val = banks[sel_bank_cur]
-                             ->sample[sel_sample_cur]
-                             .snd[FILEZERO]
-                             ->slice_num;
+                                      ->sample[sel_sample_cur]
+                                      .snd[FILEZERO]
+                                      ->slice_num;
           // External clock is 2 pulses per beat (quarter note)
-          // Convert: clock_in_beat_total (2 PPQN) -> internal ticks (192 PPQN) -> slices
-          // clock_in_beat_total * (192/2) / splice_trigger = clock_in_beat_total * 96 / splice_trigger
-          float raw_calc = (float)clock_in_beat_total * 96.0f / (float)splice_trigger_val;
+          // Convert: clock_in_beat_total (2 PPQN) -> internal ticks (192 PPQN)
+          // -> slices clock_in_beat_total * (192/2) / splice_trigger =
+          // clock_in_beat_total * 96 / splice_trigger
+          float raw_calc =
+              (float)clock_in_beat_total * 96.0f / (float)splice_trigger_val;
           int new_beat_current = (int)roundf(raw_calc) % slice_num_val;
 
           // Only update if beat_current actually changed
@@ -547,7 +550,8 @@ bool __not_in_flash_func(timer_step)() {
         }
 #endif
         // printf("beat_current: %d\n", beat_current);
-        if (should_update_phase && key_jump_debounce == 0 && !sf->fx_active[FX_SCRATCH]) {
+        if (should_update_phase && key_jump_debounce == 0 &&
+            !sf->fx_active[FX_SCRATCH]) {
           // printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
           //        beat_total);
           do_update_phase_from_beat_current();
@@ -686,9 +690,9 @@ int main() {
                   main_line * MHZ, main_line * MHZ);
   // Reinit uart now that clk_peri has changed
   stdio_init_all();
-// overclocking!!!
-// note that overclocking >200Mhz requires setting sd_card_sdio
-// rp2040_sdio_init(sd_card_p, 2);
+  // overclocking!!!
+  // note that overclocking >200Mhz requires setting sd_card_sdio
+  // rp2040_sdio_init(sd_card_t, 2);
 // otherwise clock divider of 1 is fine
 // set_sys_clock_khz(270000, true);
 #ifdef DO_OVERCLOCK

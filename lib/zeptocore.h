@@ -12,7 +12,6 @@
 #include "ssd1306.h"
 #endif
 
-
 void printStringWithDelay(char *str) {
   int len = strlen(str);
   for (int i = 0; i < len; i++) {
@@ -115,9 +114,9 @@ void __not_in_flash_func(input_handling)() {
   Onewiremidi *onewiremidi = NULL;
   if (use_onewiremidi) {
     // setup one wire midi
-    onewiremidi =
-        Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off,
-                        midi_start, midi_continue, midi_stop, midi_timing, midi_control_change);
+    onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on,
+                                  midi_note_off, midi_start, midi_continue,
+                                  midi_stop, midi_timing, midi_control_change);
   } else {
     clockinput = ClockInput_create(CLOCK_INPUT_GPIO, clock_handling_up,
                                    clock_handling_down, clock_handling_start);
@@ -142,10 +141,10 @@ void __not_in_flash_func(input_handling)() {
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv6.4.4");
+  printStringWithDelay("zv6.4.5");
 
   // print to screen
-  printf("version=v6.4.4\n");
+  printf("version=v6.4.5\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -193,7 +192,8 @@ void __not_in_flash_func(input_handling)() {
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
-                   midi_start, midi_continue, midi_stop, midi_timing, midi_control_change);
+                   midi_start, midi_continue, midi_stop, midi_timing,
+                   midi_control_change);
 #endif
 
     if (do_switch_between_clock_and_midi) {
@@ -208,9 +208,9 @@ void __not_in_flash_func(input_handling)() {
       } else {
         // switch to one wire midi
         ClockInput_destroy(clockinput);
-        onewiremidi = Onewiremidi_new(pio0, 3, CLOCK_INPUT_GPIO, midi_note_on,
-                                      midi_note_off, midi_start, midi_continue,
-                                      midi_stop, midi_timing, midi_control_change);
+        onewiremidi = Onewiremidi_new(
+            pio0, 3, CLOCK_INPUT_GPIO, midi_note_on, midi_note_off, midi_start,
+            midi_continue, midi_stop, midi_timing, midi_control_change);
       }
       use_onewiremidi = !use_onewiremidi;
     }
@@ -241,7 +241,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v6.4.4\n");
+        printf("version=v6.4.5\n");
       }
     }
 
@@ -762,7 +762,9 @@ void __not_in_flash_func(input_handling)() {
       // grimoire selection       grimoire probability
       // random sequencer         random jump
       // read the arcade box knobs
-      int arcadeknobmap[8] = {cc_volume,cc_tempo,cc_sampleselect,cc_djfilter,cc_randfxbank,cc_randfx,cc_randsequence,cc_randjump};
+      int arcadeknobmap[8] = {cc_volume,       cc_tempo,      cc_sampleselect,
+                              cc_djfilter,     cc_randfxbank, cc_randfx,
+                              cc_randsequence, cc_randjump};
       for (uint8_t i = 0; i < 8; i++) {
         int16_t adcValue = KnobChange_update(
             knob_change_arcade[i], (int16_t)ADS7830_read(arcade_ads7830, i));
