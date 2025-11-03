@@ -57,13 +57,14 @@ static sd_sdio_if_t sdio_if = {
 #if PICO_RP2040
     // The default system clock frequency for SDK is 125MHz.
     .baud_rate = 125 * 1000 * 1000 /
-                 4  // 31250000 Hz
+                 5  // 25000000 Hz (/4 is too fast for some cards), clk_div
+                    // = 5.0
 #endif
 #if PICO_RP2350
-                     // ◦The default system clock on RP2350 is 150Mhz.
-                     // Reduced from /6 to /12 for better signal integrity
+                    // The default system clock on RP2350 is 150Mhz.
+                    //  Reduced from /6 to /12 for better signal integrity
                      .baud_rate =
-                     150 * 1000 * 1000 / 12  // 12500000 Hz, clk_div = 3.0
+                     150 * 1000 * 1000 / 6  // 25000000 Hz, clk_div = 1.5
 #endif
 };
 

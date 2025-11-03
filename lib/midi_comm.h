@@ -108,7 +108,8 @@ typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
                     callback_int midi_note_off, callback_void midi_start,
                     callback_void midi_continue, callback_void midi_stop,
-                    callback_void midi_timing, callback_uint8_uint8_uint8 midi_control_change) {
+                    callback_void midi_timing,
+                    callback_uint8_uint8_uint8 midi_control_change) {
   uint8_t midi_buffer[3];
   midi_buffer[0] = 0;
   midi_buffer[1] = 0;
@@ -151,9 +152,9 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     }
     return;
   } else if (midi_buffer[0] == 0xB0 && bytes_read > 1) {
-     uint8_t channel = midi_buffer[0] & 0xf;
+    uint8_t channel = midi_buffer[0] & 0xf;
     // CONTROL CHANGE
-    midi_control_change (channel, midi_buffer[1], midi_buffer[2]);
+    midi_control_change(channel, midi_buffer[1], midi_buffer[2]);
     return;
 
   } else if (midi_buffer[0] == 0x80 && bytes_read > 1) {
@@ -194,7 +195,7 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
       sleep_ms(10);
       reset_usb_boot(0, 0);
     } else if (status == 176 && channel == 0 && note == 1) {
-      send_text_as_sysex("version=v6.4.4");
+      send_text_as_sysex("version=v6.4.5");
     }
     if (callback != NULL) {
       callback(status, channel, note, velocity);
