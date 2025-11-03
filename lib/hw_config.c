@@ -47,11 +47,11 @@ static sd_sdio_if_t sdio_if = {
     .D0_gpio = SDCARD_D0_GPIO,
     .set_drive_strength = true,
     .CLK_gpio_drive_strength = GPIO_DRIVE_STRENGTH_12MA,
-    .CMD_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
-    .D0_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
-    .D1_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
-    .D2_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
-    .D3_gpio_drive_strength = GPIO_DRIVE_STRENGTH_4MA,
+    .CMD_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
+    .D0_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
+    .D1_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
+    .D2_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
+    .D3_gpio_drive_strength = GPIO_DRIVE_STRENGTH_8MA,
     .SDIO_PIO = pio1,
     .DMA_IRQ_num = DMA_IRQ_0,
 #if PICO_RP2040
@@ -61,8 +61,9 @@ static sd_sdio_if_t sdio_if = {
 #endif
 #if PICO_RP2350
                      // ◦The default system clock on RP2350 is 150Mhz.
+                     // Reduced from /6 to /12 for better signal integrity
                      .baud_rate =
-                     150 * 1000 * 1000 / 6  // 25000000 Hz, clk_div = 1.5
+                     150 * 1000 * 1000 / 12  // 12500000 Hz, clk_div = 3.0
 #endif
 };
 
