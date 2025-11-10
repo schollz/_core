@@ -19,6 +19,7 @@ body {
     /* Light purple background color */
     max-width: 1200px;
     margin: auto;
+    overflow-x: hidden;
 }
 
 #dialog2,
@@ -471,6 +472,7 @@ body {
     .content-area {
         overflow-y: auto;
         flex: 1;
+        border-right: none;
     }
 
     .banks-selector li .desktop-bank-label {
@@ -483,6 +485,7 @@ body {
 
     .footer-row {
         flex-direction: column;
+        align-items: flex-start;
     }
 
     h2 {
@@ -496,12 +499,50 @@ body {
     }
 
     body {
-        padding: 1em;
+        padding: 0.5em;
+        padding-top: 1em;
     }
 
     .help-banner {
         padding: 1em;
         margin: 1em;
+    }
+
+    .ear {
+        display: none;
+    }
+
+    footer {
+        flex-wrap: wrap;
+    }
+
+    footer > div {
+        width: 100%;
+        text-align: center;
+        margin-top: 0.5em;
+    }
+
+    .file-details {
+        width: 95vw;
+        padding: 1em;
+        max-height: 90vh;
+    }
+
+    .grimoire-container {
+        overflow-x: auto;
+    }
+
+    #dialog-settings {
+        max-width: 95vw;
+        padding: 1em;
+    }
+
+    header h1 {
+        font-size: 1.2em;
+    }
+
+    #floater {
+        font-size: 1em;
     }
 }
 
