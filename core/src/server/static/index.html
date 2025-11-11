@@ -88,6 +88,7 @@
         }
 
         @keyframes l7-1 {
+
             0%,
             100% {
                 background-position: 0 -50px, 100% -50px
@@ -112,6 +113,7 @@
         }
 
         @keyframes l7-2 {
+
             0%,
             70% {
                 transform: translate(0)
@@ -610,8 +612,7 @@
                 </span>
                 <span v-else-if="deviceType==''">
                     <a href="https://github.com/schollz/_core/releases/[[.VersionCurrent]]" target="_blank"
-                        id="firmwareDownloadLink" style="font-size:1.0em;">[[.VersionCurrent]] <i
-                            class="fa-solid fa-microchip"></i></a>
+                        id="firmwareDownloadLink" style="font-size:1.0em;">[[.VersionCurrent]]</a>
                 </span>
                 <span v-else-if="deviceFirmwareUpload!=''"><i class="fas fa-circle" aria-hidden="true"></i>
                     {{deviceFirmwareUpload}}
@@ -643,10 +644,10 @@
                     <a href="https://ectocore.rocks/quickstart" target="_blank" id="manualDownloadLink"
                         style="font-size:1.0em;"><i class="fa-solid fa-book"></i></a>
                 </span>
-                <span>
+                <!-- <span>
                     <a href="https://getectocore.com" target="_blank" id="getLink" style="font-size:1.0em;"><i
                             class="fa-solid fa-shopping-cart"></i></a>
-                </span>
+                </span> -->
             </span>
 
         </header>
@@ -1106,8 +1107,12 @@
 
                     <div class="footer-item">
                         <div v-if="uploading">uploading</div>
-                        <div v-else-if="isworking"><div class="loader-footer"></div></div>
-                        <div v-else-if="processing"><div class="loader-footer"></div></div>
+                        <div v-else-if="isworking">
+                            <div class="loader-footer"></div>
+                        </div>
+                        <div v-else-if="processing">
+                            <div class="loader-footer"></div>
+                        </div>
                         <div v-else-if="downloading">downloading</div>
                         <button id="downloadZipButton" type="submit" v-else-if="diskUsage>0">Download .zip to load onto
                             SD card ({{
