@@ -428,8 +428,11 @@ body {
 
 
     #app {
-        border-left: 5px solid var(--header-footer-background);
         font-size-adjust: 0.4;
+    }
+
+    .content-area {
+        border-left: 5px solid var(--header-footer-background);
     }
 
     header {
