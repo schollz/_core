@@ -426,6 +426,10 @@ body {
         display: none;
     }
 
+    #show-dialog,
+    #show-dialog-settings {
+        display: none !important;
+    }
 
     #app {
         font-size-adjust: 0.4;
@@ -494,7 +498,7 @@ body {
     }
 
     h1 {
-        font-size: 1.5rem;
+        font-size: 1.1rem;
         /* Adjust the font size as needed for smaller screens */
     }
 
