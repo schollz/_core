@@ -9,10 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"runtime"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/muesli/clusters"
 	"github.com/muesli/kmeans"
@@ -20,6 +17,7 @@ import (
 	"github.com/schollz/_core/core/src/sox"
 	"github.com/schollz/_core/core/src/utils"
 	log "github.com/schollz/logger"
+	onset "github.com/schollz/onsets"
 )
 
 func OnsetDetectAPI(fname string, numOnsets int) (onsets []float64, err error) {
@@ -150,94 +148,31 @@ func findBiggestClusterCenter(data []float64) (center float64) {
 }
 
 func getOnsets(fname string, numOnsets int) (onsets []float64, err error) {
-	type job struct {
-		algo      string
-		threshold float64
-	}
+	// Convert to 16-bit 44.1kHz mono WAV file for the onsets library
+	convertedFile := utils.RandomString(10) + ".wav"
+	defer os.Remove(convertedFile)
 
-	type result struct {
-		result []float64
-		err    error
-	}
-
-	duration, err := sox.Length(fname)
+	cmd := exec.Command(sox.GetBinary(), fname, "-r", "44100", "-c", "1", "-b", "16", convertedFile)
+	err = cmd.Run()
 	if err != nil {
+		log.Error(err)
 		return
 	}
 
-	joblist := []job{}
-
-	// for _, algo := range []string{"energy", "hfc", "specflux", "madmom/OnsetDetector", "madmom/OnsetDetectorLL", "madmom/SuperFlux", "madmom/SuperFluxNN"} {
-	for _, algo := range []string{"mkl", "complex", "energy", "hfc", "specflux"} {
-		thresholds := []float64{3, 2, 1.5, 1, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.1, 0.05}
-		if strings.Contains(algo, "madmom/") {
-			thresholds = []float64{0.3, 0.2, 0.1}
-		}
-		for _, threshold := range thresholds {
-			joblist = append(joblist, job{algo, threshold})
-		}
+	// Use only the hfc (High Frequency Content) algorithm
+	opts := onset.SliceAnalyzerOptions{
+		NumSlices:        numOnsets,    
+		Method:           "hfc",
+		Optimize:         true, 
+		OptimizeWindowMs: 15.0,  
+	}
+	resultData, errAnalyze := onset.AnalyzeSlices(convertedFile, opts)
+	if errAnalyze != nil {
+		err = errAnalyze
+		return
 	}
 
-	numJobs := len(joblist)
-	jobs := make(chan job, numJobs)
-	results := make(chan result, numJobs)
-
-	numCPU := runtime.NumCPU()
-	runtime.GOMAXPROCS(numCPU)
-
-	for i := 0; i < numCPU; i++ {
-		go func(jobs <-chan job, results chan<- result) {
-			for j := range jobs {
-				var r result
-				var out []byte
-				var cmd *exec.Cmd
-				if strings.Contains(j.algo, "madmom/") {
-					// check if dev/madmom/.venv exists
-					_, errExists := os.Stat("./dev/madmom/.venv/bin/python")
-					if errExists != nil {
-						r.err = fmt.Errorf("madmom not installed")
-						results <- r
-						return
-					}
-					cmd = exec.Command("./dev/madmom/.venv/bin/python", "./dev/"+j.algo, "-t", fmt.Sprint(j.threshold), "single", fname)
-				} else {
-					cmd = exec.Command("aubioonset", "-i", fname, "-B", "128", "-H", "128", "-t", fmt.Sprint(j.threshold), "-O", j.algo, "-M", fmt.Sprint(duration/128.0))
-				}
-				out, r.err = cmd.Output()
-				for _, line := range strings.Split(string(out), "\n") {
-					num, errNum := strconv.ParseFloat(line, 64)
-					if errNum == nil {
-						r.result = append(r.result, num)
-					}
-				}
-				results <- r
-			}
-		}(jobs, results)
-	}
-
-	for _, j := range joblist {
-		jobs <- j
-	}
-	close(jobs)
-
-	data := [10000]float64{}
-	j := 0
-	for i := 0; i < numJobs; i++ {
-		r := <-results
-		if r.err != nil {
-			err = r.err
-		} else {
-			if (j == 0 && len(r.result) > 4) || (len(r.result) < 2*numOnsets && len(r.result) > numOnsets/2) {
-				for _, v := range r.result {
-					if j < len(data) {
-						data[j] = v
-						j++
-					}
-				}
-			}
-		}
-	}
-	onsets = data[:j]
+	onsets = resultData.Onsets
 	sort.Float64s(onsets)
 
 	return

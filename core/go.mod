@@ -1,6 +1,6 @@
 module github.com/schollz/_core/core
 
-go 1.24.0
+go 1.25
 
 require (
 	github.com/bep/debounce v1.2.1
@@ -15,13 +15,17 @@ require (
 	github.com/otiai10/copy v1.14.1
 	github.com/schollz/codename v0.0.0-20240708161051-eee8ae079887
 	github.com/schollz/logger v1.2.0
+	github.com/schollz/onsets v0.2.0
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.9.0
 	go.bug.st/serial v1.6.4
 )
 
-require github.com/otiai10/mint v1.6.3 // indirect
+require (
+	github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 // indirect
+	github.com/otiai10/mint v1.6.3 // indirect
+)
 
 require (
 	github.com/blend/go-sdk v1.20240719.1 // indirect

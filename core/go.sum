@@ -47,6 +47,8 @@ github.com/mattn/go-runewidth v0.0.16 h1:E5ScNMtiwvlvB5paMFdw9p4kSQzbXFikJ5SQO6T
 github.com/mattn/go-runewidth v0.0.16/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db h1:62I3jR2EmQ4l5rM/4FEfDWcRD+abF5XlKShorW5LRoQ=
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db/go.mod h1:l0dey0ia/Uv7NcFFVbCLtqEBQbrT4OCwCSKTEv6enCw=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 h1:dd7vnTDfjtwCETZDrRe+GPYNLA1jBtbZeyfyE8eZCyk=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12/go.mod h1:i/KKcxEWEO8Yyl11DYafRPKOPVYTrhxiTRigjtEEXZU=
 github.com/mpiannucci/peakdetect v0.0.0-20160920143128-9526111f1fb9 h1:MgKutH+WDSIqknS7k8FYpZdg9K3NtMKw4wwOLph1gZ8=
 github.com/mpiannucci/peakdetect v0.0.0-20160920143128-9526111f1fb9/go.mod h1:F91Na22F1M0EbbXoizzyxvaBw5zl4qbgKtaffXk6X8g=
 github.com/muesli/clusters v0.0.0-20180605185049-a07a36e67d36/go.mod h1:mw5KDqUj0eLj/6DUNINLVJNoPTFkEuGMHtJsXLviLkY=
@@ -73,6 +75,8 @@ github.com/schollz/codename v0.0.0-20240708161051-eee8ae079887 h1:LWGUDRd0sJuQ9X
 github.com/schollz/codename v0.0.0-20240708161051-eee8ae079887/go.mod h1:tGwopkebzk9l8Bhco4gRpKZdNuOSUGZN0o4haIn3tqY=
 github.com/schollz/logger v1.2.0 h1:5WXfINRs3lEUTCZ7YXhj0uN+qukjizvITLm3Ca2m0Ho=
 github.com/schollz/logger v1.2.0/go.mod h1:P6F4/dGMGcx8wh+kG1zrNEd4vnNpEBY/mwEMd/vn6AM=
+github.com/schollz/onsets v0.2.0 h1:bCu4hqKhLBjWasni2nODLvJor+jpwn9XTA1qd+gyN6A=
+github.com/schollz/onsets v0.2.0/go.mod h1:QGyfvB7ivzLq7TFNs7eLA6Y1s6HflxZfVKW5YKF2v4w=
 github.com/schollz/progressbar/v3 v3.18.0 h1:uXdoHABRFmNIjUfte/Ex7WtuyVslrw2wVPQmCN62HpA=
 github.com/schollz/progressbar/v3 v3.18.0/go.mod h1:IsO3lpbaGuzh8zIMzgY3+J8l4C8GjO0Y9S69eFvNsec=
 github.com/shirou/gopsutil v3.21.11+incompatible h1:+1+c1VGhc88SSonWP6foOcLhvnKlUeu/erjjvaPEYiI=
