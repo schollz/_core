@@ -269,6 +269,14 @@ Do *not* use these cards! They may appear to work, but they can cause spurious g
 - PNY Elite
 - MicroCenter
 
+#### Writing new SD Cards
+
+```
+sudo parted /dev/sdd --script mklabel gpt mkpart primary fat32 4MiB 100%
+sudo mkfs.fat -F 32 -s 128 -S 512 /dev/sdd1
+sudo partclone.fat32 -r -s sdcard_ectocore.img -o /dev/sdd1 --force
+```
+
 # license
 
 - Apache License 2.0 for no-OS-FatFS (Copyright 2021 Carl John Kugler III)
