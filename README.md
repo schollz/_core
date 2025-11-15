@@ -215,18 +215,19 @@ If you are still experiencing lag, it is likely due to sample splicing rather th
 
 ### Which firmware should I use?
 
-That depends on your needs. The firmware is divided into two categories: overclocking and non-overclocking. The non-overclocking firmwares have the most temporal stability but reduced cpu overhead. The overclocking firmwares have the most CPU bandwidth for FX but has a slight drift in the clock *if it is not being externally synced*.
+That depends on your needs. The firmware is divided into two categories: *overclocking* and *non-overclocking*. 
 
-- Overclocking firmware (great if you are externally clocking): [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5.uf2)
-- Non-overclocking firmware (great if you are using the internal clock and need extremely steady timing): [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking.uf2)
+- Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
+- Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
 
-If you are still experiencing latency issues, you can try the low latency version of the firmware. Keep in mind the lower latency firmwares might have less bandwidth for fx:
+For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Overclocking     | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5.uf2)                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_low_latency.uf2)                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_ultralow_latency.uf2)                 |
+| Overclocking     | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5.uf2)*                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_low_latency.uf2)                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_ultralow_latency.uf2)                 |
 | Non-Overclocking | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_low_latency.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_ultralow_latency.uf2) |
 
+*default firmware
 
 ### How do I update the ectocore?
 
