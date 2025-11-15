@@ -92,7 +92,7 @@ the source code is located in the [core folder](https://github.com/schollz/_core
 The ectocore.rocks sample loading tool can be used offline by following the instructions for your system.
 
 <div align="center">
-<img src=""https://github.com/user-attachments/assets/d6ed7a61-9209-484d-9bda-7c965382a7b3" width="50%">
+<img src="https://github.com/user-attachments/assets/d6ed7a61-9209-484d-9bda-7c965382a7b3" width="50%">
 </div>
 
 <details><summary>Windows</summary>
