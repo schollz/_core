@@ -87,12 +87,12 @@ the sample loading tool is a web-based tool (available at [zeptocore.com/tool](h
 
 the source code is located in the [core folder](https://github.com/schollz/_core/tree/main/core), and information for building the tool is located can be found in [the documentation](https://zeptocore.com/#building-from-source).
 
-### ectocore.rocks offline usage
+### ectocore software
 
 The ectocore.rocks sample loading tool can be used offline by following the instructions for your system.
 
 <div align="center">
-<img src="docs/static/img/ectocore_screenshot.png" width="70%">
+<img src=""https://github.com/user-attachments/assets/e500c153-89f0-4326-b91d-fc5af104f05d" width="50%">
 </div>
 
 <details><summary>Windows</summary>
