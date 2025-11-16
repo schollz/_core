@@ -76,3 +76,5 @@ core/*zip
 *wav.json
 
 core/core
+dev/sdcards6/
+dev/sdcards5/sdcard_timings5.png
