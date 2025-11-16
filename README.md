@@ -97,7 +97,7 @@ The ectocore.rocks sample loading tool can be used offline by following the inst
 
 <details><summary>Windows</summary>
 
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_windows_v6.4.5.exe)**
+#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_windows_v6.4.6.exe)**
 
 Once downloaded, double click on the executable file to run it.
 
@@ -111,13 +111,13 @@ To install the tool on macOS, first open a terminal.
 Then, if you are on an Intel-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_macos_amd64_v6.4.5 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_macos_amd64_v6.4.6 > core_macos
 ```
 
 Or, if you are on a M1/M2-based mac install with:
 
 ```
-curl -L https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_macos_aarch64_v6.4.5 > core_macos
+curl -L https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_macos_aarch64_v6.4.6 > core_macos
 ```
 
 Then to enable the program by entering this into the terminal:
@@ -140,7 +140,7 @@ A window should pop up in the browser with the offline version of the tool.
 
 <details><summary>Linux</summary>
 
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_linux_amd64_v6.4.5)**
+#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_linux_amd64_v6.4.6)**
 
 After downloading, run it directly from the terminal.
 
@@ -169,7 +169,7 @@ If you encounter a freeze, it would be helpful to know the following:
 
 > What was the BPM set to?
 
-If it happens a lot, please try using [this firmware](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_no_overclocking_v6.4.5.uf2) which disables overclocking, allows fewer fx, but should increase the stability.
+If it happens a lot, please try using [this firmware](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_no_overclocking_v6.4.6.uf2) which disables overclocking, allows fewer fx, but should increase the stability.
 
 Please submit an issue with responses to these questions by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
 
@@ -184,7 +184,7 @@ The stability of the ectocore varies based on whether you use the internal clock
 
 In order of stability:
 
-1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_no_overclocking_v6.4.5.uf2)). This is more stable than my external clock source (Pam's new workout).
+1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_no_overclocking_v6.4.6.uf2)). This is more stable than my external clock source (Pam's new workout).
 2) Externally clock Ectocore using a clock source. Even when Ectocore is overclocked, it follows the clock source very well.
 3) Internally clock Ectocore using the overclocking firmware (the default). This is about two times less stable than Pam's clock source.
 
@@ -224,8 +224,8 @@ For latency, normal latency will work for most, but choose low or ultra-low if y
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Overclocking     | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5.uf2)*                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_low_latency.uf2)                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_ultralow_latency.uf2)                 |
-| Non-Overclocking | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_low_latency.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_ultralow_latency.uf2) |
+| Overclocking     | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6.uf2)*                | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_low_latency.uf2)                 | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_ultralow_latency.uf2)                 |
+| Non-Overclocking | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking.uf2) | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking_low_latency.uf2) | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking_ultralow_latency.uf2) |
 
 *default firmware
 
