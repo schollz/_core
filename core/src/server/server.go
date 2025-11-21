@@ -22,6 +22,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	cp "github.com/otiai10/copy"
+	"github.com/schollz/_core/core/src/auth"
+	"github.com/schollz/_core/core/src/captcha"
 	"github.com/schollz/_core/core/src/detectdisks"
 	"github.com/schollz/_core/core/src/drumextract2"
 	"github.com/schollz/_core/core/src/latestrelease"
@@ -61,23 +63,29 @@ var deviceVersion string
 var deviceType string
 var isEctocore bool
 
-func stateSave(place string, state string) (err error) {
+func getUserStorageFolder(r *http.Request) string {
+	userID := r.Header.Get("X-User-ID")
+	if userID == "" {
+		return StorageFolder
+	}
+	return auth.GetUserStorageFolder(userID)
+}
+
+func stateSave(place string, state string, userStorageFolder string) (err error) {
 	mutexStorage.Lock()
 	defer mutexStorage.Unlock()
-	// save state by writing to file
-	// remove beginning slash if it exists in place
 	place = strings.TrimPrefix(place, "/")
-	err = os.WriteFile(path.Join(StorageFolder, "states", place+".json"), []byte(state), 0777)
+	statesFolder := path.Join(userStorageFolder, "states")
+	os.MkdirAll(statesFolder, 0777)
+	err = os.WriteFile(path.Join(statesFolder, place+".json"), []byte(state), 0777)
 	return
 }
 
-func stateLoad(place string) (state string, err error) {
+func stateLoad(place string, userStorageFolder string) (state string, err error) {
 	mutexStorage.Lock()
 	defer mutexStorage.Unlock()
-	// load state by reading from file
-	// remove beginning slash if it exists in place
 	place = strings.TrimPrefix(place, "/")
-	stateBytes, err := os.ReadFile(path.Join(StorageFolder, "states", place+".json"))
+	stateBytes, err := os.ReadFile(path.Join(userStorageFolder, "states", place+".json"))
 	if err != nil {
 		return
 	}
@@ -180,17 +188,69 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func handle(w http.ResponseWriter, r *http.Request) (err error) {
 
-	// very special paths
-	if r.URL.Path == "/drumextract" {
-		return handleDrumExtract(w, r)
+	publicPaths := map[string]bool{
+		"/login":          true,
+		"/register":       true,
+		"/logout":         true,
+		"/robots.txt":     true,
+		"/favicon.ico":    true,
+		"/get_info":       true,
+		"/api/check-auth": true,
+		"/magic-link":     true,
+		"/magic-login":    true,
+		"/verify":         true,
+		"/verify-email":   true,
+	}
+
+	isPublicStatic := strings.HasPrefix(r.URL.Path, "/static/")
+	isPublicDocs := !isEctocore && (strings.HasPrefix(r.URL.Path, "/docs") || strings.HasPrefix(r.URL.Path, "/guide"))
+	isCaptcha := strings.HasPrefix(r.URL.Path, "/captcha/")
+	isVerifyPath := strings.HasPrefix(r.URL.Path, "/verify")
+	isMagicPath := r.URL.Path == "/magic-link" || r.URL.Path == "/magic-login"
+
+	if !publicPaths[r.URL.Path] && !isPublicStatic && !isPublicDocs && !isCaptcha && !isVerifyPath && !isMagicPath {
+		_, err := auth.GetClaims(r)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
+		}
+	}
+
+	if isCaptcha {
+		id := strings.TrimPrefix(r.URL.Path, "/captcha/")
+		captcha.Serve(w, r, id)
+		return nil
+	}
+
+	if r.URL.Path == "/login" {
+		return handleLogin(w, r)
+	} else if r.URL.Path == "/register" {
+		return handleRegister(w, r)
+	} else if r.URL.Path == "/logout" {
+		return handleLogout(w, r)
+	} else if r.URL.Path == "/magic-link" {
+		return handleMagicLink(w, r)
+	} else if r.URL.Path == "/magic-login" {
+		return handleMagicLinkLogin(w, r)
+	} else if r.URL.Path == "/verify" || r.URL.Path == "/verify-email" {
+		return handleVerifyEmail(w, r)
+	} else if r.URL.Path == "/dashboard" {
+		return handleDashboard(w, r)
+	} else if r.URL.Path == "/new-project" {
+		return handleNewProject(w, r)
+	} else if r.URL.Path == "/api/check-auth" {
+		return handleCheckAuth(w, r)
+	} else if r.URL.Path == "/api/projects" {
+		return handleGetProjects(w, r)
+	} else if r.URL.Path == "/drumextract" {
+		return handleDrumExtractAuth(w, r)
 	} else if r.URL.Path == "/onsetdetect" {
-		return handleOnsetDetect(w, r)
+		return handleOnsetDetectAuth(w, r)
 	} else if r.Method == "POST" {
-		// POST file
 		if r.URL.Path == "/download" {
-			return handleDownload(w, r)
+			return handleDownloadAuth(w, r)
 		} else {
-			return handleUpload(w, r)
+			return handleUploadAuth(w, r)
 		}
 	} else if r.URL.Path == "/get_info" {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -201,19 +261,27 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Write(b)
 		return nil
 	} else if r.URL.Path == "/ws" {
-		return handleWebsocket(w, r)
+		return handleWebsocketAuth(w, r)
 	} else if r.URL.Path == "/robots.txt" {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("User-agent: *\nAllow: /\n"))
 		return
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
+	} else if r.URL.Path == "/" {
+		claims, err := auth.GetClaims(r)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		} else {
+			_ = claims
+			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		}
+		return nil
 	} else if !isEctocore &&
 		(strings.HasPrefix(r.URL.Path, "/docs") ||
 			strings.Contains(r.URL.Path, "buy") ||
-			strings.HasPrefix(r.URL.Path, "/guide") ||
-			r.URL.Path == "/") {
-		if strings.Contains(r.URL.Path, "buy") || r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" || r.URL.Path == "/" {
+			strings.HasPrefix(r.URL.Path, "/guide")) {
+		if strings.Contains(r.URL.Path, "buy") || r.URL.Path == "/docs" || r.URL.Path == "/docs/" || r.URL.Path == "/guide" || r.URL.Path == "/guide/" {
 			r.URL.Path = "/docs/index.html"
 		}
 		var b []byte
@@ -234,12 +302,35 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
 
-		if strings.HasPrefix(r.URL.Path, "/tool") {
-			r.URL.Path = "/" + strings.TrimPrefix(r.URL.Path, "/tool")
-		}
-
 		filename := r.URL.Path[1:]
-		if filename == "" || !strings.Contains(filename, ".") || filename == "buy" || filename == "faq" || filename == "zeptocore" {
+
+		pathSegment := strings.Split(filename, "/")[0]
+		reservedPaths := map[string]bool{
+			"storage": true,
+			"states":  true,
+			"static":  true,
+			"docs":    true,
+			"guide":   true,
+			"api":     true,
+		}
+		if pathSegment != "" && !strings.Contains(pathSegment, ".") &&
+			!reservedPaths[pathSegment] && isValidWorkspace(pathSegment) {
+			claims, err := auth.GetClaims(r)
+			if err != nil {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return nil
+			}
+			r.Header.Set("X-User-ID", claims.UserID)
+			r.Header.Set("X-Username", claims.Username)
+			filename = "static/index.html"
+		} else if filename == "" || filename == "buy" || filename == "faq" || filename == "zeptocore" || filename == "ectocore" {
+			claims, err := auth.GetClaims(r)
+			if err != nil {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return nil
+			}
+			r.Header.Set("X-User-ID", claims.UserID)
+			r.Header.Set("X-Username", claims.Username)
 			filename = "static/index.html"
 		}
 		mimeType := mime.TypeByExtension(filepath.Ext(filename))
@@ -375,7 +466,9 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	}
 	place := query["place"][0]
 
-	// use gorilla to open websocket
+	userStorageFolder := getUserStorageFolder(r)
+	os.MkdirAll(userStorageFolder, 0777)
+
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -387,7 +480,6 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		if _, ok := connections[connID]; ok {
 			delete(connections, connID)
 		}
-		// Cancel any active debounce operation for this connection
 		if cancelChan, exists := activeDebounce[connID]; exists {
 			close(cancelChan)
 			delete(activeDebounce, connID)
@@ -409,7 +501,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		log.Tracef("message: %s->%+v", query["id"][0], message.Action)
 		if message.Action == "getinfo" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				c.WriteJSON(Message{
 					Action: "error",
@@ -445,7 +537,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					mutex.Unlock()
 				}()
 
-				folder := path.Join(StorageFolder, place)
+				folder := path.Join(userStorageFolder, place)
 
 				// Get initial set of recently modified files (within last 3 seconds)
 				checkTime := time.Now().Add(-3 * time.Second)
@@ -591,23 +683,23 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			log.Tracef("message.Filenames: %+v", message.Filenames)
 			fnames := make([]string, len(message.Filenames))
 			for i, fname := range message.Filenames {
-				fnames[i] = path.Join(StorageFolder, place, fname, fname)
+				fnames[i] = path.Join(userStorageFolder, place, fname, fname)
 			}
 			rng, errCode := codename.DefaultRNG()
 			if errCode == nil {
 				newFilename := codename.Generate(rng, 0) + ".aif"
-				os.MkdirAll(path.Join(StorageFolder, place, newFilename), 0777)
-				err = Merge(fnames, path.Join(StorageFolder, place, newFilename, newFilename))
+				os.MkdirAll(path.Join(userStorageFolder, place, newFilename), 0777)
+				err = Merge(fnames, path.Join(userStorageFolder, place, newFilename, newFilename))
 				if err != nil {
 					log.Error(err)
 				} else {
-					go processFile(query["id"][0], newFilename, path.Join(StorageFolder, place, newFilename, newFilename), "default")
+					go processFile(query["id"][0], newFilename, path.Join(userStorageFolder, place, newFilename, newFilename), "default")
 				}
 			}
 		} else if message.Action == "onsetdetect" {
 			go func() {
 				log.Info(message)
-				f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+				f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 				if err == nil {
 					_, errAubioOnset := exec.LookPath("aubioonset")
 					var onsets []float64
@@ -633,7 +725,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 			}()
 		} else if message.Action == "gettransients" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err == nil {
 				isEmpty := true
 				for _, v := range f.Transients {
@@ -659,14 +751,14 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 
 			}
 		} else if message.Action == "settransient" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetTransient(message.I, message.J, message.N)
 			}
 		} else if message.Action == "setslices" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			log.Tracef("setting slices: %+v", message.SliceStart)
 			if err != nil {
 				log.Error(err)
@@ -676,14 +768,14 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				c.WriteJSON(message)
 			}
 		} else if message.Action == "setspliceplayback" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetSplicePlayback(int(message.Number))
 			}
 		} else if message.Action == "setoneshot" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
@@ -691,7 +783,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			}
 		} else if message.Action == "setsplicetrigger" {
 			log.Infof("setsplicetrigger: %+v", message)
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
@@ -699,21 +791,21 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			}
 		} else if message.Action == "setbpm" {
 			log.Infof("setbpm: %+v", message)
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetBPM(int(message.Number))
 			}
 		} else if message.Action == "setsplicevariable" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetSpliceVariable(message.Boolean)
 			}
 		} else if message.Action == "setchannels" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
@@ -724,21 +816,18 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 				}
 			}
 		} else if message.Action == "settempomatch" {
-			f, err := zeptocore.Get(path.Join(StorageFolder, place, message.Filename, message.Filename))
+			f, err := zeptocore.Get(path.Join(userStorageFolder, place, message.Filename, message.Filename))
 			if err != nil {
 				log.Error(err)
 			} else {
 				f.SetTempoMatch(message.Boolean)
 			}
 		} else if message.Action == "updatestate" {
-			// save into the keystore the message.State for message.Place
-			// log.Debugf("updating state for %s: %s", message.Place, message.State)
-			err = stateSave(message.Place, message.State)
+			err = stateSave(message.Place, message.State, userStorageFolder)
 			if err != nil {
 				log.Error(err)
 			}
 		} else if message.Action == "copyworkspace" {
-			// copy the workspace into the new place
 			log.Infof("copying %s to %s", message.Place, message.Message)
 			message.Place = strings.ToLower(message.Place)
 			messagePlace := message.Place
@@ -748,33 +837,31 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 					message.Error = fmt.Sprintf("invalid workspace name: %s - no spaces allowed", message.Message)
 					log.Error(message.Error)
 				} else {
-					if _, err = os.Stat(path.Join(StorageFolder, message.Place)); os.IsNotExist(err) {
+					if _, err = os.Stat(path.Join(userStorageFolder, message.Place)); os.IsNotExist(err) {
 						message.Error = fmt.Sprintf("folder %s does not exist", message.Place)
 						log.Error(message.Error)
 					} else {
-						if _, err = os.Stat(path.Join(StorageFolder, message.Message)); os.IsNotExist(err) {
-							err = cp.Copy(path.Join(StorageFolder, message.Place), path.Join(StorageFolder, message.Message))
+						if _, err = os.Stat(path.Join(userStorageFolder, message.Message)); os.IsNotExist(err) {
+							err = cp.Copy(path.Join(userStorageFolder, message.Place), path.Join(userStorageFolder, message.Message))
 							if err != nil {
 								message.Error = err.Error()
 								log.Error(message.Error)
 							} else {
 								message.Success = true
-								// go through every file in the new storage and change the names
-								err = filepath.Walk(path.Join(StorageFolder, message.Message), func(pathName string, info os.FileInfo, err error) error {
+								err = filepath.Walk(path.Join(userStorageFolder, message.Message), func(pathName string, info os.FileInfo, err error) error {
 									if strings.HasSuffix(pathName, ".json") {
 										log.Infof("changing %s", pathName)
 									}
 									b, _ := os.ReadFile(pathName)
-									b = bytes.Replace(b, []byte(path.Join(StorageFolder, message.Place)), []byte(path.Join(StorageFolder, message.Message)), -1)
+									b = bytes.Replace(b, []byte(path.Join(userStorageFolder, message.Place)), []byte(path.Join(userStorageFolder, message.Message)), -1)
 									os.WriteFile(pathName, b, 0777)
 									return nil
 								})
-								// update the states
-								stateString, err := stateLoad(messagePlace)
+								stateString, err := stateLoad(messagePlace, userStorageFolder)
 								if err != nil {
 									log.Error(err)
 								} else {
-									err = stateSave(message.Message, stateString)
+									err = stateSave(message.Message, stateString, userStorageFolder)
 									if err != nil {
 										log.Error(err)
 									}
@@ -790,8 +877,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			}
 			c.WriteJSON(message)
 		} else if message.Action == "getstate" {
-			// return message.State based for message.Place
-			message.State, err = stateLoad(message.Place)
+			message.State, err = stateLoad(message.Place, userStorageFolder)
 			if err != nil {
 				log.Trace(err)
 			} else {
@@ -816,7 +902,6 @@ func (bc *ByteCounter) Write(p []byte) (n int, err error) {
 }
 
 func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
-	// get the url query parameters from the request r
 	query := r.URL.Query()
 	if _, ok := query["id"]; !ok {
 		err = fmt.Errorf("no id")
@@ -827,6 +912,8 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 	_, place = filepath.Split(place)
 	settingsOnlyString := query.Get("settingsOnly")
 	settingsOnly := settingsOnlyString == "true"
+
+	userStorageFolder := getUserStorageFolder(r)
 
 	mutex.Lock()
 	if _, ok := connections[id]; ok {
@@ -854,7 +941,7 @@ func handleDownload(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	}
 
-	zipFile, err := pack.Zip(path.Join(StorageFolder, place), body, settingsOnly)
+	zipFile, err := pack.Zip(path.Join(userStorageFolder, place), body, settingsOnly)
 	if err != nil {
 		log.Error(err)
 		return
@@ -980,7 +1067,6 @@ func handleDrumExtract(w http.ResponseWriter, r *http.Request) (err error) {
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
-	// get the url query parameters from the request r
 	query := r.URL.Query()
 	if _, ok := query["id"]; !ok {
 		err = fmt.Errorf("no id")
@@ -997,6 +1083,8 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 	id := query["id"][0]
 	place := query["place"][0]
 	dropaudiofilemode := query["dropaudiofilemode"][0]
+
+	userStorageFolder := getUserStorageFolder(r)
 
 	log.Debugf("upload, %s, %s, %s", id, place, dropaudiofilemode)
 	_, place = filepath.Split(place)
@@ -1026,8 +1114,8 @@ func handleUpload(w http.ResponseWriter, r *http.Request) (err error) {
 
 		// Read the file content
 		// save file locally
-		localFile := path.Join(StorageFolder, place, file.Filename, file.Filename)
-		err = os.MkdirAll(path.Join(StorageFolder, place, file.Filename), 0777)
+		localFile := path.Join(userStorageFolder, place, file.Filename, file.Filename)
+		err = os.MkdirAll(path.Join(userStorageFolder, place, file.Filename), 0777)
 		if err != nil {
 			return
 		}

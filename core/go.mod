@@ -5,9 +5,12 @@ go 1.25
 require (
 	github.com/bep/debounce v1.2.1
 	github.com/cespare/xxhash v1.1.0
+	github.com/dchest/captcha v1.1.0
 	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/google/go-github/v59 v59.0.0
 	github.com/gorilla/websocket v1.5.3
+	github.com/joho/godotenv v1.5.1
+	github.com/mailjet/mailjet-apiv3-go/v3 v3.2.0
 	github.com/mpiannucci/peakdetect v0.0.0-20160920143128-9526111f1fb9
 	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762
 	github.com/muesli/kmeans v0.3.1
@@ -20,6 +23,7 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.9.0
 	go.bug.st/serial v1.6.4
+	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 )
 
 require (
