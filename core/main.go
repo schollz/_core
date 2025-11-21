@@ -6,7 +6,10 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/schollz/_core/core/src/auth"
 	"github.com/schollz/_core/core/src/drumextract2"
+	"github.com/schollz/_core/core/src/email"
 	"github.com/schollz/_core/core/src/minicom"
 	"github.com/schollz/_core/core/src/server"
 	"github.com/schollz/_core/core/src/sox"
@@ -32,17 +35,39 @@ func init() {
 func main() {
 	flag.Parse()
 	log.SetLevel(flagLogLevel)
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Warn("no .env file found, using environment variables")
+	}
+
+	err = auth.Init()
+	if err != nil {
+		log.Error(err)
+		time.Sleep(38 * time.Second)
+		os.Exit(1)
+	}
+
+	err = auth.InitUsers()
+	if err != nil {
+		log.Error(err)
+		time.Sleep(38 * time.Second)
+		os.Exit(1)
+	}
+
+	email.Init()
+
 	if !flagDontOpen {
 		go func() {
 			time.Sleep(2 * time.Second)
 			if EctocoreDefault == "yes" {
-				utils.OpenBrowser("http://localhost:8100/tool")
+				utils.OpenBrowser("http://localhost:8100/login")
 			} else {
-				utils.OpenBrowser("http://localhost:8101/tool")
+				utils.OpenBrowser("http://localhost:8101/login")
 			}
 		}()
 	}
-	err := sox.Init()
+	err = sox.Init()
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)
