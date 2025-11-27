@@ -1,4 +1,6 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
+// November 27th, 2025: improving knob change detection with smoothing and
+// thresholding
 #ifndef KNOB_CHANGE_LIB
 #define KNOB_CHANGE_LIB 1
 
