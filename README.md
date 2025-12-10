@@ -56,7 +56,7 @@ the ectocore is the eurorack version of the zeptocore.
 <img src="docs/static/img/ectocore_2.png" height="300px">
 </div>
 
-## diy
+### diy
 
 
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ectocore_v1.0.1.pdf)
@@ -64,7 +64,37 @@ the ectocore is the eurorack version of the zeptocore.
 - [Firmware](https://github.com/schollz/_core/releases)
 - [Instructions for uploading samples](https://www.youtube.com/watch?v=NfjjhU1z6Ek) 
 
+### attributions
 
+<details><summary>Click here to see the full attributions for the Ectocore project</summary>
+
+There are two official version of the Ectocore: the 2024 "Infinite Digits x Toadstool Ectocore" and the 2025 "Infinite Digits x Maneco Labs Ectocore". Here is a clear explanation of the attributions for each.
+
+Here is the key:
+
+ID = Infinite Digits (myself)
+TT = Toadstool Tech
+ML = Maneco Labs
+EG = Émilie Gillet
+IN = Instruo
+
+
+The Ectocore itself a modular version of ID's open-source zeptocore device (this repo) which is from a lineage of ID open-source devices and open-source software (pikocore, nyblcore, amen script, amenbreak script, abacus script, makebreakbeat script, sampswap script, dnb.lua utility, raw script, paracosms). These devices have their own long legacies and many acknowledgements, but would especially like to acknowledge being inspired by Jerboa (for inspiring me to use the attiny85), Fay Carsons (for inspiring me to use the rp2040), Limor Fried and EG (for pioneering CC-BY-SA hardware), and Nick Collins (for the Breakcore UGen), the open-source contributors to RP2040 community (Raspberry Pi Foundation, Carl J Kugler III for the SDIO library, which is built upon FatFS which I am thankful for), Steven Noreyko and Jacob Vosamer for helping improve MIDI and porting to RP2040v2, as well as countless musicians who inspire all ID creations and all the open-source maintainers who I find inspiration and inspire me to continue to produce open-source designs and making my work freely available to remix and re-purpose. 
+
+The Ectocore website and sample manipulator and downloader was developed and maintained by ID (also this repo). The open-source tools for splitting drums was designed at Facebook Research by Alexandre Défossez which is used to generate the splice points to do a Trig Out in the Ectocore. The automatic splicing was done using open-source Aubio library.
+ 
+The name "Ectocore" is a collaboration of TT+ID, combining of TT's mythical ethos ("ecto") and ID's *core products ("core").
+
+The "Infinite Digits x Toadstool Tech Ectocore" front panel design is a collaboration of TT+ID, a combination of TT's mythical inspiration ("Grimoire") and ID's interfaces from previous monome norns scripts (amenbreak, makebreakbeat, sampswap, dnb.lua for "tunneling", jumping, sequencing and amenbreak for "amen" and "break" knobs) and ID's previous devices (pikocore and nyblcore). ID also acknowledges that these norns scripts were born out of ideas from many other people, built in a community of open-source creations, with special thanks to scanner_darkly (who had the "amen" and "break" knob) and Nick Collins (who created the inspirational Breakcore UGen from SuperColldier).
+
+The "Infinite Digits x Maneco Labs Ectocore" front panel is based on the design from TT+ID, and incorpoates changes by ML to add a reset button to the front. The "Infinite Digits x Maneco Labs Ectocore" also acknowledges the name "Ectocore" comes from the TT+ID collaboration.
+
+The open-source zeptocore device hardware by ID is itself en-debted to designs from Raspberry Pi foundation and Adafruit (through CC-BY-SA schematics). The open-sourced ectocore schematic on this website that is CC-BY-SA is based on EG schematic. The hardware for the "Infinite Digits x Toadstool Tech Ectocore" was developed by TT, but initially dervied from the ID open-source zeptocore device and EG open-source schematics with assistance from IN (not available publicly). The hardware for the "Infinite Digits x Maneco Labs Ectocore" was developed by ML, derived from the ID open-source zeptocore device and EG open-source schematics (not available publicly).
+
+I want to acknowledge countless community members of the open-source world (Supercollider, monome norns, Raspberry Pi, Adafruit, many many more) who I have been inpsired from and continue to be inspired, and from their work I am grateful and continue to try to pay forward by continuously making my work similarly freely open-source and available. (One note on that: The final hardware design from TT and ML are NOT open-source as they are proprietary designs of their own work, each created separately based on my open-source zeptocore device). 
+
+
+</details>
 
 
 ## zeptoboard
