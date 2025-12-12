@@ -127,6 +127,14 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/all.min.css">
     <link rel="stylesheet" href="/static/jquery-ui.css">
+    <style>
+        #dialog-attributions a {
+            color: black !important;
+            font-weight: bold !important;
+            text-decoration: underline !important;
+            text-decoration-style: dotted !important;
+        }
+    </style>
 
 </head>
 
@@ -567,6 +575,39 @@
                 <button class="js-close">Update</button>
                 <button id="bDownloadSettings" class="js-close" @click="submitForm(true);">Download settings</button>
             </p>
+        </dialog>
+
+        <dialog id="dialog-attributions" style="max-width: 500px; max-height: 80vh; border-radius: 8px; border: 1px solid var(--highlight-color-border); padding: 1.5em;">
+            <button id="close-attributions" style="position: absolute; right: 1em; top: 1em; padding: 0.5em; cursor: pointer;">X</button>
+            <h2 style="margin-top: 0; margin-bottom: 1em;">Attributions & Acknowledgements</h2>
+            <div style="overflow-y: auto; max-height: calc(80vh - 100px);">
+                <p>The <a href="https://zeptocore.com">zeptocore</a> and <a href="https://github.com/schollz/pikocore">pikocore</a> by Infinite Digits are the progenitors of the ectocore. The ectocore is a modular version of the zeptocore, adapted for Eurorack systems.</p>
+
+                <p>There are two official versions of the Ectocore: the 2024 "Infinite Digits x Toadstool Ectocore" and the 2025 "Infinite Digits x Maneco Labs Ectocore". Here is a clear explanation of the attributions for each.</p>
+
+                <p>Here is the key:</p>
+                <ul>
+                    <li>ID = Infinite Digits (myself)</li>
+                    <li>TT = Toadstool Tech</li>
+                    <li>ML = Maneco Labs</li>
+                    <li>EG = Émilie Gillet</li>
+                    <li>IN = Instruo</li>
+                </ul>
+
+                <p>The Ectocore itself a modular version of ID's <a href="https://zeptocore.com">open-source zeptocore device</a> which is from a lineage of ID open-source devices and open-source software (<a href="https://github.com/schollz/pikocore">pikocore</a>, <a href="https://github.com/schollz/nyblcore">nyblcore</a>, <a href="https://github.com/schollz/amen">amen script</a>, <a href="https://github.com/schollz/glitchlets">glitchlets script</a>, <a href="https://github.com/schollz/amenbreak">amenbreak script</a>, <a href="https://github.com/schollz/abacus">abacus script</a>, <a href="https://github.com/schollz/makebreakbeat">makebreakbeat script</a>, <a href="https://github.com/schollz/sampswap">sampswap script</a>, <a href="https://github.com/schollz/dnb.lua">dnb.lua utility</a>, <a href="https://github.com/schollz/raw">raw script</a>, <a href="https://github.com/schollz/paracosms">paracosms</a>). These devices have their own long legacies and many acknowledgements, but would especially like to acknowledge being inspired by <a href="http://wiki.yak.net/1132">Jerboa modular synthesizer</a> (for inspiring me to use the attiny85), Fay Carsons (for inspiring me to use the rp2040), Limor Fried and EG (for pioneering CC-BY-SA hardware), and Nick Collins (for the Breakcore UGen), the open-source contributors to RP2040 community (Raspberry Pi Foundation, Carl J Kugler III for the SDIO library, which is built upon FatFS which I am thankful for), Steven Noreyko and Jacob Vosamer for helping improve MIDI and porting to RP2040v2, as well as countless musicians who inspire all ID creations and all the open-source maintainers who I find inspiration and inspire me to continue to produce open-source designs and making my work freely available to remix and re-purpose.</p>
+
+                <p>The Ectocore website and sample manipulator and downloader was developed and maintained by ID and <a href="https://github.com/schollz/_core">is also open-source</a>. The open-source tools for splitting drums was designed at <a href="https://github.com/facebookresearch/demucs">Facebook Research by Alexandre Défossez</a> which is used to generate the splice points to do a Trig Out in the Ectocore. The automatic splicing was done using open-source Aubio library.</p>
+
+                <p>The name "Ectocore" is a collaboration of TT+ID, combining of TT's mythical ethos ("ecto") and ID's *core products ("core").</p>
+
+                <p>The "Infinite Digits x Toadstool Tech Ectocore" front panel design is a collaboration of TT+ID, a combination of TT's mythical inspiration ("Grimoire") and ID's interfaces from previous monome norns scripts (amenbreak, makebreakbeat, sampswap, dnb.lua for "tunneling", jumping, sequencing and amenbreak for "amen" and "break" knobs) and ID's previous devices (pikocore and nyblcore). ID also acknowledges that these norns scripts were born out of ideas from many other people, built in a community of open-source creations, with special thanks to scanner_darkly (who thought of the "amen" and "break" knob) and Nick Collins (who created the inspirational Breakcore UGen from SuperColldier).</p>
+
+                <p>The "Infinite Digits x Maneco Labs Ectocore" front panel is based on the design from TT+ID, and incorpoates changes by ML to add a reset button to the front. The "Infinite Digits x Maneco Labs Ectocore" also acknowledges the name "Ectocore" comes from the TT+ID collaboration.</p>
+
+                <p>The open-source zeptocore device hardware by ID is itself en-debted to designs from Raspberry Pi foundation and Adafruit (through CC-BY-SA schematics). The open-sourced ectocore schematic on this website that is CC-BY-SA is based on EG schematic from <a href="https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/downloads/plaits_v50.pdf">plaits</a>. The hardware for the "Infinite Digits x Toadstool Tech Ectocore" was developed by TT, but initially dervied from the ID open-source zeptocore device and EG open-source schematics with assistance from IN (not available publicly). The hardware for the "Infinite Digits x Maneco Labs Ectocore" was developed by ML, derived from the ID open-source zeptocore device and EG open-source schematics (not available publicly).</p>
+
+                <p>I want to acknowledge countless community members of the open-source world (Supercollider, monome norns, Raspberry Pi, Adafruit, many many more) who I have been inpsired from and continue to be inspired, and from their work I am grateful and continue to try to pay forward by continuously making my work similarly freely open-source and available. (One note on that: The final hardware design from TT and ML are NOT open-source as they are proprietary designs of their own work, each created separately based on my open-source zeptocore device).</p>
+            </div>
         </dialog>
 
         <header>
@@ -1146,6 +1187,9 @@
                     :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ectocore_tool_linux.zip[[else]]zeptocore_tool_linux.zip[[end]]'">
                     <i class="fa-brands fa-linux"></i>
                 </a>
+                <a href="#" id="show-attributions" title="Attributions & Acknowledgements">
+                    <i class="fas fa-copyright"></i>
+                </a>
             </div>
         </footer>
         <div id="cookieConsentContainer" class="cookie-consent-container">
@@ -1314,28 +1358,61 @@
                     document.getElementById("dialog").showModal();
                 });
             }
-            document.getElementById("show-dialog-settings").addEventListener("click", () => {
-                document.getElementById("dialog-settings").showModal();
-            });
-            // close dialog settings when pressing X 
-            document.getElementById("close-settings").addEventListener("click", (e) => {
-                e.preventDefault();
-                document.getElementById("dialog-settings").close();
-            });
-            // close dialog-settings when clicking outside
-            document.getElementById("dialog-settings").addEventListener("click", (e) => {
-                if (e.target === document.getElementById("dialog-settings")) {
-                    document.getElementById("dialog-settings").close();
-                }
-            });
-            // close dialog when clicking "update"
-            // add to each .js-close in #dialog-settings
-            document.getElementById("dialog-settings").querySelectorAll(".js-close").forEach(closer => {
-                closer.addEventListener("click", (e) => {
+            const showDialogSettingsBtn = document.getElementById("show-dialog-settings");
+            if (showDialogSettingsBtn) {
+                showDialogSettingsBtn.addEventListener("click", () => {
+                    document.getElementById("dialog-settings").showModal();
+                });
+            }
+            // close dialog settings when pressing X
+            const closeSettingsBtn = document.getElementById("close-settings");
+            if (closeSettingsBtn) {
+                closeSettingsBtn.addEventListener("click", (e) => {
                     e.preventDefault();
                     document.getElementById("dialog-settings").close();
                 });
-            });
+            }
+            // close dialog-settings when clicking outside
+            const dialogSettings = document.getElementById("dialog-settings");
+            if (dialogSettings) {
+                dialogSettings.addEventListener("click", (e) => {
+                    if (e.target === dialogSettings) {
+                        dialogSettings.close();
+                    }
+                });
+                // close dialog when clicking "update"
+                // add to each .js-close in #dialog-settings
+                dialogSettings.querySelectorAll(".js-close").forEach(closer => {
+                    closer.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        dialogSettings.close();
+                    });
+                });
+            }
+
+            // attributions dialog handlers
+            const showAttributionsBtn = document.getElementById("show-attributions");
+            if (showAttributionsBtn) {
+                showAttributionsBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    document.getElementById("dialog-attributions").showModal();
+                });
+            }
+            const closeAttributionsBtn = document.getElementById("close-attributions");
+            if (closeAttributionsBtn) {
+                closeAttributionsBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    document.getElementById("dialog-attributions").close();
+                });
+            }
+            const dialogAttributions = document.getElementById("dialog-attributions");
+            if (dialogAttributions) {
+                dialogAttributions.addEventListener("click", (e) => {
+                    if (e.target === dialogAttributions) {
+                        dialogAttributions.close();
+                    }
+                });
+            }
 
             document.getElementById("dialog").querySelector("#js-close").addEventListener("click", (e) => {
                 e.preventDefault();
