@@ -1760,13 +1760,13 @@ window.addEventListener('load', (event) => {
 
 
         let grimoireList = [
-            "amalgam",
-            "alum",
-            "tree",
-            "azurite",
-            "hematite",
-            "sulphur",
-            "brimstone",
+            "I",
+            "II",
+            "III",
+            "IV",
+            "V",
+            "VI",
+            "VII",
         ];
         for (let ii = 0; ii < grimoireList.length; ii++) {
             if (ii < 3) {
