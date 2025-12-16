@@ -58,6 +58,22 @@ The EZEPTOCORE is a eurorack version of the zeptocore developed by Infinite Digi
 <img src="docs/static/img/ezeptocore.png" height="300px">
 </div>
 
+### EZEPTOCORE firmware 
+
+The firmware is divided into two categories: *overclocking* and *non-overclocking*. 
+
+- Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
+- Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
+
+For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
+
+|                  | Normal Latency                                                                                            | Low Latency                                                                                                           | Ultra-Low Latency                                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Overclocking     | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1.uf2)*                | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1_low_latency.uf2)                 | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1_ultralow_latency.uf2)                 |
+| Non-Overclocking | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1_no_overclocking.uf2) | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1_no_overclocking_low_latency.uf2) | [v7.0.1](https://github.com/schollz/_core/releases/download/v7.0.1/ezeptocore_v7.0.1_no_overclocking_ultralow_latency.uf2) |
+
+*default firmware
+
 ### diy
 
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)
@@ -72,6 +88,23 @@ the ectocore is the eurorack version of the zeptocore developed by Infinite Digi
 <div align="center">
 <img src="docs/static/img/ectocore_2.png" height="300px">
 </div>
+
+
+### ectocore firmware 
+
+
+The firmware is divided into two categories: *overclocking* and *non-overclocking*. 
+
+- Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
+- Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
+
+For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
+
+|                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Overclocking     | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5.uf2)*                | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_low_latency.uf2)                 | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_ultralow_latency.uf2)                 |
+| Non-Overclocking | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_low_latency.uf2) | [v6.4.5](https://github.com/schollz/_core/releases/download/v6.4.5/ectocore_v6.4.5_no_overclocking_ultralow_latency.uf2) |
+
 
 ### diy
 
