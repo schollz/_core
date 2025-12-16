@@ -3,7 +3,7 @@
 [![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)](https://github.com/schollz/_core/actions/workflows/build.yml) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
 
 
-this is the monorepo for [zeptocore](https://zeptocore.com), [zeptoboard](https://zeptocore.com/#zeptoboard), and [ectocore](https://getectocore.com) music devices, their documentation, their firmware, and the tools to interact with them.
+this is the monorepo for [zeptocore](https://zeptocore.com), [zeptoboard](https://zeptocore.com/#zeptoboard), ectocore, and [ezeptocore](https://get.ezeptocore.com) music devices, their documentation, their firmware, and the tools to interact with them.
 
 for information about purchasing and documentation, visit [zeptocore.com](https://zeptocore.com). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
 
@@ -48,9 +48,26 @@ The firmware for the zeptocore is written in C, and instructions for building th
 - [Video DIY guide](https://www.youtube.com/watch?v=FH1R4RCh0vU)
 
 
-## ectocore 
 
-the ectocore is the eurorack version of the zeptocore. 
+## EZEPTOCORE
+
+The EZEPTOCORE is a eurorack version of the zeptocore developed by Infinite Digits in collaboration with Maneco Labs. See [below](#attributions) for full atributions.
+
+
+<div align="center">
+<img src="docs/static/img/ezeptocore.png" height="300px">
+</div>
+
+### diy
+
+- [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)
+- [Source code](https://github.com/schollz/_core)
+- [Firmware](https://github.com/schollz/_core/releases)
+
+
+## ectocore (discontinued)
+
+the ectocore is the eurorack version of the zeptocore developed by Infinite Digits in collaboration with Toadstool Tech. See [below](#attributions) for full atributions.
 
 <div align="center">
 <img src="docs/static/img/ectocore_2.png" height="300px">
@@ -64,250 +81,15 @@ the ectocore is the eurorack version of the zeptocore.
 - [Firmware](https://github.com/schollz/_core/releases)
 - [Instructions for uploading samples](https://www.youtube.com/watch?v=NfjjhU1z6Ek) 
 
-### attributions
-
-<details><summary>Click here to see the full attributions for the Ectocore project</summary>
-
-There are two official version of the Ectocore: the 2024 "Infinite Digits x Toadstool Ectocore" and the 2025 "Infinite Digits x Maneco Labs Ectocore". Here is a clear explanation of the attributions for each.
-
-Here is the key:
-
-ID = Infinite Digits (myself)
-TT = Toadstool Tech
-ML = Maneco Labs
-EG = Émilie Gillet
-IN = Instruo
-
-
-The Ectocore itself a modular version of ID's open-source zeptocore device (this repo) which is from a lineage of ID open-source devices and open-source software ([pikocore](https://github.com/schollz/pikocore), [nyblcore](https://github.com/schollz/nyblcore), [amen script](https://github.com/schollz/amen), [glitchlets script](https://github.com/schollz/glitchlets), [amenbreak script](https://github.com/schollz/amenbreak), [abacus script](https://github.com/schollz/abacus), [makebreakbeat script](https://github.com/schollz/makebreakbeat), [sampswap script](https://github.com/schollz/sampswap), [dnb.lua utility](https://github.com/schollz/dnb.lua), [raw script](https://github.com/schollz/raw), [paracosms](https://github.com/schollz/paracosms)
-). These devices have their own long legacies and many acknowledgements, but would especially like to acknowledge being inspired by [Jerboa modular synthesizer](http://wiki.yak.net/1132) (for inspiring me to use the attiny85), Fay Carsons (for inspiring me to use the rp2040), Limor Fried and EG (for pioneering CC-BY-SA hardware), and Nick Collins (for the Breakcore UGen), the open-source contributors to RP2040 community (Raspberry Pi Foundation, Carl J Kugler III for the SDIO library, which is built upon FatFS which I am thankful for), Steven Noreyko and Jacob Vosamer for helping improve MIDI and porting to RP2040v2, as well as countless musicians who inspire all ID creations and all the open-source maintainers who I find inspiration and inspire me to continue to produce open-source designs and making my work freely available to remix and re-purpose. 
-
-The Ectocore website and sample manipulator and downloader was developed and maintained by ID (also this repo). The open-source tools for splitting drums was designed at [Facebook Research by Alexandre Défossez](https://github.com/facebookresearch/demucs) which is used to generate the splice points to do a Trig Out in the Ectocore. The automatic splicing was done using open-source Aubio library.
- 
-The name "Ectocore" is a collaboration of TT+ID, combining of TT's mythical ethos ("ecto") and ID's *core products ("core").
-
-The "Infinite Digits x Toadstool Tech Ectocore" front panel design is a collaboration of TT+ID, a combination of TT's mythical inspiration ("Grimoire") and ID's interfaces from previous monome norns scripts (amenbreak, makebreakbeat, sampswap, dnb.lua for "tunneling", jumping, sequencing and amenbreak for "amen" and "break" knobs) and ID's previous devices (pikocore and nyblcore). ID also acknowledges that these norns scripts were born out of ideas from many other people, built in a community of open-source creations, with special thanks to scanner_darkly (who had the "amen" and "break" knob) and Nick Collins (who created the inspirational Breakcore UGen from SuperColldier).
-
-The "Infinite Digits x Maneco Labs Ectocore" front panel is based on the design from TT+ID, and incorpoates changes by ML to add a reset button to the front. The "Infinite Digits x Maneco Labs Ectocore" also acknowledges the name "Ectocore" comes from the TT+ID collaboration.
-
-The open-source zeptocore device hardware by ID is itself en-debted to designs from Raspberry Pi foundation and Adafruit (through CC-BY-SA schematics). The open-sourced ectocore schematic on this website that is CC-BY-SA is based on EG schematic from [plaits](https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/downloads/plaits_v50.pdf). The hardware for the "Infinite Digits x Toadstool Tech Ectocore" was developed by TT, but initially dervied from the ID open-source zeptocore device and EG open-source schematics with assistance from IN (not available publicly). The hardware for the "Infinite Digits x Maneco Labs Ectocore" was developed by ML, derived from the ID open-source zeptocore device and EG open-source schematics (not available publicly).
-
-I want to acknowledge countless community members of the open-source world (Supercollider, monome norns, Raspberry Pi, Adafruit, many many more) who I have been inpsired from and continue to be inspired, and from their work I am grateful and continue to try to pay forward by continuously making my work similarly freely open-source and available. (One note on that: The final hardware design from TT and ML are NOT open-source as they are proprietary designs of their own work, each created separately based on my open-source zeptocore device). 
-
-
-</details>
-
 
 ## zeptoboard
 
-the zeptoboard is the breadboard version of the zeptocore. 
+zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware. more information [here](https://zeptocore.com/#zeptoboard).
 
 <div align="center">
 <img src="docs/static/img/zeptoboard_img.png" height="350px">
 </div>
 
-It retains most of the same functionality but allows you to use your keyboard and a MIDI interface (via [this website](https://zeptocore.com/#computer-keyboard)) instead of the buttons on the handheld device. While this version does require some breadboarding knowledge, it is perfect for developing your ideas based on the firmware.
-
-## sample loading tool
-
-the sample loading tool is a web-based tool (available at [zeptocore.com/tool](https://zeptocore.com/tool) or [ectocore.rocks](https://ectocore.rocks)) that allows you to load samples onto the *_core* devices. it is built with Go, and Vue.
-
-<div align="center">
-<img src="docs/static/img/core_tool.webp" width="70%">
-</div>
-
-the source code is located in the [core folder](https://github.com/schollz/_core/tree/main/core), and information for building the tool is located can be found in [the documentation](https://zeptocore.com/#building-from-source).
-
-### ectocore software
-
-The ectocore.rocks sample loading tool can be used offline by following the instructions for your system.
-
-<div align="center">
-<img src="https://github.com/user-attachments/assets/d6ed7a61-9209-484d-9bda-7c965382a7b3" width="50%">
-</div>
-
-<details><summary>Windows</summary>
-
-#### Download for Windows: **[x64](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_windows_v6.4.6.exe)**
-
-Once downloaded, double click on the executable file to run it.
-
-</details>
-
-
-<details><summary>macOS</summary>
-
-To install the tool on macOS, first open a terminal.
-
-Then, if you are on an Intel-based mac install with:
-
-```
-curl -L https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_macos_amd64_v6.4.6 > core_macos
-```
-
-Or, if you are on a M1/M2-based mac install with:
-
-```
-curl -L https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_macos_aarch64_v6.4.6 > core_macos
-```
-
-Then to enable the program by entering this into the terminal:
-
-```
-chmod +x core_macos 
-xattrc -c core_macos
-```
-
-Now to run, you can just type
-
-```
-./core_macos
-```
-
-A window should pop up in the browser with the offline version of the tool.
-
-</details>
-
-
-<details><summary>Linux</summary>
-
-#### Download for Linux: **[x64](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_linux_amd64_v6.4.6)**
-
-After downloading, run it directly from the terminal.
-
-</details>
-
-
-## faq
-
-
-### Why is it freezing?
-
-Normally, ectocore and zeptocore should not freeze. 
-
-If you encounter a freeze, it would be helpful to know the following:
-
-> What SD card are you using? If you are using a custom SD card, please try using the stock SD (or [approved SD card](https://github.com/schollz/_core?tab=readme-ov-file#which-sd-card-can-i-use)) card to see if the issue persists. If it does, please answer the following questions.
-
-> How many samples did you load? Even though all 16 banks can be used, the ectocore currently only supports about 150 samples due to recent firmware changes. If you exceed 
-> this limit, the device may freeze on start.
-
-> Were effects on or off during the freeze? Try turning off all effects (Break knob fully CCW) and see if the issue persists.
-
-> Are you using custom samples or the stock samples? Try using the [stock samples](https://infinitedigits.co/zeptocore_default_samples_v6.zip) and see if the issue persists.
-
-> Is it a particular sample that causes a freeze or any sample? If a particular sample, please provide the original sample if you can.
-
-> What was the BPM set to?
-
-If it happens a lot, please try using [this firmware](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_no_overclocking_v6.4.6.uf2) which disables overclocking, allows fewer fx, but should increase the stability.
-
-Please submit an issue with responses to these questions by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
-
-If, however, you want to return the device, I completely understand. Please reach out to the seller for a return.
-
-### Why is the ectocore not playing in time?
-
-The ectocore is very good at putting out what you put into it, and it is *incredibly* stable if you need it to be. In many cases, users that experience timing issues are due 
-to their samples not being in time (e.g. if you have a sound sample that is 8 beats at 120 bpm it should be 8*60/120 = 4 seconds long) or due to the sample not being sliced well (slices should ideally go right before transients).
-
-The stability of the ectocore varies based on whether you use the internal clock, with or without oversampling, or externally clocked.
-
-In order of stability:
-
-1) Internally clock Ectocore using the non-overclocking firmware (found [here](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_no_overclocking_v6.4.6.uf2)). This is more stable than my external clock source (Pam's new workout).
-2) Externally clock Ectocore using a clock source. Even when Ectocore is overclocked, it follows the clock source very well.
-3) Internally clock Ectocore using the overclocking firmware (the default). This is about two times less stable than Pam's clock source.
-
-You can visualize this ordering in the data I collected below, where Ectocore was clocked internally (with or without overclocking) or externally (with Pam's clock source). 
-
-![Clocking](/dev/clocking.png)
-
-1) Pam's, by itself, without Ectocore, starts to slowly drag (Red line).
-2) Ectocore, clocked by Pam's, will stay very close to Pam's (which means it will slowly drag) (Blue line).
-3) Ectocore, with the normal firmware (overclocked), internally clocked, will start to get ahead of the tempo, worse than Pam's but not terribly bad (Green line).
-4) Ectocore, with the non-overclocked firmware, internally clocked, will be rock steady, more than Pam's or anything else (Purple line). Rock steady means deviating by only 0.5 ms after almost 20 minutes.
-
-If you are still having issues, please submit an issue  by [clicking here](https://github.com/schollz/_core/issues/new?template=ectocore-freezing.md) or send an email to zack@infinitedigits.co.
-
-### Why is the ectocore lagging?
-
-Ectocore is highly responsive to start/stop triggers. It seamlessly starts when receiving an external clock signal (e.g., from Pamela's New Workout) or when triggered manually from a stopped position using the Tap button. Earlier versions of Ectocore had issues with latency, but these have been resolved in version 6.3.7 and later. 
-
-Here’s how latency (or lag) is measured for testing purposes: Two outputs from Pamela's New Workout are set to 150 BPM at 2x speed. One output clocks Ectocore, whose signal is then sent to the first channel of an output module. The second output from Pam’s is routed to the second channel of the same module. Latency is determined by measuring the difference between the two channels at the peak of Pamela’s signal. For example, here is a case where the measured latency is 4.9 ms:
-
-![Latency](/dev/latency/how.png)
-
-By collecting multiple measurements, I can generate a latency distribution:
-
-![Latency](/dev/latency/20250315.png)
-
-If you are still experiencing lag, it is likely due to sample splicing rather than actual system latency. Ectocore is designed for maximum responsiveness, but if a sample’s splice points are placed ahead of the transient, it may create the perception of lag. If you need assistance optimizing your sample splicing, feel free to email me with a link to your workspace, and I’ll be happy to take a look.
-
-### Which firmware should I use?
-
-That depends on your needs. The firmware is divided into two categories: *overclocking* and *non-overclocking*. 
-
-- Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
-- Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
-
-For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
-
-|                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Overclocking     | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6.uf2)*                | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_low_latency.uf2)                 | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_ultralow_latency.uf2)                 |
-| Non-Overclocking | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking.uf2) | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking_low_latency.uf2) | [v6.4.6](https://github.com/schollz/_core/releases/download/v6.4.6/ectocore_v6.4.6_no_overclocking_ultralow_latency.uf2) |
-
-*default firmware
-
-### How do I update the ectocore?
-
-The latest firmware version can be downloaded from [any of the available firmwares](https://github.com/schollz/_core?tab=readme-ov-file#which-firmware-should-i-use). After downloading the firmware, follow these instructions ([click here for a video version](https://www.youtube.com/watch?v=9Ql57oJBMQM)):
-
-1. **Power Connection:** Ensure your ectocore is connected to case power, not just USB power, to avoid potential damage.
-2. **Access the USB-C Port:** Remove the ectocore from your rack or create space to access the USB-C port.
-3. **Connect to Computer:** Plug a USB-C cable from the ectocore to your computer.
-4. **Enter Bootloader Mode:**
-   - Locate the two buttons on the back: "_Boot_" (right) and "_Reset_" (left).
-   - Hold the "_Boot_" button and tap the "_Reset_" button.
-   - The module lights will indicate success: all lights on and buttons are unresponsive. A drive named "RPI-RP2" will appear on your computer.
-5. **Transfer Firmware:**
-   - Copy the firmware file (ending in .uf2, around 3 MB) to the "RPI-RP2" drive.
-   - The module will reset automatically once the file is copied.
-6. **Reinstall:** Carefully unplug the USB-C cable and reinstall the ectocore into your case.
-
-
-### Which SD Card can I use?
-
-Please note that not all SD cards are equal. Terms like "high-speed," "A1," or "U3" on the card do not necessarily indicate its actual speed performance.
-
-Below is a list of known good and bad cards:
-
-#### Known bad cards
-
-Do *not* use these cards! They may appear to work, but they can cause spurious glitches.
-
-- Lexar brand
-- Kootion brand
-- Kingston brand
-- 5% of JUANWE cards
-
-#### Known good cards
-
-- Gigastone 16GB + 32GB
-- SP Elite
-- SanDisk Extreme
-- Samsung EVO
-- PNY Elite
-- MicroCenter
-
-#### Writing new SD Cards
-
-```
-sudo parted /dev/sdd --script mklabel gpt mkpart primary fat32 4MiB 100%
-sudo mkfs.fat -F 32 -s 128 -S 512 /dev/sdd1
-sudo partclone.fat32 -r -s sdcard_ectocore.img -o /dev/sdd1 --force
-```
 
 # license
 
@@ -317,7 +99,46 @@ sudo partclone.fat32 -r -s sdcard_ectocore.img -o /dev/sdd1 --force
 - GPLv3 for all _core code
 - Hardware: cc-by-sa-3.0
 
-# guidelines for derivative works
+## guidelines for derivative works
 
 The schematics are open-source - you are welcome to utilize them to customize the device according to your preferences. If you intend to produce boards based on my schematics, I kindly ask for your financial support to help sustain the development of future devices.
 Also note - Infinite Digits and Ectocore are registered trademarks. The name "Infinite Digits" and "Ectocore" should not be used on any of the derivative works you create from these files. 
+
+
+## attributions 
+
+<details><summary>Click here to see the full attributions for the Ectocore and EZEPTOCORE projects</summary>
+
+<br>
+
+The "Infinite Digits x Maneco Labs EZEPTOCORE" is a eurorack version of the Infinite Digits' handhold sample slicer, the [zeptocore](https://zeptocore.com), with manufacturing and hardware design by Maneco Labs. The [zeptocore](https://zeptocore.com) is also the basis for the 2024 Ectocore which which had manufacturing and hardware co-designed with Toadstool Tech ("Infinite Digits x Toadstool Tech Ectocore"). This acknowledges the work encompassing both of these products.
+
+- ID = Infinite Digits
+- ML = Maneco Labs
+- TT = Toadstool Tech
+- EG = Émilie Gillet
+- IN = Instruo
+
+Both the EZEPTOCORE and Ectocore are an open-source modular version of ID's open-source [zeptocore](https://zeptocore.com) device. The [zeptocore](https://zeptocore.com) itself comes from a long lineage of Infinite Digit's open-source devices and open-source software including [pikocore](https://github.com/schollz/pikocore), [nyblcore](https://github.com/schollz/nyblcore), [amen script](https://github.com/schollz/amen), [glitchlets script](https://github.com/schollz/glitchlets), [amenbreak script](https://github.com/schollz/amenbreak), [abacus script](https://github.com/schollz/abacus), [makebreakbeat script](https://github.com/schollz/makebreakbeat), [sampswap script](https://github.com/schollz/sampswap), [dnb.lua utility](https://github.com/schollz/dnb.lua), [raw script](https://github.com/schollz/raw), and the [paracosms](https://github.com/schollz/paracosms) script. These devices and software libraries have their own long legacies and many acknowledgments, but would especially like to acknowledge being inspired by [Jerboa modular synthesizer](http://wiki.yak.net/1132) (for inspiring me to use the attiny85), Fay Carsons (for inspiring to use the rp2040), Limor Fried and EG (for pioneering CC-BY-SA hardware), and Nick Collins (for the Breakcore UGen), the open-source contributors to RP2040 community (Raspberry Pi Foundation, Carl J Kugler III for the SDIO library, which is built upon FatFS which I am thankful for), Steven Noreyko and Jacob Vosamer for helping improve MIDI and porting to RP2040v2, as well as countless musicians who inspire all ID creations and all the open-source maintainers who I find inspiration and inspire me to continue to produce open-source designs and making my work freely available to remix and re-purpose.
+
+The EZEPTOCORE and Ectocore websites and sample manipulator and downloader was developed and maintained by ID. The open-source tools for splitting drums was designed at [Facebook Research by Alexandre Défossez](https://github.com/facebookresearch/demucs) which is used to generate the splice points to do a Trig Out in the Ectocore. The automatic splicing was done using open-source Aubio library.
+
+The name "EZEPTOCORE" is a product of ID, combining "eurorack" and "zeptocore" to signify its lineage.
+The name "Ectocore" is a collaboration of TT+ID, combining of TT's mythical ethos ("ecto") and ID's *core products ("core").
+
+TT asked for the following attribution and credit text without modification:
+"Ectocore's original hardware design, interface layout, and artwork were created by Toadstool Tech / Izaak Hollander. Toadstool Tech has no involvement with the current Maneco Labs/Infinite Digits 2025 iteration of Ectocore and is not responsible for any support related to iterations not branded 'Toadstool Tech'. This product is not a collaboration with Toadstool Tech, and there was no involvement with its engineering or marketing. Toadstool Tech will receive no monetary compensation from sales of this product."
+
+ID would like to clarify compensation of TT: TT was paid for the original Ectocore collaboration, and compensation was offered for the EZEPTOCORE project but TT declined.
+
+ID would like to clarify the attributions of the original Ectocore hardware design: the original design was based from Infinite Digits' [open-source pikocore schematic](https://github.com/schollz/pikocore) and [open-source zeptocore schematic](https://github.com/schollz/_core) combined with open-source designs from Raspberry Pi foundation, Adafruit, and Émilie Gillet's [plaits](https://pichenettes.github.io/mutable-instruments-documentation/modules/plaits/downloads/plaits_v50.pdf) schematic (licensed by CC-BY-SA schematics).  Iteration on the Ectocore hardware design was done by TT, ID, and IN. The final Ectocore hardware schematic and board files developed solely by TT.
+
+ID would like to clarify the attributions of the interface layout of the Ectocore: The interface was designed throughout a collaboration between TT and ID, combining of TT's mythical inspiration ("Grimoire") and ID's interfaces from previous monome norns scripts written by ID (e.g. [amenbreak script](https://github.com/schollz/amenbreak) for singular "amen" and "break" knobs, [makebreakbeat script](https://github.com/schollz/makebreakbeat) for sample splicing, [sampswap script](https://github.com/schollz/sampswap), [dnb.lua utility](https://github.com/schollz/dnb.lua) for "tunneling" and jumping) and inspiration from devices previously created by ID ([pikocore](https://github.com/schollz/pikocore) and [nyblcore](https://github.com/schollz/nyblcore)). ID also acknowledges that the norns scripts developed by ID that inspired the Ectocore and EZEPTOCORE panel design were born out of ideas from many other people, built in a community of open-source creations, with special thanks to scanner_darkly (who came up with the single "amen" and "break" knob idea) and Nick Collins (who created the inspirational Breakcore UGen from SuperColldier).
+
+The "Infinite Digits x Maneco Labs EZEPTOCORE" front panel is inspired by the design from TT+ID, and incoroprates changes by ML to add a reset button to the front.
+
+ID also wants to acknowledge the countless community members of the open-source world (Supercollider, monome norns, Raspberry Pi, Adafruit, many many more) who I have been inspired from and continue to be inspired, and from their work I am grateful and continue to try to pay forward by continuously making my work similarly freely open-source and available. (One note on that: The final hardware design from TT and ML are NOT open-source as they are proprietary designs of their own work, each created separately based on my open-source [zeptocore](https://zeptocore.com) device).
+
+
+</details>
+
