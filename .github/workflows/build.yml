@@ -86,27 +86,27 @@ jobs:
       - name: Build ectocore.uf2
         run: |
           make ectocore
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}.uf2
       - name: Build ectocore_128.uf2
         run: |
           make ectocore_128
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_ultralow_latency.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
       - name: Build ectocore_256.uf2
         run: |
           make ectocore_256
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_low_latency.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}_low_latency.uf2
       - name: Build ectocore no overclock
         run: |
           make ectocore_noclock
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
       - name: Build ectocore no overclock 128
         run: |
           make ectocore_noclock_128
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
       - name: Build ectocore no overclock 256
         run: |
           make ectocore_noclock_256
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+          cp ectocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
       - name: Build ectocore_beta_hardware.uf2
         run: |
           make ectocore_beta_hardware
@@ -131,12 +131,12 @@ jobs:
             zeptocore_${{ github.ref_name }}_ultralow_latency.uf2
             zeptocore_${{ github.ref_name }}_low_latency.uf2
             zeptoboard_${{ github.ref_name }}.uf2
-            ectocore_${{ github.ref_name }}.uf2
-            ectocore_${{ github.ref_name }}_ultralow_latency.uf2
-            ectocore_${{ github.ref_name }}_low_latency.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+            ezeptocore_${{ github.ref_name }}.uf2
+            ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
+            ezeptocore_${{ github.ref_name }}_low_latency.uf2
+            ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
+            ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
+            ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
             ectocore_beta_hardware_${{ github.ref_name }}.uf2
             _core_${{ github.ref_name }}_src.tar.gz
           if-no-files-found: ignore
@@ -167,12 +167,12 @@ jobs:
             dist/zeptocore_${{ github.ref_name }}_ultralow_latency.uf2
             dist/zeptocore_${{ github.ref_name }}_low_latency.uf2
             dist/zeptoboard_${{ github.ref_name }}.uf2
-            dist/ectocore_${{ github.ref_name }}.uf2
-            dist/ectocore_${{ github.ref_name }}_ultralow_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_low_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+            dist/ezeptocore_${{ github.ref_name }}.uf2
+            dist/ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
+            dist/ezeptocore_${{ github.ref_name }}_low_latency.uf2
+            dist/ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
+            dist/ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
+            dist/ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
             dist/ectocore_beta_hardware_${{ github.ref_name }}.uf2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -38,7 +38,7 @@ function listMidiPorts() {
     navigator.requestMIDIAccess({ sysex: true }) // Enable Sysex messages
         .then(midiAccess => {
             midiAccess.inputs.forEach(input => {
-                if (input.name.toLowerCase().includes("zeptocore") || input.name.toLowerCase().includes("ectocore")) {
+                if (input.name.toLowerCase().includes("zeptocore") || input.name.toLowerCase().includes("ectocore") || input.name.toLowerCase().includes("ezeptocore")) {
                     inputMidiDevice = input; // Ensure global scope if needed
                     console.log(`Selected input MIDI device: ${input.name}`);
                     setupMidiInputListener();
@@ -49,7 +49,7 @@ function listMidiPorts() {
             });
 
             midiAccess.outputs.forEach(output => {
-                if (output.name.toLowerCase().includes("zeptocore") || output.name.toLowerCase().includes("ectocore")) {
+                if (output.name.toLowerCase().includes("zeptocore") || output.name.toLowerCase().includes("ectocore") || output.name.toLowerCase().includes("ezeptocore")) {
                     outputMidiDevice = output; // Ensure global scope if needed
                     console.log(`Selected output MIDI device: ${output.name}`);
                     if (inputMidiDevice) {
@@ -1662,7 +1662,7 @@ window.addEventListener('load', (event) => {
             content: "Click to download the manual.",
         });
         tippy("#getLink", {
-            content: "Click to get an ectocore.",
+            content: "Click to get an ezeptocore.",
         });
         tippy("#editingSplice", {
             content: "Click waveform and drag splice regions or double click to add splice."
@@ -1692,12 +1692,12 @@ window.addEventListener('load', (event) => {
             content: 'Click to download the latest firmware.',
         });
         tippy('#show-dialog-settings', {
-            content: 'Click to edit global settings on the ectocore.',
+            content: 'Click to edit global settings on the ezeptocore.',
         });
         tippy('#pSettingsClockStop', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "When 'stop' the ectocore stops when incoming clock stops and starts when incoming clock starts. When 'continue', the incoming clock does not affect ectocore starting/stopping.",
+            content: "When 'stop' the ezeptocore stops when incoming clock stops and starts when incoming clock starts. When 'continue', the incoming clock does not affect ezeptocore starting/stopping.",
         });
         tippy('#pSettingsAmenBehavior', {
             zIndex: 9999999,
@@ -1722,7 +1722,7 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsOverrideWithReset', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "Select the CV to use as a 'Reset' to reset the ectocore to the first slice. This will disable the selected CV and use the reset CV instead.",
+            content: "Select the CV to use as a 'Reset' to reset the ezeptocore to the first slice. This will disable the selected CV and use the reset CV instead.",
         });
         tippy('#pSettingsMashMode', {
             zIndex: 9999999,
@@ -1742,7 +1742,7 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsBrightness', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "Increase the brighntess of multicolor LEDs (note this increases power usage of ectocore).",
+            content: "Increase the brighntess of multicolor LEDs (note this increases power usage of ezeptocore).",
         });
         tippy('#bDownloadSettings', {
             zIndex: 9999999,
@@ -1760,13 +1760,13 @@ window.addEventListener('load', (event) => {
 
 
         let grimoireList = [
-            "amalgam",
-            "alum",
-            "tree",
-            "azurite",
-            "hematite",
-            "sulphur",
-            "brimstone",
+            "I",
+            "II",
+            "III",
+            "IV",
+            "V",
+            "VI",
+            "VII",
         ];
         for (let ii = 0; ii < grimoireList.length; ii++) {
             if (ii < 3) {
