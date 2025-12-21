@@ -139,7 +139,7 @@ function setupMidi() {
             // Input setup
             const inputs = midiAccess.inputs.values();
             for (let input of inputs) {
-                if (input.name.includes("zeptoboard") || input.name.includes("zeptocore") || input.name.includes("ectocore")) {
+                if (input.name.includes("zeptoboard") || input.name.includes("zeptocore") || input.name.includes("ectocore") || input.name.includes("ezeptocore")) {
                     window.inputMidiDevice = input;
                     setupMidiInputListener();
                     console.log("input device connected");
@@ -151,7 +151,7 @@ function setupMidi() {
             const outputs = midiAccess.outputs.values();
             for (let output of outputs) {
                 // console.log(output.name);
-                if (output.name.includes("zeptoboard") || output.name.includes("zeptocore") || output.name.includes("ectocore")) {
+                if (output.name.includes("zeptoboard") || output.name.includes("zeptocore") || output.name.includes("ectocore") || output.name.includes("ezeptocore")) {
                     window.zeptoboardDevice = output;
                     // console.log("output device connected");
                     // show modal
