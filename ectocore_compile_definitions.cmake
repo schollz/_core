@@ -21,10 +21,10 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     DO_OVERCLOCK=1
     
     # pin definitions
-    MCP_KNOB_AMEN=0
+    MCP_KNOB_AMEN=3
     MCP_ATTEN_AMEN=1
     MCP_CV_AMEN=2
-    MCP_KNOB_BREAK=3
+    MCP_KNOB_BREAK=0
     MCP_ATTEN_BREAK=4
     MCP_CV_BREAK=5
     MCP_KNOB_SAMPLE=6
