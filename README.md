@@ -53,9 +53,8 @@ The firmware for the zeptocore is written in C, and instructions for building th
 
 The EZEPTOCORE is a eurorack version of the zeptocore developed by Infinite Digits in collaboration with Maneco Labs. See [below](#attributions) for full atributions.
 
-
 <div align="center">
-<img src="docs/static/img/ezeptocore.png" height="300px">
+<img src="https://github.com/user-attachments/assets/44a51a55-b0c1-47f3-ac32-60912d0dc610" height="300px">
 </div>
 
 ### EZEPTOCORE firmware 
