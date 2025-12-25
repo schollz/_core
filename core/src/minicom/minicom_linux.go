@@ -15,7 +15,7 @@ import (
 )
 
 const ZEPTOCOREID = "2E8A:1836"
-const ECTOCOREID = "2E8A:1837"
+const EZEPTOCOREID = "2E8A:1837"
 const BOARDCOREID = "2E8A:1838"
 
 var hasPort = false
@@ -85,11 +85,11 @@ func serialPortReader(prepareUpload chan bool, dataChannel chan []byte, stopChan
 				continue
 			}
 			log.Tracef("found port %s with id %s", port.Name, id)
-			if id == ZEPTOCOREID || id == ECTOCOREID || id == BOARDCOREID {
+			if id == ZEPTOCOREID || id == EZEPTOCOREID || id == BOARDCOREID {
 				if id == ZEPTOCOREID {
 					deviceType = "zeptocore"
-				} else if id == ECTOCOREID {
-					deviceType = "ectocore"
+				} else if id == EZEPTOCOREID {
+					deviceType = "ezeptocore"
 				} else if id == BOARDCOREID {
 					deviceType = "zeptoboard"
 				}

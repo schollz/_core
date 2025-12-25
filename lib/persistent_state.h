@@ -11,10 +11,10 @@
 #define PERSISTENT_STATE_MAGIC 0x434F5245
 
 // Combined structure to persist both calibration data and bank/sample selection
-// This structure is shared between ectocore calibration and persistent state
+// This structure is shared between ezeptocore calibration and persistent state
 typedef struct {
   uint32_t magic;                // Magic number for validation (0x434F5245)
-  uint16_t center_calibration[8]; // Calibration data for ectocore (16 bytes)
+  uint16_t center_calibration[8]; // Calibration data for ezeptocore (16 bytes)
   uint8_t bank;                  // Current bank (0-15)
   uint8_t sample;                // Current sample (0-15)
   uint16_t checksum;             // Simple checksum for additional validation

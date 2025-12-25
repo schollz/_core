@@ -197,7 +197,7 @@ bool grimoire_rune_effect[7][16];
 uint8_t grimoire_rune = 0;
 bool clock_out_do = false;
 bool clock_out_ready = false;
-uint32_t ecto_trig_out_last = 0;
+uint32_t ezepto_trig_out_last = 0;
 volatile bool clock_in_do = false;
 bool clock_input_absent_zeptocore = false;
 bool clock_in_ready = false;
@@ -401,12 +401,12 @@ float pitch_vals[PITCH_VAL_MAX] = {
 // starts at splice start and returns to start when reaching sample boundary
 #define PLAY_SAMPLE_LOOP 4
 
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
 #define TRIGGER_MODE_KICK 0
 #define TRIGGER_MODE_SNARE 1
 #define TRIGGER_MODE_HH 2
 #define TRIGGER_MODE_RANDOM 3
-uint8_t ectocore_trigger_mode = 0;
+uint8_t ezeptocore_trigger_mode = 0;
 uint8_t cv_signals[3] = {MCP_CV_AMEN, MCP_CV_BREAK, MCP_CV_SAMPLE};
 uint8_t cv_attenuate[2] = {MCP_ATTEN_AMEN, MCP_ATTEN_BREAK};
 #define CV_RESET_NONE -1
@@ -417,11 +417,11 @@ uint8_t cv_attenuate[2] = {MCP_ATTEN_AMEN, MCP_ATTEN_BREAK};
 bool cv_plugged[3] = {false, false, false};
 int8_t cv_beat_current_override = -1;
 
-#define ECTOCORE_CLOCK_NUM_DIVISIONS 7
-const uint8_t ectocore_clock_out_divisions[ECTOCORE_CLOCK_NUM_DIVISIONS] = {
+#define EZEPTOCORE_CLOCK_NUM_DIVISIONS 7
+const uint8_t ezeptocore_clock_out_divisions[EZEPTOCORE_CLOCK_NUM_DIVISIONS] = {
     8 / 8, 8 / 4, 8 / 2, 8, 8 * 2, 8 * 4, 8 * 8,
 };
-uint8_t ectocore_clock_selected_division = 2;
+uint8_t ezeptocore_clock_selected_division = 2;
 #endif
 
 #ifdef INCLUDE_RGBLED

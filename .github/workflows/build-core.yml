@@ -39,13 +39,13 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project (ectocore)
+      - name: Build Go project (ezeptocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
-      - name: Verify binary (ectocore)
+      - name: Verify binary (ezeptocore)
         run: ./core --help
 
-      - name: Zip binary (ectocore macOS)
+      - name: Zip binary (ezeptocore macOS)
         run: zip -9 ezeptocore_tool_macos.zip core
 
       - name: Build Go project (zeptocore)
@@ -57,7 +57,7 @@ jobs:
       - name: Zip binary (zeptocore macOS)
         run: zip -9 zeptocore_tool_macos.zip core
 
-      - name: Upload artifact (ectocore macOS)
+      - name: Upload artifact (ezeptocore macOS)
         uses: actions/upload-artifact@v4
         with:
           name: ezeptocore_tool_macos.zip
@@ -88,13 +88,13 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project (ectocore)
+      - name: Build Go project (ezeptocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core
 
-      - name: Verify binary (ectocore)
+      - name: Verify binary (ezeptocore)
         run: ./core --help
 
-      - name: Zip binary (ectocore Linux)
+      - name: Zip binary (ezeptocore Linux)
         run: zip -9 ezeptocore_tool_linux.zip core
 
       - name: Build Go project (zeptocore)
@@ -106,7 +106,7 @@ jobs:
       - name: Zip binary (zeptocore Linux)
         run: zip -9 zeptocore_tool_linux.zip core
 
-      - name: Upload artifact (ectocore Linux)
+      - name: Upload artifact (ezeptocore Linux)
         uses: actions/upload-artifact@v4
         with:
           name: ezeptocore_tool_linux.zip
@@ -154,13 +154,13 @@ jobs:
       # - name: Test
       #   run: go test -v ./...
 
-      - name: Build Go project (ectocore)
+      - name: Build Go project (ezeptocore)
         run: go build -v -ldflags "-X main.Version=${{ github.ref_name }} -X main.EctocoreDefault=yes" -o core.exe
 
-      - name: Verify binary (ectocore)
+      - name: Verify binary (ezeptocore)
         run: .\core.exe --help
 
-      - name: Zip binary (ectocore Windows)
+      - name: Zip binary (ezeptocore Windows)
         shell: pwsh
         run: Compress-Archive -Path core.exe -DestinationPath ezeptocore_tool_windows.zip -Force
 
@@ -174,7 +174,7 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path core.exe -DestinationPath zeptocore_tool_windows.zip -Force
 
-      - name: Upload artifact (ectocore Windows)
+      - name: Upload artifact (ezeptocore Windows)
         uses: actions/upload-artifact@v4
         with:
           name: ezeptocore_tool_windows.zip

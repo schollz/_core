@@ -18,15 +18,15 @@ var flagLogLevel string
 var flagDontOpen bool
 var flagUseFilesOnDisk bool
 var flagDontConnect bool
-var flagIsEctocore bool
-var EctocoreDefault = "no"
+var flagIsEzeptocore bool
+var EzeptocoreDefault = "no"
 
 func init() {
 	flag.StringVar(&flagLogLevel, "log", "debug", "log level (trace, debug, info)")
 	flag.BoolVar(&flagUseFilesOnDisk, "usefiles", false, "use files on disk")
 	flag.BoolVar(&flagDontOpen, "dontopen", false, "don't open browser")
 	flag.BoolVar(&flagDontConnect, "dontconnect", false, "don't connect to core")
-	flag.BoolVar(&flagIsEctocore, "ectocore", EctocoreDefault == "yes", "startup in ectocore mode")
+	flag.BoolVar(&flagIsEzeptocore, "ezeptocore", EzeptocoreDefault == "yes", "startup in ezeptocore mode")
 }
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	if !flagDontOpen {
 		go func() {
 			time.Sleep(2 * time.Second)
-			if EctocoreDefault == "yes" {
+			if EzeptocoreDefault == "yes" {
 				utils.OpenBrowser("http://localhost:8100/tool")
 			} else {
 				utils.OpenBrowser("http://localhost:8101/tool")
@@ -74,7 +74,7 @@ func main() {
 		drumextract2.DownloadModel()
 	}
 
-	err = server.Serve(flagIsEctocore, flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)
+	err = server.Serve(flagIsEzeptocore, flagUseFilesOnDisk, flagDontConnect, chanString, chanPrepareUpload, chanDeviceType)
 	if err != nil {
 		log.Error(err)
 		time.Sleep(38 * time.Second)
