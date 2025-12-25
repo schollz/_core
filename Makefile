@@ -55,51 +55,51 @@ zeptocore_nooverclock: pico-sdk pico-extras copyzepto lib/fuzz.h lib/transfer_sa
 	make -C build -j$(NPROCS)
 	cp build/_core.uf2 zeptocore_nooverclock.uf2
 
-ectocore: pico-sdk pico-extras copyecto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore: pico-sdk pico-extras copyezepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_128.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_64: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_64: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_64.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_beta_hardware: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_beta_hardware: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_v0.3.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore_beta_hardware.uf2
+	cp build/_core.uf2 ezeptocore_beta_hardware.uf2
 
-ectocore_noclock: pico-sdk pico-extras copyectonoclock lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_noclock: pico-sdk pico-extras copyezeptonoclock lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_noclock_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_noclock_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_nooverclock_128.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
-ectocore_noclock_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+ezeptocore_noclock_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions_nooverclock_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+	cp build/_core.uf2 ezeptocore.uf2
 
 copyzepto:
 	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
 
-copyecto:
+copyezepto:
 	cp ezeptocore_compile_definitions.cmake target_compile_definitions.cmake
 
-copyectonoclock:
+copyezeptonoclock:
 	cp ezeptocore_compile_definitions_nooverclock.cmake target_compile_definitions.cmake
 
 copyboard:
@@ -174,13 +174,13 @@ lib/resonantfilter_data.h: .venv
 	cd lib && ../.venv/bin/python resonantfilter.py > resonantfilter_data.h
 	clang-format -i --style=google lib/resonantfilter_data.h
 
-lib/cuedsounds.h: lib/cuedsounds_zeptocore.h lib/cuedsounds_ectocore.h
+lib/cuedsounds.h: lib/cuedsounds_zeptocore.h lib/cuedsounds_ezeptocore.h
 
 lib/cuedsounds_zeptocore.h:
 	cd dev/audio2flash && go build -v && ./audio2flash -name cuedsounds -in cuedsounds-zeptocore -out ../../lib/cuedsounds_zeptocore.h
 
-lib/cuedsounds_ectocore.h:
-	cd dev/audio2flash && go build -v && ./audio2flash -name cuedsounds -in cuedsounds-ectocore -out ../../lib/cuedsounds_ectocore.h
+lib/cuedsounds_ezeptocore.h:
+	cd dev/audio2flash && go build -v && ./audio2flash -name cuedsounds -in cuedsounds-ezeptocore -out ../../lib/cuedsounds_ezeptocore.h
 
 pico-extras:
 	git clone https://github.com/raspberrypi/pico-extras.git pico-extras
@@ -207,11 +207,11 @@ changebaud:
 
 resetpico2:
 	-timeout 1 sudo minicom -b 1200 -o -D /dev/ttyACM0
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
+	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ezeptocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
+	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ezeptocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
+	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ezeptocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 
 upload: resetpico2 changebaud dobuild
@@ -312,30 +312,30 @@ core_linux_amd64: docsbuild
 core_server: docsbuild
 	cd core && go build -v -o ../core_server
 
-# ectocore builds
-.PHONY: ectocore_windows.exe
-ectocore_windows.exe: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X main.EctocoreDefault=yes" -o ../ectocore_windows.exe
+# ezeptocore builds
+.PHONY: ezeptocore_windows.exe
+ezeptocore_windows.exe: docsbuild
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X main.EzeptocoreDefault=yes" -o ../ezeptocore_windows.exe
 
-.PHONY: ectocore_macos_aarch64
-ectocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
+.PHONY: ezeptocore_macos_aarch64
+ezeptocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_aarch64
+	go1.21.13 build -ldflags "-s -w -X main.EzeptocoreDefault=yes" -buildmode=pie -o ../ezeptocore_macos_aarch64
 
-.PHONY: ectocore_macos_amd64
-ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
+.PHONY: ezeptocore_macos_amd64
+ezeptocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	# https://web.archive.org/web/20230330180803/https://lucor.dev/post/cross-compile-golang-fyne-project-using-zig/
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_amd64
+	go1.21.13 build -ldflags "-s -w -X main.EzeptocoreDefault=yes" -buildmode=pie -o ../ezeptocore_macos_amd64
 
-.PHONY: ectocore_linux_amd64
-ectocore_linux_amd64: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.EctocoreDefault=yes" -v -o ../ectocore_linux_amd64
+.PHONY: ezeptocore_linux_amd64
+ezeptocore_linux_amd64: docsbuild
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.EzeptocoreDefault=yes" -v -o ../ezeptocore_linux_amd64
 
 .PHONY: docs
 docs: versions.md

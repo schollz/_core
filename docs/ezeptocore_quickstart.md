@@ -2,7 +2,7 @@
 
 ## Part I: Knobs and Buttons
 
-0. **SD Card.** Holds 16 banks with 16 samples each. Prepared using _ectocore.rocks_, which organizes, slices, and assigns Grimoire effects. No sample length limit. Insert to auto-load banks on startup.
+0. **SD Card.** Holds 16 banks with 16 samples each. Prepared using _ezeptocore.rocks_, which organizes, slices, and assigns Grimoire effects. No sample length limit. Insert to auto-load banks on startup.
 1. **Break Knob.** Controls the probability of triggering effects. Effects are determined by the Grimoire Knob’s current selection.
 2. **Amen Knob.** Turing Machine–style sequencer. Fully counterclockwise plays normally; fully clockwise randomizes sequence order. Intermediate positions play sequences from 1–16 steps.
 3. **Sample Knob.** Changes the active sample. Hold the Bank Button to change banks. Each bank holds up to 16 samples.
@@ -25,7 +25,7 @@
 
 ## Part III: CV Inputs
 
-1. **Amen Input.** Controls slice sequencing via CV. Set to Jump or Hold mode on _ectocore.rocks_. Supports unipolar (0–5 V) or bipolar (–5 V to +5 V). When patched, the Amen Knob sets the slice range start, and the Amen Attenuator Knob sets the range end.
+1. **Amen Input.** Controls slice sequencing via CV. Set to Jump or Hold mode on _ezeptocore.rocks_. Supports unipolar (0–5 V) or bipolar (–5 V to +5 V). When patched, the Amen Knob sets the slice range start, and the Amen Attenuator Knob sets the range end.
 2. **Break Input.** Controls probability (0–100%) of activating Grimoire-selected effects. CV polarity can be set to unipolar or bipolar.
 3. **Sample Input.** Selects the active sample within the current bank. CV polarity can be set to unipolar or bipolar.
 4. **Clock In.** Syncs playback to an external 2 PPQN clock. “Stop if clock stops” or “Continue if clock stops” behavior can be set in settings.
@@ -38,9 +38,9 @@
 
 this is the Ectocore. I’m going to tell you a little bit about the overview of the panel, and then I’ll talk about how to load samples onto it. this is just an image of it, but we can start at the top. this first knob adds effects — there are sixteen different effects, and I’ll talk more about them. this knob is a roller sequencer. this knob changes samples, and the button next to it helps you change between the sixteen banks. the button down here is a trig out mode, which I’ll talk more about in a bit. the button next to it is a clock out multiplier, so you can send this clock out to other things and keep everything in sync. the trig out is nice because you can use it to trigger certain transients. this knob up here will make the sequence more random. this knob changes the effects that are being applied. there are cv inputs for sequencing the effects, the clock in, and the sample. you have 16-bit stereo audio output.
 
-now, today I’m going to talk about this sd card. the sd card holds sixteen banks with sixteen samples each, and there’s no sample limit. to get things onto the sd card, you’ll want to go to ectocore.rocks. oh — I almost forgot — there’s also a tap tempo button.
+now, today I’m going to talk about this sd card. the sd card holds sixteen banks with sixteen samples each, and there’s no sample limit. to get things onto the sd card, you’ll want to go to ezeptocore.rocks. oh — I almost forgot — there’s also a tap tempo button.
 
-ectocore.rocks is essentially a way to prepare samples for the Ectocore. the Ectocore splits the workflow into performance and preparation. you use the Ectocore hardware to perform, and you use the ectocore.rocks tool to prepare your performance — to organize, splice, and analyze samples. let’s get started by making our own workspace. before I get into that, I just want to mention that up here, you can click to get the latest firmware, download the latest manual, or click down here to use offline versions of this tool if you need them. one caveat about this tool is that it’s online — these URLs are publicly available. but as long as you choose a URL that nobody else knows, no one will be able to access your information. if you’d prefer, you can download one of the offline versions.
+ezeptocore.rocks is essentially a way to prepare samples for the Ectocore. the Ectocore splits the workflow into performance and preparation. you use the Ectocore hardware to perform, and you use the ezeptocore.rocks tool to prepare your performance — to organize, splice, and analyze samples. let’s get started by making our own workspace. before I get into that, I just want to mention that up here, you can click to get the latest firmware, download the latest manual, or click down here to use offline versions of this tool if you need them. one caveat about this tool is that it’s online — these URLs are publicly available. but as long as you choose a URL that nobody else knows, no one will be able to access your information. if you’d prefer, you can download one of the offline versions.
 
 I’m going to create one called “Mr. Shoe” — that’s the name of my cat. once you load it, you’ll have sixteen banks. you can select these different banks on the left, and then drop in some audio. let’s drop an audio file into bank one. as you can see on the right, it automatically recognizes OP-1 drum patches, Renoise splices, and Morphagene reels, and it will automatically splice them. if you have those formats, you can use their built-in splicing features. let’s just open up a sample from my library. as you can see, this sample has the BPM in the title — that’s helpful for the tool to recognize it. if you don’t have that, it’ll try to determine BPM by the length of your sample. hopefully, your sample’s length is a multiple of its number of beats — otherwise, the splicing can get a little tricky. once you’ve loaded something, you can click on it, and it shows up in another screen.
 
@@ -56,7 +56,7 @@ when you export your workspace to the sd card, the grimoire is written along wit
 
 you can also customize how strong each effect is or whether it responds to cv modulation. for example, you can have subtle filtering on one bank and more extreme glitch or reverse effects on another. once you’re done, you can save your workspace and safely eject the sd card. insert it into the Ectocore, and it’ll load everything automatically.
 
-when performing with the Ectocore, you can simply turn the break knob to change which effect is happening. now once you’re done, you can easily go back into the browser tool to adjust your banks, change splices, or remap effects. the workflow between the Ectocore hardware and the ectocore.rocks site makes it really easy to prepare creative, performance-ready sample sets with detailed control over slices, transients, and modulation behavior.
+when performing with the Ectocore, you can simply turn the break knob to change which effect is happening. now once you’re done, you can easily go back into the browser tool to adjust your banks, change splices, or remap effects. the workflow between the Ectocore hardware and the ezeptocore.rocks site makes it really easy to prepare creative, performance-ready sample sets with detailed control over slices, transients, and modulation behavior.
 
 ## Ectocore - How does Amen Knob Work Transcript
 

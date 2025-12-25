@@ -138,6 +138,6 @@ Do a build:
 make clean zeptocore
 ```
 
-(replace 'zeptocore' with 'ectocore' or 'zeptoboard' if you are building a different image)
+(replace 'zeptocore' with 'ezeptocore' or 'zeptoboard' if you are building a different image)
 
 </details>

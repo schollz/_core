@@ -45,8 +45,8 @@ bool __not_in_flash_func(timer_step)() {
     playback_stopped = true;
   }
 
-#ifdef INCLUDE_ECTOCORE
-  uint8_t ecto_do_clock_trig = 0;
+#ifdef INCLUDE_EZEPTOCORE
+  uint8_t ezepto_do_clock_trig = 0;
 #endif
 
 #ifdef INCLUDE_MIDI
@@ -62,7 +62,7 @@ bool __not_in_flash_func(timer_step)() {
 #ifdef INCLUDE_MIDI
       send_midi_stop();
 #endif
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
       // Save current bank and sample to flash when playback stops
       PersistentState_save(sel_bank_cur, sel_sample_cur);
 #endif
@@ -83,18 +83,18 @@ bool __not_in_flash_func(timer_step)() {
                                                      .snd[FILEZERO]
                                                      ->splice_trigger)) == 0;
 
-// ectocore clocking
-#ifdef INCLUDE_ECTOCORE
+// ezeptocore clocking
+#ifdef INCLUDE_EZEPTOCORE
   if (clock_behavior_sync_slice) {
     if (bpm_timer_counter %
             (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
                  .snd[FILEZERO]
                  ->splice_trigger *
-             ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+             ezeptocore_clock_out_divisions[ezeptocore_clock_selected_division] /
              8) ==
         0) {
-      ecto_do_clock_trig++;
+      ezepto_do_clock_trig++;
       gpio_put(GPIO_CLOCK_OUT, 1);
       clock_output_trig_time = to_ms_since_boot(get_absolute_time());
     } else if (!clock_output_trig &&
@@ -102,8 +102,8 @@ bool __not_in_flash_func(timer_step)() {
                                         ->sample[sel_sample_cur]
                                         .snd[FILEZERO]
                                         ->splice_trigger *
-                                    ectocore_clock_out_divisions
-                                        [ectocore_clock_selected_division] /
+                                    ezeptocore_clock_out_divisions
+                                        [ezeptocore_clock_selected_division] /
                                     8 / 2) ==
                    0) {
       // if clock output trig mode is on, then it will be switched off in the
@@ -113,16 +113,16 @@ bool __not_in_flash_func(timer_step)() {
   } else {
     if (bpm_timer_counter %
             (192 *
-             ectocore_clock_out_divisions[ectocore_clock_selected_division] /
+             ezeptocore_clock_out_divisions[ezeptocore_clock_selected_division] /
              8) ==
         0) {
-      ecto_do_clock_trig++;
+      ezepto_do_clock_trig++;
       gpio_put(GPIO_CLOCK_OUT, 1);
       clock_output_trig_time = to_ms_since_boot(get_absolute_time());
     } else if (!clock_output_trig &&
                bpm_timer_counter % (192 *
-                                    ectocore_clock_out_divisions
-                                        [ectocore_clock_selected_division] /
+                                    ezeptocore_clock_out_divisions
+                                        [ezeptocore_clock_selected_division] /
                                     8 / 2) ==
                    0) {
       // if clock output trig mode is on, then it will be switched off in the
@@ -140,7 +140,7 @@ bool __not_in_flash_func(timer_step)() {
     // retriggering at end of a phrase
     if (do_retrig_at_end_of_phrase) {
       if (beat_start_retrig == 0) {
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
         beat_start_retrig = random_integer_in_range(2, 8);
 #else
         beat_start_retrig = random_integer_in_range(2, 10);
@@ -172,8 +172,8 @@ bool __not_in_flash_func(timer_step)() {
     Gate_reset(audio_gate);
     clock_out_ready = true;
     clock_did_activate = true;
-#ifdef INCLUDE_ECTOCORE
-    ecto_do_clock_trig++;
+#ifdef INCLUDE_EZEPTOCORE
+    ezepto_do_clock_trig++;
 #endif
 
     // check if need to do tunneling
@@ -219,7 +219,7 @@ bool __not_in_flash_func(timer_step)() {
       if (retrig_ready) {
         if (retrig_first) {
           // generate random value between 0 and 1
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
 #else
           retrig_vol = (float)random_integer_in_range(0, 50) / 100;
 #endif
@@ -542,7 +542,7 @@ bool __not_in_flash_func(timer_step)() {
             }
           }
         }
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
         if (cv_beat_current_override > 0) {
           beat_current = cv_beat_current_override;
           cv_beat_current_override = -1;
@@ -634,9 +634,9 @@ bool __not_in_flash_func(timer_step)() {
 #endif
 #endif
             // transient activated
-#ifdef INCLUDE_ECTOCORE
-            if (ectocore_trigger_mode == i) {
-              ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+#ifdef INCLUDE_EZEPTOCORE
+            if (ezeptocore_trigger_mode == i) {
+              ezepto_trig_out_last = to_ms_since_boot(get_absolute_time());
               gpio_put(GPIO_TRIG_OUT, 1);
             }
 #endif
@@ -646,12 +646,12 @@ bool __not_in_flash_func(timer_step)() {
 
       phase_sample_old = phase_sample;
     }
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
     // random transients
-    if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM) {
-      if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 100 &&
+    if (ezeptocore_trigger_mode == TRIGGER_MODE_RANDOM) {
+      if (to_ms_since_boot(get_absolute_time()) - ezepto_trig_out_last > 100 &&
           random_integer_in_range(1, 6000) < 10) {
-        ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
+        ezepto_trig_out_last = to_ms_since_boot(get_absolute_time());
         gpio_put(GPIO_TRIG_OUT, 1);
       }
     }
@@ -668,8 +668,8 @@ bool __not_in_flash_func(repeating_timer_callback)(struct repeating_timer *t) {
 #ifdef INCLUDE_ZEPTOCORE
 #include "lib/zeptocore.h"
 #endif
-#ifdef INCLUDE_ECTOCORE
-#include "lib/ectocore.h"
+#ifdef INCLUDE_EZEPTOCORE
+#include "lib/ezeptocore.h"
 #endif
 #ifdef INCLUDE_BOARDCORE
 #include "lib/zeptoboard.h"
@@ -764,7 +764,7 @@ int main() {
   gpio_set_dir(LED_TOP_GPIO, GPIO_OUT);
 #endif
 
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
   gpio_init(GPIO_BTN_BANK);
   gpio_set_dir(GPIO_BTN_BANK, GPIO_IN);
   gpio_pull_up(GPIO_BTN_BANK);
