@@ -145,7 +145,7 @@ void set_cv_start_stop(int16_t knob1, int16_t knob2) {
     cv_stop = 1000;
   }
   if (cv_start != cv_start_old || cv_stop != cv_stop_old) {
-    // printf("[ectocore] cv_start=%d, cv_stop=%d\n", cv_start, cv_stop);
+    // printf("[ezeptocore] cv_start=%d, cv_stop=%d\n", cv_start, cv_stop);
     if (knob2 < 512) {
       ws2812_set_wheel_start_stop(ws2812, cv_start * 16 / 1000,
                                   cv_stop * 16 / 1000, 100, 200, 255);
@@ -395,7 +395,7 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
 }
 
 void dust_1() {
-  // printf("[ectocore] dust_1\n");
+  // printf("[ezeptocore] dust_1\n");
 }
 
 bool clock_input_absent = true;
@@ -417,13 +417,13 @@ void gpio_callback(uint gpio, uint32_t events) {
       if (!cv_reset_override_active) {
         cv_reset_override_active = true;
         timer_reset();
-        // printf("[ectocore] cv_reset_override %d\n",
+        // printf("[ezeptocore] cv_reset_override %d\n",
         // cv_reset_override_active);
       }
     } else {
       if (cv_reset_override_active) {
         cv_reset_override_active = false;
-        // printf("[ectocore] cv_reset_override %d\n",
+        // printf("[ezeptocore] cv_reset_override %d\n",
         // cv_reset_override_active);
       }
     }
@@ -517,7 +517,7 @@ void __not_in_flash_func(input_handling)() {
     button_change[i] = ButtonChange_malloc();
   }
 
-#ifdef ECTOCORE_VERSION_3
+#ifdef EZEPTOCORE_VERSION_3
   gpio_init(GPIO_MODE_LEDA);
   gpio_set_dir(GPIO_MODE_LEDA, GPIO_OUT);
   gpio_put(GPIO_MODE_LEDA, 0);
@@ -525,7 +525,7 @@ void __not_in_flash_func(input_handling)() {
   gpio_set_dir(GPIO_MODE_LEDB, GPIO_OUT);
   gpio_put(GPIO_MODE_LEDB, 0);
 #endif
-#ifdef ECTOCORE_VERSION_4
+#ifdef EZEPTOCORE_VERSION_4
   const uint8_t gpio_mode_leds[4] = {
       GPIO_MODE_1,
       GPIO_MODE_2,
@@ -618,17 +618,17 @@ void __not_in_flash_func(input_handling)() {
         // reset probabilities
         probability_of_random_jump = 0;
       } else if (debounce_startup == 108) {
-        printf("[ectocore] startup\n");
+        printf("[ezeptocore] startup\n");
         // read flash data
         uint16_t calibration_data[8];
         if (PersistentState_load_calibration(calibration_data)) {
           for (uint8_t i = 0; i < 8; i++) {
             sf->center_calibration[i] = calibration_data[i];
           }
-          printf("[ectocore] calibration data loaded from flash\n");
+          printf("[ezeptocore] calibration data loaded from flash\n");
         } else {
           printf(
-              "[ectocore] calibration data is corrupted or missing, using "
+              "[ezeptocore] calibration data is corrupted or missing, using "
               "defaults\n");
         }
       } else if (debounce_startup >= 100 && debounce_startup < 108) {
@@ -637,7 +637,7 @@ void __not_in_flash_func(input_handling)() {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
           if (i == 0) {
-            printf("[ectocore] write calibration\n");
+            printf("[ezeptocore] write calibration\n");
             uint16_t flash_time = 250;
             for (uint8_t ii = 0; ii < 20; ii++) {
               // make the LEDS go RED
@@ -666,7 +666,7 @@ void __not_in_flash_func(input_handling)() {
             }
           }
         }
-        printf("[ectocore] calibrate %d=%d,", i, sf->center_calibration[i]);
+        printf("[ezeptocore] calibrate %d=%d,", i, sf->center_calibration[i]);
       }
     }
 
@@ -681,9 +681,9 @@ void __not_in_flash_func(input_handling)() {
       if (clock_input_absent_new != clock_input_absent) {
         clock_input_absent = clock_input_absent_new;
         if (clock_input_absent) {
-          printf("[ectocore] clock input absent\n");
+          printf("[ezeptocore] clock input absent\n");
         } else {
-          printf("[ectocore] clock input present\n");
+          printf("[ezeptocore] clock input present\n");
         }
       }
     }
@@ -712,7 +712,7 @@ void __not_in_flash_func(input_handling)() {
           mean_signal_ema =
               MEAN_ALPHA * new_sample + (1.0f - MEAN_ALPHA) * mean_signal_ema;
         }
-        // printf("[ectocore] mean_signal_ema: %f\n", mean_signal_ema);
+        // printf("[ezeptocore] mean_signal_ema: %f\n", mean_signal_ema);
       }
       last_mean_signal_time = current_time;
     }
@@ -780,7 +780,7 @@ void __not_in_flash_func(input_handling)() {
             cv_plugged[j] = true;
             cv_detection_count[j] = 0;
             last_mean_signal_time = 0;  // Trigger mean recalculation
-            printf("[ectocore] cv_%d plugged\n", j);
+            printf("[ezeptocore] cv_%d plugged\n", j);
           }
         } else if (is_signal[j] && cv_plugged[j]) {
           // Potential unplug detected
@@ -790,7 +790,7 @@ void __not_in_flash_func(input_handling)() {
             cv_detection_count[j] = 0;
             cv_was_unplugged[j] = true;
             last_mean_signal_time = 0;  // Trigger mean recalculation
-            printf("[ectocore] cv_%d unplugged\n", j);
+            printf("[ezeptocore] cv_%d unplugged\n", j);
           }
         } else {
           // State matches expectation - reset counter
@@ -895,14 +895,14 @@ void __not_in_flash_func(input_handling)() {
             }
           }
         } else if (i == CV_BREAK) {
-          // printf("[ectocore] cv_break %d\n", val);
+          // printf("[ezeptocore] cv_break %d\n", val);
           int16_t cv_min = 0;
           if (global_break_cv_bipolar) {
             cv_min = -512;
           }
           break_set(linlin(val, cv_min, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
-          // printf("[ectocore] cv_sample %d\n", val);
+          // printf("[ezeptocore] cv_sample %d\n", val);
           int16_t cv_min = 0;
           if (global_sample_cv_bipolar) {
             cv_min = -512;
@@ -934,7 +934,7 @@ void __not_in_flash_func(input_handling)() {
              sel_bank_cur != sel_bank_next_new)) {
           sel_sample_next = sel_sample_next_new;
           sel_bank_next = sel_bank_next_new;
-          // printf("[ectocore] switch bank/sample %d/%d\n", sel_bank_next,
+          // printf("[ezeptocore] switch bank/sample %d/%d\n", sel_bank_next,
           //        sel_sample_next);
           fil_current_change = true;
           debounce_file_switching = current_time;
@@ -943,10 +943,10 @@ void __not_in_flash_func(input_handling)() {
     }
 
     // turn off trigout after 50 ms
-    if (ecto_trig_out_last > 0) {
-      if (current_time - ecto_trig_out_last > 50) {
+    if (ezepto_trig_out_last > 0) {
+      if (current_time - ezepto_trig_out_last > 50) {
         gpio_put(GPIO_TRIG_OUT, 0);
-        ecto_trig_out_last = 0;
+        ezepto_trig_out_last = 0;
       }
     }
 
@@ -1035,19 +1035,19 @@ void __not_in_flash_func(input_handling)() {
       val = KnobChange_update(knob_change[i], raw_val);
       if (debounce_startup == 15 + i) {
         val = raw_val;
-        // printf("[ectocore] knob %d=%d\n", i, val);
+        // printf("[ezeptocore] knob %d=%d\n", i, val);
       } else if (i == KNOB_BREAK && cv_was_unplugged[CV_BREAK]) {
         cv_was_unplugged[CV_BREAK] = false;
         val = raw_val;
-        // printf("[ectocore] (CV_BREAK) knob %d=%d\n", i, val);
+        // printf("[ezeptocore] (CV_BREAK) knob %d=%d\n", i, val);
       } else if (i == KNOB_AMEN && cv_was_unplugged[CV_AMEN]) {
         cv_was_unplugged[CV_AMEN] = false;
         val = raw_val;
-        // printf("[ectocore] (CV_AMEN) knob %d=%d\n", i, val);
+        // printf("[ezeptocore] (CV_AMEN) knob %d=%d\n", i, val);
       } else if (i == KNOB_SAMPLE && cv_was_unplugged[CV_SAMPLE]) {
         cv_was_unplugged[CV_SAMPLE] = false;
         val = raw_val;
-        // printf("[ectocore] (CV_SAMPLE) knob %d=%d\n", i, val);
+        // printf("[ezeptocore] (CV_SAMPLE) knob %d=%d\n", i, val);
       }
       if (val < 0) {
         continue;
@@ -1063,14 +1063,14 @@ void __not_in_flash_func(input_handling)() {
           val = 1023;
         }
       }
-      // printf("[ectocore] knob %d=%d\n", i, val);
+      // printf("[ezeptocore] knob %d=%d\n", i, val);
       knob_val[i] = val;
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (gpio_get(GPIO_BTN_BANK) == 0 && fil_current_change == false) {
           // bank selection
           uint8_t bank_i =
               roundf((float)(val * (banks_with_samples_num - 1)) / 1024.0);
-          // printf("[ectocore] switch bank %d\n", val);
+          // printf("[ezeptocore] switch bank %d\n", val);
           uint8_t bank_num = banks_with_samples[bank_i];
           if (banks[bank_num]->num_samples > 0 &&
               sel_bank_next_new != bank_num && !fil_current_change &&
@@ -1086,7 +1086,7 @@ void __not_in_flash_func(input_handling)() {
                 sel_sample_next_new = banks[sel_bank_next_new]->num_samples - 1;
               }
               debounce_file_change = DEBOUNCE_FILE_SWITCH;
-              // printf("[ectocore] knob switch %d+%d/%d\n", sel_bank_next_new,
+              // printf("[ezeptocore] knob switch %d+%d/%d\n", sel_bank_next_new,
               //        sel_sample_next_new,
               //        banks[sel_bank_next_new]->num_samples);
               ws2812_set_wheel_section(ws2812, bank_i, banks_with_samples_num,
@@ -1100,13 +1100,13 @@ void __not_in_flash_func(input_handling)() {
             if (val < 128) {
               // gating off
               if (sf->fx_active[FX_TIGHTEN]) {
-                // printf("[ectocore] gating off\n");
+                // printf("[ezeptocore] gating off\n");
                 toggle_fx(FX_TIGHTEN);
               }
             } else {
               // gating on
               if (!sf->fx_active[FX_TIGHTEN]) {
-                // printf("[ectocore] gating on\n");
+                // printf("[ezeptocore] gating on\n");
                 toggle_fx(FX_TIGHTEN);
               }
               // change gating based on the value
@@ -1126,7 +1126,7 @@ void __not_in_flash_func(input_handling)() {
               WS2812_show(ws2812);
               if (sel_sample_next_new != sel_sample_cur) {
                 debounce_file_change = DEBOUNCE_FILE_SWITCH;
-                // printf("[ectocore] knob select sample %d/%d (%d)\n",
+                // printf("[ezeptocore] knob select sample %d/%d (%d)\n",
                 //        sel_sample_next_new + 1,
                 //        banks[sel_bank_cur]->num_samples, raw_val);
               }
@@ -1134,10 +1134,10 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
-        // printf("[ectocore] knob_break %d\n", val);
+        // printf("[ezeptocore] knob_break %d\n", val);
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
-        // printf("[ectocore] knob_amen %d\n", val);
+        // printf("[ezeptocore] knob_amen %d\n", val);
         if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1145,7 +1145,7 @@ void __not_in_flash_func(input_handling)() {
             // low pass filter
             global_filter_index =
                 val * (resonantfilter_fc_max) / (512 - val_mid);
-            // printf("[ectocore] lowpass: %d\n", global_filter_index);
+            // printf("[ezeptocore] lowpass: %d\n", global_filter_index);
             global_filter_lphp = 0;
             for (uint8_t channel = 0; channel < 2; channel++) {
               ResonantFilter_setFilterType(resFilter[channel],
@@ -1157,7 +1157,7 @@ void __not_in_flash_func(input_handling)() {
             // high pass filter
             global_filter_index = (val - (512 + val_mid)) *
                                   (resonantfilter_fc_max) / (512 - val_mid);
-            // printf("[ectocore] highpass: %d\n", global_filter_index);
+            // printf("[ezeptocore] highpass: %d\n", global_filter_index);
             global_filter_lphp = 1;
             for (uint8_t channel = 0; channel < 2; channel++) {
               ResonantFilter_setFilterType(resFilter[channel],
@@ -1205,12 +1205,12 @@ void __not_in_flash_func(input_handling)() {
                   ws2812_set_wheel_euclidean(ws2812, random_sequence_length,
                                              255, 150, 30);
                 }
-                // printf("[ectocore] random_sequence_length %d\n",
+                // printf("[ezeptocore] random_sequence_length %d\n",
                 //        random_sequence_length);
                 do_retrig_at_end_of_phrase = false;
               }
             } else {
-              // printf("[ectocore] regen sequence\n");
+              // printf("[ezeptocore] regen sequence\n");
               // generative mode + generate new sequence
               regenerate_random_sequence_arr();
               debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
@@ -1235,7 +1235,7 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
-        // printf("[ectocore] knob_break_atten %d\n", val);
+        // printf("[ezeptocore] knob_break_atten %d\n", val);
         // change the grimoire rune
         grimoire_rune = val * 7 / 1024;
         // show the current effects toggled for this rune
@@ -1248,7 +1248,7 @@ void __not_in_flash_func(input_handling)() {
         WS2812_show(ws2812);
 
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
-        // printf("[ectocore] knob_amen_atten %d\n", val);
+        // printf("[ezeptocore] knob_amen_atten %d\n", val);
         // check if CV is plugged in for AMEN
         if (!cv_plugged[CV_AMEN] ||
             (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
@@ -1297,7 +1297,7 @@ void __not_in_flash_func(input_handling)() {
       //   KnobChange_reset(knob_change[j]);
       // }
       if (gpio_btns[i] == GPIO_BTN_MODE) {
-        // printf("[ectocore] btn_mode %d\n", val);
+        // printf("[ezeptocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
         if (!val && gpio_btn_held_time[i] > 2000) {
           // easter egg..toggle lo-fi mode
@@ -1346,19 +1346,19 @@ void __not_in_flash_func(input_handling)() {
           }
         } else {
           if (val == 1) {
-            if (ectocore_trigger_mode < 4 - 1) {
-              ectocore_trigger_mode++;
+            if (ezeptocore_trigger_mode < 4 - 1) {
+              ezeptocore_trigger_mode++;
             } else {
-              ectocore_trigger_mode = 0;
+              ezeptocore_trigger_mode = 0;
             }
-            switch (ectocore_trigger_mode) {
+            switch (ezeptocore_trigger_mode) {
               case TRIGGER_MODE_KICK:
-                // printf("[ectocore] trigger mode: kick\n");
-#ifdef ECTOCORE_VERSION_3
+                // printf("[ezeptocore] trigger mode: kick\n");
+#ifdef EZEPTOCORE_VERSION_3
                 gpio_put(GPIO_MODE_LEDA, 0);
                 gpio_put(GPIO_MODE_LEDB, 0);
 #endif
-#ifdef ECTOCORE_VERSION_4
+#ifdef EZEPTOCORE_VERSION_4
                 for (uint8_t i = 0; i < 4; i++) {
                   gpio_put(gpio_mode_leds[i], 1);
                 }
@@ -1366,12 +1366,12 @@ void __not_in_flash_func(input_handling)() {
 #endif
                 break;
               case TRIGGER_MODE_SNARE:
-                // printf("[ectocore] trigger mode: snare\n");
-#ifdef ECTOCORE_VERSION_3
+                // printf("[ezeptocore] trigger mode: snare\n");
+#ifdef EZEPTOCORE_VERSION_3
                 gpio_put(GPIO_MODE_LEDA, 1);
                 gpio_put(GPIO_MODE_LEDB, 0);
 #endif
-#ifdef ECTOCORE_VERSION_4
+#ifdef EZEPTOCORE_VERSION_4
                 for (uint8_t i = 0; i < 4; i++) {
                   gpio_put(gpio_mode_leds[i], 1);
                 }
@@ -1379,12 +1379,12 @@ void __not_in_flash_func(input_handling)() {
 #endif
                 break;
               case TRIGGER_MODE_HH:
-                printf("[ectocore] trigger mode: hh\n");
-#ifdef ECTOCORE_VERSION_3
+                printf("[ezeptocore] trigger mode: hh\n");
+#ifdef EZEPTOCORE_VERSION_3
                 gpio_put(GPIO_MODE_LEDA, 0);
                 gpio_put(GPIO_MODE_LEDB, 1);
 #endif
-#ifdef ECTOCORE_VERSION_4
+#ifdef EZEPTOCORE_VERSION_4
                 for (uint8_t i = 0; i < 4; i++) {
                   gpio_put(gpio_mode_leds[i], 1);
                 }
@@ -1392,12 +1392,12 @@ void __not_in_flash_func(input_handling)() {
 #endif
                 break;
               case TRIGGER_MODE_RANDOM:
-                printf("[ectocore] trigger mode: random\n");
-#ifdef ECTOCORE_VERSION_3
+                printf("[ezeptocore] trigger mode: random\n");
+#ifdef EZEPTOCORE_VERSION_3
                 gpio_put(GPIO_MODE_LEDA, 1);
                 gpio_put(GPIO_MODE_LEDB, 1);
 #endif
-#ifdef ECTOCORE_VERSION_4
+#ifdef EZEPTOCORE_VERSION_4
                 for (uint8_t i = 0; i < 4; i++) {
                   gpio_put(gpio_mode_leds[i], 1);
                 }
@@ -1408,7 +1408,7 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
-        // printf("[ectocore] btn_bank %d\n", val);
+        // printf("[ezeptocore] btn_bank %d\n", val);
         if (val == 0) {
           if (i < BUTTON_NUM && current_time - gpio_btn_last_pressed[i] < 200 &&
               fil_current_change == false) {
@@ -1427,7 +1427,7 @@ void __not_in_flash_func(input_handling)() {
                 bank_i = 0;
               }
               uint8_t bank_num = banks_with_samples[bank_i];
-              // printf("[ectocore] btn switch bank_num %d\n", bank_num);
+              // printf("[ezeptocore] btn switch bank_num %d\n", bank_num);
               if (banks[bank_num]->num_samples > 0 &&
                   sel_bank_next_new != bank_num) {
                 sel_bank_next_new = bank_num;
@@ -1442,7 +1442,7 @@ void __not_in_flash_func(input_handling)() {
                         banks[sel_bank_next_new]->num_samples - 1;
                   }
                   debounce_file_change = DEBOUNCE_FILE_SWITCH;
-                  // printf("[ectocore] btn switch %d+%d/%d\n",
+                  // printf("[ezeptocore] btn switch %d+%d/%d\n",
                   // sel_bank_next_new,
                   //        sel_sample_next_new,
                   //        banks[sel_bank_next_new]->num_samples);
@@ -1459,16 +1459,16 @@ void __not_in_flash_func(input_handling)() {
           WS2812_show(ws2812);
         }
       } else if (gpio_btns[i] == GPIO_BTN_MULT) {
-        // printf("[ectocore] btn_mult %d\n", val);
+        // printf("[ezeptocore] btn_mult %d\n", val);
         if (val == 1) {
           if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
             // A+C
             if (!playback_stopped && !do_stop_playback) {
-              // printf("[ectocore] ectocore stop\n");
+              // printf("[ezeptocore] ectocore stop\n");
               if (!button_mute) trigger_button_mute = true;
               do_stop_playback = true;
             } else if (playback_stopped && !do_restart_playback) {
-              // printf("[ectocore] ectocore start\n");
+              // printf("[ezeptocore] ectocore start\n");
               timer_reset();
             }
             TapTempo_reset(taptempo);
@@ -1480,7 +1480,7 @@ void __not_in_flash_func(input_handling)() {
             }
 #endif
           } else {
-            // printf("[ectocore] btn_mult %d %d\n", val,
+            // printf("[ezeptocore] btn_mult %d %d\n", val,
             //        gpio_btn_state[BTN_TAPTEMPO]);
             btn_mult_on_time = current_time;
             btn_mult_hold_time = btn_mult_on_time;
@@ -1491,14 +1491,14 @@ void __not_in_flash_func(input_handling)() {
           } else {
             if (current_time - btn_mult_on_time < 200) {
               // tap
-              // printf("[ectocore] btn_mult tap\n");
-              if (ectocore_clock_selected_division > 0)
-                ectocore_clock_selected_division--;
+              // printf("[ezeptocore] btn_mult tap\n");
+              if (ezeptocore_clock_selected_division > 0)
+                ezeptocore_clock_selected_division--;
             }
           }
         }
       } else if (gpio_btns[i] == GPIO_BTN_TAPTEMPO) {
-        // printf("[ectocore] btn_taptempo %d\n", val);
+        // printf("[ezeptocore] btn_taptempo %d\n", val);
         if (val == 1) {
           if (playback_stopped && !do_restart_playback) {
             cancel_repeating_timer(&timer);
@@ -1520,16 +1520,16 @@ void __not_in_flash_func(input_handling)() {
           if (cv_monitor_active) {
             cv_monitor_start_time = current_time;
             cv_monitor_last_print = 0;
-            printf("[ectocore] CV monitor enabled\n");
+            printf("[ezeptocore] CV monitor enabled\n");
           } else {
-            printf("[ectocore] CV monitor disabled\n");
+            printf("[ezeptocore] CV monitor disabled\n");
           }
         }
       }
       // check for reset
       if (gpio_btn_state[BTN_BANK] > 0 && gpio_btn_state[BTN_MODE] > 0 &&
           gpio_btn_state[BTN_MULT] > 0) {
-        // printf("[ectocore] reset\n");
+        // printf("[ezeptocore] reset\n");
         // sleep_ms(10);
         watchdog_reboot(0, SRAM_END, 0);
         for (;;) {
@@ -1545,8 +1545,8 @@ void __not_in_flash_func(input_handling)() {
       if (current_time - btn_mult_hold_time > 1000) {
         btn_mult_hold_time = current_time;
         // hold
-        if (ectocore_clock_selected_division < ECTOCORE_CLOCK_NUM_DIVISIONS - 1)
-          ectocore_clock_selected_division++;
+        if (ezeptocore_clock_selected_division < EZEPTOCORE_CLOCK_NUM_DIVISIONS - 1)
+          ezeptocore_clock_selected_division++;
       }
     }
 
@@ -1614,7 +1614,7 @@ void __not_in_flash_func(input_handling)() {
       // Check if 1 minute has elapsed
       if (elapsed >= CV_MONITOR_DURATION_MS) {
         cv_monitor_active = false;
-        printf("[ectocore] CV monitor disabled (timeout)\n");
+        printf("[ezeptocore] CV monitor disabled (timeout)\n");
       } else if (current_time - cv_monitor_last_print >=
                  CV_MONITOR_INTERVAL_MS) {
         // Read raw CV values

@@ -4,7 +4,7 @@
 package minicom
 
 const ZEPTOCOREID = "2E8A:1836"
-const ECTOCOREID = "2E8A:1837"
+const EZEPTOCOREID = "2E8A:1837"
 const BOARDCOREID = "2E8A:1838"
 
 var hasPort = false

@@ -282,7 +282,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				IsBuy          bool
 				IsMain         bool
 				IsZeptocore    bool
-				IsEctocore     bool
+				IsEzeptocore     bool
 				IsUpload       bool
 				VersionCurrent string
 				LatestVersion  string
@@ -294,7 +294,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				LatestVersion:  latestTag,
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
-				IsEctocore:     isEctocore,
+				IsEzeptocore:     isEctocore,
 				IsZeptocore:    !isEctocore,
 			}
 			data.IsUpload = !(data.IsMain)

@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main.exe --dontopen --log debug --dontconnect --ectocore"
+  bin = "./tmp/main.exe --dontopen --log debug --dontconnect --ezeptocore"
   cmd = "/usr/local/go/bin/go build -o ./tmp/main.exe ."
   delay = 0
   exclude_dir = ["assets", "tmp", "vendor", "testdata","storage","zips"]

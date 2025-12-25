@@ -104,8 +104,8 @@ bool usb_midi_present = false;
 #include "clock_input.h"
 #include "comb.h"
 #ifdef INCLUDE_CUEDSOUNDS
-#ifdef INCLUDE_ECTOCORE
-#include "cuedsounds_ectocore.h"
+#ifdef INCLUDE_EZEPTOCORE
+#include "cuedsounds_ezeptocore.h"
 #else
 #include "cuedsounds_zeptocore.h"
 #endif
@@ -125,9 +125,9 @@ bool usb_midi_present = false;
 #include "sequencehandler.h"
 #include "tapedelay.h"
 #include "taptempo.h"
-#ifdef INCLUDE_ECTOCORE
+#ifdef INCLUDE_EZEPTOCORE
 #include "dazzle.h"
-#include "ectocore_easing.h"
+#include "ezeptocore_easing.h"
 #endif
 #ifdef INCLUDE_ZEPTOCORE
 #include "debounce_digits.h"
