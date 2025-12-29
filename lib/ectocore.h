@@ -35,9 +35,12 @@ const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
 
 void ws2812_mode_color(WS2812 *ws2812) {
-  if (mode_amiga) {
+  if (dual_leds_holding_mode) {
     WS2812_fill_color(ws2812, 16, YELLOW);
     WS2812_fill_color(ws2812, 17, YELLOW);
+  } else if (dual_leds_holding_tap) {
+    WS2812_fill_color(ws2812, 16, CYAN);
+    WS2812_fill_color(ws2812, 17, CYAN);
   } else {
     WS2812_fill_color(ws2812, 16, BLANK);
     WS2812_fill_color(ws2812, 17, BLANK);
@@ -1066,7 +1069,13 @@ void __not_in_flash_func(input_handling)() {
       // printf("[ectocore] knob %d=%d\n", i, val);
       knob_val[i] = val;
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
-        if (gpio_get(GPIO_BTN_BANK) == 0 && fil_current_change == false) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode selection
+          // 0 - 100
+          mode_digital_bass = val * 100 / 1024;
+          printf("[ectocore] mode_digital_bass %d\n", mode_digital_bass);
+        } else if (gpio_get(GPIO_BTN_BANK) == 0 &&
+                   fil_current_change == false) {
           // bank selection
           uint8_t bank_i =
               roundf((float)(val * (banks_with_samples_num - 1)) / 1024.0);
@@ -1095,7 +1104,8 @@ void __not_in_flash_func(input_handling)() {
             }
           }
         } else {
-          if (gpio_btn_taptempo_val == 0) {
+          if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          } else if (gpio_btn_taptempo_val == 0) {
             // tap + sample changes gating
             if (val < 128) {
               // gating off
@@ -1135,10 +1145,21 @@ void __not_in_flash_func(input_handling)() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
         // printf("[ectocore] knob_break %d\n", val);
-        break_set(val, false, true);
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_break_index setting (0 to 20)
+          mode_digital_saturation = val * 100 / 1024;
+          printf("[ectocore] mode_digital_saturation %d\n",
+                 mode_digital_saturation);
+        } else {
+          break_set(val, false, true);
+        }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         // printf("[ectocore] knob_amen %d\n", val);
-        if (gpio_btn_taptempo_val == 0) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_amiga_index setting (0 to 20)
+          mode_amiga_index = val * 37 / 1024;
+          printf("[ectocore] amiga mode %d\n", mode_amiga_index);
+        } else if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
           if (val < 512 - val_mid) {
@@ -1235,23 +1256,33 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
-        // printf("[ectocore] knob_break_atten %d\n", val);
-        // change the grimoire rune
-        grimoire_rune = val * 7 / 1024;
-        // show the current effects toggled for this rune
-        ws2812_wheel_clear(ws2812);
-        for (uint8_t j = 0; j < 16; j++) {
-          if (grimoire_rune_effect[grimoire_rune][j]) {
-            WS2812_fill(ws2812, j, 255, 144, 144);
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_digital_depth setting (0 to 100)
+          mode_digital_smear = val * 100 / 1024;
+          printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
+        } else {
+          // printf("[ectocore] knob_break_atten %d\n", val);
+          // change the grimoire rune
+          grimoire_rune = val * 7 / 1024;
+          // show the current effects toggled for this rune
+          ws2812_wheel_clear(ws2812);
+          for (uint8_t j = 0; j < 16; j++) {
+            if (grimoire_rune_effect[grimoire_rune][j]) {
+              WS2812_fill(ws2812, j, 255, 144, 144);
+            }
           }
+          WS2812_show(ws2812);
         }
-        WS2812_show(ws2812);
 
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         // printf("[ectocore] knob_amen_atten %d\n", val);
         // check if CV is plugged in for AMEN
-        if (!cv_plugged[CV_AMEN] ||
-            (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_amiga_depth setting (0 to 100)
+          mode_digital_jitter = val * 100 / 1024;
+          printf("[ectocore] mode_digital_jitter %d\n", mode_digital_jitter);
+        } else if (!cv_plugged[CV_AMEN] ||
+                   (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
           if (val < 512 - 24) {
             sf->stay_in_sync = false;
             probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);
@@ -1283,6 +1314,20 @@ void __not_in_flash_func(input_handling)() {
       // }
       val = gpio_get(gpio_btns[i]);
       val = 1 - val;
+      // check for mode hold duration
+      if (gpio_btns[i] == GPIO_BTN_MODE && mode_held_duration != 0) {
+        uint32_t mode_held_new_duration = current_time - mode_held_start_time;
+        if (mode_held_new_duration >= MODE_HOLD_DURATION_THRESHOLD &&
+            mode_held_duration < MODE_HOLD_DURATION_THRESHOLD) {
+          printf("[ectocore] MODE held for 2 seconds\n");
+        }
+        mode_held_duration = mode_held_new_duration;
+      }
+#ifdef INCLUDE_EZEPTOCORE
+      dual_leds_holding_tap = gpio_btn_state[BTN_TAPTEMPO] == 1;
+      dual_leds_holding_mode =
+          (mode_held_duration >= MODE_HOLD_DURATION_THRESHOLD);
+#endif
       if (val == gpio_btn_state[i]) {
         continue;
       }
@@ -1299,10 +1344,17 @@ void __not_in_flash_func(input_handling)() {
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         // printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
-        if (!val && gpio_btn_held_time[i] > 2000) {
-          // easter egg..toggle lo-fi mode
-          mode_amiga = !mode_amiga;
-        } else if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
+        if (val && mode_held_duration == 0) {
+#ifdef INCLUDE_EZEPTOCORE
+          // start counting hold time
+          mode_held_start_time = current_time;
+          mode_held_duration = 1;
+#endif
+        } else if (!val && mode_held_duration != 0) {
+          // reset hold time
+          mode_held_duration = 0;
+        }
+        if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
           if (val == 1) {
             // TAP + MODE resets to original bpm if no clock is present
             // otherwise it resets the pattern to beat 1
