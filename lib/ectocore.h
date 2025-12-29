@@ -1283,6 +1283,15 @@ void __not_in_flash_func(input_handling)() {
       // }
       val = gpio_get(gpio_btns[i]);
       val = 1 - val;
+      // check for mode hold duration
+      if (gpio_btns[i] == GPIO_BTN_MODE && mode_held_duration != 0) {
+        uint32_t mode_held_new_duration = current_time - mode_held_start_time;
+        if (mode_held_new_duration >= MODE_HOLD_TIME_MS &&
+            mode_held_duration < MODE_HOLD_TIME_MS) {
+          printf("[ectocore] MODE held for 2 seconds\n");
+        }
+        mode_held_duration = mode_held_new_duration;
+      }
       if (val == gpio_btn_state[i]) {
         continue;
       }
@@ -1299,10 +1308,15 @@ void __not_in_flash_func(input_handling)() {
       if (gpio_btns[i] == GPIO_BTN_MODE) {
         // printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
-        if (!val && gpio_btn_held_time[i] > 2000) {
-          // easter egg..toggle lo-fi mode
-          mode_amiga = !mode_amiga;
-        } else if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
+        if (val && mode_held_duration == 0) {
+          // start counting hold time
+          mode_held_start_time = current_time;
+          mode_held_duration = 1;
+        } else if (!val && mode_held_duration != 0) {
+          // reset hold time
+          mode_held_duration = 0;
+        }
+        if (gpio_btn_state[BTN_TAPTEMPO] == 1) {
           if (val == 1) {
             // TAP + MODE resets to original bpm if no clock is present
             // otherwise it resets the pattern to beat 1
