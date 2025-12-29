@@ -1,5 +1,52 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 
+typedef struct {
+  uint32_t a;  // alpha * 65536
+  uint32_t b;  // (1 - alpha) * 65536
+} onepole_coeff_t;
+
+static const onepole_coeff_t onepole_table[20] = {
+    // fc = 100 Hz
+    {64622, 914},
+    // fc = 200 Hz
+    {63733, 1803},
+    // fc = 300 Hz
+    {62856, 2680},
+    // fc = 500 Hz
+    {61185, 4351},
+    // fc = 700 Hz
+    {59594, 5942},
+    // fc = 1000 Hz
+    {57344, 8192},
+    // fc = 1500 Hz
+    {54316, 11220},
+    // fc = 2000 Hz
+    {51703, 13833},
+    // fc = 3000 Hz
+    {47666, 17870},
+    // fc = 4000 Hz
+    {44301, 21235},
+    // fc = 5000 Hz
+    {41453, 24083},
+    // fc = 7000 Hz
+    {36864, 28672},
+    // fc = 8000 Hz
+    {34953, 30583},
+    // fc = 10000 Hz
+    {27027, 39329},  // <-- your original value
+    // fc = 12000 Hz
+    {24289, 42047},
+    // fc = 15000 Hz
+    {21037, 45399},
+    // fc = 18000 Hz
+    {18309, 48127},
+    // fc = 20000 Hz
+    {16804, 49632},
+    // fc = 22050 Hz (Nyquist)
+    {16069, 50367},
+    // fc = 24000 Hz (slightly above Nyquist, still stable)
+    {15322, 51114}};
+
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
@@ -884,7 +931,7 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
-  if (mode_amiga) {
+  if (mode_amiga_filter_index < 20) {
     // simple filter
     int32_t v[2];
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -898,8 +945,12 @@ BREAKOUT_OF_MUTE:
         v[j] = samples[i * 2 + j];
         // add a random value (-1 to 1)
         // v[j] += (rand() % 3) - 1;
-        v[j] = q16_16_multiply(27027, amiga_previous_value[j]) +
-               q16_16_multiply(39329, v[j]);
+        // v[j] = q16_16_multiply(27027, amiga_previous_value[j]) +
+        //        q16_16_multiply(39329, v[j]);
+        v[j] = q16_16_multiply(onepole_table[mode_amiga_filter_index].a,
+                               amiga_previous_value[j]) +
+               q16_16_multiply(onepole_table[mode_amiga_filter_index].b, v[j]);
+
         amiga_previous_value[j] = v[j];
       }
 

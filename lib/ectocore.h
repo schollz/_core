@@ -1095,7 +1095,8 @@ void __not_in_flash_func(input_handling)() {
             }
           }
         } else {
-          if (gpio_btn_taptempo_val == 0) {
+          if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          } else if (gpio_btn_taptempo_val == 0) {
             // tap + sample changes gating
             if (val < 128) {
               // gating off
@@ -1138,7 +1139,12 @@ void __not_in_flash_func(input_handling)() {
         break_set(val, false, true);
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         // printf("[ectocore] knob_amen %d\n", val);
-        if (gpio_btn_taptempo_val == 0) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_amiga_index setting (0 to 20)
+          mode_amiga_filter_index = val * 22 / 1024;
+          mode_amiga = mode_amiga_filter_index < 20;
+          printf("[ectocore] amiga mode %d\n", mode_amiga_filter_index);
+        } else if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
           if (val < 512 - val_mid) {
@@ -1286,8 +1292,8 @@ void __not_in_flash_func(input_handling)() {
       // check for mode hold duration
       if (gpio_btns[i] == GPIO_BTN_MODE && mode_held_duration != 0) {
         uint32_t mode_held_new_duration = current_time - mode_held_start_time;
-        if (mode_held_new_duration >= MODE_HOLD_TIME_MS &&
-            mode_held_duration < MODE_HOLD_TIME_MS) {
+        if (mode_held_new_duration >= MODE_HOLD_DURATION_THRESHOLD &&
+            mode_held_duration < MODE_HOLD_DURATION_THRESHOLD) {
           printf("[ectocore] MODE held for 2 seconds\n");
         }
         mode_held_duration = mode_held_new_duration;
@@ -1309,9 +1315,11 @@ void __not_in_flash_func(input_handling)() {
         // printf("[ectocore] btn_mode %d\n", val);
         // check if taptempo button is pressed
         if (val && mode_held_duration == 0) {
+#ifdef INCLUDE_EZEPTOCORE
           // start counting hold time
           mode_held_start_time = current_time;
           mode_held_duration = 1;
+#endif
         } else if (!val && mode_held_duration != 0) {
           // reset hold time
           mode_held_duration = 0;
