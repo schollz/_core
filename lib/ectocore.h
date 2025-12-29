@@ -1290,6 +1290,9 @@ void __not_in_flash_func(input_handling)() {
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           // TODO: TAP TEMPO + AMEN ATTEN changes ?
+          mode_chaos_trembler = val * 100 / 1024;
+          printf("[ectocore] mode_chaos_trembler %d\n", mode_chaos_trembler);
+          ws2812_set_wheel(ws2812, val * 4, 0, 0, 255);
         } else if (!cv_plugged[CV_AMEN] ||
                    (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
           if (val < 512 - 24) {

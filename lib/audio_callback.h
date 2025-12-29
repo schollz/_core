@@ -10,6 +10,11 @@ static uint8_t smear_amt = 1;
 static int8_t smear_dir = 1;
 static uint32_t smear_acc = 0;
 static int32_t bass_lp[2] = {0, 0};
+#define MICRO_DELAY_MAX 64  // ~1.45 ms @ 44.1kHz
+
+static int32_t tremble_val[2] = {Q16_16_1, Q16_16_1};
+static int32_t tremble_vel[2] = {0, 0};
+
 #endif
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
@@ -943,6 +948,45 @@ BREAKOUT_OF_MUTE:
       }
     }
   }
+
+  if (mode_chaos_trembler > 0) {
+    uint8_t amt = mode_chaos_trembler;
+    if (amt > 100) amt = 100;
+
+    /*
+      Mapping:
+      amt → chaos strength & speed
+    */
+    int32_t chaos_gain = (amt << 16) / 120;  // depth
+    int32_t chaos_speed = 1 + (amt >> 4);    // update aggressiveness
+
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      for (uint8_t ch = 0; ch < 2; ch++) {
+        /* -------- chaotic integrator -------- */
+
+        // random force
+        int32_t noise = ((rand() & 0xFF) - 128) << 9;
+
+        tremble_vel[ch] += q16_16_multiply(noise, chaos_gain);
+        tremble_vel[ch] -= tremble_vel[ch] >> chaos_speed;
+
+        tremble_val[ch] += tremble_vel[ch];
+
+        /* -------- clamp tremble value -------- */
+
+        if (tremble_val[ch] > (Q16_16_1 + chaos_gain))
+          tremble_val[ch] = Q16_16_1 + chaos_gain;
+        if (tremble_val[ch] < (Q16_16_1 - chaos_gain))
+          tremble_val[ch] = Q16_16_1 - chaos_gain;
+
+        /* -------- apply modulation -------- */
+
+        samples[i * 2 + ch] =
+            q16_16_multiply(samples[i * 2 + ch], tremble_val[ch]);
+      }
+    }
+  }
+
   if (mode_digital_smear > 0) {
     uint8_t speed = mode_digital_smear;
     if (speed > 100) speed = 100;
