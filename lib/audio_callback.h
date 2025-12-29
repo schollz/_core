@@ -1072,34 +1072,36 @@ BREAKOUT_OF_MUTE:
     uint8_t amt = mode_digital_bass;
     if (amt > 100) amt = 100;
 
-    // wet/dry mix
-    int32_t wet = (amt << 16) / 100;  // 0..1
+    /* ---------------- mix ---------------- */
+    int32_t wet = (amt << 16) / 120;  // stays conservative
     int32_t dry = (1 << 16) - wet;
 
-    // fixed, big sub gain
-    int32_t bass_gain = 5 << 16;  // still huge
+    /* ---------------- gain ---------------- */
+    // 1.0 → ~1.8 max (safe, no clipping)
+    int32_t bass_gain = Q16_16_1 + ((amt * Q16_16_1) >> 9);
+
+    /* ---------------- LPF @ ~32 Hz ---------------- */
+    // essentially your original cutoff
+    const int32_t LP_A = BASS_LP_A;  // 64917
+    const int32_t LP_B = BASS_LP_B;  // 619
 
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      for (uint8_t j = 0; j < 2; j++) {
-        int32_t in = samples[i * 2 + j];
+      for (uint8_t ch = 0; ch < 2; ch++) {
+        int32_t in = samples[i * 2 + ch];
 
-        // one-pole LPF @ ~32.7 Hz
-        bass_lp[j] = q16_16_multiply(BASS_LP_A, bass_lp[j]) +
-                     q16_16_multiply(BASS_LP_B, in);
+        // sub extraction
+        bass_lp[ch] =
+            q16_16_multiply(LP_A, bass_lp[ch]) + q16_16_multiply(LP_B, in);
 
-        // slight attenuation for headroom (~0.8)
-        int32_t sub = bass_lp[j] - (bass_lp[j] >> 3);
+        // headroom trim (~0.85)
+        int32_t sub = bass_lp[ch] - (bass_lp[ch] >> 3);
 
-        // boosted sub (wet signal)
-        int32_t wet_sig = q16_16_multiply(sub, bass_gain);
+        // controlled boost
+        int32_t boosted = q16_16_multiply(sub, bass_gain);
 
-        // gentle safety clamp on wet only
-        if (wet_sig > 0x3A000000) wet_sig = 0x3A000000;
-        if (wet_sig < -0x3A000000) wet_sig = -0x3A000000;
-
-        // wet / dry mix
-        samples[i * 2 + j] =
-            q16_16_multiply(in, dry) + q16_16_multiply(wet_sig, wet);
+        // clean wet/dry mix
+        samples[i * 2 + ch] =
+            q16_16_multiply(in, dry) + q16_16_multiply(boosted, wet);
       }
     }
   }
