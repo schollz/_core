@@ -1131,8 +1131,8 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode selection
           // 0 - 100
-          mode_digital_bass = val * 100 / 1024;
-          printf("[ectocore] mode_digital_bass %d\n", mode_digital_bass);
+          mode_chaos_trembler = val * 100 / 1024;
+          printf("[ectocore] mode_chaos_trembler %d\n", mode_chaos_trembler);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_get(GPIO_BTN_BANK) == 0 &&
                    fil_current_change == false) {
@@ -1324,7 +1324,10 @@ void __not_in_flash_func(input_handling)() {
           printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
-          // TODO: TAP TEMPO + BREAK ATTEN changes ?
+          // TODO: TAP TEMPO + BREAK ATTEN pitch change from PITCH_VAL_MID to
+          // lower pitch
+          // Map 0..1024 to PITCH_VAL_MID..0 (normal pitch at 0).
+          sf->pitch_val_index = PITCH_VAL_MID - (val * PITCH_VAL_MID / 1024);
         } else {
           // printf("[ectocore] knob_break_atten %d\n", val);
           // change the grimoire rune
@@ -1349,8 +1352,7 @@ void __not_in_flash_func(input_handling)() {
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           // TODO: TAP TEMPO + AMEN ATTEN changes ?
-          mode_chaos_trembler = val * 100 / 1024;
-          printf("[ectocore] mode_chaos_trembler %d\n", mode_chaos_trembler);
+          mode_digital_bass = val * 100 / 1024;
           ws2812_set_wheel(ws2812, val * 4, 0, 0, 255);
         } else if (!cv_plugged[CV_AMEN] ||
                    (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
