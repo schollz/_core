@@ -24,6 +24,14 @@
 #define SIGNAL_ERROR_TOLERANCE 2      // Allow N bit errors in pattern matching
 
 uint8_t gpio_btn_taptempo_val = 0;
+#ifdef ECTOCORE_VERSION_4
+static const uint8_t gpio_mode_leds[4] = {
+    GPIO_MODE_1,
+    GPIO_MODE_2,
+    GPIO_MODE_3,
+    GPIO_MODE_4,
+};
+#endif
 
 // toggle the fx
 void toggle_fx(uint8_t fx_num) {
@@ -44,6 +52,63 @@ void ws2812_mode_color(WS2812 *ws2812) {
   } else {
     WS2812_fill_color(ws2812, 16, BLANK);
     WS2812_fill_color(ws2812, 17, BLANK);
+  }
+}
+
+void update_gpios_for_mode() {
+  switch (ectocore_trigger_mode) {
+    case TRIGGER_MODE_KICK:
+      // printf("[ectocore] trigger mode: kick\n");
+#ifdef ECTOCORE_VERSION_3
+      gpio_put(GPIO_MODE_LEDA, 0);
+      gpio_put(GPIO_MODE_LEDB, 0);
+#endif
+#ifdef ECTOCORE_VERSION_4
+      for (uint8_t i = 0; i < 4; i++) {
+        gpio_put(gpio_mode_leds[i], 1);
+      }
+      gpio_put(gpio_mode_leds[0], 0);
+#endif
+      break;
+    case TRIGGER_MODE_SNARE:
+      // printf("[ectocore] trigger mode: snare\n");
+#ifdef ECTOCORE_VERSION_3
+      gpio_put(GPIO_MODE_LEDA, 1);
+      gpio_put(GPIO_MODE_LEDB, 0);
+#endif
+#ifdef ECTOCORE_VERSION_4
+      for (uint8_t i = 0; i < 4; i++) {
+        gpio_put(gpio_mode_leds[i], 1);
+      }
+      gpio_put(gpio_mode_leds[1], 0);
+#endif
+      break;
+    case TRIGGER_MODE_HH:
+      printf("[ectocore] trigger mode: hh\n");
+#ifdef ECTOCORE_VERSION_3
+      gpio_put(GPIO_MODE_LEDA, 0);
+      gpio_put(GPIO_MODE_LEDB, 1);
+#endif
+#ifdef ECTOCORE_VERSION_4
+      for (uint8_t i = 0; i < 4; i++) {
+        gpio_put(gpio_mode_leds[i], 1);
+      }
+      gpio_put(gpio_mode_leds[2], 0);
+#endif
+      break;
+    case TRIGGER_MODE_RANDOM:
+      printf("[ectocore] trigger mode: random\n");
+#ifdef ECTOCORE_VERSION_3
+      gpio_put(GPIO_MODE_LEDA, 1);
+      gpio_put(GPIO_MODE_LEDB, 1);
+#endif
+#ifdef ECTOCORE_VERSION_4
+      for (uint8_t i = 0; i < 4; i++) {
+        gpio_put(gpio_mode_leds[i], 1);
+      }
+      gpio_put(gpio_mode_leds[3], 0);
+#endif
+      break;
   }
 }
 
@@ -529,12 +594,6 @@ void __not_in_flash_func(input_handling)() {
   gpio_put(GPIO_MODE_LEDB, 0);
 #endif
 #ifdef ECTOCORE_VERSION_4
-  const uint8_t gpio_mode_leds[4] = {
-      GPIO_MODE_1,
-      GPIO_MODE_2,
-      GPIO_MODE_3,
-      GPIO_MODE_4,
-  };
   for (uint8_t i = 0; i < 4; i++) {
     gpio_init(gpio_mode_leds[i]);
     gpio_set_dir(gpio_mode_leds[i], GPIO_OUT);
@@ -1332,6 +1391,12 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_new_duration >= MODE_HOLD_DURATION_THRESHOLD &&
             mode_held_duration < MODE_HOLD_DURATION_THRESHOLD) {
           printf("[ectocore] MODE held for 2 seconds\n");
+          if (ectocore_trigger_mode > 0) {
+            ectocore_trigger_mode--;
+          } else {
+            ectocore_trigger_mode = 4 - 1;
+          }
+          update_gpios_for_mode();
         }
         mode_held_duration = mode_held_new_duration;
       }
@@ -1415,60 +1480,7 @@ void __not_in_flash_func(input_handling)() {
             } else {
               ectocore_trigger_mode = 0;
             }
-            switch (ectocore_trigger_mode) {
-              case TRIGGER_MODE_KICK:
-                // printf("[ectocore] trigger mode: kick\n");
-#ifdef ECTOCORE_VERSION_3
-                gpio_put(GPIO_MODE_LEDA, 0);
-                gpio_put(GPIO_MODE_LEDB, 0);
-#endif
-#ifdef ECTOCORE_VERSION_4
-                for (uint8_t i = 0; i < 4; i++) {
-                  gpio_put(gpio_mode_leds[i], 1);
-                }
-                gpio_put(gpio_mode_leds[0], 0);
-#endif
-                break;
-              case TRIGGER_MODE_SNARE:
-                // printf("[ectocore] trigger mode: snare\n");
-#ifdef ECTOCORE_VERSION_3
-                gpio_put(GPIO_MODE_LEDA, 1);
-                gpio_put(GPIO_MODE_LEDB, 0);
-#endif
-#ifdef ECTOCORE_VERSION_4
-                for (uint8_t i = 0; i < 4; i++) {
-                  gpio_put(gpio_mode_leds[i], 1);
-                }
-                gpio_put(gpio_mode_leds[1], 0);
-#endif
-                break;
-              case TRIGGER_MODE_HH:
-                printf("[ectocore] trigger mode: hh\n");
-#ifdef ECTOCORE_VERSION_3
-                gpio_put(GPIO_MODE_LEDA, 0);
-                gpio_put(GPIO_MODE_LEDB, 1);
-#endif
-#ifdef ECTOCORE_VERSION_4
-                for (uint8_t i = 0; i < 4; i++) {
-                  gpio_put(gpio_mode_leds[i], 1);
-                }
-                gpio_put(gpio_mode_leds[2], 0);
-#endif
-                break;
-              case TRIGGER_MODE_RANDOM:
-                printf("[ectocore] trigger mode: random\n");
-#ifdef ECTOCORE_VERSION_3
-                gpio_put(GPIO_MODE_LEDA, 1);
-                gpio_put(GPIO_MODE_LEDB, 1);
-#endif
-#ifdef ECTOCORE_VERSION_4
-                for (uint8_t i = 0; i < 4; i++) {
-                  gpio_put(gpio_mode_leds[i], 1);
-                }
-                gpio_put(gpio_mode_leds[3], 0);
-#endif
-                break;
-            }
+            update_gpios_for_mode();
           }
         }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
