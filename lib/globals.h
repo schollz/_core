@@ -144,7 +144,7 @@ uint8_t mode_digital_jitter = 0;
 uint8_t mode_chaos_trembler = 0;
 bool dual_leds_holding_mode = false;
 bool dual_leds_holding_tap = false;
-#define MODE_HOLD_DURATION_THRESHOLD 200
+#define MODE_HOLD_DURATION_THRESHOLD 700
 
 bool key3_activated = false;
 int8_t single_key_on = -1;
