@@ -12,19 +12,20 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     AUDIO_CLK_GPIO=21 # LCK=17
     AUDIO_DIN_GPIO=23
     INCLUDE_ECTOCORE=1
+    INCLUDE_EZEPTOCORE=1
     INCLUDE_FILTER=1
     # INCLUDE_MIDI=1
     INCLUDE_RGBLED=1
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
-    # DO_OVERCLOCK=1
+    DO_OVERCLOCK=1
     
     # pin definitions
-    MCP_KNOB_AMEN=0
+    MCP_KNOB_AMEN=3
     MCP_ATTEN_AMEN=1
     MCP_CV_AMEN=2
-    MCP_KNOB_BREAK=3
+    MCP_KNOB_BREAK=0
     MCP_ATTEN_BREAK=4
     MCP_CV_BREAK=5
     MCP_KNOB_SAMPLE=6

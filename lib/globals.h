@@ -134,6 +134,16 @@ bool mode_mute = 0;
 bool mode_play = 0;
 bool mute_because_of_playback_type = false;
 bool mode_hands_on_unmute = false;
+uint32_t mode_held_duration = 0;
+uint32_t mode_held_start_time = 0;
+uint8_t mode_amiga_index = 0;
+uint32_t mode_digital_saturation = 0;
+uint8_t mode_digital_bass = 0;
+uint8_t mode_digital_smear = 0;
+uint8_t mode_digital_jitter = 0;
+bool dual_leds_holding_mode = false;
+bool dual_leds_holding_tap = false;
+#define MODE_HOLD_DURATION_THRESHOLD 200
 
 bool key3_activated = false;
 int8_t single_key_on = -1;
@@ -151,9 +161,9 @@ MidiOut *midiout[6];
 bool midi_input_activated = false;
 #endif
 
- // setup some constants for CCs
+// setup some constants for CCs
 const uint8_t cc_knobx = 12;
-const uint8_t cc_knoby= 13;
+const uint8_t cc_knoby = 13;
 const uint8_t cc_knobz = 14;
 const uint8_t cc_tempo = 15;
 const uint8_t cc_pitch = 16;
