@@ -1074,6 +1074,7 @@ void __not_in_flash_func(input_handling)() {
           // 0 - 100
           mode_digital_bass = val * 100 / 1024;
           printf("[ectocore] mode_digital_bass %d\n", mode_digital_bass);
+          ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_get(GPIO_BTN_BANK) == 0 &&
                    fil_current_change == false) {
           // bank selection
@@ -1150,6 +1151,7 @@ void __not_in_flash_func(input_handling)() {
           mode_digital_saturation = val * 100 / 1024;
           printf("[ectocore] mode_digital_saturation %d\n",
                  mode_digital_saturation);
+          ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else {
           break_set(val, false, true);
         }
@@ -1159,6 +1161,7 @@ void __not_in_flash_func(input_handling)() {
           // mode_amiga_index setting (0 to 20)
           mode_amiga_index = val * 37 / 1024;
           printf("[ectocore] amiga mode %d\n", mode_amiga_index);
+          ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1260,6 +1263,9 @@ void __not_in_flash_func(input_handling)() {
           // mode_digital_depth setting (0 to 100)
           mode_digital_smear = val * 100 / 1024;
           printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
+          ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
+        } else if (gpio_btn_taptempo_val == 0) {
+          // TODO: TAP TEMPO + BREAK ATTEN changes ?
         } else {
           // printf("[ectocore] knob_break_atten %d\n", val);
           // change the grimoire rune
@@ -1281,6 +1287,9 @@ void __not_in_flash_func(input_handling)() {
           // mode_amiga_depth setting (0 to 100)
           mode_digital_jitter = val * 100 / 1024;
           printf("[ectocore] mode_digital_jitter %d\n", mode_digital_jitter);
+          ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
+        } else if (gpio_btn_taptempo_val == 0) {
+          // TODO: TAP TEMPO + AMEN ATTEN changes ?
         } else if (!cv_plugged[CV_AMEN] ||
                    (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
           if (val < 512 - 24) {
