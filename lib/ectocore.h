@@ -1069,7 +1069,13 @@ void __not_in_flash_func(input_handling)() {
       // printf("[ectocore] knob %d=%d\n", i, val);
       knob_val[i] = val;
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
-        if (gpio_get(GPIO_BTN_BANK) == 0 && fil_current_change == false) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode selection
+          // 0 - 100
+          mode_digital_bass = val * 100 / 1024;
+          printf("[ectocore] mode_digital_bass %d\n", mode_digital_bass);
+        } else if (gpio_get(GPIO_BTN_BANK) == 0 &&
+                   fil_current_change == false) {
           // bank selection
           uint8_t bank_i =
               roundf((float)(val * (banks_with_samples_num - 1)) / 1024.0);
@@ -1139,7 +1145,14 @@ void __not_in_flash_func(input_handling)() {
         }
       } else if (knob_gpio[i] == MCP_KNOB_BREAK) {
         // printf("[ectocore] knob_break %d\n", val);
-        break_set(val, false, true);
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_break_index setting (0 to 20)
+          mode_digital_saturation = val * 100 / 1024;
+          printf("[ectocore] mode_digital_saturation %d\n",
+                 mode_digital_saturation);
+        } else {
+          break_set(val, false, true);
+        }
       } else if (knob_gpio[i] == MCP_KNOB_AMEN) {
         // printf("[ectocore] knob_amen %d\n", val);
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
@@ -1243,23 +1256,33 @@ void __not_in_flash_func(input_handling)() {
           }
         }
       } else if (knob_gpio[i] == MCP_ATTEN_BREAK) {
-        // printf("[ectocore] knob_break_atten %d\n", val);
-        // change the grimoire rune
-        grimoire_rune = val * 7 / 1024;
-        // show the current effects toggled for this rune
-        ws2812_wheel_clear(ws2812);
-        for (uint8_t j = 0; j < 16; j++) {
-          if (grimoire_rune_effect[grimoire_rune][j]) {
-            WS2812_fill(ws2812, j, 255, 144, 144);
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_digital_depth setting (0 to 100)
+          mode_digital_smear = val * 100 / 1024;
+          printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
+        } else {
+          // printf("[ectocore] knob_break_atten %d\n", val);
+          // change the grimoire rune
+          grimoire_rune = val * 7 / 1024;
+          // show the current effects toggled for this rune
+          ws2812_wheel_clear(ws2812);
+          for (uint8_t j = 0; j < 16; j++) {
+            if (grimoire_rune_effect[grimoire_rune][j]) {
+              WS2812_fill(ws2812, j, 255, 144, 144);
+            }
           }
+          WS2812_show(ws2812);
         }
-        WS2812_show(ws2812);
 
       } else if (knob_gpio[i] == MCP_ATTEN_AMEN) {
         // printf("[ectocore] knob_amen_atten %d\n", val);
         // check if CV is plugged in for AMEN
-        if (!cv_plugged[CV_AMEN] ||
-            (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
+        if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
+          // mode_amiga_depth setting (0 to 100)
+          mode_digital_jitter = val * 100 / 1024;
+          printf("[ectocore] mode_digital_jitter %d\n", mode_digital_jitter);
+        } else if (!cv_plugged[CV_AMEN] ||
+                   (cv_plugged[CV_AMEN] && cv_reset_override == CV_AMEN)) {
           if (val < 512 - 24) {
             sf->stay_in_sync = false;
             probability_of_random_jump = ((512 - 24) - val) * 100 / (512 - 24);

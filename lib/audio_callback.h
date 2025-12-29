@@ -1,5 +1,16 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
-
+// previous output per channel (persistent state)
+#ifdef INCLUDE_EZEPTOCORE
+#define BASS_LP_A 64917  // alpha ≈ 0.9908
+#define BASS_LP_B 619    // 1 - alpha
+static int32_t smear_buf[32][2];
+static uint8_t smear_pos = 0;
+// auto-oscillation state
+static uint8_t smear_amt = 1;
+static int8_t smear_dir = 1;
+static uint32_t smear_acc = 0;
+static int32_t bass_lp[2] = {0, 0};
+#endif
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
@@ -884,6 +895,7 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
+#ifdef INCLUDE_EZEPTOCORE
   if (mode_amiga_index > 5) {
     int32_t held[2] = {0, 0};
     uint8_t hold_len = mode_amiga_index - 5;
@@ -901,6 +913,154 @@ BREAKOUT_OF_MUTE:
       samples[i * 2 + 1] = held[1];
     }
   }
+
+  if (mode_digital_saturation > 0) {
+    uint8_t amt = mode_digital_saturation;
+    if (amt > 100) amt = 100;
+
+    /*
+      Threshold mapping (Q16.16)
+
+      amt = 0   → threshold ≈ full scale
+      amt = 100 → threshold ≈ small → heavy folding
+
+      Use a nonlinear curve so low values are gentle
+    */
+    int32_t thresh = 0x7FFF0000 >> (1 + (amt * 5) / 100);  // shift 1..6
+
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      for (uint8_t j = 0; j < 2; j++) {
+        int32_t x = samples[i * 2 + j];
+
+        // wavefold
+        if (x > thresh) {
+          x = thresh - (x - thresh);
+        } else if (x < -thresh) {
+          x = -thresh - (x + thresh);
+        }
+
+        samples[i * 2 + j] = x;
+      }
+    }
+  }
+  if (mode_digital_smear > 0) {
+    uint8_t speed = mode_digital_smear;
+    if (speed > 100) speed = 100;
+
+    /*
+      speed = 1   → VERY slow (multi-second sweep)
+      speed = 100 → fast shimmer
+    */
+
+    // how often smear_amt advances (samples)
+    uint32_t smear_period = 5000 - (speed * 49);  // ~5000 → ~100
+
+    if (smear_period < 256) smear_period = 256;
+
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      smear_acc++;
+      if (smear_acc >= smear_period) {
+        smear_acc = 0;
+
+        smear_amt += smear_dir;
+        if (smear_amt >= 100) {
+          smear_amt = 100;
+          smear_dir = -1;
+        } else if (smear_amt <= 1) {
+          smear_amt = 1;
+          smear_dir = 1;
+        }
+      }
+
+      smear_pos = (smear_pos + 1) & 31;
+
+      // derive delay + mix from oscillating amount
+      uint8_t delay_len = 1 + (smear_amt * 31) / 100;
+      int32_t wet = (smear_amt << 16) / 120;
+      int32_t dry = (1 << 16) - wet;
+
+      for (uint8_t j = 0; j < 2; j++) {
+        int32_t in = samples[i * 2 + j];
+
+        uint8_t tap = (smear_pos - delay_len) & 31;
+        int32_t d = smear_buf[tap][j];
+
+        smear_buf[smear_pos][j] = in;
+
+        samples[i * 2 + j] = q16_16_multiply(in, dry) + q16_16_multiply(d, wet);
+      }
+    }
+  }
+
+  if (mode_digital_jitter > 0) {
+    // mode_digital_jitter: 0..100
+    uint8_t amt = mode_digital_jitter;
+    if (amt > 100) amt = 100;
+
+    /*
+      Higher amt = more unstable clock
+      Probability is VERY small per sample
+    */
+    uint8_t jitter_prob = amt >> 2;  // 0..25
+
+    for (uint16_t i = 1; i < buffer->max_sample_count - 1; i++) {
+      for (uint8_t j = 0; j < 2; j++) {
+        int32_t x = samples[i * 2 + j];
+
+        // random clock slip
+        uint8_t r = rand() & 31;  // 0..31
+
+        if (r < jitter_prob) {
+          // slip backward
+          x = samples[(i - 1) * 2 + j];
+        } else if (r > (31 - jitter_prob)) {
+          // slip forward
+          x = samples[(i + 1) * 2 + j];
+        }
+
+        samples[i * 2 + j] = x;
+      }
+    }
+  }
+
+  if (mode_digital_bass > 0) {
+    // mode_digital_bass: 0..100
+    uint8_t amt = mode_digital_bass;
+    if (amt > 100) amt = 100;
+
+    // wet/dry mix
+    int32_t wet = (amt << 16) / 100;  // 0..1
+    int32_t dry = (1 << 16) - wet;
+
+    // fixed, big sub gain
+    int32_t bass_gain = 5 << 16;  // still huge
+
+    for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+      for (uint8_t j = 0; j < 2; j++) {
+        int32_t in = samples[i * 2 + j];
+
+        // one-pole LPF @ ~32.7 Hz
+        bass_lp[j] = q16_16_multiply(BASS_LP_A, bass_lp[j]) +
+                     q16_16_multiply(BASS_LP_B, in);
+
+        // slight attenuation for headroom (~0.8)
+        int32_t sub = bass_lp[j] - (bass_lp[j] >> 3);
+
+        // boosted sub (wet signal)
+        int32_t wet_sig = q16_16_multiply(sub, bass_gain);
+
+        // gentle safety clamp on wet only
+        if (wet_sig > 0x3A000000) wet_sig = 0x3A000000;
+        if (wet_sig < -0x3A000000) wet_sig = -0x3A000000;
+
+        // wet / dry mix
+        samples[i * 2 + j] =
+            q16_16_multiply(in, dry) + q16_16_multiply(wet_sig, wet);
+      }
+    }
+  }
+
+#endif
 
   buffer->sample_count = buffer->max_sample_count;
   t0 = time_us_32();
