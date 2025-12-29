@@ -35,9 +35,12 @@ const uint16_t debounce_ws2812_set_wheel_time = 10000;
 uint16_t debounce_ws2812_set_wheel = 0;
 
 void ws2812_mode_color(WS2812 *ws2812) {
-  if (mode_amiga) {
+  if (dual_leds_holding_mode) {
     WS2812_fill_color(ws2812, 16, YELLOW);
     WS2812_fill_color(ws2812, 17, YELLOW);
+  } else if (dual_leds_holding_tap) {
+    WS2812_fill_color(ws2812, 16, CYAN);
+    WS2812_fill_color(ws2812, 17, CYAN);
   } else {
     WS2812_fill_color(ws2812, 16, BLANK);
     WS2812_fill_color(ws2812, 17, BLANK);
@@ -1141,9 +1144,8 @@ void __not_in_flash_func(input_handling)() {
         // printf("[ectocore] knob_amen %d\n", val);
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode_amiga_index setting (0 to 20)
-          mode_amiga_filter_index = val * 22 / 1024;
-          mode_amiga = mode_amiga_filter_index < 20;
-          printf("[ectocore] amiga mode %d\n", mode_amiga_filter_index);
+          mode_amiga_index = val * 37 / 1024;
+          printf("[ectocore] amiga mode %d\n", mode_amiga_index);
         } else if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
           const uint16_t val_mid = 60;
@@ -1298,6 +1300,11 @@ void __not_in_flash_func(input_handling)() {
         }
         mode_held_duration = mode_held_new_duration;
       }
+#ifdef INCLUDE_EZEPTOCORE
+      dual_leds_holding_tap = gpio_btn_state[BTN_TAPTEMPO] == 1;
+      dual_leds_holding_mode =
+          (mode_held_duration >= MODE_HOLD_DURATION_THRESHOLD);
+#endif
       if (val == gpio_btn_state[i]) {
         continue;
       }

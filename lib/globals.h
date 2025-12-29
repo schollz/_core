@@ -136,8 +136,10 @@ bool mute_because_of_playback_type = false;
 bool mode_hands_on_unmute = false;
 uint32_t mode_held_duration = 0;
 uint32_t mode_held_start_time = 0;
-uint32_t mode_amiga_filter_index = 19;
-#define MODE_HOLD_DURATION_THRESHOLD 2000
+uint8_t mode_amiga_index = 0;
+bool dual_leds_holding_mode = false;
+bool dual_leds_holding_tap = false;
+#define MODE_HOLD_DURATION_THRESHOLD 500
 
 bool key3_activated = false;
 int8_t single_key_on = -1;

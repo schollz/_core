@@ -1,52 +1,5 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 
-typedef struct {
-  uint32_t a;  // alpha * 65536
-  uint32_t b;  // (1 - alpha) * 65536
-} onepole_coeff_t;
-
-static const onepole_coeff_t onepole_table[20] = {
-    // fc = 100 Hz
-    {64622, 914},
-    // fc = 200 Hz
-    {63733, 1803},
-    // fc = 300 Hz
-    {62856, 2680},
-    // fc = 500 Hz
-    {61185, 4351},
-    // fc = 700 Hz
-    {59594, 5942},
-    // fc = 1000 Hz
-    {57344, 8192},
-    // fc = 1500 Hz
-    {54316, 11220},
-    // fc = 2000 Hz
-    {51703, 13833},
-    // fc = 3000 Hz
-    {47666, 17870},
-    // fc = 4000 Hz
-    {44301, 21235},
-    // fc = 5000 Hz
-    {41453, 24083},
-    // fc = 7000 Hz
-    {36864, 28672},
-    // fc = 8000 Hz
-    {34953, 30583},
-    // fc = 10000 Hz
-    {27027, 39329},  // <-- your original value
-    // fc = 12000 Hz
-    {24289, 42047},
-    // fc = 15000 Hz
-    {21037, 45399},
-    // fc = 18000 Hz
-    {18309, 48127},
-    // fc = 20000 Hz
-    {16804, 49632},
-    // fc = 22050 Hz (Nyquist)
-    {16069, 50367},
-    // fc = 24000 Hz (slightly above Nyquist, still stable)
-    {15322, 51114}};
-
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
 uint32_t last_seeked = 1;
@@ -931,37 +884,21 @@ BREAKOUT_OF_MUTE:
   }
 #endif
 
-  if (mode_amiga_filter_index < 20) {
-    // simple filter
-    int32_t v[2];
+  if (mode_amiga_index > 5) {
+    int32_t held[2] = {0, 0};
+    uint8_t hold_len = mode_amiga_index - 5;
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
-      for (uint8_t j = 0; j < 2; j++) {
-        // one-pole filter converted to fixed point
-        // static const float RC = 1.0 / (2.0 * 3.14159265359 * CUTOFF_FREQ);
-        // static const float alpha = RC / (RC + (1.0 / SAMPLE_RATE));
-        // float output = alpha * (*prev_output) + (1.0 - alpha) * input;
-        // 1 = 65536
-        // filtering at 10khz
-        v[j] = samples[i * 2 + j];
-        // add a random value (-1 to 1)
-        // v[j] += (rand() % 3) - 1;
-        // v[j] = q16_16_multiply(27027, amiga_previous_value[j]) +
-        //        q16_16_multiply(39329, v[j]);
-        v[j] = q16_16_multiply(onepole_table[mode_amiga_filter_index].a,
-                               amiga_previous_value[j]) +
-               q16_16_multiply(onepole_table[mode_amiga_filter_index].b, v[j]);
-
-        amiga_previous_value[j] = v[j];
+      if ((i % hold_len) == 0) {
+        // compute new filtered value
+        for (uint8_t j = 0; j < 2; j++) {
+          // convert 32-bit to 8-bit (Amiga-style)
+          held[j] = (int32_t)((int8_t)(samples[i * 2 + j] >> 24)) << 24;
+        }
       }
 
-      if (i % 2 == 0) {
-        // convert 32-bit to 8-bit
-        samples[i * 2 + 0] = (int32_t)((int8_t)(v[0] >> 24)) << 24;
-        samples[i * 2 + 1] = (int32_t)((int8_t)(v[1] >> 24)) << 24;
-      } else {
-        samples[i * 2 + 0] = samples[i * 2 - 2];
-        samples[i * 2 + 1] = samples[i * 2 - 1];
-      }
+      // sample & hold
+      samples[i * 2 + 0] = held[0];
+      samples[i * 2 + 1] = held[1];
     }
   }
 
