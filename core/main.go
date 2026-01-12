@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -19,6 +20,7 @@ var flagDontOpen bool
 var flagUseFilesOnDisk bool
 var flagDontConnect bool
 var flagIsEctocore bool
+var flagPort int
 var EctocoreDefault = "no"
 
 func init() {
@@ -27,19 +29,24 @@ func init() {
 	flag.BoolVar(&flagDontOpen, "dontopen", false, "don't open browser")
 	flag.BoolVar(&flagDontConnect, "dontconnect", false, "don't connect to core")
 	flag.BoolVar(&flagIsEctocore, "ectocore", EctocoreDefault == "yes", "startup in ectocore mode")
+	flag.IntVar(&flagPort, "port", 0, "server port (default: 8100 for ectocore, 8101 otherwise)")
 }
 
 func main() {
 	flag.Parse()
 	log.SetLevel(flagLogLevel)
+
+	// Set port if specified via command line flag
+	if flagPort > 0 {
+		server.Port = flagPort
+	} else if flagIsEctocore {
+		server.Port = 8100
+	}
+
 	if !flagDontOpen {
 		go func() {
 			time.Sleep(2 * time.Second)
-			if EctocoreDefault == "yes" {
-				utils.OpenBrowser("http://localhost:8100/tool")
-			} else {
-				utils.OpenBrowser("http://localhost:8101/tool")
-			}
+			utils.OpenBrowser(fmt.Sprintf("http://localhost:%d/tool", server.Port))
 		}()
 	}
 	err := sox.Init()
