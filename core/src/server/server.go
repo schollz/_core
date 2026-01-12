@@ -154,9 +154,6 @@ func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg 
 
 	connections = make(map[string]*websocket.Conn)
 	activeDebounce = make(map[string]chan bool)
-	if isEctocore {
-		Port = 8100
-	}
 	log.Debugf("listening on :%d", Port)
 	http.HandleFunc("/", handler)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", Port), nil)
