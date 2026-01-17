@@ -467,7 +467,7 @@ void update_fx(uint8_t fx_num) {
       if (sf->fx_active[FX_FILTER] && !filter_was_activated) {
         // turn on filter
         filter_was_activated = true;
-        printf("filter activated!\n");
+        // filter activated
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL),
@@ -476,7 +476,7 @@ void update_fx(uint8_t fx_num) {
             linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
       } else if (filter_was_activated) {
         // turn off filter
-        printf("filter deactivated!\n");
+        // filter deactivated
         filter_was_activated = false;
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
