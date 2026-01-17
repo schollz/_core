@@ -1724,6 +1724,91 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
+    // Check for planned retrig activation on slice change
+    // Only check on odd slices, schedule to start on next even slice
+    {
+      static uint8_t last_slice_for_planned_retrig = 255;
+      static bool planned_retrig_pending = false;
+      static float pending_start_vol = 0;
+      static int8_t pending_start_pitch = 0;
+      static uint8_t pending_beats_remaining = 0;
+      static uint8_t pending_times = 0;
+
+      uint8_t current_slice =
+          banks[sel_bank_cur]
+              ->sample[sel_sample_cur]
+              .snd[FILEZERO]
+              ->slice_current;
+      uint8_t slice_num = banks[sel_bank_cur]
+                              ->sample[sel_sample_cur]
+                              .snd[FILEZERO]
+                              ->slice_num;
+
+      if (current_slice != last_slice_for_planned_retrig) {
+        last_slice_for_planned_retrig = current_slice;
+        bool is_odd_slice = (current_slice % 2) == 1;
+        bool is_even_slice = (current_slice % 2) == 0;
+
+        // If we have a pending retrig and hit an even slice, start it
+        if (planned_retrig_pending && is_even_slice && !planned_retrig_ready) {
+          planned_retrig_do(pending_start_vol, pending_start_pitch,
+                            pending_beats_remaining, pending_times);
+          planned_retrig_pending = false;
+        }
+
+        // Only check for new retrig on odd slices when not already
+        // active/pending
+        if (is_odd_slice && !planned_retrig_ready && !planned_retrig_pending &&
+            slice_num > 1) {
+          // Calculate position of NEXT EVEN slice in phrase
+          uint8_t next_even_slice = (current_slice + 1) % slice_num;
+          uint8_t pos_in_phrase = next_even_slice;
+
+          // Probability increases toward end of phrase
+          // At pos 0: ~0%, at pos slice_num-1: ~100%
+          uint16_t probability = (pos_in_phrase * 100) / (slice_num - 1);
+
+          if (random_integer_in_range(0, 100) < probability) {
+            // Determine boundary interval based on total slice count
+            uint8_t boundary_interval;
+            if (slice_num <= 4) {
+              boundary_interval = 4;
+            } else if (slice_num <= 16) {
+              boundary_interval = 8;
+            } else {
+              boundary_interval = 16;
+            }
+
+            // Stutter until next boundary
+            uint8_t next_boundary =
+                ((next_even_slice / boundary_interval) + 1) * boundary_interval;
+            if (next_boundary > slice_num) {
+              next_boundary = slice_num;
+            }
+
+            uint8_t stutter_slices = next_boundary - next_even_slice;
+            if (stutter_slices < 2) {
+              stutter_slices = 2;  // Minimum 2 slices
+            }
+
+            // Each slice is an 8th note, timer is based on quarter notes (96
+            // ticks), so multiply by 2 to get correct duration
+            pending_beats_remaining = stutter_slices * 2;
+
+            // Randomize parameters and store for next even slice
+            pending_start_vol =
+                (float)random_integer_in_range(0, 50) / 100.0f;  // 0.0 to 0.5
+            pending_start_pitch =
+                (int8_t)random_integer_in_range(-24, 24);  // -24 to +24
+            uint8_t times_options[4] = {2, 4, 8, 16};
+            pending_times = times_options[random_integer_in_range(0, 3)];
+
+            planned_retrig_pending = true;
+          }
+        }
+      }
+    }
+
     // updating the leds
     if (debounce_ws2812_set_wheel > 0) {
       debounce_ws2812_set_wheel--;
