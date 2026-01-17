@@ -309,6 +309,15 @@ bool __not_in_flash_func(timer_step)() {
           planned_retrig_ready = false;
           planned_retrig_vol = planned_retrig_stop_vol;
           planned_retrig_pitch = planned_retrig_stop_pitch;
+          if (planned_retrig_filter_active) {
+            global_filter_index = planned_retrig_filter_restore;
+            for (uint8_t channel = 0; channel < 2; channel++) {
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            }
+            planned_retrig_filter_active = false;
+          }
           retrig_vol = 1.0;
           retrig_pitch = PITCH_VAL_MID;
         } else {
@@ -331,6 +340,23 @@ bool __not_in_flash_func(timer_step)() {
           // Clamp pitch to valid range
           if (planned_retrig_pitch > PITCH_VAL_MAX - 1) {
             planned_retrig_pitch = PITCH_VAL_MAX - 1;
+          }
+
+          if (planned_retrig_filter_active) {
+            if (global_filter_index != planned_retrig_filter_stop) {
+              global_filter_index += planned_retrig_filter_change;
+              if ((planned_retrig_filter_change > 0 &&
+                   global_filter_index > planned_retrig_filter_stop) ||
+                  (planned_retrig_filter_change < 0 &&
+                   global_filter_index < planned_retrig_filter_stop)) {
+                global_filter_index = planned_retrig_filter_stop;
+              }
+              for (uint8_t channel = 0; channel < 2; channel++) {
+                ResonantFilter_setFilterType(resFilter[channel],
+                                             global_filter_lphp);
+                ResonantFilter_setFc(resFilter[channel], global_filter_index);
+              }
+            }
           }
         }
 

@@ -1747,6 +1747,8 @@ void __not_in_flash_func(input_handling)() {
       static int8_t pending_start_pitch = 0;
       static float pending_end_vol = PLANNED_RETRIG_USE_CURRENT_VOL;
       static int8_t pending_end_pitch = PLANNED_RETRIG_USE_CURRENT_PITCH;
+      static uint8_t pending_filter_mode = 0;
+      static uint16_t pending_filter_low = 0;
       static uint8_t pending_beats_remaining = 0;
       static uint8_t pending_times = 0;
       static uint8_t pending_rate_divisor = 1;
@@ -1768,7 +1770,8 @@ void __not_in_flash_func(input_handling)() {
           planned_retrig_do(pending_start_vol, pending_start_pitch,
                             pending_beats_remaining, pending_times,
                             pending_rate_divisor, pending_end_vol,
-                            pending_end_pitch);
+                            pending_end_pitch, pending_filter_mode,
+                            pending_filter_low);
           planned_retrig_pending = false;
         }
 
@@ -1847,18 +1850,17 @@ void __not_in_flash_func(input_handling)() {
             // 4) volume 0
             // 5) volume 0 + low pitch
             // 6) volume 0 + high pitch
-            // 7) normal volume -> volume 0
-            // 8) normal volume -> volume 0 + low pitch
-            // 9) normal volume -> volume 0 + high pitch
-            // 10) normal pitch -> low pitch
-            // 11) volume 0 + normal pitch -> low pitch
-            // 12) volume 0 + normal pitch -> high pitch
-            // 13) normal volume + normal pitch -> low pitch
-            // 14) normal volume + normal pitch -> high pitch
-            uint8_t mode_roll = random_integer_in_range(0, 13);
+            // 7) normal pitch -> low pitch
+            // 8) volume 0 + normal pitch -> low pitch
+            // 9) volume 0 + normal pitch -> high pitch
+            // 10) normal volume + normal pitch -> low pitch
+            // 11) normal volume + normal pitch -> high pitch
+            uint8_t mode_roll = random_integer_in_range(0, 10);
             float random_vol = (float)random_integer_in_range(0, 100) / 100.0f;
             pending_end_vol = PLANNED_RETRIG_USE_CURRENT_VOL;
             pending_end_pitch = PLANNED_RETRIG_USE_CURRENT_PITCH;
+            pending_filter_mode = 0;
+            pending_filter_low = 0;
 
             if (mode_roll == 0) {
               pending_start_vol = random_vol;
@@ -1881,30 +1883,16 @@ void __not_in_flash_func(input_handling)() {
             } else if (mode_roll == 6) {
               pending_start_vol = 1.0f;
               pending_start_pitch = 0;
-              pending_end_vol = 0.0f;
+              pending_end_pitch = -24;
             } else if (mode_roll == 7) {
-              pending_start_vol = 1.0f;
+              pending_start_vol = 0.0f;
               pending_start_pitch = 0;
-              pending_end_vol = 0.0f;
               pending_end_pitch = -24;
             } else if (mode_roll == 8) {
-              pending_start_vol = 1.0f;
+              pending_start_vol = 0.0f;
               pending_start_pitch = 0;
-              pending_end_vol = 0.0f;
               pending_end_pitch = 24;
             } else if (mode_roll == 9) {
-              pending_start_vol = 1.0f;
-              pending_start_pitch = 0;
-              pending_end_pitch = -24;
-            } else if (mode_roll == 10) {
-              pending_start_vol = 0.0f;
-              pending_start_pitch = 0;
-              pending_end_pitch = -24;
-            } else if (mode_roll == 11) {
-              pending_start_vol = 0.0f;
-              pending_start_pitch = 0;
-              pending_end_pitch = 24;
-            } else if (mode_roll == 12) {
               pending_start_vol = random_vol;
               pending_start_pitch = 0;
               pending_end_pitch = -24;
@@ -1912,6 +1900,23 @@ void __not_in_flash_func(input_handling)() {
               pending_start_vol = random_vol;
               pending_start_pitch = 0;
               pending_end_pitch = 24;
+            }
+
+            if (global_filter_index > 1) {
+              uint8_t filter_roll = random_integer_in_range(0, 99);
+              if (filter_roll < 15) {
+                pending_filter_mode = 1;  // low -> normal
+              } else if (filter_roll < 30) {
+                pending_filter_mode = 2;  // normal -> low
+              }
+              if (pending_filter_mode > 0) {
+                uint16_t max_low = global_filter_index / 2;
+                if (max_low < 1) {
+                  max_low = 1;
+                }
+                pending_filter_low =
+                    (uint16_t)random_integer_in_range(1, max_low);
+              }
             }
 
             planned_retrig_pending = true;

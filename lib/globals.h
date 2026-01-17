@@ -410,6 +410,11 @@ bool planned_retrig_ready = false;
 bool planned_retrig_first = false;
 bool fuzz_auto_active = false;
 bool fuzz_manual_lock = false;
+int16_t planned_retrig_filter_start = 0;
+int16_t planned_retrig_filter_stop = 0;
+int16_t planned_retrig_filter_restore = 0;
+int16_t planned_retrig_filter_change = 0;
+bool planned_retrig_filter_active = false;
 // Current interpolated values during playback
 volatile float planned_retrig_vol = 1.0;
 volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;
@@ -428,7 +433,8 @@ uint8_t planned_retrig_probability = 100;
 // times: retrigs per quarter note (determines speed)
 void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
                        uint8_t times, uint8_t rate_divisor, float end_vol,
-                       int8_t end_pitch) {
+                       int8_t end_pitch, uint8_t filter_mode,
+                       uint16_t filter_low) {
   if (planned_retrig_ready || beat_num == 0 || times == 0 ||
       rate_divisor == 0) {
     return;  // Already running or invalid params
@@ -483,6 +489,27 @@ void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
 
   planned_retrig_first = true;
   planned_retrig_ready = true;
+
+  planned_retrig_filter_active = false;
+  if (filter_mode > 0 && global_filter_index > 0) {
+    planned_retrig_filter_restore = global_filter_index;
+    if (filter_mode == 1) {
+      planned_retrig_filter_start = filter_low;
+      planned_retrig_filter_stop = planned_retrig_filter_restore;
+    } else {
+      planned_retrig_filter_start = planned_retrig_filter_restore;
+      planned_retrig_filter_stop = filter_low;
+    }
+    planned_retrig_filter_change =
+        (planned_retrig_filter_stop - planned_retrig_filter_start) /
+        (int16_t)planned_retrig_beat_num;
+    planned_retrig_filter_active = true;
+    global_filter_index = planned_retrig_filter_start;
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
+      ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    }
+  }
 }
 
 #define MODE_JUMP 0
