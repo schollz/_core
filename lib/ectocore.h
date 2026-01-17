@@ -1354,15 +1354,15 @@ void __not_in_flash_func(input_handling)() {
             sf->pitch_val_index =
                 PITCH_VAL_MID -
                 (uint8_t)((512 - 24 - val) * PITCH_VAL_MID / (512 - 24));
-            ws2812_set_wheel_left_half(ws2812, 2 * val, true, false, false);
+            ws2812_set_wheel_left_half(ws2812, 2 * val, false, false, true);
           } else if (val > 512 + 24) {
             // right half: pitch up
             sf->pitch_val_index =
                 PITCH_VAL_MID +
                 (uint8_t)((val - (512 + 24)) * (PITCH_VAL_MAX - PITCH_VAL_MID) /
                           (512 - 24));
-            ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), true,
-                                        false, false);
+            ws2812_set_wheel_right_half(ws2812, 2 * (val - (512 + 24)), false,
+                                        false, true);
           } else {
             sf->pitch_val_index = PITCH_VAL_MID;
             ws2812_wheel_clear(ws2812);
@@ -1765,9 +1765,9 @@ void __not_in_flash_func(input_handling)() {
           uint8_t pos_in_phrase = next_even_slice;
 
           // Probability increases toward end of phrase
-          // At pos 0: ~0%, at pos slice_num-1: ~100%
+          // At pos 0: ~10%, at pos slice_num-1: ~90% (capped)
           // Then scaled by planned_retrig_probability (0-100)
-          uint16_t probability = (pos_in_phrase * 100) / (slice_num - 1);
+          uint16_t probability = 10 + (pos_in_phrase * 80) / (slice_num - 1);
           probability = (probability * planned_retrig_probability) / 100;
 
           if (random_integer_in_range(0, 100) < probability) {
@@ -1798,12 +1798,23 @@ void __not_in_flash_func(input_handling)() {
             pending_beats_remaining = stutter_slices * 2;
 
             // Randomize parameters and store for next even slice
-            pending_start_vol =
-                (float)random_integer_in_range(0, 50) / 100.0f;  // 0.0 to 0.5
-            pending_start_pitch =
-                (int8_t)random_integer_in_range(-24, 24);  // -24 to +24
-            uint8_t times_options[4] = {2, 4, 8, 16};
-            pending_times = times_options[random_integer_in_range(0, 3)];
+            // 25% chance to start silent, otherwise random 0.0-1.0
+            if (random_integer_in_range(0, 100) < 25) {
+              pending_start_vol = 0.0f;
+            } else {
+              pending_start_vol = (float)random_integer_in_range(0, 100) / 100.0f;
+            }
+            // 50% no pitch change, 25% start at bottom, 25% start at top
+            uint8_t pitch_roll = random_integer_in_range(0, 100);
+            if (pitch_roll < 50) {
+              pending_start_pitch = 0;
+            } else if (pitch_roll < 75) {
+              pending_start_pitch = -24;
+            } else {
+              pending_start_pitch = 24;
+            }
+            uint8_t times_options[11] = {1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32};
+            pending_times = times_options[random_integer_in_range(0, 10)];
 
             planned_retrig_pending = true;
           }
