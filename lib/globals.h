@@ -408,6 +408,7 @@ uint16_t planned_retrig_timer_reset = 96;
 uint8_t planned_retrig_rate_divisor = 1;
 bool planned_retrig_ready = false;
 bool planned_retrig_first = false;
+bool fuzz_auto_active = false;
 // Current interpolated values during playback
 volatile float planned_retrig_vol = 1.0;
 volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;

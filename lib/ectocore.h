@@ -427,6 +427,7 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
 
 bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
+    fuzz_auto_active = false;
     if (show_wheel) {
       ws2812_set_wheel_green_yellow_red(ws2812, val);
     }
