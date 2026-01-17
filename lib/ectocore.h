@@ -1324,7 +1324,7 @@ void __not_in_flash_func(input_handling)() {
           printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
-          mode_digital_bass = val * 100 / 1024;
+          planned_retrig_probability = val * 100 / 1024;
           ws2812_set_wheel(ws2812, val * 4, 0, 0, 255);
         } else {
           // printf("[ectocore] knob_break_atten %d\n", val);
@@ -1766,7 +1766,9 @@ void __not_in_flash_func(input_handling)() {
 
           // Probability increases toward end of phrase
           // At pos 0: ~0%, at pos slice_num-1: ~100%
+          // Then scaled by planned_retrig_probability (0-100)
           uint16_t probability = (pos_in_phrase * 100) / (slice_num - 1);
+          probability = (probability * planned_retrig_probability) / 100;
 
           if (random_integer_in_range(0, 100) < probability) {
             // Determine boundary interval based on total slice count
