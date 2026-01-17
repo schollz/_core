@@ -657,7 +657,7 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
     bool flg = multicore_fifo_push_timeout_us(EVENT_I2S_DMA_TRANSFER_STARTED,
                                               FIFO_TIMEOUT);
     if (!flg) {
-      printf("Core0 -> Core1 FIFO Full\n");
+      // FIFO full; drop the sample to avoid blocking.
       fifo_full_counter++;
       if (fifo_full_counter == 50) {
         watchdog_reboot(0, SRAM_END, 1900);
@@ -705,7 +705,7 @@ void audio_i2s_set_enabled(bool enabled) {
     } else {
       flg = multicore_fifo_push_timeout_us(NOTIFY_I2S_DISABLED, FIFO_TIMEOUT);
       if (!flg) {
-        printf("Core0 -> Core1 FIFO Full\n");
+        // FIFO full; drop the sample to avoid blocking.
         fifo_full_counter++;
         if (fifo_full_counter == 50) {
           watchdog_reboot(0, SRAM_END, 1900);
