@@ -397,6 +397,66 @@ float pitch_vals[PITCH_VAL_MAX] = {
     2,
 };
 
+// Planned retrig - a controllable stutter effect that transitions
+// from specified start values to current values
+float planned_retrig_start_vol = 1.0;
+float planned_retrig_stop_vol = 1.0;
+uint8_t planned_retrig_start_pitch = PITCH_VAL_MID;
+uint8_t planned_retrig_stop_pitch = PITCH_VAL_MID;
+uint8_t planned_retrig_beat_num = 0;
+uint16_t planned_retrig_timer_reset = 96;
+bool planned_retrig_ready = false;
+bool planned_retrig_first = false;
+// Current interpolated values during playback
+volatile float planned_retrig_vol = 1.0;
+volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;
+float planned_retrig_vol_step = 0;
+int8_t planned_retrig_pitch_step = 0;
+
+// Initialize planned retrig effect
+// start_vol: starting volume (0.0-1.0)
+// start_pitch: pitch offset from normal (-24 to +24, 0=normal)
+// beat_num: number of retrig beats
+// times: retrigs per quarter note (determines speed)
+void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
+                       uint8_t times) {
+  if (planned_retrig_ready || beat_num == 0 || times == 0) {
+    return;  // Already running or invalid params
+  }
+
+  planned_retrig_start_vol = start_vol;
+  planned_retrig_stop_vol = retrig_vol;  // Current volume
+
+  // Convert relative pitch offset to absolute index
+  int16_t abs_pitch = PITCH_VAL_MID + start_pitch;
+  if (abs_pitch < 0) {
+    abs_pitch = 0;
+  } else if (abs_pitch > PITCH_VAL_MAX - 1) {
+    abs_pitch = PITCH_VAL_MAX - 1;
+  }
+  planned_retrig_start_pitch = (uint8_t)abs_pitch;
+  planned_retrig_stop_pitch = sf->pitch_val_index;  // Current pitch setting
+
+  planned_retrig_beat_num = beat_num;
+  planned_retrig_timer_reset = 96 / times;  // times per quarter note
+
+  // Calculate interpolation steps
+  planned_retrig_vol_step =
+      (planned_retrig_stop_vol - planned_retrig_start_vol) /
+      (float)planned_retrig_beat_num;
+  planned_retrig_pitch_step =
+      (int8_t)((int16_t)planned_retrig_stop_pitch -
+               (int16_t)planned_retrig_start_pitch) /
+      (int8_t)planned_retrig_beat_num;
+
+  // Initialize current values to start
+  planned_retrig_vol = planned_retrig_start_vol;
+  planned_retrig_pitch = planned_retrig_start_pitch;
+
+  planned_retrig_first = true;
+  planned_retrig_ready = true;
+}
+
 #define MODE_JUMP 0
 #define MODE_MASH 1
 #define MODE_BASS 2

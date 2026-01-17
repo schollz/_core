@@ -295,6 +295,59 @@ bool __not_in_flash_func(timer_step)() {
         retrig_first = false;
       }
     }
+  }
+
+  // Planned retrig - controllable stutter effect
+  if (planned_retrig_beat_num > 0) {
+    if (bpm_timer_counter % planned_retrig_timer_reset == 0) {
+      if (planned_retrig_ready) {
+        planned_retrig_beat_num--;
+
+        if (planned_retrig_beat_num == 0) {
+          // Done: set to final values and restore normal playback
+          planned_retrig_ready = false;
+          planned_retrig_vol = planned_retrig_stop_vol;
+          planned_retrig_pitch = planned_retrig_stop_pitch;
+          retrig_vol = 1.0;
+          retrig_pitch = PITCH_VAL_MID;
+        } else {
+          // Interpolate toward stop values
+          planned_retrig_vol += planned_retrig_vol_step;
+          if ((planned_retrig_vol_step > 0 &&
+               planned_retrig_vol > planned_retrig_stop_vol) ||
+              (planned_retrig_vol_step < 0 &&
+               planned_retrig_vol < planned_retrig_stop_vol)) {
+            planned_retrig_vol = planned_retrig_stop_vol;
+          }
+
+          planned_retrig_pitch += planned_retrig_pitch_step;
+          if ((planned_retrig_pitch_step > 0 &&
+               planned_retrig_pitch > planned_retrig_stop_pitch) ||
+              (planned_retrig_pitch_step < 0 &&
+               planned_retrig_pitch < planned_retrig_stop_pitch)) {
+            planned_retrig_pitch = planned_retrig_stop_pitch;
+          }
+          // Clamp pitch to valid range
+          if (planned_retrig_pitch > PITCH_VAL_MAX - 1) {
+            planned_retrig_pitch = PITCH_VAL_MAX - 1;
+          }
+        }
+
+        // Apply to global retrig values so audio callback uses them
+        retrig_vol = planned_retrig_vol;
+        retrig_pitch = planned_retrig_pitch;
+
+        // Restart slice playback
+        if (fil_is_open && debounce_quantize == 0 && retrig_beat_num == 0) {
+          do_update_phase_from_beat_current();
+        }
+        planned_retrig_first = false;
+      }
+    }
+  }
+
+  if (retrig_beat_num > 0 || planned_retrig_beat_num > 0) {
+    // Retrig active - skip normal beat processing
   } else if (sequencerhandler[0].playing &&
              banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
