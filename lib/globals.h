@@ -405,6 +405,7 @@ uint8_t planned_retrig_start_pitch = PITCH_VAL_MID;
 uint8_t planned_retrig_stop_pitch = PITCH_VAL_MID;
 uint8_t planned_retrig_beat_num = 0;
 uint16_t planned_retrig_timer_reset = 96;
+uint8_t planned_retrig_rate_divisor = 1;
 bool planned_retrig_ready = false;
 bool planned_retrig_first = false;
 // Current interpolated values during playback
@@ -413,7 +414,10 @@ volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;
 float planned_retrig_vol_step = 0;
 int8_t planned_retrig_pitch_step = 0;
 // Probability multiplier (0-100): 100 = full probability, 0 = disabled
-uint8_t planned_retrig_probability = 0;
+uint8_t planned_retrig_probability = 100;
+
+#define PLANNED_RETRIG_USE_CURRENT_VOL (-1.0f)
+#define PLANNED_RETRIG_USE_CURRENT_PITCH 127
 
 // Initialize planned retrig effect
 // start_vol: starting volume (0.0-1.0)
@@ -421,13 +425,19 @@ uint8_t planned_retrig_probability = 0;
 // beat_num: number of retrig beats
 // times: retrigs per quarter note (determines speed)
 void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
-                       uint8_t times) {
-  if (planned_retrig_ready || beat_num == 0 || times == 0) {
+                       uint8_t times, uint8_t rate_divisor, float end_vol,
+                       int8_t end_pitch) {
+  if (planned_retrig_ready || beat_num == 0 || times == 0 ||
+      rate_divisor == 0) {
     return;  // Already running or invalid params
   }
 
   planned_retrig_start_vol = start_vol;
-  planned_retrig_stop_vol = retrig_vol;  // Current volume
+  if (end_vol < 0.0f) {
+    planned_retrig_stop_vol = retrig_vol;  // Current volume
+  } else {
+    planned_retrig_stop_vol = end_vol;
+  }
 
   // Convert relative pitch offset to absolute index
   int16_t abs_pitch = PITCH_VAL_MID + start_pitch;
@@ -437,19 +447,33 @@ void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
     abs_pitch = PITCH_VAL_MAX - 1;
   }
   planned_retrig_start_pitch = (uint8_t)abs_pitch;
-  planned_retrig_stop_pitch = sf->pitch_val_index;  // Current pitch setting
+  if (end_pitch == PLANNED_RETRIG_USE_CURRENT_PITCH) {
+    planned_retrig_stop_pitch = sf->pitch_val_index;  // Current pitch setting
+  } else {
+    int16_t abs_stop_pitch = PITCH_VAL_MID + end_pitch;
+    if (abs_stop_pitch < 0) {
+      abs_stop_pitch = 0;
+    } else if (abs_stop_pitch > PITCH_VAL_MAX - 1) {
+      abs_stop_pitch = PITCH_VAL_MAX - 1;
+    }
+    planned_retrig_stop_pitch = (uint8_t)abs_stop_pitch;
+  }
 
   planned_retrig_beat_num = beat_num;
-  planned_retrig_timer_reset = 96 / times;  // times per quarter note
+  planned_retrig_rate_divisor = rate_divisor;
+  planned_retrig_timer_reset =
+      (uint16_t)((96 * planned_retrig_rate_divisor) / times);
+  if (planned_retrig_timer_reset == 0) {
+    planned_retrig_timer_reset = 1;
+  }
 
   // Calculate interpolation steps
   planned_retrig_vol_step =
       (planned_retrig_stop_vol - planned_retrig_start_vol) /
       (float)planned_retrig_beat_num;
-  planned_retrig_pitch_step =
-      (int8_t)((int16_t)planned_retrig_stop_pitch -
-               (int16_t)planned_retrig_start_pitch) /
-      (int8_t)planned_retrig_beat_num;
+  planned_retrig_pitch_step = (int8_t)((int16_t)planned_retrig_stop_pitch -
+                                       (int16_t)planned_retrig_start_pitch) /
+                              (int8_t)planned_retrig_beat_num;
 
   // Initialize current values to start
   planned_retrig_vol = planned_retrig_start_vol;

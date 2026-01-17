@@ -1725,14 +1725,21 @@ void __not_in_flash_func(input_handling)() {
     }
 
     // Check for planned retrig activation on slice change
-    // Only check on odd slices, schedule to start on next even slice
+    // Check on any slice, schedule to start on next slice
     {
       static uint8_t last_slice_for_planned_retrig = 255;
+      static uint8_t last_boundary_start = 255;
+      static uint8_t last_boundary_end = 255;
+      static uint8_t planned_retrig_target_slice = 255;
+      static uint8_t planned_retrig_start_slice = 255;
       static bool planned_retrig_pending = false;
       static float pending_start_vol = 0;
       static int8_t pending_start_pitch = 0;
+      static float pending_end_vol = PLANNED_RETRIG_USE_CURRENT_VOL;
+      static int8_t pending_end_pitch = PLANNED_RETRIG_USE_CURRENT_PITCH;
       static uint8_t pending_beats_remaining = 0;
       static uint8_t pending_times = 0;
+      static uint8_t pending_rate_divisor = 1;
 
       uint8_t current_slice =
           banks[sel_bank_cur]
@@ -1746,77 +1753,164 @@ void __not_in_flash_func(input_handling)() {
 
       if (current_slice != last_slice_for_planned_retrig) {
         last_slice_for_planned_retrig = current_slice;
-        bool is_odd_slice = (current_slice % 2) == 1;
-        bool is_even_slice = (current_slice % 2) == 0;
 
-        // If we have a pending retrig and hit an even slice, start it
-        if (planned_retrig_pending && is_even_slice && !planned_retrig_ready) {
+        // If we have a pending retrig and hit the start slice, start it
+        if (planned_retrig_pending && current_slice == planned_retrig_start_slice &&
+            !planned_retrig_ready) {
           planned_retrig_do(pending_start_vol, pending_start_pitch,
-                            pending_beats_remaining, pending_times);
+                            pending_beats_remaining, pending_times,
+                            pending_rate_divisor, pending_end_vol,
+                            pending_end_pitch);
           planned_retrig_pending = false;
         }
 
-        // Only check for new retrig on odd slices when not already
-        // active/pending
-        if (is_odd_slice && !planned_retrig_ready && !planned_retrig_pending &&
-            slice_num > 1) {
-          // Calculate position of NEXT EVEN slice in phrase
-          uint8_t next_even_slice = (current_slice + 1) % slice_num;
-          uint8_t pos_in_phrase = next_even_slice;
+        // Only check for new retrig when not already active/pending
+        if (!planned_retrig_ready && !planned_retrig_pending && slice_num > 1) {
+          // Calculate position of next slice in phrase (retrig starts here)
+          uint8_t next_slice = (current_slice + 1) % slice_num;
+          // Fixed 4-step boundary for planning
+          uint8_t boundary_interval = 4;
 
-          // Probability increases toward end of phrase
-          // At pos 0: ~10%, at pos slice_num-1: ~90% (capped)
-          // Then scaled by planned_retrig_probability (0-100)
-          uint16_t probability = 10 + (pos_in_phrase * 80) / (slice_num - 1);
-          probability = (probability * planned_retrig_probability) / 100;
+          // Boundary is defined by the next slice (where retrig starts)
+          uint8_t boundary_start =
+              (next_slice / boundary_interval) * boundary_interval;
+          uint8_t boundary_end = boundary_start + boundary_interval;
+          if (boundary_end > slice_num) {
+            boundary_end = slice_num;
+          }
 
-          if (random_integer_in_range(0, 100) < probability) {
-            // Determine boundary interval based on total slice count
-            uint8_t boundary_interval;
-            if (slice_num <= 4) {
-              boundary_interval = 4;
-            } else if (slice_num <= 16) {
-              boundary_interval = 8;
-            } else {
-              boundary_interval = 16;
+          // Choose a target slice once per boundary for uniform chance
+          if (boundary_start != last_boundary_start ||
+              boundary_end != last_boundary_end) {
+            last_boundary_start = boundary_start;
+            last_boundary_end = boundary_end;
+            planned_retrig_target_slice = 255;
+
+            if (random_integer_in_range(0, 100) <
+                planned_retrig_probability) {
+              uint8_t first_step = boundary_start;
+              uint8_t last_step =
+                  (boundary_end > 0) ? (uint8_t)(boundary_end - 1) : 0;
+              if (first_step <= last_step) {
+                uint8_t step_count = (last_step - first_step) + 1;
+                uint8_t step_index =
+                    (uint8_t)random_integer_in_range(0, step_count - 1);
+                planned_retrig_target_slice = first_step + step_index;
+              }
+            }
+          }
+
+          if (current_slice == planned_retrig_target_slice) {
+            // Stutter for a random duration, extend to end on a 4-step boundary
+            uint8_t duration_steps =
+                (uint8_t)random_integer_in_range(1, 16);
+            uint8_t end_unaligned = next_slice + duration_steps;
+            uint8_t end_aligned = ((end_unaligned + 3) / 4) * 4;
+            if (end_aligned > slice_num) {
+              end_aligned = slice_num;
             }
 
-            // Stutter until next boundary
-            uint8_t next_boundary =
-                ((next_even_slice / boundary_interval) + 1) * boundary_interval;
-            if (next_boundary > slice_num) {
-              next_boundary = slice_num;
+            uint8_t stutter_slices = end_aligned - next_slice;
+            if (stutter_slices < 1) {
+              stutter_slices = 1;
             }
 
-            uint8_t stutter_slices = next_boundary - next_even_slice;
-            if (stutter_slices < 2) {
-              stutter_slices = 2;  // Minimum 2 slices
+            // Select times first (removed 18 - doesn't divide 96 evenly)
+            uint8_t times_options[8] = {1, 2, 3, 4, 6, 8, 12, 16};
+            pending_times = times_options[random_integer_in_range(0, 7)];
+            uint8_t rate_divisor_options[4] = {1, 2, 4, 8};
+            pending_rate_divisor =
+                rate_divisor_options[random_integer_in_range(0, 3)];
+
+            // Beats remaining until next boundary (each slice is an 8th note)
+            uint8_t beats_remaining = stutter_slices / 2;
+            if (beats_remaining < 1) {
+              beats_remaining = 1;
+            }
+            pending_beats_remaining =
+                (beats_remaining * pending_times) / pending_rate_divisor;
+            if (pending_beats_remaining < 1) {
+              pending_beats_remaining = 1;
             }
 
-            // Each slice is an 8th note, timer is based on quarter notes (96
-            // ticks), so multiply by 2 to get correct duration
-            pending_beats_remaining = stutter_slices * 2;
+            // Randomize parameters and store for next slice
+            // Allowed start modes:
+            // 1) normal
+            // 2) low pitch -> normal
+            // 3) high pitch -> normal
+            // 4) volume 0
+            // 5) volume 0 + low pitch
+            // 6) volume 0 + high pitch
+            // 7) normal volume -> volume 0
+            // 8) normal volume -> volume 0 + low pitch
+            // 9) normal volume -> volume 0 + high pitch
+            // 10) normal pitch -> low pitch
+            // 11) volume 0 + normal pitch -> low pitch
+            // 12) volume 0 + normal pitch -> high pitch
+            // 13) normal volume + normal pitch -> low pitch
+            // 14) normal volume + normal pitch -> high pitch
+            uint8_t mode_roll = random_integer_in_range(0, 13);
+            float random_vol =
+                (float)random_integer_in_range(0, 100) / 100.0f;
+            pending_end_vol = PLANNED_RETRIG_USE_CURRENT_VOL;
+            pending_end_pitch = PLANNED_RETRIG_USE_CURRENT_PITCH;
 
-            // Randomize parameters and store for next even slice
-            // 25% chance to start silent, otherwise random 0.0-1.0
-            if (random_integer_in_range(0, 100) < 25) {
-              pending_start_vol = 0.0f;
-            } else {
-              pending_start_vol = (float)random_integer_in_range(0, 100) / 100.0f;
-            }
-            // 50% no pitch change, 25% start at bottom, 25% start at top
-            uint8_t pitch_roll = random_integer_in_range(0, 100);
-            if (pitch_roll < 50) {
+            if (mode_roll == 0) {
+              pending_start_vol = random_vol;
               pending_start_pitch = 0;
-            } else if (pitch_roll < 75) {
+            } else if (mode_roll == 1) {
+              pending_start_vol = random_vol;
               pending_start_pitch = -24;
-            } else {
+            } else if (mode_roll == 2) {
+              pending_start_vol = random_vol;
               pending_start_pitch = 24;
+            } else if (mode_roll == 3) {
+              pending_start_vol = 0.0f;
+              pending_start_pitch = 0;
+            } else if (mode_roll == 4) {
+              pending_start_vol = 0.0f;
+              pending_start_pitch = -24;
+            } else if (mode_roll == 5) {
+              pending_start_vol = 0.0f;
+              pending_start_pitch = 24;
+            } else if (mode_roll == 6) {
+              pending_start_vol = 1.0f;
+              pending_start_pitch = 0;
+              pending_end_vol = 0.0f;
+            } else if (mode_roll == 7) {
+              pending_start_vol = 1.0f;
+              pending_start_pitch = 0;
+              pending_end_vol = 0.0f;
+              pending_end_pitch = -24;
+            } else if (mode_roll == 8) {
+              pending_start_vol = 1.0f;
+              pending_start_pitch = 0;
+              pending_end_vol = 0.0f;
+              pending_end_pitch = 24;
+            } else if (mode_roll == 9) {
+              pending_start_vol = 1.0f;
+              pending_start_pitch = 0;
+              pending_end_pitch = -24;
+            } else if (mode_roll == 10) {
+              pending_start_vol = 0.0f;
+              pending_start_pitch = 0;
+              pending_end_pitch = -24;
+            } else if (mode_roll == 11) {
+              pending_start_vol = 0.0f;
+              pending_start_pitch = 0;
+              pending_end_pitch = 24;
+            } else if (mode_roll == 12) {
+              pending_start_vol = random_vol;
+              pending_start_pitch = 0;
+              pending_end_pitch = -24;
+            } else {
+              pending_start_vol = random_vol;
+              pending_start_pitch = 0;
+              pending_end_pitch = 24;
             }
-            uint8_t times_options[11] = {1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 32};
-            pending_times = times_options[random_integer_in_range(0, 10)];
 
             planned_retrig_pending = true;
+            planned_retrig_start_slice = next_slice;
           }
         }
       }
