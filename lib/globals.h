@@ -413,7 +413,7 @@ volatile float planned_retrig_vol = 1.0;
 volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;
 float planned_retrig_vol_step = 0;
 int8_t planned_retrig_pitch_step = 0;
-// Probability multiplier (0-100): 100 = full probability, 0 = disabled
+// Probability multiplier (0-100): 100 = base probability
 uint8_t planned_retrig_probability = 100;
 
 #define PLANNED_RETRIG_USE_CURRENT_VOL (-1.0f)

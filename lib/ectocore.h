@@ -1741,21 +1741,19 @@ void __not_in_flash_func(input_handling)() {
       static uint8_t pending_times = 0;
       static uint8_t pending_rate_divisor = 1;
 
-      uint8_t current_slice =
-          banks[sel_bank_cur]
-              ->sample[sel_sample_cur]
-              .snd[FILEZERO]
-              ->slice_current;
-      uint8_t slice_num = banks[sel_bank_cur]
-                              ->sample[sel_sample_cur]
-                              .snd[FILEZERO]
-                              ->slice_num;
+      uint8_t current_slice = banks[sel_bank_cur]
+                                  ->sample[sel_sample_cur]
+                                  .snd[FILEZERO]
+                                  ->slice_current;
+      uint8_t slice_num =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num;
 
       if (current_slice != last_slice_for_planned_retrig) {
         last_slice_for_planned_retrig = current_slice;
 
         // If we have a pending retrig and hit the start slice, start it
-        if (planned_retrig_pending && current_slice == planned_retrig_start_slice &&
+        if (planned_retrig_pending &&
+            current_slice == planned_retrig_start_slice &&
             !planned_retrig_ready) {
           planned_retrig_do(pending_start_vol, pending_start_pitch,
                             pending_beats_remaining, pending_times,
@@ -1786,8 +1784,7 @@ void __not_in_flash_func(input_handling)() {
             last_boundary_end = boundary_end;
             planned_retrig_target_slice = 255;
 
-            if (random_integer_in_range(0, 100) <
-                planned_retrig_probability) {
+            if (random_integer_in_range(0, 100) < planned_retrig_probability) {
               uint8_t first_step = boundary_start;
               uint8_t last_step =
                   (boundary_end > 0) ? (uint8_t)(boundary_end - 1) : 0;
@@ -1802,8 +1799,7 @@ void __not_in_flash_func(input_handling)() {
 
           if (current_slice == planned_retrig_target_slice) {
             // Stutter for a random duration, extend to end on a 4-step boundary
-            uint8_t duration_steps =
-                (uint8_t)random_integer_in_range(1, 16);
+            uint8_t duration_steps = (uint8_t)random_integer_in_range(1, 16);
             uint8_t end_unaligned = next_slice + duration_steps;
             uint8_t end_aligned = ((end_unaligned + 3) / 4) * 4;
             if (end_aligned > slice_num) {
@@ -1850,8 +1846,7 @@ void __not_in_flash_func(input_handling)() {
             // 13) normal volume + normal pitch -> low pitch
             // 14) normal volume + normal pitch -> high pitch
             uint8_t mode_roll = random_integer_in_range(0, 13);
-            float random_vol =
-                (float)random_integer_in_range(0, 100) / 100.0f;
+            float random_vol = (float)random_integer_in_range(0, 100) / 100.0f;
             pending_end_vol = PLANNED_RETRIG_USE_CURRENT_VOL;
             pending_end_pitch = PLANNED_RETRIG_USE_CURRENT_PITCH;
 
