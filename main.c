@@ -253,11 +253,12 @@ bool __not_in_flash_func(timer_step)() {
           retrig_vol = 1.0;
           retrig_pitch = PITCH_VAL_MID;
           // reset filter
-          if (global_filter_index != retrig_filter_original &&
-              retrig_filter_original > 0) {
-            global_filter_index = retrig_filter_original;
-            for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          if (retrig_filter_original > 0) {
+            if (global_filter_index != retrig_filter_original) {
+              global_filter_index = retrig_filter_original;
+              for (uint8_t channel = 0; channel < 2; channel++) {
+                ResonantFilter_setFc(resFilter[channel], global_filter_index);
+              }
             }
             retrig_filter_original = 0;
           }
@@ -369,11 +370,12 @@ bool __not_in_flash_func(timer_step)() {
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
     // reset filter
-    if (global_filter_index != retrig_filter_original &&
-        retrig_filter_original > 0) {
-      global_filter_index = retrig_filter_original;
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    if (retrig_filter_original > 0) {
+      if (global_filter_index != retrig_filter_original) {
+        global_filter_index = retrig_filter_original;
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          ResonantFilter_setFc(resFilter[channel], global_filter_index);
+        }
       }
       retrig_filter_original = 0;
     }

@@ -81,7 +81,6 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       uint8_t new_vol = new_adcvalue; // is it 256 total?
       if (new_vol != sf->vol) {
         sf->vol = new_vol;
-        // printf("sf-vol: %d\n", sf->vol);
       }
       break;
   case cc_bassvolume: // volume

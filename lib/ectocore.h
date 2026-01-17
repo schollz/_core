@@ -452,6 +452,11 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
       sf->fx_active[FX_FUZZ] = 0;
       sf->fx_active[FX_SATURATE] = 0;
     }
+    if (sf->fx_active[FX_FUZZ]) {
+      fuzz_manual_lock = true;
+    } else {
+      fuzz_manual_lock = false;
+    }
     return true;
   }
   break_knob_set_point = val;
@@ -862,6 +867,10 @@ void __not_in_flash_func(input_handling)() {
       }
 
       last_input_detection_time = current_time;
+    }
+
+    if (fuzz_manual_lock && !sf->fx_active[FX_FUZZ]) {
+      sf->fx_active[FX_FUZZ] = true;
     }
 
     // update the cv for each channel
