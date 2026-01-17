@@ -144,9 +144,15 @@ void break_fx_toggle(uint8_t effect, bool on) {
     case 0:
       // distortion
       if (on) {
-        sf->fx_active[FX_FUZZ] = true;
+        if (!sf->fx_active[FX_FUZZ]) {
+          sf->fx_active[FX_FUZZ] = true;
+          fuzz_auto_active = true;
+        }
       } else {
-        sf->fx_active[FX_FUZZ] = false;
+        if (fuzz_auto_active) {
+          sf->fx_active[FX_FUZZ] = false;
+          fuzz_auto_active = false;
+        }
       }
       update_fx(FX_FUZZ);
       break;

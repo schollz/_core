@@ -397,6 +397,121 @@ float pitch_vals[PITCH_VAL_MAX] = {
     2,
 };
 
+// Planned retrig - a controllable stutter effect that transitions
+// from specified start values to current values
+float planned_retrig_start_vol = 1.0;
+float planned_retrig_stop_vol = 1.0;
+uint8_t planned_retrig_start_pitch = PITCH_VAL_MID;
+uint8_t planned_retrig_stop_pitch = PITCH_VAL_MID;
+uint8_t planned_retrig_beat_num = 0;
+uint16_t planned_retrig_timer_reset = 96;
+uint8_t planned_retrig_rate_divisor = 1;
+bool planned_retrig_ready = false;
+bool planned_retrig_first = false;
+bool fuzz_auto_active = false;
+bool fuzz_manual_lock = false;
+int16_t planned_retrig_filter_start = 0;
+int16_t planned_retrig_filter_stop = 0;
+int16_t planned_retrig_filter_restore = 0;
+int16_t planned_retrig_filter_change = 0;
+bool planned_retrig_filter_active = false;
+// Current interpolated values during playback
+volatile float planned_retrig_vol = 1.0;
+volatile uint8_t planned_retrig_pitch = PITCH_VAL_MID;
+float planned_retrig_vol_step = 0;
+int8_t planned_retrig_pitch_step = 0;
+// Probability multiplier (0-100): 100 = base probability
+uint8_t planned_retrig_probability = 0;
+
+#define PLANNED_RETRIG_USE_CURRENT_VOL (-1.0f)
+#define PLANNED_RETRIG_USE_CURRENT_PITCH 127
+
+// Initialize planned retrig effect
+// start_vol: starting volume (0.0-1.0)
+// start_pitch: pitch offset from normal (-24 to +24, 0=normal)
+// beat_num: number of retrig beats
+// times: retrigs per quarter note (determines speed)
+void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
+                       uint8_t times, uint8_t rate_divisor, float end_vol,
+                       int8_t end_pitch, uint8_t filter_mode,
+                       uint16_t filter_low) {
+  if (planned_retrig_ready || beat_num == 0 || times == 0 ||
+      rate_divisor == 0) {
+    return;  // Already running or invalid params
+  }
+
+  planned_retrig_start_vol = start_vol;
+  if (end_vol < 0.0f) {
+    planned_retrig_stop_vol = retrig_vol;  // Current volume
+  } else {
+    planned_retrig_stop_vol = end_vol;
+  }
+
+  // Convert relative pitch offset to absolute index
+  int16_t abs_pitch = PITCH_VAL_MID + start_pitch;
+  if (abs_pitch < 0) {
+    abs_pitch = 0;
+  } else if (abs_pitch > PITCH_VAL_MAX - 1) {
+    abs_pitch = PITCH_VAL_MAX - 1;
+  }
+  planned_retrig_start_pitch = (uint8_t)abs_pitch;
+  if (end_pitch == PLANNED_RETRIG_USE_CURRENT_PITCH) {
+    planned_retrig_stop_pitch = sf->pitch_val_index;  // Current pitch setting
+  } else {
+    int16_t abs_stop_pitch = PITCH_VAL_MID + end_pitch;
+    if (abs_stop_pitch < 0) {
+      abs_stop_pitch = 0;
+    } else if (abs_stop_pitch > PITCH_VAL_MAX - 1) {
+      abs_stop_pitch = PITCH_VAL_MAX - 1;
+    }
+    planned_retrig_stop_pitch = (uint8_t)abs_stop_pitch;
+  }
+
+  planned_retrig_beat_num = beat_num;
+  planned_retrig_rate_divisor = rate_divisor;
+  planned_retrig_timer_reset =
+      (uint16_t)((96 * planned_retrig_rate_divisor) / times);
+  if (planned_retrig_timer_reset == 0) {
+    planned_retrig_timer_reset = 1;
+  }
+
+  // Calculate interpolation steps
+  planned_retrig_vol_step =
+      (planned_retrig_stop_vol - planned_retrig_start_vol) /
+      (float)planned_retrig_beat_num;
+  planned_retrig_pitch_step = (int8_t)((int16_t)planned_retrig_stop_pitch -
+                                       (int16_t)planned_retrig_start_pitch) /
+                              (int8_t)planned_retrig_beat_num;
+
+  // Initialize current values to start
+  planned_retrig_vol = planned_retrig_start_vol;
+  planned_retrig_pitch = planned_retrig_start_pitch;
+
+  planned_retrig_first = true;
+  planned_retrig_ready = true;
+
+  planned_retrig_filter_active = false;
+  if (filter_mode > 0 && global_filter_index > 0) {
+    planned_retrig_filter_restore = global_filter_index;
+    if (filter_mode == 1) {
+      planned_retrig_filter_start = filter_low;
+      planned_retrig_filter_stop = planned_retrig_filter_restore;
+    } else {
+      planned_retrig_filter_start = planned_retrig_filter_restore;
+      planned_retrig_filter_stop = filter_low;
+    }
+    planned_retrig_filter_change =
+        (planned_retrig_filter_stop - planned_retrig_filter_start) /
+        (int16_t)planned_retrig_beat_num;
+    planned_retrig_filter_active = true;
+    global_filter_index = planned_retrig_filter_start;
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
+      ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    }
+  }
+}
+
 #define MODE_JUMP 0
 #define MODE_MASH 1
 #define MODE_BASS 2

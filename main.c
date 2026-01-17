@@ -253,11 +253,12 @@ bool __not_in_flash_func(timer_step)() {
           retrig_vol = 1.0;
           retrig_pitch = PITCH_VAL_MID;
           // reset filter
-          if (global_filter_index != retrig_filter_original &&
-              retrig_filter_original > 0) {
-            global_filter_index = retrig_filter_original;
-            for (uint8_t channel = 0; channel < 2; channel++) {
-              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          if (retrig_filter_original > 0) {
+            if (global_filter_index != retrig_filter_original) {
+              global_filter_index = retrig_filter_original;
+              for (uint8_t channel = 0; channel < 2; channel++) {
+                ResonantFilter_setFc(resFilter[channel], global_filter_index);
+              }
             }
             retrig_filter_original = 0;
           }
@@ -295,6 +296,85 @@ bool __not_in_flash_func(timer_step)() {
         retrig_first = false;
       }
     }
+  }
+
+  // Planned retrig - controllable stutter effect
+  if (planned_retrig_beat_num > 0) {
+    if (bpm_timer_counter % planned_retrig_timer_reset == 0) {
+      if (planned_retrig_ready) {
+        planned_retrig_beat_num--;
+
+        if (planned_retrig_beat_num == 0) {
+          // Done: set to final values and restore normal playback
+          planned_retrig_ready = false;
+          planned_retrig_vol = planned_retrig_stop_vol;
+          planned_retrig_pitch = planned_retrig_stop_pitch;
+          if (planned_retrig_filter_active) {
+            global_filter_index = planned_retrig_filter_restore;
+            for (uint8_t channel = 0; channel < 2; channel++) {
+              ResonantFilter_setFilterType(resFilter[channel],
+                                           global_filter_lphp);
+              ResonantFilter_setFc(resFilter[channel], global_filter_index);
+            }
+            planned_retrig_filter_active = false;
+          }
+          retrig_vol = 1.0;
+          retrig_pitch = PITCH_VAL_MID;
+        } else {
+          // Interpolate toward stop values
+          planned_retrig_vol += planned_retrig_vol_step;
+          if ((planned_retrig_vol_step > 0 &&
+               planned_retrig_vol > planned_retrig_stop_vol) ||
+              (planned_retrig_vol_step < 0 &&
+               planned_retrig_vol < planned_retrig_stop_vol)) {
+            planned_retrig_vol = planned_retrig_stop_vol;
+          }
+
+          planned_retrig_pitch += planned_retrig_pitch_step;
+          if ((planned_retrig_pitch_step > 0 &&
+               planned_retrig_pitch > planned_retrig_stop_pitch) ||
+              (planned_retrig_pitch_step < 0 &&
+               planned_retrig_pitch < planned_retrig_stop_pitch)) {
+            planned_retrig_pitch = planned_retrig_stop_pitch;
+          }
+          // Clamp pitch to valid range
+          if (planned_retrig_pitch > PITCH_VAL_MAX - 1) {
+            planned_retrig_pitch = PITCH_VAL_MAX - 1;
+          }
+
+          if (planned_retrig_filter_active) {
+            if (global_filter_index != planned_retrig_filter_stop) {
+              global_filter_index += planned_retrig_filter_change;
+              if ((planned_retrig_filter_change > 0 &&
+                   global_filter_index > planned_retrig_filter_stop) ||
+                  (planned_retrig_filter_change < 0 &&
+                   global_filter_index < planned_retrig_filter_stop)) {
+                global_filter_index = planned_retrig_filter_stop;
+              }
+              for (uint8_t channel = 0; channel < 2; channel++) {
+                ResonantFilter_setFilterType(resFilter[channel],
+                                             global_filter_lphp);
+                ResonantFilter_setFc(resFilter[channel], global_filter_index);
+              }
+            }
+          }
+        }
+
+        // Apply to global retrig values so audio callback uses them
+        retrig_vol = planned_retrig_vol;
+        retrig_pitch = planned_retrig_pitch;
+
+        // Restart slice playback
+        if (fil_is_open && debounce_quantize == 0 && retrig_beat_num == 0) {
+          do_update_phase_from_beat_current();
+        }
+        planned_retrig_first = false;
+      }
+    }
+  }
+
+  if (retrig_beat_num > 0 || planned_retrig_beat_num > 0) {
+    // Retrig active - skip normal beat processing
   } else if (sequencerhandler[0].playing &&
              banks[sel_bank_cur]
                      ->sample[sel_sample_cur]
@@ -316,11 +396,12 @@ bool __not_in_flash_func(timer_step)() {
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
     // reset filter
-    if (global_filter_index != retrig_filter_original &&
-        retrig_filter_original > 0) {
-      global_filter_index = retrig_filter_original;
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    if (retrig_filter_original > 0) {
+      if (global_filter_index != retrig_filter_original) {
+        global_filter_index = retrig_filter_original;
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          ResonantFilter_setFc(resFilter[channel], global_filter_index);
+        }
       }
       retrig_filter_original = 0;
     }
