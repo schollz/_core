@@ -1034,7 +1034,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v7.0.1\n");
+        printf("version=v7.1.0\n");
       }
     }
 
@@ -1767,11 +1767,10 @@ void __not_in_flash_func(input_handling)() {
         if (planned_retrig_pending &&
             current_slice == planned_retrig_start_slice &&
             !planned_retrig_ready) {
-          planned_retrig_do(pending_start_vol, pending_start_pitch,
-                            pending_beats_remaining, pending_times,
-                            pending_rate_divisor, pending_end_vol,
-                            pending_end_pitch, pending_filter_mode,
-                            pending_filter_low);
+          planned_retrig_do(
+              pending_start_vol, pending_start_pitch, pending_beats_remaining,
+              pending_times, pending_rate_divisor, pending_end_vol,
+              pending_end_pitch, pending_filter_mode, pending_filter_low);
           planned_retrig_pending = false;
         }
 
