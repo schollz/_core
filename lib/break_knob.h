@@ -79,7 +79,6 @@ void do_do_retrigger(uint8_t effect, bool on, bool pitch_changes) {
     retrig_first = true;
     retrig_beat_num = break_fx_beat_activated[effect];
     uint8_t divider = retrig_timer_dividers[random_integer_in_range(0, 14)];
-    printf("retrig_beat_num=%d, divider=%d\n", retrig_beat_num, divider);
     retrig_timer_reset = 96 / divider;
     retrig_beat_num = retrig_beat_num * divider;
     if (retrig_beat_num == 0) {
