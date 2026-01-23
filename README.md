@@ -54,7 +54,9 @@ The firmware for the zeptocore is written in C, and instructions for building th
 The EZEPTOCORE is a eurorack version of the zeptocore developed by Infinite Digits in collaboration with Maneco Labs (full attributions [here](https://infinitedigits.co/posts/eurorack-zeptocore/)).
 
 <div align="center">
+<a href="https://get.ezeptocore.com">
 <img src="https://github.com/user-attachments/assets/e407fdc6-f9c1-44be-9f5e-343952043121" height="300px">
+</a>
 </div>
 
 
@@ -86,7 +88,9 @@ For latency, normal latency will work for most, but choose low or ultra-low if y
 the ectocore is the eurorack version of the zeptocore developed by Infinite Digits in collaboration with Toadstool Tech (full attributions [here](https://infinitedigits.co/posts/eurorack-zeptocore/)).
 
 <div align="center">
+<a href="https://infinitedigits.co/docs/products/ectocore/">
 <img src="docs/static/img/ectocore_2.png" height="300px">
+</a>
 </div>
 
 
