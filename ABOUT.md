@@ -8,7 +8,7 @@ The **Ezeptocore** is an **algorithmic breakbeat-focused sampler and sample mang
 
 At its core, Ezeptocore combines sample playback with a **Turing machine–inspired random sequencer (rungler)** that generates evolving slice patterns and rhythmic variation. This enables dynamic breakbeats, glitch textures, and constantly shifting grooves without repetitive programming. Clock synchronization, tap tempo, internal clock division, and retrigger logic make Ezeptocore tightly integrated with modular clock ecosystems.
 
-Internally, Ezeptocore features a powerful real-time DSP engine with multiple creative effects including **delay, comb filtering, time-stretching, tape stop, reverse playback, saturation, fuzz distortion, transient tightening, and sample expansion processing**. These effects can be combined with algorithmic sequencing to create constantly evolving rhythmic textures and aggressive sound design results.
+Internally, Ezeptocore features a powerful real-time DSP engine with multiple creative effects including **delay, comb filtering, time-stretching, tape stop, reverse playback, saturation, fuzz distortion, bitcrush, beat repeat, resonant filtering, vinyl scratch, auto-pan, transient tightening, and sample expansion processing**. These effects can be combined with algorithmic sequencing to create constantly evolving rhythmic textures and aggressive sound design results.
 
 With **16 sample banks**, a browser-based sample preparation tool, built-in trigger generation modes, and performance-oriented controls for pitch, volume, retrigger behavior, and FX modulation, Ezeptocore bridges traditional sampling workflows with generative modular performance. It functions equally well as a live breakbeat instrument, rhythmic sound design tool, and experimental modular sampler engine.
 
@@ -91,6 +91,11 @@ Ezeptocore includes multiple integrated real-time DSP effects:
 - **Reverse playback mode** — reverse sample slicing and playback
 - **Saturation processor** — analog-style harmonic enhancement
 - **Fuzz distortion engine** — aggressive overdrive textures
+- **Bitcrush effect** — sample rate and bit depth reduction for lo-fi textures
+- **Beat repeat / stutter engine** — real-time loop and stutter effects on audio slices
+- **Resonant filter** — lowpass, highpass, bandpass, and notch filtering with adjustable resonance
+- **Scratch effect** — vinyl scratch simulation with LFO-modulated speed and direction
+- **Auto-pan effect** — LFO-controlled stereo panning for spatial movement
 - **Transient tightening processor** — punch enhancement and rhythmic clarity
 - **Sample expansion effect** — dynamic spatial and envelope shaping
 
@@ -112,7 +117,7 @@ Multiple effects can be activated simultaneously for layered sound design.
 ### Trigger & Rhythm Tools
 
 - **Kick / Snare / Hi-Hat trigger extraction modes**
-  Derive rhythmic gate signals from internal sample analysis.
+  Derive rhythmic gate signals from internal sample analysis. Triggers are automatically detected using AI-powered drum separation, or can be manually tagged per-slice in the sample tool.
 
 - **Random trigger generation mode**
   Generate probabilistic trigger patterns for generative patches.
@@ -125,10 +130,22 @@ Multiple effects can be activated simultaneously for layered sound design.
 ### Workflow Tools
 
 - **Browser-based sample management interface**
-  Prepare, slice, tag, and organize samples before loading them into the module.
+  A powerful local web application for preparing samples before loading them into the module. Features include:
+  - Drag-and-drop audio file upload (WAV, AIF, OGG, Renoise XRNI)
+  - Automatic BPM detection and tempo analysis
+  - Automatic transient/onset detection for intelligent slicing
+  - AI-powered drum separation to identify kicks, snares, and hi-hats
+  - Visual slice editing with adjustable start and stop points
+  - Manual tagging of slices as kicks, snares, or other drum types
+  - Per-sample settings for tempo matching, one-shot mode, and playback behavior
+  - Workspace save/load for managing multiple sample collections
+  - Direct SD card export with proper formatting
 
 - **Fast bank switching system**
   Quickly swap entire sample sets during performance.
+
+- **Firmware update support**
+  Update device firmware directly from the sample tool when connected via USB.
 
 ---
 
