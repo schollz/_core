@@ -55,6 +55,23 @@ void ws2812_mode_color(WS2812 *ws2812) {
   }
 }
 
+// Update LEDs to show current step speed (1-4)
+// LED pattern: one LED on to indicate current speed setting
+void update_gpios_for_step_speed() {
+#ifdef ECTOCORE_VERSION_3
+  // Version 3 has 2 LEDs, use binary pattern
+  gpio_put(GPIO_MODE_LEDA, (global_step_speed_divisor - 1) & 1);
+  gpio_put(GPIO_MODE_LEDB, ((global_step_speed_divisor - 1) >> 1) & 1);
+#endif
+#ifdef ECTOCORE_VERSION_4
+  // Version 4 has 4 LEDs, light one to indicate speed
+  for (uint8_t i = 0; i < 4; i++) {
+    gpio_put(gpio_mode_leds[i], 1);  // All off (active low)
+  }
+  gpio_put(gpio_mode_leds[global_step_speed_divisor - 1], 0);  // One on
+#endif
+}
+
 void update_gpios_for_mode() {
   switch (ectocore_trigger_mode) {
     case TRIGGER_MODE_KICK:
@@ -1512,10 +1529,19 @@ void __not_in_flash_func(input_handling)() {
         }
       } else if (gpio_btns[i] == GPIO_BTN_BANK) {
         // printf("[ectocore] btn_bank %d\n", val);
-        if (val == 0) {
+        if (gpio_btn_state[BTN_TAPTEMPO] == 1 && val == 1) {
+          // TAP + BANK toggles step speed (1=96, 2=72, 3=48, 4=24 pulses)
+          global_step_speed_divisor++;
+          if (global_step_speed_divisor > 4) {
+            global_step_speed_divisor = 1;
+          }
+          printf("[ectocore] step speed: %d\n", global_step_speed_divisor);
+          update_gpios_for_step_speed();
+        } else if (val == 0) {
           if (i < BUTTON_NUM && current_time - gpio_btn_last_pressed[i] < 200 &&
-              fil_current_change == false) {
-            // "tap"
+              fil_current_change == false &&
+              gpio_btn_state[BTN_TAPTEMPO] == 0) {
+            // "tap" - only if TAPTEMPO not held
             // switch the bank by one
             if (banks_with_samples_num > 1) {
               uint8_t bank_i = 0;
@@ -1603,6 +1629,8 @@ void __not_in_flash_func(input_handling)() {
       } else if (gpio_btns[i] == GPIO_BTN_TAPTEMPO) {
         // printf("[ectocore] btn_taptempo %d\n", val);
         if (val == 1) {
+          // Show step speed on mode LEDs while TAPTEMPO is held
+          update_gpios_for_step_speed();
           if (playback_stopped && !do_restart_playback) {
             cancel_repeating_timer(&timer);
             do_restart_playback = true;
@@ -1611,6 +1639,9 @@ void __not_in_flash_func(input_handling)() {
             button_mute = false;
             TapTempo_reset(taptempo);
           }
+        } else {
+          // TAPTEMPO released - restore trigger mode LEDs
+          update_gpios_for_mode();
         }
       }
       // check for CV monitor toggle (bank+mode, but not mult)

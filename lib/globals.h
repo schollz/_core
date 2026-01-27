@@ -38,6 +38,9 @@ uint8_t audio_variant_num = 0;
 bool clock_input_present_first = false;
 bool fil_current_change_force = false;
 
+// Step speed control: 1=normal(96), 2=72, 3=48, 4=24 pulses per step
+uint8_t global_step_speed_divisor = 1;
+
 void set_audio_variant(uint8_t x) {
   if (x <= audio_variant_num && x != audio_variant) {
     audio_variant = x;
