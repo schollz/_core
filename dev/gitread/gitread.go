@@ -109,7 +109,9 @@ func main() {
 			message := strings.Join(messageFields, " ")
 			if strings.Contains(c.Message, "Merge pull request") && len(messageFields) > 6 {
 				message = strings.Join(messageFields[6:], " ")
-			} else {
+			}
+			// skip version bump commits
+			if strings.HasPrefix(message, "chore: v") {
 				return nil
 			}
 			versionInfo.Commits = append(versionInfo.Commits, CommitInfo{Message: message, Hash: c.Hash.String()})
