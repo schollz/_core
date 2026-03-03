@@ -1417,7 +1417,8 @@ void __not_in_flash_func(input_handling)() {
         uint32_t mode_held_new_duration = current_time - mode_held_start_time;
         if (mode_held_new_duration >= MODE_HOLD_DURATION_THRESHOLD &&
             mode_held_duration < MODE_HOLD_DURATION_THRESHOLD) {
-          printf("[ectocore] MODE held for 2 seconds\n");
+          printf("[ectocore] MODE held for %dms\n",
+                 MODE_HOLD_DURATION_THRESHOLD);
           if (ectocore_trigger_mode > 0) {
             ectocore_trigger_mode--;
           } else {
