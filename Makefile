@@ -1,8 +1,23 @@
 # Makefile
 export PICO_EXTRAS_PATH=$(CURDIR)/pico-extras
 export PICO_SDK_PATH=$(CURDIR)/pico-sdk
-NPROCS := $(shell grep -c 'processor' /proc/cpuinfo)
-
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_S),Darwin)
+NPROCS := $(shell sysctl -n hw.logicalcpu 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)
+else
+NPROCS := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+endif
+MACOS_ARM_TC_VERSION ?= 14.2.1-1.1
+ifeq ($(UNAME_M),arm64)
+MACOS_ARM_TC_ARCH := arm64
+else
+MACOS_ARM_TC_ARCH := x64
+endif
+MACOS_ARM_TC_BASENAME := xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)-darwin-$(MACOS_ARM_TC_ARCH)
+MACOS_ARM_TC_DIR := $(HOME)/.cache/_core/toolchains/xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)
+MACOS_ARM_TC_BIN := $(MACOS_ARM_TC_DIR)/bin
+MACOS_ARM_TC_URL := https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v$(MACOS_ARM_TC_VERSION)/$(MACOS_ARM_TC_BASENAME).tar.gz
 GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
@@ -92,6 +107,11 @@ ectocore_noclock_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h l
 	cp ectocore_compile_definitions_nooverclock_256.cmake target_compile_definitions.cmake
 	make -C build -j$(NPROCS)
 	cp build/_core.uf2 ectocore.uf2
+
+ezeptocore_midi: pico-sdk pico-extras ensure_arm_toolchain lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build/Makefile
+	cp ezeptocore_midi_compile_definitions.cmake target_compile_definitions.cmake
+	$(MAKE) -C build -j$(NPROCS)
+	cp build/_core.uf2 ezeptocore_midi.uf2
 
 ezeptocore: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp ezeptocore_compile_definitions.cmake target_compile_definitions.cmake
@@ -258,6 +278,32 @@ build:
 	cd build && cmake ..
 	make -C build -j$(NPROCS)
 	echo "build success"
+
+.PHONY: ensure_arm_toolchain build/Makefile
+ensure_arm_toolchain:
+ifeq ($(UNAME_S),Darwin)
+	@set -e; \
+	if ! command -v arm-none-eabi-gcc >/dev/null 2>&1 || [ "$$(arm-none-eabi-gcc -print-file-name=nosys.specs 2>/dev/null)" = "nosys.specs" ]; then \
+		if [ ! -x "$(MACOS_ARM_TC_BIN)/arm-none-eabi-gcc" ]; then \
+			echo "Installing local ARM GCC toolchain to $(MACOS_ARM_TC_DIR)"; \
+			mkdir -p "$(HOME)/.cache/_core/toolchains"; \
+			curl -fsSL "$(MACOS_ARM_TC_URL)" -o "$(HOME)/.cache/_core/toolchains/$(MACOS_ARM_TC_BASENAME).tar.gz"; \
+			rm -rf "$(MACOS_ARM_TC_DIR)"; \
+			tar -xzf "$(HOME)/.cache/_core/toolchains/$(MACOS_ARM_TC_BASENAME).tar.gz" -C "$(HOME)/.cache/_core/toolchains"; \
+			rm -f "$(HOME)/.cache/_core/toolchains/$(MACOS_ARM_TC_BASENAME).tar.gz"; \
+		fi; \
+	fi
+endif
+
+build/Makefile:
+	mkdir -p build
+	@set -e; \
+	rm -f build/CMakeCache.txt; \
+	if [ -x "$(MACOS_ARM_TC_BIN)/arm-none-eabi-gcc" ]; then \
+		PATH="$(MACOS_ARM_TC_BIN):$$PATH" PICO_TOOLCHAIN_PATH="$(MACOS_ARM_TC_BIN)" cmake -S . -B build; \
+	else \
+		cmake -S . -B build; \
+	fi
 
 audio:
 	sox lib/audio/amen_5c2d11c8_beats16_bpm170.flac -c 1 --bits 16 --encoding signed-integer --endian little amen_bpm170_beats16_mono.wav
