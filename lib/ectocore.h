@@ -617,10 +617,13 @@ void __not_in_flash_func(input_handling)() {
   Dust_setCallback(dust[0], dust_1);
   Dust_setDuration(dust[0], 1000 * 8);
 
-  // // create clock/midi
-  // Onewiremidi *onewiremidi =
-  //     Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
-  //                     midi_start, midi_continue, midi_stop, midi_timing);
+#ifdef INCLUDE_MIDI
+  // Hardware MIDI-in (separate from clock input).
+  Onewiremidi *onewiremidi =
+      Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
+                      midi_start, midi_continue, midi_stop, midi_timing,
+                      midi_control_change);
+#endif
   clockinput = ClockInput_create(GPIO_CLOCK_IN, clock_handling_up,
                                  clock_handling_down, clock_handling_start);
   gpio_set_irq_enabled_with_callback(GPIO_CLOCK_IN,
@@ -669,8 +672,10 @@ void __not_in_flash_func(input_handling)() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL,
-                   NULL);
+    midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
+                   midi_start, midi_continue, midi_stop, midi_timing,
+                   midi_control_change);
+    Onewiremidi_receive(onewiremidi);
 #endif
     int16_t val;
     if (debounce_startup > 0) {
