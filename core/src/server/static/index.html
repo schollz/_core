@@ -1226,7 +1226,11 @@
             // Get the grimoire element
             const grimoireElement = document.getElementById('grimoire' + grimoireIndex);
             if (grimoireElement) {
-                const svgClone = grimoireElement.querySelector('svg').cloneNode(true);
+                const sourceSvg = grimoireElement.querySelector('svg');
+                if (!sourceSvg) {
+                    return;
+                }
+                const svgClone = sourceSvg.cloneNode(true);
                 svgClone.setAttribute('width', '32');
                 svgClone.setAttribute('height', '32');
                 // Change stroke color to white - set on SVG element so inherit works

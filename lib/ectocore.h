@@ -1814,8 +1814,13 @@ void __not_in_flash_func(input_handling)() {
         if (ecto_trig_out_last == 0 ||
             current_time - ecto_trig_out_last >
                 ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS) {
-          gpio_put(GPIO_TRIG_OUT, 1);
-          ecto_trig_out_last = current_time;
+          int32_t sample_pos = 0;
+          if (sample_info->slice_start != NULL && current_slice < slice_num) {
+            sample_pos = sample_info->slice_start[current_slice];
+          }
+          ecto_emit_trigger_with_log(playback_started_now ? "loop-start"
+                                                          : "loop-wrap",
+                                     sample_pos);
         }
       }
 
