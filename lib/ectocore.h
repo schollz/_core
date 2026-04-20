@@ -112,6 +112,51 @@ void update_gpios_for_mode() {
   }
 }
 
+#define ECTO_LOOP_START_TRANSIENT_MAX 28
+#define ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS 8
+
+int8_t ecto_trigger_mode_to_transient_lane(uint8_t trigger_mode) {
+  switch (trigger_mode) {
+    case TRIGGER_MODE_KICK:
+      return 0;
+    case TRIGGER_MODE_SNARE:
+      return 1;
+    case TRIGGER_MODE_HH:
+      return 2;
+    default:
+      return -1;
+  }
+}
+
+bool ecto_selected_mode_has_loop_start_transient(uint8_t trigger_mode,
+                                                  SampleInfo *sample_info) {
+  int8_t lane = ecto_trigger_mode_to_transient_lane(trigger_mode);
+  if (lane < 0 || sample_info == NULL || sample_info->transients == NULL) {
+    return false;
+  }
+
+  uint16_t transient_num = 0;
+  if (lane == 0) {
+    transient_num = sample_info->transient_num_1;
+  } else if (lane == 1) {
+    transient_num = sample_info->transient_num_2;
+  } else if (lane == 2) {
+    transient_num = sample_info->transient_num_3;
+  }
+  if (transient_num == 0 || transient_num > 16 ||
+      sample_info->transients[lane] == NULL) {
+    return false;
+  }
+
+  for (uint16_t i = 0; i < transient_num; i++) {
+    uint16_t transient_pos = sample_info->transients[lane][i];
+    if (transient_pos > 0 && transient_pos <= ECTO_LOOP_START_TRANSIENT_MAX) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ws2812_wheel_clear(WS2812 *ws2812) {
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   for (uint8_t i = 0; i < 16; i++) {
@@ -668,6 +713,9 @@ void __not_in_flash_func(input_handling)() {
 
   int cv_amen_last_value = 0;
   uint8_t knob_selector = 0;
+  uint8_t last_slice_for_loopstart_trig = 255;
+  uint8_t last_slice_num_for_loopstart_trig = 0;
+  bool was_playback_stopped_for_loopstart_trig = true;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -1738,6 +1786,47 @@ void __not_in_flash_func(input_handling)() {
 
         cv_monitor_last_print = current_time;
       }
+    }
+
+    // Fallback trig at playback start or strict loop wrap when a selected
+    // mode has a transient at the beginning of the file.
+    {
+      SampleInfo *sample_info =
+          banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
+      uint8_t current_slice = sample_info->slice_current;
+      uint8_t slice_num = sample_info->slice_num;
+      bool playback_started_now =
+          was_playback_stopped_for_loopstart_trig && !playback_stopped;
+      bool strict_loop_wrap = false;
+
+      if (slice_num > 0 && last_slice_num_for_loopstart_trig == slice_num &&
+          current_slice < slice_num &&
+          last_slice_for_loopstart_trig < slice_num) {
+        strict_loop_wrap =
+            (last_slice_for_loopstart_trig == slice_num - 1) &&
+            (current_slice == 0);
+      }
+
+      if (!playback_stopped && slice_num > 0 &&
+          (playback_started_now || strict_loop_wrap) &&
+          ecto_selected_mode_has_loop_start_transient(ectocore_trigger_mode,
+                                                      sample_info)) {
+        if (ecto_trig_out_last == 0 ||
+            current_time - ecto_trig_out_last >
+                ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS) {
+          gpio_put(GPIO_TRIG_OUT, 1);
+          ecto_trig_out_last = current_time;
+        }
+      }
+
+      if (slice_num > 0 && current_slice < slice_num) {
+        last_slice_for_loopstart_trig = current_slice;
+        last_slice_num_for_loopstart_trig = slice_num;
+      } else {
+        last_slice_for_loopstart_trig = 255;
+        last_slice_num_for_loopstart_trig = 0;
+      }
+      was_playback_stopped_for_loopstart_trig = playback_stopped;
     }
 
     // Check for planned retrig activation on slice change
