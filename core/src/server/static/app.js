@@ -382,6 +382,10 @@ const socketMessageListener = (e) => {
                 app.banks[app.selectedBank].files[app.selectedFile].Transients,
             );
         }, 100);
+    } else if (data.action == "slicetype") {
+        if (app.selectedBank != null && app.selectedFile != null) {
+            app.banks[app.selectedBank].files[app.selectedFile].SliceType = data.sliceType;
+        }
     } else if (data.action == "progress") {
         // totalBytesUploaded = data.number;
         // var maxWidth = window.innerWidth;
@@ -620,11 +624,22 @@ app = new Vue({
                 this.addTransient(2, seconds);
             }
         },
+        syncTransient(lane, index, value) {
+            this.banks[this.selectedBank].files[this.selectedFile].Transients[lane][index] = value;
+            if (socket != null) {
+                socket.send(JSON.stringify({
+                    action: "settransient",
+                    filename: this.banks[this.selectedBank].files[this.selectedFile].Filename,
+                    i: lane,
+                    j: index,
+                    n: value,
+                }));
+            }
+        },
         addTransient(j, seconds) {
-            // TODO
             for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
                 if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
-                    this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = Math.round(seconds * 44100.0);
+                    this.syncTransient(j, i, Math.round(seconds * 44100.0));
                     break;
                 }
             }
@@ -632,15 +647,17 @@ app = new Vue({
         },
         clearTransients(j) {
             for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
-                this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] = 0;
+                if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] != 0) {
+                    this.syncTransient(j, i, 0);
+                }
             }
             this.drawTransients();
         },
         clearTransientsLast(j) {
             for (var i = 0; i < this.banks[this.selectedBank].files[this.selectedFile].Transients[j].length; i++) {
                 if (this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i] == 0) {
-                    if (i > 0) {
-                        this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i - 1] = 0;
+                    if (i > 0 && this.banks[this.selectedBank].files[this.selectedFile].Transients[j][i - 1] != 0) {
+                        this.syncTransient(j, i - 1, 0);
                     }
                     break;
                 }
