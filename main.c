@@ -11,56 +11,9 @@ int32_t phase_sample_old = 0;
 // timer
 
 #ifdef INCLUDE_ECTOCORE
-static const char *ecto_trigger_mode_name(uint8_t trigger_mode) {
-  switch (trigger_mode) {
-    case TRIGGER_MODE_KICK:
-      return "kick";
-    case TRIGGER_MODE_SNARE:
-      return "snare";
-    case TRIGGER_MODE_HH:
-      return "hh";
-    case TRIGGER_MODE_RANDOM:
-      return "random";
-    default:
-      return "unknown";
-  }
-}
-
-static int32_t ecto_current_sample_position(void) {
-  SampleInfo *sample_info = banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
-  if (sample_info == NULL) {
-    return -1;
-  }
-
-  if (sel_variation == 0) {
-    return phases[0] / 2 / (sample_info->num_channels + 1) + 440;
-  }
-
-  if (sample_info->slice_start != NULL && sample_info->slice_num > 0 &&
-      sample_info->slice_current < sample_info->slice_num) {
-    return sample_info->slice_start[sample_info->slice_current];
-  }
-
-  return -1;
-}
-
-static void ecto_emit_trigger_with_log(const char *source, int32_t sample_pos) {
-  SampleInfo *sample_info = banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
-  uint8_t slice_current = 0;
-
-  if (sample_pos < 0) {
-    sample_pos = ecto_current_sample_position();
-  }
-  if (sample_info != NULL) {
-    slice_current = sample_info->slice_current;
-  }
-
+static void ecto_emit_trigger(void) {
   ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
   gpio_put(GPIO_TRIG_OUT, 1);
-  printf(
-      "[ectocore] trigger src=%s mode=%s pos=%ld slice=%u bank=%u sample=%u\n",
-      source, ecto_trigger_mode_name(ectocore_trigger_mode), (long)sample_pos,
-      slice_current, sel_bank_cur, sel_sample_cur);
 }
 #endif
 
@@ -193,7 +146,7 @@ bool __not_in_flash_func(timer_step)() {
 #ifdef INCLUDE_ECTOCORE
     if (ectocore_trigger_mode == TRIGGER_MODE_RANDOM &&
         cv_reset_override == CV_AMEN && (beat_total + 1) % 64 == 0) {
-      ecto_emit_trigger_with_log("random-phrase", -1);
+      ecto_emit_trigger();
     }
 #endif
 
@@ -777,7 +730,7 @@ bool __not_in_flash_func(timer_step)() {
             // transient activated
 #ifdef INCLUDE_ECTOCORE
             if (ectocore_trigger_mode == i) {
-              ecto_emit_trigger_with_log("transient", phase_sample);
+              ecto_emit_trigger();
             }
 #endif
           }
@@ -792,7 +745,7 @@ bool __not_in_flash_func(timer_step)() {
         cv_reset_override != CV_AMEN) {
       if (to_ms_since_boot(get_absolute_time()) - ecto_trig_out_last > 100 &&
           random_integer_in_range(1, 6000) < 10) {
-        ecto_emit_trigger_with_log("random-transient", phase_sample_old);
+        ecto_emit_trigger();
       }
     }
 #endif
