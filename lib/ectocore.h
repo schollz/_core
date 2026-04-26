@@ -715,7 +715,8 @@ void __not_in_flash_func(input_handling)() {
   uint8_t knob_selector = 0;
   uint8_t last_slice_for_loopstart_trig = 255;
   uint8_t last_slice_num_for_loopstart_trig = 0;
-  bool was_playback_stopped_for_loopstart_trig = true;
+  bool prev_playback_stopped_for_loopstart_trig = true;
+  bool loopstart_trig_pending = false;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -1796,8 +1797,16 @@ void __not_in_flash_func(input_handling)() {
       uint8_t current_slice = sample_info->slice_current;
       uint8_t slice_num = sample_info->slice_num;
       bool playback_started_now =
-          was_playback_stopped_for_loopstart_trig && !playback_stopped;
+          prev_playback_stopped_for_loopstart_trig && !playback_stopped;
       bool strict_loop_wrap = false;
+
+      if (playback_started_now) {
+        loopstart_trig_pending = true;
+      }
+
+      if (playback_stopped) {
+        loopstart_trig_pending = false;
+      }
 
       if (slice_num > 0 && last_slice_num_for_loopstart_trig == slice_num &&
           current_slice < slice_num &&
@@ -1808,7 +1817,7 @@ void __not_in_flash_func(input_handling)() {
       }
 
       if (!playback_stopped && slice_num > 0 &&
-          (playback_started_now || strict_loop_wrap) &&
+          (loopstart_trig_pending || strict_loop_wrap) &&
           ecto_selected_mode_has_loop_start_transient(ectocore_trigger_mode,
                                                       sample_info)) {
         if (ecto_trig_out_last == 0 ||
@@ -1816,6 +1825,11 @@ void __not_in_flash_func(input_handling)() {
                 ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS) {
           ecto_emit_trigger();
         }
+        loopstart_trig_pending = false;
+      }
+
+      if (loopstart_trig_pending && slice_num > 0 && current_slice > 0) {
+        loopstart_trig_pending = false;
       }
 
       if (slice_num > 0 && current_slice < slice_num) {
@@ -1825,7 +1839,7 @@ void __not_in_flash_func(input_handling)() {
         last_slice_for_loopstart_trig = 255;
         last_slice_num_for_loopstart_trig = 0;
       }
-      was_playback_stopped_for_loopstart_trig = playback_stopped;
+      prev_playback_stopped_for_loopstart_trig = playback_stopped;
     }
 
     // Check for planned retrig activation on slice change
