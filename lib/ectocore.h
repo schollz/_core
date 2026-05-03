@@ -6,6 +6,7 @@
 #include "mcp3208.h"
 #include "midicallback.h"
 #include "onewiremidi2.h"
+#include "ectocore_loopstart_trig.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -112,9 +113,6 @@ void update_gpios_for_mode() {
   }
 }
 
-#define ECTO_LOOP_START_TRANSIENT_MAX 28
-#define ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS 8
-
 int8_t ecto_trigger_mode_to_transient_lane(uint8_t trigger_mode) {
   switch (trigger_mode) {
     case TRIGGER_MODE_KICK:
@@ -150,7 +148,7 @@ bool ecto_selected_mode_has_loop_start_transient(uint8_t trigger_mode,
 
   for (uint16_t i = 0; i < transient_num; i++) {
     uint16_t transient_pos = sample_info->transients[lane][i];
-    if (transient_pos > 0 && transient_pos <= ECTO_LOOP_START_TRANSIENT_MAX) {
+    if (ecto_loopstart_trig_transient_pos_is_start(transient_pos)) {
       return true;
     }
   }
@@ -713,10 +711,8 @@ void __not_in_flash_func(input_handling)() {
 
   int cv_amen_last_value = 0;
   uint8_t knob_selector = 0;
-  uint8_t last_slice_for_loopstart_trig = 255;
-  uint8_t last_slice_num_for_loopstart_trig = 0;
-  bool prev_playback_stopped_for_loopstart_trig = true;
-  bool loopstart_trig_pending = false;
+  EctoLoopstartTrigState loopstart_trig_state;
+  ecto_loopstart_trig_state_init(&loopstart_trig_state);
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -1794,52 +1790,24 @@ void __not_in_flash_func(input_handling)() {
     {
       SampleInfo *sample_info =
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
-      uint8_t current_slice = sample_info->slice_current;
-      uint8_t slice_num = sample_info->slice_num;
-      bool playback_started_now =
-          prev_playback_stopped_for_loopstart_trig && !playback_stopped;
-      bool strict_loop_wrap = false;
-
-      if (playback_started_now) {
-        loopstart_trig_pending = true;
-      }
-
-      if (playback_stopped) {
-        loopstart_trig_pending = false;
-      }
-
-      if (slice_num > 0 && last_slice_num_for_loopstart_trig == slice_num &&
-          current_slice < slice_num &&
-          last_slice_for_loopstart_trig < slice_num) {
-        strict_loop_wrap =
-            (last_slice_for_loopstart_trig == slice_num - 1) &&
-            (current_slice == 0);
-      }
-
-      if (!playback_stopped && slice_num > 0 &&
-          (loopstart_trig_pending || strict_loop_wrap) &&
+      uint8_t current_slice =
+          sample_info != NULL ? sample_info->slice_current : 0;
+      uint8_t slice_num = sample_info != NULL ? sample_info->slice_num : 0;
+      EctoLoopstartTrigEvent loopstart_event = ecto_loopstart_trig_step(
+          &loopstart_trig_state, (uintptr_t)sample_info, playback_stopped,
+          current_slice, slice_num,
           ecto_selected_mode_has_loop_start_transient(ectocore_trigger_mode,
-                                                      sample_info)) {
+                                                      sample_info));
+
+      if (loopstart_event != ECTO_LOOPSTART_TRIG_NONE) {
         if (ecto_trig_out_last == 0 ||
             current_time - ecto_trig_out_last >
                 ECTO_LOOP_START_TRIG_DUP_SUPPRESS_MS) {
           ecto_emit_trigger();
+          ecto_loopstart_trig_mark_emitted(&loopstart_trig_state,
+                                           loopstart_event);
         }
-        loopstart_trig_pending = false;
       }
-
-      if (loopstart_trig_pending && slice_num > 0 && current_slice > 0) {
-        loopstart_trig_pending = false;
-      }
-
-      if (slice_num > 0 && current_slice < slice_num) {
-        last_slice_for_loopstart_trig = current_slice;
-        last_slice_num_for_loopstart_trig = slice_num;
-      } else {
-        last_slice_for_loopstart_trig = 255;
-        last_slice_num_for_loopstart_trig = 0;
-      }
-      prev_playback_stopped_for_loopstart_trig = playback_stopped;
     }
 
     // Check for planned retrig activation on slice change
