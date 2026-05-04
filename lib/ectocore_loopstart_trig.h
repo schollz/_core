@@ -43,7 +43,7 @@ static inline bool ecto_loopstart_trig_transient_pos_is_start(
 static inline EctoLoopstartTrigEvent ecto_loopstart_trig_step(
     EctoLoopstartTrigState *state, uintptr_t sample_info_id,
     bool playback_stopped, uint8_t current_slice, uint8_t slice_num,
-    bool selected_mode_has_loop_start_transient) {
+    bool selected_mode_has_loop_start_transient, bool transport_started) {
   if (state == NULL) {
     return ECTO_LOOPSTART_TRIG_NONE;
   }
@@ -64,7 +64,7 @@ static inline EctoLoopstartTrigEvent ecto_loopstart_trig_step(
   bool playback_started_now = state->prev_playback_stopped && !playback_stopped;
   bool strict_loop_wrap = false;
 
-  if (playback_started_now) {
+  if (!playback_stopped && (playback_started_now || transport_started)) {
     state->pending = true;
   }
 

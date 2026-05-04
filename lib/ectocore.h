@@ -713,6 +713,8 @@ void __not_in_flash_func(input_handling)() {
   uint8_t knob_selector = 0;
   EctoLoopstartTrigState loopstart_trig_state;
   ecto_loopstart_trig_state_init(&loopstart_trig_state);
+  uint32_t loopstart_trig_seen_transport_start_generation =
+      ecto_loopstart_transport_start_generation;
 
   while (1) {
 #ifdef INCLUDE_MIDI
@@ -1793,11 +1795,19 @@ void __not_in_flash_func(input_handling)() {
       uint8_t current_slice =
           sample_info != NULL ? sample_info->slice_current : 0;
       uint8_t slice_num = sample_info != NULL ? sample_info->slice_num : 0;
+      uint32_t transport_start_generation =
+          ecto_loopstart_transport_start_generation;
+      bool transport_started =
+          transport_start_generation !=
+          loopstart_trig_seen_transport_start_generation;
+      loopstart_trig_seen_transport_start_generation =
+          transport_start_generation;
       EctoLoopstartTrigEvent loopstart_event = ecto_loopstart_trig_step(
           &loopstart_trig_state, (uintptr_t)sample_info, playback_stopped,
           current_slice, slice_num,
           ecto_selected_mode_has_loop_start_transient(ectocore_trigger_mode,
-                                                      sample_info));
+                                                      sample_info),
+          transport_started);
 
       if (loopstart_event != ECTO_LOOPSTART_TRIG_NONE) {
         if (ecto_trig_out_last == 0 ||

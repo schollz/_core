@@ -209,6 +209,9 @@ uint8_t grimoire_rune = 0;
 bool clock_out_do = false;
 bool clock_out_ready = false;
 uint32_t ecto_trig_out_last = 0;
+#ifdef INCLUDE_ECTOCORE
+volatile uint32_t ecto_loopstart_transport_start_generation = 0;
+#endif
 volatile bool clock_in_do = false;
 bool clock_input_absent_zeptocore = false;
 bool clock_in_ready = false;
