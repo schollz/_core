@@ -28,8 +28,13 @@ bool __not_in_flash_func(timer_step)() {
     cancel_repeating_timer(&timer);
     update_repeating_timer_to_bpm(sf->bpm_tempo);
   }
+  bool transport_restarted_this_step = false;
   if (do_restart_playback) {
     do_restart_playback = false;
+#ifdef INCLUDE_ECTOCORE
+    ecto_loopstart_transport_start_generation++;
+#endif
+    transport_restarted_this_step = true;
     playback_restarted = true;
     bpm_timer_counter = -1;
     bpm_timer_counter_last = bpm_timer_counter;
@@ -515,7 +520,8 @@ bool __not_in_flash_func(timer_step)() {
 
           // Only update if beat_current actually changed
           static int last_beat_current = -1;
-          if (new_beat_current != last_beat_current) {
+          if (new_beat_current != last_beat_current ||
+              transport_restarted_this_step) {
             beat_current = new_beat_current;
             last_beat_current = beat_current;
             beat_did_activate = true;  // Set flag for LED display update
