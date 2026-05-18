@@ -80,3 +80,12 @@ dev/sdcards6/
 dev/sdcards5/sdcard_timings5.png
 ezeptocore.uf2
 .codex
+dev/sdcards7/gigastone32gb_1.txt
+dev/sdcards7/kexing16gb_1.txt
+dev/sdcards7/kexing16gb_2.txt
+dev/sdcards7/kexing16gb_3.txt
+dev/sdcards7/kexing16gb_4.txt
+dev/sdcards7/kootion16gb_1.txt
+dev/sdcards7/kootion16gb_2.txt
+dev/sdcards7/kootion16gb_4.txt
+dev/analyze_sdcards7.py

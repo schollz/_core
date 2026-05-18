@@ -21,8 +21,20 @@ int16_t key_on_buttons_last[BUTTONMATRIX_BUTTONS_MAX];
 bool key_did_go_off[BUTTONMATRIX_BUTTONS_MAX];
 uint16_t key_num_presses;
 bool KEY_C_sample_select = false;
+bool jump_page_lock_d_alone_candidate = false;
 
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
+
+void maybe_toggle_jump_page_lock_on_d_release(uint8_t key) {
+  if (key != KEY_D) {
+    return;
+  }
+  if (jump_page_lock_d_alone_candidate && mode_buttons16 == MODE_JUMP) {
+    jump_page_lock = (jump_page_lock + 1) % 4;
+    printf("[button_handler] jump_page_lock: %d\n", jump_page_lock);
+  }
+  jump_page_lock_d_alone_candidate = false;
+}
 
 int8_t single_step_pressed() {
   uint8_t pressed = 0;
@@ -258,7 +270,7 @@ void button_key_on_single(uint8_t key) {
       // 1-16 (jump mode)
       // do jump
       debounce_quantize = 2;
-      key_do_jump(key - 4);
+      key_do_physical_jump(key - 4);
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
@@ -849,6 +861,7 @@ bool button_handler(ButtonMatrix *bm) {
     if (bm->off[i] == KEY_A || bm->off[i] == KEY_D) {
       cued_sound_selector = false;
     }
+    maybe_toggle_jump_page_lock_on_d_release(bm->off[i]);
     // printf("turned off %d\n", bm->off[i]);
     if (key_held_on && (bm->off[i] == key_held_num)) {
       button_key_off_held(bm->off[i]);
@@ -893,6 +906,12 @@ bool button_handler(ButtonMatrix *bm) {
     key_total_pressed++;
     if (key_total_pressed == 1) {
       key_timer_on = 0;
+    }
+    if (bm->on[i] == KEY_D) {
+      jump_page_lock_d_alone_candidate =
+          mode_buttons16 == MODE_JUMP && key_total_pressed == 1;
+    } else if (key_on_buttons[KEY_D] > 0) {
+      jump_page_lock_d_alone_candidate = false;
     }
     if (!key_held_on) {
       key_held_on = true;
@@ -1329,8 +1348,12 @@ bool button_handler(ButtonMatrix *bm) {
     } else if (mode_buttons16 == MODE_JUMP) {
       LEDS_set(leds, 0, LED_BRIGHT);
       LEDS_set(leds, 1, LED_BLINK);
-      LEDS_set(leds, 2, 0);
-      LEDS_set(leds, 3, 0);
+      LEDS_set(leds, 2,
+               (jump_page_lock & JUMP_PAGE_LOCK_FIRST) ? LED_BRIGHT
+                                                        : LED_NONE);
+      LEDS_set(leds, 3,
+               (jump_page_lock & JUMP_PAGE_LOCK_SECOND) ? LED_BRIGHT
+                                                         : LED_NONE);
     } else if (mode_buttons16 == MODE_BASS) {
       LEDS_set(leds, 0, LED_BRIGHT);
       LEDS_set(leds, 1, 0);
