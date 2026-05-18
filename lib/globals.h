@@ -130,6 +130,13 @@ void regenerate_random_sequence_arr() {
 // mode toggles
 //   mode  ==0  ==1
 uint8_t mode_buttons16 = 0;
+#ifdef INCLUDE_ZEPTOCORE
+#define JUMP_PAGE_LOCK_DEFAULT 0
+#define JUMP_PAGE_LOCK_FIRST 1
+#define JUMP_PAGE_LOCK_SECOND 2
+#define JUMP_PAGE_LOCK_THIRD 3
+uint8_t jump_page_lock = JUMP_PAGE_LOCK_DEFAULT;
+#endif
 bool mode_mute = 0;
 bool mode_play = 0;
 bool mute_because_of_playback_type = false;
@@ -632,46 +639,61 @@ void do_update_phase_from_beat_current() {
   jump_precedence = false;
 }
 
-void key_do_jump(uint8_t beat) {
-  if (beat >= 0 && beat < 16) {
+void key_do_jump_to_slice(int32_t slice, uint8_t sequencer_beat) {
 #ifdef INCLUDE_ZEPTOCORE
-    if (clock_in_do && clock_input_absent_zeptocore &&
-        clock_in_activator >= 3) {
-      // reset beats
-      bpm_timer_counter = 0;
-      beat_total = 0;
-      key_jump_debounce = 0;
-      dub_step_break = -1;
-      retrig_beat_num = 0;
-      beat_current = 0;
-      playback_stopped = false;
-      clock_in_ready = false;
-      clock_in_activator = 0;
-      clock_in_do = false;
-    }
+  if (clock_in_do && clock_input_absent_zeptocore && clock_in_activator >= 3) {
+    // reset beats
+    bpm_timer_counter = 0;
+    beat_total = 0;
+    key_jump_debounce = 0;
+    dub_step_break = -1;
+    retrig_beat_num = 0;
+    beat_current = 0;
+    playback_stopped = false;
+    clock_in_ready = false;
+    clock_in_activator = 0;
+    clock_in_do = false;
+  }
 #endif
+  // TODO: [0] should be which sequencer it is on
+  if (sequencerhandler[0].recording) {
+    Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], sequencer_beat,
+                  bpm_timer_counter);
+  }
+  key_jump_debounce = 1;
+  beat_current = slice;
+  retrig_pitch = PITCH_VAL_MID;
+  // reset filter
+  if (global_filter_index != retrig_filter_original &&
+      retrig_filter_original > 0) {
+    global_filter_index = retrig_filter_original;
+    for (uint8_t channel = 0; channel < 2; channel++) {
+      ResonantFilter_setFc(resFilter[channel], global_filter_index);
+    }
+    retrig_filter_original = 0;
+  }
+  jump_precedence = true;
+  do_update_phase_from_beat_current();
+}
+
+void key_do_jump(uint8_t beat) {
+  if (beat < 16) {
     // printf("key_do_jump %d\n", beat);
-    // TODO: [0] should be which sequencer it is on
-    if (sequencerhandler[0].recording) {
-      Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], beat,
-                    bpm_timer_counter);
-    }
-    key_jump_debounce = 1;
-    beat_current = floor(beat_current / 16) * 16 + beat;
-    retrig_pitch = PITCH_VAL_MID;
-    // reset filter
-    if (global_filter_index != retrig_filter_original &&
-        retrig_filter_original > 0) {
-      global_filter_index = retrig_filter_original;
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        ResonantFilter_setFc(resFilter[channel], global_filter_index);
-      }
-      retrig_filter_original = 0;
-    }
-    jump_precedence = true;
-    do_update_phase_from_beat_current();
+    key_do_jump_to_slice(floor(beat_current / 16) * 16 + beat, beat);
   }
 }
+
+#ifdef INCLUDE_ZEPTOCORE
+void key_do_physical_jump(uint8_t beat) {
+  if (beat < 16) {
+    int32_t slice = floor(beat_current / 16) * 16 + beat;
+    if (jump_page_lock > JUMP_PAGE_LOCK_DEFAULT) {
+      slice = (jump_page_lock - 1) * 16 + beat;
+    }
+    key_do_jump_to_slice(slice, beat);
+  }
+}
+#endif
 
 void step_sequencer_emit(uint8_t key) {
 #ifdef INCLUDE_MIDI
