@@ -1,18 +1,18 @@
 +++
-title = 'Bass volume'
+title = 'Realtime stretch'
 date = 2024-02-01T12:33:06-08:00
-short = 'Change the volume of the bass'
+short = 'Change the realtime stretch amount'
 buttons = ['B','Knob Z']
 weight = 25
-icon = 'volume-up'
+icon = 'hourglass-half'
 mode = 'any'
 +++
 
 
-Turning this knob will adjust the volume of the bass. Turn it clockwise to increase the volume. Please note that high volume levels may cause crackling, depending on the headroom in your samples.
+Turning this knob keeps playback in bypass through the low range, then increases realtime stretch as you turn clockwise.
 
 
 <figure class="imgcombo">
 <img src="/img/bass_volume.webp">
-<figcaption>Combo for changing the volume of the bass.</figcaption>
+<figcaption>Combo for changing realtime stretch.</figcaption>
 </figure>

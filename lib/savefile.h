@@ -17,15 +17,24 @@ typedef struct SaveFile {
   uint64_t stay_in_sync : 1;
   uint64_t pitch_val_index : 7;
   uint64_t do_retrig_pitch_changes : 1;
-  uint64_t _padding : 55;
+  uint64_t do_retrig_volume_ramps : 1;
+  uint64_t feature_magic : 8;
+  uint64_t _padding : 46;
 #ifdef INCLUDE_ECTOCORE
   uint16_t center_calibration[8];
 #endif
 } SaveFile;
 
 #define SAVEFILE_PATHNAME "save.bin"
+#define SAVEFILE_FEATURE_MAGIC 0xA5
 void test_sequencer_emit(uint8_t key) { printf("key %d\n", key); }
 void test_sequencer_stop() { printf("stop\n"); }
+void SaveFile_sanitize(SaveFile *sf) {
+  if (sf->feature_magic != SAVEFILE_FEATURE_MAGIC) {
+    sf->do_retrig_volume_ramps = 1;
+    sf->feature_magic = SAVEFILE_FEATURE_MAGIC;
+  }
+}
 SaveFile *SaveFile_malloc() {
   SaveFile *sf;
   sf = malloc(sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16));
@@ -49,6 +58,9 @@ SaveFile *SaveFile_malloc() {
     sf->fx_param[i][2] = 0;
   }
   sf->do_retrig_pitch_changes = 1;
+  sf->do_retrig_volume_ramps = 1;
+  sf->feature_magic = SAVEFILE_FEATURE_MAGIC;
+  sf->_padding = 0;
   sf->stay_in_sync = 1;  // default to staying in sync
   sf->fx_param[FX_SATURATE][0] = 64;
   sf->fx_param[FX_SHAPER][0] = 180;
@@ -123,6 +135,7 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
     return false;
   }
   fread(sf, sizeof(SaveFile), 1, file);
+  SaveFile_sanitize(sf);
   // print everything in the savefile
   printf("[SaveFile] vol: %d\n", sf->vol);
   printf("[SaveFile] bpm_tempo: %d\n", sf->bpm_tempo);
@@ -165,6 +178,7 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
       printf("[SaveFile] problem reading save file");
     } else {
       printf("[SaveFile] bpm_tempo = %d\n", sf->bpm_tempo);
+      SaveFile_sanitize(sf);
     }
     // read sequencers
     for (int i = 0; i < 3; i++) {
@@ -195,6 +209,7 @@ bool SaveFile_save(SaveFile *sf, uint8_t savefile_index) {
   }
   unsigned int total_bytes_written;
   unsigned int bw;
+  SaveFile_sanitize(sf);
   if (f_write(&file, sf, sizeof(SaveFile), &bw)) {
     printf("[SaveFile] problem writing save\n");
   }

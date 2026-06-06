@@ -83,10 +83,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         sf->vol = new_vol;
       }
       break;
-  case cc_bassvolume: // volume
-#ifdef INCLUDE_SINEBASS
-      WaveBass_set_volume(wavebass, new_adcvalue);
-#endif
+  case cc_realtime_stretch:
+      set_realtime_stretch_knob((uint16_t)value * 4095 / 127);
       break;
   case cc_tempo: // tempo
       uint8_t new_bpm = new_adcvalue ; // what is range?
@@ -147,7 +145,9 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         probability_of_random_tunnel = 0;
       }
       break;
-  case cc_djfilter: // DJ Filter
+  case cc_djfilter: // Filter
+#ifdef INCLUDE_ZEPTOCORE
+#if DJ_FILTER
       for (uint8_t channel = 0; channel < 2; channel++) {
         int filter_spacing = 16;
         for (uint8_t channel = 0; channel < 2; channel++) {
@@ -175,6 +175,38 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
           }
         }
       }
+#else
+      set_global_lpf_cutoff(new_adcvalue, 255);
+#endif
+#else
+      for (uint8_t channel = 0; channel < 2; channel++) {
+        int filter_spacing = 16;
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          if (new_adcvalue < 128 - filter_spacing) {
+            global_filter_index =
+              new_adcvalue * (resonantfilter_fc_max) / (128 - filter_spacing);
+            global_filter_lphp = 0;
+            ResonantFilter_setFilterType(resFilter[channel],
+                          global_filter_lphp);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          } else if (value >= 64 + filter_spacing) {
+            global_filter_index = (new_adcvalue - (128 + filter_spacing)) *
+                      (resonantfilter_fc_max) /
+                      (128 - filter_spacing);
+            global_filter_lphp = 1;
+            ResonantFilter_setFilterType(resFilter[channel],
+                          global_filter_lphp);
+            ResonantFilter_setFc(resFilter[channel], global_filter_index);
+          } else {
+            global_filter_index = resonantfilter_fc_max;
+            global_filter_lphp = 0;
+            ResonantFilter_setFilterType(resFilter[channel],
+                          global_filter_lphp);
+            ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
+          }
+        }
+      }
+#endif
       break;
   case cc_randfxbank: // Grimoire
       // change the grimoire rune

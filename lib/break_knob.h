@@ -85,7 +85,8 @@ void do_do_retrigger(uint8_t effect, bool on, bool pitch_changes) {
       retrig_beat_num = 2;
     }
     retrig_vol = 1.0;
-    if (random_integer_in_range(0, 100) < 25) {
+    retrig_vol_step = 0;
+    if (sf->do_retrig_volume_ramps && random_integer_in_range(0, 100) < 25) {
       retrig_vol = 0.02;
       retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
                         ((float)retrig_beat_num);
