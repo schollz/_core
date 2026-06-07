@@ -25,6 +25,14 @@ bool jump_page_lock_d_alone_candidate = false;
 
 bool button_is_pressed(uint8_t key) { return key_on_buttons[key] > 0; }
 
+void zeptocore_knob_bank_set(uint8_t key) {
+  if (key > KEY_D) {
+    return;
+  }
+  zeptocore_knob_bank = key;
+  zeptocore_knob_bank_changed = true;
+}
+
 void maybe_toggle_jump_page_lock_on_d_release(uint8_t key) {
   if (key != KEY_D) {
     return;
@@ -913,6 +921,7 @@ bool button_handler(ButtonMatrix *bm) {
   // check queue for buttons that turned on
   for (uint8_t i = 0; i < bm->on_num; i++) {
     key_total_pressed++;
+    zeptocore_knob_bank_set(bm->on[i]);
     if (key_total_pressed == 1) {
       key_timer_on = 0;
     }

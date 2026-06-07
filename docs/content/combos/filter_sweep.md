@@ -9,7 +9,7 @@ mode = 'any'
 +++
 
 
-Rotating this knob clockwise will increase the cutoff frequency of the low pass filter, allowing higher frequencies to pass through. Rotating it counterclockwise will decrease the cutoff frequency, restricting the passage of higher frequencies.
+Press **B**, then rotate **Knob Y** clockwise to increase the cutoff frequency of the low pass filter, allowing higher frequencies to pass through. Rotating it counterclockwise will decrease the cutoff frequency, restricting the passage of higher frequencies. You can still hold **B** while turning the knob if you prefer.
 
 
 <figure class="imgcombo">

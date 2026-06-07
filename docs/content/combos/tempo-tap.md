@@ -13,7 +13,7 @@ icon = 'tachometer-alt'
 
 The Tempo feature offers three methods for precision tempo control.
 
-First, you can adjust dynamically by holding **A** and rotating **Knob X**—with the middle position representing the original BPM, turning fully clockwise for double speed, and turning fully counter-clockwise for half speed.
+First, you can adjust dynamically by pressing **A** and rotating **Knob X**—with the middle position representing the original BPM, turning fully clockwise for double speed, and turning fully counter-clockwise for half speed. You can still hold **A** while turning the knob if you prefer.
 
 <figure class="imgcombo">
 <img src="/img/tempo_turn.webp">

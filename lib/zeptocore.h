@@ -125,6 +125,7 @@ void __not_in_flash_func(input_handling)() {
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
   int adc_debounce[3] = {0, 0, 0};
+  bool adc_recenter[3] = {true, true, true};
   const int adc_threshold_const = 200;
   int adc_threshold = adc_threshold_const;
   const int adc_debounce_max = 25;
@@ -220,6 +221,10 @@ void __not_in_flash_func(input_handling)() {
       adc_startup--;
       if (adc_startup == 0) {
         printf("adc startup done\n");
+        for (uint8_t i = 0; i < 3; i++) {
+          adc_recenter[i] = true;
+          adc_debounce[i] = 0;
+        }
       }
       // if (adc_startup == 0) {
       //   for (int i = 1; i < 2; i++) {
@@ -255,6 +260,13 @@ void __not_in_flash_func(input_handling)() {
       }
     } else {
       adc_threshold = adc_threshold_const;
+    }
+    if (zeptocore_knob_bank_changed) {
+      for (uint8_t i = 0; i < 3; i++) {
+        adc_recenter[i] = true;
+        adc_debounce[i] = 0;
+      }
+      zeptocore_knob_bank_changed = false;
     }
 #endif
 
@@ -392,7 +404,14 @@ void __not_in_flash_func(input_handling)() {
     // knob X
     uint16_t adc_raw = adc_read();
     adc = FilterExp_update(adcs[0], adc_raw);
-    if (abs(adc_last[0] - adc) > adc_threshold) {
+    bool adc_was_recentered = false;
+    if (adc_recenter[0]) {
+      adc_last[0] = adc;
+      adc_debounce[0] = 0;
+      adc_recenter[0] = false;
+      adc_was_recentered = true;
+    }
+    if (!adc_was_recentered && abs(adc_last[0] - adc) > adc_threshold) {
       adc_debounce[0] = adc_debounce_max;
     }
     if (adc_debounce[0]) {
@@ -426,7 +445,7 @@ void __not_in_flash_func(input_handling)() {
           update_reverb();
         }
       } else if (adc_startup == 0) {
-        if (button_is_pressed(KEY_A)) {
+        if (zeptocore_knob_bank == KEY_A) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_tempo, adc * 127 / 4096);
@@ -448,13 +467,13 @@ void __not_in_flash_func(input_handling)() {
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
                             adc * 255 / 4096, 100);
           DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
-        } else if (button_is_pressed(KEY_B)) {
+        } else if (zeptocore_knob_bank == KEY_B) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_randsequence, adc * 127 / 4096);
 #endif
           make_random_sequence(adc * 255 / 4096);
-        } else if (button_is_pressed(KEY_C)) {
+        } else if (zeptocore_knob_bank == KEY_C) {
           // C + X
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -462,7 +481,7 @@ void __not_in_flash_func(input_handling)() {
 #endif
           sample_selection_index = adc_raw * sample_selection_num / 4096;
           printf("sample_selection_index: %d\n", sample_selection_index);
-        } else if (button_is_pressed(KEY_D)) {
+        } else if (zeptocore_knob_bank == KEY_D) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_randjump, adc * 127 / 4096);
@@ -507,6 +526,13 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef BTN_COL_START
     if (!is_arcade_box) button_handler(bm);
+    if (zeptocore_knob_bank_changed) {
+      for (uint8_t i = 0; i < 3; i++) {
+        adc_recenter[i] = true;
+        adc_debounce[i] = 0;
+      }
+      zeptocore_knob_bank_changed = false;
+    }
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -535,7 +561,14 @@ void __not_in_flash_func(input_handling)() {
     // knob Y
     adc_select_input(1);
     adc = FilterExp_update(adcs[1], adc_read());
-    if (abs(adc_last[1] - adc) > adc_threshold) {
+    adc_was_recentered = false;
+    if (adc_recenter[1]) {
+      adc_last[1] = adc;
+      adc_debounce[1] = 0;
+      adc_recenter[1] = false;
+      adc_was_recentered = true;
+    }
+    if (!adc_was_recentered && abs(adc_last[1] - adc) > adc_threshold) {
       adc_debounce[1] = adc_debounce_max;
     }
     if (adc_debounce[1] > 0) {
@@ -551,7 +584,7 @@ void __not_in_flash_func(input_handling)() {
               delay, powf(2, linlin((float)adc, 0.0f, 4095.0f, 6.64f, 13.28f)));
         }
       } else if (adc_startup == 0) {
-        if (button_is_pressed(KEY_A)) {
+        if (zeptocore_knob_bank == KEY_A) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_pitch, adc * 127 / 4096);
@@ -571,7 +604,7 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
                             adc_original * 255 / 4096, 250);
-        } else if (button_is_pressed(KEY_B)) {
+        } else if (zeptocore_knob_bank == KEY_B) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_djfilter, adc * 127 / 4096);
@@ -608,7 +641,7 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_C)) {
+        } else if (zeptocore_knob_bank == KEY_C) {
           // C + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -621,7 +654,7 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_RANDOM2],
                             adc * 255 / 4096, 100);
-        } else if (button_is_pressed(KEY_D)) {
+        } else if (zeptocore_knob_bank == KEY_D) {
           // D + Y
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -663,6 +696,13 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef BTN_COL_START
     if (!is_arcade_box) button_handler(bm);
+    if (zeptocore_knob_bank_changed) {
+      for (uint8_t i = 0; i < 3; i++) {
+        adc_recenter[i] = true;
+        adc_debounce[i] = 0;
+      }
+      zeptocore_knob_bank_changed = false;
+    }
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -689,7 +729,14 @@ void __not_in_flash_func(input_handling)() {
     // knob Z
     adc_select_input(0);
     adc = FilterExp_update(adcs[2], adc_read());
-    if (abs(adc_last[2] - adc) > adc_threshold) {
+    adc_was_recentered = false;
+    if (adc_recenter[2]) {
+      adc_last[2] = adc;
+      adc_debounce[2] = 0;
+      adc_recenter[2] = false;
+      adc_was_recentered = true;
+    }
+    if (!adc_was_recentered && abs(adc_last[2] - adc) > adc_threshold) {
       adc_debounce[2] = adc_debounce_max;
     }
     if (adc_debounce[2] > 0) {
@@ -699,7 +746,7 @@ void __not_in_flash_func(input_handling)() {
         sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
         printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else if (adc_startup == 0) {
-        if (button_is_pressed(KEY_A)) {
+        if (zeptocore_knob_bank == KEY_A) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_volume, adc * 127 / 4096);
@@ -713,7 +760,7 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_B)) {
+        } else if (zeptocore_knob_bank == KEY_B) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_realtime_stretch, adc * 127 / 4096);
@@ -721,7 +768,7 @@ void __not_in_flash_func(input_handling)() {
           set_realtime_stretch_knob(adc);
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_C)) {
+        } else if (zeptocore_knob_bank == KEY_C) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
           MidiOut_cc(midiout[0], cc_quantize, adc * 127 / 4096);
@@ -736,7 +783,7 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
                             adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_D)) {
+        } else if (zeptocore_knob_bank == KEY_D) {
           // D + Z
 #ifdef INCLUDE_MIDI
           // send out midi cc

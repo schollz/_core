@@ -12,7 +12,7 @@ To power on the device, toggle the switch on the top right to the "up" position.
 
 ### volume & tempo
 
-Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` located on the right-hand side. Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob Y`.
+Adjust the [volume](#volume) by pressing `A` (top left key) and turning `Knob Z` located on the right-hand side. Similarly, modify the [tempo](#tempo) by pressing `A` and turning `Knob X`. You can still hold `A` while turning the knobs if you prefer.
 
 ### banks & samples
 

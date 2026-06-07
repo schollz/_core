@@ -156,6 +156,8 @@ bool dual_leds_holding_tap = false;
 bool key3_activated = false;
 int8_t single_key_on = -1;
 uint8_t key3_pressed_keys[3] = {0, 0, 0};
+uint8_t zeptocore_knob_bank = 0;
+bool zeptocore_knob_bank_changed = true;
 
 SaveFile *sf;
 #ifdef INCLUDE_ZEPTOCORE

@@ -11,4 +11,4 @@ mode = 'any'
 
 When turning up the [random effects](#random-effects), the precise effects that are affected will be determined by the effects selected for the current bank of effects. To change which effects are toggled, simply use the [sample tool](/tool) and adjust the settings and select the effects you'd like.
 
-The effects are randomly activated by holding **D** and turning **Knob Y**.
+The effects are randomly activated by pressing **D** and turning **Knob Y**. Holding **D** while turning still works if you prefer.

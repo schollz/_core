@@ -18,6 +18,9 @@ MACOS_ARM_TC_BASENAME := xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)-darwin-
 MACOS_ARM_TC_DIR := $(HOME)/.cache/_core/toolchains/xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)
 MACOS_ARM_TC_BIN := $(MACOS_ARM_TC_DIR)/bin
 MACOS_ARM_TC_URL := https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v$(MACOS_ARM_TC_VERSION)/$(MACOS_ARM_TC_BASENAME).tar.gz
+PICOTOOL ?= picotool
+UPLOAD_UF2 ?= build/_core.uf2
+PICOTOOL_LOAD_FLAGS ?= -f -x -v
 GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
@@ -264,13 +267,25 @@ resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 
-upload: resetpico2 changebaud dobuild
+.PHONY: check_picotool upload upload-legacy
+check_picotool:
+	@command -v "$(PICOTOOL)" >/dev/null 2>&1 || { \
+		echo "picotool not found. Install it first, or run make upload PICOTOOL=/path/to/picotool"; \
+		echo "macOS: brew install picotool"; \
+		exit 1; \
+	}
+
+upload: dobuild check_picotool
+	@test -f "$(UPLOAD_UF2)" || { echo "$(UPLOAD_UF2) does not exist; build failed or UPLOAD_UF2 is wrong"; exit 1; }
+	$(PICOTOOL) load $(PICOTOOL_LOAD_FLAGS) "$(UPLOAD_UF2)"
+
+upload-legacy: resetpico2 changebaud dobuild
 	./dev/upload.sh
 
 bootreset: .venv dobuild
 	.venv/bin/python dev/reset_pico.py /dev/ttyACM0
 
-autoload: dobuild bootreset upload
+autoload: upload
 
 build:
 	rm -rf build

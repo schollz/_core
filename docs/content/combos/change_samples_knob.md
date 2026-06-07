@@ -15,5 +15,5 @@ You can also change banks + samples simultaneously using [button presses](/#chan
 
 <figure class="imgcombo">
 <img src="/img/change_samples2.webp">
-<figcaption>Alternatively hold the <code>C</code> key while turning knobs to change bank/sample individually.</figcaption>
+<figcaption>Alternatively press <code>C</code>, then turn knobs to change bank/sample individually. You can still hold <code>C</code> while turning if you prefer.</figcaption>
 </figure>

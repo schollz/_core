@@ -9,7 +9,7 @@ mode = 'any'
 +++
 
 
-Change the pitch by holding **A** and turning **Knob Y**. Pitch can be changed independent of tempo. 
+Change the pitch by pressing **A** and turning **Knob Y**. You can still hold **A** while turning the knob if you prefer. Pitch can be changed independent of tempo.
 
 *Try it:* Interesting effects can be obtained by turning the tempo high and turning the pitch down or vice-versa.
 
