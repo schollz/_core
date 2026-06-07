@@ -77,22 +77,24 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
   // printf("chan/cc/value: %d/%d/%d\n", channel, control, value);
   uint8_t new_adcvalue = (value * 2) ;
   switch (control) {
-  case cc_volume: // volume
+  case cc_volume: { // volume
       uint8_t new_vol = new_adcvalue; // is it 256 total?
       if (new_vol != sf->vol) {
         sf->vol = new_vol;
       }
       break;
+  }
   case cc_realtime_stretch:
       set_realtime_stretch_knob((uint16_t)value * 4095 / 127);
       break;
-  case cc_tempo: // tempo
+  case cc_tempo: { // tempo
       uint8_t new_bpm = new_adcvalue ; // what is range?
       if (new_bpm != sf->bpm_tempo) {
         sf->bpm_tempo = new_bpm;
         // printf("sf-vol: %d\n", sf->vol);
       }
       break;
+  }
   case cc_pitch: // pitch
           // if (adc < 2048 - 200) {
           //   sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
@@ -115,7 +117,7 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         sf->pitch_val_index = PITCH_VAL_MID;
       }
       break;
-  case cc_sampleselect: // sample
+  case cc_sampleselect: { // sample
     uint8_t new_sample = new_adcvalue ; // what is range?
     uint8_t sample_selection_index = 0;
     sample_selection_index = new_sample * (sample_selection_num - 1) / 255;
@@ -130,7 +132,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       fil_current_change = true;
       }
       break;
-  case cc_quantize: // Qunatize
+  }
+  case cc_quantize: { // Qunatize
       const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                           64, 96, 144, 192, 192};
       printf("quantization: %d\n", quantizations[new_adcvalue * 9 / 255 ]);
@@ -138,6 +141,7 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
           sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
           quantizations[new_adcvalue * 9 / 255]);
       break;
+  }
   case cc_randtunnel: // Random Tunnel
       probability_of_random_tunnel = new_adcvalue * 1000 / 256;
       // if (probability_of_random_tunnel < 100) {
