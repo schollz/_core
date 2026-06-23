@@ -12,5 +12,5 @@ Alternatively, you can change the sample by selecting a bank with a knob or by s
 
 <figure class="imgcombo">
 <img src="/img/change_samples2.webp">
-<figcaption>Alternatively hold the <code>C</code> key while turning knobs to change bank/sample individually.</figcaption>
+<figcaption>Alternatively hold <code>C</code> and turn knobs to change bank/sample individually.</figcaption>
 </figure>

@@ -73,6 +73,47 @@ void __not_in_flash_func(array_resample_linear441)(int16_t *arr,
   }
 }
 
+void __not_in_flash_func(process_source_fx)(int16_t *values,
+                                            uint32_t values_len) {
+  // beat repeat
+  BeatRepeat_process(beatrepeat, values, values_len);
+
+  // saturate before resampling?
+  if (sf->fx_active[FX_SATURATE]) {
+    for (uint16_t i = 0; i < values_len; i++) {
+      values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
+    }
+    if (audio_variant_num > 0) {
+      set_audio_variant(sf->fx_param[FX_SATURATE][1] * audio_variant_num / 256);
+    }
+    Saturation_process(saturation, values, values_len);
+  }
+
+  // shaper
+  if (sf->fx_active[FX_SHAPER]) {
+    if (sf->fx_param[FX_SHAPER][0] > 128) {
+      Shaper_expandUnder_compressOver_process(
+          values, values_len, (sf->fx_param[FX_SHAPER][0] - 128) << 6,
+          sf->fx_param[FX_SHAPER][1]);
+    } else {
+      Shaper_expandOver_compressUnder_process(values, values_len,
+                                              sf->fx_param[FX_SHAPER][0] << 6,
+                                              sf->fx_param[FX_SHAPER][1]);
+    }
+  }
+
+  if (sf->fx_active[FX_FUZZ]) {
+    Fuzz_process(values, values_len, sf->fx_param[FX_FUZZ][0],
+                 sf->fx_param[FX_FUZZ][1]);
+  }
+
+  // bitcrush
+  if (sf->fx_active[FX_BITCRUSH]) {
+    Bitcrush_process(values, values_len, sf->fx_param[FX_BITCRUSH][0],
+                     sf->fx_param[FX_BITCRUSH][1]);
+  }
+}
+
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
 uint32_t sine_wave_counter = 0;
 #endif
@@ -223,6 +264,12 @@ BREAKOUT_OF_MUTE:
     audio_was_muted = false;
   }
 
+  bool realtime_stretch_was_active = realtime_stretch_is_active();
+  realtime_stretch_update_state();
+  if (realtime_stretch_was_active && !realtime_stretch_is_active()) {
+    last_seeked = 1;
+  }
+
   Gate_update(audio_gate, sf->bpm_tempo);
   envelope_pitch_val = envelope_pitch_val_new;
 
@@ -335,6 +382,8 @@ BREAKOUT_OF_MUTE:
   if (samples_to_read < 11) {
     samples_to_read = 11;
   }
+  uint64_t realtime_stretch_grain_phase_inc_q32 =
+      (((uint64_t)samples_to_read) << 32u) / buffer->max_sample_count;
 
   uint32_t values_len =
       (samples_to_read + 1) *
@@ -350,7 +399,7 @@ BREAKOUT_OF_MUTE:
   int32_t vol_main =
       round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
 
-  if (!phase_change) {
+  if (!phase_change && !realtime_stretch_is_active()) {
     const int32_t next_phase = phases[0] + ((samples_to_read) *
                                             (banks[sel_bank_cur]
                                                  ->sample[sel_sample_cur]
@@ -446,6 +495,69 @@ BREAKOUT_OF_MUTE:
   }
 
   bool first_loop = true;
+
+  if (realtime_stretch_is_active()) {
+    if (phase_change) {
+      phases[1] = phases[0];
+      phases[0] = phase_new;
+      phase_change = false;
+      realtime_stretch_reset_from_playback_phase();
+    }
+
+    if (do_open_file) {
+      sel_bank_cur = sel_bank_next;
+      sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
+
+      FRESULT fr;
+      t0 = time_us_32();
+      fr = f_close(&fil_current);
+      if (fr != FR_OK) {
+        debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
+      }
+      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
+              sel_sample_cur, sel_variation + audio_variant * 2);
+      fr = f_open(&fil_current, fil_current_name, FA_READ);
+      t1 = time_us_32();
+      sd_card_total_time += (t1 - t0);
+#ifdef PRINT_SDCARD_OPEN_TIMING
+      MessageSync_printf(messagesync,
+                         "[audio_callback] do_open_file f_close+f_open: %d\n",
+                         (t1 - t0));
+#endif
+      if (fr != FR_OK) {
+        debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
+      }
+      do_open_file = false;
+      realtime_stretch_reset_from_playback_phase();
+    }
+
+    int16_t stretch_values[buffer->max_sample_count * 2];
+    if (!realtime_stretch_render(stretch_values, buffer->max_sample_count,
+                                 realtime_stretch_grain_phase_inc_q32)) {
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        samples[i * 2 + 0] = 0;
+        samples[i * 2 + 1] = 0;
+      }
+      realtime_stretch_invalidate_grains();
+    } else {
+      process_source_fx(stretch_values, buffer->max_sample_count * 2);
+      for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
+        for (uint8_t channel = 0; channel < 2; channel++) {
+          int16_t value = stretch_values[i * 2 + channel];
+          if (do_fade_out) {
+            value = crossfade3_out(value, i, CROSSFADE3_COS);
+          } else if (do_fade_in) {
+            value = crossfade3_in(value, i, CROSSFADE3_COS);
+          }
+          samples[i * 2 + channel] =
+              q16_16_multiply(((int32_t)value) << 16, vol_main);
+        }
+      }
+    }
+    last_seeked = 1;
+    goto AUDIO_SOURCE_RENDERED;
+  }
+
   for (int8_t head = 1; head >= 0; head--) {
     if (head == 1 && (!do_crossfade || do_fade_in)) {
       continue;
@@ -514,7 +626,6 @@ BREAKOUT_OF_MUTE:
                        44100) +
                       ((phases[head] + negative_latency) / PHASE_DIVISOR) *
                           PHASE_DIVISOR) != FR_OK) {
-        printf("problem seeking to phase (%d)\n", phases[head]);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           int32_t value0 = 0;
           samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -543,7 +654,6 @@ BREAKOUT_OF_MUTE:
 
     t0 = time_us_32();
     if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
-      printf("ERROR READING!\n");
       watchdog_reboot(0, SRAM_END, 0);
       // sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
       //         sel_sample_cur, sel_variation + audio_variant * 2);
@@ -604,44 +714,7 @@ BREAKOUT_OF_MUTE:
       }
     }
 
-    // beat repeat
-    BeatRepeat_process(beatrepeat, values, values_len);
-
-    // saturate before resampling?
-    if (sf->fx_active[FX_SATURATE]) {
-      for (uint16_t i = 0; i < values_len; i++) {
-        values[i] = values[i] * sf->fx_param[FX_SATURATE][0] / 128;
-      }
-      if (audio_variant_num > 0) {
-        set_audio_variant(sf->fx_param[FX_SATURATE][1] * audio_variant_num /
-                          256);
-      }
-      Saturation_process(saturation, values, values_len);
-    }
-
-    // shaper
-    if (sf->fx_active[FX_SHAPER]) {
-      if (sf->fx_param[FX_SHAPER][0] > 128) {
-        Shaper_expandUnder_compressOver_process(
-            values, values_len, (sf->fx_param[FX_SHAPER][0] - 128) << 6,
-            sf->fx_param[FX_SHAPER][1]);
-      } else {
-        Shaper_expandOver_compressUnder_process(values, values_len,
-                                                sf->fx_param[FX_SHAPER][0] << 6,
-                                                sf->fx_param[FX_SHAPER][1]);
-      }
-    }
-
-    if (sf->fx_active[FX_FUZZ]) {
-      Fuzz_process(values, values_len, sf->fx_param[FX_FUZZ][0],
-                   sf->fx_param[FX_FUZZ][1]);
-    }
-
-    // bitcrush
-    if (sf->fx_active[FX_BITCRUSH]) {
-      Bitcrush_process(values, values_len, sf->fx_param[FX_BITCRUSH][0],
-                       sf->fx_param[FX_BITCRUSH][1]);
-    }
+    process_source_fx(values, values_len);
 
     if (banks[sel_bank_cur]
             ->sample[sel_sample_cur]
@@ -721,6 +794,8 @@ BREAKOUT_OF_MUTE:
     }
     phases[head] += (values_to_read_minus_peek * (phase_forward * 2 - 1));
   }
+
+AUDIO_SOURCE_RENDERED:
 
 #ifdef INCLUDE_ECTOCORE
   if (mute_soft) {
@@ -1201,6 +1276,7 @@ BREAKOUT_OF_MUTE:
         sf->fx_active[i] = false;
         update_fx(i);
       }
+      set_realtime_stretch_q8(REALTIME_STRETCH_Q8_ONE);
     } else {
       if (cpu_flag_counter > 0) {
         cpu_flag_counter--;

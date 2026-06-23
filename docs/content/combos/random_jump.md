@@ -9,6 +9,6 @@ mode = 'any'
 +++
 
 
-Adjust the probability of random jumping by increasing it when turning the knob clockwise.
+Hold **D** and turn **Knob X** to adjust the probability of random jumping. Turning the knob clockwise increases the probability.
 
 If you want to maintain sequence lock, you can use [the sequence lock combo](/#sequence-lock).

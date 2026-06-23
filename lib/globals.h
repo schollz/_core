@@ -178,7 +178,7 @@ const uint8_t cc_pitch = 16;
 const uint8_t cc_volume = 7;
 const uint8_t cc_randsequence = 18;
 const uint8_t cc_djfilter = 19;
-const uint8_t cc_bassvolume = 20;
+const uint8_t cc_realtime_stretch = 20;
 const uint8_t cc_sampleselect = 21;
 const uint8_t cc_randtunnel = 22;
 const uint8_t cc_quantize = 23;
@@ -307,6 +307,26 @@ int32_t lfo_tremelo_step = Q16_16_2PI / (96);
 
 uint16_t global_filter_index = resonantfilter_fc_max;
 uint8_t global_filter_lphp = 0;
+
+#ifndef DJ_FILTER
+#define DJ_FILTER 0
+#endif
+
+static inline void set_global_lpf_cutoff(uint32_t value, uint32_t value_max) {
+  if (value_max == 0) {
+    value_max = 1;
+  }
+  if (value > value_max) {
+    value = value_max;
+  }
+
+  global_filter_index = value * resonantfilter_fc_max / value_max;
+  global_filter_lphp = 0;
+  for (uint8_t channel = 0; channel < 2; channel++) {
+    ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
+    ResonantFilter_setFc(resFilter[channel], global_filter_index);
+  }
+}
 // pitches derived from supercollider
 /*
 a=(Tuning.et(24).ratios/4)++(Tuning.et(24).ratios/2)++Tuning.et(24).ratios++[2];
@@ -448,6 +468,11 @@ void planned_retrig_do(float start_vol, int8_t start_pitch, uint8_t beat_num,
   if (planned_retrig_ready || beat_num == 0 || times == 0 ||
       rate_divisor == 0) {
     return;  // Already running or invalid params
+  }
+
+  if (!sf->do_retrig_volume_ramps) {
+    start_vol = 1.0f;
+    end_vol = 1.0f;
   }
 
   planned_retrig_start_vol = start_vol;

@@ -469,6 +469,23 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
 }
 
 bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
+  if (grimoire_rune_is_timestretch_only()) {
+    if (show_wheel) {
+      uint8_t r, g, b;
+      int16_t val2 = val / 4;
+      hue_to_rgb2(val2, &r, &g, &b);
+      ws2812_set_wheel2(ws2812, val, r, g, b);
+    }
+    if (val <= 0) {
+      set_realtime_stretch_knob(0);
+    } else if (val >= 1024) {
+      set_realtime_stretch_knob(4095);
+    } else {
+      set_realtime_stretch_knob((uint16_t)((uint32_t)val * 4095u / 1024u));
+    }
+    return true;
+  }
+
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
     fuzz_auto_active = false;
     if (show_wheel) {

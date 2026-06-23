@@ -19,9 +19,9 @@ To change samples, you can hold **B** and press **1-16** to select a bank. While
 </figure>
 
 
-Alternatively, you can use the knobs to change samples - **C** + **X** will change to any sample.
+Alternatively, you can use the knobs to change samples - hold **C** and turn **Knob X** to change to any sample.
 
 <figure class="imgcombo">
 <img src="/img/change_samples2.webp">
-<figcaption>Alternatively hold the <code>C</code> key while turning knobs to change bank/sample individually.</figcaption>
+<figcaption>Alternatively hold <code>C</code> and turn knobs to change bank/sample individually.</figcaption>
 </figure>

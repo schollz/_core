@@ -806,6 +806,15 @@ bool button_handler(ButtonMatrix *bm) {
         } else {
           DebounceDigits_setText(debouncer_digits, "PIT OOFF", led_text_time);
         }
+      } else if (key_pressed[0] == 16 && key_pressed[1] == 17 &&
+                 key_pressed[2] == 18 && key_pressed[3] == 19) {
+        sf->do_retrig_volume_ramps = !sf->do_retrig_volume_ramps;
+        if (sf->do_retrig_volume_ramps) {
+          DebounceDigits_setText(debouncer_digits, "RAMP OONN", led_text_time);
+        } else {
+          DebounceDigits_setText(debouncer_digits, "RAMP OOFF",
+                                 led_text_time);
+        }
       }
     } else if (key_pressed_num == 8) {
       if (key_pressed[0] == 16 && key_pressed[1] == 12 && key_pressed[2] == 8 &&

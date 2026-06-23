@@ -576,19 +576,20 @@ void __not_in_flash_func(input_handling)() {
           // send out midi cc
           MidiOut_cc(midiout[0], cc_djfilter, adc * 127 / 4096);
 #endif
+#if DJ_FILTER
           for (uint8_t channel = 0; channel < 2; channel++) {
-#define FILTER_ZERO_SPACING 500
-            if (adc < 2048 - FILTER_ZERO_SPACING) {
+            const uint16_t filter_zero_spacing = 500;
+            if (adc < 2048 - filter_zero_spacing) {
               global_filter_index =
-                  adc * (resonantfilter_fc_max) / (2048 - FILTER_ZERO_SPACING);
+                  adc * (resonantfilter_fc_max) / (2048 - filter_zero_spacing);
               global_filter_lphp = 0;
               ResonantFilter_setFilterType(resFilter[channel],
                                            global_filter_lphp);
               ResonantFilter_setFc(resFilter[channel], global_filter_index);
-            } else if (adc > 2048 + FILTER_ZERO_SPACING) {
-              global_filter_index = (adc - (2048 + FILTER_ZERO_SPACING)) *
+            } else if (adc > 2048 + filter_zero_spacing) {
+              global_filter_index = (adc - (2048 + filter_zero_spacing)) *
                                     (resonantfilter_fc_max) /
-                                    (2048 - FILTER_ZERO_SPACING);
+                                    (2048 - filter_zero_spacing);
               global_filter_lphp = 1;
               ResonantFilter_setFilterType(resFilter[channel],
                                            global_filter_lphp);
@@ -601,6 +602,9 @@ void __not_in_flash_func(input_handling)() {
               ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
             }
           }
+#else
+          set_global_lpf_cutoff(adc, 4095);
+#endif
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
@@ -712,14 +716,11 @@ void __not_in_flash_func(input_handling)() {
         } else if (button_is_pressed(KEY_B)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], cc_bassvolume, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_realtime_stretch, adc * 127 / 4096);
 #endif
-          // set the bass volume
+          set_realtime_stretch_knob(adc);
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
-#ifdef INCLUDE_SINEBASS
-          WaveBass_set_volume(wavebass, adc);
-#endif
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -816,6 +817,7 @@ void __not_in_flash_func(input_handling)() {
                               200);
             // </change_sample>
           } else if (i == 3) {
+#if DJ_FILTER
             // <dj_style_filter>
             for (uint8_t channel = 0; channel < 2; channel++) {
               if (adcValue < 128) {
@@ -844,10 +846,15 @@ void __not_in_flash_func(input_handling)() {
                 ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
               }
             }
+            // </dj_style_filter>
+#else
+            // <lpf_filter>
+            set_global_lpf_cutoff(adcValue, 255);
+            // </lpf_filter>
+#endif
             clear_debouncers();
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                               adcValue, 200);
-            // </dj_style_filter>
           } else if (i == 4) {
             // <grimoire_selection>
             // change the grimoire rune

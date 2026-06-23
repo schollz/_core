@@ -22,8 +22,6 @@ bool __not_in_flash_func(timer_step)() {
     return true;
   }
   if (bpm_last != sf->bpm_tempo) {
-    printf("updating bpm timer: %d-> %d (%d)\n", bpm_last, sf->bpm_tempo,
-           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm);
     bpm_last = sf->bpm_tempo;
     cancel_repeating_timer(&timer);
     update_repeating_timer_to_bpm(sf->bpm_tempo);
@@ -177,7 +175,8 @@ bool __not_in_flash_func(timer_step)() {
         retrig_beat_num =
             beat_start_retrig * time_multiplier[time_multiplier_index];
         retrig_timer_reset = 96 / time_multiplier[time_multiplier_index];
-        retrig_vol_step = 1.0 / ((float)retrig_beat_num);
+        retrig_vol_step =
+            sf->do_retrig_volume_ramps ? 1.0 / ((float)retrig_beat_num) : 0.0;
         retrig_ready = true;
         beat_start_retrig = 0;
         do_random_jump = true;
@@ -196,7 +195,7 @@ bool __not_in_flash_func(timer_step)() {
 
     // check if need to do tunneling
     // avoid tunneling if we are in a timestretched variation
-    if (sel_variation == 0) {
+    if (sel_variation == 0 && !realtime_stretch_is_active()) {
       if (tunneling_is_on > 0) {
         if (tunneling_is_on < 4 && probability_of_random_tunnel > 750) {
           tunneling_is_on++;
@@ -209,8 +208,6 @@ bool __not_in_flash_func(timer_step)() {
           // deactivate tunneling
           tunneling_is_on = 0;
           sel_sample_next = tunneling_original_sample;
-          printf("%d, tunneling off: %d -> %d\n", probability_of_random_tunnel,
-                 sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       } else {
@@ -220,8 +217,6 @@ bool __not_in_flash_func(timer_step)() {
           tunneling_original_sample = sel_sample_cur;
           sel_sample_next =
               random_integer_in_range(0, 15) % banks[sel_bank_cur]->num_samples;
-          printf("%d tunneling: %d -> %d\n", probability_of_random_tunnel,
-                 sel_sample_cur, sel_sample_next);
           fil_current_change = true;
         }
       }
@@ -239,7 +234,9 @@ bool __not_in_flash_func(timer_step)() {
           // generate random value between 0 and 1
 #ifdef INCLUDE_ECTOCORE
 #else
-          retrig_vol = (float)random_integer_in_range(0, 50) / 100;
+          retrig_vol = sf->do_retrig_volume_ramps
+                           ? (float)random_integer_in_range(0, 50) / 100
+                           : 1.0;
 #endif
           retrig_pitch = PITCH_VAL_MID;
           if (sf->do_retrig_pitch_changes &&
@@ -281,7 +278,7 @@ bool __not_in_flash_func(timer_step)() {
             retrig_filter_original = 0;
           }
         }
-        if (retrig_vol < 1.0) {
+        if (sf->do_retrig_volume_ramps && retrig_vol < 1.0) {
           retrig_vol += retrig_vol_step;
           // printf("retrig_vol: %f\n", retrig_vol);
           if (retrig_vol > 1.0) {
@@ -409,7 +406,7 @@ bool __not_in_flash_func(timer_step)() {
 
              // do not iterate the beat if we are in a timestretched variation,
              // let it roll
-             && sel_variation == 0) {
+             && sel_variation == 0 && !realtime_stretch_is_active()) {
     retrig_vol = 1.0;
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
@@ -682,7 +679,7 @@ bool __not_in_flash_func(timer_step)() {
 
   // check to see if a phase crossed a boundary of a transient
   // only check if not timestretching
-  if (sel_variation == 0) {
+  if (sel_variation == 0 && !realtime_stretch_is_active()) {
     int32_t phase_sample = phases[0] / 2 /
                                (banks[sel_bank_cur]
                                     ->sample[sel_sample_cur]
@@ -728,7 +725,6 @@ bool __not_in_flash_func(timer_step)() {
               if (i == 0) {
                 // is kick
                 cuedsounds_do_play = do_layer_kicks;
-                printf("[globals] kick %d\n", do_layer_kicks);
               }
             }
 #endif
