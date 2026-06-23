@@ -13,5 +13,5 @@ This knob will increase the quantization for the current playing sequence (JUMP,
 
 <figure class="imgcombo">
 <img src="/img/quantize.webp">
-<figcaption>Hold the <code>C</code> key while turning <code>Knob Z</code> to change quantization.</figcaption>
+<figcaption>Hold <code>C</code> and turn <code>Knob Z</code> to change quantization.</figcaption>
 </figure>

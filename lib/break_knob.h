@@ -62,6 +62,22 @@ uint8_t break_fx_beat_after_activated[16] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
+#ifdef INCLUDE_ECTOCORE
+bool grimoire_rune_is_timestretch_only() {
+  if (!grimoire_rune_effect[grimoire_rune][FX_TIMESTRETCH]) {
+    return false;
+  }
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    if (effect != FX_TIMESTRETCH && grimoire_rune_effect[grimoire_rune][effect]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool grimoire_rune_timestretch_only_was_active = false;
+#endif
+
 // if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
 //   printf("[ecotocre] random retrigger\n");
 //   sf->do_retrig_pitch_changes = (random_integer_in_range(1, 10) < 5);
@@ -85,7 +101,8 @@ void do_do_retrigger(uint8_t effect, bool on, bool pitch_changes) {
       retrig_beat_num = 2;
     }
     retrig_vol = 1.0;
-    if (random_integer_in_range(0, 100) < 25) {
+    retrig_vol_step = 0;
+    if (sf->do_retrig_volume_ramps && random_integer_in_range(0, 100) < 25) {
       retrig_vol = 0.02;
       retrig_vol_step = ((float)random_integer_in_range(15, 50) / 100.0) /
                         ((float)retrig_beat_num);
@@ -309,7 +326,39 @@ void break_fx_toggle(uint8_t effect, bool on) {
   }
 }
 
+#ifdef INCLUDE_ECTOCORE
+void break_fx_clear_queued_effects() {
+  for (uint8_t effect = 0; effect < 16; effect++) {
+    if (break_fx_beat_activated[effect] > 0) {
+      break_fx_toggle(effect, false);
+    }
+    break_fx_beat_activated[effect] = 0;
+    break_fx_beat_after_activated[effect] = 0;
+  }
+}
+
+void break_fx_force_timestretch_off() {
+  sf->fx_active[FX_TIMESTRETCH] = false;
+  update_fx(FX_TIMESTRETCH);
+}
+#endif
+
 void break_fx_update() {
+#ifdef INCLUDE_ECTOCORE
+  bool timestretch_only = grimoire_rune_is_timestretch_only();
+  if (timestretch_only) {
+    if (!grimoire_rune_timestretch_only_was_active) {
+      break_fx_clear_queued_effects();
+    }
+    break_fx_force_timestretch_off();
+    grimoire_rune_timestretch_only_was_active = true;
+    return;
+  }
+  if (grimoire_rune_timestretch_only_was_active) {
+    grimoire_rune_timestretch_only_was_active = false;
+    set_realtime_stretch_q8(REALTIME_STRETCH_Q8_ONE);
+  }
+#endif
   if (!beat_did_activate) {
     return;
   }

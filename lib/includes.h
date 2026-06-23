@@ -147,6 +147,8 @@ bool usb_midi_present = false;
 //
 #include "globals.h"
 //
+#include "realtime_stretch.h"
+//
 #include "transfer.h"
 //
 #include "sdcard_startup.h"

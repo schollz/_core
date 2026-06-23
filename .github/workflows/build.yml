@@ -71,99 +71,86 @@ jobs:
           cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
+      - name: Prepare artifact filenames
+        run: |
+          mkdir -p dist
+          echo "ARTIFACT_SUFFIX=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
       - name: Build zeptocore.uf2
         run: |
           make zeptocore
-          cp zeptocore.uf2 zeptocore_${{ github.ref_name }}.uf2
+          cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}.uf2"
       - name: Build zeptocore_128.uf2
         run: |
           make zeptocore_128
-          cp zeptocore.uf2 zeptocore_${{ github.ref_name }}_ultralow_latency.uf2
+          cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}_ultralow_latency.uf2"
       - name: Build zeptocore_256.uf2
         run: |
           make zeptocore_256
-          cp zeptocore.uf2 zeptocore_${{ github.ref_name }}_low_latency.uf2
+          cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}_low_latency.uf2"
       - name: Build ezeptocore.uf2
         run: |
           make ezeptocore
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}.uf2"
       - name: Build ezeptocore_128.uf2
         run: |
           make ezeptocore_128
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_ultralow_latency.uf2"
       - name: Build ezeptocore_256.uf2
         run: |
           make ezeptocore_256
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}_low_latency.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_low_latency.uf2"
       - name: Build ezeptocore no overclock
         run: |
           make ezeptocore_noclock
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_no_overclocking.uf2"
       - name: Build ezeptocore no overclock 128
         run: |
           make ezeptocore_noclock_128
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_no_overclocking_ultralow_latency.uf2"
       - name: Build ezeptocore no overclock 256
         run: |
           make ezeptocore_noclock_256
-          cp ezeptocore.uf2 ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_no_overclocking_low_latency.uf2"
       - name: Build ectocore.uf2
         run: |
           make ectocore
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}.uf2"
       - name: Build ectocore_128.uf2
         run: |
           make ectocore_128
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_ultralow_latency.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_ultralow_latency.uf2"
       - name: Build ectocore_256.uf2
         run: |
           make ectocore_256
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_low_latency.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_low_latency.uf2"
       - name: Build ectocore no overclock
         run: |
           make ectocore_noclock
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_no_overclocking.uf2"
       - name: Build ectocore no overclock 128
         run: |
           make ectocore_noclock_128
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_no_overclocking_ultralow_latency.uf2"
       - name: Build ectocore no overclock 256
         run: |
           make ectocore_noclock_256
-          cp ectocore.uf2 ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+          cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_no_overclocking_low_latency.uf2"
       - name: Build zeptoboard.uf2
         run: |
           make zeptoboard
-          cp zeptoboard.uf2 zeptoboard_${{ github.ref_name }}.uf2
+          cp zeptoboard.uf2 "dist/zeptoboard_${ARTIFACT_SUFFIX}.uf2"
       - name: Prepare source tarball (on tags only)
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          git clone -b ${{ github.ref_name }} --depth 1 https://github.com/schollz/_core _core-${{ github.ref_name }}
-          cd _core-${{ github.ref_name }}/core && go mod tidy && go mod vendor
-          cd ../.. && tar -czvf _core_${{ github.ref_name }}_src.tar.gz _core-${{ github.ref_name }}
+          git clone --branch "$GITHUB_REF_NAME" --depth 1 https://github.com/schollz/_core "_core-${ARTIFACT_SUFFIX}"
+          cd "_core-${ARTIFACT_SUFFIX}/core" && go mod tidy && go mod vendor
+          cd ../.. && tar -czvf "dist/_core_${ARTIFACT_SUFFIX}_src.tar.gz" "_core-${ARTIFACT_SUFFIX}"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-builds
-          path: |
-            zeptocore_${{ github.ref_name }}.uf2
-            zeptocore_${{ github.ref_name }}_ultralow_latency.uf2
-            zeptocore_${{ github.ref_name }}_low_latency.uf2
-            zeptoboard_${{ github.ref_name }}.uf2
-            ezeptocore_${{ github.ref_name }}.uf2
-            ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
-            ezeptocore_${{ github.ref_name }}_low_latency.uf2
-            ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
-            ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
-            ectocore_${{ github.ref_name }}.uf2
-            ectocore_${{ github.ref_name }}_ultralow_latency.uf2
-            ectocore_${{ github.ref_name }}_low_latency.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
-            _core_${{ github.ref_name }}_src.tar.gz
+          path: dist/*
           if-no-files-found: ignore
 
   release:
@@ -186,23 +173,6 @@ jobs:
       - name: Create Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/_core_${{ github.ref_name }}_src.tar.gz
-            dist/zeptocore_${{ github.ref_name }}.uf2
-            dist/zeptocore_${{ github.ref_name }}_ultralow_latency.uf2
-            dist/zeptocore_${{ github.ref_name }}_low_latency.uf2
-            dist/zeptoboard_${{ github.ref_name }}.uf2
-            dist/ezeptocore_${{ github.ref_name }}.uf2
-            dist/ezeptocore_${{ github.ref_name }}_ultralow_latency.uf2
-            dist/ezeptocore_${{ github.ref_name }}_low_latency.uf2
-            dist/ezeptocore_${{ github.ref_name }}_no_overclocking.uf2
-            dist/ezeptocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            dist/ezeptocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
-            dist/ectocore_${{ github.ref_name }}.uf2
-            dist/ectocore_${{ github.ref_name }}_ultralow_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_low_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking_ultralow_latency.uf2
-            dist/ectocore_${{ github.ref_name }}_no_overclocking_low_latency.uf2
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
