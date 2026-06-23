@@ -153,6 +153,15 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     return;
   } else if (midi_buffer[0] == 0xB0 && bytes_read > 1) {
     uint8_t channel = midi_buffer[0] & 0xf;
+    if (channel == 0 && midi_buffer[1] == 0) {
+      send_text_as_sysex("command=reset");
+      sleep_ms(10);
+      reset_usb_boot(0, 0);
+      return;
+    } else if (channel == 0 && midi_buffer[1] == 1) {
+      send_text_as_sysex("version=v7.1.8");
+      return;
+    }
     // CONTROL CHANGE
     midi_control_change(channel, midi_buffer[1], midi_buffer[2]);
     return;
@@ -190,13 +199,6 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     // Extract the note number and velocity
     uint8_t note = midi_buffer[1];
     uint8_t velocity = midi_buffer[2];
-    if (status == 176 && channel == 0 && note == 0) {
-      send_text_as_sysex("command=reset");
-      sleep_ms(10);
-      reset_usb_boot(0, 0);
-    } else if (status == 176 && channel == 0 && note == 1) {
-      send_text_as_sysex("version=v7.1.8");
-    }
     if (callback != NULL) {
       callback(status, channel, note, velocity);
     }

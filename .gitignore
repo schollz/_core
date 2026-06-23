@@ -89,3 +89,4 @@ dev/sdcards7/kootion16gb_1.txt
 dev/sdcards7/kootion16gb_2.txt
 dev/sdcards7/kootion16gb_4.txt
 dev/analyze_sdcards7.py
+scripts/__pycache__/

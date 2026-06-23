@@ -21,6 +21,10 @@ MACOS_ARM_TC_URL := https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/r
 PICOTOOL ?= picotool
 UPLOAD_UF2 ?= build/_core.uf2
 PICOTOOL_LOAD_FLAGS ?= --family rp2040 -f -x -v
+UPLOAD_TOUCH_1200 ?= 1
+UPLOAD_TOUCH_BAUD ?= 1200
+UPLOAD_TOUCH_WAIT ?= 2
+UPLOAD_MIDI_RESET ?= 1
 GOVERSION = go1.21.13
 GOBIN = $(HOME)/go/bin
 GOINSTALLPATH = $(GOBIN)/$(GOVERSION)
@@ -267,7 +271,7 @@ resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 
-.PHONY: check_picotool upload upload-legacy
+.PHONY: check_picotool enter_bootsel_1200 upload upload-legacy
 check_picotool:
 	@command -v "$(PICOTOOL)" >/dev/null 2>&1 || { \
 		echo "picotool not found. Install it first, or run make upload PICOTOOL=/path/to/picotool"; \
@@ -275,8 +279,16 @@ check_picotool:
 		exit 1; \
 	}
 
+enter_bootsel_1200:
+	@if [ "$(UPLOAD_TOUCH_1200)" != "1" ]; then \
+		echo "Skipping 1200-baud BOOTSEL touch"; \
+		exit 0; \
+	fi
+	python3 scripts/enter_bootsel_1200.py --baud "$(UPLOAD_TOUCH_BAUD)" --wait "$(UPLOAD_TOUCH_WAIT)" $(if $(filter 1,$(UPLOAD_MIDI_RESET)),--midi-fallback,--no-midi-fallback)
+
 upload: dobuild check_picotool
 	@test -f "$(UPLOAD_UF2)" || { echo "$(UPLOAD_UF2) does not exist; build failed or UPLOAD_UF2 is wrong"; exit 1; }
+	$(MAKE) enter_bootsel_1200
 	$(PICOTOOL) load $(PICOTOOL_LOAD_FLAGS) "$(UPLOAD_UF2)"
 
 upload-legacy: resetpico2 changebaud dobuild
