@@ -6,4 +6,4 @@ weight = 2
 
 
 
-To adjust the volume, press **A** and turn **Knob Z**. Holding **A** while turning still works if you prefer. For additional details, refer to [this section](#volume).
+To adjust the volume, hold **A** and turn **Knob Z**. For additional details, refer to [this section](#volume).

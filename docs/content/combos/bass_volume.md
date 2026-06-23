@@ -9,7 +9,7 @@ mode = 'any'
 +++
 
 
-Press **B**, then turn **Knob Z**. The knob keeps playback in bypass through the low range, then increases realtime stretch as you turn clockwise. You can still hold **B** while turning the knob if you prefer.
+Hold **B** and turn **Knob Z**. The knob keeps playback in bypass through the low range, then increases realtime stretch as you turn clockwise.
 
 
 <figure class="imgcombo">

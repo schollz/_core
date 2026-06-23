@@ -9,6 +9,6 @@ mode = 'any'
 +++
 
 
-Press **C**, then turn **Knob Y** to adjust tunneling probability. You can still hold **C** while turning the knob if you prefer.
+Hold **C** and turn **Knob Y** to adjust tunneling probability.
 
 "Tunneling" is where the sample will randomly jump to a neighboring sample in the current bank.

@@ -9,4 +9,4 @@ mode = 'any'
 +++
 
 
-Adjust the probability of random effects. The effects that are activated are the ones designated in the current [random effects banks](#random-effects-banks). You can change the random effect bank by pressing **D** and turning **Knob Z**. Holding **D** while turning still works if you prefer.
+Hold **D** and turn **Knob Y** to adjust the probability of random effects. The effects that are activated are the ones designated in the current [random effects banks](#random-effects-banks). You can change the random effect bank by holding **D** and turning **Knob Z**.

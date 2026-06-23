@@ -9,7 +9,7 @@ mode = 'any'
 +++
 
 
-Change the volume by pressing **A** and turning **Knob Z**. You can still hold **A** while turning the knob if you prefer. Turning the knob fully clockwise may cause clipping for some audio files, while turning it fully counter-clockwise will mute the current audio.
+Change the volume by holding **A** and turning **Knob Z**. Turning the knob fully clockwise may cause clipping for some audio files, while turning it fully counter-clockwise will mute the current audio.
 
 
 <figure class="imgcombo">

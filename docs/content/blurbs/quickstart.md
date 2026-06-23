@@ -31,14 +31,14 @@ To power on the device, toggle the switch on the top right to the "up" position.
 
 ### volume & tempo
 
-The `A`, `B`, `C`, and `D` keys select what the knobs adjust. Press one of these keys, then turn a knob. You can still hold the key while turning if you prefer.
+Hold `A`, `B`, `C`, or `D` while turning a knob to choose what the knob adjusts.
 
 <figure class="imgcombo">
 <img src="/img/volume_turn.webp">
 <figcaption>Changing the volume.</figcaption>
 </figure>
 
-Adjust the [volume](#volume) by pressing the `A` key (top left key) and turning `Knob Z` located on the right-hand side.
+Adjust the [volume](#volume) by holding the `A` key (top left key) and turning `Knob Z` located on the right-hand side.
 
 
 <figure class="imgcombo">
@@ -47,7 +47,7 @@ Adjust the [volume](#volume) by pressing the `A` key (top left key) and turning 
 </figure>
 
 
-Similarly, modify the [tempo](#tempo) by pressing the `A` key and turning `Knob X`.
+Similarly, modify the [tempo](#tempo) by holding the `A` key and turning `Knob X`.
 
 
 ### banks & samples
