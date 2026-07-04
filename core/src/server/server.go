@@ -28,6 +28,7 @@ import (
 	"github.com/schollz/_core/core/src/names"
 	"github.com/schollz/_core/core/src/onsetdetect"
 	"github.com/schollz/_core/core/src/pack"
+	"github.com/schollz/_core/core/src/sox"
 	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
 	"github.com/schollz/codename"
@@ -244,6 +245,11 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		var b []byte
 		if strings.HasPrefix(filename, StorageFolder) {
 			b, err = os.ReadFile(filename)
+			if err != nil && os.IsNotExist(err) {
+				if errPreview := ensureStorageWaveformPreview(filename); errPreview == nil {
+					b, err = os.ReadFile(filename)
+				}
+			}
 		} else {
 			if useFilesOnDisk {
 				filename = path.Join("src/server/", filename)
@@ -306,6 +312,21 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		w.Write(b)
 	}
 
+	return
+}
+
+func ensureStorageWaveformPreview(filename string) (err error) {
+	if strings.ToLower(filepath.Ext(filename)) != ".wav" {
+		return os.ErrNotExist
+	}
+
+	sourceFilename := strings.TrimSuffix(filename, filepath.Ext(filename)) + ".aif"
+	if _, err = os.Stat(sourceFilename); err != nil {
+		return
+	}
+
+	log.Debugf("creating storage waveform preview %s -> %s", sourceFilename, filename)
+	err = sox.Convert(sourceFilename, filename)
 	return
 }
 

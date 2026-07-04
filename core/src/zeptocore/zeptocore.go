@@ -72,6 +72,7 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		log.Debugf("loaded %s from disk", pathToOriginal)
 		f.debounceSave = debounce.New(321 * time.Millisecond)
 		f.debounceRegen = debounce.New(321 * time.Millisecond)
+		err = f.ensureWaveformPreview()
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
@@ -267,6 +268,12 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		}
 	}
 
+	err = f.ensureWaveformPreview()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	// Skip transient detection for oneshot mode
 	if !f.OneShot {
 		go func() {
@@ -354,6 +361,25 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		}()
 	}
 
+	return
+}
+
+func (f File) ensureWaveformPreview() (err error) {
+	if strings.ToLower(filepath.Ext(f.PathToFile)) != ".aif" {
+		return nil
+	}
+
+	folder, filename := filepath.Split(f.PathToFile)
+	filenameWithoutExt := filename[:len(filename)-len(filepath.Ext(filename))]
+	fnamePreview := path.Join(folder, filenameWithoutExt+".wav")
+	if _, err = os.Stat(fnamePreview); err == nil {
+		return nil
+	} else if !os.IsNotExist(err) {
+		return
+	}
+
+	log.Debugf("creating waveform preview %s -> %s", f.PathToAudio, fnamePreview)
+	err = sox.Convert(f.PathToAudio, fnamePreview)
 	return
 }
 
