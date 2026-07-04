@@ -544,6 +544,7 @@ app = new Vue({
         error_message: "",
         regular_message: "",
         uploading: false,
+        isAudioDragOver: false,
         resampling: 'linear',
         titleName: "_core",
         title: window.location.pathname == '/' ? "" : window.location.pathname,
@@ -612,6 +613,14 @@ app = new Vue({
     },
     mounted: function () {
         this.isReady = true;
+        document.addEventListener('dragover', this.handlePageFileDragOver);
+        document.addEventListener('drop', this.handlePageFileDrop);
+        document.addEventListener('dragleave', this.handlePageFileDragLeave);
+    },
+    beforeDestroy: function () {
+        document.removeEventListener('dragover', this.handlePageFileDragOver);
+        document.removeEventListener('drop', this.handlePageFileDrop);
+        document.removeEventListener('dragleave', this.handlePageFileDragLeave);
     },
     methods: {
         waveformClick(seconds) {
@@ -936,13 +945,24 @@ app = new Vue({
         },
         handleFileInputChange(event) {
             // Handle selected files when the file input changes
-            const files = event.target.files;
+            this.uploadAudioFiles(event.target.files);
+
+            // Clear the file input value to allow selecting the same file again
+            event.target.value = null;
+        },
+        uploadAudioFiles(files) {
+            if (!files || files.length === 0) {
+                return false;
+            }
+
             this.progressBarWidth = '0px';
             totalBytesUploaded = 0;
             totalBytesRequested = 0;
             for (var i = 0; i < files.length; i++) {
                 totalBytesRequested += files[i].size;
             }
+            console.log('totalBytesRequested', totalBytesRequested);
+
             if (fadeOutTimeout != null) {
                 clearTimeout(fadeOutTimeout);
             }
@@ -953,7 +973,6 @@ app = new Vue({
                 formData.append('files', file);
             }
 
-            // Use fetch to send a POST request to the server
             var xhr = new XMLHttpRequest();
             xhr.upload.onprogress = function (event) {
                 if (event.lengthComputable) {
@@ -985,8 +1004,7 @@ app = new Vue({
             xhr.open('POST', '/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode);
             xhr.send(formData);
 
-            // Clear the file input value to allow selecting the same file again
-            event.target.value = null;
+            return true;
         },
         saveLastSelected() {
             this.lastSelectedFile = this.selectedFile;
@@ -1160,53 +1178,87 @@ app = new Vue({
                 }));
             }, 100);
         },
-        handleDrop(event) {
+        isUploadPageActive() {
+            return !!document.getElementById('fileInput');
+        },
+        hasTransferredFiles(event) {
+            if (!event || !event.dataTransfer) {
+                return false;
+            }
+            if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                return true;
+            }
+            const types = Array.from(event.dataTransfer.types || []);
+            return types.indexOf('Files') !== -1;
+        },
+        isInternalFileReorder(event) {
+            if (this.hasTransferredFiles(event)) {
+                return false;
+            }
+            const types = event && event.dataTransfer ? Array.from(event.dataTransfer.types || []) : [];
+            return this.draggedIndex !== null ||
+                types.indexOf('application/x-core-file-reorder') !== -1 ||
+                types.indexOf('text/html') !== -1;
+        },
+        handleAudioDragOver(event) {
+            if (!this.hasTransferredFiles(event)) {
+                return;
+            }
             event.preventDefault();
-            const files = event.target.files || event.dataTransfer.files;
-            this.progressBarWidth = '0%';
-            fadeInProgressbar();
-            totalBytesUploaded = 0;
-            totalBytesRequested = 0;
-            for (var i = 0; i < files.length; i++) {
-                totalBytesRequested += files[i].size;
+            event.stopPropagation();
+            this.isAudioDragOver = true;
+            event.dataTransfer.dropEffect = 'copy';
+        },
+        handleAudioDragEnter(event) {
+            if (!this.hasTransferredFiles(event)) {
+                return;
             }
-            console.log('totalBytesRequested', totalBytesRequested);
+            event.preventDefault();
+            event.stopPropagation();
+            this.isAudioDragOver = true;
+        },
+        handleAudioDragLeave(event) {
+            if (event.currentTarget === event.target) {
+                this.isAudioDragOver = false;
+            }
+        },
+        handleAudioFileDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.isAudioDragOver = false;
 
-            const formData = new FormData();
-            for (const file of files) {
-                formData.append('files', file);
+            if (this.isInternalFileReorder(event)) {
+                return false;
             }
-            // Use fetch to send a POST request to the server
-            var xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = function (event) {
-                if (event.lengthComputable) {
-                    var percentComplete = (event.loaded / event.total) * 100;
-                    var maxWidth = window.innerWidth;
-                    app.progressBarWidth = `${Math.floor(percentComplete / 100.0 * maxWidth)}px`;
-                    if (percentComplete >= 99.99) {
-                        app.progressBarWidth = `${maxWidth}px`;
-                        fadeOutProgressbar();
-                        fadeOutTimeout = setTimeout(() => {
-                            app.progressBarWidth = '0px';
-                        }, 5000);
-                    } else {
-                        var circle = document.getElementsByClassName('progress-bar')[0];
-                        circle.style.opacity = '1';
-                    }
-                }
-            };
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log('Upload successful:', JSON.parse(xhr.responseText).message);
-                } else {
-                    console.error('Error uploading files:', xhr.statusText);
-                }
-            };
-            xhr.onerror = function () {
-                console.error('Error during upload:', xhr.statusText);
-            };
-            xhr.open('POST', '/upload?id=' + randomID + "&place=" + window.location.pathname + "&dropaudiofilemode=" + app.dropaudiofilemode);
-            xhr.send(formData);
+
+            const files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
+            return this.uploadAudioFiles(files);
+        },
+        handlePageFileDragOver(event) {
+            if (!this.isUploadPageActive() || this.isInternalFileReorder(event) || !this.hasTransferredFiles(event)) {
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            this.isAudioDragOver = true;
+            event.dataTransfer.dropEffect = 'copy';
+        },
+        handlePageFileDrop(event) {
+            this.isAudioDragOver = false;
+
+            if (!this.isUploadPageActive() || this.isInternalFileReorder(event) || !this.hasTransferredFiles(event)) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+            this.uploadAudioFiles(event.dataTransfer.files);
+        },
+        handlePageFileDragLeave(event) {
+            if (event.clientX <= 0 || event.clientY <= 0 ||
+                event.clientX >= window.innerWidth || event.clientY >= window.innerHeight) {
+                this.isAudioDragOver = false;
+            }
         },
         openFileModal(fileIndex) {
             // Simply open the modal without changing selection
@@ -1250,6 +1302,7 @@ app = new Vue({
             this.isDragging = true;
             this.draggedIndex = fileIndex;
             event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('application/x-core-file-reorder', String(fileIndex));
             event.dataTransfer.setData('text/html', event.target.innerHTML);
         },
         handleDragEnd() {
@@ -1261,6 +1314,15 @@ app = new Vue({
             if (event.preventDefault) {
                 event.preventDefault();
             }
+            if (this.hasTransferredFiles(event)) {
+                this.isAudioDragOver = true;
+                this.dragOverIndex = null;
+                event.dataTransfer.dropEffect = 'copy';
+                return false;
+            }
+            if (this.draggedIndex === null) {
+                return false;
+            }
             this.dragOverIndex = fileIndex;
             event.dataTransfer.dropEffect = 'move';
             return false;
@@ -1268,9 +1330,16 @@ app = new Vue({
         handleDragLeave() {
             this.dragOverIndex = null;
         },
-        handleDrop(event, dropIndex) {
+        handleFileReorderDrop(event, dropIndex) {
+            event.preventDefault();
             if (event.stopPropagation) {
                 event.stopPropagation();
+            }
+
+            if (this.hasTransferredFiles(event)) {
+                this.isAudioDragOver = false;
+                this.dragOverIndex = null;
+                return this.uploadAudioFiles(event.dataTransfer.files);
             }
 
             const dragIndex = this.draggedIndex;

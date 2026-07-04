@@ -818,8 +818,10 @@
                     v-bind:class="{ 'height75' : banks[selectedBank].files.length === 0}">
                     <!-- Add file input for selecting files -->
                     <input type="file" id="fileInput" @change="handleFileInputChange" multiple style="display: none">
-                    <div class="drop-area" @drop="handleDrop" @dragover.prevent @click="openFileInput"
-                        v-bind:class="{ 'height100' : banks[selectedBank].files.length === 0}">
+                    <div class="drop-area" @drop.prevent.stop="handleAudioFileDrop"
+                        @dragover.prevent.stop="handleAudioDragOver" @dragenter.prevent.stop="handleAudioDragEnter"
+                        @dragleave="handleAudioDragLeave" @click="openFileInput"
+                        v-bind:class="{ 'height100' : banks[selectedBank].files.length === 0, 'audio-drag-over': isAudioDragOver }">
                         Drop audio files (mp3, wav, flac, xrni, aif) or click to select
                     </div>
                 </div>
@@ -857,7 +859,7 @@
                         <li v-for="(file, fileIndex) in banks[selectedBank].files" :key="fileIndex" draggable="true"
                             @dragstart="handleDragStart($event, fileIndex)" @dragend="handleDragEnd"
                             @dragover.prevent="handleDragOver($event, fileIndex)" @dragleave="handleDragLeave"
-                            @drop="handleDrop($event, fileIndex)" @mousedown="handleMouseDown(fileIndex)"
+                            @drop.prevent.stop="handleFileReorderDrop($event, fileIndex)" @mousedown="handleMouseDown(fileIndex)"
                             @mouseup="handleMouseUp(fileIndex)" :class="{
                                 'selected': isSelected(fileIndex),
                                 'selected_on':isSelectedAndOpen(fileIndex),
