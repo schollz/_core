@@ -30,8 +30,8 @@ if os.geteuid() != 0:
         ["sudo", sys.executable, *sys.argv],
     )
 
-DISK = "sdd"
-PART = "/dev/sdd1"
+DISK = "sde"
+PART = "/dev/sde1"
 MOUNT = "/mnt/ezcore"
 LABEL = "EZEPTOCORE"
 SRC = Path("/home/zns/Downloads/ezeptocore-data")
