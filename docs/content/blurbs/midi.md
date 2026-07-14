@@ -37,6 +37,36 @@ Using MIDI you can also easily sync up with Ableton or other DAWs.
   ></iframe>
 </div>
 
+### MIDI Implementation Chart
+
+| Function | Transmitted | Recognized | Remarks |
+| --- | :---: | :---: | --- |
+| Basic channel | 1–6 | 1 | Channels 1–3: Jump, Mash, and Bass buttons; channels 4–6: Jump, Mash, and Bass sequencers |
+| Note On | O | X | Notes 0–31; velocity 127 |
+| Note Off | O | X | Notes 0–31; velocity 0 |
+| CC 7 | O | O* | Volume |
+| CC 12 | O | X | Knob X |
+| CC 13 | O | X | Knob Y |
+| CC 14 | O | X | Knob Z |
+| CC 15 | O | O* | Tempo |
+| CC 16 | O | O* | Pitch |
+| CC 18 | O | O* | Random sequence |
+| CC 19 | O | O* | DJ filter |
+| CC 20 | O | O* | Realtime stretch |
+| CC 21 | O | O* | Sample select |
+| CC 22 | O | O* | Random tunnel |
+| CC 23 | O | O* | Sequencer quantize |
+| CC 24 | O | O* | Random jump |
+| CC 25 | O | O* | Grimoire probability / Break |
+| CC 26 | O | O* | Grimoire rune |
+| System Exclusive | O | X | USB status and debug text |
+| Timing Clock | O | O | 24 pulses per quarter note |
+| Start | O | O | MIDI real-time transport |
+| Continue | X | O | MIDI real-time transport |
+| Stop | O | O | MIDI real-time transport |
+
+`O` = supported; `X` = unsupported; `*` = recognized over USB MIDI only. USB provides MIDI input and output. The `CLOCK` input can provide MIDI input after MIDI mode is enabled.
+
 
 ### Itty Bitty MIDI
 
