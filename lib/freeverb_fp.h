@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "fixedpoint.h"
 
@@ -19,7 +20,14 @@ void FV_AllPass_set_feedback(FV_AllPass *self, int32_t feedback) {
 
 FV_AllPass *FV_AllPass_malloc(int bufsize, int32_t feedback) {
   FV_AllPass *self = (FV_AllPass *)malloc(sizeof(FV_AllPass));
+  if (self == NULL) {
+    return NULL;
+  }
   self->buffer = (int32_t *)malloc(bufsize * sizeof(int32_t));
+  if (self->buffer == NULL) {
+    free(self);
+    return NULL;
+  }
   memset(self->buffer, 0, bufsize * sizeof(int32_t));
   self->bufsize = bufsize;
   self->bufidx = 0;
@@ -41,7 +49,8 @@ static inline int32_t FV_AllPass_process(FV_AllPass *self, int32_t input) {
   int32_t bufout;
   bufout = self->buffer[self->bufidx];
   self->buffer[self->bufidx] = input + q16_16_multiply(bufout, self->feedback);
-  if (++(self->bufidx) >= self->bufsize) self->bufidx = 0;
+  if (++(self->bufidx) >= self->bufsize)
+    self->bufidx = 0;
   return -input + bufout;
 }
 
@@ -67,12 +76,19 @@ void FV_Comb_set_damp(FV_Comb *self, int32_t damp) {
 
 FV_Comb *FV_Comb_malloc(int bufsize, int32_t feedback, int32_t damp) {
   FV_Comb *self = (FV_Comb *)malloc(sizeof(FV_Comb));
+  if (self == NULL) {
+    return NULL;
+  }
   self->feedback = feedback;
   self->filterstore = 0;
   self->damp1 = damp;
   self->damp2 = Q16_16_1 - damp;
   self->bufidx = 0;
   self->buffer = (int32_t *)malloc(bufsize * sizeof(int32_t));
+  if (self->buffer == NULL) {
+    free(self);
+    return NULL;
+  }
   memset(self->buffer, 0, bufsize * sizeof(int32_t));
   self->bufsize = bufsize;
   return self;
@@ -96,13 +112,17 @@ static inline int32_t FV_Comb_process(FV_Comb *self, int32_t input) {
                       q16_16_multiply(self->filterstore, self->damp1);
   self->buffer[self->bufidx] =
       input + q16_16_multiply(self->filterstore, self->feedback);
-  if (++self->bufidx >= self->bufsize) self->bufidx = 0;
+  if (++self->bufidx >= self->bufsize)
+    self->bufidx = 0;
   return output;
 }
 
 // tuning
 #define FV_NUMCOMBS_MAX 8
 #define FV_NUMALLPASSES_MAX 4
+#define FV_NUMCOMBS_DEFAULT 1
+#define FV_NUMALLPASSES_DEFAULT 1
+#define FV_REVERB_HEAP_RESERVE 4096
 #define FV_MUTED 0
 #define FV_FIXEDGAIN (q16_16_float_to_fp(0.015f))
 #define FV_SCALEWET (3 * Q16_16_1)
@@ -140,6 +160,8 @@ typedef struct FV_Reverb {
   FV_AllPass *allpassR[FV_NUMALLPASSES_MAX];
 
 } FV_Reverb;
+
+void FV_Reverb_free(FV_Reverb *self);
 
 int FV_Reverb_heap_size(int num_combs, int num_allpasses) {
   int total_size = sizeof(FV_Reverb);
@@ -184,15 +206,12 @@ void FV_Reverb_set_wet(FV_Reverb *self, int32_t wet) {
 
 FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
                             int32_t dry) {
-  int8_t num_allpasses = 3;
-  int8_t num_combs = 8;
-  for (int i = 0; i <= FV_NUMALLPASSES_MAX; i++) {
-    num_combs = i;
-    if (getFreeHeap() < FV_Reverb_heap_size(num_combs, num_allpasses)) {
-      break;
-    }
-  }
-  if (num_combs <= 0 || num_allpasses <= 0) {
+  const int8_t num_combs = FV_NUMCOMBS_DEFAULT;
+  const int8_t num_allpasses = FV_NUMALLPASSES_DEFAULT;
+  const int heap_size = FV_Reverb_heap_size(num_combs, num_allpasses);
+  if (getFreeHeap() < (uint32_t)(heap_size + FV_REVERB_HEAP_RESERVE)) {
+    printf("[FV_Reverb_malloc] skipped: need %d bytes plus %d-byte reserve\n",
+           heap_size, FV_REVERB_HEAP_RESERVE);
     return NULL;
   }
   printf("[FV_Reverb_malloc] num_combs: %d, num_allpasses: %d\n", num_combs,
@@ -202,8 +221,7 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
   if (self == NULL) {
     return NULL;
   }
-  self->num_combs = num_combs;
-  self->num_allpasses = num_allpasses;
+  memset(self, 0, sizeof(*self));
   self->width = Q16_16_1;
   self->roomsize = q16_16_multiply(roomsize, FV_SCALEROOM) + FV_OFFSETROOM;
   self->damp = q16_16_multiply(damp, FV_SCALEDAMP);
@@ -212,30 +230,42 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
   self->wet1 = self->wet * (self->width / 2 + 0.5);
   self->wet2 = self->wet * ((1 - self->width) / 2);
 
-  self->gain = q16_16_float_to_fp(
-      1.0 / (float)(self->num_combs + self->num_allpasses) / 6.0f);
+  self->gain =
+      q16_16_float_to_fp(1.0 / (float)(num_combs + num_allpasses) / 6.0f);
 
-  for (int i = 0; i < self->num_combs; i++) {
+  for (int i = 0; i < num_combs; i++) {
     self->combL[i] = FV_Comb_malloc(combtunings[i], self->roomsize, self->damp);
     if (self->combL[i] == NULL) {
-      self->num_combs = i + 1;
-      break;
+      goto allocation_failed;
     }
     self->combR[i] = FV_Comb_malloc(combtunings[i] + FV_STEREOSPREAD,
                                     self->roomsize, self->damp);
     if (self->combR[i] == NULL) {
       FV_Comb_free(self->combL[i]);
-      self->num_combs = i + 1;
-      break;
+      self->combL[i] = NULL;
+      goto allocation_failed;
     }
+    self->num_combs++;
   }
-  for (int i = 0; i < self->num_allpasses; i++) {
+  for (int i = 0; i < num_allpasses; i++) {
     self->allpassL[i] = FV_AllPass_malloc(allpasstunings[i], self->damp);
     self->allpassR[i] =
         FV_AllPass_malloc(allpasstunings[i] + FV_STEREOSPREAD, self->damp);
+    if (self->allpassL[i] == NULL || self->allpassR[i] == NULL) {
+      FV_AllPass_free(self->allpassL[i]);
+      FV_AllPass_free(self->allpassR[i]);
+      self->allpassL[i] = NULL;
+      self->allpassR[i] = NULL;
+      goto allocation_failed;
+    }
+    self->num_allpasses++;
   }
   // printf("[freeverb_fp] allocated\n");
   return self;
+
+allocation_failed:
+  FV_Reverb_free(self);
+  return NULL;
 }
 
 void FV_Reverb_free(FV_Reverb *self) {
@@ -260,7 +290,7 @@ void FV_Reverb_free(FV_Reverb *self) {
 
 void FV_Reverb_process(FV_Reverb *self, int32_t *buf, unsigned int nr_samples) {
   int32_t outL, outR, inputL, inputR;
-  for (int i = 0; i < nr_samples; i++) {
+  for (unsigned int i = 0; i < nr_samples; i++) {
     outL = outR = 0;
     // convert int32_t to float
     inputL = q16_16_multiply(buf[2 * i + 0], self->gain);

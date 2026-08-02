@@ -28,8 +28,10 @@ uint64_t realtime_stretch_phase_q32 = 0;
 RealtimeStretchGrain realtime_stretch_grains[2] = {
     {0, REALTIME_STRETCH_PHASE_INC_Q32, 0},
     {0, REALTIME_STRETCH_PHASE_INC_Q32, REALTIME_STRETCH_GRAIN_HOP}};
-static int16_t realtime_stretch_readbuf[2][REALTIME_STRETCH_MAX_SOURCE_FRAMES *
-                                           2];
+// Each grain is read and accumulated before the next one, so both grains can
+// share this temporary buffer. This saves 7,072 bytes at 441-frame blocks.
+static int16_t
+    realtime_stretch_readbuf[REALTIME_STRETCH_MAX_SOURCE_FRAMES * 2];
 
 uint32_t realtime_stretch_from_knob_q8(uint16_t knob) {
   if (knob > 4095) {
@@ -302,35 +304,29 @@ bool realtime_stretch_render(int16_t *values, uint32_t sample_count,
 
     for (uint8_t grain_index = 0; grain_index < 2; grain_index++) {
       RealtimeStretchGrain *grain = &realtime_stretch_grains[grain_index];
-      const uint64_t start_phase_q32 =
+      const uint64_t segment_start_phase_q32 =
           grain->start_phase_q32 +
           (uint64_t)grain->age * grain->phase_inc_q32;
       const uint64_t local_span_q32 =
-          (start_phase_q32 & 0xffffffffull) +
+          (segment_start_phase_q32 & 0xffffffffull) +
           (uint64_t)(segment - 1) * grain->phase_inc_q32;
       uint32_t frames_to_read =
           (uint32_t)((local_span_q32 >> 32u) + 3u);
       if (frames_to_read > REALTIME_STRETCH_MAX_SOURCE_FRAMES) {
         frames_to_read = REALTIME_STRETCH_MAX_SOURCE_FRAMES;
       }
-      if (!realtime_stretch_read_frames(start_phase_q32, frames_to_read,
-                                        realtime_stretch_readbuf[grain_index])) {
+      if (!realtime_stretch_read_frames(segment_start_phase_q32,
+                                        frames_to_read,
+                                        realtime_stretch_readbuf)) {
         return false;
       }
-    }
 
-    for (uint32_t i = 0; i < segment; i++) {
-      int32_t mixed[2] = {0, 0};
-      for (uint8_t grain_index = 0; grain_index < 2; grain_index++) {
-        RealtimeStretchGrain *grain = &realtime_stretch_grains[grain_index];
+      for (uint32_t i = 0; i < segment; i++) {
         const uint32_t weight =
             realtime_stretch_grain_window(grain->age + i);
         if (weight == 0) {
           continue;
         }
-        const uint64_t segment_start_phase_q32 =
-            grain->start_phase_q32 +
-            (uint64_t)grain->age * grain->phase_inc_q32;
         const uint64_t local_phase_q32 =
             (segment_start_phase_q32 & 0xffffffffull) +
             (uint64_t)i * grain->phase_inc_q32;
@@ -338,17 +334,19 @@ bool realtime_stretch_render(int16_t *values, uint32_t sample_count,
         const uint32_t frac = (uint32_t)local_phase_q32;
         for (uint8_t channel = 0; channel < 2; channel++) {
           const uint8_t source_channel = channels == 1 ? 0 : channel;
-          mixed[channel] +=
+          const uint32_t output_index = (rendered + i) * 2 + channel;
+          const int32_t contribution =
               (int32_t)realtime_stretch_interpolated_frame(
-                  realtime_stretch_readbuf[grain_index], frame_offset,
-                  source_channel, channels, frac) *
+                  realtime_stretch_readbuf, frame_offset, source_channel,
+                  channels, frac) *
               (int32_t)weight;
+          const int32_t accumulated =
+              (int32_t)values[output_index] *
+                  (1 << REALTIME_STRETCH_GRAIN_HOP_SHIFT) +
+              contribution;
+          values[output_index] = (int16_t)(
+              accumulated >> REALTIME_STRETCH_GRAIN_HOP_SHIFT);
         }
-      }
-
-      for (uint8_t channel = 0; channel < 2; channel++) {
-        values[(rendered + i) * 2 + channel] =
-            (int16_t)(mixed[channel] >> REALTIME_STRETCH_GRAIN_HOP_SHIFT);
       }
     }
 

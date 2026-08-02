@@ -285,7 +285,6 @@ DebounceUint8 *debouncer_uint8[DEBOUNCE_UINT8_NUM];
 DebounceDigits *debouncer_digits;
 #endif
 
-MessageSync *messagesync;
 bool sdcard_startup_is_starting = false;
 volatile bool button_mute = false;
 bool trigger_button_mute = false;
@@ -626,11 +625,6 @@ void do_update_phase_from_beat_current() {
   beat_current_show = slice;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
-#ifdef INCLUDE_MIDI
-  if (midi_input_activated) {
-    printf_sysex("slice=%d", slice);
-  }
-#endif
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
@@ -727,7 +721,7 @@ void step_sequencer_emit(uint8_t key) {
 #endif
   key_do_jump(key);
 }
-void step_sequencer_stop() { printf("stop\n"); }
+void step_sequencer_stop() {}
 
 uint8_t do_random_sequence(bool on) {
   if (on) {

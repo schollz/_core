@@ -4,6 +4,8 @@
 #define LIB_UTILS 1
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c\n"
 #define BYTE_TO_BINARY(byte)                                    \
@@ -74,6 +76,52 @@ void hue_to_rgb2(uint8_t hue, uint8_t *r, uint8_t *g, uint8_t *b) {
   util_clamp((ymin + (x - xmin) * (ymax - ymin) / (xmax - xmin)), (ymin), \
              (ymax))
 
+static inline char *append_uint32_decimal(char *dest, uint32_t value) {
+  char reversed[10];
+  uint8_t digits = 0;
+
+  do {
+    reversed[digits++] = (char)('0' + value % 10);
+    value /= 10;
+  } while (value != 0);
+
+  while (digits > 0) {
+    *dest++ = reversed[--digits];
+  }
+  return dest;
+}
+
+static inline void format_int32_decimal(char *dest, int32_t value) {
+  uint32_t magnitude;
+  if (value < 0) {
+    *dest++ = '-';
+    magnitude = (uint32_t)(-(value + 1)) + 1;
+  } else {
+    magnitude = (uint32_t)value;
+  }
+  dest = append_uint32_decimal(dest, magnitude);
+  *dest = '\0';
+}
+
+static inline void format_prefixed_int32(char *dest, const char *prefix,
+                                         int32_t value) {
+  while (*prefix != '\0') {
+    *dest++ = *prefix++;
+  }
+  format_int32_decimal(dest, value);
+}
+
+static inline void format_sample_filename(char *dest, uint8_t bank,
+                                          uint8_t sample, uint8_t variation) {
+  memcpy(dest, "bank", 4);
+  dest = append_uint32_decimal(dest + 4, (uint32_t)bank + 1);
+  *dest++ = '/';
+  dest = append_uint32_decimal(dest, sample);
+  *dest++ = '.';
+  dest = append_uint32_decimal(dest, variation);
+  memcpy(dest, ".wav", 5);
+}
+
 // multiplies and clips the output
 void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,
                             uint16_t num_values) {
@@ -90,32 +138,32 @@ void MultipyAndClip_process(int32_t mul, int16_t max_val, int16_t *values,
 
 static inline uint8_t linlin_uint8_t(uint8_t in, uint8_t in_min, uint8_t in_max,
                                      uint8_t out_min, uint8_t out_max) {
-  return util_clamp(
-      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+  return util_clamp((in - in_min) * (out_max - out_min) / (in_max - in_min) +
+                        out_min,
       out_min, out_max);
 }
 
 static inline uint16_t linlin_uint16_t(uint8_t in, uint8_t in_min,
                                        uint8_t in_max, uint16_t out_min,
                                        uint16_t out_max) {
-  return util_clamp(
-      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+  return util_clamp((in - in_min) * (out_max - out_min) / (in_max - in_min) +
+                        out_min,
       out_min, out_max);
 }
 
 static inline uint32_t linlin_uint32_t(uint8_t in, uint8_t in_min,
                                        uint8_t in_max, uint32_t out_min,
                                        uint32_t out_max) {
-  return util_clamp(
-      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+  return util_clamp((in - in_min) * (out_max - out_min) / (in_max - in_min) +
+                        out_min,
       out_min, out_max);
 }
 
 static inline uint8_t linlin_int32_uint8(int32_t in, int32_t in_min,
                                          int32_t in_max, uint8_t out_min,
                                          uint8_t out_max) {
-  return util_clamp(
-      (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min,
+  return util_clamp((in - in_min) * (out_max - out_min) / (in_max - in_min) +
+                        out_min,
       out_min, out_max);
 }
 void generate_euclidean_rhythm(int n, int k, int offset, bool *rhythm) {

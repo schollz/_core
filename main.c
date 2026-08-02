@@ -905,7 +905,6 @@ int main() {
   random_initialize();
 
   // initialize message sync
-  messagesync = MessageSync_malloc();
 
   // intialize beat repeater
   beatrepeat = BeatRepeat_malloc();
