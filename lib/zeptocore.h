@@ -29,9 +29,7 @@ void printStringWithDelay(char *str) {
             }
             led++;
           }
-          printf("\n");
         }
-        printf("\n");
         LEDS_render(leds);
         if (currentChar == '.') {
           sleep_ms(50);
@@ -52,7 +50,8 @@ void clear_debouncers() {
 }
 
 void make_random_sequence(uint8_t adcValue) {
-  if (adcValue > 255) adcValue = 255;
+  if (adcValue > 255)
+    adcValue = 255;
   if (adcValue < 32) {
     // normal
     do_retrig_at_end_of_phrase = false;
@@ -76,10 +75,8 @@ void make_random_sequence(uint8_t adcValue) {
 }
 
 void __not_in_flash_func(input_handling)() {
-  printf("core1 running!\n");
   // flash bad signs
   while (!fil_is_open) {
-    printf("waiting to start\n");
     sleep_ms(10);
   }
   LEDS_clear(leds);
@@ -100,8 +97,6 @@ void __not_in_flash_func(input_handling)() {
     midiout[i] = MidiOut_malloc(i, true);
   }
 #endif
-
-  printf("entering while loop\n");
 
   uint8_t new_vol;
   //   (
@@ -142,9 +137,6 @@ void __not_in_flash_func(input_handling)() {
 
   // debug test
   printStringWithDelay("zv7.3.0");
-
-  // print to screen
-  printf("version=v7.3.0\n");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -218,9 +210,6 @@ void __not_in_flash_func(input_handling)() {
     // if in startup deduct
     if (adc_startup > 0) {
       adc_startup--;
-      if (adc_startup == 0) {
-        printf("adc startup done\n");
-      }
       // if (adc_startup == 0) {
       //   for (int i = 1; i < 2; i++) {
       //     PIO p = (i == 0) ? pio0 : pio1;
@@ -241,7 +230,7 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v7.3.0\n");
+        send_text_as_sysex("version=v7.3.0");
       }
     }
 
@@ -278,14 +267,9 @@ void __not_in_flash_func(input_handling)() {
     }
 #endif
 
-    if (MessageSync_hasMessage(messagesync)) {
-      MessageSync_print(messagesync);
-      MessageSync_clear(messagesync);
-    }
-
 #ifdef INCLUDE_SSD1306
     char buf_ssd1306[16];
-    sprintf(buf_ssd1306, "%d", beat_current);
+    format_int32_decimal(buf_ssd1306, beat_current);
     ssd1306_clear(&disp);
     ssd1306_draw_string(&disp, 8, 24, 1, buf_ssd1306);
     ssd1306_bmp_show_image_with_offset(&disp, output_bmp_data, output_bmp_size,
@@ -310,14 +294,12 @@ void __not_in_flash_func(input_handling)() {
             if (random_integer_in_range(0, 96) <
                 probability_max_values_off[sf->fx_param[i][2] >> 4]) {
               toggle_fx(i);
-              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
             }
           } else {
             if (random_integer_in_range(0, 96) <
                 probability_max_values[sf->fx_param[i][2] >> 4]) {
               toggle_fx(i);
               // TODO: also randomize the parameters?
-              printf("[zeptocore] random fx: %d %d\n", i, sf->fx_active[i]);
             }
           }
         }
@@ -403,13 +385,11 @@ void __not_in_flash_func(input_handling)() {
         clear_debouncers();
         DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                           sf->fx_param[single_key - 4][0], 100);
-        printf("fx_param %d: %d %d\n", 0, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_BEATREPEAT + 4] && do_update_beat_repeat == 0) {
           debounce_beat_repeat = 30;
         } else if (key_on_buttons[FX_DELAY + 4]) {
           Delay_setFeedbackf(delay, (float)adc / 8192.0f + 0.49f);
         } else if (key_on_buttons[FX_TIGHTEN + 4]) {
-          printf("updating gate\n");
           Gate_set_amount(audio_gate, sf->fx_param[FX_TIGHTEN][0]);
           // deactivated
           // } else if (key_on_buttons[FX_TREMELO + 4]) {
@@ -442,7 +422,6 @@ void __not_in_flash_func(input_handling)() {
             // round to nearest 2
             bpm_new_tempo = (bpm_new_tempo / 2) * 2;
           }
-          printf("bpm_new_tempo: %d\n", bpm_new_tempo);
           sf->bpm_tempo = util_clamp(bpm_new_tempo, 30, 300);
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
@@ -461,7 +440,6 @@ void __not_in_flash_func(input_handling)() {
           MidiOut_cc(midiout[0], cc_sampleselect, adc * 127 / 4096);
 #endif
           sample_selection_index = adc_raw * sample_selection_num / 4096;
-          printf("sample_selection_index: %d\n", sample_selection_index);
         } else if (button_is_pressed(KEY_D)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -485,7 +463,6 @@ void __not_in_flash_func(input_handling)() {
 #endif
 
     if (sample_selection_index_last != sample_selection_index) {
-      printf("sample_selection_index: %d\n", sample_selection_index);
       sample_selection_index_last = sample_selection_index;
       debounce_sample_selection = 40;
     } else if (debounce_sample_selection > 0) {
@@ -498,15 +475,14 @@ void __not_in_flash_func(input_handling)() {
             f_sel_sample_next != sel_sample_cur) {
           sel_bank_next = f_sel_bank_next;
           sel_sample_next = f_sel_sample_next;
-          printf("[zeptocore] %d bank %d, sample %d\n", sample_selection_index,
-                 sel_bank_next, sel_sample_next);
           fil_current_change = true;
         }
       }
     }
 
 #ifdef BTN_COL_START
-    if (!is_arcade_box) button_handler(bm);
+    if (!is_arcade_box)
+      button_handler(bm);
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -543,7 +519,6 @@ void __not_in_flash_func(input_handling)() {
       adc_debounce[1]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][1] = adc * 255 / 4096;
-        printf("fx_param %d: %d %d\n", 1, single_key - 4, adc * 255 / 4096);
         if (key_on_buttons[FX_EXPAND + 4]) {
           update_reverb();
         } else if (key_on_buttons[FX_DELAY + 4]) {
@@ -662,7 +637,8 @@ void __not_in_flash_func(input_handling)() {
 #endif
 
 #ifdef BTN_COL_START
-    if (!is_arcade_box) button_handler(bm);
+    if (!is_arcade_box)
+      button_handler(bm);
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -697,7 +673,6 @@ void __not_in_flash_func(input_handling)() {
       adc_debounce[2]--;
       if (mode_buttons16 == MODE_MASH && single_key > -1) {
         sf->fx_param[single_key - 4][2] = adc * 255 / 4096;
-        printf("fx_param %d: %d %d\n", 2, single_key - 4, adc * 255 / 4096);
       } else if (adc_startup == 0) {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
@@ -708,7 +683,6 @@ void __not_in_flash_func(input_handling)() {
           // new_vol = 100;
           if (new_vol != sf->vol) {
             sf->vol = new_vol;
-            printf("sf-vol: %d\n", sf->vol);
           }
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
@@ -729,7 +703,6 @@ void __not_in_flash_func(input_handling)() {
 
           const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
                                              64, 96, 144, 192, 192};
-          printf("quantization: %d\n", quantizations[adc * 9 / 4096]);
           Sequencer_quantize(
               sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
               quantizations[adc * 9 / 4096]);
@@ -779,7 +752,6 @@ void __not_in_flash_func(input_handling)() {
             new_vol = (255 - adcValue) * VOLUME_STEPS * 6 / 7 / 255;
             if (new_vol != sf->vol) {
               sf->vol = new_vol;
-              printf("sf-vol: %d\n", sf->vol);
             }
             clear_debouncers();
             DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
@@ -808,8 +780,6 @@ void __not_in_flash_func(input_handling)() {
                 f_sel_sample_next != sel_sample_cur) {
               sel_bank_next = f_sel_bank_next;
               sel_sample_next = f_sel_sample_next;
-              printf("[zeptocore] %d bank %d, sample %d\n",
-                     sample_selection_index, sel_bank_next, sel_sample_next);
               fil_current_change = true;
             }
             clear_debouncers();
@@ -899,7 +869,8 @@ void __not_in_flash_func(input_handling)() {
     LEDS_render(leds);
 
 #ifdef BTN_COL_START
-    if (!is_arcade_box) button_handler(bm);
+    if (!is_arcade_box)
+      button_handler(bm);
 #endif
 
 #ifdef INCLUDE_CLOCKINPUT
@@ -965,7 +936,6 @@ void __not_in_flash_func(input_handling)() {
         while (sync_using_sdcard) {
           sleep_us(100);
         }
-        printf("sync2: %ld\n", time_us_32() - time_start);
         // make sure the audio block was faster than usual
         if (time_us_32() - time_start < 4000) {
           do_try_change = true;
@@ -973,18 +943,10 @@ void __not_in_flash_func(input_handling)() {
       }
       if (do_try_change) {
         sync_using_sdcard = true;
-        // measure the time it takes
-        uint32_t time_start = time_us_32();
-        FRESULT fr = f_close(&fil_current);
-        if (fr != FR_OK) {
-          debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-        }
-        sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-                sel_sample_cur, sel_variation_next + audio_variant * 2);
-        fr = f_open(&fil_current, fil_current_name, FA_READ);
-        if (fr != FR_OK) {
-          debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-        }
+        f_close(&fil_current);
+        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
+                               sel_variation_next + audio_variant * 2);
+        f_open(&fil_current, fil_current_name, FA_READ);
 
         // TODO: fix this
         // if sel_variation_next == 0
@@ -994,8 +956,6 @@ void __not_in_flash_func(input_handling)() {
 
         sel_variation = sel_variation_next;
         sync_using_sdcard = false;
-        printf("[zeptocore] loading new sample variation took %d us\n",
-               time_us_32() - time_start);
       }
     }
   }

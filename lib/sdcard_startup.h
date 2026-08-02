@@ -335,11 +335,6 @@ void update_reverb() {
 
 bool filter_was_activated = false;
 void update_fx(uint8_t fx_num) {
-#ifdef INCLUDE_MIDI
-  if (midi_input_activated) {
-    printf_sysex("fx=%d,%d", fx_num, sf->fx_active[fx_num]);
-  }
-#endif
   switch (fx_num) {
     case FX_REVERSE:
       phase_forward = !sf->fx_active[fx_num];
@@ -349,8 +344,8 @@ void update_fx(uint8_t fx_num) {
       break;
     case FX_COMB:
       // printf("[update_fx] comb: %d\n", sf->fx_active[fx_num]);
-      Comb_setActive(combfilter, sf->fx_active[fx_num],
-                     sf->fx_param[FX_COMB][0], sf->fx_param[FX_COMB][1]);
+    Comb_setActive(combfilter, sf->fx_active[fx_num], sf->fx_param[FX_COMB][0],
+                   sf->fx_param[FX_COMB][1]);
       break;
     case FX_BEATREPEAT:
       if (sf->fx_active[fx_num]) {
@@ -437,31 +432,26 @@ void update_fx(uint8_t fx_num) {
     //   break;
     case FX_TAPE_STOP:
       if (sf->fx_active[FX_TAPE_STOP]) {
-        Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
-                        Envelope2_update(envelope_pitch),
+      Envelope2_reset(
+          envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
                         ENVELOPE_PITCH_THRESHOLD / 2,
-                        linlin((float)sf->fx_param[FX_TAPE_STOP][0], 0.0, 255.0,
-                               0.15, 6.0));
+          linlin((float)sf->fx_param[FX_TAPE_STOP][0], 0.0, 255.0, 0.15, 6.0));
       } else {
         if (sf->fx_active[FX_REPITCH]) {
           Envelope2_reset(
-              envelope_pitch, BLOCKS_PER_SECOND,
-              Envelope2_update(envelope_pitch),
+            envelope_pitch, BLOCKS_PER_SECOND, Envelope2_update(envelope_pitch),
               linlin((float)sf->fx_param[FX_REPITCH][0], 0.0, 255.0, 0.5, 2.0),
               linlin((float)sf->fx_param[FX_TAPE_STOP][1], 0.0, 255.0, 0.15,
                      6.0));
         } else {
           Envelope2_reset(envelope_pitch, BLOCKS_PER_SECOND,
                           Envelope2_update(envelope_pitch), 1.0,
-                          linlin((float)sf->fx_param[FX_TAPE_STOP][1], 0.0,
-                                 255.0, 0.15, 6.0));
+                        linlin((float)sf->fx_param[FX_TAPE_STOP][1], 0.0, 255.0,
+                               0.15, 6.0));
         }
       }
       break;
     case FX_FUZZ:
-      if (sf->fx_active[FX_FUZZ]) {
-        printf("fuzz activated!\n");
-      }
       break;
     case FX_FILTER:
       if (sf->fx_active[FX_FILTER] && !filter_was_activated) {
@@ -471,8 +461,7 @@ void update_fx(uint8_t fx_num) {
         EnvelopeLinearInteger_reset(
             envelope_filter, BLOCKS_PER_SECOND,
             EnvelopeLinearInteger_update(envelope_filter, NULL),
-            linlin(sf->fx_param[FX_FILTER][0], 0, 255, 5,
-                   resonantfilter_fc_max),
+          linlin(sf->fx_param[FX_FILTER][0], 0, 255, 5, resonantfilter_fc_max),
             linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
       } else if (filter_was_activated) {
         // turn off filter
@@ -518,7 +507,6 @@ void fx_sequencer_emit(uint8_t key) {
   // midi out
   MidiOut_on(midiout[4], key, 127);
 #endif
-  printf("[fx_sequencer_emit] key %d\n", key);
   if (key < 16) {
     sf->fx_active[key] = true;
     update_fx(key);
@@ -528,14 +516,13 @@ void fx_sequencer_emit(uint8_t key) {
   }
 }
 
-void fx_sequencer_stop() { printf("[fx_sequencer_stop] stop\n"); }
+void fx_sequencer_stop() {}
 
 void bass_sequencer_emit(uint8_t key) {
 #ifdef INCLUDE_MIDI
   // midi out
   MidiOut_on(midiout[5], key, 127);
 #endif
-  printf("[bass_sequencer_emit] key %d\n", key);
 #ifdef INCLUDE_SINEBASS
   if (key < 16) {
     WaveBass_note_on(wavebass, key);
@@ -545,7 +532,7 @@ void bass_sequencer_emit(uint8_t key) {
 #endif
 }
 
-void bass_sequencer_stop() { printf("[bass_sequencer_stop] stop\n"); }
+void bass_sequencer_stop() {}
 
 void savefile_do_load() {
   if (savefile_has_data[savefile_current]) {
@@ -556,7 +543,6 @@ void savefile_do_load() {
     SaveFile_load(sf, savefile_current);
     f_open(&fil_current, fil_current_name, FA_READ);
     sync_using_sdcard = false;
-    printf("[button_handler] loading %s again\n", fil_current_name);
     // update all the fx
     for (uint8_t i = 0; i < 16; i++) {
       update_fx(i);
@@ -578,8 +564,6 @@ void savefile_do_load() {
     // load new bank and sample
     sel_bank_next = sf->bank;
     sel_sample_next = sf->sample;
-    printf("[SaveFile] loaded bank %d sample %d\n", sel_bank_next,
-           sel_sample_next);
     fil_current_change = true;
   }
 }
@@ -649,40 +633,34 @@ void sdcard_startup() {
         continue;
         if (bi == 0) {
           for (uint8_t variation = 0; variation < 2; variation++) {
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->size: %d\n",
                 bi, si, banks[bi]->sample[si].snd[variation]->size);
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->num_channels: %d\n",
                 bi, si, banks[bi]->sample[si].snd[variation]->num_channels);
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->oversampling: %d\n",
                 bi, si, banks[bi]->sample[si].snd[variation]->oversampling);
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->splice_trigger:% "
                 "d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->splice_trigger);
-            printf(
-                "[sdcard_startup] "
+                   bi, si,
+                   banks[bi]->sample[si].snd[variation]->splice_trigger);
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->splice_variable:% "
                 "d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->splice_variable);
-            printf(
-                "[sdcard_startup] "
+                   bi, si,
+                   banks[bi]->sample[si].snd[variation]->splice_variable);
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->play_mode: "
                 "% d\n ",
                 bi, si, banks[bi]->sample[si].snd[variation]->play_mode);
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->bpm: "
                 "%d\n",
                 bi, si, banks[bi]->sample[si].snd[variation]->bpm);
-            printf(
-                "[sdcard_startup] "
+            printf("[sdcard_startup] "
                 "banks[%d]->sample[%d].snd[variation]->slice_num: "
                 "% d\n ",
                 bi, si, banks[bi]->sample[si].snd[variation]->slice_num);
@@ -822,14 +800,16 @@ void sdcard_startup() {
   savefile_do_load();
   
 #ifdef INCLUDE_ECTOCORE
-  // If no savefile was loaded, restore bank/sample from flash by triggering file change
-  // This happens after savefile_do_load so that savefiles take precedence
+  // If no savefile was loaded, restore bank/sample from flash by triggering
+  // file change This happens after savefile_do_load so that savefiles take
+  // precedence
   if (!savefile_has_data[savefile_current]) {
     // Use the restored values from flash
     sel_bank_next = sel_bank_cur;
     sel_sample_next = sel_sample_cur;
     fil_current_change = true;
-    printf("[sdcard_startup] No savefile loaded, applying flash-restored bank/sample\n");
+    printf("[sdcard_startup] No savefile loaded, applying flash-restored "
+           "bank/sample\n");
   }
 #endif
 

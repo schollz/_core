@@ -83,8 +83,6 @@ uint16_t Sequencer_add(Sequencer *seq, uint8_t key, int64_t step) {
     } else {
       seq->rec_steps[seq->rec_len] = (step - seq->rec_step_offset);
     }
-    printf("[sequencer] step %d: %d\n", seq->rec_len,
-           seq->rec_steps[seq->rec_len]);
     seq->rec_key[seq->rec_len] = key;
     seq->rec_step_offset = step;
     seq->rec_len++;
@@ -93,15 +91,6 @@ uint16_t Sequencer_add(Sequencer *seq, uint8_t key, int64_t step) {
   return 0;
 }
 
-void Sequencer_print(Sequencer *seq) {
-  uint32_t step = 0;
-  for (uint16_t i = 0; i < seq->rec_len; i++) {
-    printf("%d) %d -> key %d\n", i,
-           step + round_uint16_to(seq->rec_steps[i], seq->quantization),
-           seq->rec_key[i]);
-    step += round_uint16_to(seq->rec_steps[i], seq->quantization);
-  }
-}
 void Sequencer_quantize(Sequencer *seq, uint8_t quantization) {
   seq->quantization = quantization;
 }

@@ -3,7 +3,6 @@
 void input_handling() {
   // flash bad signs
   while (!fil_is_open) {
-    printf("waiting to start\n");
     sleep_ms(10);
   }
 
@@ -14,13 +13,9 @@ void input_handling() {
   while (1) {
 #ifdef INCLUDE_MIDI
     tud_task();
-    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL,
+                   NULL);
 #endif
-
-    if (MessageSync_hasMessage(messagesync)) {
-      MessageSync_print(messagesync);
-      MessageSync_clear(messagesync);
-    }
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
@@ -33,18 +28,10 @@ void input_handling() {
         }
       }
       sync_using_sdcard = true;
-      // measure the time it takes
-      uint32_t time_start = time_us_32();
-      FRESULT fr = f_close(&fil_current);
-      if (fr != FR_OK) {
-        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-      }
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-              sel_sample_cur, sel_variation_next + audio_variant * 2);
-      fr = f_open(&fil_current, fil_current_name, FA_READ);
-      if (fr != FR_OK) {
-        debugf("[zeptocore] f_close error: %s\n", FRESULT_str(fr));
-      }
+      f_close(&fil_current);
+      format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
+                             sel_variation_next + audio_variant * 2);
+      f_open(&fil_current, fil_current_name, FA_READ);
 
       // TODO: fix this
       // if sel_variation_next == 0
@@ -54,8 +41,6 @@ void input_handling() {
 
       sel_variation = sel_variation_next;
       sync_using_sdcard = false;
-      printf("[zeptocore] loading new sample variation took %d us\n",
-             time_us_32() - time_start);
     }
   }
 }

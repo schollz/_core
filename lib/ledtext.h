@@ -27,15 +27,11 @@ void LEDText_showGlyph(LEDText *lt, LEDS *leds, uint8_t char_glyph) {
 
   for (uint8_t i = 0; i < 4; i++) {
     uint8_t b = tinyfont_glyphs[char_index + i];
-    printf("0x%02X: ", b);
     for (uint8_t j = 4 - (char_side * 4); j < 8 - char_side * 4; j++) {
       uint8_t led_index = (j * 4 + i + 4 - (16 * (1 - char_side)));
-      // print out the jth bit of the byte b
-      printf("%d (%2d) ", (b >> j) & 1, led_index);
       // read the jth bit of the byte b
       LEDS_set(leds, led_index, 2 * ((b >> j) & 1));
     }
-    printf("\n");
   }
   LEDS_render(leds);
   lt->debounce = LEDTEXT_DEBOUNCE_TIME;
@@ -51,7 +47,7 @@ void LEDText_display(LEDText *lt, char *text) {
 
 void LEDText_displayNumber(LEDText *lt, uint16_t number) {
   char number_string[8];
-  sprintf(number_string, "%d", number);
+  format_int32_decimal(number_string, number);
   LEDText_display(lt, number_string);
 }
 

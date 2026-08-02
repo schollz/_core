@@ -110,9 +110,6 @@ void Onewiremidi_receive_(Onewiremidi *self) {
   self->last_time = t;
   uint8_t b = uart_rx_program_getc(self->pio, self->sm);
   //   b = ~b;
-  if (b != 0xf8 && b != 0xfe) {
-    printf("[onewiremidi] received: %02x\n", b);
-  }
 
   enum { DATA0_PRESENT = 0x80 };
   midi_message msg = {0};
