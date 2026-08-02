@@ -3,8 +3,8 @@
 #ifndef PERSISTENT_STATE_LIB
 #define PERSISTENT_STATE_LIB 1
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 // Magic number to validate flash data integrity (ASCII for "CORE")
@@ -22,7 +22,8 @@ typedef struct {
 } PersistentState;
 
 // Calculate a simple checksum for the state
-uint16_t __not_in_flash_func(PersistentState_calculate_checksum)(PersistentState *state) {
+uint16_t __not_in_flash_func(PersistentState_calculate_checksum)(
+    PersistentState *state) {
   uint16_t sum = 0;
   sum += state->magic & 0xFFFF;
   sum += (state->magic >> 16) & 0xFFFF;
@@ -69,35 +70,32 @@ void __not_in_flash_func(PersistentState_save)(uint8_t bank, uint8_t sample) {
   state.checksum = PersistentState_calculate_checksum(&state);
   state.padding = 0;
   
-  printf("[PersistentState] Saving bank=%d sample=%d to flash (preserving calibration)\n", bank, sample);
   write_struct_to_flash(&state, sizeof(PersistentState));
 }
 
 // Load and validate the bank and sample from flash
 // Returns true if valid data was loaded, false otherwise
-bool __not_in_flash_func(PersistentState_load)(uint8_t *bank, uint8_t *sample, uint8_t max_banks, uint8_t *banks_with_samples, uint8_t banks_with_samples_num, SampleList **banks_list) {
+bool __not_in_flash_func(PersistentState_load)(uint8_t *bank, uint8_t *sample,
+                                               uint8_t max_banks,
+                                               uint8_t *banks_with_samples,
+                                               uint8_t banks_with_samples_num,
+                                               SampleList **banks_list) {
   PersistentState state;
   read_struct_from_flash(&state, sizeof(PersistentState));
   
   // Validate magic number
   if (state.magic != PERSISTENT_STATE_MAGIC) {
-    printf("[PersistentState] Invalid magic number: 0x%08X (expected 0x%08X)\n", 
-           state.magic, PERSISTENT_STATE_MAGIC);
     return false;
   }
   
   // Validate checksum
   uint16_t expected_checksum = PersistentState_calculate_checksum(&state);
   if (state.checksum != expected_checksum) {
-    printf("[PersistentState] Invalid checksum: 0x%04X (expected 0x%04X)\n", 
-           state.checksum, expected_checksum);
     return false;
   }
   
   // Validate bank is within bounds
   if (state.bank >= max_banks) {
-    printf("[PersistentState] Bank %d out of bounds (max %d)\n", 
-           state.bank, max_banks - 1);
     return false;
   }
   
@@ -111,27 +109,23 @@ bool __not_in_flash_func(PersistentState_load)(uint8_t *bank, uint8_t *sample, u
   }
   
   if (!bank_exists) {
-    printf("[PersistentState] Bank %d has no samples\n", state.bank);
     return false;
   }
   
   // Validate sample exists in the bank
   if (state.sample >= banks_list[state.bank]->num_samples) {
-    printf("[PersistentState] Sample %d out of bounds for bank %d (max %d)\n", 
-           state.sample, state.bank, banks_list[state.bank]->num_samples - 1);
     return false;
   }
   
   *bank = state.bank;
   *sample = state.sample;
   
-  printf("[PersistentState] Successfully loaded bank=%d sample=%d from flash\n", 
-         *bank, *sample);
   return true;
 }
 
 // Save calibration data to flash (preserves bank/sample data)
-void __not_in_flash_func(PersistentState_save_calibration)(uint16_t calibration[8]) {
+void __not_in_flash_func(PersistentState_save_calibration)(
+    uint16_t calibration[8]) {
   PersistentState state;
   
   // First, read existing data to preserve bank/sample
@@ -141,7 +135,8 @@ void __not_in_flash_func(PersistentState_save_calibration)(uint16_t calibration[
   bool has_valid_bank_sample = false;
   if (state.magic == PERSISTENT_STATE_MAGIC) {
     uint16_t expected_checksum = PersistentState_calculate_checksum(&state);
-    if (state.checksum == expected_checksum && state.bank < 16 && state.sample < 16) {
+    if (state.checksum == expected_checksum && state.bank < 16 &&
+        state.sample < 16) {
       has_valid_bank_sample = true;
     }
   }
@@ -160,35 +155,30 @@ void __not_in_flash_func(PersistentState_save_calibration)(uint16_t calibration[
   state.checksum = PersistentState_calculate_checksum(&state);
   state.padding = 0;
   
-  printf("[PersistentState] Saving calibration to flash (preserving bank/sample)\n");
   write_struct_to_flash(&state, sizeof(PersistentState));
 }
 
 // Load calibration data from flash
 // Returns true if valid calibration data was loaded
-bool __not_in_flash_func(PersistentState_load_calibration)(uint16_t calibration[8]) {
+bool __not_in_flash_func(PersistentState_load_calibration)(
+    uint16_t calibration[8]) {
   PersistentState state;
   read_struct_from_flash(&state, sizeof(PersistentState));
   
   // Validate magic number
   if (state.magic != PERSISTENT_STATE_MAGIC) {
-    printf("[PersistentState] Invalid magic number for calibration: 0x%08X\n", state.magic);
     return false;
   }
   
   // Validate checksum
   uint16_t expected_checksum = PersistentState_calculate_checksum(&state);
   if (state.checksum != expected_checksum) {
-    printf("[PersistentState] Invalid checksum for calibration: 0x%04X (expected 0x%04X)\n", 
-           state.checksum, expected_checksum);
     return false;
   }
   
   // Validate calibration data is within reasonable bounds
   for (uint8_t i = 0; i < 8; i++) {
     if (state.center_calibration[i] > 1024) {
-      printf("[PersistentState] Calibration data out of bounds: %d\n", 
-             state.center_calibration[i]);
       return false;
     }
   }
@@ -198,7 +188,6 @@ bool __not_in_flash_func(PersistentState_load_calibration)(uint16_t calibration[
     calibration[i] = state.center_calibration[i];
   }
   
-  printf("[PersistentState] Successfully loaded calibration from flash\n");
   return true;
 }
 

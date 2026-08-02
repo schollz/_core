@@ -4,6 +4,7 @@
 #define LIB_SAVEFILE 1
 
 #include "sequencer.h"
+#include "utils.h"
 
 typedef struct SaveFile {
   uint32_t vol : 9;
@@ -27,8 +28,6 @@ typedef struct SaveFile {
 
 #define SAVEFILE_PATHNAME "save.bin"
 #define SAVEFILE_FEATURE_MAGIC 0xA5
-void test_sequencer_emit(uint8_t key) { printf("key %d\n", key); }
-void test_sequencer_stop() { printf("stop\n"); }
 void SaveFile_sanitize(SaveFile *sf) {
   if (sf->feature_magic != SAVEFILE_FEATURE_MAGIC) {
     sf->do_retrig_volume_ramps = 1;
@@ -37,7 +36,9 @@ void SaveFile_sanitize(SaveFile *sf) {
 }
 SaveFile *SaveFile_malloc() {
   SaveFile *sf;
-  sf = malloc(sizeof(SaveFile) + (sizeof(Sequencer) * 3 * 16));
+  // Each Sequencer owns a separate allocation below. The previous parent
+  // allocation also reserved space for 48 unused Sequencers.
+  sf = malloc(sizeof(SaveFile));
   sf->bank = 0;
   sf->sample = 0;
   sf->vol = 120;
@@ -97,22 +98,6 @@ SaveFile *SaveFile_malloc() {
   return sf;
 }
 
-void SaveFile_test_sequencer(SaveFile *sf) {
-  Sequencer_set_callbacks(sf->sequencers[0][sf->sequence_sel[0]],
-                          test_sequencer_emit, test_sequencer_stop);
-  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 1, 1);
-  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 2, 3);
-  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 3, 7);
-  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 4, 11);
-  Sequencer_add(sf->sequencers[0][sf->sequence_sel[0]], 5, 15);
-  Sequencer_play(sf->sequencers[0][sf->sequence_sel[0]], false);
-  for (int i = 0; i < 18; i++) {
-    printf("step %d ", i);
-    Sequencer_step(sf->sequencers[0][sf->sequence_sel[0]], i);
-    printf("\n");
-  }
-}
-
 void SaveFile_free(SaveFile *sf) {
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 16; j++) {
@@ -124,34 +109,15 @@ void SaveFile_free(SaveFile *sf) {
 
 #ifdef NOSDCARD
 bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
-  printf("[SaveFile] loading\n");
   char fname[32];
-  sprintf(fname, "savefile%d", savefile_index);
-  printf("[SaveFile] reading %s\n", fname);
+  format_prefixed_int32(fname, "savefile", savefile_index);
   // load from the file on the file system
   FILE *file = fopen(fname, "rb");
   if (file == NULL) {
-    printf("[SaveFile] no save file, skipping ");
     return false;
   }
   fread(sf, sizeof(SaveFile), 1, file);
   SaveFile_sanitize(sf);
-  // print everything in the savefile
-  printf("[SaveFile] vol: %d\n", sf->vol);
-  printf("[SaveFile] bpm_tempo: %d\n", sf->bpm_tempo);
-  printf("[SaveFile] bank: %d\n", sf->bank);
-  printf("[SaveFile] sample: %d\n", sf->sample);
-  // print which effects are on
-  for (int i = 0; i < 16; i++) {
-    printf("[SaveFile] fx_active[%d]: %d\n", i, sf->fx_active[i]);
-  }
-  // print stay in sync
-  printf("[SaveFile] stay_in_sync: %d\n", sf->stay_in_sync);
-  // print pitch_val_index
-  printf("[SaveFile] pitch_val_index: %d\n", sf->pitch_val_index);
-  // print do_retrig_pitch_changes
-  printf("[SaveFile] do_retrig_pitch_changes: %d\n",
-         sf->do_retrig_pitch_changes);
 
   // read sequencers
   for (int i = 0; i < 3; i++) {
@@ -168,25 +134,16 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
 bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
   FIL fil; /* File object */
   char fname[32];
-  sprintf(fname, "savefile%d", savefile_index);
-  printf("[SaveFile] reading %s\n", fname);
-  if (f_open(&fil, fname, FA_READ)) {
-    printf("[SaveFile] no save file, skipping ");
-  } else {
+  format_prefixed_int32(fname, "savefile", savefile_index);
+  if (f_open(&fil, fname, FA_READ) == FR_OK) {
     unsigned int bytes_read;
-    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read)) {
-      printf("[SaveFile] problem reading save file");
-    } else {
-      printf("[SaveFile] bpm_tempo = %d\n", sf->bpm_tempo);
+    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read) == FR_OK) {
       SaveFile_sanitize(sf);
     }
     // read sequencers
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 16; j++) {
-        if (f_read(&fil, sf->sequencers[i][j], sizeof(Sequencer),
-                   &bytes_read)) {
-          printf("[SaveFile] problem reading sequencer %d %d\n", i, j);
-        }
+        f_read(&fil, sf->sequencers[i][j], sizeof(Sequencer), &bytes_read);
       }
     }
   }
@@ -195,36 +152,24 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
 }
 
 bool SaveFile_save(SaveFile *sf, uint8_t savefile_index) {
-  printf("[SaveFile] writing\n");
   FRESULT fr;
   FIL file; /* File object */
   char fname[32];
 
-  sprintf(fname, "savefile%d", savefile_index);
-  printf("[SaveFile] opening savefile for writing\n");
+  format_prefixed_int32(fname, "savefile", savefile_index);
   fr = f_open(&file, fname, FA_WRITE | FA_CREATE_ALWAYS);
   if (FR_OK != fr) {
-    printf("f_open error: %s (%d)\n", FRESULT_str(fr), fr);
     return false;
   }
-  unsigned int total_bytes_written;
   unsigned int bw;
   SaveFile_sanitize(sf);
-  if (f_write(&file, sf, sizeof(SaveFile), &bw)) {
-    printf("[SaveFile] problem writing save\n");
-  }
-  total_bytes_written = bw;
+  f_write(&file, sf, sizeof(SaveFile), &bw);
 
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 16; j++) {
-      if (f_write(&file, sf->sequencers[i][j], sizeof(Sequencer), &bw)) {
-        printf("[SaveFile] problem writing sequencer %d %d\n", i, j);
-      } else {
-        total_bytes_written += bw;
+      f_write(&file, sf->sequencers[i][j], sizeof(Sequencer), &bw);
       }
     }
-  }
-  printf("[SaveFile] wrote %d bytes\n", total_bytes_written);
   f_close(&file);
   return true;
 }

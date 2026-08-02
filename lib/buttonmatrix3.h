@@ -22,28 +22,6 @@ typedef struct ButtonMatrix {
   uint32_t off_time[BUTTONMATRIX_BUTTONS_MAX];
 } ButtonMatrix;
 
-void ButtonMatrix_dec_to_binary(ButtonMatrix *bm, uint32_t num) {
-  if (num == 0) {
-    printf("\n");
-  }
-  for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-    // if ((num >> i) & 1) {
-    //   printf("%d ", bm->mapping[i]);
-    // }
-    uint8_t bit = (num >> i) & 1;
-    printf("%u", bit);  // Print the bit
-  }
-  printf("\n");
-}
-
-void ButtonMatrix_print_buttons(ButtonMatrix *bm) {
-  for (uint8_t i = 0; i < BUTTONMATRIX_BUTTONS_MAX; i++) {
-    printf("%d) %d\n", i, bm->button_on[i]);
-  }
-  printf("\n");
-  return;
-}
-
 ButtonMatrix *ButtonMatrix_create(uint base_input, uint base_output) {
   ButtonMatrix *bm = (ButtonMatrix *)malloc(sizeof(ButtonMatrix));
   bm->pio = pio0;
@@ -182,7 +160,6 @@ void ButtonMatrix_read(ButtonMatrix *bm) {
   pio_sm_clear_fifos(bm->pio, bm->sm);
   sleep_ms(1);
   if (pio_sm_is_rx_fifo_empty(bm->pio, bm->sm)) {
-    printf("fifo empty\n");
     return;
   }
   value = pio_sm_get(bm->pio, bm->sm);

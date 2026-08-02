@@ -19,6 +19,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
+    PICO_CORE1_STACK_SIZE=0x1000
     # DO_OVERCLOCK=1
     
     # pin definitions

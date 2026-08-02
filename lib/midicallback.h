@@ -19,9 +19,6 @@ uint32_t midi_timing_count = 0;
 const uint8_t midi_timing_modulus = 24;
 
 void midi_note_off(int note) {
-#ifdef DEBUG_MIDI
-  printf("note_off: %d\n", note);
-#endif
 #if MIDI_NOTE_KEY == 1
   input_button[note % NUM_BUTTONS].Set(false);
   if (midi_button2 > -1) {
@@ -33,9 +30,6 @@ void midi_note_off(int note) {
 }
 
 void midi_note_on(int note, int velocity) {
-#ifdef DEBUG_MIDI
-  printf("note_on: %d\n", note);
-#endif
 #if MIDI_NOTE_KEY == 1
   if (midi_button1 > -1) {
     midi_button2 = note % NUM_BUTTONS;
@@ -47,9 +41,6 @@ void midi_note_on(int note, int velocity) {
 }
 
 void midi_start() {
-#ifdef DEBUG_MIDI
-  printf("[midicallback] midi start\n");
-#endif
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
   cancel_repeating_timer(&timer);
   do_restart_playback = true;
@@ -58,16 +49,8 @@ void midi_start() {
   button_mute = false;
   trigger_button_mute = false;
 }
-void midi_continue() {
-#ifdef DEBUG_MIDI
-  printf("[midicallback] midi continue (starting)\n");
-#endif
-  midi_start();
-}
+void midi_continue() { midi_start(); }
 void midi_stop() {
-#ifdef DEBUG_MIDI
-  printf("[midicallback] midi stop\n");
-#endif
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
   trigger_button_mute = true;
   do_stop_playback = true;
@@ -112,7 +95,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       } else if (new_adcvalue > 127 + 10) {
         new_adcvalue -= 127 + 10;
         sf->pitch_val_index =
-            new_adcvalue * (PITCH_VAL_MAX - PITCH_VAL_MID) / (127 - 10) + PITCH_VAL_MID;
+          new_adcvalue * (PITCH_VAL_MAX - PITCH_VAL_MID) / (127 - 10) +
+          PITCH_VAL_MID;
       } else {
         sf->pitch_val_index = PITCH_VAL_MID;
       }
@@ -127,16 +111,12 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         f_sel_sample_next != sel_sample_cur) {
       sel_bank_next = f_sel_bank_next;
       sel_sample_next = f_sel_sample_next;
-      printf("[zeptocore] %d bank %d, sample %d\n",
-              sample_selection_index, sel_bank_next, sel_sample_next);
       fil_current_change = true;
       }
       break;
   }
   case cc_quantize: { // Qunatize
-      const uint8_t quantizations[10] = {1,  6,  12,  24,  48,
-                                          64, 96, 144, 192, 192};
-      printf("quantization: %d\n", quantizations[new_adcvalue * 9 / 255 ]);
+    const uint8_t quantizations[10] = {1, 6, 12, 24, 48, 64, 96, 144, 192, 192};
       Sequencer_quantize(
           sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
           quantizations[new_adcvalue * 9 / 255]);
@@ -159,22 +139,19 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
             global_filter_index =
               new_adcvalue * (resonantfilter_fc_max) / (128 - filter_spacing);
             global_filter_lphp = 0;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else if (value >= 64 + filter_spacing) {
             global_filter_index = (new_adcvalue - (128 + filter_spacing)) *
                       (resonantfilter_fc_max) /
                       (128 - filter_spacing);
             global_filter_lphp = 1;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else {
             global_filter_index = resonantfilter_fc_max;
             global_filter_lphp = 0;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
           }
         }
@@ -190,22 +167,19 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
             global_filter_index =
               new_adcvalue * (resonantfilter_fc_max) / (128 - filter_spacing);
             global_filter_lphp = 0;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else if (value >= 64 + filter_spacing) {
             global_filter_index = (new_adcvalue - (128 + filter_spacing)) *
                       (resonantfilter_fc_max) /
                       (128 - filter_spacing);
             global_filter_lphp = 1;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], global_filter_index);
           } else {
             global_filter_index = resonantfilter_fc_max;
             global_filter_lphp = 0;
-            ResonantFilter_setFilterType(resFilter[channel],
-                          global_filter_lphp);
+          ResonantFilter_setFilterType(resFilter[channel], global_filter_lphp);
             ResonantFilter_setFc(resFilter[channel], resonantfilter_fc_max);
           }
         }
@@ -220,7 +194,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       break_knob_set_point = new_adcvalue * 1024 / 255;
       break;
   case cc_randsequence: // Random sequencer
-      if (new_adcvalue > 255) new_adcvalue = 255;
+    if (new_adcvalue > 255)
+      new_adcvalue = 255;
       if (new_adcvalue < 32) {
         // normal
         do_retrig_at_end_of_phrase = false;
@@ -231,7 +206,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
             1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64,
         };
         random_sequence_length =
-            sequence_lengths[((int16_t)(new_adcvalue - 32) * 11 / (255 - 32)) % 11];
+          sequence_lengths[((int16_t)(new_adcvalue - 32) * 11 / (255 - 32)) %
+                           11];
       } else {
         // new random sequence
         regenerate_random_sequence_arr();
@@ -251,7 +227,6 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
   default:
     return;
   }
-
 }
 // Comparator function for qsort
 int compare_ints(const void *a, const void *b) {
@@ -276,9 +251,6 @@ void midi_timing() {
   midi_timing_count++;
   if (midi_timing_count % (24 * MIDI_RESET_EVERY_BEAT) == 0) {
     // reset
-#ifdef DEBUG_MIDI
-    printf("[midicallback] midi resetting\n");
-#endif
     clock_in_beat_total = -1;
     clock_in_beat_last = -1;
   }
@@ -303,9 +275,6 @@ void midi_timing() {
       int bpm_new = findMedian(midi_bpm_detect, 7);
       if (bpm_new > 60 && bpm_new < 260 && bpm_new != sf->bpm_tempo) {
         sf->bpm_tempo = bpm_new;
-#ifdef DEBUG_MIDI
-        printf("[midicallback] midi bpm = %d\n", bpm_new);
-#endif
       }
       //   if (bpm_input - 7 != bpm_set) {
       //     // set bpm

@@ -48,6 +48,10 @@ void __not_in_flash_func(update_filter_from_envelope)(int32_t val) {
 
 #define INTERPOLATE_VALUE 512
 int16_t newArray[SAMPLES_PER_BUFFER];
+// Core 1's stack is reserved for control flow and short-lived source buffers.
+// This always-present 3.5 KiB render workspace is static so normal stereo
+// playback fits within the RP2040 scratch-bank stack.
+static int32_t audio_render_samples[SAMPLES_PER_BUFFER * 2];
 
 void __not_in_flash_func(array_resample_linear441)(int16_t *arr,
                                                    int16_t arr_size) {
@@ -140,7 +144,7 @@ void __not_in_flash_func(i2s_callback_func)() {
     return;
   }
 
-  int32_t samples[buffer->max_sample_count * 2];
+  int32_t *samples = audio_render_samples;
   int16_t *samples16 = (int16_t *)buffer->buffer->bytes;
 
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
@@ -395,7 +399,6 @@ BREAKOUT_OF_MUTE:
        1);
   uint32_t values_to_read_minus_peek = values_len_minus_peek * 2;
   uint32_t values_to_read = values_len * 2;  // 16-bit = 2 x 1 byte reads
-  int16_t values[values_len];
   int32_t vol_main =
       round((float)volume_vals[sf->vol] * retrig_vol * envelope_volume_val);
 
@@ -508,25 +511,13 @@ BREAKOUT_OF_MUTE:
       sel_bank_cur = sel_bank_next;
       sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
 
-      FRESULT fr;
       t0 = time_us_32();
-      fr = f_close(&fil_current);
-      if (fr != FR_OK) {
-        debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
-      }
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-              sel_sample_cur, sel_variation + audio_variant * 2);
-      fr = f_open(&fil_current, fil_current_name, FA_READ);
+      f_close(&fil_current);
+      format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
+                             sel_variation + audio_variant * 2);
+      f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
-#ifdef PRINT_SDCARD_OPEN_TIMING
-      MessageSync_printf(messagesync,
-                         "[audio_callback] do_open_file f_close+f_open: %d\n",
-                         (t1 - t0));
-#endif
-      if (fr != FR_OK) {
-        debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
-      }
       do_open_file = false;
       realtime_stretch_reset_from_playback_phase();
     }
@@ -558,6 +549,8 @@ BREAKOUT_OF_MUTE:
     goto AUDIO_SOURCE_RENDERED;
   }
 
+  {
+    int16_t values[values_len];
   for (int8_t head = 1; head >= 0; head--) {
     if (head == 1 && (!do_crossfade || do_fade_in)) {
       continue;
@@ -567,30 +560,13 @@ BREAKOUT_OF_MUTE:
       // setup the next
       sel_bank_cur = sel_bank_next;
       sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
-      // printf("[audio_callback] switch bank/sample %d/%d\n", sel_bank_cur,
-      //        sel_sample_cur);
-
-      FRESULT fr;
       t0 = time_us_32();
-      fr = f_close(&fil_current);
-      if (fr != FR_OK) {
-        debugf("[audio_callback] f_close error: %s\n", FRESULT_str(fr));
-      }
-      sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-              sel_sample_cur, sel_variation + audio_variant * 2);
-      fr = f_open(&fil_current, fil_current_name, FA_READ);
+        f_close(&fil_current);
+        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
+                               sel_variation + audio_variant * 2);
+        f_open(&fil_current, fil_current_name, FA_READ);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
-#ifdef PRINT_SDCARD_OPEN_TIMING
-      if (do_open_file) {
-        MessageSync_printf(messagesync,
-                           "[audio_callback] do_open_file f_close+f_open: %d\n",
-                           (t1 - t0));
-      }
-#endif
-      if (fr != FR_OK) {
-        debugf("[audio_callback] f_open error: %s\n", FRESULT_str(fr));
-      }
     }
 
     // optimization here, only seek if the current position is not at the
@@ -606,8 +582,6 @@ BREAKOUT_OF_MUTE:
         if (clock_input_present_first) {
           clock_input_present_first = false;
           negative_latency = 0;
-          MessageSync_printf(messagesync,
-                             "[audio_callback] clock_input_present_first\n");
         }
       }
 #endif
@@ -642,68 +616,16 @@ BREAKOUT_OF_MUTE:
         return;
       }
       t1 = time_us_32();
-#ifdef PRINT_SDCARD_OPEN_TIMING
-      if (do_open_file) {
-        MessageSync_printf(messagesync,
-                           "[audio_callback] do_open_file f_lseek: %d\n",
-                           (t1 - t0));
-      }
-#endif
       sd_card_total_time += (t1 - t0);
     }
 
     t0 = time_us_32();
     if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
       watchdog_reboot(0, SRAM_END, 0);
-      // sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-      //         sel_sample_cur, sel_variation + audio_variant * 2);
-      // printf("reopening %s\n", fil_current_name);
-      // f_close(&fil_current);  // close and re-open trick
-      // f_open(&fil_current, fil_current_name, FA_READ);
-      // f_lseek(&fil_current, WAV_HEADER +
-      //                           ((banks[sel_bank_cur]
-      //                                 ->sample[sel_sample_cur]
-      //                                 .snd[FILEZERO]
-      //                                 ->num_channels +
-      //                             1) *
-      //                            (banks[sel_bank_cur]
-      //                                 ->sample[sel_sample_cur]
-      //                                 .snd[FILEZERO]
-      //                                 ->oversampling +
-      //                             1) *
-      //                            44100) +
-      //                           (phases[head] / PHASE_DIVISOR) *
-      //                           PHASE_DIVISOR);
     }
     t1 = time_us_32();
     sd_card_total_time += (t1 - t0);
-#ifdef PRINT_SDCARD_TIMING
-    if (do_open_file) {
-      MessageSync_printf(
-          messagesync, "[audio_callback] do_open_file f_read: %d\n", (t1 - t0));
-    }
-#endif
     last_seeked = phases[head] + fil_bytes_read;
-
-    if (fil_bytes_read < values_to_read) {
-      MessageSync_printf(messagesync,
-                         "%d %d: asked for %d bytes, read %d bytes\n",
-                         phases[head],
-                         WAV_HEADER +
-                             ((banks[sel_bank_cur]
-                                   ->sample[sel_sample_cur]
-                                   .snd[FILEZERO]
-                                   ->num_channels +
-                               1) *
-                              (banks[sel_bank_cur]
-                                   ->sample[sel_sample_cur]
-                                   .snd[FILEZERO]
-                                   ->oversampling +
-                               1) *
-                              44100) +
-                             phases[head],
-                         values_to_read, fil_bytes_read);
-    }
 
     if (!phase_forward) {
       // reverse audio
@@ -793,6 +715,7 @@ BREAKOUT_OF_MUTE:
       first_loop = false;
     }
     phases[head] += (values_to_read_minus_peek * (phase_forward * 2 - 1));
+  }
   }
 
 AUDIO_SOURCE_RENDERED:
@@ -894,8 +817,6 @@ AUDIO_SOURCE_RENDERED:
         }
       }
       if (reverb_fade > 0) {
-        // MessageSync_printf(messagesync, "%d fade: %ld\n", reverb_activated,
-        //                    reverb_fade);
         reverb_fade -= 300;
         if (reverb_fade < 0) {
           reverb_fade = 0;
@@ -911,8 +832,6 @@ AUDIO_SOURCE_RENDERED:
       FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
 
       if (first_loop_ever) {
-        // MessageSync_printf(messagesync, "freeverb : %ld us\n",
-        //                    (time_us_32() - t0));
         first_loop_ever = false;
       }
     }
@@ -996,7 +915,8 @@ AUDIO_SOURCE_RENDERED:
 
   if (mode_digital_saturation > 0) {
     uint8_t amt = mode_digital_saturation;
-    if (amt > 100) amt = 100;
+    if (amt > 100)
+      amt = 100;
 
     /*
       Threshold mapping (Q16.16)
@@ -1026,7 +946,8 @@ AUDIO_SOURCE_RENDERED:
 
   if (mode_chaos_trembler > 0) {
     uint8_t amt = mode_chaos_trembler;
-    if (amt > 100) amt = 100;
+    if (amt > 100)
+      amt = 100;
 
     /*
       Mapping:
@@ -1064,7 +985,8 @@ AUDIO_SOURCE_RENDERED:
 
   if (mode_digital_smear > 0) {
     uint8_t speed = mode_digital_smear;
-    if (speed > 100) speed = 100;
+    if (speed > 100)
+      speed = 100;
 
     /*
       speed = 1   → VERY slow (multi-second sweep)
@@ -1074,7 +996,8 @@ AUDIO_SOURCE_RENDERED:
     // how often smear_amt advances (samples)
     uint32_t smear_period = 5000 - (speed * 49);  // ~5000 → ~100
 
-    if (smear_period < 256) smear_period = 256;
+    if (smear_period < 256)
+      smear_period = 256;
 
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       smear_acc++;
@@ -1114,7 +1037,8 @@ AUDIO_SOURCE_RENDERED:
   if (mode_digital_jitter > 0) {
     // mode_digital_jitter: 0..100
     uint8_t amt = mode_digital_jitter;
-    if (amt > 100) amt = 100;
+    if (amt > 100)
+      amt = 100;
 
     /*
       Higher amt = more unstable clock
@@ -1145,7 +1069,8 @@ AUDIO_SOURCE_RENDERED:
   if (mode_digital_bass > 0) {
     // mode_digital_bass: 0..100
     uint8_t amt = mode_digital_bass;
-    if (amt > 100) amt = 100;
+    if (amt > 100)
+      amt = 100;
 
     /* ---------------- mix ---------------- */
     int32_t wet = (amt << 16) / 120;  // stays conservative
@@ -1206,71 +1131,19 @@ AUDIO_SOURCE_RENDERED:
       100 * (endTime - startTime) / (US_PER_BLOCK);
   cpu_utilizations_i++;
 
-#ifdef PRINT_AUDIOBLOCKDROPS
-  if (sd_card_total_time > 9000) {
-    MessageSync_printf(messagesync, "BLOCKDROP: %ld\n", sd_card_total_time);
-  }
-#endif
   if (cpu_utilizations_i == 64 || sd_card_total_time > 9000 || do_open_file) {
-    uint16_t cpu_utilization = 0;
-    for (uint8_t i = 0; i < cpu_utilizations_i; i++) {
-      cpu_utilization = cpu_utilization + cpu_utilizations[i];
-    }
-#ifdef PRINT_AUDIO_CPU_USAGE
-    uint32_t total_heap = getTotalHeap();
-    uint32_t used_heap = total_heap - getFreeHeap();
-    MessageSync_printf(messagesync,
-                       "cpu [mem]: %2.1f [ %2.1f%% (%ld/%ld)] %d\n",
-                       ((float)cpu_utilization) / (float)cpu_utilizations_i,
-                       (float)(used_heap) / (float)(total_heap) * 100.0,
-                       used_heap, total_heap, buffer->max_sample_count);
-
-#endif
     cpu_utilizations_i = 0;
-#ifdef PRINT_SDCARD_TIMING
-    MessageSync_printf(messagesync, "sdcard%2.1f %ld %d %d %ld\n",
-                       ((float)cpu_utilization) / 64.0, sd_card_total_time,
-                       values_to_read, give_audio_buffer_time,
-                       take_audio_buffer_time);
-#endif
   }
   if (cpu_usage_flag == cpu_usage_flag_limit) {
     cpu_usage_flag = 0;
     reduce_cpu_usage = BLOCKS_PER_SECOND * 30 / sf->bpm_tempo;
-    MessageSync_printf(messagesync, "cpu_usage_flag: %d\n", reduce_cpu_usage);
   } else {
     if (cpu_utilizations[cpu_utilizations_i] > cpu_usage_limit_threshold) {
-#ifdef PRINT_SDCARD_TIMING
-      MessageSync_printf(messagesync, "sdcard%d %ld %d %d %ld\n",
-                         cpu_utilizations[cpu_utilizations_i],
-                         sd_card_total_time, values_to_read,
-                         give_audio_buffer_time, take_audio_buffer_time);
-#endif
       cpu_usage_flag++;
       cpu_usage_flag_total++;
-#ifdef PRINT_AUDIO_OVERLOADS
-      if (cpu_usage_flag_total > 0) {
-        clock_t currentTime = time_us_64();
-        MessageSync_printf(messagesync, "cpu overloads every: %d ms\n",
-                           (currentTime - time_of_initialization) / 1000 /
-                               cpu_usage_flag_total);
-      }
-#endif
       if (cpu_flag_counter == 0) {
         cpu_flag_counter = BLOCKS_PER_SECOND;
       }
-      // char fx_string[17];
-      // for (uint8_t i = 0; i < 16; i++) {
-      //   if (sf->fx_active[i]) {
-      //     fx_string[i] = '1';
-      //   } else {
-      //     fx_string[i] = '0';
-      //   }
-      // }
-      // fx_string[16] = retrig_beat_num > 0 ? '1' : '0';
-      // MessageSync_printf(messagesync, "cpu: %d, flag: %d, fx: %s\n",
-      //                    cpu_utilizations[cpu_utilizations_i],
-      //                    cpu_usage_flag, fx_string);
       // turn off all fx
       for (uint8_t i = 0; i < 16; i++) {
         sf->fx_active[i] = false;
@@ -1285,8 +1158,6 @@ AUDIO_SOURCE_RENDERED:
       }
     }
   }
-
-  MessageSync_lockIfNotEmpty(messagesync);
 
   // change phase_forward back if it was switched
   if (change_phase_forward) {

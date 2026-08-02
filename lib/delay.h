@@ -42,7 +42,6 @@ void Delay_setDuration(Delay *self, uint16_t num_samples) {
     num_samples = DELAY_RINGBUFFER_SIZE;
   }
   if (num_samples != self->duration) {
-    printf("[delay] duration %d\n", num_samples);
     self->duration = num_samples;
   }
 }
@@ -56,7 +55,6 @@ void Delay_setFeedback(Delay *self, uint8_t feedback) {
     feedback = 16;
   }
   if (feedback != self->feedback) {
-    printf("[delay] feedback %d\n", feedback);
     self->feedback = feedback;
   }
 }
@@ -65,8 +63,8 @@ void Delay_setFeedbackf(Delay *self, float feedback) {
   Delay_setFeedback(self, (uint8_t)(feedback * 8.0f));
 }
 
-void __not_in_flash_func(Delay_process)(Delay *self, int32_t *samples, uint16_t num_samples,
-                   uint8_t channel) {
+void __not_in_flash_func(Delay_process)(Delay *self, int32_t *samples,
+                                        uint16_t num_samples, uint8_t channel) {
   for (int ii = 0; ii < num_samples; ii++) {
     while (self->ringbuffer_index > self->duration) {
       self->ringbuffer_index -= self->duration;

@@ -31,7 +31,6 @@ void maybe_toggle_jump_page_lock_on_d_release(uint8_t key) {
   }
   if (jump_page_lock_d_alone_candidate && mode_buttons16 == MODE_JUMP) {
     jump_page_lock = (jump_page_lock + 1) % 4;
-    printf("[button_handler] jump_page_lock: %d\n", jump_page_lock);
   }
   jump_page_lock_d_alone_candidate = false;
 }
@@ -52,7 +51,6 @@ int8_t single_step_pressed() {
 }
 
 void go_retrigger_3key(uint8_t key1, uint8_t key2, uint8_t key3) {
-  printf("[button_handler] retrigger 3key: %d %d %d\n", key1, key2, key3);
   debounce_quantize = 0;
   retrig_vol = 1.0;
   retrig_pitch = PITCH_VAL_MID;
@@ -180,11 +178,10 @@ void toggle_off_fx(uint8_t fx_num) {
   update_fx(fx_num);
 }
 
-void button_key_off_held(uint8_t key) { printf("off held %d\n", key); }
+void button_key_off_held(uint8_t key) {}
 
 // triggers on ANY key off, used for 1-16 off's
 void button_key_off_any(uint8_t key) {
-  printf("off any %d\n", key);
   if (key_total_pressed < 3) {
     key3_activated = false;
   }
@@ -198,7 +195,6 @@ void button_key_off_any(uint8_t key) {
     if (key_total_pressed == 0) {
       if (mode_hands_on_unmute) {
         if (!button_mute) {
-          printf("[button_handler] mode_hands_on_unmute -> mute\n");
           trigger_button_mute = true;
         }
       }
@@ -253,14 +249,12 @@ uint32_t tap_tempo_last = 0;
 uint8_t tap_tempo_hits = 0;
 
 void button_key_on_single(uint8_t key) {
-  printf("on single %d\n", key);
   if (key < 4) {
     if (key == KEY_A) {
     }
   } else if (key >= 4) {
     if (mode_hands_on_unmute) {
       if (button_mute) {
-        printf("[button_handler] mode_hands_on_unmute unmute\n");
         button_mute = false;
         trigger_button_mute = false;
       }
@@ -274,7 +268,6 @@ void button_key_on_single(uint8_t key) {
       dub_step_break = 0;
       dub_step_divider = 0;
       dub_step_beat = beat_current;
-      printf("dub_step_beat: %d\n", dub_step_beat);
       // if (toggle_chain_rec) {
       //   Chain_add_current(chain, key - 4, bpm_timer_counter);
       // }
@@ -289,7 +282,6 @@ void button_key_on_single(uint8_t key) {
 bool cued_sound_selector = false;
 int8_t cued_sound_last_selected = 1;
 void button_key_on_double(uint8_t key1, uint8_t key2) {
-  printf("on double %d+%d\n", key1, key2);
   if (key_on_buttons[KEY_A] && key_on_buttons[KEY_B]) {
     // make sure KEY_A is on first
     uint16_t key_a_on = 0;
@@ -304,7 +296,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key_a_on < key_b_on) {
       uint8_t tempos[16] = {60,  70,  80,  90,  100, 110, 120, 130,
                             140, 150, 160, 170, 180, 190, 200, 210};
-      printf("[button_handler] select tempo: %d %d\n", key2, tempos[key2 - 4]);
       sf->bpm_tempo = tempos[key2 - 4];
       DebounceDigits_set(debouncer_digits, sf->bpm_tempo, led_text_time);
       return;
@@ -319,14 +310,12 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       }
       do_layer_kicks = cuedsounds_do_play;
       cued_sound_last_selected = cuedsounds_do_play;
-      printf("cuedsounds_do_play: %d\n", cuedsounds_do_play);
     } else {
       // select volume
       cuedsounds_volume = (key2 - 4) * 255 / 16;
       if (cuedsounds_volume == 0) {
         do_layer_kicks = -1;
       }
-      printf("cuedsounds_volume: %d\n", cuedsounds_volume);
     }
     cued_sound_selector = !cued_sound_selector;
 #endif
@@ -344,7 +333,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       mode_buttons16 = MODE_JUMP;
       uint16_t val = TapTempo_tap(taptempo);
       if (val > 0) {
-        printf("tap bpm -> %d\n", val);
         sf->bpm_tempo = val;
         DebounceDigits_set(debouncer_digits, sf->bpm_tempo, led_text_time);
       }
@@ -381,10 +369,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_C) {
       // A+B
       if (button_mute) {
-        printf("[button_handler] button_mute off\n");
         button_mute = false;
       } else if (!button_mute) {
-        printf("[button_handler] trigger button_mute\n");
         trigger_button_mute = true;
       }
 
@@ -408,7 +394,8 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         update_repeating_timer_to_bpm(sf->bpm_tempo);
         button_mute = false;
       } else {
-        if (!button_mute) trigger_button_mute = true;
+        if (!button_mute)
+          trigger_button_mute = true;
         do_stop_playback = true;
       }
     } else if (key2 > 3) {
@@ -418,13 +405,10 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
           sel_bank_select =
               banks_with_samples[(key2 - 4) % banks_with_samples_num];
           KEY_C_sample_select = true;
-          printf("sel_bank_select: %d\n", sel_bank_select);
         } else {
           sel_bank_next = sel_bank_select;
           sel_sample_next = ((key2 - 4) % (banks[sel_bank_next]->num_samples));
           tunneling_original_sample = sel_sample_next;
-          printf("sel_bank_next: %d\n", sel_bank_next);
-          printf("sel_sample_next: %d\n", sel_sample_next);
           fil_current_change = true;
           KEY_C_sample_select = false;
         }
@@ -442,7 +426,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
           !sequencerhandler[mode_buttons16].playing;
 
       if (sequencerhandler[mode_buttons16].playing) {
-        printf("[button_handler] sequence %d playing on\n", mode_buttons16);
         if (Sequencer_has_data(
                 sf->sequencers[mode_buttons16]
                               [sf->sequence_sel[mode_buttons16]])) {
@@ -450,11 +433,9 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
               sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]],
               true);
         } else {
-          printf("[button_handler] sequence %d has no data\n", mode_buttons16);
           sequencerhandler[mode_buttons16].playing = false;
         }
       } else {
-        printf("[button_handler] sequence %d playing off\n", mode_buttons16);
         Sequencer_stop(
             sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
         if (mode_buttons16 == MODE_BASS) {
@@ -476,9 +457,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
         // todo [0] should be which sequencer is currently on
         Sequencer_clear(
             sf->sequencers[mode_buttons16][sf->sequence_sel[mode_buttons16]]);
-        printf("[button_handler] sequence %d recording on\n", mode_buttons16);
-      } else {
-        printf("[button_handler] sequence %d recording off\n", mode_buttons16);
       }
 
     } else if (key2 > 3) {
@@ -505,12 +483,10 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     if (key2 == KEY_B) {
       // D+B
       // do load
-      printf("[button_handler] loading %d to sd card\n", savefile_current);
       savefile_do_load();
     } else if (key2 == KEY_C) {
       // D+C
       // do save
-      printf("[button_handler] saving %d to sd card\n", savefile_current);
       // save the current bank and sample
       sf->bank = sel_bank_cur;
       sf->sample = sel_sample_cur;
@@ -522,7 +498,6 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
       // load prevoius file
       f_open(&fil_current, fil_current_name, FA_READ);
       sync_using_sdcard = false;
-      printf("[button_handler] loading %s again\n", fil_current_name);
       savefile_has_data[savefile_current] = true;
     } else if (key2 == KEY_A) {
       // D+A
@@ -539,15 +514,8 @@ bool button_handler(ButtonMatrix *bm) {
     key_timer++;
   }
   if (key_timer == led_text_time && key_pressed_num > 0) {
-    // create string
-    char key_pressed_str[256];
-    int pos = snprintf(key_pressed_str, sizeof(key_pressed_str),
-                       "[button_handler](%d)(%ld)combo: ", key_pressed_num,
-                       key_timer_on);
-
     if (key_pressed_num > 2) {
       if (key_pressed[0] == 1 && key_pressed[1] == 0) {
-        printf("[button_handler] customseq\n");
         random_sequence_length = key_pressed_num - 2;
         for (uint16_t i = 2; i < key_pressed_num; i++) {
           random_sequence_arr[i - 2] = key_pressed[i] - 4;
@@ -555,35 +523,12 @@ bool button_handler(ButtonMatrix *bm) {
       }
     }
 
-    // Ensure the snprintf was successful and within the buffer size
-    if (pos >= 0 && pos < sizeof(key_pressed_str)) {
-      for (uint8_t i = 0; i < key_pressed_num; i++) {
-        // Calculate remaining space in the buffer
-        int remaining = sizeof(key_pressed_str) - pos;
-        if (remaining > 0) {
-          int ret =
-              snprintf(key_pressed_str + pos, remaining, "%d ", key_pressed[i]);
-          // Check if snprintf was successful
-          if (ret < 0 || ret >= remaining) {
-            // Handle error (e.g., truncate string, log error, etc.)
-            key_pressed_str[sizeof(key_pressed_str) - 1] = '\0';
-            break;
-          }
-          pos += ret;
-        } else {
-          // No space left in the buffer
-          break;
-        }
-      }
-      printf("%s\n", key_pressed_str);
-    }
-
     // if in RAND mode, generate new one
     if (key_pressed_num == 1 && key_timer_on > 400 &&
         random_sequence_length > 0 && key_pressed[0] > 3) {
       do_random_sequence_len(key_pressed[0] - 3);
       char random_sequence_str[10];
-      sprintf(random_sequence_str, "%d", random_sequence_length);
+      format_int32_decimal(random_sequence_str, random_sequence_length);
       DebounceDigits_setText(debouncer_digits, random_sequence_str,
                              led_text_time);
     }
@@ -599,14 +544,11 @@ bool button_handler(ButtonMatrix *bm) {
         uint8_t merge_sequence_num = key_pressed[1] - 4;
         if (!Sequencer_has_data(
                 sf->sequencers[mode_buttons16][merge_sequence_num])) {
-          printf("[button_handler] merging sequences into sequence %d: \n",
-                 merge_sequence_num);
           // copy the first sequence into the empty slot
           Sequencer_copy(sf->sequencers[mode_buttons16][key_pressed[2] - 4],
                          sf->sequencers[mode_buttons16][merge_sequence_num]);
           // merge the rest into that slot
           for (uint8_t i = 3; i < key_pressed_num; i++) {
-            printf("merging %d\n", key_pressed[i] - 4);
             Sequencer *merged = Sequencer_merge(
                 sf->sequencers[mode_buttons16][merge_sequence_num],
                 sf->sequencers[mode_buttons16][key_pressed[i] - 4]);
@@ -614,7 +556,6 @@ bool button_handler(ButtonMatrix *bm) {
                            sf->sequencers[mode_buttons16][merge_sequence_num]);
             free(merged);
           }
-          Sequencer_print(sf->sequencers[mode_buttons16][merge_sequence_num]);
           sf->sequence_sel[mode_buttons16] = merge_sequence_num;
           sequencerhandler[mode_buttons16].playing = true;
           Sequencer_play(sf->sequencers[mode_buttons16][merge_sequence_num],
@@ -631,7 +572,6 @@ bool button_handler(ButtonMatrix *bm) {
                 ->sample[sel_sample_cur]
                 .snd[FILEZERO]
                 ->one_shot) {
-          printf("toggle one shot OFF ");
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
               false;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
@@ -639,17 +579,14 @@ bool button_handler(ButtonMatrix *bm) {
           DebounceDigits_setText(debouncer_digits, "ONESHOT OFF",
                                  led_text_time);
         } else {
-          printf("toggle one shot ON ");
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->one_shot =
               true;
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               PLAY_SPLICE_STOP;
           DebounceDigits_setText(debouncer_digits, "ONESHOT ON", led_text_time);
         }
-        printf("combo: 8 9 8!!!\n");
       } else if (key_pressed[0] == 10 && key_pressed[1] == 11 &&
                  key_pressed[2] == 10) {
-        printf("combo: 10 11 10!!!\n");
         if (banks[sel_bank_cur]
                 ->sample[sel_sample_cur]
                 .snd[FILEZERO]
@@ -662,13 +599,8 @@ bool button_handler(ButtonMatrix *bm) {
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode =
               0;
         }
-        printf("play_mode: %d\n", banks[sel_bank_cur]
-                                      ->sample[sel_sample_cur]
-                                      .snd[FILEZERO]
-                                      ->play_mode);
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 4) {
-        printf("toggling variable splice\n");
         banks[sel_bank_cur]
             ->sample[sel_sample_cur]
             .snd[FILEZERO]
@@ -730,7 +662,8 @@ bool button_handler(ButtonMatrix *bm) {
         if (random_sequence_length == 0) {
           // create string with the length
           char random_sequence_str[10];
-          sprintf(random_sequence_str, "RAND %d", do_random_sequence(true));
+          format_prefixed_int32(random_sequence_str, "RAND ",
+                                do_random_sequence(true));
           DebounceDigits_setText(debouncer_digits, random_sequence_str,
                                  led_text_time);
         } else {
@@ -749,7 +682,6 @@ bool button_handler(ButtonMatrix *bm) {
       } else if (key_pressed[0] == 4 && key_pressed[1] == 5 &&
                  key_pressed[2] == 6 && key_pressed[3] == 7) {
         sf->stay_in_sync = !sf->stay_in_sync;
-        printf("toggling in sync mode: %d\n", sf->stay_in_sync);
         if (sf->stay_in_sync) {
           DebounceDigits_setText(debouncer_digits, "LOCK OONN", led_text_time);
         } else {
@@ -758,9 +690,7 @@ bool button_handler(ButtonMatrix *bm) {
         }
       } else if (key_pressed[0] == 7 && key_pressed[1] == 10 &&
                  key_pressed[2] == 13 && key_pressed[3] == 16) {
-        printf("combo: 7 10 13 16!!!\n");
         only_play_kicks = !only_play_kicks;
-        printf("only_play_kicks: %d\n", only_play_kicks);
         if (only_play_kicks) {
           DebounceDigits_setText(debouncer_digits, "KICKS", led_text_time);
         } else {
@@ -769,7 +699,6 @@ bool button_handler(ButtonMatrix *bm) {
       } else if (key_pressed[0] == 16 && key_pressed[1] == 13 &&
                  key_pressed[2] == 10 && key_pressed[3] == 6) {
         only_play_snares = !only_play_snares;
-        printf("only_play_snares: %d\n", only_play_snares);
         if (only_play_snares) {
           DebounceDigits_setText(debouncer_digits, "SNARES", led_text_time);
         } else {
@@ -788,10 +717,8 @@ bool button_handler(ButtonMatrix *bm) {
                 ->sample[sel_sample_cur]
                 .snd[FILEZERO]
                 ->tempo_match) {
-          printf("combo: enabled to tempo match mode\n");
           DebounceDigits_setText(debouncer_digits, "MATCH OONN", led_text_time);
         } else {
-          printf("combo: disabled tempo match mode\n");
           DebounceDigits_setText(debouncer_digits, "MATCH OOFFF",
                                  led_text_time);
         }
@@ -799,8 +726,6 @@ bool button_handler(ButtonMatrix *bm) {
       } else if (key_pressed[0] == 12 && key_pressed[1] == 13 &&
                  key_pressed[2] == 14 && key_pressed[3] == 15) {
         sf->do_retrig_pitch_changes = !sf->do_retrig_pitch_changes;
-        printf("combo: enabled to pitch retrig mode: %d\n",
-               sf->do_retrig_pitch_changes);
         if (sf->do_retrig_pitch_changes) {
           DebounceDigits_setText(debouncer_digits, "PIT OONN", led_text_time);
         } else {
@@ -812,8 +737,7 @@ bool button_handler(ButtonMatrix *bm) {
         if (sf->do_retrig_volume_ramps) {
           DebounceDigits_setText(debouncer_digits, "RAMP OONN", led_text_time);
         } else {
-          DebounceDigits_setText(debouncer_digits, "RAMP OOFF",
-                                 led_text_time);
+          DebounceDigits_setText(debouncer_digits, "RAMP OOFF", led_text_time);
         }
       }
     } else if (key_pressed_num == 8) {
@@ -822,10 +746,8 @@ bool button_handler(ButtonMatrix *bm) {
           key_pressed[6] == 10 && key_pressed[7] == 6) {
         clock_out_do = !clock_out_do;
         if (clock_out_do) {
-          printf("[button_handler]: combo: clock out enabled\n");
           DebounceDigits_setText(debouncer_digits, "SYNC OONN", led_text_time);
         } else {
-          printf("[button_handler]: combo: clock out disabled\n");
           DebounceDigits_setText(debouncer_digits, "SYNC OOFFF", led_text_time);
         }
       }
@@ -890,10 +812,6 @@ bool button_handler(ButtonMatrix *bm) {
           key_on_buttons[i] = 0;
         }
       }
-    } else if (key_held_on) {
-      printf("off %d+%d\n", key_held_num, bm->off[i]);
-    } else {
-      printf("off %d\n", bm->off[i]);
     }
 
     if (bm->off[i] < 4) {
@@ -944,7 +862,6 @@ bool button_handler(ButtonMatrix *bm) {
         }
       }
       if (all_off) {
-        printf("playing note: %d\n", octave + bm->on[i] - 4);
         WaveBass_note_on(wavebass, octave + bm->on[i] - 4);
         if (sequencerhandler[2].recording) {
           Sequencer_add(sf->sequencers[2][sf->sequence_sel[2]],
@@ -980,7 +897,6 @@ bool button_handler(ButtonMatrix *bm) {
         bool all_h = true;
         for (uint8_t i = 0; i < 3; i++) {
           keys[i] = indexes[BUTTONMATRIX_BUTTONS_MAX - 3 + i];
-          printf("keys[%d]: %d\n", i, keys[i]);
           if (keys[i] < 4) {
             all_h = false;
           }
@@ -1358,8 +1274,7 @@ bool button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, 0, LED_BRIGHT);
       LEDS_set(leds, 1, LED_BLINK);
       LEDS_set(leds, 2,
-               (jump_page_lock & JUMP_PAGE_LOCK_FIRST) ? LED_BRIGHT
-                                                        : LED_NONE);
+               (jump_page_lock & JUMP_PAGE_LOCK_FIRST) ? LED_BRIGHT : LED_NONE);
       LEDS_set(leds, 3,
                (jump_page_lock & JUMP_PAGE_LOCK_SECOND) ? LED_BRIGHT
                                                          : LED_NONE);

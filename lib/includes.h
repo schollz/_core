@@ -118,10 +118,13 @@ bool usb_midi_present = false;
 #include "filterexp.h"
 #include "flashmem.h"
 #include "persistent_state.h"
+#ifdef INCLUDE_ECTOCORE
+#include "freeverb_fp.h"
+#else
 #include "freeverb_fp_mono.h"
+#endif
 #include "gate.h"
 #include "knob_change.h"
-#include "messagesync.h"
 #include "sequencehandler.h"
 #include "tapedelay.h"
 #include "taptempo.h"

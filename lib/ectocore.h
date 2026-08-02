@@ -3,10 +3,10 @@
 #include "clockhandling.h"
 //
 #include "break_knob.h"
+#include "ectocore_loopstart_trig.h"
 #include "mcp3208.h"
 #include "midicallback.h"
 #include "onewiremidi2.h"
-#include "ectocore_loopstart_trig.h"
 #ifdef INCLUDE_MIDI
 #include "midi_comm_callback.h"
 #endif
@@ -85,7 +85,6 @@ void update_gpios_for_mode() {
 #endif
       break;
     case TRIGGER_MODE_HH:
-      printf("[ectocore] trigger mode: hh\n");
 #ifdef ECTOCORE_VERSION_3
       gpio_put(GPIO_MODE_LEDA, 0);
       gpio_put(GPIO_MODE_LEDB, 1);
@@ -98,7 +97,6 @@ void update_gpios_for_mode() {
 #endif
       break;
     case TRIGGER_MODE_RANDOM:
-      printf("[ectocore] trigger mode: random\n");
 #ifdef ECTOCORE_VERSION_3
       gpio_put(GPIO_MODE_LEDA, 1);
       gpio_put(GPIO_MODE_LEDB, 1);
@@ -534,16 +532,10 @@ void dust_1() {
 
 bool clock_input_absent = true;
 
-// CV monitoring feature (bank+mode button toggle)
-bool cv_monitor_active = false;
-uint32_t cv_monitor_start_time = 0;
-uint32_t cv_monitor_last_print = 0;
-#define CV_MONITOR_INTERVAL_MS 100
-#define CV_MONITOR_DURATION_MS 60000
-
 ClockInput *clockinput;
 void gpio_callback(uint gpio, uint32_t events) {
-  if (gpio != GPIO_CLOCK_IN) return;
+  if (gpio != GPIO_CLOCK_IN)
+    return;
   bool clock_up = events & 4;
   if (cv_reset_override == CV_CLOCK) {
     // check GPIO_CLOCK_IN
@@ -573,7 +565,6 @@ bool dont_wait = false;
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
   while (!fil_is_open) {
-    printf("waiting to start\n");
     sleep_ms(10);
   }
 
@@ -679,10 +670,9 @@ void __not_in_flash_func(input_handling)() {
 
 #ifdef INCLUDE_MIDI
   // Hardware MIDI-in (separate from clock input).
-  Onewiremidi *onewiremidi =
-      Onewiremidi_new(pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off,
-                      midi_start, midi_continue, midi_stop, midi_timing,
-                      midi_control_change);
+  Onewiremidi *onewiremidi = Onewiremidi_new(
+      pio0, 3, GPIO_MIDI_IN, midi_note_on, midi_note_off, midi_start,
+      midi_continue, midi_stop, midi_timing, midi_control_change);
 #endif
   clockinput = ClockInput_create(GPIO_CLOCK_IN, clock_handling_up,
                                  clock_handling_down, clock_handling_start);
@@ -755,18 +745,12 @@ void __not_in_flash_func(input_handling)() {
         // reset probabilities
         probability_of_random_jump = 0;
       } else if (debounce_startup == 108) {
-        printf("[ectocore] startup\n");
         // read flash data
         uint16_t calibration_data[8];
         if (PersistentState_load_calibration(calibration_data)) {
           for (uint8_t i = 0; i < 8; i++) {
             sf->center_calibration[i] = calibration_data[i];
           }
-          printf("[ectocore] calibration data loaded from flash\n");
-        } else {
-          printf(
-              "[ectocore] calibration data is corrupted or missing, using "
-              "defaults\n");
         }
       } else if (debounce_startup >= 100 && debounce_startup < 108) {
         uint8_t i = debounce_startup - 100;
@@ -774,7 +758,6 @@ void __not_in_flash_func(input_handling)() {
           sleep_ms(1);
           sf->center_calibration[i] = MCP3208_read(mcp3208, i, false);
           if (i == 0) {
-            printf("[ectocore] write calibration\n");
             uint16_t flash_time = 250;
             for (uint8_t ii = 0; ii < 20; ii++) {
               // make the LEDS go RED
@@ -803,7 +786,6 @@ void __not_in_flash_func(input_handling)() {
             }
           }
         }
-        printf("[ectocore] calibrate %d=%d,", i, sf->center_calibration[i]);
       }
     }
 
@@ -818,9 +800,7 @@ void __not_in_flash_func(input_handling)() {
       if (clock_input_absent_new != clock_input_absent) {
         clock_input_absent = clock_input_absent_new;
         if (clock_input_absent) {
-          printf("[ectocore] clock input absent\n");
         } else {
-          printf("[ectocore] clock input present\n");
         }
       }
     }
@@ -917,7 +897,6 @@ void __not_in_flash_func(input_handling)() {
             cv_plugged[j] = true;
             cv_detection_count[j] = 0;
             last_mean_signal_time = 0;  // Trigger mean recalculation
-            printf("[ectocore] cv_%d plugged\n", j);
           }
         } else if (is_signal[j] && cv_plugged[j]) {
           // Potential unplug detected
@@ -927,7 +906,6 @@ void __not_in_flash_func(input_handling)() {
             cv_detection_count[j] = 0;
             cv_was_unplugged[j] = true;
             last_mean_signal_time = 0;  // Trigger mean recalculation
-            printf("[ectocore] cv_%d unplugged\n", j);
           }
         } else {
           // State matches expectation - reset counter
@@ -1103,13 +1081,8 @@ void __not_in_flash_func(input_handling)() {
     int char_input = getchar_timeout_us(10);
     if (char_input >= 0) {
       if (char_input == 118) {
-        printf("version=v7.3.0\n");
+        puts("version=v7.3.0");
       }
-    }
-
-    if (MessageSync_hasMessage(messagesync)) {
-      MessageSync_print(messagesync);
-      MessageSync_clear(messagesync);
     }
 
 #ifdef PRINT_SDCARD_TIMING
@@ -1211,7 +1184,6 @@ void __not_in_flash_func(input_handling)() {
           // mode selection
           // 0 - 100
           mode_chaos_trembler = val * 100 / 1024;
-          printf("[ectocore] mode_chaos_trembler %d\n", mode_chaos_trembler);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_get(GPIO_BTN_BANK) == 0 &&
                    fil_current_change == false) {
@@ -1287,8 +1259,6 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode_break_index setting (0 to 20)
           mode_digital_saturation = val * 100 / 1024;
-          printf("[ectocore] mode_digital_saturation %d\n",
-                 mode_digital_saturation);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else {
           break_set(val, false, true);
@@ -1298,7 +1268,6 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode_amiga_index setting (0 to 20)
           mode_amiga_index = val * 37 / 1024;
-          printf("[ectocore] amiga mode %d\n", mode_amiga_index);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           // TODO: change the filter cutoff!
@@ -1400,7 +1369,6 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode_digital_depth setting (0 to 100)
           mode_digital_smear = val * 100 / 1024;
-          printf("[ectocore] mode_digital_smear %d\n", mode_digital_smear);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           planned_retrig_probability = val * 100 / 1024;
@@ -1425,7 +1393,6 @@ void __not_in_flash_func(input_handling)() {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode_amiga_depth setting (0 to 100)
           mode_digital_jitter = val * 100 / 1024;
-          printf("[ectocore] mode_digital_jitter %d\n", mode_digital_jitter);
           ws2812_set_wheel(ws2812, val * 4, 255, 0, 0);
         } else if (gpio_btn_taptempo_val == 0) {
           if (val < 512 - 24) {
@@ -1486,8 +1453,6 @@ void __not_in_flash_func(input_handling)() {
         uint32_t mode_held_new_duration = current_time - mode_held_start_time;
         if (mode_held_new_duration >= MODE_HOLD_DURATION_THRESHOLD &&
             mode_held_duration < MODE_HOLD_DURATION_THRESHOLD) {
-          printf("[ectocore] MODE held for %dms\n",
-                 MODE_HOLD_DURATION_THRESHOLD);
           if (ectocore_trigger_mode > 0) {
             ectocore_trigger_mode--;
           } else {
@@ -1638,7 +1603,8 @@ void __not_in_flash_func(input_handling)() {
             // A+C
             if (!playback_stopped && !do_stop_playback) {
               // printf("[ectocore] ectocore stop\n");
-              if (!button_mute) trigger_button_mute = true;
+              if (!button_mute)
+                trigger_button_mute = true;
               do_stop_playback = true;
             } else if (playback_stopped && !do_restart_playback) {
               // printf("[ectocore] ectocore start\n");
@@ -1680,22 +1646,6 @@ void __not_in_flash_func(input_handling)() {
             update_repeating_timer_to_bpm(sf->bpm_tempo);
             button_mute = false;
             TapTempo_reset(taptempo);
-          }
-        }
-      }
-      // check for CV monitor toggle (bank+mode, but not mult)
-      if (val == 1 && gpio_btn_state[BTN_BANK] > 0 &&
-          gpio_btn_state[BTN_MODE] > 0 && gpio_btn_state[BTN_MULT] == 0 &&
-          gpio_btn_state[BTN_TAPTEMPO] == 0) {
-        if (gpio_btns[i] == GPIO_BTN_BANK || gpio_btns[i] == GPIO_BTN_MODE) {
-          // Toggle CV monitoring feature
-          cv_monitor_active = !cv_monitor_active;
-          if (cv_monitor_active) {
-            cv_monitor_start_time = current_time;
-            cv_monitor_last_print = 0;
-            printf("[ectocore] CV monitor enabled\n");
-          } else {
-            printf("[ectocore] CV monitor disabled\n");
           }
         }
       }
@@ -1755,18 +1705,10 @@ void __not_in_flash_func(input_handling)() {
       }
       if (do_try_change) {
         sync_using_sdcard = true;
-        // measure the time it takes
-        uint32_t time_start = time_us_32();
-        FRESULT fr = f_close(&fil_current);
-        if (fr != FR_OK) {
-          printf("[main] f_close error: %s\n", FRESULT_str(fr));
-        }
-        sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-                sel_sample_cur, sel_variation_next + audio_variant * 2);
-        fr = f_open(&fil_current, fil_current_name, FA_READ);
-        if (fr != FR_OK) {
-          printf("[main] f_open error: %s\n", FRESULT_str(fr));
-        }
+        f_close(&fil_current);
+        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
+                               sel_variation_next + audio_variant * 2);
+        f_open(&fil_current, fil_current_name, FA_READ);
 
         // TODO: fix this
         // if sel_variation_next == 0
@@ -1780,30 +1722,6 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    // CV monitoring - print raw CV values every 100ms for 1 minute
-    if (cv_monitor_active) {
-      uint32_t elapsed = current_time - cv_monitor_start_time;
-
-      // Check if 1 minute has elapsed
-      if (elapsed >= CV_MONITOR_DURATION_MS) {
-        cv_monitor_active = false;
-        printf("[ectocore] CV monitor disabled (timeout)\n");
-      } else if (current_time - cv_monitor_last_print >=
-                 CV_MONITOR_INTERVAL_MS) {
-        // Read raw CV values
-        int16_t cv_amen = MCP3208_read(mcp3208, MCP_CV_AMEN, false);
-        int16_t cv_break = MCP3208_read(mcp3208, MCP_CV_BREAK, false);
-        int16_t cv_clock = gpio_get(GPIO_CLOCK_IN);  // Digital read for clock
-        int16_t cv_sample = MCP3208_read(mcp3208, MCP_CV_SAMPLE, false);
-
-        // Print in requested format: cv1=x,cv2=x,cv3=x,cv4=x
-        printf("cv1=%d,cv2=%d,cv3=%d,cv4=%d\n", cv_amen, cv_break, cv_clock,
-               cv_sample);
-
-        cv_monitor_last_print = current_time;
-      }
-    }
-
     // Fallback trig at playback start or strict loop wrap when a selected
     // mode has a transient at the beginning of the file.
     {
@@ -1814,8 +1732,7 @@ void __not_in_flash_func(input_handling)() {
       uint8_t slice_num = sample_info != NULL ? sample_info->slice_num : 0;
       uint32_t transport_start_generation =
           ecto_loopstart_transport_start_generation;
-      bool transport_started =
-          transport_start_generation !=
+      bool transport_started = transport_start_generation !=
           loopstart_trig_seen_transport_start_generation;
       loopstart_trig_seen_transport_start_generation =
           transport_start_generation;
