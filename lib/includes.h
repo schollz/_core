@@ -74,6 +74,7 @@ bool is_arcade_box = false;
 #endif
 //
 #include "bitcrush.h"
+#include "break_knob_mapping.h"
 #include "fuzz.h"
 #include "saturation.h"
 #include "shaper.h"
