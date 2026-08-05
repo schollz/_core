@@ -104,6 +104,25 @@ void Comb_setActive(Comb *self, bool on, uint8_t duration_spread,
   self->on = on;
 }
 
+void Comb_setDirect(Comb *self, bool on, uint8_t amount) {
+  if (!on) {
+    self->on = false;
+    return;
+  }
+
+  const int16_t duration_spread =
+      (int16_t)(((uint32_t)amount * 120u * DURATION_MAXSPREAD) /
+                (255u * 255u));
+  const int32_t feedback_spread =
+      (int32_t)(((uint32_t)amount * 20u * FEEDBACK_MAXSPREAD) /
+                (255u * 255u));
+  self->duration[0] = DURATION_MID - duration_spread;
+  self->duration[1] = DURATION_MID + duration_spread;
+  self->feedback[0] = FEEDBACK_MID - feedback_spread;
+  self->feedback[1] = FEEDBACK_MID + feedback_spread;
+  self->on = true;
+}
+
 void Comb_free(Comb *self) { free(self); }
 
 #endif /* COMB_LIB */

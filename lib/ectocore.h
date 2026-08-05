@@ -467,22 +467,19 @@ void go_retrigger_2key(uint8_t key1, uint8_t key2) {
 }
 
 bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
-  if (grimoire_rune_is_timestretch_only()) {
+  const uint16_t direct_value = break_direct_clamp(val);
+  const int8_t single_effect = grimoire_rune_single_effect();
+  grimoire_direct_value = direct_value;
+  if (single_effect != GRIMOIRE_EFFECT_NONE) {
     if (show_wheel) {
       uint8_t r, g, b;
-      int16_t val2 = val / 4;
-      hue_to_rgb2(val2, &r, &g, &b);
-      ws2812_set_wheel2(ws2812, val, r, g, b);
+      hue_to_rgb2(direct_value / 4, &r, &g, &b);
+      ws2812_set_wheel2(ws2812, direct_value, r, g, b);
     }
-    if (val <= 0) {
-      set_realtime_stretch_knob(0);
-    } else if (val >= 1024) {
-      set_realtime_stretch_knob(4095);
-    } else {
-      set_realtime_stretch_knob((uint16_t)((uint32_t)val * 4095u / 1024u));
-    }
+    break_fx_set_direct_effect(single_effect, direct_value);
     return true;
   }
+  break_fx_leave_direct_mode();
 
   if (gpio_btn_taptempo_val == 0 && !ignore_taptempo_btn) {
     fuzz_auto_active = false;
@@ -517,13 +514,14 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     }
     return true;
   }
-  break_knob_set_point = val;
+  break_knob_set_point = direct_value;
   if (show_wheel) {
     uint8_t r, g, b;
     int16_t val2 = val / 4;
     hue_to_rgb2(val2, &r, &g, &b);
     ws2812_set_wheel2(ws2812, val, r, g, b);
   }
+  return true;
 }
 
 void dust_1() {

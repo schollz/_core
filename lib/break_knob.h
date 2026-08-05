@@ -63,19 +63,9 @@ uint8_t break_fx_beat_after_activated[16] = {
 };
 
 #ifdef INCLUDE_ECTOCORE
-bool grimoire_rune_is_timestretch_only() {
-  if (!grimoire_rune_effect[grimoire_rune][FX_TIMESTRETCH]) {
-    return false;
-  }
-  for (uint8_t effect = 0; effect < 16; effect++) {
-    if (effect != FX_TIMESTRETCH && grimoire_rune_effect[grimoire_rune][effect]) {
-      return false;
-    }
-  }
-  return true;
+int8_t grimoire_rune_single_effect() {
+  return grimoire_find_single_effect(grimoire_rune_effect[grimoire_rune]);
 }
-
-bool grimoire_rune_timestretch_only_was_active = false;
 #endif
 
 // if (random_integer_in_range(1, 2000000) < probability_of_random_retrig) {
@@ -157,7 +147,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
   }
 
   switch (effect) {
-    case 0:
+    case GRIMOIRE_EFFECT_DISTORTION:
       // distortion
       if (on) {
         if (!sf->fx_active[FX_FUZZ]) {
@@ -172,7 +162,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_FUZZ);
       break;
-    case 1:
+    case GRIMOIRE_EFFECT_LOSS:
       // loss
       if (on) {
         sf->fx_param[FX_SHAPER][0] = random_integer_in_range(0, 255);
@@ -183,7 +173,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_SHAPER);
       break;
-    case 2:
+    case GRIMOIRE_EFFECT_BITCRUSH:
       // bitcrush
       if (on) {
         sf->fx_param[FX_BITCRUSH][0] = random_integer_in_range(220, 255);
@@ -194,7 +184,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_BITCRUSH);
       break;
-    case 3:
+    case GRIMOIRE_EFFECT_FILTER:
       // filter
       if (on) {
         sf->fx_param[FX_FILTER][0] = random_integer_in_range(0, 128);
@@ -205,7 +195,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_FILTER);
       break;
-    case 4:
+    case GRIMOIRE_EFFECT_STRETCH:
       // time stretch
       if (on) {
         sf->fx_active[FX_TIMESTRETCH] = true;
@@ -214,7 +204,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_TIMESTRETCH);
       break;
-    case 5:
+    case GRIMOIRE_EFFECT_DELAY:
       // time-synced delay
       if (on) {
         uint8_t faster = 1;
@@ -243,7 +233,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_DELAY);
       break;
-    case 6:
+    case GRIMOIRE_EFFECT_COMB:
       // combo
       if (on) {
         sf->fx_param[FX_COMB][0] = random_integer_in_range(0, 120);
@@ -254,17 +244,17 @@ void break_fx_toggle(uint8_t effect, bool on) {
       }
       update_fx(FX_COMB);
       break;
-    case 7:
+    case GRIMOIRE_EFFECT_BEAT_REPEAT:
       // beat repeat
       sf->fx_active[FX_BEATREPEAT] = on;
       update_fx(FX_BEATREPEAT);
       break;
-    case 8:
+    case GRIMOIRE_EFFECT_REVERB:
       // reverb
       sf->fx_active[FX_EXPAND] = on;
       update_fx(FX_EXPAND);
       break;
-    case 9:
+    case GRIMOIRE_EFFECT_AUTOPAN:
       // autopan
       sf->fx_active[FX_PAN] = on;
       uint8_t possible_speeds[3] = {2, 4, 8};
@@ -272,7 +262,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
           Q16_16_2PI / (48 * possible_speeds[random_integer_in_range(0, 2)]);
       update_fx(FX_PAN);
       break;
-    case 10:
+    case GRIMOIRE_EFFECT_PITCH_DOWN:
       // pitch down
       if (on && !sf->fx_active[FX_REPITCH]) {
         if (sf->bpm_tempo < 180 && sf->bpm_tempo > 120) {
@@ -286,7 +276,7 @@ void break_fx_toggle(uint8_t effect, bool on) {
         update_fx(FX_REPITCH);
       }
       break;
-    case 11:
+    case GRIMOIRE_EFFECT_PITCH_UP:
       // pitch up
       if (on && !sf->fx_active[FX_REPITCH]) {
         if (sf->bpm_tempo < 180 && sf->bpm_tempo > 120) {
@@ -300,22 +290,22 @@ void break_fx_toggle(uint8_t effect, bool on) {
         update_fx(FX_REPITCH);
       }
       break;
-    case 12:
+    case GRIMOIRE_EFFECT_REVERSE:
       // if (retrig_beat_num == 0) {
       // reverse
       sf->fx_active[FX_REVERSE] = on;
       update_fx(FX_REVERSE);
       // }
       break;
-    case 13:
+    case GRIMOIRE_EFFECT_RETRIGGER:
       // retrigger
       do_do_retrigger(effect, on, false);
       break;
-    case 14:
+    case GRIMOIRE_EFFECT_RETRIGGER_PITCHED:
       // retrigger pitched
       do_do_retrigger(effect, on, true);
       break;
-    case 15:
+    case GRIMOIRE_EFFECT_TAPE_STOP:
       sf->fx_param[FX_TAPE_STOP][0] = random_integer_in_range(0, 128);
       sf->fx_param[FX_TAPE_STOP][1] = random_integer_in_range(0, 128);
       sf->fx_active[FX_TAPE_STOP] = on;
@@ -341,23 +331,286 @@ void break_fx_force_timestretch_off() {
   sf->fx_active[FX_TIMESTRETCH] = false;
   update_fx(FX_TIMESTRETCH);
 }
+
+void break_fx_direct_stop_retrigger() {
+  retrig_beat_num = 0;
+  retrig_ready = false;
+  retrig_first = false;
+  retrig_vol = 1.0;
+  retrig_vol_step = 0;
+  retrig_pitch = PITCH_VAL_MID;
+  retrig_pitch_change = 0;
+}
+
+void break_fx_direct_deactivate(uint8_t effect) {
+  switch (effect) {
+    case GRIMOIRE_EFFECT_DISTORTION:
+      if (!fuzz_manual_lock) {
+        sf->fx_active[FX_FUZZ] = false;
+      }
+      fuzz_auto_active = false;
+      update_fx(FX_FUZZ);
+      break;
+    case GRIMOIRE_EFFECT_LOSS:
+      sf->fx_active[FX_SHAPER] = false;
+      update_fx(FX_SHAPER);
+      break;
+    case GRIMOIRE_EFFECT_BITCRUSH:
+      sf->fx_active[FX_BITCRUSH] = false;
+      update_fx(FX_BITCRUSH);
+      break;
+    case GRIMOIRE_EFFECT_FILTER:
+      sf->fx_active[FX_FILTER] = false;
+      update_fx(FX_FILTER);
+      break;
+    case GRIMOIRE_EFFECT_STRETCH:
+      break_fx_force_timestretch_off();
+      set_realtime_stretch_q8(REALTIME_STRETCH_Q8_ONE);
+      break;
+    case GRIMOIRE_EFFECT_DELAY:
+      sf->fx_active[FX_DELAY] = false;
+      update_fx(FX_DELAY);
+      break;
+    case GRIMOIRE_EFFECT_COMB:
+      sf->fx_active[FX_COMB] = false;
+      Comb_setDirect(combfilter, false, 0);
+      break;
+    case GRIMOIRE_EFFECT_BEAT_REPEAT:
+      sf->fx_active[FX_BEATREPEAT] = false;
+      BeatRepeat_repeat(beatrepeat, 0);
+      break;
+    case GRIMOIRE_EFFECT_REVERB:
+      reverb_activated = false;
+      reverb_fade = sf->fx_param[FX_EXPAND][1] * Q16_16_1 / 255;
+      sf->fx_active[FX_EXPAND] = false;
+      update_fx(FX_EXPAND);
+      break;
+    case GRIMOIRE_EFFECT_AUTOPAN:
+      sf->fx_active[FX_PAN] = false;
+      update_fx(FX_PAN);
+      break;
+    case GRIMOIRE_EFFECT_PITCH_DOWN:
+    case GRIMOIRE_EFFECT_PITCH_UP:
+      sf->fx_param[FX_REPITCH][1] = 16;
+      sf->fx_active[FX_REPITCH] = false;
+      update_fx(FX_REPITCH);
+      break;
+    case GRIMOIRE_EFFECT_REVERSE:
+      sf->fx_active[FX_REVERSE] = false;
+      update_fx(FX_REVERSE);
+      break;
+    case GRIMOIRE_EFFECT_RETRIGGER:
+    case GRIMOIRE_EFFECT_RETRIGGER_PITCHED:
+      break_fx_direct_stop_retrigger();
+      break;
+    case GRIMOIRE_EFFECT_TAPE_STOP:
+      sf->fx_active[FX_TAPE_STOP] = false;
+      update_fx(FX_TAPE_STOP);
+      break;
+    default:
+      break;
+  }
+  if (effect < GRIMOIRE_EFFECT_COUNT) {
+    break_fx_beat_activated[effect] = 0;
+    break_fx_beat_after_activated[effect] = 0;
+  }
+}
+
+void break_fx_direct_apply(uint8_t effect, uint16_t value) {
+  const uint8_t amount = break_direct_u8(value);
+  const bool on = value > 0;
+
+  if (!on) {
+    break_fx_direct_deactivate(effect);
+    return;
+  }
+
+  switch (effect) {
+    case GRIMOIRE_EFFECT_DISTORTION:
+      sf->fx_param[FX_FUZZ][0] = amount;
+      sf->fx_param[FX_FUZZ][1] =
+          255u - (uint8_t)(((uint16_t)amount * 130u) / 255u);
+      if (!sf->fx_active[FX_FUZZ]) {
+        sf->fx_active[FX_FUZZ] = true;
+        fuzz_auto_active = true;
+      }
+      update_fx(FX_FUZZ);
+      break;
+    case GRIMOIRE_EFFECT_LOSS:
+      sf->fx_param[FX_SHAPER][0] = 128 + amount / 2;
+      sf->fx_param[FX_SHAPER][1] =
+          255u - (uint8_t)(((uint16_t)amount * 191u) / 255u);
+      sf->fx_active[FX_SHAPER] = true;
+      update_fx(FX_SHAPER);
+      break;
+    case GRIMOIRE_EFFECT_BITCRUSH:
+      sf->fx_param[FX_BITCRUSH][0] = amount;
+      sf->fx_param[FX_BITCRUSH][1] = amount;
+      sf->fx_active[FX_BITCRUSH] = true;
+      update_fx(FX_BITCRUSH);
+      break;
+    case GRIMOIRE_EFFECT_FILTER: {
+      const bool was_active = sf->fx_active[FX_FILTER];
+      sf->fx_param[FX_FILTER][0] = 255 - amount;
+      sf->fx_param[FX_FILTER][1] = 16;
+      sf->fx_active[FX_FILTER] = true;
+      if (!was_active) {
+        update_fx(FX_FILTER);
+      } else {
+        EnvelopeLinearInteger_reset(
+            envelope_filter, BLOCKS_PER_SECOND,
+            EnvelopeLinearInteger_update(envelope_filter, NULL),
+            linlin(sf->fx_param[FX_FILTER][0], 0, 255, 5,
+                   resonantfilter_fc_max),
+            linlin(sf->fx_param[FX_FILTER][1], 0, 255, 0.5, 5));
+      }
+      break;
+    }
+    case GRIMOIRE_EFFECT_STRETCH:
+      break_fx_force_timestretch_off();
+      set_realtime_stretch_knob((uint16_t)((uint32_t)value * 4095u / 1024u));
+      break;
+    case GRIMOIRE_EFFECT_DELAY: {
+      uint32_t duration = sf->bpm_tempo > 0
+                              ? (30u * SAMPLE_RATE) / sf->bpm_tempo
+                              : SAMPLE_RATE / 4u;
+      while (duration > 10000u) {
+        duration /= 2u;
+      }
+      Delay_setDuration(delay, duration);
+      Delay_setFeedbackf(delay, 0.5f + ((float)amount * 0.49f / 255.0f));
+      if (!sf->fx_active[FX_DELAY]) {
+        sf->fx_active[FX_DELAY] = true;
+        update_fx(FX_DELAY);
+      }
+      break;
+    }
+    case GRIMOIRE_EFFECT_COMB:
+      sf->fx_active[FX_COMB] = true;
+      Comb_setDirect(combfilter, true, amount);
+      break;
+    case GRIMOIRE_EFFECT_BEAT_REPEAT: {
+      uint32_t samples = sf->bpm_tempo > 0
+                             ? (30u * SAMPLE_RATE) / sf->bpm_tempo
+                             : SAMPLE_RATE / 4u;
+      samples /= break_direct_retrigger_division(amount);
+      if (samples < 100) {
+        samples = 100;
+      }
+      if (samples > INT16_MAX) {
+        samples = INT16_MAX;
+      }
+      sf->fx_active[FX_BEATREPEAT] = true;
+      BeatRepeat_repeat(beatrepeat, (int16_t)samples);
+      break;
+    }
+    case GRIMOIRE_EFFECT_REVERB:
+      sf->fx_param[FX_EXPAND][1] = (uint8_t)(((uint16_t)amount * 217u) / 255u);
+      sf->fx_active[FX_EXPAND] = true;
+      update_fx(FX_EXPAND);
+      break;
+    case GRIMOIRE_EFFECT_AUTOPAN: {
+      sf->fx_param[FX_PAN][1] = amount;
+      sf->fx_active[FX_PAN] = true;
+      const uint8_t period = 8u - (uint8_t)(((uint16_t)amount * 7u) / 255u);
+      lfo_pan_step = Q16_16_2PI / (48 * period);
+      update_fx(FX_PAN);
+      break;
+    }
+    case GRIMOIRE_EFFECT_PITCH_DOWN:
+      sf->fx_param[FX_REPITCH][0] =
+          85u - (uint8_t)(((uint16_t)amount * 85u) / 255u);
+      sf->fx_param[FX_REPITCH][1] = 16;
+      sf->fx_active[FX_REPITCH] = true;
+      update_fx(FX_REPITCH);
+      break;
+    case GRIMOIRE_EFFECT_PITCH_UP:
+      sf->fx_param[FX_REPITCH][0] =
+          85u + (uint8_t)(((uint16_t)amount * 170u) / 255u);
+      sf->fx_param[FX_REPITCH][1] = 16;
+      sf->fx_active[FX_REPITCH] = true;
+      update_fx(FX_REPITCH);
+      break;
+    case GRIMOIRE_EFFECT_REVERSE:
+      sf->fx_active[FX_REVERSE] = true;
+      update_fx(FX_REVERSE);
+      break;
+    case GRIMOIRE_EFFECT_RETRIGGER:
+    case GRIMOIRE_EFFECT_RETRIGGER_PITCHED: {
+      const uint8_t division = break_direct_retrigger_division(amount);
+      retrig_timer_reset = 96u / division;
+      if (retrig_timer_reset == 0) {
+        retrig_timer_reset = 1;
+      }
+      if (retrig_beat_num < 128) {
+        retrig_first = retrig_beat_num == 0;
+        retrig_beat_num = 255;
+      }
+      debounce_quantize = 0;
+      retrig_ready = true;
+      retrig_vol = 1.0;
+      retrig_vol_step = 0;
+      if (effect == GRIMOIRE_EFFECT_RETRIGGER) {
+        retrig_pitch = PITCH_VAL_MID;
+        retrig_pitch_change = 0;
+      }
+      break;
+    }
+    case GRIMOIRE_EFFECT_TAPE_STOP:
+      sf->fx_param[FX_TAPE_STOP][0] = 255 - amount;
+      sf->fx_param[FX_TAPE_STOP][1] = 255 - amount;
+      sf->fx_active[FX_TAPE_STOP] = true;
+      update_fx(FX_TAPE_STOP);
+      break;
+    default:
+      break;
+  }
+}
+
+void break_fx_set_direct_effect(int8_t effect, uint16_t value) {
+  if (grimoire_direct_effect != effect) {
+    if (grimoire_direct_effect != GRIMOIRE_EFFECT_NONE) {
+      break_fx_direct_deactivate((uint8_t)grimoire_direct_effect);
+    }
+    break_fx_clear_queued_effects();
+    grimoire_direct_effect = effect;
+  }
+  grimoire_direct_value = value;
+  break_fx_direct_apply((uint8_t)effect, value);
+}
+
+void break_fx_leave_direct_mode() {
+  if (grimoire_direct_effect == GRIMOIRE_EFFECT_NONE) {
+    return;
+  }
+  break_fx_direct_deactivate((uint8_t)grimoire_direct_effect);
+  grimoire_direct_effect = GRIMOIRE_EFFECT_NONE;
+}
 #endif
 
 void break_fx_update() {
 #ifdef INCLUDE_ECTOCORE
-  bool timestretch_only = grimoire_rune_is_timestretch_only();
-  if (timestretch_only) {
-    if (!grimoire_rune_timestretch_only_was_active) {
-      break_fx_clear_queued_effects();
+  const int8_t single_effect = grimoire_rune_single_effect();
+  if (single_effect != GRIMOIRE_EFFECT_NONE) {
+    if (grimoire_direct_effect != single_effect) {
+      break_fx_set_direct_effect(single_effect, grimoire_direct_value);
+    } else if ((single_effect == GRIMOIRE_EFFECT_RETRIGGER ||
+                single_effect == GRIMOIRE_EFFECT_RETRIGGER_PITCHED) &&
+               grimoire_direct_value > 0 && retrig_beat_num < 128) {
+      retrig_beat_num = 255;
+      retrig_first = single_effect == GRIMOIRE_EFFECT_RETRIGGER_PITCHED;
+      if (retrig_first) {
+        retrig_pitch = PITCH_VAL_MID;
+      }
+    } else if (single_effect == GRIMOIRE_EFFECT_BEAT_REPEAT &&
+               grimoire_direct_value > 0 &&
+               beatrepeat->repeat_start < 0) {
+      break_fx_direct_apply((uint8_t)single_effect, grimoire_direct_value);
     }
-    break_fx_force_timestretch_off();
-    grimoire_rune_timestretch_only_was_active = true;
+    beat_did_activate = false;
     return;
   }
-  if (grimoire_rune_timestretch_only_was_active) {
-    grimoire_rune_timestretch_only_was_active = false;
-    set_realtime_stretch_q8(REALTIME_STRETCH_Q8_ONE);
-  }
+  break_fx_leave_direct_mode();
 #endif
   if (!beat_did_activate) {
     return;

@@ -3,7 +3,7 @@
 ## Part I: Knobs and Buttons
 
 0. **SD Card.** Holds 16 banks with 16 samples each. Prepared using _ectocore.rocks_, which organizes, slices, and assigns Grimoire effects. No sample length limit. Insert to auto-load banks on startup.
-1. **Break Knob.** Controls the probability of triggering effects. Effects are determined by the Grimoire Knob’s current selection.
+1. **Break Knob.** Controls the probability of triggering effects. Effects are determined by the Grimoire Knob’s current selection. When the selected rune contains exactly one effect, the knob directly controls that effect instead.
 2. **Amen Knob.** Turing Machine–style sequencer. Fully counterclockwise plays normally; fully clockwise randomizes sequence order. Intermediate positions play sequences from 1–16 steps.
 3. **Sample Knob.** Changes the active sample. Hold the Bank Button to change banks. Each bank holds up to 16 samples.
 4. **Bank Button.** Press to cycle through banks.
@@ -26,7 +26,7 @@
 ## Part III: CV Inputs
 
 1. **Amen Input.** Controls slice sequencing via CV. Set to Jump or Hold mode on _ectocore.rocks_. Supports unipolar (0–5 V) or bipolar (–5 V to +5 V). When patched, the Amen Knob sets the slice range start, and the Amen Attenuator Knob sets the range end.
-2. **Break Input.** Controls probability (0–100%) of activating Grimoire-selected effects. CV polarity can be set to unipolar or bipolar.
+2. **Break Input.** Controls probability (0–100%) of activating Grimoire-selected effects, or directly controls the effect when the selected rune contains exactly one. CV polarity can be set to unipolar or bipolar.
 3. **Sample Input.** Selects the active sample within the current bank. CV polarity can be set to unipolar or bipolar.
 4. **Clock In.** Syncs playback to an external 2 PPQN clock. “Stop if clock stops” or “Continue if clock stops” behavior can be set in settings.
 5. **Trig Out.** Sends transient triggers (Kick, Snare, Transient, Random) as defined by the Mode Button.

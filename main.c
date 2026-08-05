@@ -239,7 +239,16 @@ bool __not_in_flash_func(timer_step)() {
                            : 1.0;
 #endif
           retrig_pitch = PITCH_VAL_MID;
-          if (sf->do_retrig_pitch_changes &&
+          bool retrig_pitch_changes = sf->do_retrig_pitch_changes;
+#ifdef INCLUDE_ECTOCORE
+          if (grimoire_direct_effect == GRIMOIRE_EFFECT_RETRIGGER) {
+            retrig_pitch_changes = false;
+          } else if (grimoire_direct_effect ==
+                     GRIMOIRE_EFFECT_RETRIGGER_PITCHED) {
+            retrig_pitch_changes = true;
+          }
+#endif
+          if (retrig_pitch_changes &&
               random_integer_in_range(1, 100) < 70) {
             retrig_pitch_change =
                 round((float)random_integer_in_range(100, 500) / 100);

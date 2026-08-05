@@ -773,10 +773,18 @@ AUDIO_SOURCE_RENDERED:
     //   u = u * vv / 255 + (Q16_16_1 * (255 - vv) / 255);
     // }
     if (sf->fx_active[FX_PAN]) {
-      uint8_t vv = linlin(sf->fx_param[FX_PAN][1], 0, 255, 128, 255);
-      v = q16_16_sin01(lfo_pan_val);
-      v = v * vv / 255 + (Q16_16_1 * (255 - vv) / 255);
-      w = Q16_16_1 - v;
+      const int32_t sine = q16_16_sin01(lfo_pan_val);
+      if (grimoire_direct_effect == GRIMOIRE_EFFECT_AUTOPAN) {
+        const uint8_t depth = sf->fx_param[FX_PAN][1];
+        v = sine * depth / 255 + (Q16_16_1 * (255 - depth) / 255);
+        w = (Q16_16_1 - sine) * depth / 255 +
+            (Q16_16_1 * (255 - depth) / 255);
+      } else {
+        const uint8_t depth =
+            linlin(sf->fx_param[FX_PAN][1], 0, 255, 128, 255);
+        v = sine * depth / 255 + (Q16_16_1 * (255 - depth) / 255);
+        w = Q16_16_1 - v;
+      }
     }
     for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
       for (uint8_t channel = 0; channel < 2; channel++) {
@@ -800,6 +808,10 @@ AUDIO_SOURCE_RENDERED:
   // apply reverb
   if (sf->fx_active[FX_EXPAND] || reverb_fade > 0 || reverb_activated) {
     if (freeverb != NULL) {
+      const int32_t reverb_wet_target =
+          grimoire_direct_effect == GRIMOIRE_EFFECT_REVERB
+              ? sf->fx_param[FX_EXPAND][1] * Q16_16_1 / 255
+              : Q16_16_0_85;
       if (first_loop_ever) {
         // time this process
         t0 = time_us_32();
@@ -807,23 +819,26 @@ AUDIO_SOURCE_RENDERED:
       if (reverb_activated && !sf->fx_active[FX_EXPAND]) {
         reverb_activated = false;
         if (reverb_fade <= 0) {
-          reverb_fade = Q16_16_0_85;
+          reverb_fade = reverb_wet_target;
         }
       }
       if (!reverb_activated && sf->fx_active[FX_EXPAND]) {
         reverb_activated = true;
         if (reverb_fade <= 0) {
-          reverb_fade = Q16_16_0_85;
+          reverb_fade = reverb_wet_target;
         }
       }
       if (reverb_fade > 0) {
+        if (reverb_fade > reverb_wet_target) {
+          reverb_fade = reverb_wet_target;
+        }
         reverb_fade -= 300;
         if (reverb_fade < 0) {
           reverb_fade = 0;
         }
         if (sf->fx_active[FX_EXPAND]) {
           // fade in
-          FV_Reverb_set_wet(freeverb, Q16_16_0_85 - reverb_fade);
+          FV_Reverb_set_wet(freeverb, reverb_wet_target - reverb_fade);
         } else {
           // fade out
           FV_Reverb_set_wet(freeverb, reverb_fade);
@@ -837,7 +852,8 @@ AUDIO_SOURCE_RENDERED:
     }
   } else {
 #ifdef INCLUDE_ECTOCORE
-    if (sf->fx_active[FX_DELAY]) {
+    if (sf->fx_active[FX_DELAY] &&
+        grimoire_direct_effect != GRIMOIRE_EFFECT_DELAY) {
       Delay_setFeedbackf(delay,
                          Range(LFNoise2_period(noise_feedback, 1), 0.49, 0.99));
       float v = Range(LFNoise2_period(noise_duration, 2), 100, 10000);
