@@ -90,6 +90,11 @@ a:hover {
   position: relative;
 }
 
+.hero-title h1 {
+  font-size: 1em;
+  margin: 0;
+}
+
 
 .hero-small {
   font-size: 1.5rem;
@@ -221,6 +226,44 @@ div {
   padding: 1em;
   cursor: pointer;
   background-color: #fff;
+}
+
+.reviews details {
+  margin-bottom: 1.5em;
+}
+
+.reviews summary {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1em;
+  margin-top: 1.5em;
+}
+
+.review-card {
+  border: 2px solid var(--header-footer-background);
+  border-radius: 0.75em;
+  box-shadow: rgba(189, 175, 237, 0.45) 3px 3px 2px 1px;
+  margin: 0;
+  padding: 1em;
+}
+
+.review-card blockquote {
+  margin: 0.75em 0;
+}
+
+.review-card figcaption {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.review-stars {
+  color: #6d51c9;
+  letter-spacing: 0.1em;
 }
 
 

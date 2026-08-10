@@ -1,0 +1,52 @@
+{{- $content := .Content -}}
+{{- $imageAlts := dict
+    "/_core_bb.webp" "Zeptoboard breadboard wiring and component layout"
+    "/img/Schematic_zeptocore-v28_2024-03-24.webp" "Zeptocore hardware schematic"
+    "/img/bass_volume.webp" "Zeptocore knob combination for realtime stretch"
+    "/img/battery_pack.webp" "Epoxy securing the Zeptocore battery holder"
+    "/img/case1.webp" "3D-printed Zeptocore case design"
+    "/img/case2.webp" "Compact 3D-printed Zeptocore case design"
+    "/img/case3.webp" "Dich Studios protective case for Zeptocore"
+    "/img/chain_sequence.webp" "Zeptocore button combination for creating a sequence chain"
+    "/img/change_samples.webp" "Zeptocore button combination for selecting a sample bank and sample"
+    "/img/change_samples2.webp" "Zeptocore knob controls for changing banks and samples"
+    "/img/combo_fill.webp" "Zeptocore button combination for random fill mode"
+    "/img/combo_lock.webp" "Zeptocore button combination for sequence lock"
+    "/img/combo_midi.webp" "Zeptocore button combination for MIDI input mode"
+    "/img/combo_momentary.webp" "Zeptocore button combination for momentary effects mode"
+    "/img/combo_oneshot.webp" "Zeptocore button combination for one-shot playback mode"
+    "/img/combo_rand.webp" "Zeptocore button combination for a random sequence"
+    "/img/combo_sync.webp" "Zeptocore button combination for clock and MIDI sync"
+    "/img/core_tool.webp" "Zeptocore sample preparation tool interface"
+    "/img/filter_turn.webp" "Zeptocore knob control for a filter sweep"
+    "/img/folders.webp" "Correct Zeptocore SD card bank and sample folder structure"
+    "/img/jump.webp" "Using the Zeptocore keypad to jump between sample slices"
+    "/img/jump_effect.webp" "Toggling an effect from Zeptocore Jump mode"
+    "/img/kicks.webp" "Detected kick sample locations in the Zeptocore sample tool"
+    "/img/loop_sequence.webp" "Zeptocore three-key combination for looping sample slices"
+    "/img/mode_bass.webp" "Zeptocore button combination for Bass mode"
+    "/img/mode_jump.webp" "Zeptocore button combination for Jump mode"
+    "/img/mode_mash.webp" "Zeptocore button combination for Mash mode"
+    "/img/mute.webp" "Zeptocore button combination for mute"
+    "/img/pcm5102.webp" "PCM5102 audio board solder configuration for Zeptoboard"
+    "/img/pitch_turn.webp" "Zeptocore knob control for changing sample pitch"
+    "/img/quantize.webp" "Zeptocore knob control for sequencer quantization"
+    "/img/retrigger.webp" "Zeptocore keypad combination for retriggering a sample slice"
+    "/img/sequence_play.webp" "Zeptocore button combination for sequence playback"
+    "/img/sequence_rec.webp" "Zeptocore button combination for recording a sequence"
+    "/img/sequence_select.webp" "Zeptocore button combination for selecting a sequence slot"
+    "/img/start_stop.webp" "Zeptocore button combination for starting and stopping playback"
+    "/img/tempo_tap.webp" "Zeptocore button combination for tap tempo"
+    "/img/tempo_turn.webp" "Zeptocore knob control for changing tempo"
+    "/img/volume_turn.webp" "Zeptocore knob control for changing volume"
+    "/img/z1.webp" "Opening the Zeptocade enclosure to install Zeptocore"
+    "/img/z2.webp" "Removing the Zeptocade corner standoff"
+    "/img/z3.webp" "Installing Zeptocore onto the Zeptocade header pins"
+    "/img/zeptoboard_midi.webp" "Zeptocore browser MIDI and computer keyboard interface"
+-}}
+{{- range $src, $alt := $imageAlts -}}
+    {{- $needle := printf `<img src="%s"` $src -}}
+    {{- $replacement := printf `<img src="%s" alt="%s" loading="lazy" decoding="async"` $src $alt -}}
+    {{- $content = replace $content $needle $replacement -}}
+{{- end -}}
+{{- $content | safeHTML -}}

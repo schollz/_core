@@ -1,0 +1,19 @@
+{{- with site.Data.reviews -}}
+<section class="help reviews" aria-labelledby="reviews-heading">
+    <div>
+        <h1 id="reviews-heading">What people are saying</h1>
+        <details>
+            <summary>{{ len . }} five-star reviews</summary>
+            <div class="review-grid">
+                {{- range . }}
+                <figure class="review-card">
+                    <div class="review-stars" role="img" aria-label="5 out of 5 stars">★★★★★</div>
+                    <blockquote>“{{ .reviewBody }}”</blockquote>
+                    <figcaption>Anonymous reviewer</figcaption>
+                </figure>
+                {{- end }}
+            </div>
+        </details>
+    </div>
+</section>
+{{- end -}}

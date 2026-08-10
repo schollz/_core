@@ -1,37 +1,81 @@
+{{- $siteName := site.Params.brandName | default site.Title -}}
+{{- $title := site.Params.seoTitle | default site.Title -}}
+{{- if not .IsHome -}}
+    {{- $pageName := .Title -}}
+    {{- if not $pageName }}{{ $pageName = .Section | humanize }}{{ end -}}
+    {{- $title = printf "%s | %s Guide" $pageName $siteName -}}
+{{- end -}}
+{{- $description := site.Params.description -}}
+{{- if not .IsHome -}}
+    {{- $description = .Params.description | default .Params.short | default .Summary | default site.Params.description -}}
+{{- end -}}
+{{- $description = trim ($description | plainify | htmlUnescape) " \t\r\n" | truncate 160 -}}
+{{- $canonicalURL := .Permalink -}}
+{{- $imagePath := .Params.image | default site.Params.socialImage -}}
+{{- with .Params.images -}}
+    {{- $imagePath = index . 0 -}}
+{{- end -}}
+{{- $imageURL := $imagePath | absURL -}}
+{{- $imageAlt := .Params.imageAlt | default site.Params.socialImageAlt -}}
+{{- $pageType := cond .IsHome "website" "article" -}}
+{{- $robots := cond .IsHome "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" "noindex, follow, max-image-preview:large" -}}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ printf "%s | %s" .Title site.Title }}{{ end }}</title>
-<link rel="apple-touch-icon" sizes="57x57" href="/static/apple-icon-57x57.png">
-<link rel="apple-touch-icon" sizes="60x60" href="/static/apple-icon-60x60.png">
-<link rel="apple-touch-icon" sizes="72x72" href="/static/apple-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="76x76" href="/static/apple-icon-76x76.png">
-<link rel="apple-touch-icon" sizes="114x114" href="/static/apple-icon-114x114.png">
-<link rel="apple-touch-icon" sizes="120x120" href="/static/apple-icon-120x120.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/static/apple-icon-144x144.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/static/apple-icon-152x152.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-icon-180x180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/static/android-icon-192x192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-<link rel="manifest" href="/static/manifest.json">
-<meta name="msapplication-TileColor" content="#f0f4ff">
-<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<title>{{ $title }}</title>
+<meta name="description" content="{{ $description }}">
+<meta name="author" content="{{ site.Params.author }}">
+<meta name="creator" content="{{ site.Params.author }}">
+<meta name="publisher" content="{{ site.Params.author }}">
+<meta name="application-name" content="{{ $siteName }}">
+<meta name="apple-mobile-web-app-title" content="{{ $siteName }}">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="{{ $robots }}">
+{{- with site.Params.keywords }}
+<meta name="keywords" content="{{ delimit . ", " }}">
+{{- end }}
+<link rel="canonical" href="{{ $canonicalURL }}">
+<link rel="alternate" hreflang="en-US" href="{{ $canonicalURL }}">
+<link rel="alternate" hreflang="x-default" href="{{ $canonicalURL }}">
+{{- with .OutputFormats.Get "RSS" }}
+<link rel="alternate" type="application/rss+xml" title="{{ $siteName }}" href="{{ .Permalink }}">
+{{- end }}
+
+<link rel="icon" href="{{ "favicon.ico" | relURL }}" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ "static/icon-32.png" | relURL }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ "static/apple-touch-icon.png" | relURL }}">
+<link rel="manifest" href="{{ "static/manifest.json" | relURL }}">
 <meta name="theme-color" content="#f0f4ff">
-<meta name="title" content="zeptocore" />
-<meta name="description"
-    content="zeptocore is a handmade, handheld sample player and sequencer created by infinite digits." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://zeptocore.com" />
-<meta property="og:title" content="zeptocore" />
-<meta property="og:description"
-    content="zeptocore is a handmade, handheld sample player and sequencer created by infinite digits." />
-<meta property="og:image" content="https://zeptocore.com/img/zepto3.png" />
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content="https://zeptocore.com" />
-<meta property="twitter:title" content="zeptocore" />
-<meta property="twitter:description"
-    content="zeptocore is a handmade, handheld sample player and sequencer created by infinite digits." />
-<meta property="twitter:image" content="https://zeptocore.com/img/zepto3.png" />
+<meta name="msapplication-TileColor" content="#f0f4ff">
+
+<meta property="og:type" content="{{ $pageType }}">
+<meta property="og:site_name" content="{{ $siteName }}">
+<meta property="og:locale" content="{{ site.Params.locale }}">
+<meta property="og:url" content="{{ $canonicalURL }}">
+<meta property="og:title" content="{{ $title }}">
+<meta property="og:description" content="{{ $description }}">
+<meta property="og:image" content="{{ $imageURL }}">
+<meta property="og:image:secure_url" content="{{ $imageURL }}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="672">
+<meta property="og:image:alt" content="{{ $imageAlt }}">
+{{- if not .IsHome }}
+<meta property="article:section" content="{{ .Section | humanize }}">
+{{- if not .PublishDate.IsZero }}
+<meta property="article:published_time" content="{{ .PublishDate.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- end -}}
+{{- if not .Lastmod.IsZero }}
+<meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- end }}
+{{- end }}
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="{{ $canonicalURL }}">
+<meta name="twitter:title" content="{{ $title }}">
+<meta name="twitter:description" content="{{ $description }}">
+<meta name="twitter:image" content="{{ $imageURL }}">
+<meta name="twitter:image:alt" content="{{ $imageAlt }}">
+
+{{ partial "structured-data.html" . }}
 {{ partialCached "head/css.html" . }}
 {{ partialCached "head/js.html" . }}

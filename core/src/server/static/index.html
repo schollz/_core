@@ -4,7 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[[ if .IsEctocore]]ezeptocore[[else]]zeptocore[[end]] tool</title>
+    [[ if .IsZeptocore ]]
+    <title>Zeptocore Sample Tool — Prepare &amp; Manage Samples</title>
+    <meta name="description"
+        content="Prepare, slice, organize, preview, and transfer audio samples for the Zeptocore handheld sampler with this free browser-based tool.">
+    <meta name="author" content="Infinite Digits">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <link rel="canonical" href="https://zeptocore.com/tool">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Zeptocore">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://zeptocore.com/tool">
+    <meta property="og:title" content="Zeptocore Sample Tool — Prepare &amp; Manage Samples">
+    <meta property="og:description"
+        content="Prepare, slice, organize, preview, and transfer audio samples for the Zeptocore handheld sampler.">
+    <meta property="og:image" content="https://zeptocore.com/img/zepto3.png">
+    <meta property="og:image:alt" content="The Zeptocore handheld sample player and sequencer">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://zeptocore.com/tool">
+    <meta name="twitter:title" content="Zeptocore Sample Tool — Prepare &amp; Manage Samples">
+    <meta name="twitter:description"
+        content="Prepare, slice, organize, preview, and transfer audio samples for the Zeptocore handheld sampler.">
+    <meta name="twitter:image" content="https://zeptocore.com/img/zepto3.png">
+    <meta name="twitter:image:alt" content="The Zeptocore handheld sample player and sequencer">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Zeptocore Sample Tool",
+            "url": "https://zeptocore.com/tool",
+            "description": "Browser-based tool to prepare, slice, organize, preview, and transfer audio samples for Zeptocore.",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires a Web MIDI and WebUSB compatible browser",
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "Zeptocore",
+                "url": "https://zeptocore.com/"
+            },
+            "creator": {
+                "@type": "Organization",
+                "name": "Infinite Digits",
+                "url": "https://infinitedigits.co/"
+            }
+        }
+    </script>
+    [[ else ]]
+    <title>Ezeptocore Sample Tool</title>
+    <meta name="description" content="Prepare and manage audio samples for the Ezeptocore music instrument.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://get.ezeptocore.com/">
+    [[ end ]]
     <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-72x72.png">
@@ -20,7 +70,7 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-16x16.png">
     <meta name="msapplication-TileImage" content="/static/[[ if .IsEctocore]]ecto/[[ end]]ms-icon-144x144.png">
-    <link rel="manifest" href="/static/manifest.json">
+    <link rel="manifest" href="/static/[[ if .IsEctocore]]ecto/[[ end]]manifest.json">
     [[ if .IsZeptocore ]]
     <meta name="msapplication-TileColor" content="#f0f4ff">
     <meta name="theme-color" content="#f0f4ff">

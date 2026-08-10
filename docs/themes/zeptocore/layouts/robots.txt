@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /download
+Disallow: /get_info
+Disallow: /storage/
+Disallow: /ws
+
+Sitemap: {{ "sitemap.xml" | absURL }}

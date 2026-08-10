@@ -31,8 +31,9 @@
                 class="fas fa-print" aria-hidden="true"></i></a></div>
     <div class="hero">
         <div class="hero-inner hero-title">
-            <p><strong>zeptocore</strong></p>
-            <p><img src="/img/zepto3.webp"></p>
+            <h1>zeptocore</h1>
+            <p><img src="/img/zepto3.webp" alt="The Zeptocore handheld sample player and sequencer"
+                    width="1600" height="672" fetchpriority="high"></p>
             <!-- <p class="hero-small"><a href="#changelog" style="text-decoration: none;color:inherit;">v7.3.1</a></p> -->
             <!-- <p class="hero-small">boundless beats in a finite footprint.</p> -->
             <p class="hero-small" style="margin-bottom: 1em;">a handmade, handheld sample player.</p>
@@ -165,15 +166,16 @@
         <!-- {{ $indexPage := .Site.GetPage "/combos/" }}
     {{ $indexPage.Content }} -->
         <div>
-            {{ .Content }}
+            {{ partial "content.html" . }}
         </div>
     </section>
     {{ end }}
     {{ end }}
+    {{ partial "reviews.html" . }}
     <section class="combos">
         {{ $indexPage := .Site.GetPage "/combos/" }}
         <div>
-            {{ $indexPage.Content }}
+            {{ partial "content.html" $indexPage }}
         </div>
         {{ range where .Site.RegularPages "Section" "combos" }}
         {{ if isset .Params "noshow"}}{{else}}
@@ -207,7 +209,7 @@
                     from <code>{{.Params.mode_alt }}</code> mode
                 </p>
                 {{ end }}
-                {{.Content}}
+                {{ partial "content.html" . }}
             </div>
         </div>
         {{end}}
@@ -216,7 +218,7 @@
     <section class="effects">
         {{ $indexPage := .Site.GetPage "/effects/" }}
         <div>
-            {{ $indexPage.Content }}
+            {{ partial "content.html" $indexPage }}
         </div>
         {{ range where .Site.RegularPages "Section" "effects" }}
         {{ if isset .Params "noshow"}}{{else}}
@@ -254,7 +256,7 @@
                 {{end}}
                 {{ end}}
                 {{ end }}
-                {{.Content}}
+                {{ partial "content.html" . }}
             </div>
         </div>
         {{end}}
@@ -272,13 +274,14 @@
                         target="_blank"><i class="fas fa-edit" aria-hidden="true"></i>
                     </a></span>
             </summary>
-            {{ .Content }}
+            {{ partial "content.html" . }}
         </details>
         {{ end }}
     </section>
     <section class="reference">
         <h1 id="reference">Reference <a href="#reference"><i class="fas fa-link" aria-hidden="true"></i></a></h1>
-        <img src="/img/numbers.webp" class="centerimage">
+        <img src="/img/numbers.webp" class="centerimage"
+            alt="Zeptocore button and knob reference diagram" loading="lazy" decoding="async">
         <h2 id="combo-list" style="padding-left:0.75em;">Combo list</h2>
         <table class=" pb">
             <tbody>
@@ -326,7 +329,8 @@
                 {{end}}
             </tbody>
         </table>
-        <img src="/img/effects.webp" class="centerimage">
+        <img src="/img/effects.webp" class="centerimage"
+            alt="Zeptocore effects button reference diagram" loading="lazy" decoding="async">
         <h2 id="effect-list" style="padding-left:0.75em;">Effect list</h2>
         <table class="pb" style="margin-top:2em;">
             <tbody>
@@ -364,19 +368,19 @@
     </section>
     <section class="help faq">
         {{ range where .Site.RegularPages "Section" "contact" }}
-        {{ .Content }}
+        {{ partial "content.html" . }}
         {{ end }}
     </section>
     <section class="help faq">
         {{ range where .Site.RegularPages "Section" "versions" }}
 
-        {{ .Content }}
+        {{ partial "content.html" . }}
         {{ end }}
     </section>
     <footer>
         <div class="footer-inner">
             <p>zeptocore v7.3.1</p>
-            <p>© 2023-2024 <a href="https://infinitedigits.co">infinitedigits.co</a></p>
+            <p>© 2023–{{ now.Year }} <a href="https://infinitedigits.co">Infinite Digits</a></p>
         </div>
     </footer>
     <script>

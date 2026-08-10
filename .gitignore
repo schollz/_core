@@ -51,6 +51,7 @@ core/src/server/docs/pdf/
 core/src/server/docs/posts/
 core/src/server/docs/questions/
 core/src/server/docs/quickstart/
+core/src/server/docs/robots.txt
 core/src/server/docs/sitemap.xml
 core/src/server/docs/static/
 core/src/server/docs/tags/

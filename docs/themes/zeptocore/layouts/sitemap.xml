@@ -1,0 +1,13 @@
+{{- printf `<?xml version="1.0" encoding="UTF-8"?>` | safeHTML }}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{{ site.Home.Permalink }}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>{{ "tool" | absURL }}</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
