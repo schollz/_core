@@ -374,7 +374,7 @@ versions.md:
 	cd dev/gitread && go build -v && ./gitread ../../docs/content/versions/versions.md
 
 docsbuild: versions.md
-	cd docs && hugo --minify
+	cd docs && hugo --cleanDestinationDir --minify
 	rm -rf core/src/server/docs
 	cp -r docs/public core/src/server/docs
 

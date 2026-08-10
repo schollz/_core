@@ -202,7 +202,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return handleWebsocket(w, r)
 	} else if r.URL.Path == "/robots.txt" {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("User-agent: *\nAllow: /\n"))
+		w.Write([]byte("User-agent: *\nAllow: /\nDisallow: /download\nDisallow: /get_info\nDisallow: /storage/\nDisallow: /ws\n\nSitemap: https://zeptocore.com/sitemap.xml\n"))
 		return
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)

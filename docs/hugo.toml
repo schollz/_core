@@ -1,7 +1,31 @@
-baseURL = 'https://docs.zeptocore.com/'
-languageCode = 'en-us'
-title = 'zeptocore'
+baseURL = 'https://zeptocore.com/'
+languageCode = 'en-US'
+title = 'Zeptocore'
 theme = 'zeptocore'
+enableRobotsTXT = true
+copyright = 'Copyright 2023–2026 Infinite Digits'
+
+[params]
+  brandName = 'Zeptocore'
+  seoTitle = 'Zeptocore — Handheld Sample Player & Sequencer'
+  description = 'Zeptocore is an open-source, handmade handheld sample player, effects processor, and realtime sequencer by Infinite Digits.'
+  socialImage = '/img/zepto3.png'
+  socialImageAlt = 'The Zeptocore handheld sample player and sequencer'
+  author = 'Infinite Digits'
+  organizationURL = 'https://infinitedigits.co/'
+  locale = 'en_US'
+  keywords = ['handheld sampler', 'sample player', 'music sequencer', 'effects processor', 'open-source instrument', 'portable sampler', 'Zeptocore', 'Infinite Digits']
+
+[sitemap]
+  changeFreq = 'weekly'
+  priority = 1.0
+  filename = 'sitemap.xml'
+
+[outputs]
+  home = ['HTML']
+  section = ['HTML']
+  page = ['HTML']
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
@@ -17,5 +41,3 @@ theme = 'zeptocore'
       X-Content-Type-Options = "nosniff"
       X-Frame-Options = "SAMEORIGIN"
       X-XSS-Protection = "0"
-
-

@@ -136,7 +136,12 @@ func main() {
 	}
 	data.Versions = newVersions
 
-	tmpl := `# Version history
+	tmpl := `+++
+title = 'Version history'
+description = 'Release notes and firmware version history for the Zeptocore handheld sample player and sequencer.'
++++
+
+# Version history
 
 {{- range .Versions }}
 
