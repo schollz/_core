@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func renderStaticIndex(t *testing.T, isZeptocore bool) string {
+func renderStaticIndexForHost(t *testing.T, isZeptocore bool, host string) string {
 	t.Helper()
 
 	b, err := staticFiles.ReadFile("static/index.html")
@@ -22,15 +22,137 @@ func renderStaticIndex(t *testing.T, isZeptocore bool) string {
 		t.Fatal(err)
 	}
 
+	purchase := purchaseDestinationForHost(host, isZeptocore)
 	var rendered bytes.Buffer
-	err = tmpl.Execute(&rendered, map[string]bool{
-		"IsZeptocore": isZeptocore,
-		"IsEctocore":  !isZeptocore,
+	err = tmpl.Execute(&rendered, map[string]any{
+		"IsZeptocore":    isZeptocore,
+		"IsEctocore":     !isZeptocore,
+		"BuyURL":         purchase.URL,
+		"BuyProductName": purchase.ProductName,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	return rendered.String()
+}
+
+func renderStaticIndex(t *testing.T, isZeptocore bool) string {
+	t.Helper()
+	return renderStaticIndexForHost(t, isZeptocore, "localhost")
+}
+
+func TestPurchaseDestinationForHost(t *testing.T) {
+	tests := []struct {
+		name        string
+		host        string
+		isZeptocore bool
+		wantProduct string
+		wantURL     string
+	}{
+		{
+			name:        "Zeptocore domain",
+			host:        "zeptocore.com",
+			wantProduct: "Zeptocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/zeptocore/",
+		},
+		{
+			name:        "Zeptocore subdomain with port",
+			host:        "tool.zeptocore.com:443",
+			wantProduct: "Zeptocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/zeptocore/",
+		},
+		{
+			name:        "Ezeptocore domain with port",
+			host:        "ezeptocore.com:443",
+			wantProduct: "Ezeptocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/ezeptocore/",
+		},
+		{
+			name:        "Ectocore domain",
+			host:        "ectocore.rocks",
+			wantProduct: "Ectocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/ectocore/",
+		},
+		{
+			name:        "Local Zeptocore default",
+			host:        "localhost:8101",
+			isZeptocore: true,
+			wantProduct: "Zeptocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/zeptocore/",
+		},
+		{
+			name:        "Local Eurorack default",
+			host:        "localhost:8100",
+			wantProduct: "Ezeptocore",
+			wantURL:     "https://shop.infinitedigits.co/collections/ezeptocore/",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := purchaseDestinationForHost(test.host, test.isZeptocore)
+			if got.ProductName != test.wantProduct {
+				t.Errorf("product = %q, want %q", got.ProductName, test.wantProduct)
+			}
+			if got.URL != test.wantURL {
+				t.Errorf("URL = %q, want %q", got.URL, test.wantURL)
+			}
+		})
+	}
+}
+
+func TestBuyLinkByHost(t *testing.T) {
+	buyLinkPattern := regexp.MustCompile(`(?s)<a[^>]*id="buyLink"[^>]*>.*?</a>`)
+	tests := []struct {
+		name        string
+		host        string
+		isZeptocore bool
+		product     string
+		url         string
+	}{
+		{
+			name:        "Zeptocore",
+			host:        "zeptocore.com",
+			isZeptocore: true,
+			product:     "Zeptocore",
+			url:         "https://shop.infinitedigits.co/collections/zeptocore/",
+		},
+		{
+			name:    "Ezeptocore",
+			host:    "ezeptocore.com",
+			product: "Ezeptocore",
+			url:     "https://shop.infinitedigits.co/collections/ezeptocore/",
+		},
+		{
+			name:    "Ectocore",
+			host:    "ectocore.rocks",
+			product: "Ectocore",
+			url:     "https://shop.infinitedigits.co/collections/ectocore/",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			html := renderStaticIndexForHost(t, test.isZeptocore, test.host)
+			buyLinks := buyLinkPattern.FindAllString(html, -1)
+			if len(buyLinks) != 1 {
+				t.Fatalf("rendered tool contains %d buy links, want 1", len(buyLinks))
+			}
+			buyLink := buyLinks[0]
+			for _, expected := range []string{
+				`href="` + test.url + `"`,
+				`title="Buy ` + test.product + `"`,
+				`aria-label="Buy ` + test.product + `"`,
+				`target="_blank"`,
+				`rel="noopener noreferrer"`,
+				`class="fa-solid fa-shopping-cart"`,
+			} {
+				if !strings.Contains(buyLink, expected) {
+					t.Errorf("rendered %s tool is missing %q", test.product, expected)
+				}
+			}
+		})
+	}
 }
 
 func TestZeptocoreToolSEO(t *testing.T) {

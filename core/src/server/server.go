@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -61,6 +62,52 @@ var latestTag string
 var deviceVersion string
 var deviceType string
 var isEctocore bool
+
+type purchaseDestination struct {
+	ProductName string
+	URL         string
+}
+
+func purchaseDestinationForHost(hostport string, isZeptocore bool) purchaseDestination {
+	hostname := strings.ToLower(strings.TrimSpace(hostport))
+	if host, _, err := net.SplitHostPort(hostname); err == nil {
+		hostname = host
+	}
+	hostname = strings.TrimSuffix(hostname, ".")
+
+	matchesDomain := func(domain string) bool {
+		return hostname == domain || strings.HasSuffix(hostname, "."+domain)
+	}
+
+	switch {
+	case matchesDomain("ectocore.rocks"):
+		return purchaseDestination{
+			ProductName: "Ectocore",
+			URL:         "https://shop.infinitedigits.co/collections/ectocore/",
+		}
+	case matchesDomain("ezeptocore.com"):
+		return purchaseDestination{
+			ProductName: "Ezeptocore",
+			URL:         "https://shop.infinitedigits.co/collections/ezeptocore/",
+		}
+	case matchesDomain("zeptocore.com"):
+		return purchaseDestination{
+			ProductName: "Zeptocore",
+			URL:         "https://shop.infinitedigits.co/collections/zeptocore/",
+		}
+	}
+
+	if isZeptocore {
+		return purchaseDestination{
+			ProductName: "Zeptocore",
+			URL:         "https://shop.infinitedigits.co/collections/zeptocore/",
+		}
+	}
+	return purchaseDestination{
+		ProductName: "Ezeptocore",
+		URL:         "https://shop.infinitedigits.co/collections/ezeptocore/",
+	}
+}
 
 func stateSave(place string, state string) (err error) {
 	mutexStorage.Lock()
@@ -280,6 +327,7 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				return
 			}
 
+			purchase := purchaseDestinationForHost(r.Host, !isEctocore)
 			data := struct {
 				IsFaq          bool
 				IsBuy          bool
@@ -291,6 +339,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				LatestVersion  string
 				GenURL1        string
 				GenURL2        string
+				BuyURL         string
+				BuyProductName string
 			}{
 				IsMain:         r.URL.Path == "/",
 				VersionCurrent: "v7.3.1",
@@ -299,6 +349,8 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				GenURL2:        names.Random(),
 				IsEctocore:     isEctocore,
 				IsZeptocore:    !isEctocore,
+				BuyURL:         purchase.URL,
+				BuyProductName: purchase.ProductName,
 			}
 			data.IsUpload = !(data.IsMain)
 
