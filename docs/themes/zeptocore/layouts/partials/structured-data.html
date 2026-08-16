@@ -1,142 +1,20 @@
-{{- $homeURL := site.Home.Permalink -}}
-{{- $organizationID := printf "%s#organization" $homeURL -}}
-{{- $websiteID := printf "%s#website" $homeURL -}}
-{{- $productID := printf "%s#product" $homeURL -}}
-{{- $pageID := printf "%s#webpage" .Permalink -}}
-{{- $siteName := site.Params.brandName | default site.Title -}}
-{{- $title := site.Params.seoTitle | default site.Title -}}
-{{- $pageName := .Title -}}
-{{- if not .IsHome -}}
-    {{- if not $pageName }}{{ $pageName = .Section | humanize }}{{ end -}}
-    {{- $title = printf "%s | %s Guide" $pageName $siteName -}}
-{{- end -}}
-{{- $description := site.Params.description -}}
-{{- if not .IsHome -}}
-    {{- $description = .Params.description | default .Params.short | default .Summary | default site.Params.description -}}
-{{- end -}}
-{{- $description = trim ($description | plainify | htmlUnescape) " \t\r\n" | truncate 160 -}}
-{{- $imageURL := (site.Params.socialImage | absURL) -}}
-
-{{- $organization := dict
-    "@type" "Organization"
-    "@id" $organizationID
-    "name" site.Params.author
-    "url" site.Params.organizationURL
-    "logo" (dict "@type" "ImageObject" "url" ("static/apple-icon-180x180.webp" | absURL) "width" 180 "height" 180)
-    "sameAs" (slice "https://github.com/schollz/_core" "https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293")
--}}
-{{- $website := dict
-    "@type" "WebSite"
-    "@id" $websiteID
-    "url" $homeURL
-    "name" $siteName
-    "alternateName" "Zeptocore handheld sampler"
-    "description" site.Params.description
-    "inLanguage" site.Language.LanguageCode
-    "publisher" (dict "@id" $organizationID)
--}}
-{{- $webPage := dict
-    "@type" "WebPage"
-    "@id" $pageID
-    "url" .Permalink
-    "name" $title
-    "description" $description
-    "inLanguage" site.Language.LanguageCode
-    "isPartOf" (dict "@id" $websiteID)
-    "primaryImageOfPage" (dict "@type" "ImageObject" "url" $imageURL "width" 1600 "height" 672 "caption" site.Params.socialImageAlt)
--}}
-{{- $graph := slice $organization $website $webPage -}}
-
-{{- if .IsHome -}}
-    {{- $reviews := slice -}}
-    {{- range site.Data.reviews -}}
-        {{- $reviews = $reviews | append (dict
-            "@type" "Review"
-            "reviewBody" .reviewBody
-            "author" (dict "@type" "Person" "name" "Anonymous reviewer")
-            "reviewRating" (dict
-                "@type" "Rating"
-                "ratingValue" .ratingValue
-                "bestRating" 5
-                "worstRating" 1
-            )
-        ) -}}
-    {{- end -}}
-    {{- $product := dict
-        "@type" "Product"
-        "@id" $productID
-        "name" "Zeptocore"
-        "url" $homeURL
+{{- $canonicalURL := site.Params.canonicalStoreURL -}}
+{{- $graph := slice
+    (dict
+        "@type" "Organization"
+        "@id" "https://infinitedigits.co/#organization"
+        "name" site.Params.author
+        "url" site.Params.organizationURL
+        "sameAs" (slice "https://github.com/schollz/_core")
+    )
+    (dict
+        "@type" "WebPage"
+        "@id" (printf "%s#legacy-landing" site.BaseURL)
+        "url" site.BaseURL
+        "name" site.Params.seoTitle
         "description" site.Params.description
-        "image" (slice $imageURL)
-        "category" "Handheld music sampler and sequencer"
-        "brand" (dict "@type" "Brand" "name" "Zeptocore")
-        "manufacturer" (dict "@id" $organizationID)
-        "countryOfOrigin" (dict "@type" "Country" "name" "United States")
-        "sameAs" "https://github.com/schollz/_core"
-        "aggregateRating" (dict
-            "@type" "AggregateRating"
-            "ratingValue" 5
-            "bestRating" 5
-            "worstRating" 1
-            "ratingCount" (len $reviews)
-            "reviewCount" (len $reviews)
-        )
-        "review" $reviews
-    -}}
-    {{- $graph = $graph | append $product -}}
-
-    {{- $questions := slice -}}
-    {{- range where site.RegularPages "Section" "questions" -}}
-        {{- $answer := trim (.Content | plainify | htmlUnescape) " \t\r\n" -}}
-        {{- if and .Title $answer -}}
-            {{- $questions = $questions | append (dict
-                "@type" "Question"
-                "name" .Title
-                "acceptedAnswer" (dict "@type" "Answer" "text" $answer)
-            ) -}}
-        {{- end -}}
-    {{- end -}}
-    {{- if gt (len $questions) 0 -}}
-        {{- $faq := dict
-            "@type" "FAQPage"
-            "@id" (printf "%s#faq" $homeURL)
-            "url" (printf "%s#questions" $homeURL)
-            "name" "Zeptocore frequently asked questions"
-            "inLanguage" site.Language.LanguageCode
-            "mainEntity" $questions
-            "isPartOf" (dict "@id" $websiteID)
-        -}}
-        {{- $graph = $graph | append $faq -}}
-    {{- end -}}
-{{- else -}}
-    {{- $article := dict
-        "@type" "TechArticle"
-        "@id" (printf "%s#article" .Permalink)
-        "headline" $pageName
-        "description" $description
-        "url" .Permalink
-        "mainEntityOfPage" (dict "@id" $pageID)
-        "image" $imageURL
-        "inLanguage" site.Language.LanguageCode
-        "author" (dict "@id" $organizationID)
-        "publisher" (dict "@id" $organizationID)
-    -}}
-    {{- if not .PublishDate.IsZero -}}
-        {{- $article = merge $article (dict "datePublished" (.PublishDate.Format "2006-01-02T15:04:05Z07:00")) -}}
-    {{- end -}}
-    {{- if not .Lastmod.IsZero -}}
-        {{- $article = merge $article (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")) -}}
-    {{- end -}}
-    {{- $breadcrumb := dict
-        "@type" "BreadcrumbList"
-        "@id" (printf "%s#breadcrumb" .Permalink)
-        "itemListElement" (slice
-            (dict "@type" "ListItem" "position" 1 "name" "Zeptocore" "item" $homeURL)
-            (dict "@type" "ListItem" "position" 2 "name" $pageName "item" .Permalink)
-        )
-    -}}
-    {{- $graph = $graph | append $article | append $breadcrumb -}}
-{{- end -}}
-
+        "isPartOf" (dict "@id" (printf "%s#website" $canonicalURL))
+        "mainEntity" (dict "@id" (printf "%s#product" $canonicalURL))
+    )
+-}}
 <script type="application/ld+json">{{ dict "@context" "https://schema.org" "@graph" $graph | jsonify | safeJS }}</script>

@@ -253,6 +253,12 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
+	} else if !isEctocore && (r.URL.Path == "/buy" || r.URL.Path == "/buy/") {
+		http.Redirect(w, r, "https://shop.infinitedigits.co/collections/zeptocore/", http.StatusPermanentRedirect)
+		return nil
+	} else if !isEctocore && strings.HasPrefix(r.URL.Path, "/docs/") && filepath.Ext(r.URL.Path) == "" {
+		http.Redirect(w, r, "https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide", http.StatusPermanentRedirect)
+		return nil
 	} else if !isEctocore &&
 		(strings.HasPrefix(r.URL.Path, "/docs") ||
 			strings.Contains(r.URL.Path, "buy") ||
