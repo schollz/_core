@@ -3,9 +3,9 @@
 [![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)](https://github.com/schollz/_core/actions/workflows/build.yml) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
 
 
-this is the monorepo for [zeptocore](https://zeptocore.com), [zeptoboard](https://zeptocore.com/#zeptoboard), ectocore, and [ezeptocore](https://get.ezeptocore.com) music devices, their documentation, their firmware, and the tools to interact with them.
+this is the monorepo for [zeptocore](https://shop.infinitedigits.co/collections/zeptocore/), [zeptoboard](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-zeptoboard), ectocore, and [ezeptocore](https://get.ezeptocore.com) music devices, their firmware, and the tools to interact with them.
 
-for information about purchasing and documentation, visit [zeptocore.com](https://zeptocore.com). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
+for purchasing and the complete maintained documentation, visit the [Zeptocore collection guide](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide). prepare samples with the [Zeptocore tool](https://tool.zeptocore.com/). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
 
 ## dsp
 
@@ -34,16 +34,16 @@ the zeptocore device is a versatile, open-source, handmade audio player and synt
 
 the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can recall up to 256 audio files organized into 16 banks of 16 tracks each. the zeptocore has 16 different audio effects - saturation, fuzz, delay, comb, beat repeater, filter, tape stop, reverb + more - and includes a single-cycle wavetable synthesizer. The device offers a real-time sequencer with optional quantization, optional clock sync out, and MIDI (in and out) over USB. the device has a built-in 8-ohm speaker and can be powered by two AAA batteries or USB-C.
 
-The firmware for the zeptocore is written in C, and instructions for building the firmware are in the [documentation](https://zeptocore.com/#firmware-development).
+The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
 
 
 ## diy
 
-- [Website](https://zeptocore.com/)
+- [Product and documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide)
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/zeptocore_v28.pdf)
 - [Source code](https://github.com/schollz/_core)
-- [Firmware](https://zeptocore.com/#uploading-firmware)
-- [Instructions for uploading firmware](https://zeptocore.com/#instructions) 
+- [Firmware](https://shop.infinitedigits.co/firmware/zeptocore/)
+- [Instructions for uploading firmware](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-upload)
 - [Video demonstration](https://www.youtube.com/watch?v=WBvos0TkcSY)
 - [Video DIY guide](https://www.youtube.com/watch?v=FH1R4RCh0vU)
 
@@ -121,7 +121,7 @@ For latency, normal latency will work for most, but choose low or ultra-low if y
 
 ## zeptoboard
 
-zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware. more information [here](https://zeptocore.com/#zeptoboard).
+zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware. more information is in the [Zeptocore guide](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-zeptoboard).
 
 <div align="center">
 <img src="docs/static/img/zeptoboard_img.png" height="350px">
@@ -140,4 +140,3 @@ zeptoboard is the breadboard variant of the zeptocore. It has most of the same f
 
 The schematics are open-source - you are welcome to utilize them to customize the device according to your preferences. If you intend to produce boards based on my schematics, I kindly ask for your financial support to help sustain the development of future devices.
 Also note - Infinite Digits and Ectocore are registered trademarks. The name "Infinite Digits" and "Ectocore" should not be used on any of the derivative works you create from these files. 
-

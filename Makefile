@@ -373,7 +373,7 @@ resetpico: .venv
 versions.md:
 	cd dev/gitread && go build -v && ./gitread ../../docs/content/versions/versions.md
 
-docsbuild: versions.md
+docsbuild:
 	cd docs && hugo --cleanDestinationDir --minify
 	rm -rf core/src/server/docs
 	cp -r docs/public core/src/server/docs
@@ -441,7 +441,7 @@ ectocore_linux_amd64: docsbuild
 	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.EctocoreDefault=yes" -v -o ../ectocore_linux_amd64
 
 .PHONY: docs
-docs: versions.md
+docs:
 	cd docs && hugo serve -D --bind 0.0.0.0
 
 .venv:
