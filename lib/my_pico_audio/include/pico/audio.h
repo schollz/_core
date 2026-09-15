@@ -76,9 +76,12 @@ typedef struct audio_buffer {
     uint32_t sample_count;
     uint32_t max_sample_count;
     uint32_t user_data; // only valid while the user has the buffer
+    uint32_t flags; // producer metadata; cleared when the producer takes ownership
     // private - todo make an internal version
     struct audio_buffer *next;
 } audio_buffer_t;
+
+#define AUDIO_BUFFER_SILENCE 1u
 
 typedef struct audio_connection audio_connection_t;
 

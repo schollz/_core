@@ -193,3 +193,10 @@ sample processing, SD access and filtering as major contributors.
 The subsequent [DSP optimization](seek-dsp-optimization.md) substantially
 reduces filter processing time without extra buffering. The optimized normal
 256-frame firmware is now installed; that report records its ELF and validation.
+
+[Clock restart latency](ectocore-clock-latency.md) measures simulated CV edges
+through to resumed-block DMA output and documents distinct clock-loss/manual
+stop behavior and the first-clock crossfade/compensation interaction.
+
+[Clock restart correction](ectocore-clock-restart-fix.md) subsequently fixes
+those startup behaviors and measures immediate renderer wake-up on 256 frames.

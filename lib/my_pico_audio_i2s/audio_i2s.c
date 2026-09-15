@@ -8,6 +8,7 @@
 
 #include "pico/audio_i2s.h"
 #include "../seek_diagnostics.h"
+#include "../audio_restart.h"
 #include "../seek_timing_witness.h"
 
 #if defined(SEEK_TIMING_WITNESS) && SEEK_TIMING_WITNESS
@@ -93,25 +94,36 @@ __attribute__((weak)) void i2s_callback_func() {
   return;
 }
 
+__attribute__((weak)) bool i2s_callback_restart_func(void) { return false; }
+
 #ifdef CORE1_PROCESS_I2S_CALLBACK
 
 enum FifoMessage {
   RESPONSE_CORE1_THREAD_STARTED = 0,
   RESPONSE_CORE1_THREAD_TERMINATED = 0,
   EVENT_I2S_DMA_TRANSFER_STARTED,
-  NOTIFY_I2S_DISABLED
+  NOTIFY_I2S_DISABLED,
+  EVENT_AUDIO_RESTART
 };
 
 static const uint64_t FIFO_TIMEOUT = 10 * 1000;  // us
 
 void i2s_callback_loop() {
+  unsigned restart_credit = 0;
   multicore_fifo_push_blocking(RESPONSE_CORE1_THREAD_STARTED);
 #ifndef NDEBUG
   printf("i2s_callback_loop started (on core %d)\n", get_core_num());
 #endif  // NDEBUG
   while (true) {
     uint32_t msg = multicore_fifo_pop_blocking();
-    if (msg == EVENT_I2S_DMA_TRANSFER_STARTED) {
+    if (msg == EVENT_AUDIO_RESTART) {
+      if (i2s_callback_restart_func()) ++restart_credit;
+    } else if (msg == EVENT_I2S_DMA_TRANSFER_STARTED) {
+      // The wake render already fulfilled this one DMA notification.
+      if (restart_credit) {
+        --restart_credit;
+        continue;
+      }
       ZD_WITNESS_START();
       i2s_callback_func();
       ZD_WITNESS_END();
@@ -133,6 +145,13 @@ void i2s_callback_loop() {
   return;
 }
 #endif  // CORE1_PROCESS_I2S_CALLBACK
+
+void audio_i2s_request_render(void) {
+#if AUDIO_RESTART_WAKE_ENABLED
+  // A full FIFO already has work for the renderer; never wait in the clock ISR.
+  multicore_fifo_push_timeout_us(EVENT_AUDIO_RESTART, 0);
+#endif
+}
 
 // void audio_i2s_end(const audio_i2s_config_t *config) {
 void audio_i2s_end() {

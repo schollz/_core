@@ -43,6 +43,7 @@ audio_buffer_pool_t *init_audio() {
       samples[i * 2 + 1] = 0;
     }
     buffer->sample_count = buffer->max_sample_count;
+    buffer->flags = AUDIO_BUFFER_SILENCE;
     give_audio_buffer(producer_pool, buffer);
   }
   audio_i2s_set_enabled(true);

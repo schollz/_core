@@ -1,6 +1,7 @@
 // Copyright 2026 Zack Scholl, GPLv3.0
 #include "seek_diagnostics.h"
 #include "audio_profile.h"
+#include "clock_latency.h"
 #include <limits.h>
 #include <string.h>
 
@@ -283,6 +284,9 @@ ZD_RAM void zd_notify(uint32_t start, bool success) {
   }
   zd_service(ZD_IRQ);
 }
+#if SEEK_CLOCK_LATENCY
+uint32_t cl_starvation(void) { return zd_irq.counters[1]; }
+#endif
 void zd_switch_request(uint16_t key) {
   // The MIDI control dispatcher on core 0 is the only request writer. DMA on
   // that core can interrupt it, so publish the token after all request fields.
@@ -308,9 +312,11 @@ void zd_switch_file(uint32_t key) {
   atomic_store_explicit(&switch_file_token,matches?seq:0,memory_order_release);
 }
 uint32_t zd_switch_render_tag(void) {
+  CL_CALL(uint32_t tag = cl_render_tag(); if(tag) return tag);
   return atomic_load_explicit(&switch_file_token,memory_order_acquire)<<9;
 }
 uint32_t zd_switch_copy_tag(uint32_t destination,uint32_t source,uint32_t offset) {
+  CL_CALL(if(source & CL_TAG) return cl_copy(destination, source, offset));
   uint32_t seq=atomic_load_explicit(&switch_requested,memory_order_acquire);
   // Preserve the first occurrence when a producer is split or several producers
   // are combined. Completed/old tokens cannot hide the next measured transition.
@@ -319,6 +325,7 @@ uint32_t zd_switch_copy_tag(uint32_t destination,uint32_t source,uint32_t offset
   return destination;
 }
 void zd_switch_dma(uint32_t tag,uint32_t started_us) {
+  CL_CALL(if(tag & CL_TAG) { cl_dma(tag, started_us); return; });
   uint32_t seq=tag>>9;
   if(!seq || seq!=atomic_load_explicit(&switch_requested,memory_order_acquire) ||
      seq==atomic_load_explicit(&switch_completed,memory_order_relaxed))return;
