@@ -11,6 +11,12 @@ include(pico_extras_import.cmake)
 # Set name of project (as PROJECT_NAME) and C/C++ standards
 project(_core C CXX ASM)
 option(SEEK_DIAGNOSTICS "Collect bounded SWD seek/audio diagnostics" OFF)
+option(AUDIO_DETAILED_TIMING "Retain per-stage slow/starved callback profiles" OFF)
+if(AUDIO_DETAILED_TIMING AND NOT SEEK_DIAGNOSTICS)
+    message(FATAL_ERROR "AUDIO_DETAILED_TIMING requires SEEK_DIAGNOSTICS")
+endif()
+option(AUDIO_PREPARE_NEXT "Experimental staged preparation of the next audio file" OFF)
+option(AUDIO_EXTRA_OUTPUT_BUFFER "Queue one additional audio block to absorb render spikes" OFF)
 option(SEEK_TIMING_WITNESS "Independent callback timing for paired observer tests" OFF)
 option(SEEK_TEST_CONTROLS "Enable reserved MIDI CCs for repeatable hardware tests" OFF)
 option(SEEK_MAP_ATTACH "Attach validated seek maps (disable only for comparison tests)" ON)
@@ -45,6 +51,7 @@ pico_sdk_init()
 add_executable(${PROJECT_NAME} 
     main.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_diagnostics.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/audio_profile.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_seek_map.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_fragment_benchmark.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_audio_fixture.c
@@ -101,7 +108,17 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 
 include(${CORE_COMPILE_DEFINITIONS})
+# USB-serial targets need the SDK's CDC configuration, even when the project
+# directory (which contains the MIDI configuration) is on the include path.
+get_target_property(CORE_STDIO_USB ${PROJECT_NAME} PICO_TARGET_STDIO_USB)
+if(CORE_STDIO_USB)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        CFG_TUSB_CONFIG_FILE="${PICO_SDK_PATH}/src/rp2_common/pico_stdio_usb/include/tusb_config.h")
+endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE SEEK_MAP_MODULE=1 PICO_MALLOC_PANIC=0
+    AUDIO_PREPARE_NEXT=$<BOOL:${AUDIO_PREPARE_NEXT}>
+    AUDIO_EXTRA_OUTPUT_BUFFER=$<BOOL:${AUDIO_EXTRA_OUTPUT_BUFFER}>
+    AUDIO_DETAILED_TIMING=$<BOOL:${AUDIO_DETAILED_TIMING}>
     SEEK_MAP_ATTACH=$<BOOL:${SEEK_MAP_ATTACH}> SEEK_TEST_FRESH_INDEX=$<BOOL:${SEEK_TEST_FRESH_INDEX}>
     SEEK_TEST_FRAGMENT_BENCH=$<BOOL:${SEEK_TEST_FRAGMENT_BENCH}>
     SEEK_TEST_AUDIO_FIXTURE=${SEEK_TEST_AUDIO_FIXTURE})
@@ -123,7 +140,7 @@ if(SEEK_DIAGNOSTICS)
          "${CMAKE_CURRENT_LIST_DIR}/lib/CMakeLists.txt")
     list(APPEND SEEK_ID_INPUTS "${CMAKE_CURRENT_LIST_DIR}/main.c"
          "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" "${CORE_COMPILE_DEFINITIONS}")
-    set(SEEK_ID_TEXT "${CMAKE_C_COMPILER_ID};${CMAKE_C_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_C_FLAGS};${SEEK_TIMING_WITNESS};${SEEK_TEST_CONTROLS};${CORE_NO_OVERCLOCK};${SEEK_MAP_ATTACH};${SEEK_TEST_FRESH_INDEX};${SEEK_TEST_FRAGMENT_BENCH};${SEEK_TEST_AUDIO_FIXTURE}")
+    set(SEEK_ID_TEXT "${CMAKE_C_COMPILER_ID};${CMAKE_C_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_C_FLAGS};${SEEK_TIMING_WITNESS};${SEEK_TEST_CONTROLS};${CORE_NO_OVERCLOCK};${SEEK_MAP_ATTACH};${SEEK_TEST_FRESH_INDEX};${SEEK_TEST_FRAGMENT_BENCH};${SEEK_TEST_AUDIO_FIXTURE};${AUDIO_PREPARE_NEXT};${AUDIO_EXTRA_OUTPUT_BUFFER};${AUDIO_DETAILED_TIMING}")
     foreach(SEEK_ID_INPUT IN LISTS SEEK_ID_INPUTS)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${SEEK_ID_INPUT}")
         file(SHA256 "${SEEK_ID_INPUT}" SEEK_FILE_HASH)

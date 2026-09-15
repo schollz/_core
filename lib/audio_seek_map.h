@@ -34,6 +34,9 @@ void seek_maps_detach(FIL *file);
 seek_map_job seek_maps_request(const char *path);
 // Caller must already have stopped playback AND acquired its acknowledgement.
 void seek_maps_service(void);
+// Read an already validated persisted map only; never build or write an index.
+// Requires exclusive filesystem ownership; may perform synchronous SD reads.
+bool seek_maps_load_existing(const char *path);
 // Call before a firmware operation can change this audio file's allocations.
 // The caller must detach/close affected handles before that operation.
 bool seek_maps_invalidate(const char *path);

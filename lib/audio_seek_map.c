@@ -528,12 +528,31 @@ void seek_maps_service(void) {
         if(i>=0){prepare_file(i);finish();sort();seek_maps_stats.files=sm.count;}
     }
 }
+bool seek_maps_load_existing(const char *path) {
+    uint16_t id;
+    if(!seek_maps_media_ready()||!seek_maps_file_id(path,&id))return false;
+    for(unsigned n=0;n<SEEK_MAP_CACHE_ENTRIES;++n)
+        if(sm.cache[n].valid&&sm.cache[n].id==id)return true;
+    int i=find(id);
+    if(i<0||(sm.directory[i].location&(VALID|REF|LARGE))!=(VALID|REF))return false;
+    if(!load_record(sm.directory[i].location)) {error(FR_INT_ERR);return false;}
+    if(record()[14]!=STATUS_MAP)return false;
+    table_decode();
+    if(!cache_store(id,u64(record()+16),u32(record()+24)))return false;
+    seek_maps_stats.loads=seek_maps_stats.loads+1;
+    return true;
+}
 #ifndef SEEK_MAP_HOST_TEST
 __attribute__((section(".time_critical.seek_layout")))
 #endif
 void seek_maps_layout(uint16_t id,volatile uint32_t out[76]) {
     for(unsigned i=0;i<76;i+=4)out[i]=out[i+1]=out[i+2]=out[i+3]=0;
     out[0]=0x314d4c43u;out[2]=id;out[3]=seek_maps_stats.mount;
+#if AUDIO_PREPARE_NEXT && !defined(AUDIO_PREPARE_LAYOUT_TEST)
+    // Experimental audio-core cache writes cannot overlap this foreground
+    // diagnostic reader. Do not expose a potentially inconsistent table.
+    return;
+#endif
     if(!seek_maps_media_ready())return;
     for(unsigned i=0;i<SEEK_MAP_CACHE_ENTRIES;++i) {
         const cache_entry *e=&sm.cache[i];

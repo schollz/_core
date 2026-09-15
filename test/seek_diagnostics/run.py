@@ -10,6 +10,12 @@ with tempfile.TemporaryDirectory() as directory:
     output = Path(directory) / "metrics"
     subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
                     "-fsanitize=address,undefined", "-g", "-DSEEK_DIAGNOSTICS=1",
+                    "-DAUDIO_DETAILED_TIMING=1", "-Itest/seek_diagnostics/stubs", "-Ilib",
+                    "lib/audio_profile.c", "test/seek_diagnostics/test_profile.c",
+                    "-o", str(output)], cwd=root, check=True)
+    subprocess.run([str(output)], check=True)
+    subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                    "-fsanitize=address,undefined", "-g", "-DSEEK_DIAGNOSTICS=1",
                     "-DSAMPLES_PER_BUFFER=441", "-Itest/seek_diagnostics/stubs", "-Ilib",
                     "lib/seek_diagnostics.c", "test/seek_diagnostics/test_metrics.c",
                     "-o", str(output)], cwd=root, check=True)

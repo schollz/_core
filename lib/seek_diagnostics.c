@@ -1,5 +1,6 @@
 // Copyright 2026 Zack Scholl, GPLv3.0
 #include "seek_diagnostics.h"
+#include "audio_profile.h"
 #include <limits.h>
 #include <string.h>
 
@@ -266,6 +267,7 @@ ZD_RAM void zd_dma_start(bool missing, uint32_t frames) {
   dma_started = true;
   sat_add(&zd_irq.counters[0], 1, &zd_irq.counters[7]);
   if (missing) {
+    AP_CALL(if(zeptocore_diag.header[21]>=3)audio_profile_starved(now));
     unsigned base = zeptocore_diag.header[21] >= 3 ? 1 : 3;
     sat_add(&zd_irq.counters[base], 1, &zd_irq.counters[7]);
     sat_add(&zd_irq.counters[base + 1], frames, &zd_irq.counters[7]);

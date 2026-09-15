@@ -185,7 +185,32 @@ static void cache_index(FATFS *fs) {
     assert(!fil_is_open&&!fil_current.cltbl&&!fil_current.obj.fs);
     ok(audio_file_open("bank1/2.0.wav"));assert(fil_is_open&&fil_current.cltbl);
     assert(fil_current.cltbl!=pinned);ok(audio_file_close());
-    assert(!fil_is_open&&!fil_current.cltbl);reboot(fs);
+    assert(!fil_is_open&&!fil_current.cltbl);
+#if AUDIO_PREPARE_NEXT
+    ok(audio_file_open("bank1/2.0.wav"));
+    ok(f_lseek(&fil_current,123));FIL before_prepare=fil_current;
+    unsigned before_writes=test_writes;
+    audio_prepare_step("bank1/3.0.wav");
+    audio_prepare_step("bank1/3.0.wav");
+    assert(audio_prepare_ready("bank1/3.0.wav"));
+    audio_prepare_warm(513);
+    assert(!memcmp(&before_prepare,&fil_current,sizeof fil_current));
+    assert(test_writes==before_writes);
+    ok(audio_file_open("bank1/3.0.wav"));
+    assert(f_tell(&fil_current)==513&&fil_current.cltbl&&audio_prepare_adopts);
+    BYTE prefetched[700];UINT prefetched_count;
+    ok(f_read(&fil_current,prefetched,sizeof prefetched,&prefetched_count));
+    assert(prefetched_count==sizeof prefetched);
+    for(unsigned k=0;k<sizeof prefetched;++k)assert(prefetched[k]==pattern(513+k));
+    audio_prepare_step("bank1/1.0.wav");
+    audio_prepare_step("bank1/2.0.wav"); // superseded request closes its handle
+    ok(audio_file_close());assert(!audio_prepared_stage);
+    audio_prepare_step("bank1/15.255.wav");
+    assert(audio_prepare_ready("bank1/15.255.wav"));
+    assert(audio_file_open("bank1/15.255.wav")==FR_NO_FILE);
+    assert(!fil_is_open&&!audio_prepared_stage&&test_writes==before_writes);
+#endif
+    reboot(fs);
     unsigned writes=test_writes;prepare(fs);
     assert(seek_maps_stats.builds==0&&seek_maps_stats.reused==4&&seek_maps_stats.writes==0&&test_writes==writes);
     assert(!seek_maps_stats.failures);
