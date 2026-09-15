@@ -1,6 +1,7 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 
 #include "fixedpoint.h"
+#include "dsp_multiply.h"
 #include "resonantfilter_data.h"
 
 #define FILTER_LOWPASS 0
@@ -157,6 +158,39 @@ ResonantFilter* ResonantFilter_create(uint8_t filter_type) {
 #define CROSSFADE_FILTER 8
 #define CROSSFADE_FILTER_WAIT 4
 
+// Keep the original five separately rounded products and their order.
+static inline __attribute__((always_inline)) void ResonantFilter_process_block(
+    ResonantFilter* rf, int32_t* samples, uint16_t num_samples,
+    uint8_t channel, int transition) {
+  const int32_t b0 = rf->b0, b1 = rf->b1, b2 = rf->b2;
+  const int32_t a1 = rf->a1, a2 = rf->a2;
+  int32_t x1 = rf->x1_f, x2 = rf->x2_f;
+  int32_t y1 = rf->y1_f, y2 = rf->y2_f;
+  for (uint16_t i = 0; i < num_samples; ++i) {
+    const int32_t input = samples[i * 2 + channel];
+    const int32_t y = dsp_multiply_q16(b0, input) +
+        dsp_multiply_q16(b1, x1) + dsp_multiply_q16(b2, x2) -
+        dsp_multiply_q16(a1, y1) - dsp_multiply_q16(a2, y2);
+    x2 = x1;
+    x1 = input;
+    y2 = y1;
+    y1 = y;
+    if (transition < 0) {
+      samples[i * 2 + channel] = dsp_multiply_q16(y, crossfade3_cos_out[i]) +
+          dsp_multiply_q16(input, crossfade3_cos_in[i]);
+    } else if (transition > 0) {
+      samples[i * 2 + channel] = dsp_multiply_q16(y, crossfade3_cos_in[i]) +
+          dsp_multiply_q16(input, crossfade3_cos_out[i]);
+    } else {
+      samples[i * 2 + channel] = y;
+    }
+  }
+  rf->x1_f = x1;
+  rf->x2_f = x2;
+  rf->y1_f = y1;
+  rf->y2_f = y2;
+}
+
 void __not_in_flash_func(ResonantFilter_update)(ResonantFilter* rf,
                                                 int32_t* samples,
                                                 uint16_t num_samples,
@@ -179,29 +213,14 @@ void __not_in_flash_func(ResonantFilter_update)(ResonantFilter* rf,
   if (rf->passthrough && !rf->filter_was_on) {
     return;
   }
-  int32_t y;
-  for (uint16_t i = 0; i < num_samples; i++) {
-    y = q16_16_multiply(rf->b0, samples[i * 2 + channel]) +
-        q16_16_multiply(rf->b1, rf->x1_f) + q16_16_multiply(rf->b2, rf->x2_f) -
-        q16_16_multiply(rf->a1, rf->y1_f) - q16_16_multiply(rf->a2, rf->y2_f);
-
-    rf->x2_f = rf->x1_f;
-    rf->x1_f = samples[i * 2 + channel];
-    rf->y2_f = rf->y1_f;
-    rf->y1_f = y;
-    if (rf->passthrough && rf->filter_was_on) {
-      // fade out the filter
-      samples[i * 2 + channel] =
-          q16_16_multiply(y, crossfade3_cos_out[i]) +
-          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_in[i]);
-    } else if (!rf->passthrough && !rf->filter_was_on) {
-      // fade in the filter
-      samples[i * 2 + channel] =
-          q16_16_multiply(y, crossfade3_cos_in[i]) +
-          q16_16_multiply(samples[i * 2 + channel], crossfade3_cos_out[i]);
-    } else {
-      samples[i * 2 + channel] = y;
-    }
+  // Select the transition once per block. The helper is specialized at each
+  // call site, leaving the steady-state sample loop without fade branches.
+  if (rf->passthrough && rf->filter_was_on) {
+    ResonantFilter_process_block(rf, samples, num_samples, channel, -1);
+  } else if (!rf->passthrough && !rf->filter_was_on) {
+    ResonantFilter_process_block(rf, samples, num_samples, channel, 1);
+  } else {
+    ResonantFilter_process_block(rf, samples, num_samples, channel, 0);
   }
   if (rf->passthrough && rf->filter_was_on) {
     rf->filter_was_on = false;
