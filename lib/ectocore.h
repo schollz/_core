@@ -564,9 +564,6 @@ void gpio_callback(uint gpio, uint32_t events) {
 bool dont_wait = false;
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
-  while (!fil_is_open) {
-    sleep_ms(10);
-  }
 
   gpio_init(GPIO_LED_TAPTEMPO);
   gpio_set_dir(GPIO_LED_TAPTEMPO, GPIO_OUT);
@@ -723,7 +720,11 @@ void __not_in_flash_func(input_handling)() {
   uint32_t loopstart_trig_seen_transport_start_generation =
       ecto_loopstart_transport_start_generation;
 
+  ZD_CALL(zd_control.context[2] = getFreeHeap());
+  audio_media_boot_complete();
   while (1) {
+    audio_media_poll();
+    ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
@@ -1680,46 +1681,8 @@ void __not_in_flash_func(input_handling)() {
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
-      bool do_try_change = false;
-      if (dont_wait) {
-        do_try_change = true;
-        dont_wait = false;
-      }
-      if (!audio_callback_in_mute && !do_try_change) {
-        // uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (!sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // printf("sync1: %ld\n", time_us_32() - time_start);
-        uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // printf("sync2: %ld\n", time_us_32() - time_start);
-        // make sure the audio block was faster than usual
-        if (time_us_32() - time_start < 4000) {
-          do_try_change = true;
-        }
-      }
-      if (do_try_change) {
-        sync_using_sdcard = true;
-        f_close(&fil_current);
-        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
-                               sel_variation_next + audio_variant * 2);
-        f_open(&fil_current, fil_current_name, FA_READ);
-
-        // TODO: fix this
-        // if sel_variation_next == 0
-        phases[0] = round(((float)phases[0] *
-                           (float)sel_variation_scale[sel_variation_next]) /
-                          (float)sel_variation_scale[sel_variation]);
-
-        sel_variation = sel_variation_next;
-        sync_using_sdcard = false;
-        // printf("[main] sel_variation %d us\n", time_us_32() - time_start);
-      }
+      dont_wait=false;
+      audio_file_change_variation();
     }
 
     // Fallback trig at playback start or strict loop wrap when a selected

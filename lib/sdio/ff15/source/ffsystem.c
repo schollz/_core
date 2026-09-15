@@ -3,6 +3,7 @@
 /*------------------------------------------------------------------------*/
 
 #include "ff.h"
+#include "ff_workspace.h"
 
 
 #if FF_USE_LFN == 3	/* Use dynamic memory allocation */
@@ -11,14 +12,28 @@
 /* Allocate/Free a Memory Block                                           */
 /*------------------------------------------------------------------------*/
 
-#include <stdlib.h>		/* with POSIX API */
+/* FF_FS_REENTRANT is disabled: the application hands exclusive ownership
+ * between cores. A fixed name workspace avoids heap fragmentation and the
+ * Pico allocator's panic-on-OOM behavior. While a FatFs call owns this buffer,
+ * optional directory-clear allocations fail normally and FatFs uses its
+ * existing sector-window fallback. Formatting callers supply their own buffer. */
+#if FF_FS_REENTRANT
+#error "The fixed FatFs workspace requires application-level exclusive ownership"
+#endif
+static struct {
+    union { BYTE bytes[FF_NAME_WORKSPACE_BYTES]; DWORD alignment; } data;
+    BYTE leased;
+} workspace;
+unsigned ff_workspace_reserved_bytes(void) { return sizeof workspace; }
 
 
 void* ff_memalloc (	/* Returns pointer to the allocated memory block (null if not enough core) */
 	UINT msize		/* Number of bytes to allocate */
 )
 {
-	return malloc((size_t)msize);	/* Allocate a new memory block */
+    if (!msize || msize > sizeof workspace.data.bytes || workspace.leased) return 0;
+    workspace.leased = 1;
+    return workspace.data.bytes;
 }
 
 
@@ -26,7 +41,7 @@ void ff_memfree (
 	void* mblock	/* Pointer to the memory block to free (no effect if null) */
 )
 {
-	free(mblock);	/* Free the memory block */
+    if (mblock == workspace.data.bytes) workspace.leased = 0;
 }
 
 #endif

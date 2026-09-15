@@ -75,10 +75,6 @@ void make_random_sequence(uint8_t adcValue) {
 }
 
 void __not_in_flash_func(input_handling)() {
-  // flash bad signs
-  while (!fil_is_open) {
-    sleep_ms(10);
-  }
   LEDS_clear(leds);
   LEDS_render(leds);
 
@@ -180,7 +176,11 @@ void __not_in_flash_func(input_handling)() {
 
   bool sel_sample_knob_ready = false;
   clock_start_stop_sync = true;
+  ZD_CALL(zd_control.context[2] = getFreeHeap());
+  audio_media_boot_complete();
   while (1) {
+    audio_media_poll();
+    ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
@@ -923,40 +923,7 @@ void __not_in_flash_func(input_handling)() {
       debounce_sel_variation_next--;
     } else if (sel_variation_next != sel_variation) {
       debounce_sel_variation_next = 50;
-      bool do_try_change = false;
-      if (!audio_callback_in_mute) {
-        // uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (!sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // printf("sync1: %ld\n", time_us_32() - time_start);
-        uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // make sure the audio block was faster than usual
-        if (time_us_32() - time_start < 4000) {
-          do_try_change = true;
-        }
-      }
-      if (do_try_change) {
-        sync_using_sdcard = true;
-        f_close(&fil_current);
-        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
-                               sel_variation_next + audio_variant * 2);
-        f_open(&fil_current, fil_current_name, FA_READ);
-
-        // TODO: fix this
-        // if sel_variation_next == 0
-        phases[0] = round(((float)phases[0] *
-                           (float)sel_variation_scale[sel_variation_next]) /
-                          (float)sel_variation_scale[sel_variation]);
-
-        sel_variation = sel_variation_next;
-        sync_using_sdcard = false;
-      }
+      audio_file_change_variation();
     }
   }
 }

@@ -237,7 +237,9 @@ void audio_complete_connection(audio_connection_t *connection,
 
 void __not_in_flash_func(give_audio_buffer)(audio_buffer_pool_t *ac,
                                             audio_buffer_t *buffer) {
+#if !defined(SEEK_DIAGNOSTICS) || !SEEK_DIAGNOSTICS
   buffer->user_data = 0;
+#endif
   assert(ac->connection);
   if (ac->type == audio_buffer_pool::ac_producer)
     ac->connection->producer_pool_give(ac->connection, buffer);
@@ -247,10 +249,14 @@ void __not_in_flash_func(give_audio_buffer)(audio_buffer_pool_t *ac,
 
 audio_buffer_t *take_audio_buffer(audio_buffer_pool_t *ac, bool block) {
   assert(ac->connection);
-  if (ac->type == audio_buffer_pool::ac_producer)
-    return ac->connection->producer_pool_take(ac->connection, block);
-  else
-    return ac->connection->consumer_pool_take(ac->connection, block);
+  if (ac->type == audio_buffer_pool::ac_producer) {
+    audio_buffer_t *buffer=ac->connection->producer_pool_take(ac->connection, block);
+#if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
+    if(buffer)buffer->user_data=0;
+#endif
+    return buffer;
+  }
+  return ac->connection->consumer_pool_take(ac->connection, block);
 }
 
 audio_buffer_t *mono_to_mono_consumer_take(audio_connection_t *connection,

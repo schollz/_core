@@ -14,24 +14,36 @@ static FATFS *sd_get_fs_by_name(const char *name) {
   return NULL;
 }
 
-void sd_unmount() { f_unmount(sd_get_by_num(0)->pcName); }
+void sd_unmount() {
+  if(!audio_media_acquire())return;
+  audio_file_close();
+  seek_maps_unmount();
+  sd_card_t *card=sd_get_by_num(0);
+  FRESULT result=f_unmount(card->pcName);
+  card->state.mounted=false;
+  audio_media_io_failed(result);
+  audio_media_release();
+}
 
 bool run_mount() {
+  if(!audio_media_acquire())return false;
   const char *arg1 = strtok(NULL, " ");
   arg1 = sd_get_by_num(0)->pcName;
   FATFS *p_fs = sd_get_fs_by_name(arg1);
   if (!p_fs) {
     // printf("Unknown logical drive number: \"%s\"\n", arg1);
-    return false;
+    audio_media_release();return false;
   }
+  audio_file_close();seek_maps_unmount();
   FRESULT fr = f_mount(p_fs, arg1, 1);
   if (FR_OK != fr) {
     // printf("f_mount error: %s (%d)\n", FRESULT_str(fr), fr);
-    return false;
+    audio_media_release();return false;
   }
   sd_card_t *pSD = sd_get_by_name(arg1);
   myASSERT(pSD);
   pSD->state.mounted = true;
+  audio_media_release();
   return true;
 }
 

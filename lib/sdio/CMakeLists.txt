@@ -7,6 +7,7 @@ target_compile_definitions(FatFs_SPI INTERFACE
 )
 
 target_sources(FatFs_SPI INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/../seek_hash.c
     ${CMAKE_CURRENT_LIST_DIR}/ff15/source/ff.c
     ${CMAKE_CURRENT_LIST_DIR}/ff15/source/ffsystem.c
     ${CMAKE_CURRENT_LIST_DIR}/ff15/source/ffunicode.c
@@ -29,6 +30,7 @@ target_sources(FatFs_SPI INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/src/util.c
 )
 target_include_directories(FatFs_SPI INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/..
     ff15/source
     sd_driver
     tests

@@ -13,6 +13,7 @@
 #include <cstring>
 #include "pico/audio.h"
 #include "pico/util/buffer.h"
+#include "seek_switch_trace.h"
 
 template<typename _sample_t>
 struct FmtDetails {
@@ -218,6 +219,9 @@ audio_buffer_t *consumer_pool_take(audio_connection_t *connection, bool block) {
     // for now we block until we have all the data in consumer buffers
     audio_buffer_t *buffer = get_free_audio_buffer(cc->core.consumer_pool, block);
     if (!buffer) return NULL;
+#if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
+    buffer->user_data=0;
+#endif
     assert(buffer->format->sample_stride == ToFmt::frame_stride);
 
     uint32_t pos = 0;
@@ -238,6 +242,10 @@ audio_buffer_t *consumer_pool_take(audio_connection_t *connection, bool block) {
         }
         uint sample_count = std::min(buffer->max_sample_count - pos,
                                      cc->current_producer_buffer->sample_count - cc->current_producer_buffer_pos);
+#if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
+        if(sample_count)buffer->user_data=zd_switch_copy_tag(buffer->user_data,
+            cc->current_producer_buffer->user_data,pos);
+#endif
         converting_copy<ToFmt, FromFmt>::copy(
                 ((typename ToFmt::sample_t *) buffer->buffer->bytes) + pos * ToFmt::channel_count,
                 ((typename FromFmt::sample_t *) cc->current_producer_buffer->buffer->bytes) +
@@ -263,9 +271,16 @@ void producer_pool_blocking_give(audio_connection_t *connection, audio_buffer_t 
         if (!pbc->current_consumer_buffer) {
             pbc->current_consumer_buffer = get_free_audio_buffer(pbc->core.consumer_pool, true);
             pbc->current_consumer_buffer_pos = 0;
+#if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
+            pbc->current_consumer_buffer->user_data=0;
+#endif
         }
         uint sample_count = std::min(buffer->sample_count - pos,
                                      pbc->current_consumer_buffer->max_sample_count - pbc->current_consumer_buffer_pos);
+#if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
+        if(sample_count)pbc->current_consumer_buffer->user_data=zd_switch_copy_tag(
+            pbc->current_consumer_buffer->user_data,buffer->user_data,pbc->current_consumer_buffer_pos);
+#endif
         assert(buffer->format->sample_stride == FromFmt::frame_stride);
         assert(buffer->format->format->channel_count == FromFmt::channel_count);
         converting_copy<ToFmt, FromFmt>::copy(

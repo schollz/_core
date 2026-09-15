@@ -1,8 +1,8 @@
-# Plan: zeptocore firmware-generated FatFs fast-seek maps
+# Zeptocore firmware-generated FatFs fast-seek maps
 
 ## Status
 
-Planning only. No implementation, firmware builds, or hardware changes are part of this step. All work below remains to be done.
+Complete. Native checks, the supported 441/256-frame playback matrix, the diagnostics overhead gate, fragmented-file benchmark and physical power-cycle/card reinsertion check passed. The final firmware is programmed. See [implementation status](docs/seek-implementation-status.md) and [hardware results](docs/seek-hardware-results.md).
 
 ## Connected hardware
 
@@ -20,7 +20,7 @@ The firmware will derive maps from the mounted card. `core_server`, ZIP exports,
 
 **Build once per relevant card change:** automatically prepare and persist maps when a card is first used or its audio files/allocation layout change. Reuse completed maps across file selections, RAM-cache eviction, card reinsertion, and power cycles while they remain valid. An unchanged boot may validate and load maps, but must not rebuild them.
 
-## Current behavior
+## Behavior before this change
 
 - `lib/sdio/include/ffconf.h` already sets `FF_USE_FASTSEEK = 1`.
 - The application does not initialize `FIL.cltbl` or call `f_lseek(..., CREATE_LINKMAP)`.
@@ -42,6 +42,18 @@ Store the persistent map index in a reserved firmware-managed location on the SD
 Treat relevant changes as a different card/volume, added or replaced audio files, or changed audio-file allocation chains. Remove records for deleted files. Changes to unrelated settings and the map index itself must not repeatedly invalidate audio maps. If audio bytes change in place but their allocation remains identical, a validated map is still usable.
 
 ## Design
+
+### Prerequisite: on-demand debugging apparatus
+
+Implement and validate the [seek diagnostics plan](docs/seek-diagnostics-plan.md)
+before seek-map work. It specifies a local request/response server over the
+connected SWD probe, bounded firmware measurements and coherent RAM snapshots,
+host capture artifacts, and an explicit instrumentation-overhead acceptance gate.
+Collect baseline seek/read/open/render timings and actual DMA starvation through
+this apparatus. Requests must not initiate filesystem work or block audio.
+
+The apparatus is the first implementation milestone; builds, hardware validation,
+and baseline captures must be evidenced before marking it complete.
 
 ### 1. Use the existing FatFs map builder
 
@@ -148,15 +160,16 @@ Search again for direct `f_open`, `f_close`, mount/unmount, and audio-file mutat
 
 ## Implementation sequence
 
-- [ ] **Baseline and limits:** record seek/read/open times, startup time, audio underruns, and RAM/stack headroom for representative zeptocore builds. Confirm the installed FatFs API, card identity, allocation-validation approach, and documented cache/index limits.
-- [ ] **Map module:** implement construction, immutable bounded storage, lookup, pinning, invalidation, and deterministic fallback. Add focused lifecycle tests.
-- [ ] **Persistent index and change detection:** implement versioned records, allocation validation, reconciliation, recoverable commits, and resume behavior. Prove that an unchanged card requires zero map-building calls across boots.
-- [ ] **Ownership and file helpers:** establish safe media preparation and centralize all playback-handle opens/closes. Preserve current error handling and sample-change semantics.
-- [ ] **Startup/changed-card preparation:** load the index, reuse validated records, and prepare missing/changed maps once in priority order. Keep audio services safe while file ownership is withheld.
-- [ ] **Playback integration:** attach valid cached maps after every successful open, including save/load, variation, and audio-variant changes. Leave cache misses on normal seeking.
-- [ ] **Deferred map loads/preparation:** distinguish RAM misses from missing persistent records, and process requests only in verified quiescent media windows. Deduplicate requests and persist oversized-file outcomes.
-- [ ] **Instrumentation and regression checks:** expose RAM/persistent hits, validation time, actual build counts/time, index writes, capacity failures, retained/peak bytes, and invalidations through deferred diagnostics.
-- [ ] **Zeptocore hardware validation:** compare mapped and ordinary seeking using the same files, access sequences, clocks, and buffer sizes. Document results and chosen shared defaults.
+- [x] **Debugging apparatus:** implement and validate the [on-demand diagnostics service](docs/seek-diagnostics-plan.md), including normal/stretch timing, actual DMA starvation, coherent snapshots, host capture tools, memory limits, and measured collection/retrieval overhead. Complete its acceptance gate before seek-map implementation.
+- [x] **Baseline and limits:** record seek/read/open times, startup time, audio underruns, and RAM/stack headroom for representative zeptocore builds. Confirm the installed FatFs API, card identity, allocation-validation approach, and documented cache/index limits.
+- [x] **Map module:** implement construction, immutable bounded storage, lookup, pinning, invalidation, and deterministic fallback. Add focused lifecycle tests.
+- [x] **Persistent index and change detection:** implement versioned records, allocation validation, reconciliation, recoverable commits, and resume behavior. Prove that an unchanged card requires zero map-building calls across boots.
+- [x] **Ownership and file helpers:** establish safe media preparation and centralize all playback-handle opens/closes. Preserve current error handling and sample-change semantics.
+- [x] **Startup/changed-card preparation:** load the index, reuse validated records, and prepare missing/changed maps once in priority order. Keep audio services safe while file ownership is withheld.
+- [x] **Playback integration:** attach valid cached maps after every successful open, including save/load, variation, and audio-variant changes. Leave cache misses on normal seeking.
+- [x] **Deferred map loads/preparation:** distinguish RAM misses from missing persistent records, and process requests only in verified quiescent media windows. Deduplicate requests and persist oversized-file outcomes.
+- [x] **Instrumentation and regression checks:** expose RAM/persistent hits, validation time, actual build counts/time, index writes, capacity failures, retained/peak bytes, and invalidations through deferred diagnostics.
+- [x] **Zeptocore hardware validation:** compare mapped and ordinary seeking using the same files, access sequences, clocks, and buffer sizes. Document results and chosen shared defaults.
 
 ## Validation
 
@@ -178,29 +191,31 @@ Search again for direct `f_open`, `f_close`, mount/unmount, and audio-file mutat
 
 ### Performance and memory
 
+- Use the validated [debugging apparatus](docs/seek-diagnostics-plan.md) and retain its build/workload manifests and raw host captures for every comparison. Keep diagnostic settings identical between mapped and ordinary runs; report instrumentation overhead and unavailable measurements.
 - Measure seek time separately from read/open and DSP time. Record median, high percentile, and maximum values, plus actual DMA underruns and sample-switch latency.
 - Use full-width microsecond counters; do not rely on the existing utilization ring until its index and percentage-overflow issues are corrected or bypassed by dedicated measurements.
 - Test long files as well as heavily fragmented files. Fast seeking still scans map fragments, so avoid claiming constant-time behavior for every file layout.
 - Measure first-use, changed-card, and unchanged-card startup separately, including allocation validation, index loading, map construction, and commits. Verify that runtime RAM misses do not add map-building delays to audio callbacks.
 - Inspect the linker map and heap/stack high-water marks. Treat existing high-pitch stack failures as separate faults, not evidence that fast seeking is slower.
-- Build and validate zeptocore at its supported 441, 256, and 128 frame buffer sizes and supported clock configurations. Do not add a separate build, hardware-test, or tuning matrix for other devices to this plan.
+- Build and validate zeptocore at 441 and 256 frame buffer sizes and supported clock configurations. The user removed 128 frames from the supported build/validation matrix on 2026-09-15; retain earlier measurements as historical evidence. Do not add a separate build, hardware-test, or tuning matrix for other devices to this plan.
 - Run hardware checks with simultaneous controls/clock/MIDI activity where supported. Use the actual I2S/DMA cadence when assessing deadlines.
 - Do not change SD clock speed or checksum behavior as part of these comparisons.
 
 ## Acceptance criteria
 
-- [ ] Zeptocore's implementation uses the common map/index and audio-file lifecycle, so the other firmware devices inherit it without a separate implementation or later port.
-- [ ] Existing cards and `core_server` exports work without user conversion or desktop-generated files; firmware manages its own optional persistent index.
-- [ ] Maps are prepared automatically for a new or changed card state and saved for reuse. Successfully persisted unchanged records are not rebuilt on reboot, reinsertion, selection, or RAM-cache eviction.
-- [ ] Relevant allocation changes are detected before reuse, including changes that preserve ordinary file metadata. Validation cost and supported filesystem rules are documented.
-- [ ] Index writes do not cause self-invalidation. Interrupted writes, read-only/full cards, and invalid records have a tested playback fallback.
-- [ ] Supported audio opens attach the correct completed map when one is cached; every other open has an explicit ordinary-seek fallback.
-- [ ] Map construction, eviction, and allocation never run in audio rendering or an interrupt.
-- [ ] No handle can retain a pointer to a partial, invalidated, moved, or evicted map.
-- [ ] RAM use is bounded and documented for the supported zeptocore builds, including preparation peak usage.
-- [ ] Mapped and ordinary reads return identical data for the tested access sequences; sample selection, fades, pitch, and stretch behavior remain unchanged.
-- [ ] The mapped workload avoids allocation-chain traversal during seeks and shows measured improvement on representative reverse/jump/stretch cases, without a material playback or switching regression.
-- [ ] First-use/changed/unchanged startup costs, persistent-index coverage, RAM-cache limits, fragmentation limits, fallback behavior, and hardware measurements are documented before the feature is considered complete.
+- [x] On-demand diagnostics collect and retrieve coherent seek/audio/map measurements with bounded memory and measured overhead, without blocking audio or initiating diagnostic filesystem I/O; reproducible baseline and comparison artifacts are retained on the host.
+- [x] Zeptocore's implementation uses the common map/index and audio-file lifecycle, so the other firmware devices inherit it without a separate implementation or later port.
+- [x] Existing cards and `core_server` exports work without user conversion or desktop-generated files; firmware manages its own optional persistent index.
+- [x] Maps are prepared automatically for a new or changed card state and saved for reuse. Successfully persisted unchanged records are not rebuilt on reboot, reinsertion, selection, or RAM-cache eviction.
+- [x] Relevant allocation changes are detected before reuse, including changes that preserve ordinary file metadata. Validation cost and supported filesystem rules are documented.
+- [x] Index writes do not cause self-invalidation. Interrupted writes, read-only/full cards, and invalid records have a tested playback fallback.
+- [x] Supported audio opens attach the correct completed map when one is cached; every other open has an explicit ordinary-seek fallback.
+- [x] Map construction, eviction, and allocation never run in audio rendering or an interrupt.
+- [x] No handle can retain a pointer to a partial, invalidated, moved, or evicted map.
+- [x] RAM use is bounded and documented for the supported zeptocore builds, including preparation peak usage.
+- [x] Mapped and ordinary reads return identical data for the tested access sequences; sample selection, fades, pitch, and stretch behavior remain unchanged.
+- [x] The mapped workload avoids allocation-chain traversal during seeks and shows measured improvement on representative reverse/jump/stretch cases, without a material playback or switching regression.
+- [x] First-use/changed/unchanged startup costs, persistent-index coverage, RAM-cache limits, fragmentation limits, fallback behavior, and hardware measurements are documented before the feature is considered complete.
 
 ## Reference
 

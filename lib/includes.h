@@ -37,6 +37,10 @@ bool is_arcade_box = false;
 #include "definitions.h"
 //
 #include "ff.h" /* Obtains integer types */
+#include "seek_diagnostics_io.h"
+#include "seek_timing_witness.h"
+#include "audio_media_owner.h"
+#include "audio_seek_map.h"
 //
 #include "diskio.h" /* Declarations of disk functions */
 //
@@ -140,7 +144,6 @@ bool usb_midi_present = false;
 #endif
 #include "noise.h"
 #include "resonantfilter.h"
-#include "sdcard.h"
 #ifdef INCLUDE_SINEBASS
 #include "wavetablebass.h"
 #endif
@@ -149,11 +152,15 @@ bool usb_midi_present = false;
 #include "savefile.h"
 //
 #include "globals.h"
+#include "audio_media.h"
+#include "sdcard.h"
 //
 #include "realtime_stretch.h"
+#include "audio_media_control.h"
 //
 #include "transfer.h"
 //
+#include "seek_audio_fixture.h"
 #include "sdcard_startup.h"
 //
 #include "keyboard.h"

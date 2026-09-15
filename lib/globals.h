@@ -13,6 +13,7 @@ clock_t time_of_initialization;
 FIL fil_current;
 char fil_current_name[32];
 volatile bool fil_is_open;
+uint32_t last_seeked = 1;
 uint8_t cpu_utilization;
 volatile int32_t phases[2];
 volatile int32_t phases_old[2];
