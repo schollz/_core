@@ -80,3 +80,6 @@ After measurement, the original normal 256-frame firmware was restored from
 experiments disabled. Its SHA-256 is
 `79884605a1ae3c3a6e265d00559c64a7974056bb6e8ad516025d619cf41731b4`.
 Restore evidence is in `restore.log` and `restored-status.json`.
+
+Subsequent [DSP loop optimization](seek-dsp-optimization.md) records the active
+tape-delay implementation, numerical equivalence tests and before/after timing.

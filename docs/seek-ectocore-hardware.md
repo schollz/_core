@@ -189,3 +189,7 @@ current ELF and latency/RAM tradeoffs.
 [Detailed callback timing](seek-detailed-timing.md) subsequently captured the
 callback spanning starvation with both experiments disabled, identifying delay
 sample processing, SD access and filtering as major contributors.
+
+The subsequent [DSP optimization](seek-dsp-optimization.md) substantially
+reduces filter processing time without extra buffering. The optimized normal
+256-frame firmware is now installed; that report records its ELF and validation.
