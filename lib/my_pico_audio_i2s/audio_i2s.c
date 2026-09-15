@@ -7,6 +7,14 @@
 // Modified by Elehobica, 2021
 
 #include "pico/audio_i2s.h"
+#include "../seek_diagnostics.h"
+#include "../seek_timing_witness.h"
+
+#if defined(SEEK_TIMING_WITNESS) && SEEK_TIMING_WITNESS
+volatile zd_witness_t zeptocore_timing_witness;
+volatile uint32_t zeptocore_witness_rendered;
+volatile uint32_t zeptocore_starvation_witness;
+#endif
 
 #include <stdio.h>
 
@@ -104,7 +112,9 @@ void i2s_callback_loop() {
   while (true) {
     uint32_t msg = multicore_fifo_pop_blocking();
     if (msg == EVENT_I2S_DMA_TRANSFER_STARTED) {
+      ZD_WITNESS_START();
       i2s_callback_func();
+      ZD_WITNESS_END();
     } else if (msg == NOTIFY_I2S_DISABLED) {
       break;
     } else {
@@ -286,6 +296,7 @@ static void update_pio_frequency(uint32_t sample_freq,
                                // PIO source clock freq
 #endif
 
+  ZD_CALL(zd_audio_clock(system_clock_frequency, divider, bits));
   shared_state.freq = sample_freq;
 }
 
@@ -606,6 +617,9 @@ static inline void audio_start_dma_transfer() {
 
   shared_state.playing_buffer = ab;
   if (!ab) {
+#if defined(SEEK_TIMING_WITNESS) && SEEK_TIMING_WITNESS
+    ++zeptocore_starvation_witness;
+#endif
     DEBUG_PINS_XOR(audio_timing, 1);
     DEBUG_PINS_XOR(audio_timing, 2);
     DEBUG_PINS_XOR(audio_timing, 1);
@@ -613,6 +627,7 @@ static inline void audio_start_dma_transfer() {
     //  just play some silence
     ab = &silence_buffer;
   }
+  ZD_CALL(zd_dma_start(shared_state.playing_buffer == NULL, ab->sample_count));
   assert(ab->sample_count);
   // todo better naming of format->format->format!!
   assert(ab->format->format->pcm_format == AUDIO_PCM_FORMAT_S16 ||
@@ -633,6 +648,7 @@ static inline void audio_start_dma_transfer() {
     dma_channel_transfer_from_buffer_now(shared_state.dma_channel,
                                          ab->buffer->bytes, ab->sample_count);
   }
+  ZD_CALL(zd_switch_dma(shared_state.playing_buffer ? ab->user_data : 0,time_us_32()));
 }
 
 // irq handler for DMA
@@ -654,8 +670,10 @@ void __isr __time_critical_func(audio_i2s_dma_irq_handler)() {
     audio_start_dma_transfer();
     DEBUG_PINS_CLR(audio_timing, 4);
 #ifdef CORE1_PROCESS_I2S_CALLBACK
+    uint32_t diag_notify_start = ZD_TIME();
     bool flg = multicore_fifo_push_timeout_us(EVENT_I2S_DMA_TRANSFER_STARTED,
                                               FIFO_TIMEOUT);
+    ZD_CALL(zd_notify(diag_notify_start, flg));
     if (!flg) {
       // FIFO full; drop the sample to avoid blocking.
       fifo_full_counter++;
@@ -697,6 +715,7 @@ void audio_i2s_set_enabled(bool enabled) {
     uint32_t msg;
     if (enabled) {
       multicore_reset_core1();
+      ZD_CALL(zd_prepare_core1_stack());
       multicore_launch_core1(i2s_callback_loop);
       flg = multicore_fifo_pop_timeout_us(FIFO_TIMEOUT, &msg);
       if (!flg || msg != RESPONSE_CORE1_THREAD_STARTED) {

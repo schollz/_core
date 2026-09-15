@@ -5,6 +5,7 @@
 
 #include "sequencer.h"
 #include "utils.h"
+#include <stddef.h>
 
 typedef struct SaveFile {
   uint32_t vol : 9;
@@ -132,23 +133,33 @@ bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
 #ifndef NOSDCARD
 
 bool SaveFile_load(SaveFile *sf, uint8_t savefile_index) {
-  FIL fil; /* File object */
+  FIL fil = {0};
   char fname[32];
   format_prefixed_int32(fname, "savefile", savefile_index);
-  if (f_open(&fil, fname, FA_READ) == FR_OK) {
-    unsigned int bytes_read;
-    if (f_read(&fil, sf, sizeof(SaveFile), &bytes_read) == FR_OK) {
-      SaveFile_sanitize(sf);
-    }
-    // read sequencers
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 16; j++) {
-        f_read(&fil, sf->sequencers[i][j], sizeof(Sequencer), &bytes_read);
-      }
+  if (f_open(&fil, fname, FA_READ) != FR_OK) return false;
+  // Keep the existing on-card layout, but never use saved heap/code pointers.
+  // Allocation addresses can change between compatible firmware builds.
+  SaveFile saved;
+  UINT bytes_read;
+  bool loaded = f_size(&fil) >= sizeof(SaveFile) + 48 * sizeof(Sequencer) &&
+      f_read(&fil, &saved, sizeof saved, &bytes_read) == FR_OK &&
+      bytes_read == sizeof saved;
+  for (unsigned i = 0; loaded && i < 3; i++) {
+    for (unsigned j = 0; loaded && j < 16; j++) {
+      FSIZE_t next = f_tell(&fil) + sizeof(Sequencer);
+      size_t data_bytes = offsetof(Sequencer, sequence_emit);
+      loaded = f_read(&fil, sf->sequencers[i][j], data_bytes, &bytes_read) == FR_OK &&
+          bytes_read == data_bytes && f_lseek(&fil, next) == FR_OK;
     }
   }
-  f_close(&fil);
-  return true;
+  loaded = f_close(&fil) == FR_OK && loaded;
+  if (loaded) {
+    memcpy(sf, &saved, offsetof(SaveFile, sequencers));
+    size_t tail = offsetof(SaveFile, sequence_sel);
+    memcpy((char *)sf + tail, (char *)&saved + tail, sizeof saved - tail);
+    SaveFile_sanitize(sf);
+  }
+  return loaded;
 }
 
 bool SaveFile_save(SaveFile *sf, uint8_t savefile_index) {

@@ -534,15 +534,13 @@ void bass_sequencer_emit(uint8_t key) {
 
 void bass_sequencer_stop() {}
 
-void savefile_do_load() {
+static bool savefile_load_state(bool reopen) {
   if (savefile_has_data[savefile_current]) {
-    while (sync_using_sdcard) {
-      sleep_us(100);
+    if(!audio_media_acquire())return false;
+    if(!SaveFile_load(sf, savefile_current)) {
+      audio_media_release();return false;
     }
-    sync_using_sdcard = true;
-    SaveFile_load(sf, savefile_current);
-    f_open(&fil_current, fil_current_name, FA_READ);
-    sync_using_sdcard = false;
+    if(reopen)audio_file_open(fil_current_name);
     // update all the fx
     for (uint8_t i = 0; i < 16; i++) {
       update_fx(i);
@@ -562,13 +560,34 @@ void savefile_do_load() {
     }
 
     // load new bank and sample
-    sel_bank_next = sf->bank;
-    sel_sample_next = sf->sample;
+    if(sf->bank<16 && banks[sf->bank] && banks[sf->bank]->num_samples) {
+      sel_bank_next = sf->bank;
+      sel_sample_next = sf->sample % banks[sf->bank]->num_samples;
+    }
     fil_current_change = true;
+    audio_media_release();
+    return true;
   }
+  return false;
+}
+void savefile_do_load(void) {
+  savefile_load_state(true);
+}
+
+bool savefile_do_save(void) {
+  if(!audio_media_acquire())return false;
+  sf->bank=sel_bank_cur;
+  sf->sample=sel_sample_cur;
+  bool saved=SaveFile_save(sf,savefile_current);
+  audio_file_open(fil_current_name);
+  audio_media_release();
+  if(saved)savefile_has_data[savefile_current]=true;
+  return saved;
 }
 
 void sdcard_startup() {
+  uint32_t diag_startup_us = ZD_TIME();
+  ZD_CALL(zeptocore_diag.header[21] = 2);
   for (uint8_t i = SDCARD_CMD_GPIO - 1; i < SDCARD_D0_GPIO + 5; i++) {
     gpio_pull_up(i);
   }
@@ -577,11 +596,8 @@ void sdcard_startup() {
     return;
   }
   sdcard_startup_is_starting = true;
+  if(!audio_media_acquire()) {sdcard_startup_is_starting=false;return;}
   fil_is_open = false;
-  while (sync_using_sdcard) {
-    sleep_us(100);
-  }
-  sync_using_sdcard = true;
   bool started = false;
   for (uint8_t i = 0; i < 10; i++) {
     started = run_mount();
@@ -623,6 +639,7 @@ void sdcard_startup() {
     char dirname[10];
     sprintf(dirname, "bank%d", bi + 1);
     banks[bi] = list_files(dirname);
+    ZD_CALL(zd_service(ZD_CONTROL));
     if (banks[bi]->num_samples > 0) {
       printf("[sdcard_startup] bank %d has %d samples\n", bi,
              banks[bi]->num_samples);
@@ -697,11 +714,23 @@ void sdcard_startup() {
   }
 #endif
 
-  // check to see if bank0/0.*2+x).wav exists
+#if SEEK_TEST_AUDIO_FIXTURE
+  // Explicit test build only: stage a guarded physical variant before the
+  // normal detector and map preparation. Requests cannot initiate this work.
+  sd_card_t *fixture_card=sd_get_by_num(0);
+  FRESULT fixture_result=seek_audio_fixture_run(SEEK_TEST_AUDIO_FIXTURE,fixture_card->state.CID);
+  if(fixture_result==FR_DISK_ERR||fixture_result==FR_NOT_READY) {
+    f_unmount(fixture_card->pcName);
+    if(!run_mount())audio_media_io_failed(FR_NOT_READY);
+  }
+#endif
+  // Audio filenames use one-based bank directories, as playback and the map
+  // manifest do. Probe the initial selection using that same convention.
   // if it does, then we are in audio variant mode
+  audio_variant_num=0;
   for (uint8_t i = 2; i < 16; i++) {
     char filename[100];
-    sprintf(filename, "bank0/0.%d.wav", i);
+    sprintf(filename, "bank%u/%u.%u.wav",sel_bank_cur+1,sel_sample_cur,i);
     FILINFO fno;
     FRESULT fr = f_stat(filename, &fno);
     if (fr == FR_OK) {
@@ -781,24 +810,44 @@ void sdcard_startup() {
          (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
          total_heap);
 
+  // Resolve the saved selection before prioritizing maps or opening playback.
+  // Runtime loads retain the normal reopen/fade path through savefile_do_load.
+  sf->vol = 180;
+  sf->pitch_val_index = PITCH_VAL_MID;
+  if(savefile_load_state(false)) {
+    sel_bank_cur=sel_bank_next;
+    sel_sample_cur=sel_sample_next;
+    if(sel_variation_next>=0 && sel_variation_next<2)
+      sel_variation=sel_variation_next;
+  }
   FRESULT fr;
   sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
           sel_sample_cur, sel_variation + audio_variant * 2);
 
-  fr = f_open(&fil_current, fil_current_name, FA_READ);
+  // Media preparation runs under the boot guard while the audio core services
+  // silence. The firmware-owned index is the only new data written to the card.
+#ifdef INCLUDE_ZEPTOCORE
+  LEDText_display(ledtext,"M");
+  LEDText_update(ledtext,leds);
+#endif
+  sd_card_t *map_card=sd_get_by_num(0);
+  fr=seek_maps_prepare(&map_card->state.fatfs,map_card->state.CID,
+                      map_card->state.sectors,fil_current_name);
+  if(fr==FR_DISK_ERR) {
+    // Discard a potentially dirty FatFs window after an index I/O failure.
+    // This boot uses ordinary seeking; a future boot can resume checkpoints.
+    seek_maps_unmount();f_unmount(map_card->pcName);
+    if(!run_mount())audio_media_io_failed(FR_NOT_READY);
+  }
+  fr = audio_file_open(fil_current_name);
   if (fr != FR_OK) {
     printf("[sdcard_startup] could not open %s: %s\n", fil_current_name,
            FRESULT_str(fr));
   }
-  sf->vol = 180;
-  sf->pitch_val_index = PITCH_VAL_MID;
   phase_new = 0;
   phase_change = true;
-  sync_using_sdcard = false;
   sdcard_startup_is_starting = false;
 
-  savefile_do_load();
-  
 #ifdef INCLUDE_ECTOCORE
   // If no savefile was loaded, restore bank/sample from flash by triggering
   // file change This happens after savefile_do_load so that savefiles take
@@ -813,6 +862,25 @@ void sdcard_startup() {
   }
 #endif
 
-  fil_is_open = true;
+  audio_media_release();
   time_of_initialization = time_us_64();
+  ZD_CALL(zd_metric_record(&zd_control.metrics[ZD_STARTUP],
+      time_us_32() - diag_startup_us, 0, 0, false, &zd_control.counters[9]));
+  ZD_CALL(zd_control.context[0] = getTotalHeap());
+  ZD_CALL(zd_control.context[1] = getFreeHeap());
+  ZD_CALL({
+    sd_card_t *card = sd_get_by_num(0);
+    if (card) {
+      memcpy(&zd_control.context[4], card->state.CID, 16);
+      zd_control.context[8] = card->state.sectors;
+      zd_control.context[9] = card->state.fatfs.fs_type;
+      zd_control.context[10] = card->state.fatfs.csize;
+      zd_control.context[11] = card->state.fatfs.volbase;
+      zd_control.context[12] = card->state.fatfs.fatbase;
+      zd_control.context[13] = card->state.fatfs.database;
+      zd_control.context[14] = card->state.fatfs.n_fatent;
+    }
+  });
+  ZD_CALL(zeptocore_diag.header[21] = 3);
+  ZD_CALL(zd_service(ZD_CONTROL));
 }

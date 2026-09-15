@@ -36,6 +36,13 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
 
+For development measurements over the Raspberry Pi Debug Probe, see
+[on-demand seek diagnostics](docs/seek-diagnostics.md) and the
+[current implementation/validation status](docs/seek-implementation-status.md).
+The firmware prepares and reuses optional SD seek maps automatically. Supported
+zeptocore builds use 441 or 256 frames; see the
+[hardware measurements and limits](docs/seek-hardware-results.md).
+
 
 ## diy
 

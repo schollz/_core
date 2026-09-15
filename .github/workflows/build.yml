@@ -79,10 +79,6 @@ jobs:
         run: |
           make zeptocore
           cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}.uf2"
-      - name: Build zeptocore_128.uf2
-        run: |
-          make zeptocore_128
-          cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}_ultralow_latency.uf2"
       - name: Build zeptocore_256.uf2
         run: |
           make zeptocore_256
