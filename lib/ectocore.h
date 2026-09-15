@@ -1080,6 +1080,35 @@ void __not_in_flash_func(input_handling)() {
 
     // check for input
     int char_input = getchar_timeout_us(10);
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+    // Test-only serial transport: 'T', controller, value (both 7-bit).
+    // Parse one byte per loop; never wait for a partially received command.
+    static uint8_t test_serial_state = 0, test_serial_cc = 0;
+    static uint32_t test_serial_last_ms = 0;
+    if (current_time - test_serial_last_ms > 100) test_serial_state = 0;
+    if (char_input >= 0) {
+      test_serial_last_ms = current_time;
+      if (test_serial_state == 0) {
+        if (char_input == 'T') test_serial_state = 1;
+      } else if (test_serial_state == 1) {
+        test_serial_cc = (uint8_t)char_input;
+        test_serial_state = char_input < 128 ? 2 : 0;
+      } else {
+        test_serial_state = 0;
+        if (char_input < 128 && test_serial_cc == cc_sampleselect) {
+          // Ectocore selects within the current bank through its debounced
+          // knob path; the MIDI flattened selection table is zeptocore-only.
+          sel_bank_next_new = sel_bank_cur;
+          sel_sample_next_new =
+              (uint32_t)char_input * banks[sel_bank_cur]->num_samples / 128;
+          debounce_file_change = 1;
+        } else if (char_input < 128 &&
+            ((test_serial_cc >= 15 && test_serial_cc <= 26) ||
+             (test_serial_cc >= 110 && test_serial_cc <= 112)))
+          midi_control_change(0, test_serial_cc, (uint8_t)char_input);
+      }
+    }
+#endif
     if (char_input >= 0) {
       if (char_input == 118) {
         puts("version=v7.3.1");

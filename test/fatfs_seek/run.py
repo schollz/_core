@@ -13,6 +13,11 @@ with tempfile.TemporaryDirectory() as directory:
                'lib/sdio/ff15/source/ffunicode.c', '-Wl,--wrap=calloc', '-lm', '-o', executable]
     subprocess.run(command, cwd=root, check=True)
     subprocess.run([executable], cwd=root, check=True)
+    prefetch = command.copy()
+    prefetch.insert(1, '-DAUDIO_PREPARE_NEXT=1')
+    prefetch.insert(1, '-DAUDIO_PREPARE_LAYOUT_TEST=1')
+    subprocess.run(prefetch, cwd=root, check=True)
+    subprocess.run([executable], cwd=root, check=True)
     comparison = command.copy()
     comparison.insert(1, '-DSEEK_MAP_ATTACH=0')
     comparison.remove('-Wl,--wrap=calloc')
