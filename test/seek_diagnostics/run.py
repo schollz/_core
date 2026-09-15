@@ -9,6 +9,19 @@ root = Path(__file__).resolve().parents[2]
 with tempfile.TemporaryDirectory() as directory:
     output = Path(directory) / "metrics"
     subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                    "-fsanitize=address,undefined", "-g", "-DAUDIO_CLOCK_RESTART_FIX=1",
+                    "-DINCLUDE_ECTOCORE=1", "-Itest/seek_diagnostics/stubs",
+                    "-Ilib/my_pico_audio/include", "-Ilib",
+                    "lib/audio_restart.c", "test/seek_diagnostics/test_audio_restart.c",
+                    "-o", str(output)], cwd=root, check=True)
+    subprocess.run([str(output)], check=True)
+    subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                    "-fsanitize=address,undefined", "-g", "-DSEEK_DIAGNOSTICS=1",
+                    "-DSEEK_CLOCK_LATENCY=1", "-Itest/seek_diagnostics/stubs", "-Ilib",
+                    "lib/clock_latency.c", "test/seek_diagnostics/test_clock_latency.c",
+                    "-o", str(output)], cwd=root, check=True)
+    subprocess.run([str(output)], check=True)
+    subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror",
                     "-fsanitize=address,undefined", "-g", "-DSEEK_DIAGNOSTICS=1",
                     "-DAUDIO_DETAILED_TIMING=1", "-Itest/seek_diagnostics/stubs", "-Ilib",
                     "lib/audio_profile.c", "test/seek_diagnostics/test_profile.c",

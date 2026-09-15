@@ -27,6 +27,9 @@
 extern "C" {
 #endif
 
+// Nonblocking core-1 notification. Normal DMA notification remains the fallback.
+void audio_i2s_request_render(void);
+
 #ifndef PICO_AUDIO_I2S_DMA_IRQ
 #ifdef PICO_AUDIO_DMA_IRQ
 #define PICO_AUDIO_I2S_DMA_IRQ PICO_AUDIO_DMA_IRQ

@@ -38,6 +38,8 @@ bool is_arcade_box = false;
 //
 #include "ff.h" /* Obtains integer types */
 #include "seek_diagnostics_io.h"
+#include "clock_latency.h"
+#include "audio_restart.h"
 #include "seek_timing_witness.h"
 #include "audio_media_owner.h"
 #include "audio_seek_map.h"

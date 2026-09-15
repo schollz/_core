@@ -1,5 +1,29 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 #include "audio_profile.h"
+#include "audio_restart.h"
+#if AUDIO_RESTART_WAKE_ENABLED
+#include "audio_restart_queue.h"
+// Owned only by the audio worker; the clock core communicates through the
+// restart token and FIFO, never these fields.
+static struct {
+  bool active;
+  bool published;
+  unsigned replaced_silence;
+} audio_restart_wake;
+static void audio_submit_buffer(audio_buffer_t *buffer, bool restart_block) {
+  if (audio_restart_wake.active || restart_block) {
+    unsigned removed = audio_restart_publish_buffer(ap, buffer);
+    if (audio_restart_wake.active) {
+      audio_restart_wake.published = true;
+      audio_restart_wake.replaced_silence += removed;
+    }
+  } else {
+    give_audio_buffer(ap, buffer);
+  }
+}
+#else
+#define audio_submit_buffer(buffer, restart_block) give_audio_buffer(ap, buffer)
+#endif
 // previous output per channel (persistent state)
 #ifdef INCLUDE_EZEPTOCORE
 #define BASS_LP_A 64917  // alpha ≈ 0.9908
@@ -123,6 +147,7 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
   bool do_crossfade = false;
   bool do_fade_out = false;
   bool do_fade_in = false;
+  bool clock_restart_block = false;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
 #ifdef PRINT_SDCARD_TIMING
@@ -152,7 +177,7 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
     samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
   }
   ZD_CALL(zd_audio_output(buffer->sample_count, 0));
-  give_audio_buffer(ap, buffer);
+  audio_submit_buffer(buffer, false);
   return;
 #endif
 
@@ -244,7 +269,11 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
       samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
     }
     ZD_CALL(zd_audio_output(buffer->sample_count, 0));
-  give_audio_buffer(ap, buffer);
+#if AUDIO_RESTART_WAKE_ENABLED
+    if (audio_restart_pcm_silent(samples16, buffer->sample_count))
+      buffer->flags |= AUDIO_BUFFER_SILENCE;
+#endif
+    audio_submit_buffer(buffer, false);
 
     ZD_CALL(zd_audio_counter(ZD_MUTED));
     // audio muted flag to ensure a fade in occurs when
@@ -490,7 +519,14 @@ BREAKOUT_OF_MUTE:
     do_crossfade = true;
     phases[1] = phases[0];  // old phase
     phases[0] = phase_new;
+    CL_CALL(cl_applied(phases[0]));
     phase_change = false;
+    AR_CALL(if (audio_restart_take(phases[0])) {
+      clock_restart_block = true;
+      do_crossfade = false;
+      do_fade_in = false;
+      audio_was_muted = false;
+    });
   }
 
   if (audio_was_muted) {
@@ -511,10 +547,17 @@ BREAKOUT_OF_MUTE:
   bool first_loop = true;
 
   if (realtime_stretch_is_active()) {
+    if (clock_restart_block) realtime_stretch_reset_from_playback_phase();
     if (phase_change) {
       phases[1] = phases[0];
       phases[0] = phase_new;
+      CL_CALL(cl_applied(phases[0]));
       phase_change = false;
+      AR_CALL(if (audio_restart_take(phases[0])) {
+        clock_restart_block = true;
+        do_crossfade = do_fade_in = false;
+        audio_was_muted = false;
+      });
       realtime_stretch_reset_from_playback_phase();
     }
 
@@ -592,12 +635,17 @@ BREAKOUT_OF_MUTE:
         negative_latency =
             roundf((float)values_len_minus_peek * latency_factor) *
             (phase_forward * 2 - 1);
-        if (clock_input_present_first) {
+        if ((!AUDIO_CLOCK_RESTART_FIX || head == 0) && clock_input_present_first) {
           clock_input_present_first = false;
           negative_latency = 0;
         }
+        if (clock_restart_block) negative_latency = 0;
       }
 #endif
+      CL_CALL(if(head == 0) cl_seek(negative_latency, samples_to_read,
+          values_to_read_minus_peek / samples_to_read,
+          (do_crossfade ? 16u : 0) | (do_fade_in ? 32u : 0) | (do_fade_out ? 64u : 0) |
+          (clock_restart_block ? 128u : 0)));
       FRESULT seek_result=zd_f_lseek(&fil_current,
                   WAV_HEADER +
                       ((banks[sel_bank_cur]
@@ -626,7 +674,7 @@ BREAKOUT_OF_MUTE:
           samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
         }
         ZD_CALL(zd_audio_output(buffer->sample_count, 0));
-  give_audio_buffer(ap, buffer);
+        audio_submit_buffer(buffer, false);
         sync_using_sdcard = false;
         ZD_CALL(zd_audio_counter(ZD_ERROR_SILENCE));
         // sdcard_startup();
@@ -1142,7 +1190,14 @@ AUDIO_SOURCE_RENDERED:
     samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
   }
   ZD_CALL(zd_audio_output(buffer->sample_count, 0));
-  give_audio_buffer(ap, buffer);
+  if (clock_restart_block) {
+    for(unsigned i = 0; i < buffer->sample_count && i < AUDIO_RESTART_FADE_FRAMES; ++i) {
+      samples16[2*i] = audio_restart_fade(samples16[2*i], i);
+      samples16[2*i+1] = audio_restart_fade(samples16[2*i+1], i);
+    }
+  }
+  CL_CALL(cl_submit(buffer->user_data, samples16, buffer->sample_count));
+  audio_submit_buffer(buffer, clock_restart_block);
 #ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);
 #endif
@@ -1263,10 +1318,11 @@ void __not_in_flash_func(i2s_callback_func)() {
     if(buffer) {
       ZD_WITNESS_RENDERED();
       memset(buffer->buffer->bytes,0,buffer->max_sample_count*4);
+      buffer->flags = AUDIO_BUFFER_SILENCE;
       buffer->sample_count=buffer->max_sample_count;
       ZD_CALL(zd_audio_output(buffer->sample_count,0));
       ZD_CALL(zd_audio_counter(ZD_MUTED));
-      give_audio_buffer(ap,buffer);
+      audio_submit_buffer(buffer, false);
     } else ZD_CALL(zd_audio_counter(ZD_NO_BUFFER));
   }
   AP_CALL(audio_profile_end(audio_profile_source(owns_media),audio_profile_effects()));
@@ -1305,4 +1361,21 @@ void __not_in_flash_func(i2s_callback_func)() {
   }
 #endif
   audio_media_end(quiescent);
+}
+
+bool i2s_callback_restart_func(void) {
+#if AUDIO_RESTART_WAKE_ENABLED
+  if (!ap || !audio_restart_pending() || !audio_restart_can_wake(ap)) return false;
+  audio_restart_wake.active = true;
+  audio_restart_wake.published = false;
+  audio_restart_wake.replaced_silence = 0;
+  i2s_callback_func();
+  audio_restart_wake.active = false;
+  // If the sole queued silence was consumed during this render, its DMA
+  // notification is still pending on this same core's FIFO. This extra render
+  // fulfilled that one notification. Do not change the normal queue policy.
+  return audio_restart_wake.published && audio_restart_wake.replaced_silence == 0;
+#else
+  return false;
+#endif
 }

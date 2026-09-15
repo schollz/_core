@@ -251,6 +251,7 @@ audio_buffer_t *take_audio_buffer(audio_buffer_pool_t *ac, bool block) {
   assert(ac->connection);
   if (ac->type == audio_buffer_pool::ac_producer) {
     audio_buffer_t *buffer=ac->connection->producer_pool_take(ac->connection, block);
+    if(buffer)buffer->flags=0;
 #if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
     if(buffer)buffer->user_data=0;
 #endif
