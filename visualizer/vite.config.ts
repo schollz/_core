@@ -9,10 +9,8 @@ function referenceLibrary(): Plugin {
   let library: Awaited<ReturnType<typeof buildLibrary>>;
   return {
     name: 'zeptocore-reference',
+    apply: 'serve',
     async buildStart() { library = await buildLibrary(root, cache); },
-    generateBundle() {
-      for (const [fileName, source] of library.assets) this.emitFile({ type: 'asset', fileName, source });
-    },
     configureServer(server) {
       let timer: ReturnType<typeof setTimeout>;
       let refreshing = Promise.resolve();

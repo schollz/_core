@@ -53,42 +53,60 @@ The browser app remains a separate, explicit build. Firmware builds need no
 Node/npm and do not embed the app. Full sample/slice telemetry requires an enabled
 firmware; default firmware only provides the existing legacy status.
 
-## Run
+## Build and run
 
-Use Node.js 22.12 or newer and Chrome or Edge:
+Use Node.js 22.12 or newer and Chrome or Edge. Build once:
 
 ```sh
 cd visualizer
-make serve
+npm ci
+npm run build
 ```
 
-This installs the locked npm dependencies when needed, builds the website and
-waveform data from the current `reference` files, and serves `dist` locally.
-Stop the server with Ctrl-C. Run `make serve` again after changing reference files.
-For development with automatic refresh, use `npm run dev` after the first setup.
-
-Open the localhost URL printed by Vite, click **CONNECT**, and allow
-MIDI access including system exclusive messages. The Codex embedded preview may
-deny MIDI permission; open the same URL in Chrome for hardware use. If several
-ports are available, select the zeptocore's input and output.
-
-After MIDI/SysEx permission has been granted, the page automatically connects
-on load in browsers supporting MIDI permission queries. It reconnects after
-USB disconnection and retries connection errors every two seconds. Returning
-to the tab also checks the connection. The first permission approval still
-requires **CONNECT**; unsupported permission queries use manual connection.
+Run the built server, pointing it at the folder containing your `bank1`, `bank2`,
+etc. directories:
 
 ```sh
-npm test
-npm run build
-npm run preview
+node dist/server.mjs /path/to/reference
+# Optional port (default 4173):
+node dist/server.mjs "/path/with spaces/reference" --port 8080
+# Equivalent npm shortcut:
+npm start -- /path/to/reference --port 8080
 ```
 
-`dist` is self-contained: it contains the page and derived waveform data, not the
-original recordings. Rebuild after replacing the reference library for a
-production preview. Development watches reference changes and refreshes the
-library automatically. Waveform data is preloaded with three concurrent requests
-and cached by its content URL, so switching to a cached sample is immediate.
+Relative paths resolve from the shell's current directory. With no folder
+argument, the server uses `reference` beside the `dist` directory. `--help` shows
+usage. Missing reference folders and invalid arguments fail with a clear error.
+
+The server generates waveform and spectrum data from the selected folder at
+startup, then prints its localhost URL. Large libraries take longer to prepare.
+It serves on `127.0.0.1` only. Stop with Ctrl+C. Restart after editing reference
+files or to select another folder; no app rebuild is required. A bad sample is
+reported in the terminal and UI while other samples remain available.
+
+`dist` contains the compiled website and standalone `server.mjs`. You can copy
+that folder to another machine with Node and launch it against that machine's
+reference folder; npm, Vite, and node_modules are not needed to run it. Original
+WAVs remain on disk and are not served over HTTP. The server only serves the UI
+and derived waveform/spectrum JSON.
+
+For a build-and-run shortcut:
+
+```sh
+make serve REFERENCE=/path/to/reference PORT=4173
+```
+
+`make serve` installs locked dependencies when needed, builds, and starts the
+server. `npm run preview -- /path/to/reference` also runs the built server.
+For development with automatic refresh, use `npm run dev`; it watches the local
+`visualizer/reference` folder. Run `npm test` for checks.
+
+Open the printed localhost URL, click **CONNECT**, and allow MIDI access including
+system exclusive messages. If several ports are available, select the zeptocore's
+input and output. After permission has been granted, the app connects automatically
+on supported browsers and retries USB reconnections. Waveform data is preloaded
+with three concurrent requests and cached by content URL, so switching to a
+cached sample is immediate.
 
 ## Reference files
 

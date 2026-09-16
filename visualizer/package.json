@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run"
+    "build": "tsc --noEmit && vite build && vite build --config vite.server.config.ts",
+    "preview": "node dist/server.mjs",
+    "test": "vitest run",
+    "start": "node dist/server.mjs"
   },
   "dependencies": {
     "react": "19.2.4",
