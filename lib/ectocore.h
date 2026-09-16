@@ -1164,7 +1164,7 @@ void __not_in_flash_func(input_handling)() {
     CL_CALL(cl_test_service());
     if (char_input >= 0) {
       if (char_input == 118) {
-        puts("version=v7.3.1");
+        puts("version=v7.4.1");
       }
     }
 
