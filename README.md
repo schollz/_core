@@ -78,12 +78,12 @@ The firmware is divided into two categories: *overclocking* and *non-overclockin
 - Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
 - Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
 
-For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
+For latency, normal latency will work for most, but choose low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
 
-|                  | Normal Latency                                                                                            | Low Latency                                                                                                           | Ultra-Low Latency                                                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1.uf2)*                | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1_low_latency.uf2)                 | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1_ultralow_latency.uf2)                 |
-| Non-Overclocking | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1_no_overclocking.uf2) | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1_no_overclocking_low_latency.uf2) | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ezeptocore_v7.3.1_no_overclocking_ultralow_latency.uf2) |
+|                  | Normal Latency                                                                                            | Low Latency                                                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Overclocking     | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1.uf2)*                | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_low_latency.uf2)                 |
+| Non-Overclocking | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_no_overclocking.uf2) | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_no_overclocking_low_latency.uf2) |
 
 *default firmware
 
@@ -113,12 +113,12 @@ The firmware is divided into two categories: *overclocking* and *non-overclockin
 - Choose *overclocking*  if you are using an external clock and want maximum CPU bandwidth for FX. These builds run faster but can exhibit slight clock drift if not externally synced.
 - Choose *non-overclocking*  if you are using the internal clock and need extremely stable timing. These builds have slightly reduced CPU overhead but offer the highest temporal stability.
 
-For latency, normal latency will work for most, but choose low or ultra-low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
+For latency, normal latency will work for most, but choose low if you encounter latency issues (note: available FX bandwidth decreases for low latency).
 
-|                  | Normal Latency                                                                                          | Low Latency                                                                                                         | Ultra-Low Latency                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Overclocking     | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1.uf2)*                | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1_low_latency.uf2)                 | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1_ultralow_latency.uf2)                 |
-| Non-Overclocking | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1_no_overclocking.uf2) | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1_no_overclocking_low_latency.uf2) | [v7.3.1](https://github.com/schollz/_core/releases/download/v7.3.1/ectocore_v7.3.1_no_overclocking_ultralow_latency.uf2) |
+|                  | Normal Latency                                                                                          | Low Latency                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Overclocking     | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1.uf2)*                | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_low_latency.uf2)                 |
+| Non-Overclocking | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_no_overclocking.uf2) | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_no_overclocking_low_latency.uf2) |
 
 
 ### diy
