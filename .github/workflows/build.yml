@@ -87,10 +87,6 @@ jobs:
         run: |
           make ezeptocore
           cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}.uf2"
-      - name: Build ezeptocore_128.uf2
-        run: |
-          make ezeptocore_128
-          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_ultralow_latency.uf2"
       - name: Build ezeptocore_256.uf2
         run: |
           make ezeptocore_256
@@ -99,10 +95,6 @@ jobs:
         run: |
           make ezeptocore_noclock
           cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_no_overclocking.uf2"
-      - name: Build ezeptocore no overclock 128
-        run: |
-          make ezeptocore_noclock_128
-          cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_no_overclocking_ultralow_latency.uf2"
       - name: Build ezeptocore no overclock 256
         run: |
           make ezeptocore_noclock_256
