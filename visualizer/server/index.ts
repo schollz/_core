@@ -15,8 +15,9 @@ async function main() {
   if (!/^\d+$/.test(values.port!) || Number(values.port) > 65535) throw new Error('--port must be an integer from 0 to 65535.');
   const distRoot = fileURLToPath(new URL('.', import.meta.url));
   const referenceRoot = positionals[0] ? resolve(positionals[0]) : fileURLToPath(new URL('../reference/', import.meta.url));
-  console.log(`Preparing reference data from ${referenceRoot} …`);
-  const { server, manifest } = await createVisualizerServer(referenceRoot, distRoot);
+  console.log(`Loading reference data from ${referenceRoot} …`);
+  const { server, manifest, reused, prepared } = await createVisualizerServer(referenceRoot, distRoot);
+  console.log(`${reused} samples reused from cache; ${prepared} newly prepared.`);
   const failed = manifest.samples.filter(s => s.error);
   for (const sample of failed) console.warn(`${sample.path}: ${sample.error}`);
   await new Promise<void>((ready, reject) => {

@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { extname, join } from 'node:path';
-import { buildLibrary } from '../build/library';
+import { loadReferenceLibrary } from './cache';
 
 const mime: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -9,7 +9,7 @@ const mime: Record<string, string> = {
   '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
 };
 
-export async function createVisualizerServer(referenceRoot: string, distRoot: string) {
+export async function createVisualizerServer(referenceRoot: string, distRoot: string, cacheRoot?: string) {
   if (!(await stat(referenceRoot)).isDirectory()) throw new Error(`Reference path is not a directory: ${referenceRoot}`);
   const files = new Map<string, { body: Buffer; type: string }>();
   const addFile = async (url: string, path: string) => {
@@ -26,7 +26,7 @@ export async function createVisualizerServer(referenceRoot: string, distRoot: st
     }
   };
   await addAssets(join(distRoot, 'assets'), '/assets');
-  const library = await buildLibrary(referenceRoot);
+  const library = await loadReferenceLibrary(referenceRoot, cacheRoot);
   for (const [url, body] of library.assets) files.set(`/${url}`, { body: Buffer.from(body), type: mime['.json'] });
   const server = createServer((req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -42,5 +42,5 @@ export async function createVisualizerServer(referenceRoot: string, distRoot: st
     res.writeHead(200, { 'Content-Type': file.type, 'Content-Length': file.body.length });
     res.end(req.method === 'HEAD' ? undefined : file.body);
   });
-  return { server, manifest: library.manifest };
+  return { server, manifest: library.manifest, reused: library.reused, prepared: library.prepared };
 }
