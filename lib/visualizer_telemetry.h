@@ -4,7 +4,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if defined(INCLUDE_ZEPTOCORE) && defined(INCLUDE_MIDI)
+#ifndef ZEPTOCORE_VISUALIZER
+#define ZEPTOCORE_VISUALIZER 0
+#endif
+#if ZEPTOCORE_VISUALIZER && (!defined(INCLUDE_ZEPTOCORE) || !INCLUDE_ZEPTOCORE || !defined(INCLUDE_MIDI) || !INCLUDE_MIDI)
+#error "ZEPTOCORE_VISUALIZER requires INCLUDE_ZEPTOCORE=1 and INCLUDE_MIDI=1"
+#endif
+
+#if ZEPTOCORE_VISUALIZER
 #define ZV_ENABLED 1
 #define ZV_CALL(...) do { __VA_ARGS__; } while (0)
 #else

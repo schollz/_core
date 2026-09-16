@@ -40,6 +40,19 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
 
+Local and CI firmware configurations apply the same TinyUSB patch, replacing
+`OSAL_TIMEOUT_WAIT_FOREVER` with `OSAL_TIMEOUT_NORMAL` in `tusb.c`. This also
+applies to existing SDK checkouts and direct CMake builds.
+
+Current [Zeptocore knob controls](docs/zeptocore-controls.md): **A+1/2/3** adjust
+volume, low-pass cutoff, and realtime stretch; **B+1/2/3** adjust random sequence,
+playback rate, and tempo.
+
+Optional waveform visualizer telemetry is disabled by default. Build with
+`make zeptocore ZEPTOCORE_VISUALIZER=ON` to produce `zeptocore_visualizer.uf2`;
+see [visualizer setup and build options](visualizer/README.md). The browser app
+is built separately and is not required for ordinary firmware builds.
+
 For development measurements over the Raspberry Pi Debug Probe, see
 [on-demand seek diagnostics](docs/seek-diagnostics.md) and the
 [current implementation/validation status](docs/seek-implementation-status.md).

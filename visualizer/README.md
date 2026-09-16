@@ -8,6 +8,51 @@ IBM Plex Mono (regular, medium, and bold) is vendored as WOFF2 files in
 `src/assets`, alongside its SIL Open Font License. UI text and canvas callout
 labels use the local font; no font service or CDN is needed.
 
+## Firmware opt-in
+
+Visualizer telemetry is excluded from default firmware builds. To build it and
+immediately upload to the connected device through the existing picotool workflow:
+
+```sh
+make zeptocore-visualizer
+```
+
+This enables telemetry, builds `zeptocore_visualizer.uf2`, then uploads that exact
+file without rebuilding. Upload runs only after a successful build; existing
+`PICOTOOL` and `UPLOAD_*` options still apply (the UF2 path is selected by this target).
+
+To build without uploading, enable it explicitly:
+
+```sh
+make zeptocore ZEPTOCORE_VISUALIZER=ON
+# Or the 256-frame variant:
+make zeptocore_256 ZEPTOCORE_VISUALIZER=ON
+```
+
+Both commands produce `zeptocore_visualizer.uf2`. The no-overclock target produces
+`zeptocore_nooverclock_visualizer.uf2`. Default builds retain their existing names.
+These commands build only; upload the chosen UF2 separately.
+
+`make zeptocore` explicitly configures the option OFF, including after an ON build.
+The Make interface accepts `ON` or `OFF`. For an isolated CMake build:
+
+```sh
+cmake -S . -B build/visualizer \
+  -DCORE_COMPILE_DEFINITIONS="$PWD/zeptocore_compile_definitions.cmake" \
+  -DZEPTOCORE_VISUALIZER=ON
+cmake --build build/visualizer --parallel
+```
+
+Direct CMake invocations retain cached options: pass `-DZEPTOCORE_VISUALIZER=OFF`
+to disable it in an existing directory. The option requires Zeptocore with MIDI;
+unsupported devices or builds without MIDI fail configuration. When OFF, the
+telemetry source, hooks, state buffers, and subscription service are excluded,
+and ordinary MIDI clock/start/stop retain their existing path.
+
+The browser app remains a separate, explicit build. Firmware builds need no
+Node/npm and do not embed the app. Full sample/slice telemetry requires an enabled
+firmware; default firmware only provides the existing legacy status.
+
 ## Run
 
 Use Node.js 22.12 or newer and Chrome or Edge:
@@ -139,3 +184,28 @@ CC=/opt/homebrew/opt/llvm/bin/clang .venv/bin/python test/midi/run.py
 The compiler override avoids the Apple AddressSanitizer startup issue on this
 machine. Other platforms can omit it. Both normal 441-frame and 256-frame builds
 support the protocol; other device targets compile the feature out.
+
+Verify the firmware flag (441/256 frames, default → ON → OFF, symbol/map checks,
+and rejection of unsupported devices or missing MIDI):
+
+```sh
+python3 test/visualizer_build/run.py
+```
+
+This builds under `artifacts/visualizer-build`, saves logs and size reports, and
+never flashes hardware. CI runs these checks without publishing opt-in firmware
+as a default release artifact.
+
+## Source spectrum
+
+The lower panel shows 32 logarithmic frequency bands from 50 Hz to 16 kHz.
+Hann-windowed 4096-point FFTs are generated at 20 frames per second from the
+unpadded reference WAV. Stereo powers are combined without phase cancellation.
+Levels use a fixed −72 to 0 dBFS display range and compact 8-bit storage.
+
+The bars interpolate at the same estimated source position as the playback line,
+including sample changes, retriggers, reverse, and tempo changes. They clear when
+playback stops, mutes, or telemetry expires. Jumps reset animation smoothing;
+reduced-motion preferences disable smoothing. This is a source spectrum, not a
+measurement of device output: pitch processing and device effects are not included.
+No microphone access, audio playback, or additional firmware telemetry is needed.

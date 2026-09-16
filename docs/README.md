@@ -7,6 +7,8 @@ also refer to the repository root; Markdown links are relative to each document.
 
 The short orientation note is [readme-starthere.md](readme-starthere.md).
 
+Current performance controls: [Zeptocore A/B knob mappings](zeptocore-controls.md).
+
 ## Reading order
 
 1. Use the repository map and build instructions below to locate the relevant code.

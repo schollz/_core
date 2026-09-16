@@ -99,3 +99,6 @@ drum_separation_model.zip
 /build-seek-*/
 /artifacts/
 test/**/__pycache__/
+
+/zeptocore_visualizer.uf2
+/zeptocore_nooverclock_visualizer.uf2

@@ -229,6 +229,7 @@ static void test_usb(void) {
 }
 
 #if ZV_ENABLED
+static void visualizer_only_probe(void) {}
 static unsigned realtime_written;
 static bool realtime_sink(const uint8_t packet[4]) {
   const uint8_t expected[] = {0xfa, 0xf8, 0xfc};
@@ -250,6 +251,8 @@ static void test_clock_output(void) {
 }
 int main(void) {
   assert(MIDI_NOTE_KEY == EXPECT_NOTE_KEY);
+  assert(ZV_ENABLED == ZEPTOCORE_VISUALIZER);
+  ZV_CALL(visualizer_only_probe());
   test_notes();
   test_usb();
   test_clock_output();

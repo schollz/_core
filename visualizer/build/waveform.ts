@@ -1,4 +1,5 @@
 import type { Waveform } from '../src/types';
+import { makeSpectrum } from './spectrum';
 
 export function parseInfo(bytes: Buffer) {
   if (bytes.length < 11) throw new Error('Truncated sample metadata');
@@ -67,5 +68,6 @@ export function makeWaveform(wav: Buffer, metadata: Buffer, bank: number, sample
   const bytesPerSecond = audio.sampleRate * audio.blockAlign;
   return { bank, sample, sampleRate: audio.sampleRate, channels: audio.channels,
     duration: info.size / bytesPerSecond, bpm: info.bpm, tempoMatch: info.tempoMatch, playMode: info.playMode,
+    spectrum: makeSpectrum(audio.data.subarray(padding, padding + info.size), audio.sampleRate, audio.channels),
     slices: info.slices.map(s => ({ start: s.start / bytesPerSecond, stop: s.stop / bytesPerSecond })), peaks };
 }

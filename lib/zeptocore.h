@@ -418,24 +418,16 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], cc_tempo, adc * 127 / 4096);
+          MidiOut_cc(midiout[0], cc_volume, adc * 127 / 4096);
 #endif
-          uint16_t bpm_new_tempo =
-              banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
-          bpm_new_tempo = round(
-              linlin(adc, 0, 4095, bpm_new_tempo / 2, bpm_new_tempo * 3 / 2));
-          if (bpm_new_tempo % 10 == 1 || bpm_new_tempo % 10 == 9) {
-            // round to nearest 5
-            bpm_new_tempo = (bpm_new_tempo / 5) * 5;
-          } else if (bpm_new_tempo % 10 == 3 || bpm_new_tempo % 10 == 7) {
-            // round to nearest 2
-            bpm_new_tempo = (bpm_new_tempo / 2) * 2;
+          new_vol = adc * VOLUME_STEPS / 4096;
+          // new_vol = 100;
+          if (new_vol != sf->vol) {
+            sf->vol = new_vol;
           }
-          sf->bpm_tempo = util_clamp(bpm_new_tempo, 30, 300);
           clear_debouncers();
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
-                            adc * 255 / 4096, 100);
-          DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
+                            adc * 255 / 4096, 200);
         } else if (button_is_pressed(KEY_B)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
@@ -538,26 +530,6 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], cc_pitch, adc * 127 / 4096);
-#endif
-
-          int16_t adc_original = adc;
-          if (adc < 2048 - 200) {
-            sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
-          } else if (adc > 2048 + 200) {
-            adc -= 2048 + 200;
-            sf->pitch_val_index =
-                adc * (PITCH_VAL_MAX - PITCH_VAL_MID) / (2048 - 200) +
-                PITCH_VAL_MID;
-          } else {
-            sf->pitch_val_index = PITCH_VAL_MID;
-          }
-          clear_debouncers();
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
-                            adc_original * 255 / 4096, 250);
-        } else if (button_is_pressed(KEY_B)) {
-#ifdef INCLUDE_MIDI
-          // send out midi cc
           MidiOut_cc(midiout[0], cc_djfilter, adc * 127 / 4096);
 #endif
 #if DJ_FILTER
@@ -592,6 +564,26 @@ void __not_in_flash_func(input_handling)() {
           clear_debouncers();
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_SPIRAL1],
                             adc * 255 / 4096, 200);
+        } else if (button_is_pressed(KEY_B)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], cc_pitch, adc * 127 / 4096);
+#endif
+
+          int16_t adc_original = adc;
+          if (adc < 2048 - 200) {
+            sf->pitch_val_index = adc * PITCH_VAL_MID / (2048 - 200);
+          } else if (adc > 2048 + 200) {
+            adc -= 2048 + 200;
+            sf->pitch_val_index =
+                adc * (PITCH_VAL_MAX - PITCH_VAL_MID) / (2048 - 200) +
+                PITCH_VAL_MID;
+          } else {
+            sf->pitch_val_index = PITCH_VAL_MID;
+          }
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_TRIANGLE],
+                            adc_original * 255 / 4096, 250);
         } else if (button_is_pressed(KEY_C)) {
           // C + Y
 #ifdef INCLUDE_MIDI
@@ -686,24 +678,32 @@ void __not_in_flash_func(input_handling)() {
         if (button_is_pressed(KEY_A)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc
-          MidiOut_cc(midiout[0], cc_volume, adc * 127 / 4096);
-#endif
-          new_vol = adc * VOLUME_STEPS / 4096;
-          // new_vol = 100;
-          if (new_vol != sf->vol) {
-            sf->vol = new_vol;
-          }
-          clear_debouncers();
-          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_WALL],
-                            adc * 255 / 4096, 200);
-        } else if (button_is_pressed(KEY_B)) {
-#ifdef INCLUDE_MIDI
-          // send out midi cc
           MidiOut_cc(midiout[0], cc_realtime_stretch, adc * 127 / 4096);
 #endif
           set_realtime_stretch_knob(adc);
           DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_BAR],
                             adc * 255 / 4096, 200);
+        } else if (button_is_pressed(KEY_B)) {
+#ifdef INCLUDE_MIDI
+          // send out midi cc
+          MidiOut_cc(midiout[0], cc_tempo, adc * 127 / 4096);
+#endif
+          uint16_t bpm_new_tempo =
+              banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm;
+          bpm_new_tempo = round(
+              linlin(adc, 0, 4095, bpm_new_tempo / 2, bpm_new_tempo * 3 / 2));
+          if (bpm_new_tempo % 10 == 1 || bpm_new_tempo % 10 == 9) {
+            // round to nearest 5
+            bpm_new_tempo = (bpm_new_tempo / 5) * 5;
+          } else if (bpm_new_tempo % 10 == 3 || bpm_new_tempo % 10 == 7) {
+            // round to nearest 2
+            bpm_new_tempo = (bpm_new_tempo / 2) * 2;
+          }
+          sf->bpm_tempo = util_clamp(bpm_new_tempo, 30, 300);
+          clear_debouncers();
+          DebounceUint8_set(debouncer_uint8[DEBOUNCE_UINT8_LED_DIAGONAL],
+                            adc * 255 / 4096, 100);
+          DebounceDigits_set(debouncer_digits, sf->bpm_tempo, 300);
         } else if (button_is_pressed(KEY_C)) {
 #ifdef INCLUDE_MIDI
           // send out midi cc

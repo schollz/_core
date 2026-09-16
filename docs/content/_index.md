@@ -15,3 +15,11 @@ The complete Zeptocore manual now lives beside the products it supports. The ass
 </div>
 
 The firmware and hardware source remain in the [_core repository](https://github.com/schollz/_core), and existing static asset URLs remain available for old links.
+
+## Current development firmware controls
+
+The current firmware remaps **A + knobs 1/2/3** to volume, low-pass filter cutoff,
+and realtime stretch, and **B + knobs 1/2/3** to random slice sequence, playback
+rate, and tempo. Knobs 1/2/3 correspond to X/Y/Z. See the
+[firmware control reference](https://github.com/schollz/_core/blob/main/docs/zeptocore-controls.md)
+for ranges and MIDI CC mappings. Older firmware retains its previous controls.

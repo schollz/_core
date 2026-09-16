@@ -67,5 +67,5 @@ describe('reference audio', () => {
       const counts = new Set(result.manifest.samples.map(s => JSON.parse(result.assets.get(s.url!)!).slices.length));
       expect(counts).toEqual(new Set([16, 32, 64]));
     }
-  });
+  }, 60000);
 });

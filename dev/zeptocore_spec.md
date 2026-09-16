@@ -35,12 +35,14 @@ the rest of the buttons (1-16) are just called **H**.
 
 #### combo knobs
 
-- [x] **A** + **X** → tempo
-- [x] **A** + **Y** → pitch
-- [x] **A** + **Z** → volume
-- [ ] **B** + **X** → 
-- [x] **B** + **Y** → filter fc (lowpass/highpass?)
-- [ ] **B** + **Z** → 
+For current A/B mappings and ranges, see [Zeptocore knob controls](../docs/zeptocore-controls.md).
+
+- [x] **A** + **X** → output volume
+- [x] **A** + **Y** → low-pass filter cutoff
+- [x] **A** + **Z** → realtime time stretching
+- [x] **B** + **X** → random slice sequence
+- [x] **B** + **Y** → pitch / playback rate
+- [x] **B** + **Z** → tempo
 - [x] **C** + **X** → change bank
 - [x] **C** + **Y** → change sample
 - [x] **C** + **Z** → quantize
