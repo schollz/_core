@@ -2,9 +2,12 @@
 
 .PHONY: serve build
 
-# Rebuild on every invocation so changes in reference are always included.
+REFERENCE ?= reference
+PORT ?= 4173
+
+# Build the app, then analyse the selected reference folder at server startup.
 serve: build
-	npm run preview
+	npm start -- "$(REFERENCE)" --port "$(PORT)"
 
 build: node_modules/.visualizer-installed
 	npm run build
