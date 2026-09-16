@@ -2,6 +2,7 @@
 #define LIB_MIDI_COMM_H 1
 #include <stdarg.h>  // Include this header for va_start, va_end, etc.
 #include <stdio.h>   // Include for vsnprintf
+#include "visualizer_telemetry.h"
 
 uint32_t send_buffer_as_sysex(char* buffer, uint32_t bufsize) {
   uint8_t sysex_data[bufsize + 2];  // +2 for SysEx start and end bytes
@@ -30,6 +31,9 @@ uint32_t send_text_as_sysex(const char* text) {
 }
 
 void send_midi_clock() {
+#if ZV_ENABLED
+  zv_realtime_enqueue(0xf8);
+#else
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
     // Construct the MIDI message
@@ -40,9 +44,13 @@ void send_midi_clock() {
     // Send the MIDI message
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
+#endif
 }
 
 void send_midi_start() {
+#if ZV_ENABLED
+  zv_realtime_enqueue(0xfa);
+#else
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
     // Construct the MIDI message
@@ -53,9 +61,13 @@ void send_midi_start() {
     // Send the MIDI message
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
+#endif
 }
 
 void send_midi_stop() {
+#if ZV_ENABLED
+  zv_realtime_enqueue(0xfc);
+#else
   // Ensure TinyUSB stack is initialized and ready
   if (tud_ready()) {
     // Construct the MIDI message
@@ -66,6 +78,7 @@ void send_midi_stop() {
     // Send the MIDI message
     tud_midi_n_stream_write(0, 0, midi_message, sizeof(midi_message));
   }
+#endif
 }
 
 void send_midi_note_on(uint8_t note, uint8_t velocity) {

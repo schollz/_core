@@ -45,10 +45,12 @@ static unsigned starts, stops, continues, clocks, note_ons, note_offs, ccs, rese
 static unsigned generic_count;
 static uint8_t generic_event[4], cc_event[3];
 static char sysex[128];
+static unsigned stream_writes;
 static bool tud_ready(void) { return true; }
 static uint32_t tud_midi_n_stream_write(uint8_t itf, uint8_t cable,
                                       const uint8_t *data, uint32_t count) {
   assert(itf == 0 && cable == 0);
+  ++stream_writes;
   if (count > 1 && data[0] == 0xf0) {
     assert(count - 2 < sizeof sysex);
     memcpy(sysex, data + 1, count - 2);
@@ -226,10 +228,31 @@ static void test_usb(void) {
   midi_comm_task(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
+#if ZV_ENABLED
+static unsigned realtime_written;
+static bool realtime_sink(const uint8_t packet[4]) {
+  const uint8_t expected[] = {0xfa, 0xf8, 0xfc};
+  assert(packet[0] == 15 && realtime_written < 3);
+  assert(packet[1] == expected[realtime_written++]);
+  return true;
+}
+#endif
+static void test_clock_output(void) {
+  unsigned before = stream_writes;
+  send_midi_start(); send_midi_clock(); send_midi_stop();
+#if ZV_ENABLED
+  assert(stream_writes == before); // Timer calls never enter TinyUSB.
+  zv_realtime_service(true, realtime_sink);
+  assert(realtime_written == 3);
+#else
+  assert(stream_writes == before + 3); // Other devices preserve their behavior.
+#endif
+}
 int main(void) {
   assert(MIDI_NOTE_KEY == EXPECT_NOTE_KEY);
   test_notes();
   test_usb();
+  test_clock_output();
   printf("MIDI tests passed (MIDI_NOTE_KEY=%d)\n", MIDI_NOTE_KEY);
   return 0;
 }

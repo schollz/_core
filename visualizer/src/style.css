@@ -1,0 +1,22 @@
+/* IBM Plex Mono — IBM Corp.; SIL Open Font License 1.1. Bundled locally. */
+@font-face{font-family:"IBM Plex Mono";src:url("./assets/IBMPlexMono-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"IBM Plex Mono";src:url("./assets/IBMPlexMono-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"IBM Plex Mono";src:url("./assets/IBMPlexMono-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+:root{font-family:"IBM Plex Mono",monospace;color:#c4c4c4;background:#000;font-synthesis:none;color-scheme:dark;font-weight:400;font-size:clamp(14px,2.5vw,24px)}
+*{box-sizing:border-box}body{margin:0;min-width:280px}button,select{font:inherit;color:#c4c4c4;background:#000;border:1px solid #777;border-radius:0}button{padding:.2em .5em;cursor:pointer}button:hover,button:focus-visible{color:#fff;border-color:#fff}button:disabled{border-style:dotted;cursor:default}button:focus-visible,select:focus-visible{outline:1px solid #fff;outline-offset:3px}
+main{height:100vh;height:100dvh;min-height:220px;padding:4vh 4vw;display:flex;flex-direction:column;gap:.65em;overflow:auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:1em;padding-bottom:.4em}.selection{display:flex;gap:1.25em;white-space:nowrap;font-size:.85em;letter-spacing:.03em}.selection b{color:#fff;font-size:1.2em;font-weight:500}.midi-button{font-size:.7em;line-height:1.4}.scope{flex:1;min-height:80px;position:relative;background:linear-gradient(#777,#777) left top/12px 1px no-repeat,linear-gradient(#777,#777) left top/1px 12px no-repeat,linear-gradient(#777,#777) right top/12px 1px no-repeat,linear-gradient(#777,#777) right top/1px 12px no-repeat,linear-gradient(#777,#777) left bottom/12px 1px no-repeat,linear-gradient(#777,#777) left bottom/1px 12px no-repeat,linear-gradient(#777,#777) right bottom/12px 1px no-repeat,linear-gradient(#777,#777) right bottom/1px 12px no-repeat}.waveform{display:block;width:calc(100% - 16px);height:calc(100% - 16px);position:absolute;inset:8px}footer{padding-top:.4em}.transport,.state-line{display:flex;justify-content:space-between;gap:.6em}.transport{font-variant-numeric:tabular-nums;font-size:.85em;letter-spacing:.03em}.transport b{color:#fff;font-size:1.2em;font-weight:500}.state-line{color:#999;font-size:.75em;line-height:1.3;margin-top:.65em}.estimate{white-space:nowrap;font-size:.85em}.slice-count{font-size:.8em}.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:.8em}.empty p{font-size:.75em;max-width:40em;overflow-wrap:anywhere}.notice{font-size:.75em;line-height:1.4;margin:0;padding:.5em;border:1px solid #777}.ports{display:flex;gap:1em;font-size:.75em}.ports label{display:grid;gap:.4em;flex:1;min-width:0}.ports select{width:100%;padding:.2em}
+@media(max-width:380px){.selection{gap:.6em}.state-line{flex-wrap:wrap}}
+
+/* Font Awesome Free 6.2.0 — Fonticons, Inc.; font licensed under SIL OFL 1.1. */
+@font-face{font-family:"Effect Icons";src:url('./assets/fa-solid-900.woff2') format('woff2');font-weight:900;font-style:normal;font-display:block}
+.effect-icons{position:absolute;inset:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));align-items:center;justify-items:center;pointer-events:none;container-type:size;z-index:0}
+.effect{font-family:"Effect Icons";font-weight:900;font-style:normal;font-size:clamp(14px,min(9cqw,12cqh),60px);line-height:1;color:#fff;opacity:.09;transition:opacity 90ms linear}
+.effect.active{opacity:1}.waveform{z-index:1}.empty{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.effect{transition:none}}
+
+.effect{position:relative;display:inline-block}
+.effect-outline{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);overflow:visible;fill:none;stroke:#fff;stroke-width:1;pointer-events:none}
+.effect-outline rect{stroke-dasharray:1;stroke-dashoffset:1;visibility:hidden}
+.effect.active .effect-outline rect{visibility:visible;animation:effect-box-trace 650ms linear forwards}
+@keyframes effect-box-trace{0%{stroke-dashoffset:1}28%,55%{stroke-dashoffset:0}100%{stroke-dashoffset:1;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){.effect.active .effect-outline rect{animation:none;visibility:hidden}}

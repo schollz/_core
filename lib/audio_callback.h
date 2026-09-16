@@ -1326,6 +1326,30 @@ void __not_in_flash_func(i2s_callback_func)() {
     } else ZD_CALL(zd_audio_counter(ZD_NO_BUFFER));
   }
   AP_CALL(audio_profile_end(audio_profile_source(owns_media),audio_profile_effects()));
+  ZV_CALL({
+    uint32_t trigger = zv_trigger_read();
+    uint8_t bank = sel_bank_cur, sample = sel_sample_cur;
+    uint8_t slice = trigger & 255;
+    bool valid = owns_media && fil_is_open && bank < 16 && banks[bank] &&
+        banks[bank]->sample && sample < banks[bank]->num_samples &&
+        !fil_current_change && !fil_current_change_force && !do_open_file_ready;
+    // A newly opened sample must never inherit the previous sample's trigger.
+    valid = valid && ((trigger >> 12) & 15) == bank &&
+        ((trigger >> 8) & 15) == sample;
+    if (valid) {
+      SampleInfo *sound = banks[bank]->sample[sample].snd[FILEZERO];
+      valid = sound && sound->slice_start && sound->slice_stop && slice < sound->slice_num;
+    }
+    zv_snapshot snapshot = {.bank = bank, .sample = sample, .slice = valid ? slice : 0,
+        .trigger = trigger >> 16, .bpm = owns_media && sf ? sf->bpm_tempo : 0,
+        .forward = phase_forward, .stopped = playback_stopped || do_stop_playback,
+        .muted = button_mute || trigger_button_mute, .valid = valid};
+    if (valid && sf) {
+      for (unsigned i = 0; i < 16; ++i)
+        if (sf->fx_active[i]) snapshot.effects |= (uint16_t)(1u << i);
+    }
+    zv_publish(&snapshot);
+  });
   ZD_CALL(if(zeptocore_diag.request.sequence!=zeptocore_diag.audio.header.sequence) {
     zd_audio.counters[12]=audio_file_generation;
     zd_audio.counters[13]=seek_maps_stats.hits;

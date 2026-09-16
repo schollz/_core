@@ -1,4 +1,6 @@
 storage/**
+visualizer/reference/**
+reference/**
 .DS_Store
 /pico-extras
 /pico-sdk
