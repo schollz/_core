@@ -60,6 +60,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_profile.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/clock_latency.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_restart.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/visualizer_telemetry.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_seek_map.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_fragment_benchmark.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_audio_fixture.c

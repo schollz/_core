@@ -626,6 +626,7 @@ void do_update_phase_from_beat_current() {
   beat_current_show = slice;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
+  ZV_CALL(zv_trigger(sel_bank_cur, sel_sample_cur, slice));
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
