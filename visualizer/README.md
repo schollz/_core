@@ -78,8 +78,13 @@ Relative paths resolve from the shell's current directory. With no folder
 argument, the server uses `reference` beside the `dist` directory. `--help` shows
 usage. Missing reference folders and invalid arguments fail with a clear error.
 
-The server generates waveform and spectrum data from the selected folder at
-startup, then prints its localhost URL. Large libraries take longer to prepare.
+The server caches prepared waveform and spectrum data between runs in
+`$XDG_CACHE_HOME/zeptocore-visualizer` (default `~/.cache/zeptocore-visualizer`).
+At startup it checks WAV and `.info` file sizes and timestamps, reuses unchanged
+samples, and prepares only new or changed samples. It reports the reused and
+prepared counts before printing its localhost URL. The first run of a large
+library takes longer. Missing, damaged or outdated caches regenerate automatically;
+delete the cache directory to force a full refresh. Reference folders can be read-only.
 It serves on `127.0.0.1` only. Stop with Ctrl+C. Restart after editing reference
 files or to select another folder; no app rebuild is required. A bad sample is
 reported in the terminal and UI while other samples remain available.

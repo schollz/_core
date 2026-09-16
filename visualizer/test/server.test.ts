@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createVisualizerServer } from '../server/server';
@@ -30,7 +30,7 @@ async function fixture() {
 
 test('serves the built UI and generated waveform/spectrum from the requested folder', async () => {
   const { root, dist, reference } = await fixture();
-  const { server } = await createVisualizerServer(reference, dist);
+  const { server } = await createVisualizerServer(reference, dist, join(root, 'cache'));
   try {
     await new Promise<void>(ready => server.listen(0, '127.0.0.1', ready));
     const address = server.address() as { port: number };
@@ -63,7 +63,38 @@ test('rejects a missing reference path and supports an empty reference folder', 
     await expect(createVisualizerServer(join(root, 'missing'), dist)).rejects.toThrow();
     await expect(createVisualizerServer(join(dist, 'index.html'), dist)).rejects.toThrow('not a directory');
     const empty = join(root, 'empty'); await mkdir(empty);
-    const { manifest } = await createVisualizerServer(empty, dist);
+    const { manifest } = await createVisualizerServer(empty, dist, join(root, 'cache'));
     expect(manifest.samples).toEqual([]);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+
+test('persists prepared samples across server instances and invalidates changed or damaged data', async () => {
+  const { root, dist, reference } = await fixture();
+  const cacheRoot = join(root, 'cache');
+  const start = () => createVisualizerServer(reference, dist, cacheRoot);
+  try {
+    expect(await start()).toMatchObject({ prepared: 1, reused: 0 });
+    expect(await start()).toMatchObject({ prepared: 0, reused: 1 });
+    const infoPath = join(reference, 'bank2/3.0.wav.info');
+    const info = await readFile(infoPath);
+    info.writeUInt32LE(140 | (1 << 13) | (1 << 16), 4);
+    await writeFile(infoPath, info);
+    expect(await start()).toMatchObject({ prepared: 1, reused: 0 });
+    expect(await start()).toMatchObject({ prepared: 0, reused: 1 });
+    const audioPath = join(reference, 'bank2/3.0.wav');
+    const audio = await readFile(audioPath); audio.writeInt16LE(1234, 88244);
+    await writeFile(audioPath, audio);
+    expect(await start()).toMatchObject({ prepared: 1, reused: 0 });
+    const cacheFile = join(cacheRoot, (await readdir(cacheRoot))[0]);
+    await writeFile(cacheFile, 'broken JSON');
+    expect(await start()).toMatchObject({ prepared: 1, reused: 0 });
+    const saved = JSON.parse(await readFile(cacheFile, 'utf8'));
+    saved.version = -1; await writeFile(cacheFile, JSON.stringify(saved));
+    expect(await start()).toMatchObject({ prepared: 1, reused: 0 });
+    await rm(audioPath);
+    const removed = await start();
+    expect(removed.manifest.samples).toEqual([]);
+    expect(removed).toMatchObject({ prepared: 0, reused: 0 });
   } finally { await rm(root, { recursive: true, force: true }); }
 });

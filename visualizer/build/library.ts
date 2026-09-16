@@ -5,6 +5,7 @@ import { makeWaveform } from './waveform';
 import type { Library } from '../src/types';
 
 export async function buildLibrary(root: string, cache = new Map<string, { stamp: string; text: string }>()) {
+  let reused = 0, prepared = 0;
   const manifest: Library = { samples: [] };
   const assets = new Map<string, string>();
   const dirs = await readdir(root, { withFileTypes: true }).catch((error: NodeJS.ErrnoException) => {
@@ -26,7 +27,8 @@ export async function buildLibrary(root: string, cache = new Map<string, { stamp
           const [audio, info] = await Promise.all([readFile(absolute), readFile(`${absolute}.info`)]);
           entry = { stamp, text: JSON.stringify(makeWaveform(audio, info, bank, sample)) };
           cache.set(path, entry);
-        }
+          prepared++;
+        } else reused++;
         const hash = createHash('sha256').update(entry.text).digest('hex').slice(0, 16);
         const url = `data/${bank}-${sample}-${hash}.json`;
         assets.set(url, entry.text);
@@ -38,5 +40,5 @@ export async function buildLibrary(root: string, cache = new Map<string, { stamp
   }
   manifest.samples.sort((a, b) => a.bank - b.bank || a.sample - b.sample);
   assets.set('data/library.json', JSON.stringify(manifest));
-  return { manifest, assets };
+  return { manifest, assets, reused, prepared };
 }
