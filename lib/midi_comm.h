@@ -110,48 +110,56 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
                     callback_void midi_continue, callback_void midi_stop,
                     callback_void midi_timing,
                     callback_uint8_uint8_uint8 midi_control_change) {
-  uint8_t midi_buffer[3];
-  midi_buffer[0] = 0;
-  midi_buffer[1] = 0;
-  midi_buffer[2] = 0;
-  uint32_t bytes_read = 0;
-  if (tud_midi_n_available(0, 0)) {
-    bytes_read = tud_midi_n_stream_read(0, 0, midi_buffer, 3);
-  } else {
+  // A stream read can merge a clock byte with part of the following note.
+  // Consume one complete USB MIDI event per foreground iteration instead.
+  uint8_t packet[4];
+  if (!tud_midi_n_packet_read(0, packet) || (packet[0] >> 4) != 0) {
     return;
   }
-  if (bytes_read == 0) {
+  static const uint8_t packet_lengths[16] = {
+      0, 0, 2, 3, 3, 1, 2, 3, 3, 3, 3, 3, 2, 2, 3, 1};
+  uint8_t cin = packet[0] & 0x0f;
+  uint8_t bytes_read = packet_lengths[cin];
+  uint8_t *midi_buffer = packet + 1;
+  // SysEx is not a command input. Do not interpret its data as notes/CCs.
+  if (!bytes_read || (cin >= 4 && cin <= 7)) {
     return;
   }
-  if (midi_buffer[0] == 0xf8) {
+  // Channel-voice CINs must agree with the status and contain MIDI data bytes.
+  if (cin >= 8 && cin <= 14 &&
+      ((midi_buffer[0] >> 4) != cin || midi_buffer[1] >= 0x80 ||
+       (bytes_read == 3 && midi_buffer[2] >= 0x80))) {
+    return;
+  }
+  if (cin == 15 && midi_buffer[0] == 0xf8) {
     // timing received
     usb_midi_present = true;
     if (midi_timing != NULL) {
       midi_timing();
     }
     return;
-  } else if (midi_buffer[0] == 0xfa) {
+  } else if (cin == 15 && midi_buffer[0] == 0xfa) {
     // start received
     usb_midi_present = true;
     if (midi_start != NULL) {
       midi_start();
     }
     return;
-  } else if (midi_buffer[0] == 0xfb) {
+  } else if (cin == 15 && midi_buffer[0] == 0xfb) {
     // continue received
     usb_midi_present = true;
     if (midi_continue != NULL) {
       midi_continue();
     }
     return;
-  } else if (midi_buffer[0] == 0xfc) {
+  } else if (cin == 15 && midi_buffer[0] == 0xfc) {
     // stop received
     usb_midi_present = true;
     if (midi_stop != NULL) {
       midi_stop();
     }
     return;
-  } else if (midi_buffer[0] == 0xB0 && bytes_read > 1) {
+  } else if (cin == 11 && midi_buffer[0] == 0xB0) {
     uint8_t channel = midi_buffer[0] & 0xf;
     if (channel == 0 && midi_buffer[1] == 0) {
       send_text_as_sysex("command=reset");
@@ -163,33 +171,28 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
       return;
     }
     // CONTROL CHANGE
-    midi_control_change(channel, midi_buffer[1], midi_buffer[2]);
+    if (midi_control_change != NULL) {
+      midi_control_change(channel, midi_buffer[1], midi_buffer[2]);
+    }
     return;
 
-  } else if (midi_buffer[0] == 0x80 && bytes_read > 1) {
+  } else if (cin == 8 && midi_buffer[0] == 0x80) {
     // note off received
     usb_midi_present = true;
     if (midi_note_off != NULL) {
       midi_note_off(midi_buffer[1]);
     }
     return;
-  } else if (midi_buffer[0] == 0x90 && bytes_read > 2) {
+  } else if (cin == 9 && midi_buffer[0] == 0x90) {
     // note on received
     usb_midi_present = true;
-    if (midi_note_on != NULL) {
-      if (bytes_read == 3) {
-        // TODO: for some reason this is not working
-        midi_note_on(midi_buffer[1], midi_buffer[2]);
-      } else {
-        midi_note_on(midi_buffer[1], 0);
-      }
+    if (midi_buffer[2] == 0) {
+      if (midi_note_off != NULL) midi_note_off(midi_buffer[1]);
+    } else if (midi_note_on != NULL) {
+      midi_note_on(midi_buffer[1], midi_buffer[2]);
     }
     return;
   }
-  // for (int i = 0; i < bytes_read; i++) {
-  //   printf_sysex("[midi_comm_task] midi_buffer[%d]: %x\n", i,
-  //   midi_buffer[i]);
-  // }
   if (bytes_read == 3) {
     usb_midi_present = true;
     // Extract the status byte and MIDI channel
