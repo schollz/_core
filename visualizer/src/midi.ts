@@ -1,5 +1,6 @@
 import { decodeMessage, isFresh, type LegacyInfo } from './protocol';
 import type { Playback } from './types';
+import { SampleTransition } from './transition';
 
 type Port = { id: string; name: string };
 export interface ButtonPress { button: number; at: number; bank: number; sample: number; slice: number; }
@@ -10,6 +11,8 @@ export interface MidiState {
   inputId: string;
   outputId: string;
   playback?: Playback;
+  displayPlayback?: Playback;
+  displayAt?: number;
   buttonPress?: ButtonPress;
   legacy?: LegacyInfo;
   receivedAt?: number;
@@ -28,6 +31,7 @@ export class MidiConnection {
   private timer?: ReturnType<typeof setInterval>;
   private listeners = new Set<() => void>();
   private generation = 0;
+  private transition = new SampleTransition();
   constructor(private request = () => navigator.requestMIDIAccess({ sysex: true }), private now = () => performance.now()) {}
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   snapshot = () => this.state;
@@ -88,7 +92,7 @@ export class MidiConnection {
     this.detach();
     const token = this.generation;
     const input = this.access?.inputs.get(inputId), output = this.access?.outputs.get(outputId);
-    this.update({ inputId, outputId, playback: undefined, buttonPress: undefined, legacy: undefined, receivedAt: undefined, legacyAt: undefined });
+    this.update({ inputId, outputId, playback: undefined, displayPlayback: undefined, displayAt: undefined, buttonPress: undefined, legacy: undefined, receivedAt: undefined, legacyAt: undefined });
     if (!input || !output) { this.update({ connection: 'choose' }); return; }
     // Set before opening: opening a port itself produces statechange events.
     this.input = input; this.output = output;
@@ -112,7 +116,8 @@ export class MidiConnection {
           const pending = press && press.at >= (this.state.receivedAt ?? 0);
           const buttonPress = pending ? message.state.valid && message.state.bank === press.bank && message.state.sample === press.sample
             ? { ...press, slice: message.state.slice } : undefined : press;
-          this.update({ playback: message.state, receivedAt: at, buttonPress });
+          const display = this.transition.update(message.state, at);
+          this.update({ playback: message.state, receivedAt: at, buttonPress, displayPlayback: display.state, displayAt: display.at });
         }
         else this.update({ legacy: message.state, legacyAt: at });
       };
@@ -135,6 +140,7 @@ export class MidiConnection {
 
   private detach() {
     this.generation++;
+    this.transition = new SampleTransition();
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
     if (this.input) this.input.onmidimessage = null;

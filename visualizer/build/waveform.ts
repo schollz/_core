@@ -12,7 +12,7 @@ export function parseInfo(bytes: Buffer) {
     if (start < 0 || stop <= start || stop > size) throw new Error('Slice outside sample bounds');
     return { start, stop };
   });
-  return { size, slices, bpm: flags & 511, tempoMatch: !!(flags & (1 << 13)),
+  return { size, slices, playMode: (flags >>> 9) & 7, bpm: flags & 511, tempoMatch: !!(flags & (1 << 13)),
     sampleRate: 44100 * (((flags >>> 14) & 1) + 1), channels: ((flags >>> 15) & 1) + 1 };
 }
 
@@ -66,6 +66,6 @@ export function makeWaveform(wav: Buffer, metadata: Buffer, bank: number, sample
   }
   const bytesPerSecond = audio.sampleRate * audio.blockAlign;
   return { bank, sample, sampleRate: audio.sampleRate, channels: audio.channels,
-    duration: info.size / bytesPerSecond, bpm: info.bpm, tempoMatch: info.tempoMatch,
+    duration: info.size / bytesPerSecond, bpm: info.bpm, tempoMatch: info.tempoMatch, playMode: info.playMode,
     slices: info.slices.map(s => ({ start: s.start / bytesPerSecond, stop: s.stop / bytesPerSecond })), peaks };
 }

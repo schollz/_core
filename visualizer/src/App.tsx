@@ -17,7 +17,7 @@ export default function App() {
   const device = useSyncExternalStore(midi.subscribe, midi.snapshot);
   const [library, setLibrary] = useState<Library>({ samples: [] });
   const [libraryError, setLibraryError] = useState('');
-  const [wave, setWave] = useState<WaveformData>();
+  const [waves, setWaves] = useState<Record<string, WaveformData>>({});
   const [error, setError] = useState('');
   const [setup, setSetup] = useState(false);
   const [now, setNow] = useState(performance.now());
@@ -41,14 +41,38 @@ export default function App() {
   const bank = selected?.bank ?? library.samples[0]?.bank;
   const sample = selected?.sample ?? library.samples[0]?.sample;
   const source = library.samples.find(s => s.bank === bank && s.sample === sample);
+  const wave = source?.url ? waves[source.url] : undefined;
   useEffect(() => {
     const controller = new AbortController();
-    setWave(undefined); setError('');
+    setError('');
     if (source?.error) setError(source.error);
-    else if (source?.url) void json<WaveformData>(`./${source.url}`, controller.signal).then(setWave).catch(e => { if (!controller.signal.aborted) setError(String(e)); });
+    else if (source?.url && !wave) {
+      const url = source.url;
+      void json<WaveformData>(`./${url}`, controller.signal)
+        .then(data => setWaves(cache => ({ ...cache, [url]: data })))
+        .catch(e => { if (!controller.signal.aborted) setError(String(e)); });
+    }
     return () => controller.abort();
-  }, [source?.url, source?.error, bank, sample]);
-  const activeSlice = fresh && device.playback?.valid && wave?.slices[device.playback.slice] ? device.playback.slice : undefined;
+  }, [source?.url, source?.error, wave]);
+  // Preload with bounded concurrency so sample changes normally need no fetch.
+  useEffect(() => {
+    const controller = new AbortController();
+    const queue = library.samples.filter(s => s.url && !s.error).map(s => s.url!);
+    const worker = async () => {
+      while (queue.length && !controller.signal.aborted) {
+        const url = queue.shift()!;
+        try {
+          const data = await json<WaveformData>(`./${url}`, controller.signal);
+          if (!controller.signal.aborted) setWaves(cache => ({ ...cache, [url]: cache[url] ?? data }));
+        } catch { /* A selected sample retries and reports its own load error. */ }
+      }
+    };
+    void Promise.all([worker(), worker(), worker()]);
+    return () => controller.abort();
+  }, [library]);
+  const display = device.displayPlayback;
+  const displayFresh = live && isFresh(device.displayAt, now);
+  const activeSlice = displayFresh && display?.valid && wave?.slices[display.slice] ? display.slice : undefined;
   const showSetup = setup || device.connection === 'choose';
   return <main>
     <header className="topbar" aria-label="Current sample">
@@ -63,7 +87,7 @@ export default function App() {
     </div>}
     <section className="scope" aria-label="Sample waveform">
       <EffectIcons mask={fresh && device.playback?.valid && wave && device.playback.bank === wave.bank && device.playback.sample === wave.sample ? device.playback.effects : undefined} />
-      {wave ? <Waveform wave={wave} playback={device.playback} buttonPress={device.buttonPress} receivedAt={device.receivedAt} live={live} /> : <div className="empty" role="status"><strong>{error || libraryError ? 'Waveform unavailable' : source ? 'Reading waveform' : 'No matching sample'}</strong><p>{error || libraryError || (library.samples.length ? `Add the matching WAV and .info files for bank ${number(bank)}, sample ${number(sample)} to reference.` : 'Place your bank folders in visualizer/reference.')}</p></div>}
+      {wave ? <Waveform wave={wave} playback={display} buttonPress={device.buttonPress} receivedAt={device.displayAt} live={live} /> : <div className="empty" role="status"><strong>{error || libraryError ? 'Waveform unavailable' : source ? 'Reading waveform' : 'No matching sample'}</strong><p>{error || libraryError || (library.samples.length ? `Add the matching WAV and .info files for bank ${number(bank)}, sample ${number(sample)} to reference.` : 'Place your bank folders in visualizer/reference.')}</p></div>}
     </section>
     <footer>
       <div className="transport"><span>SLICE <b>{number(activeSlice)}</b><span className="slice-count">/{wave?.slices.length ?? '—'}</span></span><span><b>{selected?.bpm ?? wave?.bpm ?? '—'}</b> BPM</span></div>

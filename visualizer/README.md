@@ -42,7 +42,8 @@ npm run preview
 `dist` is self-contained: it contains the page and derived waveform data, not the
 original recordings. Rebuild after replacing the reference library for a
 production preview. Development watches reference changes and refreshes the
-library automatically.
+library automatically. Waveform data is preloaded with three concurrent requests
+and cached by its content URL, so switching to a cached sample is immediate.
 
 ## Reference files
 
@@ -96,7 +97,7 @@ Bank, sample, and slice are zero-based. Flags are
 0/1. `trigger` is a wrapping unsigned 16-bit serial; every slice trigger increments
 it, including a repeated trigger of the same slice. Snapshot identity and serial
 are published together across cores. Invalid media or a sample transition clears
-`valid`, and the receiver must not highlight that snapshot's slice.
+`valid`; an invalid snapshot's slice is not authoritative.
 
 Changed states are transmitted at most 60 times/second; idle states have a 250 ms
 heartbeat. Serialization occurs in the foreground, using bounded USB event
@@ -106,11 +107,21 @@ entered from the timer IRQ while foreground telemetry is writing. Partial transm
 backpressure; a 50 ms stalled-host cutoff prevents indefinite control starvation.
 Unfinished frames must never be interpreted as complete snapshots.
 
+When an invalid snapshot first identifies a different bank/sample, the browser
+provisionally starts at slice 0 using its reported tempo and direction. This
+estimate lasts at most 1.5 seconds from the transition; loading heartbeats do not
+extend it. The first valid snapshot replaces the estimate and reanchors the cursor,
+even if the trigger number is unchanged. Initial invalid snapshots and invalidity
+within an already playing sample do not start speculative playback. The display
+cannot anticipate a sample choice before the device reports its identity.
+
 The browser expires telemetry after 1.5 seconds. The cursor anchors at the
 reported slice edge, follows direction, and scales source-time progression by
 current/source BPM when tempo matching is enabled. Heartbeats preserve the
-anchor; retriggers replace it. It clamps at the slice boundary and stops when
-transport stops or the connection becomes stale. The display combines stereo into one mirrored peak envelope with at most 640 columns and continuous amplitude.
+anchor; retriggers replace it. Normal playback continues across slice boundaries
+and wraps at the file end, including while waiting for a variable slice trigger.
+Slice-stop, slice-loop, sample-stop, and sample-loop modes use their respective
+boundaries. The cursor stops when transport stops or the connection becomes stale. The display combines stereo into one mirrored peak envelope with at most 640 columns and continuous amplitude.
 The active slice is brighter; stopped or muted playback leaves the waveform dim.
 Animated numbered callouts respond only to performance-pad Note On messages
 (notes 0–15 on MIDI channels 1–3), not automatic slice changes. The number is
