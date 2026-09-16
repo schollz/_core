@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import { mkdtemp, mkdir, writeFile, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { PreparationProgress } from '../build/library';
 import { createVisualizerServer } from '../server/server';
 
 async function fixture() {
@@ -96,5 +97,26 @@ test('persists prepared samples across server instances and invalidates changed 
     const removed = await start();
     expect(removed.manifest.samples).toEqual([]);
     expect(removed).toMatchObject({ prepared: 0, reused: 0 });
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+
+test('reports preparation progress, cached samples and failures with totals', async () => {
+  const { root, dist, reference } = await fixture();
+  const events: PreparationProgress[] = [];
+  const start = () => createVisualizerServer(reference, dist, join(root, 'cache'), event => events.push(event));
+  try {
+    await start();
+    expect(events).toEqual([
+      { completed: 0, total: 1, path: 'bank2/3.0.wav', status: 'preparing' },
+      { completed: 1, total: 1, path: 'bank2/3.0.wav', status: 'prepared' },
+    ]);
+    events.length = 0;
+    await start();
+    expect(events).toEqual([{ completed: 1, total: 1, path: 'bank2/3.0.wav', status: 'cached' }]);
+    events.length = 0;
+    await rm(join(reference, 'bank2/3.0.wav.info'));
+    await start();
+    expect(events).toEqual([{ completed: 1, total: 1, path: 'bank2/3.0.wav', status: 'failed' }]);
   } finally { await rm(root, { recursive: true, force: true }); }
 });

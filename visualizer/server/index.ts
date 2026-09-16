@@ -16,7 +16,10 @@ async function main() {
   const distRoot = fileURLToPath(new URL('.', import.meta.url));
   const referenceRoot = positionals[0] ? resolve(positionals[0]) : fileURLToPath(new URL('../reference/', import.meta.url));
   console.log(`Loading reference data from ${referenceRoot} …`);
-  const { server, manifest, reused, prepared } = await createVisualizerServer(referenceRoot, distRoot);
+  const { server, manifest, reused, prepared } = await createVisualizerServer(referenceRoot, distRoot, undefined, progress => {
+    const label = { preparing: 'Preparing', prepared: 'Prepared', cached: 'Reused', failed: 'Failed' }[progress.status];
+    console.log(`[${progress.completed}/${progress.total}] ${label} ${progress.path}`);
+  });
   console.log(`${reused} samples reused from cache; ${prepared} newly prepared.`);
   const failed = manifest.samples.filter(s => s.error);
   for (const sample of failed) console.warn(`${sample.path}: ${sample.error}`);

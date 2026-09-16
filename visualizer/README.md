@@ -81,7 +81,8 @@ usage. Missing reference folders and invalid arguments fail with a clear error.
 The server caches prepared waveform and spectrum data between runs in
 `$XDG_CACHE_HOME/zeptocore-visualizer` (default `~/.cache/zeptocore-visualizer`).
 At startup it checks WAV and `.info` file sizes and timestamps, reuses unchanged
-samples, and prepares only new or changed samples. It reports the reused and
+samples, and prepares only new or changed samples. Progress lines show the
+completed/total count and the sample being prepared, reused or failed. It reports the reused and
 prepared counts before printing its localhost URL. The first run of a large
 library takes longer. Missing, damaged or outdated caches regenerate automatically;
 delete the cache directory to force a full refresh. Reference folders can be read-only.
