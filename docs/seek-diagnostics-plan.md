@@ -3,7 +3,7 @@
 ## Status and purpose
 
 Implementation authorized. This document specifies the debugging apparatus
-required before the fast-seek implementation in [GOAL.md](../GOAL.md). Track
+required before the fast-seek implementation in the [implementation brief](seek-implementation-brief.md). Track
 measured results and outstanding work in [implementation status](seek-implementation-status.md).
 The acceptance checkboxes below remain unproven until backed by that evidence.
 
@@ -294,7 +294,7 @@ values explicitly. A text view should make stale data and device resets visible.
 7. **Persistence and regression:** capture first-use, changed-card and unchanged
    boots; prove zero rebuild calls on unchanged boots and persistent reload after
    eviction. Combine performance artifacts with the separate byte/position
-   correctness tests and audio captures required by GOAL.md.
+   correctness tests and audio captures required by the implementation brief.
 
 For all phases, distinguish measured callback overruns, DMA starvation, intentional
 silence, and audible discontinuities. A successful mailbox read alone establishes
@@ -319,7 +319,7 @@ none of these. Preserve unknown/unavailable measurements in reports.
   all absent measurements and external-capture limitations are stated.
 
 Apparatus overhead results, resource budgets and baseline artifacts become inputs
-to GOAL.md's map-cache limits and hardware acceptance, rather than assumptions.
+to the implementation brief's map-cache limits and hardware acceptance, rather than assumptions.
 
 Gate evidence: `artifacts/seek/diagnostics-gate.json`, `diagnostic-memory.json`,
 paired retained ELFs/audio/captures, and the documented baseline matrix. The mean

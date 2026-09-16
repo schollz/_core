@@ -1,13 +1,17 @@
 # Seek implementation status
 
+This document records the original implementation and validation. See the
+[repository index](README.md#subsequent-review-notes) for subsequent review
+findings that remain unresolved at the consolidation baseline.
+
 **Follow-up correction:** a user-reported freeze exposed a retrigger-pitch stack
 overflow outside the original workload matrix. The source-buffer fix is now
 programmed and passes pitch/tempo sweeps on both supported buffer sizes. See
 [cause, verification and rate limits](seek-freeze-fix.md).
 
-The full GOAL.md implementation is authorized and implemented. The supported
+The full [implementation brief](seek-implementation-brief.md) was authorized and implemented. The supported
 441/256-frame playback matrix, final observer gate and fragmented benchmark
-passed. Physical power-cycle/reinsertion also passed; GOAL.md is complete.
+passed. Physical power-cycle/reinsertion also passed; the implementation brief's acceptance work was completed.
 The authoritative measurements and limitations are in
 [hardware results](seek-hardware-results.md). Usage is in
 [on-demand diagnostics](seek-diagnostics.md); limits and ownership rules are in

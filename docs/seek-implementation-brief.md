@@ -1,8 +1,14 @@
-# Zeptocore firmware-generated FatFs fast-seek maps
+# Seek-map implementation brief (historical)
+
+This is the original implementation brief and completion record for the work
+merged in PR #830. Its hardware setup, authorization, and completion statements
+describe that development session. Start with the [repository documentation
+index](README.md) for current orientation and subsequent review findings.
+Source paths and shell commands in this document are relative to the repository root.
 
 ## Status
 
-Complete. Native checks, the supported 441/256-frame playback matrix, the diagnostics overhead gate, fragmented-file benchmark and physical power-cycle/card reinsertion check passed. The final firmware is programmed. See [implementation status](docs/seek-implementation-status.md) and [hardware results](docs/seek-hardware-results.md).
+Complete. Native checks, the supported 441/256-frame playback matrix, the diagnostics overhead gate, fragmented-file benchmark and physical power-cycle/card reinsertion check passed. The final firmware is programmed. See [implementation status](seek-implementation-status.md) and [hardware results](seek-hardware-results.md).
 
 ## Connected hardware
 
@@ -45,7 +51,7 @@ Treat relevant changes as a different card/volume, added or replaced audio files
 
 ### Prerequisite: on-demand debugging apparatus
 
-Implement and validate the [seek diagnostics plan](docs/seek-diagnostics-plan.md)
+Implement and validate the [seek diagnostics plan](seek-diagnostics-plan.md)
 before seek-map work. It specifies a local request/response server over the
 connected SWD probe, bounded firmware measurements and coherent RAM snapshots,
 host capture artifacts, and an explicit instrumentation-overhead acceptance gate.
@@ -160,7 +166,7 @@ Search again for direct `f_open`, `f_close`, mount/unmount, and audio-file mutat
 
 ## Implementation sequence
 
-- [x] **Debugging apparatus:** implement and validate the [on-demand diagnostics service](docs/seek-diagnostics-plan.md), including normal/stretch timing, actual DMA starvation, coherent snapshots, host capture tools, memory limits, and measured collection/retrieval overhead. Complete its acceptance gate before seek-map implementation.
+- [x] **Debugging apparatus:** implement and validate the [on-demand diagnostics service](seek-diagnostics-plan.md), including normal/stretch timing, actual DMA starvation, coherent snapshots, host capture tools, memory limits, and measured collection/retrieval overhead. Complete its acceptance gate before seek-map implementation.
 - [x] **Baseline and limits:** record seek/read/open times, startup time, audio underruns, and RAM/stack headroom for representative zeptocore builds. Confirm the installed FatFs API, card identity, allocation-validation approach, and documented cache/index limits.
 - [x] **Map module:** implement construction, immutable bounded storage, lookup, pinning, invalidation, and deterministic fallback. Add focused lifecycle tests.
 - [x] **Persistent index and change detection:** implement versioned records, allocation validation, reconciliation, recoverable commits, and resume behavior. Prove that an unchanged card requires zero map-building calls across boots.
@@ -191,7 +197,7 @@ Search again for direct `f_open`, `f_close`, mount/unmount, and audio-file mutat
 
 ### Performance and memory
 
-- Use the validated [debugging apparatus](docs/seek-diagnostics-plan.md) and retain its build/workload manifests and raw host captures for every comparison. Keep diagnostic settings identical between mapped and ordinary runs; report instrumentation overhead and unavailable measurements.
+- Use the validated [debugging apparatus](seek-diagnostics-plan.md) and retain its build/workload manifests and raw host captures for every comparison. Keep diagnostic settings identical between mapped and ordinary runs; report instrumentation overhead and unavailable measurements.
 - Measure seek time separately from read/open and DSP time. Record median, high percentile, and maximum values, plus actual DMA underruns and sample-switch latency.
 - Use full-width microsecond counters; do not rely on the existing utilization ring until its index and percentage-overflow issues are corrected or bypassed by dedicated measurements.
 - Test long files as well as heavily fragmented files. Fast seeking still scans map fragments, so avoid claiming constant-time behavior for every file layout.

@@ -7,6 +7,10 @@ this is the monorepo for [zeptocore](https://shop.infinitedigits.co/collections/
 
 for purchasing and the complete maintained documentation, visit the [Zeptocore collection guide](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide). prepare samples with the [Zeptocore tool](https://tool.zeptocore.com/). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
 
+For contributors and coding agents, start with the [repository documentation
+index](docs/README.md): repository layout, build and test commands, current
+firmware behavior, and the consolidated seek/audio development notes.
+
 ## dsp
 
 The digital signal processing for all the *core things was written by Zack, from scratch, in C. This was done partially to have strict control over the sound/utility, but also because the RP2040 is fixed-point based and needed special care in all the DSP. The libraries are written with modularity in mind, so [they can be used in other programs](https://github.com/schollz/fpfx). Here are the DSP header files:
