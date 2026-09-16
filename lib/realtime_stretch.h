@@ -218,14 +218,18 @@ bool realtime_stretch_read_frames(uint64_t start_phase_q32,
     const uint32_t phase_bytes = frame * bytes_per_frame;
     const uint32_t offset =
         WAV_HEADER + realtime_stretch_preroll_bytes() + phase_bytes;
-    if (f_lseek(&fil_current, offset) != FR_OK) {
+    FRESULT io_result=zd_f_lseek(&fil_current,offset,ZD_STRETCH_SEEK);
+    if (io_result != FR_OK) {
+      audio_media_io_failed(io_result);
       return false;
     }
 
     unsigned int bytes_read = 0;
     const uint32_t bytes_to_read = frames_now * bytes_per_frame;
-    if (f_read(&fil_current, &dst[frames_done * channels], bytes_to_read,
-               &bytes_read) != FR_OK) {
+    io_result=zd_f_read(&fil_current,&dst[frames_done*channels],bytes_to_read,
+                       &bytes_read,ZD_STRETCH_READ);
+    if (io_result != FR_OK) {
+      audio_media_io_failed(io_result);
       return false;
     }
     if (bytes_read < bytes_to_read) {

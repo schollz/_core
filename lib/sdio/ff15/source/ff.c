@@ -1166,6 +1166,10 @@ static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFF
 	UINT wc, bc;
 	DWORD val;
 	FATFS *fs = obj->fs;
+#if SEEK_TEST_FRAGMENT_BENCH
+	extern DWORD seek_benchmark_count_fat, seek_benchmark_fat_visits;
+	if (seek_benchmark_count_fat) ++seek_benchmark_fat_visits;
+#endif
 
 
 	if (clst < 2 || clst >= fs->n_fatent) {	/* Check if in valid range */
@@ -1624,6 +1628,23 @@ static DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:D
 /* FAT handling - Convert offset into cluster with link map table        */
 /*-----------------------------------------------------------------------*/
 
+/* Mounted FAT/exFAT cluster sizes are powers of two. Avoid the general
+ * 64-bit division helper on RP2040 for every mapped seek/read boundary.
+ * Truncate to DWORD only after shifting, preserving large exFAT offsets. */
+static DWORD clmt_order (FSIZE_t sectors, UINT cluster_sectors)
+{
+	while (cluster_sectors > 1) {
+		sectors >>= 1; cluster_sectors >>= 1;
+	}
+	return (DWORD)sectors;
+}
+#ifdef SEEK_MAP_HOST_TEST
+DWORD ff_test_clmt_order (FSIZE_t sectors, UINT cluster_sectors)
+{
+	return clmt_order(sectors, cluster_sectors);
+}
+#endif
+
 static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 	FIL* fp,		/* Pointer to the file object */
 	FSIZE_t ofs		/* File offset to be converted to cluster# */
@@ -1635,7 +1656,7 @@ static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 
 
 	tbl = fp->cltbl + 1;	/* Top of CLMT */
-	cl = (DWORD)(ofs / SS(fs) / fs->csize);	/* Cluster order from top of the file */
+	cl = clmt_order(ofs / SS(fs), fs->csize);	/* Cluster order from top of the file */
 	for (;;) {
 		ncl = *tbl++;			/* Number of cluters in the fragment */
 		if (ncl == 0) return 0;	/* End of table? (error) */
@@ -1644,6 +1665,47 @@ static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 	}
 	return cl + *tbl;	/* Return the cluster number */
 }
+
+/* The mapped lookup/cached-sector path is small and bounded. Keep its CPU
+ * work in SRAM on Pico builds so instruction-cache misses do not erase the
+ * benefit for short local seeks. SD operations retain their existing path. */
+#ifndef SEEK_MAP_HOST_TEST
+__attribute__((noinline, section(".time_critical.fatfs_mapped_seek")))
+#endif
+static FRESULT mapped_seek (FIL *fp, FATFS *fs, FSIZE_t ofs)
+{
+	FSIZE_t ifptr;
+	DWORD bcs;
+	LBA_t dsc;
+	if (ofs > fp->obj.objsize) ofs = fp->obj.objsize;	/* Clip offset at the file size */
+	ifptr = fp->fptr;
+	fp->fptr = ofs;				/* Set file pointer */
+	if (ofs > 0) {
+		bcs = (DWORD)fs->csize * SS(fs);
+		/* Like normal seeking, retain the known cluster for a seek
+		 * within it. Both positions refer to their preceding byte at
+		 * an exact boundary, matching FatFs's cached-cluster rule. */
+		if (!ifptr || (((ofs - 1) ^ (ifptr - 1)) & ~(FSIZE_t)(bcs - 1)))
+			fp->clust = clmt_clust(fp, ofs - 1);
+		dsc = clst2sect(fs, fp->clust);
+		if (dsc == 0) return FR_INT_ERR;
+		dsc += (DWORD)((ofs - 1) / SS(fs)) & (fs->csize - 1);
+		if (fp->fptr % SS(fs) && dsc != fp->sect) {	/* Refill sector cache if needed */
+#if !FF_FS_TINY
+#if !FF_FS_READONLY
+			if (fp->flag & FA_DIRTY) {		/* Write-back dirty sector cache */
+				if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) return FR_DISK_ERR;
+				fp->flag &= (BYTE)~FA_DIRTY;
+			}
+#endif
+			if (disk_read(fs->pdrv, fp->buf, dsc, 1) != RES_OK) return FR_DISK_ERR;	/* Load current sector */
+#endif
+			fp->sect = dsc;
+		}
+	}
+	return FR_OK;
+}
+
 
 #endif	/* FF_USE_FASTSEEK */
 
@@ -4483,26 +4545,8 @@ FRESULT f_lseek (
 				res = FR_NOT_ENOUGH_CORE;	/* Given table size is smaller than required */
 			}
 		} else {						/* Fast seek */
-			if (ofs > fp->obj.objsize) ofs = fp->obj.objsize;	/* Clip offset at the file size */
-			fp->fptr = ofs;				/* Set file pointer */
-			if (ofs > 0) {
-				fp->clust = clmt_clust(fp, ofs - 1);
-				dsc = clst2sect(fs, fp->clust);
-				if (dsc == 0) ABORT(fs, FR_INT_ERR);
-				dsc += (DWORD)((ofs - 1) / SS(fs)) & (fs->csize - 1);
-				if (fp->fptr % SS(fs) && dsc != fp->sect) {	/* Refill sector cache if needed */
-#if !FF_FS_TINY
-#if !FF_FS_READONLY
-					if (fp->flag & FA_DIRTY) {		/* Write-back dirty sector cache */
-						if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
-						fp->flag &= (BYTE)~FA_DIRTY;
-					}
-#endif
-					if (disk_read(fs->pdrv, fp->buf, dsc, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);	/* Load current sector */
-#endif
-					fp->sect = dsc;
-				}
-			}
+			res = mapped_seek(fp, fs, ofs);
+			if (res != FR_OK) ABORT(fs, res);
 		}
 	} else
 #endif
@@ -7082,3 +7126,77 @@ FRESULT f_setcp (
 }
 #endif	/* FF_CODE_PAGE == 0 */
 
+
+/* Application adapter: bounded read-only CLMT validation, not a builder.
+ * Uses this exact FatFs version's get_fat and window cache, including generated
+ * links for contiguous exFAT objects. No changes to CREATE_LINKMAP itself. */
+#include "ff_clmt_validate.h"
+#include "seek_hash.h"
+FRESULT ff_clmt_inspect(FIL *file, const DWORD *table, UINT words, ff_clmt_info *info)
+{
+    FATFS *fs;
+    FRESULT result;
+    DWORD required, cluster, fragment_left = 0, expected = 0;
+    UINT entry = 1;
+    seek_sha256_t hash;
+    if (!file || !info) return FR_INVALID_PARAMETER;
+    result = validate(&file->obj, &fs);
+    if (result != FR_OK) return result;
+    if (file->flag & FA_WRITE || fs->wflag || file->obj.n_frag || file->obj.stat == 3)
+        return FR_INVALID_PARAMETER;
+    if (!fs->csize || fs->n_fatent < 2) return FR_INT_ERR;
+    FSIZE_t count = file->obj.objsize / ((DWORD)fs->csize * SS(fs));
+    if (file->obj.objsize % ((DWORD)fs->csize * SS(fs))) ++count;
+    if (count > fs->n_fatent-2) return FR_INT_ERR;
+    required = (DWORD)count;
+    if (table) {
+        if (words < 2 || (words & 1) || table[0] != words || table[words-1] != 0)
+            return FR_INVALID_PARAMETER;
+        DWORD total = 0;
+        for (UINT i=1; i<words-1; i+=2) {
+            DWORD length=table[i], start=table[i+1];
+            if (!length || start<2 || start>=fs->n_fatent || length>fs->n_fatent-start || length>required-total)
+                return FR_INVALID_PARAMETER;
+            total += length;
+        }
+        if (total != required) return FR_INVALID_PARAMETER;
+    }
+    memset(info,0,sizeof *info);
+    seek_sha256_init(&hash);
+    cluster=file->obj.sclust;
+    if ((!required && cluster) || (required && (cluster<2 || cluster>=fs->n_fatent))) return FR_INT_ERR;
+    for (DWORD i=0; i<required; ++i) {
+        if (cluster<2 || cluster>=fs->n_fatent) return FR_INT_ERR;
+        if (table) {
+            if (!fragment_left) {
+                if (entry>=words-1) return FR_INVALID_PARAMETER;
+                fragment_left=table[entry++]; expected=table[entry++];
+            }
+            if (cluster!=expected) return FR_INVALID_PARAMETER;
+            ++expected; --fragment_left;
+        }
+        BYTE value[4]={(BYTE)cluster,(BYTE)(cluster>>8),(BYTE)(cluster>>16),(BYTE)(cluster>>24)};
+        seek_sha256_update(&hash,value,4);
+        // Contiguous exFAT has no FAT links. Validate its allocation bitmap too;
+        // these sequential checks share the existing sector window.
+        if (fs->fs_type==FS_EXFAT && file->obj.stat==2) {
+            DWORD bit=cluster-2;
+            if (move_window(fs,fs->bitbase+bit/(SS(fs)*8))!=FR_OK) return FR_DISK_ERR;
+            if (!(fs->win[bit/8%SS(fs)] & (1u<<(bit%8)))) return FR_INT_ERR;
+        }
+        DWORD next=get_fat(&file->obj,cluster);
+        if (next==0xffffffff) return FR_DISK_ERR;
+        if (!i) info->fragments=1;
+        if (i+1==required) {
+            DWORD eoc=fs->fs_type==FS_FAT12?0xff8:fs->fs_type==FS_FAT16?0xfff8:fs->fs_type==FS_FAT32?0x0ffffff8:0x7ffffff8;
+            if (next<eoc) return FR_INT_ERR;
+        } else {
+            if (next<2 || next>=fs->n_fatent) return FR_INT_ERR;
+            if (next!=cluster+1) ++info->fragments;
+        }
+        cluster=next;
+    }
+    info->clusters=required;
+    seek_sha256_final(&hash,info->digest);
+    return FR_OK;
+}

@@ -2,6 +2,9 @@
 
 #define WAV_HEADER 44
 #define SAMPLE_RATE 44100
+#ifndef AUDIO_EXTRA_OUTPUT_BUFFER
+#define AUDIO_EXTRA_OUTPUT_BUFFER 0
+#endif
 
 #define US_PER_BLOCK 1000000 * SAMPLES_PER_BUFFER / SAMPLE_RATE
 
@@ -14,7 +17,7 @@ audio_buffer_pool_t *init_audio() {
                                                   .sample_stride = 4};
 
   audio_buffer_pool_t *producer_pool =
-      audio_new_producer_pool(&producer_format, 3,
+      audio_new_producer_pool(&producer_format, 3 + AUDIO_EXTRA_OUTPUT_BUFFER,
                               SAMPLES_PER_BUFFER);  // todo correct size
   bool __unused ok;
   const audio_format_t *output_format;
@@ -30,7 +33,9 @@ audio_buffer_pool_t *init_audio() {
 
   ok = audio_i2s_connect(producer_pool);
   assert(ok);
-  {  // initial buffer data
+  // Prime the extra queue slot too: an unused allocation alone cannot absorb
+  // a late render. This adds one block of reserve and control-to-output delay.
+  for (unsigned initial = 0; initial < 1 + AUDIO_EXTRA_OUTPUT_BUFFER; ++initial) {
     audio_buffer_t *buffer = take_audio_buffer(producer_pool, true);
     int16_t *samples = (int16_t *)buffer->buffer->bytes;
     for (uint i = 0; i < buffer->max_sample_count; i++) {
@@ -38,6 +43,7 @@ audio_buffer_pool_t *init_audio() {
       samples[i * 2 + 1] = 0;
     }
     buffer->sample_count = buffer->max_sample_count;
+    buffer->flags = AUDIO_BUFFER_SILENCE;
     give_audio_buffer(producer_pool, buffer);
   }
   audio_i2s_set_enabled(true);

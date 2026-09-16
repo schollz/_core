@@ -18,6 +18,7 @@ static void ecto_emit_trigger(void) {
 #endif
 
 bool __not_in_flash_func(timer_step)() {
+  if(!audio_media_timer_allowed())return true;
   if (!fil_is_open) {
     return true;
   }
@@ -803,6 +804,7 @@ int main() {
 #else
   set_sys_clock_khz(125000, true);
 #endif
+  ZD_CALL(zd_init(clock_get_hz(clk_sys), SAMPLES_PER_BUFFER));
   sleep_ms(75);
 
   // DCDC PSM control
