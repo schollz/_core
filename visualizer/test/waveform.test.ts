@@ -29,6 +29,11 @@ describe('reference audio', () => {
     if (channels === 2) expect(result.peaks[1]).toEqual(Array(40).fill(-1000));
     expect(result.slices).toEqual([{ start: 0, stop: 0.25 }, { start: 0.25, stop: 1 }]);
   });
+  test.each([0, 1, 2, 3, 4])('retains playback mode %i from exported metadata', playMode => {
+    const { wav, info } = fixture();
+    info.writeUInt32LE(info.readUInt32LE(4) | (playMode << 9), 4);
+    expect(makeWaveform(wav, info, 0, 0, 20).playMode).toBe(playMode);
+  });
   test('rejects corrupt metadata, inconsistent padding and truncated WAV chunks', () => {
     const { wav, info } = fixture();
     expect(() => parseInfo(info.subarray(0, 12))).toThrow();

@@ -6,7 +6,7 @@ import type { Playback, Waveform } from '../src/types';
 
 const sysex = (text: string) => Uint8Array.from([0xf0, ...Array.from(text).map(c => c.charCodeAt(0)), 0xf7]);
 const state: Playback = { bank: 0, sample: 0, slice: 0, trigger: 1, bpm: 120, forward: true, stopped: false, muted: false, valid: true };
-const wave: Waveform = { bank: 0, sample: 0, bpm: 120, tempoMatch: true, sampleRate: 44100, channels: 1, duration: 2, slices: [{ start: 0, stop: 1 }, { start: 1, stop: 2 }], peaks: [] };
+const wave: Waveform = { bank: 0, sample: 0, bpm: 120, tempoMatch: true, playMode: 1, sampleRate: 44100, channels: 1, duration: 2, slices: [{ start: 0, stop: 1 }, { start: 1, stop: 2 }], peaks: [] };
 
 test('strictly decodes versioned snapshots and legacy status, ignores clock and malformed frames', () => {
   expect(decodeMessage(sysex('view=1,0,0,0,1,120,1,0,0,1'))).toEqual({ kind: 'view', state });
@@ -77,4 +77,79 @@ test('a failed initial output write does not leave a renewal timer running', asy
   expect(connection.state.connection).toBe('disconnected');
   await vi.advanceTimersByTimeAsync(2000); expect(output.send).toHaveBeenCalledTimes(1);
   connection.dispose();
+});
+
+
+test('normal playback crosses variable slice boundaries until a real trigger and wraps at the file end', () => {
+  const clock = new Playhead();
+  const variable = { ...wave, playMode: 0, duration: 30,
+    slices: [{ start: 0, stop: 10.27 }, { start: 10.27, stop: 30 }] };
+  clock.update(state, variable, 0);
+  expect(clock.value(11000)).toBeCloseTo(11);
+  clock.update({ ...state }, variable, 11000);
+  expect(clock.value(12000)).toBeCloseTo(12);
+  clock.update({ ...state, slice: 1, trigger: 2 }, variable, 12000);
+  expect(clock.value(13000)).toBeCloseTo(11.27);
+  expect(clock.value(33000)).toBeCloseTo(1.27);
+  clock.update({ ...state, slice: 1, trigger: 2 }, variable, 33000);
+  expect(clock.value(34000)).toBeCloseTo(2.27);
+  clock.update({ ...state, forward: false, trigger: 3 }, variable, 35000);
+  expect(clock.value(47000)).toBeCloseTo(28.27);
+});
+
+test.each([
+  [0, true, 3.5], [0, false, 0.5],
+  [1, true, 3], [1, false, 1],
+  [2, true, 1.5], [2, false, 2.5],
+  [3, true, 3.5], [3, false, 0.5],
+  [4, true, 3.5], [4, false, 0.5],
+])('playback mode %i respects boundaries in direction %s', (playMode, forward, expected) => {
+  const clock = new Playhead();
+  clock.update({ ...state, forward }, { ...wave, playMode, duration: 4,
+    slices: [{ start: 1, stop: 3 }] }, 0);
+  expect(clock.value(2500)).toBeCloseTo(expected);
+});
+
+test.each([[0, true, 0.5], [0, false, 3.5], [3, true, 4], [3, false, 0],
+  [4, true, 1.5], [4, false, 2.5]])('playback mode %i handles the file edge in direction %s', (playMode, forward, expected) => {
+  const clock = new Playhead();
+  clock.update({ ...state, forward }, { ...wave, playMode, duration: 4,
+    slices: [{ start: 1, stop: 3 }] }, 0);
+  expect(clock.value(3500)).toBeCloseTo(expected);
+});
+
+test('sample loading gets a bounded estimate, then valid telemetry reanchors even with the same trigger', async () => {
+  const { SampleTransition } = await import('../src/transition');
+  const transition = new SampleTransition(), clock = new Playhead();
+  transition.update(state, 0);
+  const loading = { ...state, sample: 1, valid: false };
+  const nextWave = { ...wave, sample: 1, playMode: 0 };
+  const first = transition.update(loading, 100);
+  expect(first.state).toMatchObject({ sample: 1, slice: 0, valid: true, estimated: true });
+  clock.update(first.state, nextWave, first.at);
+  expect(clock.value(400)).toBeCloseTo(0.3);
+  const heartbeat = transition.update(loading, 500);
+  expect(heartbeat.at).toBe(100);
+  clock.update(heartbeat.state, nextWave, heartbeat.at);
+  expect(clock.value(600)).toBeCloseTo(0.5);
+  const confirmed = transition.update({ ...loading, valid: true }, 700);
+  clock.update(confirmed.state, nextWave, confirmed.at);
+  expect(clock.value(800)).toBeCloseTo(0.1);
+  expect(confirmed.state.estimated).toBeUndefined();
+});
+
+test('loading estimates expire and do not fabricate playback for initial or unrelated invalid snapshots', async () => {
+  const { SampleTransition } = await import('../src/transition');
+  const transition = new SampleTransition();
+  expect(transition.update({ ...state, valid: false }, 0).state.valid).toBe(false);
+  transition.update(state, 100);
+  expect(transition.update({ ...state, valid: false }, 200).state.valid).toBe(false);
+  const loading = { ...state, sample: 1, valid: false };
+  expect(transition.update(loading, 300).state.estimated).toBe(true);
+  expect(transition.update(loading, 1799).at).toBe(300);
+  expect(transition.update(loading, 1800).state.valid).toBe(false);
+  expect(transition.update(loading, 2200).state.valid).toBe(false);
+  const rapid = transition.update({ ...loading, sample: 2, stopped: true }, 2300);
+  expect(rapid.state).toMatchObject({ sample: 2, stopped: true, estimated: true });
+  expect(rapid.at).toBe(2300);
 });

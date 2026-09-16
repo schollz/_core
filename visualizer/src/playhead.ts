@@ -12,7 +12,7 @@ export class Playhead {
     const region = wave.slices[state.slice];
     if (!region || wave.bank !== state.bank || wave.sample !== state.sample) return;
     const old = this.state;
-    const retrigger = !old || old.trigger !== state.trigger || old.bank !== state.bank ||
+    const retrigger = !old || old.estimated !== state.estimated || old.trigger !== state.trigger || old.bank !== state.bank ||
       old.sample !== state.sample || old.slice !== state.slice || old.forward !== state.forward || this.wave !== wave;
     this.position = retrigger ? (state.forward ? region.start : region.stop) : this.value(at) ?? region.start;
     this.state = state; this.wave = wave; this.at = at;
@@ -25,6 +25,21 @@ export class Playhead {
     if (!region) return null;
     const speed = w.tempoMatch && w.bpm > 0 ? s.bpm / w.bpm : 1;
     const elapsed = s.stopped ? 0 : Math.max(0, now - this.at) / 1000;
-    return Math.max(region.start, Math.min(region.stop, this.position + elapsed * speed * (s.forward ? 1 : -1)));
+    const position = this.position + elapsed * speed * (s.forward ? 1 : -1);
+    const clamp = (start: number, stop: number) => Math.max(start, Math.min(stop, position));
+    const wrap = (start: number, stop: number) => {
+      if (position >= start && position <= stop) return position;
+      const length = stop - start;
+      return length > 0 ? start + ((position - start) % length + length) % length : start;
+    };
+    // Slice boundaries schedule triggers, but only slice-stop/loop playback
+    // constrains the audio to that region. Normal audio can run beyond it.
+    switch (w.playMode) {
+      case 1: return clamp(region.start, region.stop); // PLAY_SPLICE_STOP
+      case 2: return wrap(region.start, region.stop); // PLAY_SPLICE_LOOP
+      case 3: return clamp(0, w.duration); // PLAY_SAMPLE_STOP
+      case 4: return s.forward ? wrap(region.start, w.duration) : wrap(0, region.stop);
+      default: return wrap(0, w.duration); // PLAY_NORMAL
+    }
   }
 }

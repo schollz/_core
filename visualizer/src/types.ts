@@ -14,6 +14,7 @@ export interface Waveform {
   duration: number;
   bpm: number;
   tempoMatch: boolean;
+  playMode: number;
   slices: { start: number; stop: number }[];
   // Interleaved minimum/maximum signed 16-bit values, one array per channel.
   peaks: number[][];
@@ -29,4 +30,5 @@ export interface Playback {
   muted: boolean;
   valid: boolean;
   effects?: number;
+  estimated?: boolean;
 }
