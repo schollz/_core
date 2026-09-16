@@ -67,6 +67,7 @@ Run the relevant native suites after building the generated headers:
 .venv/bin/python test/seek_diagnostics/run.py
 .venv/bin/python test/audio_source/run.py
 .venv/bin/python test/dsp_loops/run.py
+.venv/bin/python test/midi/run.py
 ```
 
 These runners invoke host `cc`/`c++` with sanitizers. The FatFs runner uses GNU
@@ -138,6 +139,7 @@ the topic documents and use this index for orientation.
 
 | Document | Purpose |
 | --- | --- |
+| [MIDI slice triggering](midi-slice-triggering.md) | Channel 1 note mapping, transport/mute behavior, Ableton routing, and native tests. |
 | [Implementation brief](seek-implementation-brief.md) | Original scope, requirements, integration checklist, and acceptance/completion record. |
 | [Seek-map design](seek-map-design.md) | Memory policy, durable index, allocation validation, filesystem ownership, and mapped execution. |
 | [Implementation status](seek-implementation-status.md) | Original integration audit, correctness coverage, hardware evidence, and limitations. |
