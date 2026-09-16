@@ -7,7 +7,7 @@ remain tied to the retained ELFs; the follow-up report records the corrected
 firmware, source-rate limits and additional stress captures.
 
 The shared implementation, native checks, supported playback matrix, observer
-gate, fragmented benchmark and physical reinsertion check passed. GOAL.md is
+gate, fragmented benchmark and physical reinsertion check passed. The [implementation brief](seek-implementation-brief.md) is
 complete for the supported configurations. Measurements below identify their
 exact retained builds. No SD clock or checksum setting changed.
 
