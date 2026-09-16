@@ -18,27 +18,7 @@ uint32_t midi_delta_count = 0;
 uint32_t midi_timing_count = 0;
 const uint8_t midi_timing_modulus = 24;
 
-void midi_note_off(int note) {
-#if MIDI_NOTE_KEY == 1
-  input_button[note % NUM_BUTTONS].Set(false);
-  if (midi_button2 > -1) {
-    midi_button2 = -1;
-  } else {
-    midi_button1 = -1;
-  }
-#endif
-}
-
-void midi_note_on(int note, int velocity) {
-#if MIDI_NOTE_KEY == 1
-  if (midi_button1 > -1) {
-    midi_button2 = note % NUM_BUTTONS;
-  } else {
-    midi_button1 = note % NUM_BUTTONS;
-  }
-  input_button[note % NUM_BUTTONS].Set(true);
-#endif
-}
+#include "midi_note_key.h"
 
 void midi_start() {
   midi_timing_count = 24 * MIDI_RESET_EVERY_BEAT - 1;
