@@ -1,4 +1,29 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
+#include "audio_profile.h"
+#include "audio_restart.h"
+#if AUDIO_RESTART_WAKE_ENABLED
+#include "audio_restart_queue.h"
+// Owned only by the audio worker; the clock core communicates through the
+// restart token and FIFO, never these fields.
+static struct {
+  bool active;
+  bool published;
+  unsigned replaced_silence;
+} audio_restart_wake;
+static void audio_submit_buffer(audio_buffer_t *buffer, bool restart_block) {
+  if (audio_restart_wake.active || restart_block) {
+    unsigned removed = audio_restart_publish_buffer(ap, buffer);
+    if (audio_restart_wake.active) {
+      audio_restart_wake.published = true;
+      audio_restart_wake.replaced_silence += removed;
+    }
+  } else {
+    give_audio_buffer(ap, buffer);
+  }
+}
+#else
+#define audio_submit_buffer(buffer, restart_block) give_audio_buffer(ap, buffer)
+#endif
 // previous output per channel (persistent state)
 #ifdef INCLUDE_EZEPTOCORE
 #define BASS_LP_A 64917  // alpha ≈ 0.9908
@@ -18,7 +43,6 @@ static int32_t tremble_vel[2] = {0, 0};
 #endif
 uint8_t cpu_utilizations[64];
 uint8_t cpu_utilizations_i = 0;
-uint32_t last_seeked = 1;
 uint32_t reduce_cpu_usage = 0;
 uint32_t cpu_usage_flag_total = 0;
 uint8_t cpu_usage_flag = 0;
@@ -47,40 +71,24 @@ void __not_in_flash_func(update_filter_from_envelope)(int32_t val) {
 }
 
 #define INTERPOLATE_VALUE 512
+#include "audio_resample.h"
 int16_t newArray[SAMPLES_PER_BUFFER];
 // Core 1's stack is reserved for control flow and short-lived source buffers.
 // This always-present 3.5 KiB render workspace is static so normal stereo
 // playback fits within the RP2040 scratch-bank stack.
 static int32_t audio_render_samples[SAMPLES_PER_BUFFER * 2];
 
-void __not_in_flash_func(array_resample_linear441)(int16_t *arr,
-                                                   int16_t arr_size) {
-  // If the sizes match, simply copy the input array
-  if (arr_size == SAMPLES_PER_BUFFER) {
-    for (int16_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
-      newArray[i] = arr[i];
-    }
-  }
-
-  // Calculate step size in fixed-point format
-  uint32_t stepSize = (arr_size)*INTERPOLATE_VALUE / (SAMPLES_PER_BUFFER);
-
-  for (int16_t i = 0; i < SAMPLES_PER_BUFFER; i++) {
-    uint32_t indexFixed = i * stepSize;               // Fixed-point index
-    uint32_t index = indexFixed / INTERPOLATE_VALUE;  // Integer part
-    uint32_t frac = indexFixed % INTERPOLATE_VALUE;   // Fractional part
-
-    // Perform fixed-point linear interpolation
-    int32_t x = ((int32_t)arr[index] * (INTERPOLATE_VALUE - frac)) +
-                ((int32_t)arr[index + 1] * frac);
-    newArray[i] = x / INTERPOLATE_VALUE;
-  }
+void __not_in_flash_func(array_resample_linear441)(const int16_t *arr,
+                                                   uint32_t arr_size,
+                                                   uint32_t stride) {
+  AP_MEASURE(AP_RESAMPLE,audio_resample_linear(newArray, arr, arr_size, SAMPLES_PER_BUFFER, stride));
 }
 
 void __not_in_flash_func(process_source_fx)(int16_t *values,
                                             uint32_t values_len) {
   // beat repeat
-  BeatRepeat_process(beatrepeat, values, values_len);
+  AP_MEASURE(AP_BEAT,BeatRepeat_process(beatrepeat, values, values_len));
+  AP_START(ap_source);
 
   // saturate before resampling?
   if (sf->fx_active[FX_SATURATE]) {
@@ -94,6 +102,7 @@ void __not_in_flash_func(process_source_fx)(int16_t *values,
   }
 
   // shaper
+  AP_END(AP_SATURATE,ap_source);AP_RESET(ap_source);
   if (sf->fx_active[FX_SHAPER]) {
     if (sf->fx_param[FX_SHAPER][0] > 128) {
       Shaper_expandUnder_compressOver_process(
@@ -106,23 +115,26 @@ void __not_in_flash_func(process_source_fx)(int16_t *values,
     }
   }
 
+  AP_END(AP_SHAPER,ap_source);AP_RESET(ap_source);
   if (sf->fx_active[FX_FUZZ]) {
     Fuzz_process(values, values_len, sf->fx_param[FX_FUZZ][0],
                  sf->fx_param[FX_FUZZ][1]);
   }
 
   // bitcrush
+  AP_END(AP_FUZZ,ap_source);AP_RESET(ap_source);
   if (sf->fx_active[FX_BITCRUSH]) {
     Bitcrush_process(values, values_len, sf->fx_param[FX_BITCRUSH][0],
                      sf->fx_param[FX_BITCRUSH][1]);
   }
+  AP_END(AP_BITCRUSH,ap_source);
 }
 
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
 uint32_t sine_wave_counter = 0;
 #endif
 
-void __not_in_flash_func(i2s_callback_func)() {
+static void __not_in_flash_func(zeptocore_render_audio)() {
   // void i2s_callback_func() {
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
@@ -135,16 +147,19 @@ void __not_in_flash_func(i2s_callback_func)() {
   bool do_crossfade = false;
   bool do_fade_out = false;
   bool do_fade_in = false;
+  bool clock_restart_block = false;
   clock_t startTime = time_us_64();
   audio_buffer_t *buffer = take_audio_buffer(ap, false);
 #ifdef PRINT_SDCARD_TIMING
   take_audio_buffer_time = (time_us_64() - startTime);
 #endif
   if (buffer == NULL) {
+    ZD_CALL(zd_audio_counter(ZD_NO_BUFFER));
     return;
   }
 
   int32_t *samples = audio_render_samples;
+  ZD_WITNESS_RENDERED();
   int16_t *samples16 = (int16_t *)buffer->buffer->bytes;
 
 #ifdef DEBUG_AUDIO_WITH_SINE_WAVE
@@ -161,7 +176,8 @@ void __not_in_flash_func(i2s_callback_func)() {
     samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
     samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
   }
-  give_audio_buffer(ap, buffer);
+  ZD_CALL(zd_audio_output(buffer->sample_count, 0));
+  audio_submit_buffer(buffer, false);
   return;
 #endif
 
@@ -252,8 +268,14 @@ void __not_in_flash_func(i2s_callback_func)() {
       samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
       samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
     }
-    give_audio_buffer(ap, buffer);
+    ZD_CALL(zd_audio_output(buffer->sample_count, 0));
+#if AUDIO_RESTART_WAKE_ENABLED
+    if (audio_restart_pcm_silent(samples16, buffer->sample_count))
+      buffer->flags |= AUDIO_BUFFER_SILENCE;
+#endif
+    audio_submit_buffer(buffer, false);
 
+    ZD_CALL(zd_audio_counter(ZD_MUTED));
     // audio muted flag to ensure a fade in occurs when
     // unmuted
     return;
@@ -331,7 +353,17 @@ BREAKOUT_OF_MUTE:
     do_open_file_ready = false;
     // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
-  if (fil_current_change || fil_current_change_force) {
+  bool allow_file_change=true;
+#if AUDIO_PREPARE_NEXT
+  if(fil_current_change||fil_current_change_force) {
+    char next_path[32];
+    format_sample_filename(next_path,sel_bank_next,
+        sel_sample_next%banks[sel_bank_next]->num_samples,
+        sel_variation+audio_variant*2);
+    allow_file_change=audio_prepare_ready(next_path);
+  }
+#endif
+  if (allow_file_change && (fil_current_change || fil_current_change_force)) {
     fil_current_change = false;
     if (fil_current_change_force || sel_bank_cur != sel_bank_next ||
         sel_sample_cur != sel_sample_next) {
@@ -385,6 +417,14 @@ BREAKOUT_OF_MUTE:
   }
   if (samples_to_read < 11) {
     samples_to_read = 11;
+  }
+  // Normal and stretch rendering are mutually exclusive. Reuse the existing
+  // fixed stretch read workspace instead of pitch-sized stack arrays. Bound
+  // extreme combined rates to its capacity, including interpolation lookahead.
+  if (!realtime_stretch_is_active()) {
+    samples_to_read = audio_source_frame_limit(samples_to_read,
+        sizeof realtime_stretch_readbuf / sizeof realtime_stretch_readbuf[0],
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->num_channels + 1);
   }
   uint64_t realtime_stretch_grain_phase_inc_q32 =
       (((uint64_t)samples_to_read) << 32u) / buffer->max_sample_count;
@@ -479,7 +519,14 @@ BREAKOUT_OF_MUTE:
     do_crossfade = true;
     phases[1] = phases[0];  // old phase
     phases[0] = phase_new;
+    CL_CALL(cl_applied(phases[0]));
     phase_change = false;
+    AR_CALL(if (audio_restart_take(phases[0])) {
+      clock_restart_block = true;
+      do_crossfade = false;
+      do_fade_in = false;
+      audio_was_muted = false;
+    });
   }
 
   if (audio_was_muted) {
@@ -500,10 +547,17 @@ BREAKOUT_OF_MUTE:
   bool first_loop = true;
 
   if (realtime_stretch_is_active()) {
+    if (clock_restart_block) realtime_stretch_reset_from_playback_phase();
     if (phase_change) {
       phases[1] = phases[0];
       phases[0] = phase_new;
+      CL_CALL(cl_applied(phases[0]));
       phase_change = false;
+      AR_CALL(if (audio_restart_take(phases[0])) {
+        clock_restart_block = true;
+        do_crossfade = do_fade_in = false;
+        audio_was_muted = false;
+      });
       realtime_stretch_reset_from_playback_phase();
     }
 
@@ -512,10 +566,9 @@ BREAKOUT_OF_MUTE:
       sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
 
       t0 = time_us_32();
-      f_close(&fil_current);
       format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
                              sel_variation + audio_variant * 2);
-      f_open(&fil_current, fil_current_name, FA_READ);
+      audio_file_open(fil_current_name);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
       do_open_file = false;
@@ -523,14 +576,18 @@ BREAKOUT_OF_MUTE:
     }
 
     int16_t stretch_values[buffer->max_sample_count * 2];
-    if (!realtime_stretch_render(stretch_values, buffer->max_sample_count,
-                                 realtime_stretch_grain_phase_inc_q32)) {
+    AP_START(ap_stretch);
+    bool stretch_ok=realtime_stretch_render(stretch_values, buffer->max_sample_count,
+                                 realtime_stretch_grain_phase_inc_q32);
+    AP_END(AP_STRETCH,ap_stretch);
+    if (!stretch_ok) {
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         samples[i * 2 + 0] = 0;
         samples[i * 2 + 1] = 0;
       }
       realtime_stretch_invalidate_grains();
     } else {
+      ZD_CALL(buffer->user_data=zd_switch_render_tag());
       process_source_fx(stretch_values, buffer->max_sample_count * 2);
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         for (uint8_t channel = 0; channel < 2; channel++) {
@@ -550,7 +607,7 @@ BREAKOUT_OF_MUTE:
   }
 
   {
-    int16_t values[values_len];
+    int16_t *values = realtime_stretch_readbuf;
   for (int8_t head = 1; head >= 0; head--) {
     if (head == 1 && (!do_crossfade || do_fade_in)) {
       continue;
@@ -561,10 +618,9 @@ BREAKOUT_OF_MUTE:
       sel_bank_cur = sel_bank_next;
       sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
       t0 = time_us_32();
-        f_close(&fil_current);
         format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
                                sel_variation + audio_variant * 2);
-        f_open(&fil_current, fil_current_name, FA_READ);
+        audio_file_open(fil_current_name);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
     }
@@ -579,13 +635,18 @@ BREAKOUT_OF_MUTE:
         negative_latency =
             roundf((float)values_len_minus_peek * latency_factor) *
             (phase_forward * 2 - 1);
-        if (clock_input_present_first) {
+        if ((!AUDIO_CLOCK_RESTART_FIX || head == 0) && clock_input_present_first) {
           clock_input_present_first = false;
           negative_latency = 0;
         }
+        if (clock_restart_block) negative_latency = 0;
       }
 #endif
-      if (f_lseek(&fil_current,
+      CL_CALL(if(head == 0) cl_seek(negative_latency, samples_to_read,
+          values_to_read_minus_peek / samples_to_read,
+          (do_crossfade ? 16u : 0) | (do_fade_in ? 32u : 0) | (do_fade_out ? 64u : 0) |
+          (clock_restart_block ? 128u : 0)));
+      FRESULT seek_result=zd_f_lseek(&fil_current,
                   WAV_HEADER +
                       ((banks[sel_bank_cur]
                             ->sample[sel_sample_cur]
@@ -599,7 +660,9 @@ BREAKOUT_OF_MUTE:
                         1) *
                        44100) +
                       ((phases[head] + negative_latency) / PHASE_DIVISOR) *
-                          PHASE_DIVISOR) != FR_OK) {
+                          PHASE_DIVISOR, ZD_SEEK);
+      if(seek_result!=FR_OK) {
+        audio_media_io_failed(seek_result);
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
           int32_t value0 = 0;
           samples[i * 2 + 0] = value0 + (value0 >> 16u);  // L
@@ -610,19 +673,27 @@ BREAKOUT_OF_MUTE:
           samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
           samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
         }
-        give_audio_buffer(ap, buffer);
+        ZD_CALL(zd_audio_output(buffer->sample_count, 0));
+        audio_submit_buffer(buffer, false);
         sync_using_sdcard = false;
+        ZD_CALL(zd_audio_counter(ZD_ERROR_SILENCE));
         // sdcard_startup();
         return;
       }
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
+    } else {
+      ZD_CALL(zd_audio_counter(ZD_SEEK_SKIPPED));
     }
 
     t0 = time_us_32();
-    if (f_read(&fil_current, values, values_to_read, &fil_bytes_read)) {
-      watchdog_reboot(0, SRAM_END, 0);
+    FRESULT read_result=zd_f_read(&fil_current,values,values_to_read,&fil_bytes_read,ZD_READ);
+    if(read_result!=FR_OK) {
+      audio_media_io_failed(read_result);
+      memset(values,0,values_to_read);fil_bytes_read=0;
     }
+    if(head==0 && read_result==FR_OK && fil_bytes_read)
+      ZD_CALL(buffer->user_data=zd_switch_render_tag());
     t1 = time_us_32();
     sd_card_total_time += (t1 - t0);
     last_seeked = phases[head] + fil_bytes_read;
@@ -643,7 +714,7 @@ BREAKOUT_OF_MUTE:
             .snd[FILEZERO]
             ->num_channels == 0) {
       // mono
-      array_resample_linear441(values, samples_to_read);
+      array_resample_linear441(values, samples_to_read, 1);
 
       for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
         if (do_crossfade && !do_fade_in) {
@@ -682,14 +753,7 @@ BREAKOUT_OF_MUTE:
                    ->num_channels == 1) {
       // stereo
       for (uint8_t channel = 0; channel < 2; channel++) {
-        int16_t valuesC[values_len / 2];  // max limit
-        for (uint16_t i = 0; i < values_len; i++) {
-          if (i % 2 == channel) {
-            valuesC[i / 2] = values[i];
-          }
-        }
-
-        array_resample_linear441(valuesC, samples_to_read);
+        array_resample_linear441(values + channel, samples_to_read, 2);
 
         // TODO: function pointer for audio block here?
         for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
@@ -753,6 +817,7 @@ AUDIO_SOURCE_RENDERED:
 #endif
 
 // apply filter
+  AP_START(ap_filter);
 #ifdef INCLUDE_FILTER
   for (uint8_t channel = 0; channel < 2; channel++) {
     ResonantFilter_update(resFilter[channel], samples, buffer->max_sample_count,
@@ -761,6 +826,8 @@ AUDIO_SOURCE_RENDERED:
 #endif
 
   // apply other fx
+  AP_END(AP_FILTER,ap_filter);
+  AP_START(ap_pan);
   // TODO: fade in/out these fx using the crossfade?
   // TODO: LFO's move to main thread?
   if (sf->fx_active[FX_PAN]) {
@@ -798,6 +865,7 @@ AUDIO_SOURCE_RENDERED:
   }
 
   // apply reverb
+  AP_END(AP_PAN,ap_pan);
   if (sf->fx_active[FX_EXPAND] || reverb_fade > 0 || reverb_activated) {
     if (freeverb != NULL) {
       if (first_loop_ever) {
@@ -829,7 +897,7 @@ AUDIO_SOURCE_RENDERED:
           FV_Reverb_set_wet(freeverb, reverb_fade);
         }
       }
-      FV_Reverb_process(freeverb, samples, buffer->max_sample_count);
+      AP_MEASURE(AP_REVERB,FV_Reverb_process(freeverb, samples, buffer->max_sample_count));
 
       if (first_loop_ever) {
         first_loop_ever = false;
@@ -838,16 +906,19 @@ AUDIO_SOURCE_RENDERED:
   } else {
 #ifdef INCLUDE_ECTOCORE
     if (sf->fx_active[FX_DELAY]) {
+      AP_START(ap_delay_setup);
       Delay_setFeedbackf(delay,
                          Range(LFNoise2_period(noise_feedback, 1), 0.49, 0.99));
       float v = Range(LFNoise2_period(noise_duration, 2), 100, 10000);
       Delay_setDuration(delay, v);
+      AP_END(AP_DELAY_SETUP,ap_delay_setup);
       // float v = Range(LFNoise2_period(noise_duration, 2), 6.64f, 13.28f);
       // Delay_setDuration(delay, powf(2, v));
     }
-    Delay_process(delay, samples, buffer->max_sample_count, 0);
+    AP_MEASURE(AP_DELAY,Delay_process(delay, samples, buffer->max_sample_count, 0));
 #else
     if (sf->fx_active[FX_DELAY] && sf->fx_param[FX_DELAY][2] > 30) {
+      AP_START(ap_delay_setup);
       Delay_setFeedbackf(delay,
                          Range(LFNoise2_period(noise_feedback, 2), 0.49, 0.99));
       float v = Range(LFNoise2_period(noise_duration, 2), 100, 10000);
@@ -855,13 +926,14 @@ AUDIO_SOURCE_RENDERED:
       // float v = Range(LFNoise2_period(noise_duration, 2), 6.64f, 13.28f);
       // // raise v from the 10th power
       // Delay_setDuration(delay, powf(2, v));
+      AP_END(AP_DELAY_SETUP,ap_delay_setup);
     }
-    Delay_process(delay, samples, buffer->max_sample_count, 0);
+    AP_MEASURE(AP_DELAY,Delay_process(delay, samples, buffer->max_sample_count, 0));
 #endif
   }
 
   // apply comb
-  Comb_process(combfilter, samples, buffer->max_sample_count);
+  AP_MEASURE(AP_COMB,Comb_process(combfilter, samples, buffer->max_sample_count));
 
 #ifdef INCLUDE_SINEBASS
   // apply bass
@@ -894,6 +966,7 @@ AUDIO_SOURCE_RENDERED:
   }
 #endif
 
+  AP_START(ap_digital);
 #ifdef INCLUDE_EZEPTOCORE
   if (mode_amiga_index > 5) {
     int32_t held[2] = {0, 0};
@@ -1108,17 +1181,28 @@ AUDIO_SOURCE_RENDERED:
 
 #endif
 
+  AP_END(AP_DIGITAL,ap_digital);
   buffer->sample_count = buffer->max_sample_count;
+  AP_START(ap_convert);
   t0 = time_us_32();
   for (uint16_t i = 0; i < buffer->max_sample_count; i++) {
     samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
     samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
   }
-  give_audio_buffer(ap, buffer);
+  ZD_CALL(zd_audio_output(buffer->sample_count, 0));
+  if (clock_restart_block) {
+    for(unsigned i = 0; i < buffer->sample_count && i < AUDIO_RESTART_FADE_FRAMES; ++i) {
+      samples16[2*i] = audio_restart_fade(samples16[2*i], i);
+      samples16[2*i+1] = audio_restart_fade(samples16[2*i+1], i);
+    }
+  }
+  CL_CALL(cl_submit(buffer->user_data, samples16, buffer->sample_count));
+  audio_submit_buffer(buffer, clock_restart_block);
 #ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);
 #endif
 
+  AP_END(AP_CONVERT,ap_convert);
   if (trigger_button_mute) {
     button_mute = true;
     trigger_button_mute = false;
@@ -1163,5 +1247,135 @@ AUDIO_SOURCE_RENDERED:
   if (change_phase_forward) {
     phase_forward = !phase_forward;
   }
+#if AUDIO_PREPARE_NEXT
+  // The current block is already queued. Keep all SD work on its owning core,
+  // and attempt at most one preparation step when this render left headroom.
+  if((uint32_t)(time_us_32()-startTime)<US_PER_BLOCK/2&&
+     (fil_current_change||fil_current_change_force||do_open_file_ready)) {
+    char next_path[32];
+    unsigned next_sample=sel_sample_next%banks[sel_bank_next]->num_samples;
+    format_sample_filename(next_path,sel_bank_next,next_sample,
+                           sel_variation+audio_variant*2);
+    if(!audio_prepare_ready(next_path))audio_prepare_step(next_path);
+    else if(do_open_file_ready) {
+      float ratio=(float)banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->size/
+                   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size;
+      FSIZE_t next_phase=round((float)phases[0]*ratio*
+          sel_variation_scale[sel_variation]*sel_variation_scale[sel_variation]);
+      FSIZE_t offset=WAV_HEADER+
+          (banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->num_channels+1)*
+          (banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->oversampling+1)*44100+
+          next_phase/PHASE_DIVISOR*PHASE_DIVISOR;
+      audio_prepare_warm(offset);
+    }
+  }
+#endif
   return;
+}
+
+// All returns from the renderer pass through measurement/publication.
+#if AUDIO_DETAILED_TIMING
+static uint32_t audio_profile_effects(void) {
+  uint32_t mask=0;
+  if(sf)for(unsigned i=0;i<16;++i)mask|=sf->fx_active[i]?1u<<i:0;
+  return mask;
+}
+static uint32_t audio_profile_source(bool owns) {
+  return (sel_bank_cur<<12)|(sel_sample_cur<<8)|(sel_variation+audio_variant*2)|
+      ((owns&&fil_current.cltbl)?1u<<30:0)|(audio_callback_in_mute?1u<<31:0);
+}
+#endif
+#if AUDIO_EXTRA_OUTPUT_BUFFER
+static volatile uint32_t audio_queue_refills;
+static unsigned audio_queued_blocks(void) {
+  if(!ap)return 0;
+  uint32_t irq=spin_lock_blocking(ap->prepared_list_spin_lock);
+  unsigned count=0;
+  for(audio_buffer_t *b=ap->prepared_list;b&&count<4;b=b->next)++count;
+  spin_unlock(ap->prepared_list_spin_lock,irq);
+  return count;
+}
+#endif
+void __not_in_flash_func(i2s_callback_func)() {
+  ZD_CALL(zd_audio_begin());
+  bool owns_media=audio_media_begin();
+  AP_CALL(audio_profile_begin(owns_media&&zeptocore_diag.header[21]>=3,
+      audio_profile_source(owns_media),audio_profile_effects(),
+      sf?sf->pitch_val_index:0,realtime_stretch_q8));
+  if(owns_media) {
+    zeptocore_render_audio();
+#if AUDIO_EXTRA_OUTPUT_BUFFER
+    // Maintain one queued block beyond the ordinary next block. A startup
+    // reserve alone can drain and never recover with one render per DMA event.
+    // No filesystem work occurs under the queue's short list lock.
+    if(ap&&audio_queued_blocks()<2) {
+      ++audio_queue_refills;
+      zeptocore_render_audio();
+    }
+#endif
+  } else if(ap) {
+    audio_buffer_t *buffer=take_audio_buffer(ap,false);
+    if(buffer) {
+      ZD_WITNESS_RENDERED();
+      memset(buffer->buffer->bytes,0,buffer->max_sample_count*4);
+      buffer->flags = AUDIO_BUFFER_SILENCE;
+      buffer->sample_count=buffer->max_sample_count;
+      ZD_CALL(zd_audio_output(buffer->sample_count,0));
+      ZD_CALL(zd_audio_counter(ZD_MUTED));
+      audio_submit_buffer(buffer, false);
+    } else ZD_CALL(zd_audio_counter(ZD_NO_BUFFER));
+  }
+  AP_CALL(audio_profile_end(audio_profile_source(owns_media),audio_profile_effects()));
+  ZD_CALL(if(zeptocore_diag.request.sequence!=zeptocore_diag.audio.header.sequence) {
+    zd_audio.counters[12]=audio_file_generation;
+    zd_audio.counters[13]=seek_maps_stats.hits;
+    zd_audio.counters[14]=seek_maps_stats.misses;
+    zd_audio.counters[15]=audio_media_stats.withheld_callbacks;
+    zd_audio.context[15]=owns_media?fil_is_open:2;
+  });
+  ZD_CALL(if (owns_media && zeptocore_diag.request.sequence !=
+                 zeptocore_diag.audio.header.sequence && fil_is_open) {
+    uint32_t *c = zd_audio.context;
+    c[0] = sel_bank_cur; c[1] = sel_sample_cur;
+    c[2] = sel_variation; c[3] = audio_variant; c[4] = phase_forward;
+    c[5] = realtime_stretch_q8; c[6] = sf->pitch_val_index;
+    c[7] = sf->bpm_tempo; c[8] = 0;
+    for (unsigned i = 0; i < 16; ++i) c[8] |= sf->fx_active[i] ? 1u << i : 0;
+    c[9] = f_size(&fil_current); c[10] = f_size(&fil_current) >> 32;
+    c[11] = fil_current.obj.sclust;
+    c[12] = f_tell(&fil_current); c[13] = f_tell(&fil_current) >> 32;
+    c[14] = fil_current.cltbl != NULL; c[15] = fil_is_open;
+  });
+  ZD_CALL(zd_audio_end());
+  bool quiescent=false;
+  // Optional map work may use a stopped, already muted output with no effect
+  // tails. A mute flag alone cannot establish this, or filesystem ownership.
+  quiescent=owns_media&&playback_stopped&&audio_callback_in_mute&&
+      !sf->fx_active[FX_EXPAND]&&delay&&!delay->on;
+#ifdef INCLUDE_SINEBASS
+  if(quiescent&&wavebass) {
+    quiescent=wavebass->change_count>=2000;
+    for(unsigned voice=0;voice<WAVETABLEBASS_MAX&&quiescent;++voice)
+      for(unsigned osc=0;osc<WAVETABLESYN_MAX;++osc)
+        if(wavebass->osc[voice]->active[osc])quiescent=false;
+  }
+#endif
+  audio_media_end(quiescent);
+}
+
+bool i2s_callback_restart_func(void) {
+#if AUDIO_RESTART_WAKE_ENABLED
+  if (!ap || !audio_restart_pending() || !audio_restart_can_wake(ap)) return false;
+  audio_restart_wake.active = true;
+  audio_restart_wake.published = false;
+  audio_restart_wake.replaced_silence = 0;
+  i2s_callback_func();
+  audio_restart_wake.active = false;
+  // If the sole queued silence was consumed during this render, its DMA
+  // notification is still pending on this same core's FIFO. This extra render
+  // fulfilled that one notification. Do not change the normal queue policy.
+  return audio_restart_wake.published && audio_restart_wake.replaced_silence == 0;
+#else
+  return false;
+#endif
 }

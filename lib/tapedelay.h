@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "fixedpoint.h"
+#include "dsp_multiply.h"
 #include "slew.h"
 
 typedef struct Delay {
@@ -97,21 +98,30 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
     return;
   }
 
+  const size_t buffer_size = tapeDelay->buffer_size;
+  const float buffer_size_f = (float)buffer_size;
+  size_t write_index = tapeDelay->write_index;
+  float smoothed_delay_time = tapeDelay->smoothed_delay_time;
   for (unsigned int i = 0; i < nr_samples; i++) {
     // Smooth the delay time for gradual transitions
-    tapeDelay->smoothed_delay_time +=
-        0.01f * (tapeDelay->delay_time - tapeDelay->smoothed_delay_time);
+    smoothed_delay_time +=
+        0.01f * (tapeDelay->delay_time - smoothed_delay_time);
 
     float fractional_read_index =
-        (float)tapeDelay->write_index - tapeDelay->smoothed_delay_time;
+        (float)write_index - smoothed_delay_time;
     if (fractional_read_index < 0) {
-      fractional_read_index += tapeDelay->buffer_size;
+      fractional_read_index += buffer_size_f;
     }
 
-    size_t base_read_index =
-        (size_t)fractional_read_index % tapeDelay->buffer_size;
-    size_t next_read_index = (base_read_index + 1) % tapeDelay->buffer_size;
-    float frac = fractional_read_index - (size_t)fractional_read_index;
+    const size_t integral_read_index = (size_t)fractional_read_index;
+    // The normal delay range already gives an in-range index. Retain the
+    // modulo fallback for other representable indices, including round-up at
+    // the end of the ring, without dividing on every sample.
+    size_t base_read_index = integral_read_index;
+    if (base_read_index >= buffer_size) base_read_index %= buffer_size;
+    size_t next_read_index = base_read_index + 1;
+    if (next_read_index == buffer_size) next_read_index = 0;
+    float frac = fractional_read_index - integral_read_index;
 
     // Read the delayed sample with interpolation
     int32_t delayed_sample =
@@ -121,19 +131,20 @@ void Delay_process(Delay *tapeDelay, int32_t *samples, unsigned int nr_samples,
     // Add feedback to the current sample and write it to the buffer
     int32_t input_sample = samples[i * 2 + channel];
     int32_t feedback_sample =
-        q16_16_multiply(tapeDelay->feedback_fp, delayed_sample);
+        dsp_multiply_q16(tapeDelay->feedback_fp, delayed_sample);
     int32_t processed_sample = add_and_softclip(input_sample, feedback_sample);
 
-    tapeDelay->buffer[tapeDelay->write_index] = processed_sample;
+    tapeDelay->buffer[write_index] = processed_sample;
 
     // Update write index
-    tapeDelay->write_index =
-        (tapeDelay->write_index + 1) % tapeDelay->buffer_size;
+    if (++write_index == buffer_size) write_index = 0;
 
     // Store the processed sample back in the buffer
     samples[i * 2 + channel] = processed_sample;
     samples[i * 2 + 1] = add_and_softclip(samples[i * 2 + 1], feedback_sample);
   }
+  tapeDelay->write_index = write_index;
+  tapeDelay->smoothed_delay_time = smoothed_delay_time;
 }
 
 void Delay_setActive(Delay *self, bool on) {

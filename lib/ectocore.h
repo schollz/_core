@@ -562,11 +562,58 @@ void gpio_callback(uint gpio, uint32_t events) {
 }
 
 bool dont_wait = false;
+#if SEEK_CLOCK_LATENCY
+// Test-only pulse generator: same GPIO callback as CV input, no host/USB time
+// in the latency measurement. No sleeps or SD logging in this path.
+static uint32_t cl_next, cl_fall, cl_trial, cl_pulse;
+static uint8_t cl_mode;
+static bool cl_saved_sync;
+static __attribute__((noinline)) void cl_test_command(uint8_t mode) {
+  if (cl_mode) { cl_timeout(); clock_start_stop_sync = cl_saved_sync; }
+  cl_mode = mode;
+  if (!mode) return;
+  cl_saved_sync = clock_start_stop_sync;
+  clock_start_stop_sync = true;
+  cv_reset_override = -1;
+  cl_trial = cl_pulse = cl_fall = 0;
+  clockinput->last_state = 0;
+  clockinput->last_diff = 250000;
+  clockinput->last_time = time_us_32() - 1200000;
+  clock_in_last_time = clockinput->last_time;
+  clock_in_diff_2x = 500000;
+  clock_in_do = mode == 1;
+  if (mode == 2) {
+    if (!button_mute) trigger_button_mute = true;
+    do_stop_playback = true;
+  }
+  cl_next = time_us_32() + 500000;
+}
+static __attribute__((noinline)) void cl_test_service(void) {
+  if (!cl_mode) return;
+  uint32_t now = time_us_32();
+  if (cl_fall && (int32_t)(now-cl_fall) >= 0) {
+    gpio_callback(GPIO_CLOCK_IN, GPIO_IRQ_EDGE_RISE); // inverted jack signal
+    cl_fall = 0;
+  }
+  if ((int32_t)(now-cl_next) < 0) return;
+  if ((cl_mode == 2 && cl_trial) || cl_trial >= 24) {
+    cl_timeout(); cl_mode = 0; clock_start_stop_sync = cl_saved_sync; return;
+  }
+  if (!cl_pulse) {
+    cl_begin((playback_stopped ? 1u : 0) | (audio_callback_in_mute ? 2u : 0) |
+             (button_mute ? 4u : 0) | (clock_input_absent ? 8u : 0),
+             (sel_bank_cur << 16) | sel_sample_cur, cl_mode);
+    ++cl_trial;
+  }
+  gpio_callback(GPIO_CLOCK_IN, GPIO_IRQ_EDGE_FALL);
+  if (!cl_pulse) cl_handler_done();
+  cl_fall = now + 10000;
+  cl_pulse = (cl_pulse + 1) % 3;
+  cl_next = now + (cl_pulse ? 250000 : 1200000 + (cl_trial * 997) % 17000);
+}
+#endif
 void __not_in_flash_func(input_handling)() {
   // flash bad signs
-  while (!fil_is_open) {
-    sleep_ms(10);
-  }
 
   gpio_init(GPIO_LED_TAPTEMPO);
   gpio_set_dir(GPIO_LED_TAPTEMPO, GPIO_OUT);
@@ -723,7 +770,11 @@ void __not_in_flash_func(input_handling)() {
   uint32_t loopstart_trig_seen_transport_start_generation =
       ecto_loopstart_transport_start_generation;
 
+  ZD_CALL(zd_control.context[2] = getFreeHeap());
+  audio_media_boot_complete();
   while (1) {
+    audio_media_poll();
+    ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
@@ -1079,6 +1130,38 @@ void __not_in_flash_func(input_handling)() {
 
     // check for input
     int char_input = getchar_timeout_us(10);
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+    // Test-only serial transport: 'T', controller, value (both 7-bit).
+    // Parse one byte per loop; never wait for a partially received command.
+    static uint8_t test_serial_state = 0, test_serial_cc = 0;
+    static uint32_t test_serial_last_ms = 0;
+    if (current_time - test_serial_last_ms > 100) test_serial_state = 0;
+    if (char_input >= 0) {
+      test_serial_last_ms = current_time;
+      if (test_serial_state == 0) {
+        if (char_input == 'T') test_serial_state = 1;
+      } else if (test_serial_state == 1) {
+        test_serial_cc = (uint8_t)char_input;
+        test_serial_state = char_input < 128 ? 2 : 0;
+      } else {
+        test_serial_state = 0;
+        if (char_input < 128 && test_serial_cc == 113) {
+          CL_CALL(if(char_input <= 2) cl_test_command(char_input));
+        } else if (char_input < 128 && test_serial_cc == cc_sampleselect) {
+          // Ectocore selects within the current bank through its debounced
+          // knob path; the MIDI flattened selection table is zeptocore-only.
+          sel_bank_next_new = sel_bank_cur;
+          sel_sample_next_new =
+              (uint32_t)char_input * banks[sel_bank_cur]->num_samples / 128;
+          debounce_file_change = 1;
+        } else if (char_input < 128 &&
+            ((test_serial_cc >= 15 && test_serial_cc <= 26) ||
+             (test_serial_cc >= 110 && test_serial_cc <= 112)))
+          midi_control_change(0, test_serial_cc, (uint8_t)char_input);
+      }
+    }
+#endif
+    CL_CALL(cl_test_service());
     if (char_input >= 0) {
       if (char_input == 118) {
         puts("version=v7.3.1");
@@ -1680,46 +1763,8 @@ void __not_in_flash_func(input_handling)() {
 
     // load the new sample if variation changed
     if (sel_variation_next != sel_variation) {
-      bool do_try_change = false;
-      if (dont_wait) {
-        do_try_change = true;
-        dont_wait = false;
-      }
-      if (!audio_callback_in_mute && !do_try_change) {
-        // uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (!sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // printf("sync1: %ld\n", time_us_32() - time_start);
-        uint32_t time_start = time_us_32();
-        sleep_us(100);
-        while (sync_using_sdcard) {
-          sleep_us(100);
-        }
-        // printf("sync2: %ld\n", time_us_32() - time_start);
-        // make sure the audio block was faster than usual
-        if (time_us_32() - time_start < 4000) {
-          do_try_change = true;
-        }
-      }
-      if (do_try_change) {
-        sync_using_sdcard = true;
-        f_close(&fil_current);
-        format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
-                               sel_variation_next + audio_variant * 2);
-        f_open(&fil_current, fil_current_name, FA_READ);
-
-        // TODO: fix this
-        // if sel_variation_next == 0
-        phases[0] = round(((float)phases[0] *
-                           (float)sel_variation_scale[sel_variation_next]) /
-                          (float)sel_variation_scale[sel_variation]);
-
-        sel_variation = sel_variation_next;
-        sync_using_sdcard = false;
-        // printf("[main] sel_variation %d us\n", time_us_32() - time_start);
-      }
+      dont_wait=false;
+      audio_file_change_variation();
     }
 
     // Fallback trig at playback start or strict loop wrap when a selected

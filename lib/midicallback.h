@@ -60,6 +60,42 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
   // printf("chan/cc/value: %d/%d/%d\n", channel, control, value);
   uint8_t new_adcvalue = (value * 2) ;
   switch (control) {
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+  // Explicit test firmware only. These invoke the ordinary musical controls;
+  // the read-only SWD diagnostic service cannot send them or change playback.
+  case 110:
+    sf->fx_active[FX_REVERSE] = value != 0;
+    update_fx(FX_REVERSE);
+    break;
+  case 111:
+    key_do_jump_to_slice(value, value % 16);
+    break;
+  case 112:
+    sf->fx_active[FX_TIMESTRETCH] = value != 0;
+    update_fx(FX_TIMESTRETCH);
+    break;
+  case 113:
+    set_audio_variant(value);
+    break;
+  case 114:
+    // Exercise the ordinary acknowledged save/reopen path, only in an empty
+    // preset slot. Never replace an existing preset through this test control.
+    if(value<16&&!savefile_has_data[value]) {
+      uint8_t previous=savefile_current;
+      savefile_current=value;
+      savefile_do_save();
+      savefile_current=previous;
+    }
+    break;
+  case 115:
+    if(value<16&&savefile_has_data[value]) {
+      uint8_t previous=savefile_current;
+      savefile_current=value;
+      savefile_do_load();
+      savefile_current=previous;
+    }
+    break;
+#endif
   case cc_volume: { // volume
       uint8_t new_vol = new_adcvalue; // is it 256 total?
       if (new_vol != sf->vol) {
@@ -100,6 +136,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       } else {
         sf->pitch_val_index = PITCH_VAL_MID;
       }
+      if (sf->pitch_val_index >= PITCH_VAL_MAX)
+        sf->pitch_val_index = PITCH_VAL_MAX - 1;
       break;
   case cc_sampleselect: { // sample
     uint8_t new_sample = new_adcvalue ; // what is range?
@@ -111,6 +149,8 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         f_sel_sample_next != sel_sample_cur) {
       sel_bank_next = f_sel_bank_next;
       sel_sample_next = f_sel_sample_next;
+      ZD_CALL(zd_switch_request(((uint16_t)f_sel_bank_next<<12)|
+          ((uint16_t)f_sel_sample_next<<8)|(sel_variation+audio_variant*2)));
       fil_current_change = true;
       }
       break;

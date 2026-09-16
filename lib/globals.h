@@ -13,6 +13,7 @@ clock_t time_of_initialization;
 FIL fil_current;
 char fil_current_name[32];
 volatile bool fil_is_open;
+uint32_t last_seeked = 1;
 uint8_t cpu_utilization;
 volatile int32_t phases[2];
 volatile int32_t phases_old[2];
@@ -639,6 +640,8 @@ void do_update_phase_from_beat_current() {
                 sel_variation_scale[sel_variation];
   }
   mute_because_of_playback_type = false;
+  CL_CALL(cl_phase(beat_current, phase_new));
+  AR_CALL(audio_restart_publish_phase(phase_new));
   phase_change = true;
   Gate_reset(audio_gate);
 #ifdef INCLUDE_ECTOCORE

@@ -487,18 +487,7 @@ void button_key_on_double(uint8_t key1, uint8_t key2) {
     } else if (key2 == KEY_C) {
       // D+C
       // do save
-      // save the current bank and sample
-      sf->bank = sel_bank_cur;
-      sf->sample = sel_sample_cur;
-      while (sync_using_sdcard) {
-        sleep_us(100);
-      }
-      sync_using_sdcard = true;
-      SaveFile_save(sf, savefile_current);
-      // load prevoius file
-      f_open(&fil_current, fil_current_name, FA_READ);
-      sync_using_sdcard = false;
-      savefile_has_data[savefile_current] = true;
+      savefile_do_save();
     } else if (key2 == KEY_A) {
       // D+A
     } else {

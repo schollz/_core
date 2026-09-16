@@ -47,15 +47,25 @@ void clock_handling_start() {
 #endif
     clock_in_activator++;
   } else {
+    bool restart_from_stop = false;
+    // Stop phase publication before arming the explicit restart below.
+    cancel_repeating_timer(&timer);
+    AR_CALL(restart_from_stop = playback_stopped ||
+        (clock_start_stop_sync && audio_callback_in_mute && !button_mute);
+      if (restart_from_stop) {
+        audio_restart_arm();
+        button_mute = false;
+        trigger_button_mute = false;
+      });
     clock_in_do = true;
     clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();
     clock_in_beat_total = 0;
     clock_in_beat_last = 0;
     clock_in_ready = true;
-    cancel_repeating_timer(&timer);
     do_restart_playback = true;
     timer_step();
     update_repeating_timer_to_bpm(sf->bpm_tempo);
+    if (restart_from_stop) audio_i2s_request_render();
   }
 }
