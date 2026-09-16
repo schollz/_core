@@ -38,7 +38,7 @@ int main(void) {
   zv_realtime_service(true, sink); assert(packets == 8);
   zv_realtime_service(false, sink); clear(); zv_realtime_service(true, sink); assert(packets == 0);
   zv_snapshot s = {.bank = 1, .sample = 2, .slice = 3, .trigger = 4,
-      .bpm = 170, .forward = true, .valid = true};
+      .bpm = 170, .forward = true, .valid = true, .effects = 32769};
   zv_publish(&s);
   zv_service(0, true, sink); assert(packets == 0);
   assert(!zv_command(0x80, 9, 5, 1, 0)); // Never treat a performance key as subscription.
@@ -46,7 +46,9 @@ int main(void) {
   assert(zv_command(0x80, 9, 5, 0, 0));
   zv_service(0, true, sink);
   assert(bytes[0] == 0xf0 && bytes[length - 1] == 0xf7 && packets <= 16);
-  assert(strncmp((char *)bytes + 1, "view=1,1,2,3,4,170,1,0,0,1", length - 2) == 0);
+  const char expected[] = "view=2,1,2,3,4,170,1,0,0,1,32769";
+  assert(length == sizeof expected + 1);
+  assert(memcmp(bytes + 1, expected, sizeof expected - 1) == 0);
   clear(); s.trigger++; zv_publish(&s);
   zv_service(16666, true, sink); assert(packets == 0);
   allowance = 2; zv_service(16667, true, sink); assert(zv_tx_pending() && packets == 2);

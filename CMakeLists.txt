@@ -10,6 +10,7 @@ include(pico_extras_import.cmake)
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
 project(_core C CXX ASM)
+option(ZEPTOCORE_VISUALIZER "Enable Zeptocore visualizer MIDI telemetry" OFF)
 option(SEEK_DIAGNOSTICS "Collect bounded SWD seek/audio diagnostics" OFF)
 option(AUDIO_CLOCK_RESTART_FIX "Restart ectocore clock playback from its intended beat" ON)
 option(AUDIO_CLOCK_RESTART_WAKE "Wake 256-frame ectocore rendering on clock restart" ON)
@@ -49,6 +50,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
+include(${CMAKE_CURRENT_LIST_DIR}/scripts/patch_tinyusb.cmake)
 
 # error if there is a warning
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
@@ -60,7 +62,6 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_profile.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/clock_latency.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_restart.c
-    ${CMAKE_CURRENT_LIST_DIR}/lib/visualizer_telemetry.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_seek_map.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_fragment_benchmark.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_audio_fixture.c
@@ -117,6 +118,16 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 
 include(${CORE_COMPILE_DEFINITIONS})
+if(ZEPTOCORE_VISUALIZER)
+    get_target_property(VISUALIZER_DEVICE_DEFINITIONS ${PROJECT_NAME} COMPILE_DEFINITIONS)
+    foreach(REQUIRED_FEATURE INCLUDE_ZEPTOCORE INCLUDE_MIDI)
+        if(NOT "${REQUIRED_FEATURE}=1" IN_LIST VISUALIZER_DEVICE_DEFINITIONS)
+            message(FATAL_ERROR "ZEPTOCORE_VISUALIZER requires INCLUDE_ZEPTOCORE=1 and INCLUDE_MIDI=1")
+        endif()
+    endforeach()
+    target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/visualizer_telemetry.c)
+endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE ZEPTOCORE_VISUALIZER=$<BOOL:${ZEPTOCORE_VISUALIZER}>)
 # USB-serial targets need the SDK's CDC configuration, even when the project
 # directory (which contains the MIDI configuration) is on the include path.
 get_target_property(CORE_STDIO_USB ${PROJECT_NAME} PICO_TARGET_STDIO_USB)
@@ -152,7 +163,7 @@ if(SEEK_DIAGNOSTICS)
          "${CMAKE_CURRENT_LIST_DIR}/lib/CMakeLists.txt")
     list(APPEND SEEK_ID_INPUTS "${CMAKE_CURRENT_LIST_DIR}/main.c"
          "${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt" "${CORE_COMPILE_DEFINITIONS}")
-    set(SEEK_ID_TEXT "${CMAKE_C_COMPILER_ID};${CMAKE_C_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_C_FLAGS};${SEEK_TIMING_WITNESS};${SEEK_TEST_CONTROLS};${CORE_NO_OVERCLOCK};${SEEK_MAP_ATTACH};${SEEK_TEST_FRESH_INDEX};${SEEK_TEST_FRAGMENT_BENCH};${SEEK_TEST_AUDIO_FIXTURE};${AUDIO_PREPARE_NEXT};${AUDIO_EXTRA_OUTPUT_BUFFER};${AUDIO_DETAILED_TIMING};${SEEK_CLOCK_LATENCY};${AUDIO_CLOCK_RESTART_FIX};${AUDIO_CLOCK_RESTART_WAKE}")
+    set(SEEK_ID_TEXT "${CMAKE_C_COMPILER_ID};${CMAKE_C_COMPILER_VERSION};${CMAKE_BUILD_TYPE};${CMAKE_C_FLAGS};${SEEK_TIMING_WITNESS};${SEEK_TEST_CONTROLS};${CORE_NO_OVERCLOCK};${SEEK_MAP_ATTACH};${SEEK_TEST_FRESH_INDEX};${SEEK_TEST_FRAGMENT_BENCH};${SEEK_TEST_AUDIO_FIXTURE};${AUDIO_PREPARE_NEXT};${AUDIO_EXTRA_OUTPUT_BUFFER};${AUDIO_DETAILED_TIMING};${SEEK_CLOCK_LATENCY};${AUDIO_CLOCK_RESTART_FIX};${AUDIO_CLOCK_RESTART_WAKE};${ZEPTOCORE_VISUALIZER}")
     foreach(SEEK_ID_INPUT IN LISTS SEEK_ID_INPUTS)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${SEEK_ID_INPUT}")
         file(SHA256 "${SEEK_ID_INPUT}" SEEK_FILE_HASH)

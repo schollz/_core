@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 import type { Playback, Waveform as WaveformData } from './types';
 import { Playhead } from './playhead';
+import { decodeSpectrum, spectrumAt } from './spectrum';
 import { isFresh } from './protocol';
 import type { ButtonPress } from './midi';
+
+const INACTIVE_WAVEFORM_ALPHA = 0.55;
 
 // Trace a measured portion of a polyline, so the outline draws and undraws.
 function trace(ctx: CanvasRenderingContext2D, points: number[][], progress: number) {
@@ -22,6 +25,7 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
   wave: WaveformData; playback?: Playback; buttonPress?: ButtonPress; receivedAt?: number; live: boolean;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const spectrumCanvas = useRef<HTMLCanvasElement>(null);
   const clock = useRef(new Playhead());
   const current = useRef({ playback, buttonPress, receivedAt, live });
   current.current = { playback, buttonPress, receivedAt, live };
@@ -32,6 +36,12 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
   useEffect(() => {
     const node = canvas.current!;
     const ctx = node.getContext('2d')!;
+    const spectrumNode = spectrumCanvas.current!;
+    const spectrumCtx = spectrumNode.getContext('2d')!;
+    const levels = decodeSpectrum(wave.spectrum);
+    let spectrumWidth = 0, spectrumHeight = 0;
+    let displayed = Array(32).fill(0), lastFrame = performance.now(), lastTrigger = '';
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const backing = document.createElement('canvas');
     const base = backing.getContext('2d')!;
     let width = 0, height = 0, raf = 0;
@@ -42,6 +52,10 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
     function resize() {
       const box = node.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
       width = box.width; height = box.height;
+      const spectrumBox = spectrumNode.getBoundingClientRect();
+      spectrumWidth = spectrumBox.width; spectrumHeight = spectrumBox.height;
+      spectrumNode.width = Math.round(spectrumWidth * dpr);
+      spectrumNode.height = Math.round(spectrumHeight * dpr);
       const style = getComputedStyle(node);
       uiScale = parseFloat(style.fontSize) / 16;
       labelFont = style.fontFamily;
@@ -71,12 +85,12 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
         base.fillRect(x, middle - h, end - x, h * 2);
       }
     }
-    const observer = new ResizeObserver(resize); observer.observe(node); resize();
+    const observer = new ResizeObserver(resize); observer.observe(node); observer.observe(spectrumNode); resize();
     function frame() {
       const dpr = window.devicePixelRatio || 1;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, node.width, node.height);
-      ctx.globalAlpha = 0.55; ctx.drawImage(backing, 0, 0); ctx.globalAlpha = 1;
+      ctx.globalAlpha = INACTIVE_WAVEFORM_ALPHA; ctx.drawImage(backing, 0, 0); ctx.globalAlpha = 1;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       // Quiet reference marks, like the geography beneath a radar track.
       ctx.strokeStyle = '#404040'; ctx.lineWidth = 1;
@@ -101,7 +115,7 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
           const position = clock.current.value(now);
           if (!state.stopped && !state.muted && position !== null) {
             const px = position / wave.duration * width;
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(Math.floor(px) + 0.5, 0);
             ctx.lineTo(Math.floor(px) + 0.5, height);
@@ -158,6 +172,26 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
           }
         }
       }
+      const spectrumPosition = valid && !state.stopped && !state.muted ? clock.current.value(now) : null;
+      const target = spectrumAt(wave.spectrum, levels, spectrumPosition);
+      const trigger = state ? `${state.bank}:${state.sample}:${state.trigger}:${state.estimated}` : '';
+      const reset = trigger !== lastTrigger || spectrumPosition === null || reduceMotion.matches;
+      const dt = Math.min(100, Math.max(0, now - lastFrame));
+      displayed = target.map((value, band) => reset ? value : displayed[band] + (value - displayed[band]) *
+        (1 - Math.exp(-dt / (value > displayed[band] ? 35 : 140))));
+      lastFrame = now; lastTrigger = trigger;
+      spectrumCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      spectrumCtx.clearRect(0, 0, spectrumWidth, spectrumHeight);
+      const gap = Math.max(2, Math.min(5, spectrumWidth / 160));
+      const step = spectrumWidth / 32;
+      for (let band = 0; band < 32; band++) {
+        const barHeight = Math.max(1, displayed[band] * Math.max(0, spectrumHeight - 2));
+        spectrumCtx.fillStyle = '#fff';
+        spectrumCtx.globalAlpha = INACTIVE_WAVEFORM_ALPHA * Math.max(0, Math.min(1, displayed[band]));
+        spectrumCtx.fillRect(Math.floor(band * step), spectrumHeight - barHeight,
+          Math.max(1, Math.floor(step - gap)), barHeight);
+      }
+      spectrumCtx.globalAlpha = 1;
       raf = requestAnimationFrame(frame);
     }
     frame();
@@ -165,5 +199,14 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
   }, [wave]);
   const active = live && isFresh(receivedAt, performance.now()) && playback?.valid &&
     playback.bank === wave.bank && playback.sample === wave.sample && wave.slices[playback.slice];
-  return <canvas ref={canvas} className="waveform" role="img" aria-label={`Waveform for bank ${wave.bank + 1}, sample ${wave.sample + 1}, ${wave.slices.length} slices. Active slice ${active ? playback!.slice + 1 : 'unavailable'}.`} />;
+  return <>
+    <canvas ref={canvas} className="waveform" role="img"
+      aria-label={`Waveform for bank ${wave.bank + 1}, sample ${wave.sample + 1}, ${wave.slices.length} slices. Active slice ${active ? playback!.slice + 1 : 'unavailable'}.`} />
+    <div className="spectrum-panel">
+      <div className="spectrum-caption"><span>SOURCE SPECTRUM</span><span>ESTIMATED</span></div>
+      <canvas ref={spectrumCanvas} className="spectrum" role="img"
+        aria-label="Estimated source audio frequency spectrum, 32 bands from 50 Hz to 16 kHz; device effects are not included" />
+      <div className="spectrum-axis"><span>50 Hz</span><span>1 kHz</span><span>16 kHz</span></div>
+    </div>
+  </>;
 }
