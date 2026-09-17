@@ -57,18 +57,20 @@ jobs:
         with:
           repository: raspberrypi/pico-sdk
           path: pico-sdk
-          submodules: true
-          ref: 2.2.0
+          submodules: recursive
+          ref: 2.3.1
       - name: Checkout pico-extras
         uses: actions/checkout@v4.2.2
         with:
           repository: raspberrypi/pico-extras
           path: pico-extras
-          submodules: true
-          ref: sdk-2.2.0
+          submodules: recursive
+          ref: sdk-2.3.1
       - name: Patch tinyusb
         run: |
-          cmake -DPICO_SDK_PATH="$GITHUB_WORKSPACE/pico-sdk" -P scripts/patch_tinyusb.cmake
+          cmake -DPICO_SDK_PATH="$GITHUB_WORKSPACE/pico-sdk" -P lib/cmake/patch_tinyusb.cmake
+      - name: Check SDK upgrade integration
+        run: python3 test/sdk_upgrade/run.py
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
       - name: Prepare artifact filenames
@@ -124,6 +126,14 @@ jobs:
         run: |
           make zeptoboard
           cp zeptoboard.uf2 "dist/zeptoboard_${ARTIFACT_SUFFIX}.uf2"
+      - name: Check ezeptocore MIDI build
+        run: make ezeptocore_midi
+      - name: Check filesystem and audio behavior
+        run: |
+          python3 test/fatfs_seek/run.py
+          python3 test/seek_diagnostics/run.py
+          python3 test/audio_source/run.py
+          python3 test/dsp_loops/run.py
       # Check flag isolation separately from the packaged visualizer firmware.
       - name: Check visualizer build flag (default, ON, OFF)
         run: python3 test/visualizer_build/run.py

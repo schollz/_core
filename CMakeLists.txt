@@ -2,10 +2,10 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Pull in PICO SDK (must be before project)
-include(pico_sdk_import.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lib/cmake/pico_sdk_import.cmake)
 
 # We also need PICO EXTRAS
-include(pico_extras_import.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lib/cmake/pico_extras_import.cmake)
 
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
@@ -43,14 +43,14 @@ if(SEEK_TEST_FRESH_INDEX AND NOT SEEK_TEST_CONTROLS)
     message(FATAL_ERROR "SEEK_TEST_FRESH_INDEX requires SEEK_TEST_CONTROLS")
 endif()
 option(CORE_NO_OVERCLOCK "Use the firmware's 125 MHz non-overclocked clock path" OFF)
-set(CORE_COMPILE_DEFINITIONS "${CMAKE_CURRENT_LIST_DIR}/target_compile_definitions.cmake"
+set(CORE_COMPILE_DEFINITIONS "${CMAKE_CURRENT_LIST_DIR}/lib/cmake/target_compile_definitions.cmake"
     CACHE FILEPATH "Device compile definitions for an isolated build")
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
-include(${CMAKE_CURRENT_LIST_DIR}/scripts/patch_tinyusb.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lib/cmake/patch_tinyusb.cmake)
 
 # error if there is a warning
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")

@@ -7,6 +7,8 @@ also refer to the repository root; Markdown links are relative to each document.
 
 The short orientation note is [readme-starthere.md](readme-starthere.md).
 
+SDK upgrade and validation: [Pico SDK 2.3.1 and connected hardware validation](pico-sdk-upgrade.md).
+
 Current performance controls: [Zeptocore A/B knob mappings](zeptocore-controls.md).
 
 ## Reading order
@@ -37,7 +39,7 @@ Current performance controls: [Zeptocore A/B knob mappings](zeptocore-controls.m
 | [dev/](../dev/) | Development utilities, audio/header generators, and device tools. |
 | [scripts/](../scripts/) | Host-side build comparisons, diagnostics, hardware workloads, and capture analysis. |
 | [test/](../test/) | Native firmware tests and Python protocol tests. Older standalone module tests also live in [lib/test/](../lib/test/). |
-| [Makefile](../Makefile), [CMakeLists.txt](../CMakeLists.txt), root `*_compile_definitions*.cmake` | Build targets, feature switches, and device/buffer configurations. |
+| [Makefile](../Makefile), [CMakeLists.txt](../CMakeLists.txt), [lib/cmake](../lib/cmake/) `*_compile_definitions*.cmake` | Build targets, feature switches, and device/buffer configurations. |
 | [schematics/](../schematics/) | Hardware schematics. |
 | [docs/](./) | Development notes and legacy Hugo site sources/assets. The site's `public/` output is generated; top-level development notes are ordinary Markdown. |
 
@@ -52,15 +54,22 @@ make zeptocore
 It produces `zeptocore.uf2` and `build/_core.elf`, using the 441-frame device
 configuration. `make zeptocore_256` selects the supported 256-frame configuration.
 Other device targets are listed in the [Makefile](../Makefile). These targets
-share `build/` and `target_compile_definitions.cmake`; use separate CMake build
+share `build/` and `lib/cmake/target_compile_definitions.cmake`; use separate CMake build
 directories and `CORE_COMPILE_DEFINITIONS` for simultaneous configurations, as
 shown in the [diagnostics build instructions](seek-diagnostics.md#build-and-run).
 
-The Makefile downloads Pico SDK 2.2.0 and Pico Extras `sdk-2.2.0`, creates a Python
+The Makefile downloads Pico SDK 2.3.1 and Pico Extras `sdk-2.3.1`, creates a Python
 3.11 `.venv` with `uv`, and generates DSP/audio headers when absent. Host tools
 include CMake, Make, ARM GCC with newlib, Git, `uv`, `clang-format`, Go, and SoX.
 The [firmware CI workflow](../.github/workflows/build.yml) documents its Linux
 setup, including the TinyUSB patch used by CI. Building firmware does not flash it.
+
+Make checks existing SDK/extras checkouts against the pinned tags and initialized
+submodules. It reports a mismatch without overwriting local changes. For an older
+installation, move the old SDK, extras, and build directories into a uniquely
+named backup under `artifacts/`, then run `make zeptocore` to fetch the pinned
+dependencies and configure a fresh build. Direct CMake builds can select other
+SDK/extras paths for comparisons; use a separate build directory for each pair.
 
 Run the relevant native suites after building the generated headers:
 

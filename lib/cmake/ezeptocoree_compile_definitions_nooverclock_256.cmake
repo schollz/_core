@@ -6,7 +6,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # # ecto
-    SAMPLES_PER_BUFFER=441
+    SAMPLES_PER_BUFFER=256
     SDCARD_CMD_GPIO=25
     SDCARD_D0_GPIO=26 
     AUDIO_CLK_GPIO=21 # LCK=17
@@ -20,13 +20,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # utilize core1 for audio to avoid dropouts
     CORE1_PROCESS_I2S_CALLBACK=1 
     PICO_CORE1_STACK_SIZE=0x1000
-    DO_OVERCLOCK=1
+    # DO_OVERCLOCK=1
     
     # pin definitions
-    MCP_KNOB_AMEN=0
+    MCP_KNOB_AMEN=3
     MCP_ATTEN_AMEN=1
     MCP_CV_AMEN=2
-    MCP_KNOB_BREAK=3
+    MCP_KNOB_BREAK=0
     MCP_ATTEN_BREAK=4
     MCP_CV_BREAK=5
     MCP_KNOB_SAMPLE=6
@@ -41,10 +41,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     GPIO_MIDI_IN=15
     GPIO_CLOCK_OUT=19
     GPIO_TRIG_OUT=18
-    GPIO_MODE_LEDA=12
-    GPIO_MODE_LEDB=13
+    GPIO_MODE_1=6
+    GPIO_MODE_2=12
+    GPIO_MODE_3=17
+    GPIO_MODE_4=13
     GPIO_WS2812=7
-    INCLUDE_CUEDSOUNDS=1
+    # INCLUDE_CUEDSOUNDS=1
 
     # ARCADE DEFINITIONS
     MCP23017_ADDR1=0x20
@@ -58,6 +60,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     # PRINT_MEMORY_USAGE=1
     # PRINT_SDCARD_TIMING=1
     # PRINT_AUDIOBLOCKDROPS=1
+    # PRINT_SDCARD_OPEN_TIMING=1
 
     # turn off gpio for leds
     LEDS_NO_GPIO=1
@@ -72,7 +75,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
     USBD_PID=0x1837
     SKIP_SDIO_CHECKSUMS=1
-    ECTOCORE_VERSION_3=1
+    ECTOCORE_VERSION_4=1
     # DEBUG_AUDIO_WITH_SINE_WAVE=1
 )
 
@@ -84,7 +87,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 # )
 # pico_enable_stdio_usb(${PROJECT_NAME} 0)
 # pico_enable_stdio_uart(${PROJECT_NAME} 1)
-# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)

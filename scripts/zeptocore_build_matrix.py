@@ -14,21 +14,27 @@ def main():
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--jobs", type=int, default=4)
     p.add_argument("--parallel", type=int, default=2)
+    p.add_argument("--sdk-path", type=Path, help="SDK checkout (defaults to repository pico-sdk)")
+    p.add_argument("--extras-path", type=Path, help="Extras checkout (defaults to repository pico-extras)")
     p.add_argument("--observer", action="store_true",
                    help="Build 441/256-frame paired diagnostics-on/off configurations with the independent timing witness")
     args = p.parse_args()
     root = Path(__file__).resolve().parents[1]
+    sdk = (args.sdk_path or root/'pico-sdk').resolve()
+    extras = (args.extras_path or root/'pico-extras').resolve()
     args.out.mkdir(parents=True, exist_ok=False)
 
     def build(frames, clock, attach):
         name = f"{frames}-{clock}-{'on' if attach else 'off'}"
         artifact = args.out/name
         artifact.mkdir()
-        directory = root/f"build-seek-map-{'observer' if args.observer else 'matrix'}-{name}"
+        # A run owns its build directories, including when comparing different
+        # SDK checkouts. Never reuse another run's CMake cache/toolchain.
+        directory = artifact.resolve()/"build"
         suffix = "" if frames == 441 else f"_{frames}"
         configure = ["cmake", "-S", str(root), "-B", str(directory),
-            f"-DPICO_SDK_PATH={root/'pico-sdk'}", f"-DPICO_EXTRAS_PATH={root/'pico-extras'}",
-            f"-DCORE_COMPILE_DEFINITIONS={root/f'zeptocore_compile_definitions{suffix}.cmake'}",
+            f"-DPICO_SDK_PATH={sdk}", f"-DPICO_EXTRAS_PATH={extras}",
+            f"-DCORE_COMPILE_DEFINITIONS={root/'lib/cmake'/f'zeptocore_compile_definitions{suffix}.cmake'}",
             f"-DSEEK_DIAGNOSTICS={'ON' if not args.observer or attach else 'OFF'}", "-DSEEK_TEST_CONTROLS=ON",
             f"-DSEEK_TIMING_WITNESS={'ON' if args.observer else 'OFF'}",
             "-DSEEK_TEST_FRESH_INDEX=OFF", "-DSEEK_TEST_FRAGMENT_BENCH=OFF",

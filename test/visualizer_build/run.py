@@ -26,7 +26,7 @@ for variant, definitions in [('441', 'zeptocore_compile_definitions.cmake'),
                              ('256', 'zeptocore_compile_definitions_256.cmake')]:
     build = output / variant
     base = ['cmake', '-S', str(root), '-B', str(build),
-            f'-DCORE_COMPILE_DEFINITIONS={root / definitions}']
+            f'-DCORE_COMPILE_DEFINITIONS={root / 'lib/cmake' / definitions}']
     # -U removes a previous cache value to exercise the default as well as explicit OFF.
     for mode, options in [('default', ['-UZEPTOCORE_VISUALIZER']),
                           ('on', ['-DZEPTOCORE_VISUALIZER=ON']),
@@ -49,11 +49,11 @@ for variant, definitions in [('441', 'zeptocore_compile_definitions.cmake'),
 
 # Invalid configurations must fail at configuration, not later during linking.
 no_midi = output / 'zeptocore-no-midi.cmake'
-no_midi.write_text(f'include("{root / "zeptocore_compile_definitions.cmake"}")\n'
+no_midi.write_text(f'include("{root / "lib/cmake/zeptocore_compile_definitions.cmake"}")\n'
                    'get_target_property(defs ${PROJECT_NAME} COMPILE_DEFINITIONS)\n'
                    'list(FILTER defs EXCLUDE REGEX "^INCLUDE_MIDI(=|$)")\n'
                    'set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_DEFINITIONS ${defs})\n')
-for name, definitions in [('other-device', root / 'ezeptocore_compile_definitions.cmake'), ('no-midi', no_midi)]:
+for name, definitions in [('other-device', root / 'lib/cmake/ezeptocore_compile_definitions.cmake'), ('no-midi', no_midi)]:
     result = run(['cmake', '-S', str(root), '-B', str(output / name),
                   f'-DCORE_COMPILE_DEFINITIONS={definitions}', '-DZEPTOCORE_VISUALIZER=ON'],
                  output / f'{name}.log', success=False)
