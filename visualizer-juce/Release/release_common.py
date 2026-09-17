@@ -2,7 +2,7 @@
 
 Like Tape: fresh source/build directories, local Keychain signing, notarization,
 platform-specific archives/manifests/checksums, and gh publication. These scripts
-do not execute the application or tests. Releases use a dedicated visualizer tag.
+do not execute the application or tests. Assets attach to the latest existing release.
 """
 from __future__ import annotations
 
@@ -69,30 +69,20 @@ def snapshot(destination):
     return manifest
 
 
-def release_info(repo, tag):
-    # A missing tag is distinguished from authentication/network/repository errors.
-    releases = json.loads(run(["gh", "api", "--paginate", "--slurp",
-                              f"repos/{repo}/releases?per_page=100"]))
-    for page in releases:
-        for release in page:
-            if release["tag_name"] == tag:
-                if release.get("draft") or release.get("immutable"):
-                    raise RuntimeError("The selected release is draft or immutable")
-                return release
-    return None
+def release_info(repo):
+    # Fail if no latest release exists; never create a release or infer its tag.
+    release = json.loads(run(["gh", "api", f"repos/{repo}/releases/latest"]))
+    if (not release.get("tag_name") or release.get("draft") or release.get("immutable")):
+        raise RuntimeError("The latest release is missing, draft or immutable")
+    return release
 
 
-def publish(repo, tag, commit, assets, pinned):
-    current = release_info(repo, tag)
-    if pinned and (not current or current["id"] != pinned["id"]):
+def publish(repo, assets, pinned):
+    current = release_info(repo)
+    if current["id"] != pinned["id"] or current["tag_name"] != pinned["tag_name"]:
         raise RuntimeError("Release changed while building; artifacts retained locally")
-    if not current:
-        run(["gh", "release", "create", tag, "--repo", repo, "--target", commit,
-             "--title", "Zeptocore Visualizer " + tag.removeprefix("zeptocore-visualizer-v"),
-             "--notes", "Standalone Zeptocore Visualizer for macOS, Linux and Windows.",
-             "--latest=false"])
-    run(["gh", "release", "upload", tag, "--repo", repo, "--clobber", *assets])
-    current = release_info(repo, tag)
+    run(["gh", "release", "upload", "--repo", repo, "--clobber", "--", current["tag_name"], *assets])
+    current = json.loads(run(["gh", "api", f"repos/{repo}/releases/{pinned['id']}"]))
     uploaded = {a["name"]: a for a in current["assets"]}
     for asset in assets:
         remote = uploaded.get(asset.name, {})
@@ -132,8 +122,8 @@ def main(system, architecture, minimum=None):
             for key in ("APPLE_ID", "TEAM_ID", "APPLE_PASSWORD"):
                 if not os.environ.get(key):
                     raise ValueError(f"Set {key} or NOTARY_PROFILE before releasing")
-        tag = "zeptocore-visualizer-v" + args.version
-        pinned = None if args.no_upload else release_info(args.repo, tag)
+        pinned = None if args.no_upload else release_info(args.repo)
+        tag = pinned["tag_name"] if pinned else None
         commit = run(["git", "rev-parse", "HEAD"]).strip()
         dirty = bool(run(["git", "status", "--porcelain", "--", "visualizer-juce"]).strip())
         label = ("macOS" if system == "Darwin" else "Linux") + "-" + architecture
@@ -212,7 +202,7 @@ def main(system, architecture, minimum=None):
         assets = [archive, manifest, sums]
         if not args.no_upload:
             print("Publishing " + tag, flush=True)
-            publish(args.repo, tag, commit, assets, pinned)
+            publish(args.repo, assets, pinned)
         (output / "complete.json").write_text(json.dumps({
             "uploaded": not args.no_upload, "assets": [p.name for p in assets]}, indent=2) + "\n")
         print("Standalone release ready: " + str(output), flush=True)

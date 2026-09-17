@@ -3,13 +3,14 @@
 These three independent release pipelines package **only the standalone app**.
 They do not build plugins, run application tests, launch the app or install it.
 They follow Tape's native macOS/Linux scripts and self-hosted Windows action.
-All platforms share the dedicated `zeptocore-visualizer-vVERSION` GitHub release;
-firmware releases are untouched, and this release is not marked latest.
+All platforms upload to GitHub's **latest existing release**, regardless of its
+tag or title. The app version is independent of that release's tag. No release or
+tag is created, and existing release metadata and other assets are preserved.
 
 Use the same source revision and version on each machine. The scripts build the
 current source; macOS/Linux include source hashes and dirty state in the manifest.
-Publication creates the dedicated release if necessary or replaces only matching
-platform asset names. Authenticate `gh` against `schollz/_core` for local uploads
+Publication replaces only matching platform asset names and fails if no latest
+release exists. Authenticate `gh` against `schollz/_core` for local uploads
 (or use `GH_TOKEN`/`GITHUB_TOKEN`). No sibling checkout is needed.
 
 ## macOS: run on each Mac
@@ -49,7 +50,8 @@ contains notices and launch instructions. System libraries are not bundled;
 build on the oldest distribution you intend to support.
 
 Native scripts accept `--no-upload` to package locally, `--jobs N`, and
-`--repo owner/repository`. They use a fresh build in
+`--repo owner/repository`. They resolve the latest release at startup and abort
+upload if it changes during the build, keeping the artifacts locally. They use a fresh build in
 `visualizer-juce/release-output/<platform>/<version>-<unique>/`, retain incomplete
 output after failure, and write `complete.json` only on success. Each platform
 produces a `-Standalone.zip`, `-manifest.json` and `-SHA256SUMS.txt` with unique
@@ -58,9 +60,11 @@ platform/architecture names. No test execution is implied by completion.
 ## Windows: separate manual GitHub Action
 
 Select **Release Visualizer Standalone - Windows** in Actions, choose the source
-branch, enter the same version, and enable `publish` to attach the assets. With
-`publish` disabled the signed ZIP, manifest and hashes are retained as an Actions
-artifact. This workflow does not trigger on firmware tags or ordinary pushes.
+branch, enter the app version, and click **Run workflow**. After building and
+signing, it automatically uploads to whichever release is latest at publication
+time. The signed ZIP, manifest and hashes are also retained as an Actions artifact.
+`workflow_dispatch` is its only trigger: no tag, push, PR or release event starts
+this action automatically. No separate publish checkbox is required.
 
 The runner labels match Tape: `[self-hosted, Windows, X64, tape-gpu]`. It uses
 Visual Studio's x64 MSVC/CMake/Ninja tools, static MSVC runtime, and the same
