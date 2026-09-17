@@ -25,7 +25,7 @@ main{height:100vh;height:100dvh;min-height:220px;padding:4vh 4vw;display:flex;fl
 .waveform{height:calc(70% - 16px)}
 .effect-icons{bottom:calc(30% + 8px)}
 .spectrum-panel{position:absolute;left:8px;right:8px;top:72%;bottom:8px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.spectrum-caption,.spectrum-axis{display:flex;justify-content:space-between;color:#777;font-size:clamp(8px,.42em,12px);letter-spacing:.08em;line-height:1.2}
+.spectrum-axis{display:flex;justify-content:space-between;color:#777;font-size:clamp(8px,.42em,12px);letter-spacing:.08em;line-height:1.2}
 .spectrum{display:block;width:100%;flex:1;min-height:0}
 .spectrum-axis{letter-spacing:0}
-@media(max-height:400px){.spectrum-panel{gap:2px}.spectrum-caption{display:none}}
+@media(max-height:400px){.spectrum-panel{gap:2px}}

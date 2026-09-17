@@ -1,16 +1,18 @@
 # zeptocore visualizer — JUCE
 
-A native port of the zeptocore browser visualizer, with a standalone macOS app,
-VST3, and Audio Unit. The original `visualizer` kiosk project and device firmware
+A native port of the zeptocore browser visualizer, with a standalone Linux/macOS app,
+VST3, and macOS Audio Unit. The original `visualizer` kiosk project and device firmware
 are unchanged. This directory is an independent CMake project and can be copied
 out of the parent repository.
 
 ## Build and use
 
-On this laptop, Xcode Command Line Tools, CMake, Ninja, and Make are sufficient:
+Use CMake 3.22+, a C++17 compiler, and Make. macOS requires Xcode Command Line
+Tools; Linux requires JUCE's development libraries (ALSA, X11, FreeType and
+Fontconfig). Ninja is used when installed; otherwise the build uses Unix Makefiles.
 
 ```sh
-cd /Users/zns/Documents/_core/visualizer-juce
+cd visualizer-juce
 make run
 ```
 
@@ -44,8 +46,12 @@ make test          # Native contracts and real CoreMIDI virtual-port integration
 make visual-check  # Render deterministic UI fixtures under test-results/visuals
 ```
 
-`CONFIG`, `BUILD_DIR`, `JOBS` (default 4), `CMAKE_FLAGS`, and `VST3_INSTALL_DIR`
+`CONFIG`, `BUILD_DIR`, `GENERATOR`, `JOBS` (default 4), `CMAKE_FLAGS`, and `VST3_INSTALL_DIR`
 are overridable. `make install` replaces only this plugin's destination bundle.
+If an existing build directory was configured with a different generator, use a
+new `BUILD_DIR` or reconfigure once with `CMAKE_FLAGS=--fresh` (CMake 3.24+).
+On Linux, the standalone executable is
+`build-debug/zeptocore_visualizer_artefacts/Debug/Standalone/zeptocore visualizer`.
 AU installation is manual: copy the `.component` into
 `~/Library/Audio/Plug-Ins/Components` and restart the host if required.
 
@@ -58,10 +64,12 @@ build-release/zeptocore_visualizer_artefacts/Release/
   AU/zeptocore visualizer.component
 ```
 
-The app and plugins include their fonts and icons, and local builds are ad-hoc
+The app and plugins include their fonts and icons; local macOS builds are ad-hoc
 signed and verified. The reference copy stays external and is never modified.
-The app can be moved outside the checkout. Developer ID signing, notarization,
-installers, cross-platform qualification, and GitHub Actions are deferred.
+The app can be moved outside the checkout. See [standalone releases](Release/README.md)
+for native macOS/Linux release scripts and the separate signed Windows action.
+These standalone release paths have not yet been tested; installers and
+cross-platform qualification remain deferred.
 
 ## Reference and playback contract
 

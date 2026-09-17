@@ -1,0 +1,105 @@
+name: Release Visualizer Standalone - Windows
+
+# Deliberately separate from firmware releases and normal pushes/PRs.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Standalone version (major.minor.patch)'
+        type: string
+        required: true
+        default: '1.0.0'
+      publish:
+        description: 'Publish to the dedicated zeptocore-visualizer-vVERSION release'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visualizer-windows-release
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build and sign Windows x64 standalone
+    runs-on: [self-hosted, Windows, X64, tape-gpu]
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: false
+          persist-credentials: false
+      - name: Build and stage standalone
+        id: build
+        env:
+          RELEASE_INPUT_VERSION: ${{ inputs.version }}
+        run: ./visualizer-juce/Release/build-windows.ps1
+      - name: Prepare signing runtime
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Sign standalone
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0, as in Tape
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_CODE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+          files-folder: ${{ env.RELEASE_ROOT }}/payload
+          files-folder-filter: exe
+          files-folder-recurse: false
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          exclude-environment-credential: false
+          exclude-workload-identity-credential: true
+          exclude-managed-identity-credential: true
+          exclude-shared-token-cache-credential: true
+          exclude-visual-studio-credential: true
+          exclude-visual-studio-code-credential: true
+          exclude-azure-cli-credential: true
+          exclude-azure-powershell-credential: true
+          exclude-azure-developer-cli-credential: true
+          exclude-interactive-browser-credential: true
+      - name: Package signed standalone
+        run: ./visualizer-juce/Release/package-windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zeptocore-visualizer-${{ steps.build.outputs.version }}-Windows-x64
+          path: ${{ env.RELEASE_ROOT }}/assets/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish standalone to its own release
+    if: inputs.publish
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: zeptocore-visualizer-${{ needs.windows.outputs.version }}-Windows-x64
+          path: release-assets
+      - name: Check transferred asset hashes
+        working-directory: release-assets
+        run: sha256sum --check *-SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zeptocore-visualizer-v${{ needs.windows.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Zeptocore Visualizer ${{ needs.windows.outputs.version }}
+          body: Standalone Zeptocore Visualizer for macOS, Linux and Windows.
+          make_latest: 'false'
+          fail_on_unmatched_files: true
+          files: release-assets/*

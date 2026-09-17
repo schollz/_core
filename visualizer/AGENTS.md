@@ -351,8 +351,8 @@ Animated numbered callouts respond only to performance-pad Note On messages
 (notes 0–15 on MIDI channels 1–3), not automatic slice changes. The number is
 the physical pad (01–16); its pointer uses the first playback snapshot after
 the press. Modifier buttons A–D do not emit these notes.
-Pitch modulation, effects, and audio output latency are not modelled: the cursor
-is deliberately labelled **ESTIMATED**.
+Pitch modulation, effects, and audio output latency are not modelled; the cursor
+position is inferred from telemetry and reference audio.
 
 Firmware and MIDI tests (from the repository root):
 
