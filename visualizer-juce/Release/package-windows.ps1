@@ -13,7 +13,7 @@ Compress-Archive -Path "$root/payload/*" -DestinationPath $archive -CompressionL
 $manifest = Join-Path $assets "$prefix-manifest.json"
 @{
     version = $version
-    tag = "zeptocore-visualizer-v$version"
+    upload_target = 'latest existing GitHub release at publication time'
     commit = $env:GITHUB_SHA
     architecture = 'x86_64'
     system = 'Windows'
