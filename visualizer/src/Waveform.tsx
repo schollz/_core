@@ -203,9 +203,8 @@ export function Waveform({ wave, playback, buttonPress, receivedAt, live }: {
     <canvas ref={canvas} className="waveform" role="img"
       aria-label={`Waveform for bank ${wave.bank + 1}, sample ${wave.sample + 1}, ${wave.slices.length} slices. Active slice ${active ? playback!.slice + 1 : 'unavailable'}.`} />
     <div className="spectrum-panel">
-      <div className="spectrum-caption"><span>SOURCE SPECTRUM</span><span>ESTIMATED</span></div>
       <canvas ref={spectrumCanvas} className="spectrum" role="img"
-        aria-label="Estimated source audio frequency spectrum, 32 bands from 50 Hz to 16 kHz; device effects are not included" />
+        aria-label="Source audio frequency spectrum, 32 bands from 50 Hz to 16 kHz; device effects are not included" />
       <div className="spectrum-axis"><span>50 Hz</span><span>1 kHz</span><span>16 kHz</span></div>
     </div>
   </>;

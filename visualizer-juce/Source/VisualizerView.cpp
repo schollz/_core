@@ -419,8 +419,7 @@ void Editor::paint(juce::Graphics &g)
         else if (session.device.display->state.muted)
             status = "MUTED";
         else
-            status =
-                "ESTIMATED / " + juce::String(session.device.display->state.forward ? "FORWARD" : "REVERSE");
+            status = session.device.display->state.forward ? "FORWARD" : "REVERSE";
     }
     if (session.libraryState.loading)
         status = "Preparing " + juce::String(session.libraryState.completed) + " / " +
@@ -581,13 +580,6 @@ void Editor::drawSpectrum(juce::Graphics &g, juce::Rectangle<float> r)
     if (r.getHeight() < 8)
         return;
     const float font = juce::jlimit(8.f, 12.f, getWidth() * 0.0105f);
-    if (getHeight() >= 400)
-    {
-        auto caption = r.removeFromTop(14);
-        text(g, "SOURCE SPECTRUM", caption, font, quiet);
-        text(g, "ESTIMATED", caption, font, quiet, juce::Justification::centredRight);
-        r.removeFromTop(6);
-    }
     auto axis = r.removeFromBottom(14);
     text(g, "50 Hz", axis, font, quiet);
     text(g, "1 kHz", axis, font, quiet, juce::Justification::centred);

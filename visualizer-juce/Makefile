@@ -3,6 +3,8 @@ ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 CONFIG ?= $(if $(filter install,$(MAKECMDGOALS)),Release,Debug)
 BUILD_DIR ?= $(ROOT)/build-$(shell echo $(CONFIG) | tr A-Z a-z)
 JOBS ?= 4
+# Fall back to Makefiles on systems without Ninja (common on Linux).
+GENERATOR ?= $(if $(shell command -v ninja 2>/dev/null),Ninja,Unix Makefiles)
 CMAKE_FLAGS ?=
 VST3_INSTALL_DIR ?= $(HOME)/Documents/vsts
 PRODUCT := zeptocore visualizer
@@ -14,7 +16,7 @@ endif
 .PHONY: all configure build run vst3 au plugins install release test visual-check clean help
 all: build
 configure:
-	cmake -S "$(ROOT)" -B "$(BUILD_DIR)" -G Ninja -DCMAKE_BUILD_TYPE=$(CONFIG) $(CMAKE_FLAGS)
+	cmake -S "$(ROOT)" -B "$(BUILD_DIR)" -G "$(GENERATOR)" -DCMAKE_BUILD_TYPE=$(CONFIG) $(CMAKE_FLAGS)
 build: configure
 	cmake --build "$(BUILD_DIR)" --target zeptocore_visualizer_Standalone --parallel $(JOBS)
 run: build
@@ -50,4 +52,15 @@ clean:
 help:
 	@echo 'build / run / vst3 / au / plugins / release / test / visual-check / clean'
 	@echo 'install: Release VST3 into ~/Documents/vsts (override VST3_INSTALL_DIR)'
-	@echo 'CONFIG, BUILD_DIR, JOBS, CMAKE_FLAGS and ARGS are overridable'
+	@echo 'CONFIG, BUILD_DIR, GENERATOR, JOBS, CMAKE_FLAGS and ARGS are overridable'
+	@echo 'release-linux / release-macosarm / release-macos11: standalone packages (RELEASE_ARGS=...)'
+
+# Each script builds on the machine where it is invoked; no remote compilation.
+RELEASE_ARGS ?=
+.PHONY: release-linux release-macosarm release-macos11
+release-linux:
+	python3 "$(ROOT)/Release/release-linux.py" $(RELEASE_ARGS)
+release-macosarm:
+	python3 "$(ROOT)/Release/release-macosarm.py" $(RELEASE_ARGS)
+release-macos11:
+	python3 "$(ROOT)/Release/release-macos11.py" $(RELEASE_ARGS)

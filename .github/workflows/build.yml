@@ -8,6 +8,7 @@ on:
     tags:
       - "v*"
       - "*.*.*"
+      - "!zeptocore-visualizer-v*"
   workflow_dispatch:
 
 permissions:
@@ -78,6 +79,11 @@ jobs:
         run: |
           make zeptocore
           cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}.uf2"
+      - name: Build zeptocore visualizer firmware
+        # The zeptocore-visualizer target also flashes hardware; CI only builds.
+        run: |
+          make zeptocore ZEPTOCORE_VISUALIZER=ON
+          cp zeptocore_visualizer.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}_visualizer.uf2"
       - name: Build zeptocore_256.uf2
         run: |
           make zeptocore_256
@@ -118,7 +124,7 @@ jobs:
         run: |
           make zeptoboard
           cp zeptoboard.uf2 "dist/zeptoboard_${ARTIFACT_SUFFIX}.uf2"
-      # These opt-in builds are checked but are not copied into release artifacts.
+      # Check flag isolation separately from the packaged visualizer firmware.
       - name: Check visualizer build flag (default, ON, OFF)
         run: python3 test/visualizer_build/run.py
       - name: Check MIDI and visualizer telemetry

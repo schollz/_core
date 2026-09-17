@@ -5,6 +5,7 @@ reference/**
 /pico-extras
 /pico-sdk
 /build
+/build-*/
 dev/audio2flash/audio2flash
 lib/crossfade4_128.h
 lib/crossfade4_160.h

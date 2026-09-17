@@ -6,6 +6,7 @@ on:
     tags:
       - "v*"
       - "*.*.*"
+      - "!zeptocore-visualizer-v*"
   pull_request:
     branches: [ main ]
 
