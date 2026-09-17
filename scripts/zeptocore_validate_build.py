@@ -20,9 +20,11 @@ def main():
     p.add_argument("--seconds", type=int, default=10)
     p.add_argument("--midi-port", default="hw:6,0,0")
     p.add_argument("--audio-device", default="hw:4,0")
+    p.add_argument("--skip-stack", action="store_true",
+                   help="Leave firmware running after capture; omit the separate halt/reset stack check")
     p.add_argument("--test-controls", action="store_true",
                    help="Use only with SEEK_TEST_CONTROLS firmware; exercises reverse/slices/variation")
-    p.add_argument("--modes", nargs="+", choices=["ordinary", "stretch", "sample-switch",
+    p.add_argument("--modes", nargs="+", choices=["ordinary", "stretch", "sample-switch", "transport",
                                                 "reverse", "slices", "variation", "audio-variant", "audio-variant-variation",
                                                 "long-reverse", "long-stretch", "long-slices"],
                    help="Restrict this observation to selected workloads")
@@ -87,6 +89,8 @@ def main():
             wait_available(args.midi_port)
             modes = [("ordinary", "B01200B01600B01800B01900B01040B01400FA"),
                      ("stretch", "B01440FA"), ("sample-switch", "B01400B01540FA")]
+            if args.modes and "transport" in args.modes:
+                modes += [("transport", "B01200B01600B01800B01900B01040B01400FA")]
             if args.test_controls:
                 modes += [("reverse", "B01500B01400B06E7FFA"),
                           ("slices", "B06E00B06F00FA"),
@@ -132,15 +136,17 @@ def main():
                 def controls():
                     sequence = [0, 7, 2, 15, 4, 11, 1, 8]
                     index = 0
-                    interval = 1.0 if mode == "sample-switch" else .25
+                    interval = 1.0 if mode in ("sample-switch", "transport") else .25
                     while not stop_controls.wait(interval):
-                        packet = (f"B015{[0,64][index%2]:02X}" if mode == "sample-switch" else
+                        packet = (["FC", "B01440B01500FA", "FC", "B01400B01540FB"][index % 4] if mode == "transport" else
+                                  f"B015{[0,64][index%2]:02X}" if mode == "sample-switch" else
                                   f"B06F{sequence[index % len(sequence)]:02X}")
                         subprocess.run(["amidi", "-p", args.midi_port, "-S", packet], check=True)
                         control_events.append({"host_time": time.time(), "midi_hex": packet})
                         index += 1
                 control_thread = threading.Thread(target=controls, daemon=True) if (
-                    mode.endswith("slices") or (mode == "sample-switch" and args.repeat_switches)) else None
+                    mode == "transport" or mode.endswith("slices") or
+                    (mode == "sample-switch" and args.repeat_switches)) else None
                 if control_thread:
                     control_thread.start()
                 with (args.out / f"{mode}-audio.log").open("w") as audio_log:
@@ -173,12 +179,28 @@ def main():
             memory = request(socket_path, "memory.status")
             (args.out / "memory.json").write_text(json.dumps(memory, indent=2)+"\n")
             subprocess.run(["amidi", "-p", args.midi_port, "-S", "B01500B01400B06E00B07000B07100FA"], check=True)
+            if not args.skip_stack:
+                # Stop playback and let deferred media work finish before the
+                # separate stack inspector halts/resets the target.
+                subprocess.run(["amidi", "-p", args.midi_port, "-S", "FC"], check=True)
+                time.sleep(.5)  # allow the foreground loop to consume transport/selection messages
+                deadline = time.monotonic() + 10
+                idle_samples = 0
+                while True:
+                    maps = request(socket_path, "maps.status")["data"]
+                    idle_samples = idle_samples + 1 if not maps["pending_job"] else 0
+                    if idle_samples >= 3:
+                        break
+                    if time.monotonic() > deadline:
+                        raise RuntimeError("media work pending; refusing stack halt/reset")
+                    time.sleep(.1)
         finally:
             server.terminate()
             server.wait(timeout=10)
     # Audio recording has ended. This separate operation intentionally stops the CPU.
-    subprocess.run([sys.executable, str(root / "scripts/zeptocore_stack_report.py"),
-                    "--elf", str(args.elf), "--out", str(args.out / "stacks")], check=True)
+    if not args.skip_stack:
+        subprocess.run([sys.executable, str(root / "scripts/zeptocore_stack_report.py"),
+                        "--elf", str(args.elf), "--out", str(args.out / "stacks")], check=True)
 
 
 if __name__ == "__main__":

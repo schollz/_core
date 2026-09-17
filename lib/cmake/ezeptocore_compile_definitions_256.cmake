@@ -6,7 +6,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # # ecto
-    SAMPLES_PER_BUFFER=441
+    SAMPLES_PER_BUFFER=256
     SDCARD_CMD_GPIO=25
     SDCARD_D0_GPIO=26 
     AUDIO_CLK_GPIO=21 # LCK=17
@@ -14,7 +14,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     INCLUDE_ECTOCORE=1
     INCLUDE_EZEPTOCORE=1
     INCLUDE_FILTER=1
-    INCLUDE_MIDI=1
+    # INCLUDE_MIDI=1
     INCLUDE_RGBLED=1
 
     # utilize core1 for audio to avoid dropouts
@@ -80,15 +80,15 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 
-# uncomment these lines to include midi
-target_link_libraries(${PROJECT_NAME} 
-    tinyusb_device
-     tinyusb_board
-)
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
+# # uncomment these lines to include midi
+# target_link_libraries(${PROJECT_NAME} 
+#     tinyusb_device
+#     tinyusb_board
+# )
+# pico_enable_stdio_usb(${PROJECT_NAME} 0)
+# pico_enable_stdio_uart(${PROJECT_NAME} 1)
+# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../..)
+
+
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-
-
-#pico_enable_stdio_usb(${PROJECT_NAME} 1)
-#pico_enable_stdio_uart(${PROJECT_NAME} 1)

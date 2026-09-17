@@ -6,7 +6,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PICO_XOSC_STARTUP_DELAY_MULTIPLIER=4
 
     # # ecto
-    SAMPLES_PER_BUFFER=256
+    SAMPLES_PER_BUFFER=441
     SDCARD_CMD_GPIO=25
     SDCARD_D0_GPIO=26 
     AUDIO_CLK_GPIO=21 # LCK=17
@@ -87,7 +87,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 # )
 # pico_enable_stdio_usb(${PROJECT_NAME} 0)
 # pico_enable_stdio_uart(${PROJECT_NAME} 1)
-# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+# target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)

@@ -42,7 +42,7 @@ The Make interface accepts `ON` or `OFF`. For an isolated CMake build:
 
 ```sh
 cmake -S . -B build/visualizer \
-  -DCORE_COMPILE_DEFINITIONS="$PWD/zeptocore_compile_definitions.cmake" \
+  -DCORE_COMPILE_DEFINITIONS="$PWD/lib/cmake/zeptocore_compile_definitions.cmake" \
   -DZEPTOCORE_VISUALIZER=ON
 cmake --build build/visualizer --parallel
 ```

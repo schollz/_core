@@ -9,7 +9,7 @@ Probe UART is not needed. USB MIDI remains available for musical controls.
 
 ```sh
 cmake -S . -B build-seek-441 \
-  -DCORE_COMPILE_DEFINITIONS="$PWD/zeptocore_compile_definitions.cmake" \
+  -DCORE_COMPILE_DEFINITIONS="$PWD/lib/cmake/zeptocore_compile_definitions.cmake" \
   -DSEEK_DIAGNOSTICS=ON \
   -DPICO_SDK_PATH="$PWD/pico-sdk" -DPICO_EXTRAS_PATH="$PWD/pico-extras"
 cmake --build build-seek-441 -j8
@@ -37,7 +37,8 @@ python3 scripts/zeptocore_debug.py capture --duration 60 \
   --workload manual/exploratory --out artifacts/seek/my-capture
 ```
 
-For the validated firmware currently retained in this workspace, use:
+For the historical diagnostic firmware retained in this workspace, first
+program its matching ELF, then use:
 
 ```sh
 .venv/bin/python scripts/zeptocore_debug_server.py \
@@ -106,10 +107,17 @@ Use `-DCORE_NO_OVERCLOCK=ON` for the existing 125 MHz clock path.
 `zeptocore_validate_build.py` explicitly programs a build, records normal/stretch/
 selection workloads and Scarlett audio, then runs a separate stack inspection.
 The latter **halts both cores and resets afterward**, after audio recording has
-ended. Never run it during firmware SD writes. It paints unused stack memory at
+ended. The runner stops playback and waits for pending map work before this step;
+`--skip-stack` omits the halt/reset and leaves firmware running. Never run a
+standalone stack inspection during firmware SD writes. It paints unused stack memory at
 boot, then measures intact paint in an exercised workload. Core 0's available
 stack starts after `__scratch_y_end__`; `__StackBottom` is only the linker's
 minimum reservation. Core 1 uses its separately reserved 4 KiB stack.
+
+Select `--modes transport --seconds 180` to alternate MIDI Stop, Start/Continue,
+sample selection, and ordinary/stretch playback once per second. This uses
+normal MIDI controls and records their schedule; intentional stops produce
+expected silence. Check DMA starvation counters separately from audio gaps.
 
 `SEEK_TEST_CONTROLS=ON` enables test-only MIDI CC 110 (reverse), 111 (slice),
 112 (file variation) and 113 (audio variant), routed through existing musical
