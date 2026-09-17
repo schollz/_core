@@ -1,0 +1,4 @@
+.cache/
+build-*/
+test-results/
+.DS_Store
