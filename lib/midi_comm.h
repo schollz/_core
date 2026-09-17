@@ -180,7 +180,7 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
       reset_usb_boot(0, 0);
       return;
     } else if (channel == 0 && midi_buffer[1] == 1) {
-      send_text_as_sysex("version=v7.4.1");
+      send_text_as_sysex("version=v8.0.1");
       return;
     }
     // CONTROL CHANGE

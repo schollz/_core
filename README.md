@@ -82,8 +82,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                            | Low Latency                                                                                                           |
 | ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1.uf2)*                | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_low_latency.uf2)                 |
-| Non-Overclocking | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_no_overclocking.uf2) | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ezeptocore_v7.4.1_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1.uf2)*                | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_no_overclocking.uf2) | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_no_overclocking_low_latency.uf2) |
 
 *default firmware
 
@@ -117,8 +117,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1.uf2)*                | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_low_latency.uf2)                 |
-| Non-Overclocking | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_no_overclocking.uf2) | [v7.4.1](https://github.com/schollz/_core/releases/download/v7.4.1/ectocore_v7.4.1_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1.uf2)*                | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_no_overclocking.uf2) | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_no_overclocking_low_latency.uf2) |
 
 
 ### diy

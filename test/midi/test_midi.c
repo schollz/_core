@@ -198,7 +198,7 @@ static void test_usb(void) {
          generic_event[2] == 49 && generic_event[3] == 1);
   queue(0x0b, 0xb0, 1, 0);
   drain();
-  assert(strcmp(sysex, "version=v7.4.1") == 0);
+  assert(strcmp(sysex, "version=v8.0.1") == 0);
   queue(0x0b, 0xb0, 0, 0);
   drain();
   assert(resets == 1 && strcmp(sysex, "command=reset") == 0);
