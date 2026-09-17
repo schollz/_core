@@ -3,6 +3,7 @@ bool midi_comm_callback_do_retrigger = false;
 
 void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
                            uint8_t velocity) {
+  ZV_CALL(if (zv_command(status, channel, note, velocity, time_us_32())) return);
   // printf_sysex("status=%d, channel=%d, note=%d, vel=%d", status, channel,
   // note,
   //              velocity);

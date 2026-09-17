@@ -8,6 +8,7 @@ on:
     tags:
       - "v*"
       - "*.*.*"
+      - "!zeptocore-visualizer-v*"
   workflow_dispatch:
 
 permissions:
@@ -41,7 +42,7 @@ jobs:
       - name: Install Pico SDK dependencies
         run: |
           sudo apt update
-          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc wget tar
+          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential gcc clang wget tar
       - name: Create and activate a Python virtual environment
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -67,8 +68,7 @@ jobs:
           ref: sdk-2.2.0
       - name: Patch tinyusb
         run: |
-          sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c
-          cat $GITHUB_WORKSPACE/pico-sdk/lib/tinyusb/src/tusb.c | grep osal_mutex
+          cmake -DPICO_SDK_PATH="$GITHUB_WORKSPACE/pico-sdk" -P scripts/patch_tinyusb.cmake
       - name: Set PICO_SDK_PATH
         run: echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
       - name: Prepare artifact filenames
@@ -79,6 +79,11 @@ jobs:
         run: |
           make zeptocore
           cp zeptocore.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}.uf2"
+      - name: Build zeptocore visualizer firmware
+        # The zeptocore-visualizer target also flashes hardware; CI only builds.
+        run: |
+          make zeptocore ZEPTOCORE_VISUALIZER=ON
+          cp zeptocore_visualizer.uf2 "dist/zeptocore_${ARTIFACT_SUFFIX}_visualizer.uf2"
       - name: Build zeptocore_256.uf2
         run: |
           make zeptocore_256
@@ -119,6 +124,11 @@ jobs:
         run: |
           make zeptoboard
           cp zeptoboard.uf2 "dist/zeptoboard_${ARTIFACT_SUFFIX}.uf2"
+      # Check flag isolation separately from the packaged visualizer firmware.
+      - name: Check visualizer build flag (default, ON, OFF)
+        run: python3 test/visualizer_build/run.py
+      - name: Check MIDI and visualizer telemetry
+        run: CC=clang python3 test/midi/run.py
       - name: Prepare source tarball (on tags only)
         if: startsWith(github.ref, 'refs/tags/')
         run: |

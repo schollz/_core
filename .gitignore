@@ -1,8 +1,11 @@
 storage/**
+visualizer/reference/**
+reference/**
 .DS_Store
 /pico-extras
 /pico-sdk
 /build
+/build-*/
 dev/audio2flash/audio2flash
 lib/crossfade4_128.h
 lib/crossfade4_160.h
@@ -97,3 +100,6 @@ drum_separation_model.zip
 /build-seek-*/
 /artifacts/
 test/**/__pycache__/
+
+/zeptocore_visualizer.uf2
+/zeptocore_nooverclock_visualizer.uf2

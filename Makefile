@@ -18,6 +18,15 @@ MACOS_ARM_TC_BASENAME := xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)-darwin-
 MACOS_ARM_TC_DIR := $(HOME)/.cache/_core/toolchains/xpack-arm-none-eabi-gcc-$(MACOS_ARM_TC_VERSION)
 MACOS_ARM_TC_BIN := $(MACOS_ARM_TC_DIR)/bin
 MACOS_ARM_TC_URL := https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v$(MACOS_ARM_TC_VERSION)/$(MACOS_ARM_TC_BASENAME).tar.gz
+# Always pass an explicit value: a previous ON CMake cache must not opt in later builds.
+ZEPTOCORE_VISUALIZER ?= OFF
+ifeq ($(filter ON OFF,$(ZEPTOCORE_VISUALIZER)),)
+$(error ZEPTOCORE_VISUALIZER must be ON or OFF)
+endif
+VISUALIZER_SUFFIX := $(if $(filter ON,$(ZEPTOCORE_VISUALIZER)),_visualizer,)
+CORE_COMPILE_DEFINITIONS ?= $(CURDIR)/target_compile_definitions.cmake
+CORE_NO_OVERCLOCK ?= OFF
+CORE_CMAKE_OPTIONS = -DZEPTOCORE_VISUALIZER=$(ZEPTOCORE_VISUALIZER) -DCORE_COMPILE_DEFINITIONS="$(CORE_COMPILE_DEFINITIONS)" -DCORE_NO_OVERCLOCK=$(CORE_NO_OVERCLOCK)
 PICOTOOL ?= picotool
 UPLOAD_UF2 ?= build/_core.uf2
 PICOTOOL_LOAD_FLAGS ?= --family rp2040 -f -x -v
@@ -56,26 +65,27 @@ zeptoboard: pico-sdk pico-extras copyboard lib/fuzz.h lib/transfer_saturate2.h l
 	make -C build -j$(NPROCS)
 	cp build/_core.uf2 zeptoboard.uf2
 
-zeptocore: pico-sdk pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 zeptocore.uf2
+# Select the device before configuration, including parallel Make invocations.
+zeptocore zeptocore_nooverclock: CORE_COMPILE_DEFINITIONS = $(CURDIR)/zeptocore_compile_definitions.cmake
+zeptocore_128: CORE_COMPILE_DEFINITIONS = $(CURDIR)/zeptocore_compile_definitions_128.cmake
+zeptocore_256: CORE_COMPILE_DEFINITIONS = $(CURDIR)/zeptocore_compile_definitions_256.cmake
+zeptocore_nooverclock: CORE_NO_OVERCLOCK = ON
 
-zeptocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	cp zeptocore_compile_definitions_128.cmake target_compile_definitions.cmake
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 zeptocore.uf2
+# Sequential submakes keep upload after the successful build, even with make -j.
+.PHONY: zeptocore-visualizer
+zeptocore-visualizer:
+	$(MAKE) zeptocore ZEPTOCORE_VISUALIZER=ON
+	$(MAKE) upload-built UPLOAD_UF2=zeptocore_visualizer.uf2
 
-zeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	cp zeptocore_compile_definitions_256.cmake target_compile_definitions.cmake
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 zeptocore.uf2
+.PHONY: zeptocore zeptocore_128 zeptocore_256 zeptocore_nooverclock
+zeptocore zeptocore_128 zeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp "$(CORE_COMPILE_DEFINITIONS)" target_compile_definitions.cmake
+	cp build/_core.uf2 zeptocore$(VISUALIZER_SUFFIX).uf2
 
-zeptocore_nooverclock: pico-sdk pico-extras copyzepto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	cp zeptocore_compile_definitions.cmake target_compile_definitions.cmake
+zeptocore_nooverclock: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp "$(CORE_COMPILE_DEFINITIONS)" target_compile_definitions.cmake
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' target_compile_definitions.cmake
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 zeptocore_nooverclock.uf2
+	cp build/_core.uf2 zeptocore_nooverclock$(VISUALIZER_SUFFIX).uf2
 
 ectocore: pico-sdk pico-extras copyecto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	make -C build -j$(NPROCS)
@@ -271,7 +281,7 @@ resetpico2:
 	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
 	sleep 0.1
 
-.PHONY: check_picotool enter_bootsel_1200 upload upload-legacy
+.PHONY: check_picotool enter_bootsel_1200 upload upload-built upload-legacy
 check_picotool:
 	@command -v "$(PICOTOOL)" >/dev/null 2>&1 || { \
 		echo "picotool not found. Install it first, or run make upload PICOTOOL=/path/to/picotool"; \
@@ -286,7 +296,11 @@ enter_bootsel_1200:
 	fi
 	python3 scripts/enter_bootsel_1200.py --baud "$(UPLOAD_TOUCH_BAUD)" --wait "$(UPLOAD_TOUCH_WAIT)" $(if $(filter 1,$(UPLOAD_MIDI_RESET)),--midi-fallback,--no-midi-fallback)
 
-upload: dobuild check_picotool
+upload: dobuild
+	$(MAKE) upload-built
+
+# Upload an already-built artifact without reconfiguring firmware.
+upload-built: check_picotool
 	@test -f "$(UPLOAD_UF2)" || { echo "$(UPLOAD_UF2) does not exist; build failed or UPLOAD_UF2 is wrong"; exit 1; }
 	$(MAKE) enter_bootsel_1200
 	$(PICOTOOL) load $(PICOTOOL_LOAD_FLAGS) "$(UPLOAD_UF2)"
@@ -299,10 +313,10 @@ bootreset: .venv dobuild
 
 autoload: upload
 
+.PHONY: build
 build:
-	rm -rf build
-	mkdir build
-	cd build && cmake ..
+	mkdir -p build
+	cmake -S . -B build $(CORE_CMAKE_OPTIONS)
 	make -C build -j$(NPROCS)
 	echo "build success"
 
@@ -327,9 +341,9 @@ build/Makefile:
 	@set -e; \
 	rm -f build/CMakeCache.txt; \
 	if [ -x "$(MACOS_ARM_TC_BIN)/arm-none-eabi-gcc" ]; then \
-		PATH="$(MACOS_ARM_TC_BIN):$$PATH" PICO_TOOLCHAIN_PATH="$(MACOS_ARM_TC_BIN)" cmake -S . -B build; \
+		PATH="$(MACOS_ARM_TC_BIN):$$PATH" PICO_TOOLCHAIN_PATH="$(MACOS_ARM_TC_BIN)" cmake -S . -B build $(CORE_CMAKE_OPTIONS); \
 	else \
-		cmake -S . -B build; \
+		cmake -S . -B build $(CORE_CMAKE_OPTIONS); \
 	fi
 
 audio:
