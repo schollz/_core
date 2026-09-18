@@ -40,12 +40,24 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
 
-For development measurements over the Raspberry Pi Debug Probe, see
-[on-demand seek diagnostics](docs/seek-diagnostics.md) and the
-[current implementation/validation status](docs/seek-implementation-status.md).
-The firmware prepares and reuses optional SD seek maps automatically. Supported
-zeptocore builds use 441 or 256 frames; see the
-[hardware measurements and limits](docs/seek-hardware-results.md).
+### zeptocore firmware
+
+| Normal | Low latency | Visualizer |
+| --- | --- | --- |
+| [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1.uf2) | [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1_low_latency.uf2) | [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1_visualizer.uf2) |
+
+Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
+
+### visualizer
+
+| Platform | Download |
+| --- | --- |
+| Linux (x86_64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Linux-x86_64-Standalone.zip) |
+| macOS (Apple Silicon) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-arm64-Standalone.zip) — coming soon |
+| macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) — coming soon |
+| Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) — coming soon |
+
+The [visualizer](visualizer-juce/README.md) follows playback over USB MIDI, showing waveforms, slices, and effects. Flash the visualizer UF2, then copy the **entire contents of your SD card** into a folder on your computer. In the visualizer, click **CHOOSE FOLDER** and select that folder (the one containing `bank1`, `bank2`, etc.), then connect your zeptocore over USB.
 
 
 ## diy
