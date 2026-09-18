@@ -26,7 +26,7 @@ for variant, definitions in [('441', 'zeptocore_compile_definitions.cmake'),
                              ('256', 'zeptocore_compile_definitions_256.cmake')]:
     build = output / variant
     base = ['cmake', '-S', str(root), '-B', str(build),
-            f'-DCORE_COMPILE_DEFINITIONS={root / 'lib/cmake' / definitions}']
+            f'-DCORE_COMPILE_DEFINITIONS={root / "lib/cmake" / definitions}']
     # -U removes a previous cache value to exercise the default as well as explicit OFF.
     for mode, options in [('default', ['-UZEPTOCORE_VISUALIZER']),
                           ('on', ['-DZEPTOCORE_VISUALIZER=ON']),
