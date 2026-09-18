@@ -55,7 +55,7 @@ help:
 	@echo 'CONFIG, BUILD_DIR, GENERATOR, JOBS, CMAKE_FLAGS and ARGS are overridable'
 	@echo 'release-linux / release-macosarm / release-macos11: standalone packages (RELEASE_ARGS=...)'
 
-# Each script builds on the machine where it is invoked; no remote compilation.
+# Intel builds remotely over SSH; signing and packaging run on the invoking Mac.
 RELEASE_ARGS ?=
 .PHONY: release-linux release-macosarm release-macos11
 release-linux:

@@ -100,18 +100,26 @@ def notarize(archive, profile):
         raise RuntimeError("Notarization was not accepted: " + str(result.get("id")))
 
 
-def main(system, architecture, minimum=None):
+def main(system, architecture, minimum=None, remote_intel=False):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", default="1.0.0")
     parser.add_argument("--repo", default="schollz/_core")
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--no-upload", action="store_true")
     parser.add_argument("--notary-profile", default=os.environ.get("NOTARY_PROFILE"))
+    if remote_intel:
+        import remote_intel as intel
+        parser.add_argument("remote", nargs="?", default=intel.DEFAULT_REMOTE)
+        parser.add_argument("--keep-remote", action="store_true")
     args = parser.parse_args()
     output = None
+    remote_dir = None
+    complete = False
     try:
-        if platform.system() != system or platform.machine() != architecture:
+        if platform.system() != system or (not remote_intel and platform.machine() != architecture):
             raise RuntimeError(f"Run natively on {system} {architecture}")
+        if remote_intel and not re.fullmatch(r"(?:[A-Za-z0-9_.-]+@)?[A-Za-z0-9][A-Za-z0-9_.-]*", args.remote):
+            raise ValueError("Invalid SSH host")
         if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", args.version):
             raise ValueError("Version must be major.minor.patch")
         if any(int(v) > 255 for v in args.version.split(".")) or not 1 <= args.jobs <= 32:
@@ -122,6 +130,14 @@ def main(system, architecture, minimum=None):
             for key in ("APPLE_ID", "TEAM_ID", "APPLE_PASSWORD"):
                 if not os.environ.get(key):
                     raise ValueError(f"Set {key} or NOTARY_PROFILE before releasing")
+        if remote_intel:
+            for tool in ("ssh", "rsync", "ditto", "codesign", "security", "lipo", "otool", "xcrun", "spctl"):
+                if not shutil.which(tool):
+                    raise RuntimeError("Missing local tool: " + tool)
+            identity = os.environ.get("SIGN_IDENTITY", IDENTITY)
+            if not identity.startswith("Developer ID Application:") or identity not in run(
+                    ["security", "find-identity", "-v", "-p", "codesigning"]):
+                raise RuntimeError("Developer ID Application identity/private key unavailable on this Mac")
         pinned = None if args.no_upload else release_info(args.repo)
         tag = pinned["tag_name"] if pinned else None
         commit = run(["git", "rev-parse", "HEAD"]).strip()
@@ -141,24 +157,33 @@ def main(system, architecture, minimum=None):
             configure += ["-DCMAKE_OSX_ARCHITECTURES=" + architecture,
                           "-DCMAKE_OSX_DEPLOYMENT_TARGET=" + minimum]
         print("Configuring and building standalone", flush=True)
-        run(configure)
-        run(["cmake", "--build", build, "--config", "Release", "--parallel", str(args.jobs),
-             "--target", "zeptocore_visualizer_Standalone"])
+        if remote_intel:
+            remote_dir = intel.ssh(run, args.remote, "mktemp -d /tmp/zeptocore-release-intel.XXXXXX").strip()
+            if not intel.REMOTE_PATH.fullmatch(remote_dir):
+                raise RuntimeError("Unexpected remote temporary directory")
+            print("Intel builder: " + args.remote + ":" + remote_dir, flush=True)
+            built = intel.build(run, args.remote, remote_dir, source, output, args.version, args.jobs)
+        else:
+            run(configure)
+            run(["cmake", "--build", build, "--config", "Release", "--parallel", str(args.jobs),
+                 "--target", "zeptocore_visualizer_Standalone"])
+            built = build / "zeptocore_visualizer_artefacts/Release/Standalone"
         payload = output / "payload"
         payload.mkdir()
-        built = build / "zeptocore_visualizer_artefacts/Release/Standalone"
         app = payload / (PRODUCT + (".app" if minimum else ""))
         if minimum:
             shutil.copytree(built / app.name, app, symlinks=True)
         else:
             shutil.copy2(built / app.name, app)
+        if remote_intel:
+            intel.check_bundle(run, app, args.version)
         notices = payload / "Notices"
         notices.mkdir()
         for name, path in {
             "LICENSE.txt": source / "LICENSE",
             "IBM-Plex-LICENSE.txt": source / "Resources/Fonts/IBM-Plex-LICENSE.txt",
             "Font-Awesome-LICENSE.txt": source / "Resources/Fonts/Font-Awesome-LICENSE.txt",
-            "JUCE-LICENSE.md": source / ".cache/deps/juce-src/LICENSE.md",
+            "JUCE-LICENSE.md": (output / "JUCE-LICENSE.md" if remote_intel else source / ".cache/deps/juce-src/LICENSE.md"),
         }.items():
             shutil.copy2(path, notices / name)
         (payload / "README.txt").write_text(
@@ -193,6 +218,7 @@ def main(system, architecture, minimum=None):
         manifest.write_text(json.dumps({
             "version": args.version, "tag": tag, "commit": commit, "dirty": dirty,
             "source_sha256": inputs, "system": system, "architecture": architecture,
+            "remote_builder": args.remote if remote_intel else None,
             "minimum_macos": minimum, "signed": bool(minimum), "notarized": bool(minimum),
             "built_at": datetime.now(timezone.utc).isoformat(), "tests_run": False,
             "assets": {archive.name: sha(archive)},
@@ -206,9 +232,19 @@ def main(system, architecture, minimum=None):
         (output / "complete.json").write_text(json.dumps({
             "uploaded": not args.no_upload, "assets": [p.name for p in assets]}, indent=2) + "\n")
         print("Standalone release ready: " + str(output), flush=True)
+        complete = True
         return 0
     except (OSError, ValueError, RuntimeError) as error:
         print(str(error), file=sys.stderr)
         if output:
             print("Incomplete output retained: " + str(output), file=sys.stderr)
         return 1
+    finally:
+        if remote_intel and remote_dir and intel.REMOTE_PATH.fullmatch(remote_dir):
+            if complete and not args.keep_remote:
+                try:
+                    intel.ssh(run, args.remote, "rm -rf -- " + remote_dir)
+                except (OSError, RuntimeError) as error:
+                    print("Remote cleanup failed: " + str(error), file=sys.stderr)
+            else:
+                print(f"Remote build retained: {args.remote}:{remote_dir}", file=sys.stderr)

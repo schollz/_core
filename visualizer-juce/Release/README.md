@@ -13,20 +13,33 @@ Publication replaces only matching platform asset names and fails if no latest
 release exists. Authenticate `gh` against `schollz/_core` for local uploads
 (or use `GH_TOKEN`/`GITHUB_TOKEN`). No sibling checkout is needed.
 
-## macOS: run on each Mac
+## macOS: run on the signing Mac
 
 ```sh
 # Apple Silicon, native arm64 Python (not Rosetta); deployment minimum macOS 12:
 python3 scripts/release_visualizer_macos_arm.py --version 1.0.0
 
-# Intel Mac; deployment minimum macOS 11.6:
-make -C visualizer-juce release-macos11 RELEASE_ARGS='--version 1.0.0'
+# Intel build over SSH; deployment minimum macOS 11.6:
+python3 scripts/release_visualizer_macos_intel.py --version 8.0.1
+# Optional alternate builder:
+python3 scripts/release_visualizer_macos_intel.py user@intel-mac.local --version 8.0.1
 ```
 
-Each Mac builds, signs, notarizes and packages locally. There is no SSH build or
-hosted macOS runner. Both need Python 3.9+, Git, CMake 3.22+, Make or Ninja,
-Xcode command-line tools, `gh`, and a working `xcrun notarytool` installation.
-Use a sufficiently recent signing Mac/toolchain even when targeting older macOS.
+The Apple Silicon script builds locally. The Intel script follows Tape: it defaults
+to `zns@192.168.0.44` over SSH, copies a snapshot of the current application source
+into a fresh temporary directory, builds only the standalone, and returns the app
+to the initiating Mac. That Mac verifies the Intel architecture, version and
+deployment target, then signs, notarizes, staples, packages and uploads it to
+GitHub's latest existing release. Signing keys and notarization credentials stay
+on the initiating Mac. `make -C visualizer-juce release-macos11` uses the same flow.
+
+The signing Mac needs Python 3.9+, Git, `gh`, Xcode command-line tools with
+`xcrun notarytool`, and (for Intel) `ssh` and `rsync`. Configure key-based SSH to
+the builder first. The Intel builder needs CMake 3.22+, Make, Xcode command-line
+tools and `rsync`; it downloads pinned JUCE unless the local cached archive is
+available. Apple Silicon builds also need CMake and Make or Ninja locally.
+Remote build directories are removed only after success; failures retain them
+for diagnosis. Use `--keep-remote` to retain a successful build too.
 
 Credentials match Tape: the local Keychain's
 `Developer ID Application: Zackary Scholl (KF253X8W3N)` certificate/private key,
@@ -82,4 +95,5 @@ thumbprints and the signed executable hash. Uploads use the workflow's
 no installer or plugin payload. Builds use fresh output directories on the
 persistent runner.
 
-These new release paths have not been executed or tested.
+The remote Intel workflow has automated orchestration checks; an end-to-end
+Intel build, signing and notarization must be verified from a signing Mac.
