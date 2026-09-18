@@ -17,7 +17,7 @@ release exists. Authenticate `gh` against `schollz/_core` for local uploads
 
 ```sh
 # Apple Silicon, native arm64 Python (not Rosetta); deployment minimum macOS 12:
-make -C visualizer-juce release-macosarm RELEASE_ARGS='--version 1.0.0'
+python3 scripts/release_visualizer_macos_arm.py --version 1.0.0
 
 # Intel Mac; deployment minimum macOS 11.6:
 make -C visualizer-juce release-macos11 RELEASE_ARGS='--version 1.0.0'
@@ -40,7 +40,7 @@ app and notices, rather than a PKG.
 ## Linux: run on the Linux machine
 
 ```sh
-make -C visualizer-juce release-linux RELEASE_ARGS='--version 1.0.0'
+python3 scripts/release_visualizer_linux.py --version 1.0.0
 ```
 
 Requires x86_64 Linux, Python 3.9+, Git, CMake 3.22+, a C++17 compiler, Make or
