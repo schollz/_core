@@ -56,9 +56,9 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 | Platform | Download |
 | --- | --- |
 | Linux (x86_64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Linux-x86_64-Standalone.zip) |
-| macOS (Apple Silicon) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-arm64-Standalone.zip) — coming soon |
-| macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) — coming soon |
-| Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) — coming soon |
+| macOS (Apple Silicon) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-arm64-Standalone.zip) |
+| macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) |
+| Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) |
 
 The [visualizer](visualizer-juce/README.md) follows playback over USB MIDI, showing waveforms, slices, and effects. Flash the visualizer UF2, then copy the **entire contents of your SD card** into a folder on your computer. In the visualizer, click **CHOOSE FOLDER** and select that folder (the one containing `bank1`, `bank2`, etc.), then connect your zeptocore over USB.
 
