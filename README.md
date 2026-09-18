@@ -36,7 +36,7 @@ the zeptocore device is a versatile, open-source, handmade audio player and synt
 <img src="docs/static/img/zeptocore_noche.png" width="70%">
 </div>
 
-the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can recall up to 256 audio files organized into 16 banks of 16 tracks each. the zeptocore has 16 different audio effects - saturation, fuzz, delay, comb, beat repeater, filter, tape stop, reverb + more - and includes a single-cycle wavetable synthesizer. The device offers a real-time sequencer with optional quantization, optional clock sync out, and MIDI (in and out) over USB. the device has a built-in 8-ohm speaker and can be powered by two AAA batteries or USB-C.
+the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can recall up to 256 audio files organized into 16 banks of 16 tracks each. the zeptocore has 16 different audio effects - saturation, fuzz, delay, comb, beat repeater, filter, tape stop, reverb + more - and includes a single-cycle wavetable synthesizer. The device offers a real-time sequencer with optional quantization, optional clock sync out, and MIDI input and [MIDI output](https://www.youtube.com/watch?v=Rl_LBdM1FQw) over USB. the device has a built-in 8-ohm speaker and can be powered by two AAA batteries or USB-C.
 
 The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
 
@@ -50,7 +50,9 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 
 ### visualizer
 
+<a href="https://www.youtube.com/watch?v=YlEtNIeCu6k">
 <img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
+</a>
 
 
 | Platform | Download |
