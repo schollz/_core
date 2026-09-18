@@ -20,9 +20,9 @@ release exists. Authenticate `gh` against `schollz/_core` for local uploads
 python3 scripts/release_visualizer_macos_arm.py --version 1.0.0
 
 # Intel build over SSH; deployment minimum macOS 11.6:
-python3 scripts/release_visualizer_macos_intel.py --version 8.0.1
+python3 scripts/release_visualizer_macos_intel.py --remote zns@192.168.0.44 --version 8.0.1
 # Optional alternate builder:
-python3 scripts/release_visualizer_macos_intel.py user@intel-mac.local --version 8.0.1
+python3 scripts/release_visualizer_macos_intel.py --remote user@intel-mac.local --version 8.0.1
 ```
 
 The Apple Silicon script builds locally. The Intel script follows Tape: it defaults
@@ -32,6 +32,8 @@ to the initiating Mac. That Mac verifies the Intel architecture, version and
 deployment target, then signs, notarizes, staples, packages and uploads it to
 GitHub's latest existing release. Signing keys and notarization credentials stay
 on the initiating Mac. `make -C visualizer-juce release-macos11` uses the same flow.
+Override the builder with `--remote user@host`, the legacy positional host, or the
+`VISUALIZER_INTEL_REMOTE` environment variable.
 
 The signing Mac needs Python 3.9+, Git, `gh`, Xcode command-line tools with
 `xcrun notarytool`, and (for Intel) `ssh` and `rsync`. Configure key-based SSH to

@@ -109,13 +109,20 @@ def main(system, architecture, minimum=None, remote_intel=False):
     parser.add_argument("--notary-profile", default=os.environ.get("NOTARY_PROFILE"))
     if remote_intel:
         import remote_intel as intel
-        parser.add_argument("remote", nargs="?", default=intel.DEFAULT_REMOTE)
+        parser.add_argument("remote_host", nargs="?", help="SSH target (legacy positional form)")
+        parser.add_argument("--remote", dest="remote_option",
+                            default=os.environ.get("VISUALIZER_INTEL_REMOTE"),
+                            help="Intel Mac SSH target, such as user@192.168.0.44")
         parser.add_argument("--keep-remote", action="store_true")
     args = parser.parse_args()
     output = None
     remote_dir = None
     complete = False
     try:
+        if remote_intel:
+            if args.remote_host and args.remote_option:
+                raise ValueError("Specify the Intel builder with either --remote or the positional host, not both")
+            args.remote = args.remote_option or args.remote_host or intel.DEFAULT_REMOTE
         if platform.system() != system or (not remote_intel and platform.machine() != architecture):
             raise RuntimeError(f"Run natively on {system} {architecture}")
         if remote_intel and not re.fullmatch(r"(?:[A-Za-z0-9_.-]+@)?[A-Za-z0-9][A-Za-z0-9_.-]*", args.remote):

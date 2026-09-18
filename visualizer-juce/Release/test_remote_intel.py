@@ -12,6 +12,13 @@ import remote_intel as intel
 
 
 class IntelReleaseTests(unittest.TestCase):
+    def test_entry_point_exposes_named_remote_option(self):
+        result = subprocess.run(
+            ['python3', str(Path(__file__).parents[2] / 'scripts/release_visualizer_macos_intel.py'),
+             '--help'], text=True, capture_output=True, check=True)
+        self.assertIn('--remote REMOTE_OPTION', result.stdout)
+        self.assertIn('remote_host', result.stdout)
+
     def test_remote_script_is_valid_and_build_only(self):
         script = intel.build_script('/tmp/zeptocore-release-intel.ABC123', '8.0.1', 3)
         subprocess.run(['bash', '-n'], input=script, text=True, check=True)
