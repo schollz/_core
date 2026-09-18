@@ -20,7 +20,7 @@ concurrency:
 jobs:
   windows:
     name: Build and sign Windows x64 standalone
-    runs-on: [self-hosted, Windows, X64, tape-gpu]
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 45
     outputs:
       version: ${{ steps.build.outputs.version }}
