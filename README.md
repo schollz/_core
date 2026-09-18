@@ -50,6 +50,9 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 
 ### visualizer
 
+<img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
+
+
 | Platform | Download |
 | --- | --- |
 | Linux (x86_64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Linux-x86_64-Standalone.zip) |
