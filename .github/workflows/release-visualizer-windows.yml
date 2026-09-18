@@ -41,7 +41,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - name: Sign standalone
+      - name: Authenticode sign and RFC 3161 timestamp standalone
         uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0, as in Tape
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -66,7 +66,7 @@ jobs:
           exclude-azure-powershell-credential: true
           exclude-azure-developer-cli-credential: true
           exclude-interactive-browser-credential: true
-      - name: Package signed standalone
+      - name: Verify signature and timestamp, then package standalone
         run: ./visualizer-juce/Release/package-windows.ps1
       - uses: actions/upload-artifact@v4
         with:

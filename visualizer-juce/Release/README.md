@@ -66,7 +66,7 @@ time. The signed ZIP, manifest and hashes are also retained as an Actions artifa
 `workflow_dispatch` is its only trigger: no tag, push, PR or release event starts
 this action automatically. No separate publish checkbox is required.
 
-The runner labels match Tape: `[self-hosted, Windows, X64, tape-gpu]`. It uses
+The runner uses `[self-hosted, Windows, X64]`. It uses
 Visual Studio's x64 MSVC/CMake/Ninja tools, static MSVC runtime, and the same
 pinned Azure signing action and secrets:
 
@@ -74,8 +74,12 @@ pinned Azure signing action and secrets:
 - `AZURE_CODE_SIGNING_ENDPOINT`, `AZURE_CODE_SIGNING_ACCOUNT`
 - `AZURE_CERT_PROFILE_NAME`
 
-Signing is required before packaging. Uploads use the workflow's `GITHUB_TOKEN`
-with `contents: write` in a separate hosted publish job. There is no installer or
-plugin payload. Builds use fresh output directories on the persistent runner.
+The Azure action Authenticode-signs the executable with SHA-256 and applies an
+RFC 3161 SHA-256 timestamp. Packaging fails unless Windows validates both the
+signer and timestamp certificates, and the manifest records their subjects,
+thumbprints and the signed executable hash. Uploads use the workflow's
+`GITHUB_TOKEN` with `contents: write` in a separate hosted publish job. There is
+no installer or plugin payload. Builds use fresh output directories on the
+persistent runner.
 
 These new release paths have not been executed or tested.
