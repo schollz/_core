@@ -460,13 +460,13 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 		c.Close()
 		mutex.Lock()
 		connID := query["id"][0]
-		if _, ok := connections[connID]; ok {
+		if current, ok := connections[connID]; ok && current == c {
 			delete(connections, connID)
-		}
-		// Cancel any active debounce operation for this connection
-		if cancelChan, exists := activeDebounce[connID]; exists {
-			close(cancelChan)
-			delete(activeDebounce, connID)
+			// A replaced connection must not cancel the current connection's work.
+			if cancelChan, exists := activeDebounce[connID]; exists {
+				close(cancelChan)
+				delete(activeDebounce, connID)
+			}
 		}
 		mutex.Unlock()
 	}()

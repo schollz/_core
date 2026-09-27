@@ -452,6 +452,9 @@ const socketErrorListener = (e) => {
     // console.error(e);
 }
 const socketCloseListener = (e) => {
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        return;
+    }
     if (socket) {
         console.log('Disconnected.');
         disconnectedTimeout = setTimeout(() => {
@@ -468,8 +471,6 @@ const socketCloseListener = (e) => {
 window.addEventListener('load', (event) => {
     // Load previousPages from cookies into the app
     app.previousPages = loadPreviousPages();
-
-    socketCloseListener();
 });
 
 const updateAllRegions = () => {
