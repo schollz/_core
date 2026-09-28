@@ -94,6 +94,11 @@ jobs:
         run: |
           make ezeptocore
           cp ezeptocore.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}.uf2"
+      - name: Build ezeptocore visualizer firmware
+        # The ezeptocore-visualizer target also flashes hardware; CI only builds.
+        run: |
+          make ezeptocore ZEPTOCORE_VISUALIZER=ON
+          cp ezeptocore_visualizer.uf2 "dist/ezeptocore_${ARTIFACT_SUFFIX}_visualizer.uf2"
       - name: Build ezeptocore_256.uf2
         run: |
           make ezeptocore_256
@@ -110,6 +115,11 @@ jobs:
         run: |
           make ectocore
           cp ectocore.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}.uf2"
+      - name: Build ectocore visualizer firmware
+        # The ectocore-visualizer target also flashes hardware; CI only builds.
+        run: |
+          make ectocore ZEPTOCORE_VISUALIZER=ON
+          cp ectocore_visualizer.uf2 "dist/ectocore_${ARTIFACT_SUFFIX}_visualizer.uf2"
       - name: Build ectocore_256.uf2
         run: |
           make ectocore_256

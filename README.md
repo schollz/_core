@@ -104,6 +104,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 *default firmware
 
+For the [visualizer](visualizer-juce/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+
 To build and upload the default 441-frame, overclocked firmware with USB MIDI
 visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
 hardware, use `make ectocore-visualizer` to retain its knob mapping. These produce
@@ -149,6 +151,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_low_latency.uf2)                 |
 | Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking_low_latency.uf2) |
+
+For the [visualizer](visualizer-juce/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
 
 
 ### diy
