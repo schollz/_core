@@ -753,6 +753,9 @@ void __not_in_flash_func(input_handling)() {
   uint32_t debounce_file_switching = 0;
   uint8_t sel_bank_next_new = sel_bank_cur;
   uint8_t sel_sample_next_new = sel_sample_cur;
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+  uint32_t test_selection_until=0;
+#endif
 
   regenerate_random_sequence_arr();
 
@@ -768,9 +771,10 @@ void __not_in_flash_func(input_handling)() {
       ecto_loopstart_transport_start_generation;
 
   ZD_CALL(zd_control.context[2] = getFreeHeap());
-  audio_media_boot_complete();
+  metadata_optional_reverb();
   while (1) {
     audio_media_poll();
+    metadata_deferred_presets();
     ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -789,6 +793,7 @@ void __not_in_flash_func(input_handling)() {
     ZV_CALL(zv_service(time_us_32(), tud_mounted(), tud_midi_packet_write));
     Onewiremidi_receive(onewiremidi);
 #endif
+    if(!total_number_samples) {sleep_ms(1);continue;}
     int16_t val;
     if (debounce_startup > 0) {
       debounce_startup--;
@@ -917,6 +922,9 @@ void __not_in_flash_func(input_handling)() {
     sleep_us(SIGNAL_SETTLE_TIME_US);
 
     for (uint8_t i = 0; i < 3; i++) {
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+      if(i==CV_SAMPLE && (int32_t)(test_selection_until-current_time)>0)continue;
+#endif
       if (cv_plugged[i]) {
         // collect out CV values
         val = MCP3208_read(mcp3208, cv_signals[i], false) - 512;
@@ -1087,6 +1095,18 @@ void __not_in_flash_func(input_handling)() {
         test_serial_state = 0;
         if (char_input < 128 && test_serial_cc == 113) {
           CL_CALL(if(char_input <= 2) cl_test_command(char_input));
+        } else if (test_serial_cc == 116 && char_input < 16 &&
+                   banks[char_input]->num_samples) {
+          // Exact bank/ordinal controls for bounded catalogue acceptance tests.
+          test_selection_until=current_time+1000;
+          sel_bank_next_new=char_input;
+          sel_sample_next_new%=banks[char_input]->num_samples;
+          debounce_file_change=1;
+        } else if (test_serial_cc == 117 && char_input < 16 &&
+                   char_input < banks[sel_bank_next_new]->num_samples) {
+          test_selection_until=current_time+1000;
+          sel_sample_next_new=char_input;
+          debounce_file_change=1;
         } else if (char_input < 128 && test_serial_cc == cc_sampleselect) {
           // Ectocore selects within the current bank through its debounced
           // knob path; the MIDI flattened selection table is zeptocore-only.
@@ -1202,6 +1222,9 @@ void __not_in_flash_func(input_handling)() {
       }
       // printf("[ectocore] knob %d=%d\n", i, val);
       knob_val[i] = val;
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+      if(knob_gpio[i]==MCP_KNOB_SAMPLE && (int32_t)(test_selection_until-current_time)>0)continue;
+#endif
       if (knob_gpio[i] == MCP_KNOB_SAMPLE) {
         if (mode_held_duration > MODE_HOLD_DURATION_THRESHOLD) {
           // mode selection
@@ -1709,7 +1732,7 @@ void __not_in_flash_func(input_handling)() {
 
     // Fallback trig at playback start or strict loop wrap when a selected
     // mode has a transient at the beginning of the file.
-    {
+    if(metadata_ready(sel_bank_cur) && !bank_transition_busy()) {
       SampleInfo *sample_info =
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
       uint8_t current_slice =
@@ -1742,6 +1765,7 @@ void __not_in_flash_func(input_handling)() {
     // Check for planned retrig activation on slice change
     // Check on any slice, schedule to start on next slice
     {
+      static uint32_t retrig_metadata_generation;
       static uint8_t last_slice_for_planned_retrig = 255;
       static uint8_t last_boundary_start = 255;
       static uint8_t last_boundary_end = 255;
@@ -1758,6 +1782,11 @@ void __not_in_flash_func(input_handling)() {
       static uint8_t pending_times = 0;
       static uint8_t pending_rate_divisor = 1;
 
+      if(retrig_metadata_generation!=metadata_generation()) {
+        retrig_metadata_generation=metadata_generation();
+        last_slice_for_planned_retrig=last_boundary_start=last_boundary_end=255;
+        planned_retrig_pending=false;
+      }
       uint8_t current_slice = banks[sel_bank_cur]
                                   ->sample[sel_sample_cur]
                                   .snd[FILEZERO]

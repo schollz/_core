@@ -534,7 +534,9 @@ void bass_sequencer_emit(uint8_t key) {
 
 void bass_sequencer_stop() {}
 
+static int deferred_preset_load=-1, deferred_preset_save=-1;
 static bool savefile_load_state(bool reopen) {
+  if(bank_transition_busy()) {deferred_preset_load=savefile_current;return false;}
   if (savefile_has_data[savefile_current]) {
     if(!audio_media_acquire())return false;
     if(!SaveFile_load(sf, savefile_current)) {
@@ -562,7 +564,8 @@ static bool savefile_load_state(bool reopen) {
     // load new bank and sample
     if(sf->bank<16 && banks[sf->bank] && banks[sf->bank]->num_samples) {
       sel_bank_next = sf->bank;
-      sel_sample_next = sf->sample % banks[sf->bank]->num_samples;
+      int ordinal=metadata_ordinal(sf->bank,sf->sample);
+      sel_sample_next = ordinal<0?0:ordinal;
     }
     fil_current_change = true;
     audio_media_release();
@@ -575,9 +578,10 @@ void savefile_do_load(void) {
 }
 
 bool savefile_do_save(void) {
-  if(!audio_media_acquire())return false;
+  if(bank_transition_busy()) {deferred_preset_save=savefile_current;return false;}
+  if(!metadata_ready(sel_bank_cur)||!audio_media_acquire())return false;
   sf->bank=sel_bank_cur;
-  sf->sample=sel_sample_cur;
+  sf->sample=metadata_filename_index(sel_bank_cur,sel_sample_cur);
   bool saved=SaveFile_save(sf,savefile_current);
   audio_file_open(fil_current_name);
   audio_media_release();
@@ -627,73 +631,42 @@ void sdcard_startup() {
   check_setup_files();
   // sleep_ms(2000);
 
-  for (uint8_t bi = 0; bi < 16; bi++) {
-    // TODO: show which banks are loading?
-    // #ifdef INCLUDE_ZEPTOCORE
-    //     for (uint8_t i = 0; i < bi; i++) {
-    //       LEDS_set(leds, i, 2);
-    //     }
-    //     LEDS_render(leds);
-    // #endif
+  // load save file
+  // load new save file
+  sf = SaveFile_malloc();
 
-    char dirname[10];
-    sprintf(dirname, "bank%d", bi + 1);
-    banks[bi] = list_files(dirname);
-    ZD_CALL(zd_service(ZD_CONTROL));
-    if (banks[bi]->num_samples > 0) {
-      printf("[sdcard_startup] bank %d has %d samples\n", bi,
-             banks[bi]->num_samples);
-      banks_with_samples[banks_with_samples_num] = bi;
-      banks_with_samples_num++;
-      total_number_samples += banks[bi]->num_samples;
-      for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
-        continue;
-        if (bi == 0) {
-          for (uint8_t variation = 0; variation < 2; variation++) {
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->size: %d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->size);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->num_channels: %d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->num_channels);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->oversampling: %d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->oversampling);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->splice_trigger:% "
-                "d\n",
-                   bi, si,
-                   banks[bi]->sample[si].snd[variation]->splice_trigger);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->splice_variable:% "
-                "d\n",
-                   bi, si,
-                   banks[bi]->sample[si].snd[variation]->splice_variable);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->play_mode: "
-                "% d\n ",
-                bi, si, banks[bi]->sample[si].snd[variation]->play_mode);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->bpm: "
-                "%d\n",
-                bi, si, banks[bi]->sample[si].snd[variation]->bpm);
-            printf("[sdcard_startup] "
-                "banks[%d]->sample[%d].snd[variation]->slice_num: "
-                "% d\n ",
-                bi, si, banks[bi]->sample[si].snd[variation]->slice_num);
-            printf("slices: \n");
-            for (uint8_t i = 0;
-                 i < banks[bi]->sample[si].snd[variation]->slice_num; i++) {
-              printf("%d) %d-%d\n", i,
-                     banks[bi]->sample[si].snd[variation]->slice_start[i],
-                     banks[bi]->sample[si].snd[variation]->slice_stop[i]);
-            }
-            printf("\n");
-          }
-        }
-      }
+  // initialize sequencers
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
+                            step_sequencer_stop);
+  }
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
+                            fx_sequencer_stop);
+  }
+  for (uint8_t j = 0; j < 16; j++) {
+    Sequencer_set_callbacks(sf->sequencers[2][j], bass_sequencer_emit,
+                            bass_sequencer_stop);
+  }
+  // sync_using_sdcard = false;
+  // SaveFile_save(sf, &sync_using_sdcard);
+  // SaveFile_test_sequencer(sf);
+  // SaveFile_load(sf);
+  // SaveFile_test_sequencer(sf);
+  // sleep_ms(3000);
+
+
+  metadata_catalogue_scan();
+  banks_with_samples_num=0;total_number_samples=0;
+  for (unsigned bi=0;bi<16;++bi) {
+    if(banks[bi]->num_samples) {
+      banks_with_samples[banks_with_samples_num++]=bi;
+      total_number_samples+=banks[bi]->num_samples;
+      printf("[metadata] bank %u: %u samples, %u detail bytes, slots %04x\n",
+          bi+1,banks[bi]->num_samples,(unsigned)banks[bi]->detail_bytes,banks[bi]->valid_slots);
     }
-  }  // bank loop
+  }
+  if(banks_with_samples_num)sel_bank_cur=sel_bank_next=banks_with_samples[0];
 
 #ifdef INCLUDE_ECTOCORE
   // Try to restore last used bank and sample from flash
@@ -730,7 +703,7 @@ void sdcard_startup() {
   audio_variant_num=0;
   for (uint8_t i = 2; i < 16; i++) {
     char filename[100];
-    sprintf(filename, "bank%u/%u.%u.wav",sel_bank_cur+1,sel_sample_cur,i);
+    format_sample_filename(filename,sel_bank_cur,sel_sample_cur,i);
     FILINFO fno;
     FRESULT fr = f_stat(filename, &fno);
     if (fr == FR_OK) {
@@ -752,12 +725,12 @@ void sdcard_startup() {
   // }
 
 #ifdef INCLUDE_ZEPTOCORE
-  sample_selection = (SampleSelection *)malloc(sizeof(SampleSelection) * 255);
+  sample_selection = (SampleSelection *)calloc(255,sizeof(SampleSelection));
   for (uint8_t bi = 0; bi < 16; bi++) {
     for (uint8_t si = 0; si < banks[bi]->num_samples; si++) {
       // add to sample_selection list if not one-shot
       if (banks[bi]->sample[si].snd[0]->play_mode == PLAY_NORMAL &&
-          sample_selection_num < 255) {
+          sample_selection && sample_selection_num < 255) {
         // append to sample_selection
         sample_selection[sample_selection_num] =
             (SampleSelection){.bank = bi, .sample = si};
@@ -767,45 +740,8 @@ void sdcard_startup() {
   }
 #endif
 
-  // load save file
-  // load new save file
-  sf = SaveFile_malloc();
-
-  // initialize sequencers
-  for (uint8_t j = 0; j < 16; j++) {
-    Sequencer_set_callbacks(sf->sequencers[0][j], step_sequencer_emit,
-                            step_sequencer_stop);
-  }
-  for (uint8_t j = 0; j < 16; j++) {
-    Sequencer_set_callbacks(sf->sequencers[1][j], fx_sequencer_emit,
-                            fx_sequencer_stop);
-  }
-  for (uint8_t j = 0; j < 16; j++) {
-    Sequencer_set_callbacks(sf->sequencers[2][j], bass_sequencer_emit,
-                            bass_sequencer_stop);
-  }
-  // sync_using_sdcard = false;
-  // SaveFile_save(sf, &sync_using_sdcard);
-  // SaveFile_test_sequencer(sf);
-  // SaveFile_load(sf);
-  // SaveFile_test_sequencer(sf);
-  // sleep_ms(3000);
-
   uint32_t total_heap = getTotalHeap();
   uint32_t used_heap = total_heap - getFreeHeap();
-  printf("memory usage: %2.1f%% (%ld/%ld)\n",
-         (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
-         total_heap);
-
-  // if you have too many samples, reverb won't work
-  if (total_number_samples < 128) {
-    // allocate as much space as possible for the reverb
-    freeverb = FV_Reverb_malloc(FV_INITIALROOM, FV_INITIALDAMP, FV_INITIALWET,
-                                FV_INITIALDRY);
-  }
-
-  total_heap = getTotalHeap();
-  used_heap = total_heap - getFreeHeap();
   printf("memory usage: %2.1f%% (%ld/%ld)\n",
          (float)(used_heap) / (float)(total_heap) * 100.0, used_heap,
          total_heap);
@@ -821,8 +757,27 @@ void sdcard_startup() {
       sel_variation=sel_variation_next;
   }
   FRESULT fr;
-  sprintf(fil_current_name, "bank%d/%d.%d.wav", sel_bank_cur + 1,
-          sel_sample_cur, sel_variation + audio_variant * 2);
+  format_sample_filename(fil_current_name,sel_bank_cur,sel_sample_cur,
+                         sel_variation+audio_variant*2);
+  // Keep room for remaining control/filter startup allocations. Optional
+  // reverb is constructed only once those allocations have completed.
+  bool details_loaded=false;
+  void *startup_reserve=malloc(16384);
+  bool reserved=startup_reserve && metadata_reserve();
+  free(startup_reserve);
+  if(reserved && metadata_load_begin(sel_bank_cur,time_us_32())) {
+    int result;
+    do {
+      result=metadata_load_step(time_us_32());
+#ifdef INCLUDE_MIDI
+      if(tud_inited())tud_task();
+#endif
+      ZD_CALL(zd_service(ZD_CONTROL));
+    } while(result==0);
+    if(result>0) {metadata_publish();details_loaded=true;}
+    else metadata_load_cancel();
+  }
+
 
   // Media preparation runs under the boot guard while the audio core services
   // silence. The firmware-owned index is the only new data written to the card.
@@ -831,15 +786,15 @@ void sdcard_startup() {
   LEDText_update(ledtext,leds);
 #endif
   sd_card_t *map_card=sd_get_by_num(0);
-  fr=seek_maps_prepare(&map_card->state.fatfs,map_card->state.CID,
-                      map_card->state.sectors,fil_current_name);
+  fr=details_loaded?seek_maps_prepare(&map_card->state.fatfs,map_card->state.CID,
+                      map_card->state.sectors,fil_current_name):FR_NOT_READY;
   if(fr==FR_DISK_ERR) {
     // Discard a potentially dirty FatFs window after an index I/O failure.
     // This boot uses ordinary seeking; a future boot can resume checkpoints.
     seek_maps_unmount();f_unmount(map_card->pcName);
     if(!run_mount())audio_media_io_failed(FR_NOT_READY);
   }
-  fr = audio_file_open(fil_current_name);
+  fr = details_loaded?audio_file_open(fil_current_name):FR_NOT_READY;
   if (fr != FR_OK) {
     printf("[sdcard_startup] could not open %s: %s\n", fil_current_name,
            FRESULT_str(fr));
@@ -883,4 +838,29 @@ void sdcard_startup() {
   });
   ZD_CALL(zeptocore_diag.header[21] = 3);
   ZD_CALL(zd_service(ZD_CONTROL));
+}
+
+// Called after all device controls and required startup allocations exist.
+static void metadata_optional_reverb(void) {
+  void *headroom=malloc(8192);
+  if(headroom && metadata_status.arena_capacity) {
+    freeverb=FV_Reverb_malloc(FV_INITIALROOM,FV_INITIALDAMP,FV_INITIALWET,FV_INITIALDRY);
+    update_reverb();
+  }
+  free(headroom);
+  metadata_status.minimum_free_heap=getFreeHeap();
+  audio_media_boot_complete();
+}
+
+static void metadata_deferred_presets(void) {
+  if(bank_transition_busy())return;
+  uint8_t current=savefile_current;
+  if(deferred_preset_load>=0) {
+    savefile_current=deferred_preset_load;deferred_preset_load=-1;
+    savefile_do_load();
+  } else if(deferred_preset_save>=0) {
+    savefile_current=deferred_preset_save;deferred_preset_save=-1;
+    savefile_do_save();
+  }
+  savefile_current=current;
 }

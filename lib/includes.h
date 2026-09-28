@@ -169,6 +169,7 @@ bool usb_midi_present = false;
 #include "keyboard.h"
 //
 #include "audio_callback.h"
+#include "bank_transition_impl.h"
 //
 #ifdef INCLUDE_ZEPTOCORE
 #include "button_handler.h"

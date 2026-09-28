@@ -111,12 +111,14 @@ static inline void format_prefixed_int32(char *dest, const char *prefix,
   format_int32_decimal(dest, value);
 }
 
+uint8_t metadata_filename_index(unsigned bank, unsigned ordinal);
+
 static inline void format_sample_filename(char *dest, uint8_t bank,
                                           uint8_t sample, uint8_t variation) {
   memcpy(dest, "bank", 4);
   dest = append_uint32_decimal(dest + 4, (uint32_t)bank + 1);
   *dest++ = '/';
-  dest = append_uint32_decimal(dest, sample);
+  dest = append_uint32_decimal(dest, metadata_filename_index(bank, sample));
   *dest++ = '.';
   dest = append_uint32_decimal(dest, variation);
   memcpy(dest, ".wav", 5);

@@ -67,6 +67,22 @@ class FakeRpc:
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_metadata_status_is_optional_bounded_and_read_only(self):
+        elf, rpc = FakeElf(), FakeRpc()
+        reader = DeviceReader(elf, rpc)
+        self.assertFalse(reader.metadata_status()["available"])
+        elf.symbols = {**elf.symbols, "metadata_status": (0x20002000, 48)}
+        original_read = rpc.read
+        values = [3, 16, 7, 15000, 12000, 8192, 130000, 150000, 0, 0, 0, 0]
+        rpc.read = lambda address, count: values[:] if address == 0x20002000 else original_read(address, count)
+        status = reader.metadata_status()
+        self.assertEqual(status["arena_capacity"], 15000)
+        self.assertEqual(status["resident_bank"], 3)
+        self.assertFalse(rpc.writes)
+        elf.symbols["metadata_status"] = (0x10000000, 48)
+        with self.assertRaises(DiagnosticError):
+            reader.metadata_status()
+
     def test_audio_fixture_is_a_completed_read_only_boot_report(self):
         elf,rpc=FakeElf(),FakeRpc()
         elf.header=list(elf.header);elf.header[4]=rpc.data[4]=1|1024

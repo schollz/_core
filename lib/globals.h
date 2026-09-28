@@ -31,7 +31,7 @@ volatile uint8_t sel_bank_cur = 0;
 volatile uint8_t sel_bank_next = 0;
 uint8_t sel_bank_select = 0;
 bool fil_current_change = false;
-SampleList *banks[16];
+
 uint8_t banks_with_samples[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint8_t banks_with_samples_num = 0;
 uint8_t audio_variant = 0;
@@ -595,6 +595,7 @@ bool jump_precedence = false;
 uint32_t beat_current_last = 0;
 
 void do_update_phase_from_beat_current() {
+  if (!metadata_ready(sel_bank_cur) || !audio_media_timer_allowed()) return;
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
   //        beat_current);
   // printf_sysex("[global] beat_current: %d\n", beat_current);
@@ -626,7 +627,7 @@ void do_update_phase_from_beat_current() {
   beat_current_show = slice;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
-  ZV_CALL(zv_trigger(sel_bank_cur, sel_sample_cur, slice));
+  ZV_CALL(zv_trigger(sel_bank_cur, metadata_filename_index(sel_bank_cur,sel_sample_cur), slice));
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
@@ -663,6 +664,7 @@ void do_update_phase_from_beat_current() {
 }
 
 void key_do_jump_to_slice(int32_t slice, uint8_t sequencer_beat) {
+  if(!metadata_ready(sel_bank_cur) || !audio_media_timer_allowed())return;
 #ifdef INCLUDE_ZEPTOCORE
   if (clock_in_do && clock_input_absent_zeptocore && clock_in_activator >= 3) {
     // reset beats

@@ -8,6 +8,7 @@ static void audio_switch_while_silent(void) {
     return;
   uint8_t bank = sel_bank_next, sample = sel_sample_next;
   if (bank >= 16 || !banks[bank] || !banks[bank]->num_samples) return;
+  if (!metadata_ready(bank)) return;
   sample %= banks[bank]->num_samples;
   bool changed = bank != sel_bank_cur || sample != sel_sample_cur;
   bool reopen = changed || fil_current_change_force || do_open_file_ready;

@@ -13,6 +13,7 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
     return;
   }
   midi_input_activated = true;
+  if(!total_number_samples)return;
   if (velocity == 1) {
     if (note == 93) {
       // bpm up
@@ -32,7 +33,7 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
       return;
     } else if (note == 39) {
       for (uint8_t i = 1; i < 17; i++) {
-        if (banks_with_samples[(sel_bank_cur + i) % 16] > 0) {
+        if (banks[(sel_bank_cur + i) % 16]->num_samples > 0) {
           sel_bank_next = (sel_bank_cur + i) % 16;
           sel_sample_next = sel_sample_cur % banks[sel_bank_next]->num_samples;
           fil_current_change = true;
@@ -95,7 +96,7 @@ void midi_comm_callback_fn(uint8_t status, uint8_t channel, uint8_t note,
           "slices=%d",
           banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_num);
     } else if (note == 4) {
-      printf_sysex("info=%d,%d,%d,%d,%d,%d,%d", sel_bank_cur, sel_sample_cur,
+      printf_sysex("info=%d,%d,%d,%d,%d,%d,%d", sel_bank_cur, metadata_filename_index(sel_bank_cur,sel_sample_cur),
                    sf->bpm_tempo, sf->vol, midi_comm_callback_do_retrigger,
                    playback_stopped, button_mute);
     }

@@ -2,6 +2,7 @@
 // Common foreground operations, included after realtime_stretch.h.
 #ifndef AUDIO_MEDIA_CONTROL_H
 #define AUDIO_MEDIA_CONTROL_H
+#include "bank_transition.h"
 #if defined(SEEK_DIAGNOSTICS) && SEEK_DIAGNOSTICS
 void __not_in_flash_func(zd_application_layout_snapshot)(volatile uint32_t *out,uint16_t id) {
     seek_maps_layout(id,out);
@@ -33,6 +34,7 @@ void __not_in_flash_func(zd_application_control_snapshot)(void) {
 }
 #endif
 static bool audio_file_change_variation(void) {
+    if(bank_transition_busy() || !metadata_ready(sel_bank_cur))return false;
     if(!audio_media_acquire())return false;
     format_sample_filename(fil_current_name,sel_bank_cur,sel_sample_cur,
                            sel_variation_next+audio_variant*2);
@@ -46,21 +48,9 @@ static bool audio_file_change_variation(void) {
     audio_media_release();return result==FR_OK;
 }
 static void audio_media_poll(void) {
+    bank_transition_service();
+    if(bank_transition_busy())return;
     audio_media_recovery_poll();
-    // A failed open leaves no playback handle. Controls must still be able to
-    // select another file while the renderer is producing its normal silence.
-    if(!fil_is_open&&fil_current_change&&sel_bank_next<16&&banks[sel_bank_next]&&
-       banks[sel_bank_next]->num_samples&&audio_media_acquire()) {
-        sel_bank_cur=sel_bank_next;
-        sel_sample_cur=sel_sample_next%banks[sel_bank_cur]->num_samples;
-        format_sample_filename(fil_current_name,sel_bank_cur,sel_sample_cur,
-                               sel_variation+audio_variant*2);
-        if(audio_file_open(fil_current_name)==FR_OK) {
-            phases[0]=phases[1]=0;phase_new=0;phase_change=true;
-            realtime_stretch_reset_from_playback_phase();
-        }
-        fil_current_change=false;audio_media_release();
-    }
     if(seek_maps_stats.pending&&playback_stopped&&audio_callback_in_mute&&
        audio_media_try_quiet()) {
         // Recheck transport after the boundary acknowledgement. These jobs

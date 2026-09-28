@@ -137,6 +137,13 @@ uint32_t sine_wave_counter = 0;
 #endif
 
 static void __not_in_flash_func(zeptocore_render_audio)() {
+  // A foreground control can update the pending selection during a render.
+  // Use one bounded snapshot for every lookup/open in this block.
+  const uint8_t audio_next_bank=sel_bank_next;
+  uint8_t audio_next_sample=sel_sample_next;
+  if(audio_next_bank<16 && banks[audio_next_bank] && banks[audio_next_bank]->num_samples)
+    audio_next_sample%=banks[audio_next_bank]->num_samples;
+
   // void i2s_callback_func() {
   uint32_t t0, t1;
   uint32_t sd_card_total_time = 0;
@@ -203,7 +210,9 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
     // File switches used to live below this early return, trapping a stopped
     // one-shot in its old bank forever. Finish the switch while this block
     // remains silent; the following block applies the normal mute conditions.
-    audio_switch_while_silent();
+    if(bank_transition_fading()) {
+      atomic_store_explicit(&bank_fade_silent,true,memory_order_relaxed);
+    } else if(!bank_transition_busy()) audio_switch_while_silent();
 
     envelope_pitch_val = envelope_pitch_val_new;
 
@@ -275,12 +284,23 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
       samples16[i * 2 + 0] = (int16_t)(samples[i * 2 + 0] >> 16);
       samples16[i * 2 + 1] = (int16_t)(samples[i * 2 + 1] >> 16);
     }
+    // A silent source may still have delay/reverb tails. Finish their fade
+    // before handing the buffer to the foreground metadata loader as well.
+    bool bank_silent_fading=bank_transition_fading();
+    if(bank_silent_fading) {
+      for(unsigned i=0;i<buffer->sample_count;++i) {
+        samples16[2*i]=crossfade3_out(samples16[2*i],i,CROSSFADE3_COS);
+        samples16[2*i+1]=crossfade3_out(samples16[2*i+1],i,CROSSFADE3_COS);
+      }
+    }
     ZD_CALL(zd_audio_output(buffer->sample_count, 0));
 #if AUDIO_RESTART_WAKE_ENABLED
     if (audio_restart_pcm_silent(samples16, buffer->sample_count))
       buffer->flags |= AUDIO_BUFFER_SILENCE;
 #endif
     audio_submit_buffer(buffer, false);
+    if(bank_silent_fading)
+      atomic_store_explicit(&bank_fade_done,true,memory_order_release);
 
     ZD_CALL(zd_audio_counter(ZD_MUTED));
     // audio muted flag to ensure a fade in occurs when
@@ -319,17 +339,18 @@ BREAKOUT_OF_MUTE:
   // mutex
   sync_using_sdcard = true;
 
+  if(bank_transition_busy() || !metadata_ready(audio_next_bank)) do_open_file_ready=false;
   bool do_open_file = do_open_file_ready;
   // check if the file is the right one
   if (do_open_file_ready) {
-    // printf("[audio_callback] next file: %s\n", banks[sel_bank_next]
-    //                               ->sample[sel_sample_next]
+    // printf("[audio_callback] next file: %s\n", banks[audio_next_bank]
+    //                               ->sample[audio_next_sample]
     //                               .snd[sel_variation_next]
     //                               ->name);
     phases[0] = round(
         ((float)phases[0] *
-         (float)banks[sel_bank_next]
-             ->sample[sel_sample_next]
+         (float)banks[audio_next_bank]
+             ->sample[audio_next_sample]
              .snd[FILEZERO]
              ->size *
          sel_variation_scale[sel_variation]) /
@@ -338,16 +359,16 @@ BREAKOUT_OF_MUTE:
 
     // printf("[audio_callback] phase[0] -> phase_new: %d*%d/%d -> %d\n",
     // phases[0],
-    //        banks[sel_bank_next]
-    //            ->sample[sel_sample_next]
+    //        banks[audio_next_bank]
+    //            ->sample[audio_next_sample]
     //            .snd[sel_variation_next]
     //            ->size,
     //        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size,
     //        phase_new);
     // printf("[audio_callback] beat_current -> new beat_current: %d",
     // beat_current);
-    beat_current = round(((float)beat_current * (float)banks[sel_bank_next]
-                                                    ->sample[sel_sample_next]
+    beat_current = round(((float)beat_current * (float)banks[audio_next_bank]
+                                                    ->sample[audio_next_sample]
                                                     .snd[FILEZERO]
                                                     ->slice_num)) /
                    (float)banks[sel_bank_cur]
@@ -360,20 +381,20 @@ BREAKOUT_OF_MUTE:
     do_open_file_ready = false;
     // printf("[audio_callback] do_fade_in from do_open_file_ready\n");
   }
-  bool allow_file_change=true;
+  bool allow_file_change=!bank_transition_busy() && metadata_ready(audio_next_bank);
 #if AUDIO_PREPARE_NEXT
   if(fil_current_change||fil_current_change_force) {
     char next_path[32];
-    format_sample_filename(next_path,sel_bank_next,
-        sel_sample_next%banks[sel_bank_next]->num_samples,
+    format_sample_filename(next_path,audio_next_bank,
+        audio_next_sample%banks[audio_next_bank]->num_samples,
         sel_variation+audio_variant*2);
-    allow_file_change=audio_prepare_ready(next_path);
+    allow_file_change=allow_file_change && audio_prepare_ready(next_path);
   }
 #endif
   if (allow_file_change && (fil_current_change || fil_current_change_force)) {
-    fil_current_change = false;
-    if (fil_current_change_force || sel_bank_cur != sel_bank_next ||
-        sel_sample_cur != sel_sample_next) {
+    fil_current_change = sel_bank_next!=audio_next_bank || sel_sample_next!=audio_next_sample;
+    if (fil_current_change_force || sel_bank_cur != audio_next_bank ||
+        sel_sample_cur != audio_next_sample) {
       do_open_file_ready = true;
       do_fade_out = true;
       fil_current_change_force = false;
@@ -569,8 +590,8 @@ BREAKOUT_OF_MUTE:
     }
 
     if (do_open_file) {
-      sel_bank_cur = sel_bank_next;
-      sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
+      sel_bank_cur = audio_next_bank;
+      sel_sample_cur = audio_next_sample % banks[sel_bank_cur]->num_samples;
 
       t0 = time_us_32();
       format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
@@ -622,8 +643,8 @@ BREAKOUT_OF_MUTE:
 
     if (head == 0 && do_open_file) {
       // setup the next
-      sel_bank_cur = sel_bank_next;
-      sel_sample_cur = sel_sample_next % banks[sel_bank_cur]->num_samples;
+      sel_bank_cur = audio_next_bank;
+      sel_sample_cur = audio_next_sample % banks[sel_bank_cur]->num_samples;
       t0 = time_us_32();
         format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
                                sel_variation + audio_variant * 2);
@@ -1203,8 +1224,16 @@ AUDIO_SOURCE_RENDERED:
       samples16[2*i+1] = audio_restart_fade(samples16[2*i+1], i);
     }
   }
+  bool bank_fading=bank_transition_fading();
+  if(bank_fading) {
+    for(unsigned i=0;i<buffer->sample_count;++i) {
+      samples16[2*i]=crossfade3_out(samples16[2*i],i,CROSSFADE3_COS);
+      samples16[2*i+1]=crossfade3_out(samples16[2*i+1],i,CROSSFADE3_COS);
+    }
+  }
   CL_CALL(cl_submit(buffer->user_data, samples16, buffer->sample_count));
   audio_submit_buffer(buffer, clock_restart_block);
+  if(bank_fading) atomic_store_explicit(&bank_fade_done,true,memory_order_release);
 #ifdef PRINT_SDCARD_TIMING
   give_audio_buffer_time = (time_us_32() - t0);
 #endif
@@ -1257,21 +1286,22 @@ AUDIO_SOURCE_RENDERED:
 #if AUDIO_PREPARE_NEXT
   // The current block is already queued. Keep all SD work on its owning core,
   // and attempt at most one preparation step when this render left headroom.
-  if((uint32_t)(time_us_32()-startTime)<US_PER_BLOCK/2&&
+  if(!bank_transition_busy() && metadata_ready(audio_next_bank) &&
+     (uint32_t)(time_us_32()-startTime)<US_PER_BLOCK/2&&
      (fil_current_change||fil_current_change_force||do_open_file_ready)) {
     char next_path[32];
-    unsigned next_sample=sel_sample_next%banks[sel_bank_next]->num_samples;
-    format_sample_filename(next_path,sel_bank_next,next_sample,
+    unsigned next_sample=audio_next_sample%banks[audio_next_bank]->num_samples;
+    format_sample_filename(next_path,audio_next_bank,next_sample,
                            sel_variation+audio_variant*2);
     if(!audio_prepare_ready(next_path))audio_prepare_step(next_path);
     else if(do_open_file_ready) {
-      float ratio=(float)banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->size/
+      float ratio=(float)banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->size/
                    banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size;
       FSIZE_t next_phase=round((float)phases[0]*ratio*
           sel_variation_scale[sel_variation]*sel_variation_scale[sel_variation]);
       FSIZE_t offset=WAV_HEADER+
-          (banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->num_channels+1)*
-          (banks[sel_bank_next]->sample[next_sample].snd[FILEZERO]->oversampling+1)*44100+
+          (banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->num_channels+1)*
+          (banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->oversampling+1)*44100+
           next_phase/PHASE_DIVISOR*PHASE_DIVISOR;
       audio_prepare_warm(offset);
     }
@@ -1288,7 +1318,7 @@ static uint32_t audio_profile_effects(void) {
   return mask;
 }
 static uint32_t audio_profile_source(bool owns) {
-  return (sel_bank_cur<<12)|(sel_sample_cur<<8)|(sel_variation+audio_variant*2)|
+  return (sel_bank_cur<<12)|(metadata_filename_index(sel_bank_cur,sel_sample_cur)<<8)|(sel_variation+audio_variant*2)|
       ((owns&&fil_current.cltbl)?1u<<30:0)|(audio_callback_in_mute?1u<<31:0);
 }
 #endif
@@ -1309,7 +1339,7 @@ void __not_in_flash_func(i2s_callback_func)() {
   AP_CALL(audio_profile_begin(owns_media&&zeptocore_diag.header[21]>=3,
       audio_profile_source(owns_media),audio_profile_effects(),
       sf?sf->pitch_val_index:0,realtime_stretch_q8));
-  if(owns_media) {
+  if(owns_media && metadata_ready(sel_bank_cur) && !bank_transition_audio_hold()) {
     zeptocore_render_audio();
 #if AUDIO_EXTRA_OUTPUT_BUFFER
     // Maintain one queued block beyond the ordinary next block. A startup
@@ -1337,17 +1367,17 @@ void __not_in_flash_func(i2s_callback_func)() {
     uint32_t trigger = zv_trigger_read();
     uint8_t bank = sel_bank_cur, sample = sel_sample_cur;
     uint8_t slice = trigger & 255;
-    bool valid = owns_media && fil_is_open && bank < 16 && banks[bank] &&
+    bool valid = owns_media && metadata_ready(bank) && !bank_transition_busy() && fil_is_open && bank < 16 && banks[bank] &&
         banks[bank]->sample && sample < banks[bank]->num_samples &&
         !fil_current_change && !fil_current_change_force && !do_open_file_ready;
     // A newly opened sample must never inherit the previous sample's trigger.
     valid = valid && ((trigger >> 12) & 15) == bank &&
-        ((trigger >> 8) & 15) == sample;
+        ((trigger >> 8) & 15) == metadata_filename_index(bank,sample);
     if (valid) {
       SampleInfo *sound = banks[bank]->sample[sample].snd[FILEZERO];
       valid = sound && sound->slice_start && sound->slice_stop && slice < sound->slice_num;
     }
-    zv_snapshot snapshot = {.bank = bank, .sample = sample, .slice = valid ? slice : 0,
+    zv_snapshot snapshot = {.bank = bank, .sample = metadata_filename_index(bank,sample), .slice = valid ? slice : 0,
         .trigger = trigger >> 16, .bpm = owns_media && sf ? sf->bpm_tempo : 0,
         .forward = phase_forward, .stopped = playback_stopped || do_stop_playback,
         .muted = button_mute || trigger_button_mute, .valid = valid};
@@ -1367,7 +1397,7 @@ void __not_in_flash_func(i2s_callback_func)() {
   ZD_CALL(if (owns_media && zeptocore_diag.request.sequence !=
                  zeptocore_diag.audio.header.sequence && fil_is_open) {
     uint32_t *c = zd_audio.context;
-    c[0] = sel_bank_cur; c[1] = sel_sample_cur;
+    c[0] = sel_bank_cur; c[1] = metadata_filename_index(sel_bank_cur,sel_sample_cur);
     c[2] = sel_variation; c[3] = audio_variant; c[4] = phase_forward;
     c[5] = realtime_stretch_q8; c[6] = sf->pitch_val_index;
     c[7] = sf->bpm_tempo; c[8] = 0;

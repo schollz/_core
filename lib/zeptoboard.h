@@ -6,9 +6,10 @@ void input_handling() {
   tusb_init();
 #endif
 
-  audio_media_boot_complete();
+  metadata_optional_reverb();
   while (1) {
     audio_media_poll();
+    metadata_deferred_presets();
 #ifdef INCLUDE_MIDI
     tud_task();
     midi_comm_task(midi_comm_callback_fn, NULL, NULL, NULL, NULL, NULL, NULL,

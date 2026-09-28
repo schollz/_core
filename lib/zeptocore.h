@@ -177,9 +177,10 @@ void __not_in_flash_func(input_handling)() {
   bool sel_sample_knob_ready = false;
   clock_start_stop_sync = true;
   ZD_CALL(zd_control.context[2] = getFreeHeap());
-  audio_media_boot_complete();
+  metadata_optional_reverb();
   while (1) {
     audio_media_poll();
+    metadata_deferred_presets();
     ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
@@ -197,6 +198,7 @@ void __not_in_flash_func(input_handling)() {
     ZV_CALL(if (zv_tx_pending()) continue);
 #endif
 
+    if(!total_number_samples) {sleep_ms(1);continue;}
     if (do_switch_between_clock_and_midi) {
       do_switch_between_clock_and_midi = false;
       if (use_onewiremidi) {
