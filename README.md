@@ -44,7 +44,7 @@ The firmware for the zeptocore is written in C, and instructions for building it
 
 | Normal | Low latency | Visualizer |
 | --- | --- | --- |
-| [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1.uf2) | [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1_low_latency.uf2) | [v8.0.1 UF2](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore_v8.0.1_visualizer.uf2) |
+| [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2.uf2) | [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2_low_latency.uf2) | [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2_visualizer.uf2) |
 
 Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
 
@@ -99,8 +99,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                            | Low Latency                                                                                                           |
 | ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1.uf2)*                | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_no_overclocking.uf2) | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ezeptocore_v8.0.1_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_no_overclocking_low_latency.uf2) |
 
 *default firmware
 
@@ -147,8 +147,8 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1.uf2)*                | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_no_overclocking.uf2) | [v8.0.1](https://github.com/schollz/_core/releases/download/v8.0.1/ectocore_v8.0.1_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking_low_latency.uf2) |
 
 
 ### diy
