@@ -59,6 +59,8 @@ int32_t amiga_previous_value[2];
 bool reverb_activated = false;
 bool mute_soft_activated = false;
 
+#include "audio_silent_switch.h"
+
 inline int32_t scale16to32_fixed_dither(int16_t val) {
   return (((int32_t)val) << 16);  // + ((rand() & 1) - 1);
 }
@@ -197,6 +199,11 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
     first_loop_ever = true;
     audio_was_muted = true;
     audio_callback_in_mute = true;
+
+    // File switches used to live below this early return, trapping a stopped
+    // one-shot in its old bank forever. Finish the switch while this block
+    // remains silent; the following block applies the normal mute conditions.
+    audio_switch_while_silent();
 
     envelope_pitch_val = envelope_pitch_val_new;
 
