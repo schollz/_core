@@ -5,6 +5,7 @@
 #include "break_knob.h"
 #include "ectocore_loopstart_trig.h"
 #include "mcp3208.h"
+#include "cv_input_detect.h"
 #include "midicallback.h"
 #include "onewiremidi2.h"
 #ifdef INCLUDE_MIDI
@@ -19,9 +20,7 @@
 #define SIGNAL_READ_SAMPLES 1    // Number of samples to average
 #define DETECTION_THRESHOLD 5    // Consecutive matches needed for state change
 #define SIGNAL_THRESHOLD_MARGIN 50  // ADC counts above/below mean for detection
-#define MEAN_ALPHA 0.1f             // EMA coefficient for mean signal
 #define DETECTION_INTERVAL_MS 10    // Minimum time between detection runs
-#define MEAN_SIGNAL_INTERVAL_MS 1000  // Time between mean signal recalculations
 #define SIGNAL_ERROR_TOLERANCE 2      // Allow N bit errors in pattern matching
 
 uint8_t gpio_btn_taptempo_val = 0;
@@ -636,8 +635,6 @@ void __not_in_flash_func(input_handling)() {
   Saturation_setActive(saturation, sf->fx_active[FX_SATURATE]);
 
   uint32_t last_input_detection_time = 0;
-  uint32_t last_mean_signal_time = 0;
-  float mean_signal_ema = 0;
   const uint8_t length_signal = 16;
   // Improved magic signals with better Hamming distance
   uint8_t magic_signal[3][16] = {
@@ -648,7 +645,7 @@ void __not_in_flash_func(input_handling)() {
   bool cv_was_unplugged[3] = {false, false, false};
   uint8_t cv_detection_count[3] = {0, 0, 0};
   uint16_t detection_errors[3] = {0, 0, 0};
-  uint8_t signal_strength[3] = {0, 0, 0};
+  uint16_t signal_strength[3] = {0, 0, 0};
 
   // update the knobs
 #define KNOB_NUM 5
@@ -866,87 +863,22 @@ void __not_in_flash_func(input_handling)() {
       }
     }
 
-    // Calculate mean signal using exponential moving average
     uint32_t current_time = to_ms_since_boot(get_absolute_time());
-    if (current_time - last_mean_signal_time >= MEAN_SIGNAL_INTERVAL_MS) {
-      int16_t total_mean_signal = 0;
-      uint8_t total_signals_sent = 0;
+    // Probe every channel even when all jacks appear connected, so an initial
+    // misclassification can recover. Each response supplies its own threshold.
+    if (current_time - last_input_detection_time >= DETECTION_INTERVAL_MS) {
+      bool is_signal[3];
       for (uint8_t j = 0; j < 3; j++) {
-        if (!cv_plugged[j]) {
-          total_signals_sent++;
-          for (uint8_t i = 0; i < length_signal; i++) {
-            gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
-            sleep_us(SIGNAL_SETTLE_TIME_US);
-            total_mean_signal += MCP3208_read(mcp3208, cv_signals[j], false);
-          }
-        }
-      }
-      if (total_signals_sent > 0) {
-        float new_sample =
-            (float)total_mean_signal / (total_signals_sent * length_signal);
-        if (mean_signal_ema == 0) {
-          mean_signal_ema = new_sample;  // Initialize on first run
-        } else {
-          mean_signal_ema =
-              MEAN_ALPHA * new_sample + (1.0f - MEAN_ALPHA) * mean_signal_ema;
-        }
-        // printf("[ectocore] mean_signal_ema: %f\n", mean_signal_ema);
-      }
-      last_mean_signal_time = current_time;
-    }
-
-    // Input detection with time-based debouncing
-    if (mean_signal_ema > 0 &&
-        current_time - last_input_detection_time >= DETECTION_INTERVAL_MS) {
-      int16_t val_input;
-      uint8_t response_signal[3][16] = {
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      };
-
-      for (uint8_t j = 0; j < 3; j++) {
-        int16_t total_signal_strength = 0;
+        uint16_t response[16];
         for (uint8_t i = 0; i < length_signal; i++) {
           gpio_put(GPIO_INPUTDETECT, magic_signal[j][i]);
           sleep_us(SIGNAL_SETTLE_TIME_US);
-          val_input = MCP3208_read(mcp3208, cv_signals[j], false);
-
-          // Track signal strength for diagnostics
-          int16_t signal_diff = val_input - (int16_t)mean_signal_ema;
-          total_signal_strength += abs(signal_diff);
-
-          // Threshold with margin to reduce noise sensitivity
-          if (val_input > (int16_t)mean_signal_ema + SIGNAL_THRESHOLD_MARGIN) {
-            response_signal[j][i] = 1;
-          } else if (val_input <
-                     (int16_t)mean_signal_ema - SIGNAL_THRESHOLD_MARGIN) {
-            response_signal[j][i] = 0;
-          } else {
-            // Ambiguous reading - use previous state or default to 0
-            response_signal[j][i] = 0;
-          }
+          response[i] = MCP3208_read(mcp3208, cv_signals[j], false);
         }
-        // Store average signal strength
-        signal_strength[j] = total_signal_strength / length_signal;
-      }
-
-      // Validate signals with error correction
-      bool is_signal[3] = {true, true, true};
-      for (uint8_t j = 0; j < 3; j++) {
-        uint8_t count_matches = 0;
-        for (uint8_t i = 0; i < length_signal; i++) {
-          if (response_signal[j][i] == magic_signal[j][i]) {
-            count_matches++;
-          }
-        }
-        // Allow SIGNAL_ERROR_TOLERANCE bit errors
-        is_signal[j] =
-            (count_matches >= length_signal - SIGNAL_ERROR_TOLERANCE);
-        if (!is_signal[j] &&
-            count_matches < length_signal - SIGNAL_ERROR_TOLERANCE) {
-          detection_errors[j]++;
-        }
+        is_signal[j] = cv_input_follows_pattern(response, magic_signal[j],
+            length_signal, SIGNAL_THRESHOLD_MARGIN, SIGNAL_ERROR_TOLERANCE,
+            &signal_strength[j]);
+        if (!is_signal[j]) detection_errors[j]++;
       }
 
       // Hysteresis-based state machine
@@ -957,7 +889,6 @@ void __not_in_flash_func(input_handling)() {
           if (cv_detection_count[j] >= DETECTION_THRESHOLD) {
             cv_plugged[j] = true;
             cv_detection_count[j] = 0;
-            last_mean_signal_time = 0;  // Trigger mean recalculation
           }
         } else if (is_signal[j] && cv_plugged[j]) {
           // Potential unplug detected
@@ -966,7 +897,6 @@ void __not_in_flash_func(input_handling)() {
             cv_plugged[j] = false;
             cv_detection_count[j] = 0;
             cv_was_unplugged[j] = true;
-            last_mean_signal_time = 0;  // Trigger mean recalculation
           }
         } else {
           // State matches expectation - reset counter

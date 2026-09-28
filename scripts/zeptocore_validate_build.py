@@ -20,6 +20,12 @@ def main():
     p.add_argument("--seconds", type=int, default=10)
     p.add_argument("--midi-port", default="hw:6,0,0")
     p.add_argument("--audio-device", default="hw:4,0")
+    p.add_argument("--skip-audio", action="store_true",
+                   help="Capture diagnostics only; do not open an audio device or record audio")
+    p.add_argument("--adapter-khz", type=int, default=5000,
+                   help="SWD programming speed in kHz; lower for unreliable probe links")
+    p.add_argument("--skip-flash", action="store_true",
+                   help="Capture already-programmed firmware; the server still checks ELF identity")
     p.add_argument("--skip-stack", action="store_true",
                    help="Leave firmware running after capture; omit the separate halt/reset stack check")
     p.add_argument("--test-controls", action="store_true",
@@ -35,17 +41,23 @@ def main():
     p.add_argument("--long-files", action="store_true",
                    help="Also exercise reverse/stretch/slices on the larger existing variation WAV")
     args = p.parse_args()
+    if args.adapter_khz <= 0:
+        p.error("--adapter-khz must be positive")
     args.out.mkdir(parents=True, exist_ok=False)
     (args.out / "firmware.elf").write_bytes(ElfImage(args.elf).data)
     root = Path(__file__).resolve().parents[1]
     socket_path = str((args.out / "debug.sock").resolve())
     if len(socket_path) > 100:
         raise RuntimeError("artifact path too long for Unix socket")
-    print(f"Programming {args.elf}", flush=True)
-    with (args.out / "flash.log").open("w") as log:
-        subprocess.run(["openocd", "-f", "interface/cmsis-dap.cfg", "-f", "target/rp2040.cfg",
-                        "-c", "adapter speed 5000", "-c", f"program {{{args.elf.resolve()}}} verify reset exit"],
-                       stdout=log, stderr=subprocess.STDOUT, check=True, timeout=60)
+    if not args.skip_flash:
+        print(f"Programming {args.elf}", flush=True)
+        with (args.out / "flash.log").open("w") as log:
+            subprocess.run(["openocd", "-f", "interface/cmsis-dap.cfg", "-f", "target/rp2040.cfg",
+                            "-c", f"adapter speed {args.adapter_khz}", "-c", f"program {{{args.elf.resolve()}}} verify reset exit"],
+                           stdout=log, stderr=subprocess.STDOUT, check=True,
+                           timeout=max(60, 180 * 1000 / args.adapter_khz))
+    else:
+        print(f"Using running firmware; checking identity against {args.elf}", flush=True)
     time.sleep(3)
     with (args.out / "server.log").open("w") as log:
         server = subprocess.Popen([sys.executable, str(root / "scripts/zeptocore_debug_server.py"),
@@ -152,20 +164,20 @@ def main():
                 with (args.out / f"{mode}-audio.log").open("w") as audio_log:
                     recorder = subprocess.Popen(["arecord", "-D", args.audio_device,
                         "-f", "S32_LE", "-r", "48000", "-c", "2", "-d", str(args.seconds+2),
-                        "-t", "wav", str(args.out / f"{mode}.wav")], stdout=audio_log, stderr=subprocess.STDOUT)
+                        "-t", "wav", str(args.out / f"{mode}.wav")], stdout=audio_log, stderr=subprocess.STDOUT) if not args.skip_audio else None
                     try:
                         with (args.out / f"{mode}.log").open("w") as capture_log:
                             subprocess.run([sys.executable, str(root / "scripts/zeptocore_debug.py"),
                                 "--socket", socket_path, "capture", "--duration", str(args.seconds),
                                 "--interval", ".25", "--workload", mode, "--out", str(args.out / mode)],
                                 stdout=capture_log, stderr=subprocess.STDOUT, check=True, timeout=args.seconds+15)
-                        if recorder.wait(timeout=5) != 0:
+                        if recorder is not None and recorder.wait(timeout=5) != 0:
                             raise RuntimeError("audio recorder failed")
                     finally:
                         stop_controls.set()
                         if control_thread:
                             control_thread.join(timeout=3)
-                        if recorder.poll() is None:
+                        if recorder is not None and recorder.poll() is None:
                             recorder.terminate()
                             recorder.wait(timeout=5)
                 (args.out / f"{mode}-controls.json").write_text(json.dumps({
