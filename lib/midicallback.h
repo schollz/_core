@@ -120,6 +120,7 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
         sf->pitch_val_index = PITCH_VAL_MAX - 1;
       break;
   case cc_sampleselect: { // sample
+    if(!sample_selection_num || !sample_selection)return;
     uint8_t new_sample = new_adcvalue ; // what is range?
     uint8_t sample_selection_index = 0;
     sample_selection_index = new_sample * (sample_selection_num - 1) / 255;
@@ -130,7 +131,7 @@ void midi_control_change (uint8_t channel, uint8_t control, uint8_t value) {
       sel_bank_next = f_sel_bank_next;
       sel_sample_next = f_sel_sample_next;
       ZD_CALL(zd_switch_request(((uint16_t)f_sel_bank_next<<12)|
-          ((uint16_t)f_sel_sample_next<<8)|(sel_variation+audio_variant*2)));
+          ((uint16_t)metadata_filename_index(f_sel_bank_next,f_sel_sample_next)<<8)|(sel_variation+audio_variant*2)));
       fil_current_change = true;
       }
       break;

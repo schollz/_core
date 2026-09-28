@@ -35,8 +35,11 @@ class DebugService:
         response = {"schema": "zeptocore.debug-response", "version": 1,
                     "id": identity, "command": command, "status": "ok"}
         if not isinstance(command, str) or command not in {"device.info", "seek.status", "audio.status", "memory.status",
-                            "maps.status", "maps.layout", "maps.benchmark", "maps.fixture", "media.cached", "capture.start", "capture.stop"}:
+                            "metadata.status", "maps.status", "maps.layout", "maps.benchmark", "maps.fixture", "media.cached", "capture.start", "capture.stop"}:
             raise DiagnosticError("unsupported command")
+        if command == "metadata.status":
+            response["data"] = self.reader.metadata_status()
+            return response
         if command == "maps.fixture":
             response["data"] = self.reader.audio_fixture()
             if not response["data"]["available"]:

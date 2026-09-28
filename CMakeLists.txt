@@ -58,6 +58,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/lib/cmake/patch_tinyusb.cmake)
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
     main.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib/bank_metadata.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/seek_diagnostics.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/audio_profile.c
     ${CMAKE_CURRENT_LIST_DIR}/lib/clock_latency.c

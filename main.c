@@ -18,9 +18,14 @@ static void ecto_emit_trigger(void) {
 #endif
 
 bool __not_in_flash_func(timer_step)() {
-  if(!audio_media_timer_allowed())return true;
+  if(!audio_media_timer_allowed() || !metadata_ready(sel_bank_cur))return true;
   if (!fil_is_open) {
     return true;
+  }
+  static unsigned transient_metadata_generation;
+  if(transient_metadata_generation!=metadata_generation()) {
+    transient_metadata_generation=metadata_generation();
+    phase_sample_old=0;
   }
   if (bpm_last != sf->bpm_tempo) {
     bpm_last = sf->bpm_tempo;
@@ -902,7 +907,7 @@ int main() {
   // it again 500ms later regardless of how long the callback took to execute
   // add_repeating_timer_ms(-1000, repeating_timer_callback, NULL, &timer);
   // cancel_repeating_timer(&timer);
-  update_repeating_timer_to_bpm(sf->bpm_tempo);
+  // Start the playback timer after the persistent state has been allocated.
   // initialize random library
   random_initialize();
 
@@ -953,6 +958,7 @@ int main() {
 
   // printf("startup!\n");
   sdcard_startup();
+  update_repeating_timer_to_bpm(sf->bpm_tempo);
 
   // TODO
   // load chain from SD card

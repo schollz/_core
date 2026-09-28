@@ -332,6 +332,23 @@ class DeviceReader:
                           ["ordinary_seek", "ordinary_read", "mapped_seek", "mapped_read"])})
         return result
 
+    def metadata_status(self) -> dict:
+        """Optional, read-only extension; the mailbox ABI stays at version 1."""
+        self.validate()
+        address, size = self.elf.symbols.get("metadata_status", (0, 0))
+        if not address:
+            return {"available": False, "reason": "firmware has no bank metadata status"}
+        if size != 48 or address % 4 or not 0x20000000 <= address < address + size <= 0x20040000:
+            raise DiagnosticError("invalid metadata status symbol")
+        names = ["resident_bank", "loading_bank", "generation", "arena_capacity", "arena_used",
+                 "minimum_free_heap", "transition_us", "maximum_transition_us", "rollbacks",
+                 "last_error", "state", "rejected_files"]
+        for _ in range(3):
+            data = self.rpc.read(address, 12)
+            if data == self.rpc.read(address, 12):
+                return {"available": True, **dict(zip(names, data)), "session": list(self.session)}
+        raise DiagnosticError("metadata status changed during retrieval")
+
     def snapshot(self, *, layout_id: int | None = None) -> dict:
         h = self.validate()
         if layout_id is not None and (type(layout_id) is not int or not 0 <= layout_id <= 65535 or not h[4] & 128):

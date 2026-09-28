@@ -23,6 +23,7 @@ static FRESULT audio_file_open(const char *p) {
   ++opens; return open_result;
 }
 static void realtime_stretch_reset_from_playback_phase(void) { ++resets; }
+static bool metadata_ready(unsigned bank) {return bank==2;}
 #include "audio_silent_switch.h"
 int main(void) {
   storage[2].num_samples=3; banks[2]=&storage[2];

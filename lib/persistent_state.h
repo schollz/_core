@@ -66,7 +66,7 @@ void __not_in_flash_func(PersistentState_save)(uint8_t bank, uint8_t sample) {
   // Update bank and sample
   state.magic = PERSISTENT_STATE_MAGIC;
   state.bank = bank;
-  state.sample = sample;
+  state.sample = metadata_filename_index(bank,sample);
   state.checksum = PersistentState_calculate_checksum(&state);
   state.padding = 0;
   
@@ -113,12 +113,13 @@ bool __not_in_flash_func(PersistentState_load)(uint8_t *bank, uint8_t *sample,
   }
   
   // Validate sample exists in the bank
-  if (state.sample >= banks_list[state.bank]->num_samples) {
+  int ordinal=metadata_ordinal(state.bank,state.sample);
+  if (ordinal<0) {
     return false;
   }
   
   *bank = state.bank;
-  *sample = state.sample;
+  *sample = ordinal;
   
   return true;
 }

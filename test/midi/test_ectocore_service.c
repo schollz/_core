@@ -14,6 +14,9 @@ static bool connected = true;
 #endif
 static void *onewiremidi;
 static void audio_media_poll(void) {}
+static void metadata_deferred_presets(void) {}
+static const unsigned total_number_samples=1;
+static void sleep_ms(unsigned n) {(void)n;}
 #define ZD_CALL(...) ((void)0)
 static void tud_task(void) { ++usb_tasks; }
 #if ZV_ENABLED

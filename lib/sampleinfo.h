@@ -32,6 +32,9 @@ typedef struct SampleInfo {
   uint16_t transient_num_2 : 5;
   uint16_t transient_num_3 : 6;
   uint16_t **transients;
+  uint32_t metadata_bytes, metadata_checksum, detail_bytes;
+  uint8_t filename_index;
+
 } SampleInfo;
 
 typedef struct SampleInfoPack {
@@ -45,177 +48,21 @@ typedef struct SampleInfoPack {
 
 #define SAMPLEINFOPACK_SIZE (4 + 4 + 2 + 1)
 
-void SampleInfo_free(SampleInfo *si) {
-  if (si != NULL) {
-    free(si->slice_start);
-    free(si->slice_stop);
-    free(si->slice_type);
-  }
-  free(si);
-}
-
-#ifndef NOSDCARD
-// sdcard version
-SampleInfo *SampleInfo_load(const char *fname, bool load_transients) {
-  FIL fil;
-  FRESULT fr;
-  fr = f_open(&fil, fname, FA_READ);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-  }
-  unsigned int bytes_read;
-
-  SampleInfoPack *sip = (SampleInfoPack *)malloc(sizeof(SampleInfoPack));
-  if (sip == NULL) {
-    perror("Error allocating memory");
-    f_close(&fil);
-    return NULL;
-  }
-
-  // read from sample pack
-  fr = f_read(&fil, sip, SAMPLEINFOPACK_SIZE, &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    f_close(&fil);
-    free(sip);
-    return NULL;
-  }
-
-  // create SampleInfo from SampleInfoPack
-  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
-  if (si == NULL) {
-    perror("Error allocating memory");
-    f_close(&fil);
-    free(sip);
-    return NULL;
-  }
-
-  si->size = sip->size;
-  si->bpm = sip->flags & 0x1FF;
-  si->play_mode = (sip->flags >> 9) & 0x7;
-  si->one_shot = (sip->flags >> 12) & 0x1;
-  si->tempo_match = (sip->flags >> 13) & 0x1;
-  si->oversampling = (sip->flags >> 14) & 0x1;
-  si->num_channels = (sip->flags >> 15) & 0x1;
-  si->version = (sip->flags >> 16) & 0x7F;
-  si->reserved = (sip->flags >> 23) & 0x1FF;
-  si->splice_trigger = sip->splice_info & 0x7FFF;
-  si->splice_variable = (sip->splice_info >> 15) & 0x1;
-  si->slice_num = sip->slice_num;
-  si->slice_current = 0;
-
-  // load in arrays
-  si->slice_start = malloc(sizeof(int32_t) * si->slice_num);
-  if (si->slice_start == NULL) {
-    perror("Error allocating memory for array");
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-  fr = f_read(&fil, si->slice_start, sizeof(int32_t) * si->slice_num,
-              &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-
-  si->slice_stop = malloc(sizeof(int32_t) * si->slice_num);
-  if (si->slice_stop == NULL) {
-    perror("Error allocating memory for array");
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-  fr = f_read(&fil, si->slice_stop, sizeof(int32_t) * si->slice_num,
-              &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-
-  si->slice_type = malloc(sizeof(int8_t) * si->slice_num);
-  if (si->slice_type == NULL) {
-    perror("Error allocating memory for array");
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-  fr =
-      f_read(&fil, si->slice_type, sizeof(int8_t) * si->slice_num, &bytes_read);
-  if (fr != FR_OK) {
-    printf("[sampleinfo] %s\n", FRESULT_str(fr));
-    f_close(&fil);
-    free(sip);
-    SampleInfo_free(si);
-    return NULL;
-  }
-
-  if (load_transients && si->version >= 1) {
-    // read in transient nums
-    uint16_t transient_num;
-    f_read(&fil, &transient_num, sizeof(uint16_t), &bytes_read);
-    si->transient_num_1 = transient_num;
-    if (si->transient_num_1 > 16) {
-      si->transient_num_1 = 16;
-    }
-    f_read(&fil, &transient_num, sizeof(uint16_t), &bytes_read);
-    si->transient_num_2 = transient_num;
-    if (si->transient_num_2 > 16) {
-      si->transient_num_2 = 16;
-    }
-    f_read(&fil, &transient_num, sizeof(uint16_t), &bytes_read);
-    si->transient_num_3 = transient_num;
-    if (si->transient_num_3 > 16) {
-      si->transient_num_3 = 16;
-    }
-
-    // load in transients
-    si->transients = malloc(sizeof(uint16_t *) * 3);
-    uint16_t transient_nums[3] = {si->transient_num_1, si->transient_num_2,
-                                  si->transient_num_3};
-    for (int i = 0; i < 3; i++) {
-      si->transients[i] = malloc(sizeof(uint16_t) * transient_nums[i]);
-      f_read(&fil, si->transients[i], sizeof(uint16_t) * transient_nums[i],
-             &bytes_read);
-    }
-  } else {
-    si->transient_num_1 = 0;
-    si->transient_num_2 = 0;
-    si->transient_num_3 = 0;
-  }
-
-  f_close(&fil);
-  free(sip);
-
-  // initialize variables
-  if (si->bpm < 30) {
-    si->bpm = 30;
-  } else if (si->bpm > 300) {
-    si->bpm = 300;
-  }
-  return si;
-}
-#endif
-
 #ifdef NOSDCARD
-// disk version (for testing)
-SampleInfo *SampleInfo_readFromDisk() {
-  FILE *file = fopen("sampleinfo.bin", "rb");
+// Legacy standalone host reader owns its arrays. Firmware never compiles this
+// allocator/free path; arena-backed catalogue views must never reach it.
+static void SampleInfo_free(SampleInfo *si) {
+  if(!si)return;
+  free(si->slice_start);free(si->slice_stop);free(si->slice_type);free(si);
+}
+SampleInfo *SampleInfo_readFromDisk(const char *path) {
+  FILE *file = fopen(path, "rb");
   if (file == NULL) {
     perror("Error opening file");
     return NULL;
   }
 
-  SampleInfoPack *sip = (SampleInfoPack *)malloc(SAMPLEINFOPACK_SIZE);
+  SampleInfoPack *sip = (SampleInfoPack *)calloc(1,sizeof(SampleInfoPack));
   if (sip == NULL) {
     perror("Error allocating memory");
     fclose(file);
@@ -230,7 +77,7 @@ SampleInfo *SampleInfo_readFromDisk() {
   }
 
   // create SampleInfo from SampleInfoPack
-  SampleInfo *si = (SampleInfo *)malloc(sizeof(SampleInfo));
+  SampleInfo *si = (SampleInfo *)calloc(1,sizeof(SampleInfo));
   if (si == NULL) {
     perror("Error allocating memory");
     fclose(file);
@@ -338,4 +185,7 @@ SampleInfo *SampleInfo_readFromDisk() {
 }
 #endif
 
+
+// Firmware catalogue entries own no arrays. Detailed views belong to the single
+// metadata arena; only metadata_catalogue_destroy() may release that storage.
 #endif
