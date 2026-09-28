@@ -119,6 +119,31 @@ Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
 all visualizer code and state, even after building an enabled version in the
 same directory. The new commands use the default latency and clock settings.
 
+### Sample CV mapping (ectocore and ezeptocore)
+
+In the webtool's Settings, **Sample CV mapping** offers **Bank divisions**
+(the default) and **1 V/oct**. Bank divisions spreads the samples across the
+selected CV range. With 1 V/oct, 0 V selects sample 1 and each chromatic semitone
+(1/12 V) advances one sample, wrapping around the bank. For an eight-sample bank,
++1 V selects sample 5. CV selects samples; it does not change their pitch or add
+retriggering. Existing sample-switch timing still applies.
+
+With **bipolar** polarity, negative notes wrap backward: -1/12 V selects the last
+sample. With **unipolar** polarity, negative voltages select sample 1. While CV is
+connected in 1 V/oct mode, it controls sample selection; the sample knob still
+supports bank selection and its other modifier gestures. Unplug CV to resume
+ordinary knob selection. Assigning Sample CV to Reset disables sample selection
+by CV.
+
+Download either the full SD-card contents or settings only, copy the settings
+to the card, and restart the device. The mapping is stored in
+`settings/sample_cv_mapping` as `bank` or `1voct`; copying a new download overwrites
+the previous choice. Missing settings preserve the default bank divisions.
+This option requires firmware with 1 V/oct sample CV support; **the published
+v8.0.2 builds do not support it**. Older firmware ignores the new setting. Note detection uses the
+existing nominal voltage scale, nearest-semitone rounding, and hysteresis to
+reduce jitter; it does not add a CV calibration procedure.
+
 ### diy
 
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)
@@ -153,6 +178,9 @@ For latency, normal latency will work for most, but choose low if you encounter 
 | Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking_low_latency.uf2) |
 
 For the [visualizer](visualizer-juce/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+
+See [Sample CV mapping](#sample-cv-mapping-ectocore-and-ezeptocore) for the optional
+1 V/oct sample-selection mode shared with ezeptocore.
 
 
 ### diy

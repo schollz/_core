@@ -312,6 +312,15 @@
                         <option value="unipolar">unipolar (0 to +5v)</option>
                     </select>
                 </p>
+                <p id="pSettingsSampleCVMapping" style="margin: 0.25em 0;">
+                    <label for="settingsSampleCVMapping" style="display: block; margin-bottom: 0.25em;"
+                        :class="{ 'grayed': settingsOverrideWithReset === 'sample' }">Sample CV mapping</label>
+                    <select id="settingsSampleCVMapping" v-model="settingsSampleCVMapping"
+                        :disabled="settingsOverrideWithReset === 'sample'" style="width: 100%;">
+                        <option value="bank">Bank divisions</option>
+                        <option value="1voct">1 V/oct</option>
+                    </select>
+                </p>
                 <p id="pSettingsOverrideWithReset" style="margin: 0.25em 0;">
                     <label for="settingsOverrideWithReset" style="display: block; margin-bottom: 0.25em;">Reset CV
                         (Override)</label>

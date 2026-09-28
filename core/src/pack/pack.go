@@ -28,6 +28,7 @@ type Data struct {
 	SettingsAmenBehavior      string   `json:"settingsAmenBehavior"`
 	SettingsBreakCV           string   `json:"settingsBreakCV"`
 	SettingsSampleCV          string   `json:"settingsSampleCV"`
+	SettingsSampleCVMapping   string   `json:"settingsSampleCVMapping"`
 	SettingsKnobXSample       bool     `json:"settingsKnobXSample"`
 	SettingsMashMode          bool     `json:"settingsMashMode"`
 	SettingsGrimoireEffects   [][]bool `json:"settingsGrimoireEffects"`
@@ -159,6 +160,14 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("amen_behavior-%s", data.SettingsAmenBehavior)))
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("break_cv-%s", data.SettingsBreakCV)))
 	os.Create(path.Join(settingsFolder, fmt.Sprintf("sample_cv-%s", data.SettingsSampleCV)))
+	mapping := "bank"
+	if data.SettingsSampleCVMapping == "1voct" {
+		mapping = "1voct"
+	}
+	err = os.WriteFile(path.Join(settingsFolder, "sample_cv_mapping"), []byte(mapping+"\n"), 0666)
+	if err != nil {
+		return
+	}
 
 	// knob x
 	if data.SettingsKnobXSample {

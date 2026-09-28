@@ -3,6 +3,10 @@
 #ifndef GLOBALS_LIB
 #define GLOBALS_LIB 1
 
+#ifdef INCLUDE_ECTOCORE
+#include "sample_cv.h"
+#endif
+
 bool repeating_timer_callback(struct repeating_timer *t);
 bool timer_step();
 struct repeating_timer timer;
@@ -206,6 +210,9 @@ bool global_amen_cv_bipolar = true;
 uint8_t global_amen_cv_behavior = AMEN_CV_BEHAVIOR_JUMP;
 bool global_break_cv_bipolar = true;
 bool global_sample_cv_bipolar = true;
+#ifdef INCLUDE_ECTOCORE
+SampleCVMapping global_sample_cv_mapping = SAMPLE_CV_MAPPING_BANK;
+#endif
 volatile bool clock_start_stop_sync = false;
 bool clock_output_trig = false;
 int8_t cv_reset_override = -1;

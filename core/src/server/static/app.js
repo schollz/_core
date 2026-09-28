@@ -328,6 +328,7 @@ const socketMessageListener = (e) => {
         if (savedState.settingsSampleCV) {
             app.settingsSampleCV = savedState.settingsSampleCV;
         }
+        app.settingsSampleCVMapping = savedState.settingsSampleCVMapping === "1voct" ? "1voct" : "bank";
         if (savedState.settingsOverrideWithReset) {
             app.settingsOverrideWithReset = savedState.settingsOverrideWithReset;
         }
@@ -529,6 +530,7 @@ app = new Vue({
         settingsAmenBehavior: "split",
         settingsBreakCV: "bipolar",
         settingsSampleCV: "bipolar",
+        settingsSampleCVMapping: "bank",
         settingsOverrideWithReset: "none",
         settingsKnobXSample: false,
         settingsMashMode: false,
@@ -589,6 +591,7 @@ app = new Vue({
         settingsAmenBehavior: 'saveState',
         settingsBreakCV: 'saveState',
         settingsSampleCV: 'saveState',
+        settingsSampleCVMapping: 'saveState',
         settingsOverrideWithReset: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
@@ -1029,6 +1032,7 @@ app = new Vue({
                 settingsAmenBehavior: app.settingsAmenBehavior,
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
+                settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
@@ -1433,6 +1437,7 @@ app = new Vue({
                 settingsAmenBehavior: app.settingsAmenBehavior,
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
+                settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
@@ -1804,7 +1809,12 @@ window.addEventListener('load', (event) => {
         tippy('#pSettingsSampleCV', {
             zIndex: 9999999,
             appendTo: "parent",
-            content: "When set to 'unipolar' the 0-5v is mapped to the full range. When set to 'bipolar' the -5-5v is mapped to the full range.",
+            content: "Bank divisions spreads the samples across 0 to +5 V (unipolar) or -5 to +5 V (bipolar). In 1 V/oct mode, bipolar allows negative notes to wrap backward; unipolar holds sample 1 below 0 V.",
+        });
+        tippy('#pSettingsSampleCVMapping', {
+            zIndex: 9999999,
+            appendTo: "parent",
+            content: "Bank divisions divides the CV range by the bank's sample count. 1 V/oct selects sample 1 at 0 V and advances one sample per semitone (1/12 V), wrapping around the bank. Requires firmware with 1 V/oct sample CV support.",
         });
         tippy('#pSettingsOverrideWithReset', {
             zIndex: 9999999,
