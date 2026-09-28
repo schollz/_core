@@ -19,11 +19,15 @@ immediately upload to the connected device through the existing picotool workflo
 
 ```sh
 make zeptocore-visualizer
+# Default 441-frame, overclocked eurorack firmware:
+make ezeptocore-visualizer
+make ectocore-visualizer
 ```
 
-This enables telemetry, builds `zeptocore_visualizer.uf2`, then uploads that exact
-file without rebuilding. Upload runs only after a successful build; existing
-`PICOTOOL` and `UPLOAD_*` options still apply (the UF2 path is selected by this target).
+These enable telemetry, build `<device>_visualizer.uf2`, then upload that exact
+file without rebuilding. Each device retains its hardware mapping. Upload runs
+only after a successful build; existing `PICOTOOL` and `UPLOAD_*` options still
+apply (the UF2 path is selected by this target).
 
 To build without uploading, enable it explicitly:
 
@@ -31,13 +35,20 @@ To build without uploading, enable it explicitly:
 make zeptocore ZEPTOCORE_VISUALIZER=ON
 # Or the 256-frame variant:
 make zeptocore_256 ZEPTOCORE_VISUALIZER=ON
+# Default eurorack builds (441 frames):
+make ezeptocore ZEPTOCORE_VISUALIZER=ON
+make ectocore ZEPTOCORE_VISUALIZER=ON
 ```
 
-Both commands produce `zeptocore_visualizer.uf2`. The no-overclock target produces
+The Zeptocore commands produce `zeptocore_visualizer.uf2`; the eurorack commands
+produce `ezeptocore_visualizer.uf2` and `ectocore_visualizer.uf2`. No additional
+eurorack latency or clock variants are provided by the new shortcuts.
+The Zeptocore no-overclock target produces
 `zeptocore_nooverclock_visualizer.uf2`. Default builds retain their existing names.
 These commands build only; upload the chosen UF2 separately.
 
-`make zeptocore` explicitly configures the option OFF, including after an ON build.
+`make zeptocore`, `make ezeptocore`, and `make ectocore` explicitly configure the
+option OFF, including after an ON build in the same directory.
 The Make interface accepts `ON` or `OFF`. For an isolated CMake build:
 
 ```sh
@@ -48,14 +59,18 @@ cmake --build build/visualizer --parallel
 ```
 
 Direct CMake invocations retain cached options: pass `-DZEPTOCORE_VISUALIZER=OFF`
-to disable it in an existing directory. The option requires Zeptocore with MIDI;
-unsupported devices or builds without MIDI fail configuration. When OFF, the
-telemetry source, hooks, state buffers, and subscription service are excluded,
+to disable it in an existing directory. The option supports Zeptocore with MIDI
+and Ectocore/Ezeptocore. For the latter, enabling telemetry switches USB serial
+stdio to USB MIDI; normal builds retain USB serial. Both eurorack devices keep
+their existing **ezeptocore** USB product name, recognized by both visualizer apps.
+Unsupported devices and Zeptocore builds without MIDI fail configuration. When
+OFF, the telemetry source, hooks, state buffers, and subscription service are excluded,
 and ordinary MIDI clock/start/stop retain their existing path.
 
 The browser app remains a separate, explicit build. Firmware builds need no
 Node/npm and do not embed the app. Full sample/slice telemetry requires an enabled
-firmware; default firmware only provides the existing legacy status.
+firmware; existing MIDI-enabled firmware without telemetry only provides legacy
+status. Default eurorack USB serial firmware cannot connect to the visualizer.
 
 ## Build and run
 
@@ -295,9 +310,9 @@ unavailable state rather than guessed slices.
 
 ## Firmware protocol
 
-This repository adds opt-in reporting to MIDI-enabled zeptocore builds. Older
-firmware still supplies bank/sample status but the page explicitly displays
-**SLICE TRACKING UNAVAILABLE**.
+This repository adds opt-in reporting to Zeptocore and Ectocore/Ezeptocore builds.
+Older MIDI-enabled firmware still supplies bank/sample status but the page
+explicitly displays **SLICE TRACKING UNAVAILABLE**.
 
 The page sends `[0x89, 5, 0]` (channel 10, Note Off, note 5, velocity 0) every
 500 ms. This requests a snapshot and renews a two-second lease. Existing
@@ -325,10 +340,12 @@ are published together across cores. Invalid media or a sample transition clears
 
 Changed states are transmitted at most 60 times/second; idle states have a 250 ms
 heartbeat. Serialization occurs in the foreground, using bounded USB event
-packets, not in audio/timer callbacks. Zeptocore's outgoing clock and transport
+packets, not in audio/timer callbacks. Visualizer firmware's outgoing clock and transport
 also use a bounded foreground queue: TinyUSB's transmit mutex cannot safely be
 entered from the timer IRQ while foreground telemetry is writing. Partial transmissions resume under USB
 backpressure; a 50 ms stalled-host cutoff prevents indefinite control starvation.
+Ectocore/Ezeptocore continue polling hardware MIDI and physical controls while
+deferring USB commands that could interrupt a pending SysEx frame.
 Unfinished frames must never be interpreted as complete snapshots.
 
 When an invalid snapshot first identifies a different bank/sample, the browser
@@ -361,14 +378,18 @@ CC=/opt/homebrew/opt/llvm/bin/clang .venv/bin/python test/midi/run.py
 ```
 
 The compiler override avoids the Apple AddressSanitizer startup issue on this
-machine. Other platforms can omit it. Both normal 441-frame and 256-frame builds
-support the protocol; other device targets compile the feature out.
+machine. Other platforms can omit it. Zeptocore's 441/256-frame builds and the
+default 441-frame Ectocore/Ezeptocore builds are covered. All normal builds compile
+the feature out.
 
-Verify the firmware flag (441/256 frames, default → ON → OFF, symbol/map checks,
+Verify the firmware flag (Zeptocore 441/256 frames and default eurorack builds,
+default → ON → OFF, compile-command/symbol/map checks,
 and rejection of unsupported devices or missing MIDI):
 
 ```sh
 python3 test/visualizer_build/run.py
+# Make build/upload orchestration only, without the SDK or hardware:
+python3 test/visualizer_build/test_make.py
 ```
 
 This builds under `artifacts/visualizer-build`, saves logs and size reports, and

@@ -503,7 +503,7 @@ void update_fx(uint8_t fx_num) {
 }
 
 void fx_sequencer_emit(uint8_t key) {
-#ifdef INCLUDE_MIDI
+#if defined(INCLUDE_MIDI) && defined(INCLUDE_ZEPTOCORE)
   // midi out
   MidiOut_on(midiout[4], key, 127);
 #endif
@@ -519,7 +519,7 @@ void fx_sequencer_emit(uint8_t key) {
 void fx_sequencer_stop() {}
 
 void bass_sequencer_emit(uint8_t key) {
-#ifdef INCLUDE_MIDI
+#if defined(INCLUDE_MIDI) && defined(INCLUDE_ZEPTOCORE)
   // midi out
   MidiOut_on(midiout[5], key, 127);
 #endif

@@ -777,9 +777,19 @@ void __not_in_flash_func(input_handling)() {
     ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
     tud_task();
+    ZV_CALL(zv_realtime_service(tud_mounted(), tud_midi_packet_write));
+#if ZV_ENABLED
+    // Defer USB commands that can emit SysEx until this frame is complete.
+    // Hardware MIDI and the physical controls still run under backpressure.
+    if (!zv_tx_pending()) {
+#endif
     midi_comm_task(midi_comm_callback_fn, midi_note_on, midi_note_off,
                    midi_start, midi_continue, midi_stop, midi_timing,
                    midi_control_change);
+#if ZV_ENABLED
+    }
+#endif
+    ZV_CALL(zv_service(time_us_32(), tud_mounted(), tud_midi_packet_write));
     Onewiremidi_receive(onewiremidi);
 #endif
     int16_t val;

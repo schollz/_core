@@ -88,10 +88,14 @@ ezeptocore_noclock_128: CORE_COMPILE_DEFINITIONS = $(CURDIR)/lib/cmake/ezeptocor
 ezeptocore_noclock_256: CORE_COMPILE_DEFINITIONS = $(CURDIR)/lib/cmake/ezeptocore_compile_definitions_nooverclock_256.cmake
 
 # Sequential submakes keep upload after the successful build, even with make -j.
-.PHONY: zeptocore-visualizer
+.PHONY: zeptocore-visualizer ezeptocore-visualizer ectocore-visualizer
 zeptocore-visualizer:
 	$(MAKE) zeptocore ZEPTOCORE_VISUALIZER=ON
 	$(MAKE) upload-built UPLOAD_UF2=zeptocore_visualizer.uf2
+
+ezeptocore-visualizer ectocore-visualizer:
+	$(MAKE) $(@:-visualizer=) ZEPTOCORE_VISUALIZER=ON
+	$(MAKE) upload-built UPLOAD_UF2=$(@:-visualizer=)_visualizer.uf2
 
 .PHONY: zeptocore zeptocore_128 zeptocore_256 zeptocore_nooverclock
 zeptocore zeptocore_128 zeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
@@ -103,9 +107,10 @@ zeptocore_nooverclock: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h 
 	sed -i 's/DO_OVERCLOCK=1/#DO_OVERCLOCK=1/g' lib/cmake/target_compile_definitions.cmake
 	cp build/_core.uf2 zeptocore_nooverclock$(VISUALIZER_SUFFIX).uf2
 
-ectocore: pico-sdk pico-extras copyecto lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ectocore.uf2
+.PHONY: ectocore ezeptocore
+ectocore ezeptocore: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
+	cp "$(CORE_COMPILE_DEFINITIONS)" lib/cmake/target_compile_definitions.cmake
+	cp build/_core.uf2 $@$(VISUALIZER_SUFFIX).uf2
 
 ectocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp lib/cmake/ectocore_compile_definitions_128.cmake lib/cmake/target_compile_definitions.cmake
@@ -145,11 +150,6 @@ ezeptocore_midi: pico-sdk pico-extras ensure_arm_toolchain lib/fuzz.h lib/transf
 	cp lib/cmake/ezeptocore_midi_compile_definitions.cmake lib/cmake/target_compile_definitions.cmake
 	$(MAKE) -C build -j$(NPROCS)
 	cp build/_core.uf2 ezeptocore_midi.uf2
-
-ezeptocore: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
-	cp lib/cmake/ezeptocore_compile_definitions.cmake lib/cmake/target_compile_definitions.cmake
-	make -C build -j$(NPROCS)
-	cp build/_core.uf2 ezeptocore.uf2
 
 ezeptocore_128: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp lib/cmake/ezeptocore_compile_definitions_128.cmake lib/cmake/target_compile_definitions.cmake

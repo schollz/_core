@@ -22,11 +22,18 @@ No Node, npm, browser, local web server, tape project, or font tooling is needed
 
 1. Click **CHOOSE FOLDER** and select your reference SD-card copy: the folder
    immediately containing `bank1`, `bank2`, etc.
-2. Plug in a zeptocore with visualizer telemetry enabled. A unique matching MIDI
-   input/output pair connects automatically; otherwise use **CONNECT/MIDI** to
-   select both ports. Device changes are checked every two seconds.
-3. Perform on the zeptocore. The app shows the selected waveform, slice,
+2. Plug in a zeptocore, ezeptocore, or ectocore with visualizer telemetry enabled.
+   A unique matching MIDI input/output pair connects automatically; otherwise use
+   **CONNECT/MIDI** to select both ports. Device changes are checked every two seconds.
+3. Perform on the device. The app shows the selected waveform, slice,
    estimated playhead, effect state, physical-pad callouts, and source spectrum.
+
+From the firmware repository root, `make ezeptocore-visualizer` and
+`make ectocore-visualizer` build and upload the corresponding default 441-frame,
+overclocked firmware with telemetry. Both devices appear as **ezeptocore** over
+USB MIDI. Their normal firmware uses USB serial and omits all visualizer code.
+See the [firmware opt-in instructions](../visualizer/AGENTS.md#firmware-opt-in)
+for build-only commands. Physical-pad callouts apply to Zeptocore's pads.
 
 **FOLDER** changes the reference, **RESCAN** reloads changed files, and the MIDI
 panel contains a reduced-motion option; macOS Reduce Motion is also respected.

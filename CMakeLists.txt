@@ -10,7 +10,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/lib/cmake/pico_extras_import.cmake)
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
 project(_core C CXX ASM)
-option(ZEPTOCORE_VISUALIZER "Enable Zeptocore visualizer MIDI telemetry" OFF)
+option(ZEPTOCORE_VISUALIZER "Enable Zeptocore/Ectocore/Ezeptocore visualizer MIDI telemetry" OFF)
 option(SEEK_DIAGNOSTICS "Collect bounded SWD seek/audio diagnostics" OFF)
 option(AUDIO_CLOCK_RESTART_FIX "Restart ectocore clock playback from its intended beat" ON)
 option(AUDIO_CLOCK_RESTART_WAKE "Wake 256-frame ectocore rendering on clock restart" ON)
@@ -120,11 +120,19 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 include(${CORE_COMPILE_DEFINITIONS})
 if(ZEPTOCORE_VISUALIZER)
     get_target_property(VISUALIZER_DEVICE_DEFINITIONS ${PROJECT_NAME} COMPILE_DEFINITIONS)
-    foreach(REQUIRED_FEATURE INCLUDE_ZEPTOCORE INCLUDE_MIDI)
-        if(NOT "${REQUIRED_FEATURE}=1" IN_LIST VISUALIZER_DEVICE_DEFINITIONS)
-            message(FATAL_ERROR "ZEPTOCORE_VISUALIZER requires INCLUDE_ZEPTOCORE=1 and INCLUDE_MIDI=1")
-        endif()
-    endforeach()
+    if("INCLUDE_ECTOCORE=1" IN_LIST VISUALIZER_DEVICE_DEFINITIONS)
+        # Default ectocore-family firmware uses USB serial. Opt-in telemetry
+        # switches this build to the same USB MIDI setup as ezeptocore_midi.
+        list(FILTER VISUALIZER_DEVICE_DEFINITIONS EXCLUDE REGEX "^INCLUDE_MIDI(=|$)")
+        set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_DEFINITIONS ${VISUALIZER_DEVICE_DEFINITIONS})
+        target_compile_definitions(${PROJECT_NAME} PRIVATE INCLUDE_MIDI=1)
+        target_link_libraries(${PROJECT_NAME} tinyusb_device tinyusb_board)
+        pico_enable_stdio_usb(${PROJECT_NAME} 0)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+    elseif(NOT "INCLUDE_ZEPTOCORE=1" IN_LIST VISUALIZER_DEVICE_DEFINITIONS OR
+           NOT "INCLUDE_MIDI=1" IN_LIST VISUALIZER_DEVICE_DEFINITIONS)
+        message(FATAL_ERROR "ZEPTOCORE_VISUALIZER requires Zeptocore with INCLUDE_MIDI=1 or an Ectocore/Ezeptocore target")
+    endif()
     target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/visualizer_telemetry.c)
 endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE ZEPTOCORE_VISUALIZER=$<BOOL:${ZEPTOCORE_VISUALIZER}>)

@@ -719,7 +719,7 @@ void key_do_physical_jump(uint8_t beat) {
 #endif
 
 void step_sequencer_emit(uint8_t key) {
-#ifdef INCLUDE_MIDI
+#if defined(INCLUDE_MIDI) && defined(INCLUDE_ZEPTOCORE)
   // midi out
   MidiOut_on(midiout[3], key, 127);
 #endif

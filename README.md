@@ -104,6 +104,19 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 *default firmware
 
+To build and upload the default 441-frame, overclocked firmware with USB MIDI
+visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
+hardware, use `make ectocore-visualizer` to retain its knob mapping. These produce
+`ezeptocore_visualizer.uf2` and `ectocore_visualizer.uf2`, respectively, and upload
+only after the build succeeds.
+
+To build without uploading, run `make ezeptocore ZEPTOCORE_VISUALIZER=ON` or
+`make ectocore ZEPTOCORE_VISUALIZER=ON`. These opt-in builds use USB MIDI in place
+of USB serial and work with the existing [visualizer](visualizer-juce/README.md).
+Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
+all visualizer code and state, even after building an enabled version in the
+same directory. The new commands use the default latency and clock settings.
+
 ### diy
 
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)
