@@ -14,6 +14,8 @@ Preview::~Preview() {
   readAhead.stopThread(5000);
 }
 void Preview::play(const File &f, const String &id, double start, double stop) {
+  diagnostics::Scope trace("PREVIEW", "Play sample=" + id + " file=" +
+      f.getFullPathName() + " start=" + String(start, 6) + " stop=" + String(stop, 6));
   require(
       f.existsAsFile(),
       "Completed preview audio is unavailable. Reconnect the project volume.");
@@ -23,6 +25,10 @@ void Preview::play(const File &f, const String &id, double start, double stop) {
     player.setSource(&transport);
     device.addAudioCallback(&player);
     started = true;
+    if (auto *output = device.getCurrentAudioDevice())
+      diagnostics::log("PREVIEW", "Output=" + output->getName() +
+          " rate=" + String(output->getCurrentSampleRate()) +
+          " buffer_size=" + String(output->getCurrentBufferSizeSamples()));
   }
   transport.stop();
   transport.setSource(nullptr);
@@ -46,5 +52,8 @@ void Preview::play(const File &f, const String &id, double start, double stop) {
   currentId = id;
   transport.start();
 }
-void Preview::stop() { transport.stop(); }
+void Preview::stop() {
+  diagnostics::log("PREVIEW", "Stop sample=" + currentId);
+  transport.stop();
+}
 } // namespace core

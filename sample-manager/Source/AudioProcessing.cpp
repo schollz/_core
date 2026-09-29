@@ -1,4 +1,5 @@
 #include "AudioProcessing.h"
+#include "Tempo.h"
 #include "Onsets/OnsetDetector.h"
 #include <cmath>
 #include <rubberband/RubberBandStretcher.h>
@@ -105,6 +106,9 @@ AudioProcessing::reader(const File &f) {
           "Unsupported, empty, or damaged audio: " + f.getFileName());
   if (f.hasFileExtension("ogg"))
     r->metadataValues.addArray(oggTags(f));
+  diagnostics::log("AUDIO", "Read " + f.getFullPathName() +
+      " rate=" + String(r->sampleRate) + " channels=" + String(int(r->numChannels)) +
+      " frames=" + String(r->lengthInSamples));
   return r;
 }
 std::unique_ptr<juce::AudioFormatWriter>
@@ -274,15 +278,18 @@ AudioProcessing::embeddedMarkers(const File &file,
       }
     }
   }
-  return slices.empty() ? std::vector<Marker>{{0, 1, 0}} : slices;
+  return slices;
 }
 Sample AudioProcessing::import(Storage &storage, const File &input, int bank,
                                int slot, const Cancel &cancel) {
+  diagnostics::Scope trace("AUDIO", "Import " + input.getFullPathName() +
+      " bank=" + String(bank + 1) + " slot=" + String(slot + 1));
   cancelled(cancel);
   Sample s;
   s.bank = bank;
   s.slot = slot;
   s.name = input.getFileName();
+  s.originalFilename = input.getFileName();
   File audio = input;
   std::vector<double> xrniPoints;
   if (input.hasFileExtension("xrni")) {
@@ -331,12 +338,20 @@ Sample AudioProcessing::import(Storage &storage, const File &input, int bank,
             marker->getChildElementAllSubText("SamplePosition", "0")
                 .getDoubleValue());
     String archiveHash;
-    s.originalArchive = storage.importSource(
-        input, archiveHash); // retain the actual imported original too
+    s.originalArchive =
+        storage.importSource(input, archiveHash); // retain the actual imported original too
   }
   auto r = reader(audio);
   s.channels = int(r->numChannels);
   s.sourceDuration = double(r->lengthInSamples) / r->sampleRate;
+  {
+    diagnostics::Scope tempoTrace("TEMPO", "Detect " + input.getFileName());
+    const auto estimate = detectTempo(*r, input.getFileName(), cancel);
+    if (estimate.bpm > 0)
+      s.sourceBpm = estimate.bpm;
+    diagnostics::log("TEMPO", "Source BPM=" + String(s.sourceBpm, 2) +
+                                  " method=" + estimate.method + " file=" + input.getFileName());
+  }
   s.slices = embeddedMarkers(audio, *r);
   if (!xrniPoints.empty()) {
     for (auto &x : xrniPoints)
@@ -350,20 +365,72 @@ Sample AudioProcessing::import(Storage &storage, const File &input, int bank,
     s.tempoMatch = false;
     s.playMode = 1;
   }
-  s.renderAnchors = s.slices;
+  if (s.slices.empty()) {
+    // Leave the source's render anchors unchanged: default editor slices are
+    // metadata, just like clicking Even slices after importing.
+    const auto outputFrames = juce::int64(std::llround(s.sourceDuration * s.rate));
+    const auto alignedRanges = outputFrames * s.channels / 2;
+    const int count = int(juce::jlimit<juce::int64>(1, 16, alignedRanges));
+    for (int n = 0; n < count; ++n)
+      s.slices.push_back({double(n) / count, double(n + 1) / count, 0});
+    s.spliceVariable = false;
+  } else
+    s.renderAnchors = s.slices;
   s.source = storage.importSource(audio, s.sourceHash);
   cancelled(cancel);
   return s;
 }
-void AudioProcessing::resample(const File &from, const File &to, int channels,
-                               int rate, double speed, const Cancel &cancel) {
+std::shared_ptr<const zv::Wave> AudioProcessing::sourceWaveform(const File &file,
+                                                                const Cancel &cancel) {
+  diagnostics::Scope trace("WAVEFORM", "Prepare imported source " + file.getFullPathName());
+  cancelled(cancel);
+  auto r = reader(file);
+  auto wave = std::make_shared<zv::Wave>();
+  wave->channels = int(r->numChannels);
+  wave->sampleRate = int(r->sampleRate);
+  wave->duration = double(r->lengthInSamples) / r->sampleRate;
+  const auto bins = int(std::min<juce::int64>(4096, r->lengthInSamples));
+  wave->peaks.resize(size_t(wave->channels));
+  for (auto &channel : wave->peaks) {
+    channel.resize(size_t(bins * 2));
+    for (int bin = 0; bin < bins; ++bin) {
+      channel[size_t(bin * 2)] = 32767;
+      channel[size_t(bin * 2 + 1)] = -32768;
+    }
+  }
+  // Sequential decoded blocks keep compressed imports cheap. Only min/max
+  // peaks are needed for the editor: no conversion, padding, FFT or stretching.
+  juce::AudioBuffer<float> buffer(wave->channels, block);
+  int bin = 0;
+  auto binEnd = r->lengthInSamples / bins;
+  for (juce::int64 offset = 0; offset < r->lengthInSamples; offset += block) {
+    cancelled(cancel);
+    const int count = int(std::min<juce::int64>(block, r->lengthInSamples - offset));
+    checkRead(*r, buffer, offset, count);
+    for (int frame = 0; frame < count; ++frame) {
+      if (offset + frame >= binEnd) {
+        ++bin;
+        binEnd = juce::int64(bin + 1) * r->lengthInSamples / bins;
+      }
+      for (int channel = 0; channel < wave->channels; ++channel) {
+        const auto value = int16_t(
+            std::lround(juce::jlimit(-1.f, 1.f, buffer.getSample(channel, frame)) * 32767.f));
+        auto &peaks = wave->peaks[size_t(channel)];
+        peaks[size_t(bin * 2)] = std::min(peaks[size_t(bin * 2)], value);
+        peaks[size_t(bin * 2 + 1)] = std::max(peaks[size_t(bin * 2 + 1)], value);
+      }
+    }
+  }
+  return wave;
+}
+void AudioProcessing::resample(const File &from, const File &to, int channels, int rate,
+                               double speed, const Cancel &cancel) {
   auto r = reader(from);
   require(speed > 0 && std::isfinite(speed), "Invalid speed");
   auto writer = floatWriter(to, channels, rate);
   double step = r->sampleRate / rate * speed;
   auto frames = juce::int64(std::llround(double(r->lengthInSamples) / step));
-  require(frames > 0 &&
-              uint64_t(frames) <= uint64_t(INT32_MAX) / (channels * 2),
+  require(frames > 0 && uint64_t(frames) <= uint64_t(INT32_MAX) / (channels * 2),
           "Rendered sample exceeds device limit");
   // Windowed-sinc low-pass. Wider support follows the downsampling ratio;
   // bounded blocks.
@@ -525,6 +592,10 @@ void AudioProcessing::pcm(const File &from, const File &to, bool pad,
 }
 Rendered AudioProcessing::render(const File &root, const Sample &sample,
                                  const Cancel &cancel) {
+  diagnostics::Scope trace("AUDIO", "Render sample=" + sample.id +
+      " name=" + sample.name + " rate=" + String(sample.rate) +
+      " channels=" + String(sample.channels) + " ratio=" + String(sample.ratio(), 6) +
+      " preserve_pitch=" + String(sample.preservePitch ? 1 : 0));
   cancelled(cancel);
   require(hashFile(child(root, sample.source)) == sample.sourceHash,
           "Immutable source was modified");
@@ -555,6 +626,7 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
   result.padded = relative + "0.wav";
   if (!valid("preview.wav") || !valid("0.wav") ||
       !valid(renderSource.getFileName())) {
+    diagnostics::log("AUDIO", "Render cache miss; converting source");
     resample(child(root, sample.source), converted, sample.channels,
              sample.rate, sample.preservePitch ? 1. : 1. / sample.ratio(),
              cancel);
@@ -570,6 +642,7 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     result.companionPreview = relative + "companion.wav";
     result.companionPadded = relative + "1.wav";
     if (!valid("companion.wav") || !valid("1.wav")) {
+      diagnostics::log("AUDIO", "Rendering eight-times companion");
       auto longFile = dir.getChildFile("long.wav");
       stretch(renderSource, longFile, 8., sample.renderAnchors, cancel);
       pcm(longFile, child(root, result.companionPreview), false, cancel);
@@ -587,18 +660,32 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
   put(j, "companionFrames", juce::int64(result.companionFrames));
   cancelled(cancel);
   durableJson(ready, j);
+  diagnostics::log("AUDIO", "Rendered frames=" + String(juce::int64(result.frames)) +
+      " companion_frames=" + String(juce::int64(result.companionFrames)));
   return result;
 }
 std::vector<Marker> AudioProcessing::detect(const File &source, String method,
                                             double spacingMs,
-                                            const Cancel &cancel) {
+                                            const Cancel &cancel,
+                                            int targetSlices) {
+  diagnostics::Scope trace("SLICES", "Detect " + source.getFullPathName() +
+      " method=" + method + " target=" + String(targetSlices));
+  require(targetSlices >= 0 && targetSlices <= 1024, "Invalid slice target");
+  require(std::isfinite(spacingMs) && spacingMs >= 0,
+          "Minimum slice spacing must be zero or greater");
   require(juce::StringArray{"hfc", "energy", "complex", "phase", "wphase",
                             "specdiff", "kl", "mkl", "specflux"}
               .contains(method),
           "Unsupported onset method");
   auto r = reader(source);
+  if (targetSlices == 1)
+    return {{0., 1., 0}};
   Onsets::OnsetDetector detector(method.toStdString(), 1024, 256,
                                  size_t(r->sampleRate));
+  // As in amenbreak's targeted slicer, collect sensitive candidates, then
+  // choose the strongest attacks instead of taking the first N transients.
+  if (targetSlices > 0)
+    detector.setThreshold(0.02);
   detector.setMinioiMs(spacingMs);
   Onsets::Fvec frame(256), onset(1);
   juce::AudioBuffer<float> input(int(r->numChannels), 256);
@@ -652,14 +739,57 @@ std::vector<Marker> AudioProcessing::detect(const File &source, String method,
     }
     point = double(start + at) / r->sampleRate;
   }
-  std::sort(points.begin(), points.end());
+  const double duration = double(r->lengthInSamples) / r->sampleRate;
+  const double minimumSpacing = std::max(1. / r->sampleRate, spacingMs / 1000.);
+  struct Candidate {
+    double time, energy;
+  };
+  std::vector<Candidate> candidates;
+  const int energyWindow = std::max(1, int(r->sampleRate * 0.05));
+  juce::AudioBuffer<float> energy(int(r->numChannels), energyWindow);
+  for (auto point : points) {
+    cancelled(cancel);
+    if (point < minimumSpacing || point >= duration)
+      continue;
+    double strength = 0.;
+    if (targetSlices > 0) {
+      auto start = juce::int64(point * r->sampleRate);
+      int n = int(std::min<juce::int64>(energyWindow, r->lengthInSamples - start));
+      if (n <= 0)
+        continue;
+      checkRead(*r, energy, start, n);
+      for (int c = 0; c < energy.getNumChannels(); ++c)
+        for (int j = 0; j < n; ++j) {
+          const double v = energy.getSample(c, j);
+          strength += v * v;
+        }
+      strength /= n * energy.getNumChannels();
+    }
+    candidates.push_back({point, strength});
+  }
+  std::sort(candidates.begin(), candidates.end(),
+            [targetSlices](const Candidate &a, const Candidate &b) {
+              if (targetSlices > 0 && a.energy != b.energy)
+                return a.energy > b.energy;
+              return a.time < b.time;
+            });
+  // Zero is the first slice, so N slices need at most N - 1 internal cuts.
   std::vector<double> spaced{0.};
-  for (auto p : points)
-    if (p >= 0 && p < double(r->lengthInSamples) / r->sampleRate &&
-        (spaced.empty() || p - spaced.back() >= spacingMs / 1000.))
-      spaced.push_back(p);
+  for (const auto &candidate : candidates) {
+    cancelled(cancel);
+    auto next = std::lower_bound(spaced.begin(), spaced.end(), candidate.time);
+    if (candidate.time - *(next - 1) < minimumSpacing ||
+        (next != spaced.end() && *next - candidate.time < minimumSpacing) ||
+        (targetSlices > 0 && duration - candidate.time < minimumSpacing))
+      continue;
+    spaced.insert(next, candidate.time);
+    if (targetSlices > 0 && int(spaced.size()) >= targetSlices)
+      break;
+  }
   for (auto &p : spaced)
-    p /= double(r->lengthInSamples) / r->sampleRate;
+    p /= duration;
+  diagnostics::log("SLICES", "Candidates=" + String(int(candidates.size())) +
+      " actual_slices=" + String(int(spaced.size())) + " target=" + String(targetSlices));
   return boundaries(spaced);
 }
 File AudioProcessing::merge(const File &root,

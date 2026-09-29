@@ -1,5 +1,6 @@
 #pragma once
 #include "Storage.h"
+#include "Visualizer/Core.h"
 namespace core {
 struct Rendered {
   String preview, padded, companionPreview, companionPadded, key;
@@ -12,9 +13,11 @@ public:
   std::unique_ptr<juce::AudioFormatReader> reader(const File &);
   Sample import(Storage &, const File &, int bank, int slot,
                 const Cancel & = {});
+  std::shared_ptr<const zv::Wave> sourceWaveform(const File &, const Cancel & = {});
   Rendered render(const File &root, const Sample &, const Cancel & = {});
   std::vector<Marker> detect(const File &, String method = "hfc",
-                             double spacingMs = 80, const Cancel & = {});
+                             double spacingMs = 80, const Cancel & = {},
+                             int targetSlices = 0);
   void resample(const File &, const File &, int channels, int rate,
                 double speed, const Cancel & = {});
   void stretch(const File &, const File &, double ratio,

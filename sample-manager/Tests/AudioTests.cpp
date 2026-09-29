@@ -48,6 +48,46 @@ void audioTests() {
     ~Clean() { f.deleteRecursively(); }
   } clean{folder};
   AudioProcessing audio;
+  auto peakFixture = folder.getChildFile("source-peaks.wav");
+  {
+    juce::WavAudioFormat format;
+    std::unique_ptr<juce::OutputStream> stream(peakFixture.createOutputStream());
+    auto writer = format.createWriterFor(
+        stream,
+        juce::AudioFormatWriterOptions().withSampleRate(48000).withNumChannels(2).withBitsPerSample(
+            16));
+    require(writer != nullptr, "Source waveform fixture writer");
+    juce::AudioBuffer<float> data(2, 8195);
+    data.clear();
+    data.setSample(0, 0, -1.f);
+    data.setSample(0, 4096, .5f);
+    data.setSample(0, 8194, 1.f);
+    data.setSample(1, 4095, -.5f);
+    require(writer->writeFromAudioSampleBuffer(data, 0, 8195), "Source waveform fixture write");
+  }
+  const auto sourceHash = hashFile(peakFixture);
+  auto sourcePeaks = audio.sourceWaveform(peakFixture);
+  require(sourcePeaks->channels == 2 && sourcePeaks->sampleRate == 48000 &&
+              std::abs(sourcePeaks->duration - 8195. / 48000.) < 1e-9 &&
+              sourcePeaks->spectrum.empty() && sourcePeaks->peaks[0].size() == 8192 &&
+              sourcePeaks->peaks[1].size() == 8192,
+          "Source preview keeps native duration/channels with bounded peaks and no FFT");
+  require(sourcePeaks->peaks[0][0] == -32767 && sourcePeaks->peaks[0][1] == 0 &&
+              std::abs(sourcePeaks->peaks[0][2047 * 2 + 1] - 16384) <= 1 &&
+              std::abs(sourcePeaks->peaks[1][2047 * 2] + 16384) <= 1 &&
+              sourcePeaks->peaks[0][8190] == 0 &&
+              std::abs(sourcePeaks->peaks[0][8191] - 32767) <= 1 &&
+              sourcePeaks->peaks[1][8191] == 0,
+          "Source peaks retain polarity, stereo separation, block boundaries and the last frame");
+  require(hashFile(peakFixture) == sourceHash, "Source waveform generation leaves audio untouched");
+  int peakChecks = 0;
+  bool peaksCancelled = false;
+  try {
+    audio.sourceWaveform(peakFixture, [&] { return ++peakChecks > 2; });
+  } catch (const std::exception &e) {
+    peaksCancelled = String(e.what()) == "Cancelled";
+  }
+  require(peaksCancelled, "Source waveform decoding cancels after work has begun");
   auto source = folder.getChildFile("tone.wav");
   tone(source, 48000, 2, 96000, 440);
   auto resampled = folder.getChildFile("resampled.wav");
@@ -85,12 +125,18 @@ void audioTests() {
           "Minus six dB peak normalization");
   auto shortSource = folder.getChildFile("short.wav");
   tone(shortSource, 44100, 1, 13, 1000);
+  require(audio.sourceWaveform(shortSource)->peaks[0].size() == 26,
+          "Very short source previews retain every frame");
   auto shortOut = folder.getChildFile("short-padded.wav");
   audio.pcm(shortSource, shortOut, true);
   require(card::inspect(shortOut).frames == 44113,
           "Shorter-than-padding source");
   auto silence = folder.getChildFile("silence.wav");
   tone(silence, 44100, 1, 100, 0, true);
+  auto silentPeaks = audio.sourceWaveform(silence);
+  require(std::all_of(silentPeaks->peaks[0].begin(), silentPeaks->peaks[0].end(),
+                      [](int16_t value) { return value == 0; }),
+          "Silent imports produce a flat source waveform");
   audio.pcm(silence, folder.getChildFile("silent-padded.wav"), true);
   auto sr = audio.reader(folder.getChildFile("silent-padded.wav"));
   juce::AudioBuffer<float> sb(1, 100);
@@ -139,6 +185,9 @@ void audioTests() {
   first.slices = {{0, .5, 2}, {.5, 1, 1}};
   first.transients[0] = {1.};
   auto second = audio.import(storage, shortSource, 0, 1);
+  require(second.slices.size() == 6,
+          "Very short imports limit default slices to encodable nonempty ranges");
+  second.slices = {{0, 1, 0}};
   second.oneShot = true;
   second.tempoMatch = false;
   Sample merged;
@@ -147,10 +196,8 @@ void audioTests() {
   require(mergedReader->lengthInSamples == 132313 && merged.channels == 2,
           "Merge uses current stretch and channel settings");
   require(merged.slices.size() == 3 &&
-              std::abs(merged.slices[1].start * merged.sourceDuration - 1.5) <
-                  1e-6 &&
-              std::abs(merged.slices[2].start * merged.sourceDuration - 3.) <
-                  1e-6 &&
+              std::abs(merged.slices[1].start * merged.sourceDuration - 1.5) < 1e-6 &&
+              std::abs(merged.slices[2].start * merged.sourceDuration - 3.) < 1e-6 &&
               merged.slices[0].type == 2 && merged.transients[0][0] == 1.5 &&
               merged.sourceBpm == 80 && merged.renderBpm == 0,
           "Merge retains ordered slices, mapped transients and audible tempo");

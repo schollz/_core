@@ -15,6 +15,18 @@ public:
     return JUCE_APPLICATION_VERSION_STRING;
   }
   void initialise(const juce::String &command) override {
+    if (core::diagnostics::enabled()) {
+      logger = std::make_unique<core::diagnostics::JuceLogger>();
+      juce::Logger::setCurrentLogger(logger.get());
+      core::diagnostics::log("APP", "Starting version=" + getApplicationVersion() +
+                                       " JUCE=" + juce::SystemStats::getJUCEVersion() +
+                                       " OS=" + juce::SystemStats::getOperatingSystemName() +
+                                       " CPUs=" + juce::String(juce::SystemStats::getNumCpus()) +
+                                       " memory_mb=" + juce::String(juce::SystemStats::getMemorySizeInMegabytes()));
+      core::diagnostics::log("APP", "Executable=" + juce::File::getSpecialLocation(
+          juce::File::currentExecutableFile).getFullPathName() +
+          " state_root=" + core::stateRoot().getFullPathName() + " arguments=" + command);
+    }
     if (command.startsWith("--crash-transaction ")) {
       auto path = command.fromFirstOccurrenceOf(" ", false, false).unquoted();
       core::crashTransaction(juce::File(path));
@@ -43,11 +55,18 @@ public:
         std::make_unique<Window>(command.contains("--drag-drop-acceptance"));
   }
   void shutdown() override {
+    core::diagnostics::log("APP", "Shutdown requested");
     midiTest.reset();
     window.reset();
+    core::diagnostics::log("APP", "Shutdown complete");
+    if (logger) {
+      juce::Logger::setCurrentLogger(nullptr);
+      logger.reset();
+    }
   }
 
 private:
+  std::unique_ptr<core::diagnostics::JuceLogger> logger;
   class Window : public juce::DocumentWindow {
   public:
     explicit Window(bool dragAcceptance)

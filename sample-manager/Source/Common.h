@@ -1,4 +1,5 @@
 #pragma once
+#include "Diagnostics.h"
 #include <array>
 #include <atomic>
 #include <filesystem>
@@ -23,8 +24,10 @@ inline File stateRoot() {
                    .getChildFile("com.infinitedigits.coresamplemanager");
 }
 inline void require(bool condition, const String &message) {
-  if (!condition)
+  if (!condition) {
+    diagnostics::log("ERROR", message);
     throw std::runtime_error(message.toStdString());
+  }
 }
 inline void ensureDirectory(const File &directory) {
   // Never let a recursive mkdir recreate a disconnected project's mount path.
@@ -58,13 +61,46 @@ inline void put(var &o, const juce::Identifier &key, const var &value) {
   o.getDynamicObject()->setProperty(key, value);
 }
 inline String uuid() { return juce::Uuid().toString(); }
-inline String hashFile(const File &f) {
-  auto stream = f.createInputStream();
-  require(stream != nullptr, "Cannot read " + f.getFullPathName());
-  return juce::SHA256(*stream).toHexString();
+inline String hashFile(const File &f, const std::function<bool()> &cancel = {}) {
+  struct Input final : juce::FileInputStream {
+    Input(const File &file, const std::function<bool()> &stop)
+        : juce::FileInputStream(file), stop(stop) {}
+    int read(void *buffer, int bytes) override {
+      if (stop && stop())
+        throw std::runtime_error("Cancelled");
+      return juce::FileInputStream::read(buffer, bytes);
+    }
+    const std::function<bool()> &stop;
+  } stream(f, cancel);
+  require(stream.openedOk(), "Cannot read " + f.getFullPathName());
+  // JUCE SHA256 requests 64 bytes per read. Buffer those requests instead of
+  // issuing a filesystem read for every SHA block (millions on a sample card).
+  juce::BufferedInputStream buffered(stream, 256 * 1024);
+  auto hash = juce::SHA256(buffered).toHexString();
+  require(stream.getStatus().wasOk() && buffered.isExhausted(),
+          "Cannot finish reading " + f.getFullPathName());
+  return hash;
 }
-inline String fingerprint(const File &f) {
-  return f.existsAsFile() ? hashFile(f) : String("missing");
+inline constexpr int filenameMetadataMaxBytes = 64 * 1024;
+inline String fingerprint(const File &f, const std::function<bool()> &cancel = {}) {
+  if (cancel && cancel())
+    throw std::runtime_error("Cancelled");
+  if (!f.existsAsFile())
+    return "missing";
+  if (!f.getFileName().endsWith(".name.json"))
+    return hashFile(f, cancel);
+  // External edits to an owned sidecar must not turn the project-open
+  // fingerprint pass into an unbounded read, or prevent its audio from opening.
+  auto stream = f.createInputStream();
+  if (!stream)
+    return "unreadable filename metadata";
+  if (stream->getTotalLength() > filenameMetadataMaxBytes)
+    return "oversized filename metadata";
+  juce::BufferedInputStream buffered(*stream, filenameMetadataMaxBytes);
+  auto hash = juce::SHA256(buffered, filenameMetadataMaxBytes).toHexString();
+  return stream->getStatus().wasOk() && stream->isExhausted()
+             ? hash
+             : String("unreadable filename metadata");
 }
 inline void cancelled(const std::function<bool()> &fn) {
   if (fn && fn())

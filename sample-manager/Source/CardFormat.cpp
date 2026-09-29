@@ -79,7 +79,9 @@ juce::StringArray compatibility(const Info &i) {
       warnings.add("Transient lane " + String(int(l + 1)) +
                    " has more than 16 markers.");
     for (auto frame : i.transients[l])
-      if (frame < 16 || frame / 16 > 65535) {
+      // The counted wire value zero is valid, including onsets in the first
+      // 16 frames. Preserve it: firmware can use it for a loop-start trigger.
+      if (frame / 16 > 65535) {
         warnings.add("Transient lane " + String(int(l + 1)) +
                      " has a position outside the device's encoding range.");
         break;
@@ -244,6 +246,26 @@ const std::vector<Setting> &settingDefinitions() {
     return defs;
   }();
   return defs;
+}
+Settings defaultSettings() {
+  Settings settings;
+  for (const auto &definition : settingDefinitions())
+    settings[definition.key] = definition.initial;
+  // Website presets, with the first bank dedicated to Time Stretch.
+  const std::array<std::vector<int>, 7> effects{{{5},
+                                                 {6, 13},
+                                                 {5, 6, 9, 10},
+                                                 {6, 7, 9, 13, 14},
+                                                 {11, 12, 13, 15, 16},
+                                                 {5, 6, 10},
+                                                 {1, 3, 5, 6, 7, 8, 10, 13, 14, 15}}};
+  for (int bank = 1; bank <= 7; ++bank)
+    for (int effect = 1; effect <= 16; ++effect) {
+      const auto &enabled = effects[size_t(bank - 1)];
+      settings["grimoire/rune" + String(bank) + "/effect" + String(effect)] =
+          std::find(enabled.begin(), enabled.end(), effect) != enabled.end() ? "on" : "off";
+    }
+  return settings;
 }
 std::map<String, bool> settingsFiles(const Settings &settings) {
   std::map<String, bool> files;

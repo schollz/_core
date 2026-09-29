@@ -1,3 +1,5 @@
+#include "NameMetadata.h"
+#include "Parallel.h"
 #include "SettingsView.h"
 #include "Storage.h"
 #include <FixtureData.h>
@@ -6,6 +8,7 @@ int runVisualizerTests();
 namespace core {
 void audioTests();
 void importTests();
+void tempoTests();
 void recoveryTests();
 void managerTests();
 namespace {
@@ -47,6 +50,48 @@ int runTests() {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    {
+      Temp t;
+      auto file = t.dir.getChildFile("hash.bin");
+      for (size_t size : {size_t(0), size_t(63), size_t(64), size_t(65),
+                          size_t(256 * 1024), size_t(256 * 1024 + 1)}) {
+        juce::MemoryBlock bytes(size);
+        auto *data = static_cast<uint8_t *>(bytes.getData());
+        for (size_t i = 0; i < size; ++i)
+          data[i] = uint8_t(i * 17);
+        durableWrite(file, bytes.getData(), bytes.getSize());
+        check(hashFile(file) == juce::SHA256(bytes).toHexString(),
+              "Buffered file SHA-256 matches full bytes across block/buffer "
+              "boundaries");
+      }
+      int reads = 0;
+      rejects([&] { hashFile(file, [&] { return ++reads > 1; }); },
+              "An in-progress hash can be cancelled between buffered reads");
+      check(reads > 1, "Cancellation interrupts a hash after reading has begun");
+      std::vector<int> results(33, -1);
+      const auto caller = std::this_thread::get_id();
+      size_t reported = 0;
+      parallelFor(
+          results.size(), [&](size_t i) { results[i] = int(i); },
+          [&](size_t completed) {
+            check(std::this_thread::get_id() == caller &&
+                      completed >= reported && completed <= results.size(),
+                  "Parallel checks report monotonic progress on caller thread");
+            reported = completed;
+          });
+      check(reported == results.size(), "Parallel checks finish progress");
+      for (size_t i = 0; i < results.size(); ++i)
+        check(results[i] == int(i),
+              "Parallel checks process each file exactly once");
+      rejects(
+          [&] {
+            parallelFor(results.size(), [](size_t i) {
+              if (i == 3)
+                throw std::runtime_error("failed file read");
+            });
+          },
+          "Parallel file errors propagate after joining workers");
+    }
     auto oldPreferences = privateState.dir.getChildFile("old-preferences.json");
     auto newPreferences =
         privateState.dir.getChildFile("migrated-preferences.json");
@@ -82,6 +127,15 @@ int runTests() {
                   i.transients[2][0] == 4800,
               "Decode markers");
         check(card::encode(i) == bytes, "Exact little-endian roundtrip");
+        auto edgeMarkers = i;
+        for (auto &lane : edgeMarkers.transients)
+          lane = {0, 15, 16, 1048560, 1048575};
+        check(card::compatibility(edgeMarkers).isEmpty(),
+              "Zero, first-block and maximum transient positions are encodable");
+        auto decodedEdges = card::decode(card::encode(edgeMarkers));
+        for (const auto &lane : decodedEdges.transients)
+          check(lane == std::vector<uint32_t>{0, 0, 16, 1048560, 1048560},
+                "Counted zero markers survive the firmware's 16-frame encoding");
         Temp t;
         wav(t.dir.getChildFile("a.wav"), ch, rate, rate * 2);
         auto w = card::inspect(t.dir.getChildFile("a.wav"));
@@ -108,14 +162,35 @@ int runTests() {
       textFile(active, "before");
       auto stage = t.dir.getChildFile(".core-manager/cache/staged");
       textFile(stage, "after");
+      auto nameFile = child(t.dir, "bank1/0.name.json");
+      auto nameStage = child(t.dir, ".core-manager/cache/staged-name");
+      durableJson(nameFile,
+                  names::encode("Before", "original.wav", hashFile(active)));
+      durableJson(nameStage,
+                  names::encode("After", "original.wav", hashFile(stage)));
+      auto beforeName = hashFile(nameFile);
+      std::vector<Replacement> replacements{
+          {"bank1/0.0.wav", stage, hashFile(active)},
+          {"bank1/0.name.json", nameStage, beforeName}};
       p.revision = p.completedRevision = 1;
       Transaction tx(t.dir);
-      tx.afterMutation = [](int) {
-        throw std::runtime_error("simulated interrupted write");
-      };
-      rejects(
-          [&] { tx.commit({{"bank1/0.0.wav", stage, hashFile(active)}}, p); },
-          "Injected write interruption");
+      auto changedSource = replacements;
+      changedSource[0].contentHash = hashFile(stage);
+      textFile(stage, "changed after planning");
+      rejects([&] { tx.commit(changedSource, p); },
+              "A source changed after save planning cannot commit stale hashes");
+      check(active.loadFileAsString() == "before" && hashFile(nameFile) == beforeName,
+            "Changed staged content preserves active audio and names");
+      textFile(stage, "after");
+      for (int interruption : {0, 1, 2}) {
+        tx.afterMutation = [interruption](int mutation) {
+          if (mutation == interruption)
+            throw std::runtime_error("simulated interrupted write");
+        };
+        rejects([&] { tx.commit(replacements, p); }, "Injected write interruption");
+        check(active.loadFileAsString() == "before" && hashFile(nameFile) == beforeName,
+              "Audio and filename metadata roll back together at every mutation");
+      }
       check(active.loadFileAsString() == "before",
             "Rollback keeps completed audio");
       check(Project::fromJson(
@@ -123,8 +198,10 @@ int runTests() {
                     .completedRevision == 0,
             "Rollback keeps manifest");
       tx.afterMutation = {};
-      tx.commit({{"bank1/0.0.wav", stage, hashFile(active)}}, p);
+      tx.commit(replacements, p);
       check(active.loadFileAsString() == "after", "Commit replaces audio");
+      check(hashFile(nameFile) == hashFile(nameStage),
+            "Commit replaces name metadata");
       check(Project::fromJson(
                 parseJson(t.dir.getChildFile(".core-manager/project.json")))
                     .completedRevision == 1,
@@ -150,12 +227,22 @@ int runTests() {
                    bytes.getSize());
       textFile(t.dir.getChildFile("firmware.save"), "keep");
       textFile(t.dir.getChildFile("bank1/1.0.wav"), "broken");
+      auto sidecar = t.dir.getChildFile("bank1/0.name.json");
+      durableWrite(sidecar, FixtureData::websitename_json,
+                   size_t(FixtureData::websitename_jsonSize));
+      auto websiteName = parseJson(sidecar);
       auto before = hashFile(f);
       Storage s(t.dir);
       auto p = s.open();
       check(p.samples.size() == 2, "Adopt good and damaged entries");
       check(!p.samples[0].protectedEntry && p.samples[1].protectedEntry,
             "Protect damaged entry individually");
+      check(p.samples[0].name == websiteName["name"].toString() &&
+                p.samples[0].originalFilename ==
+                    websiteName["originalFilename"].toString() &&
+                p.fingerprints.at("bank1/0.name.json") == hashFile(sidecar),
+            "Website pack fixture restores Unicode names and owns matching "
+            "sidecar");
       check(p.samples[0].origin == "recovered card audio" &&
                 p.samples[0].sourceDuration == 1,
             "Recover unpadded source");
@@ -167,15 +254,74 @@ int runTests() {
             "Stable ID survives manifest reopen");
       check(card::inspect(child(t.dir, p.samples[0].source)).frames == 44100,
             "Recovered source excludes padding");
+      auto emptyName = names::encode("", "original.wav", before);
+      durableJson(sidecar, emptyName);
+      check(s.adopt(false).samples[0].name == "original.wav",
+            "Empty display name falls back to original filename");
+      durableJson(sidecar, names::encode("", "", before));
+      check(s.adopt(false).samples[0].name == "Recovered card audio 1",
+            "Empty names fall back to generic label");
+      std::vector<String> invalid{
+          "{bad JSON",
+          "[]",
+          "{\"schema\":2}",
+          "{\"schema\":4294967297}",
+          juce::JSON::toString(names::encode("Stale", "stale.wav",
+                                             String::repeatedString("0", 64))),
+          String::repeatedString("x", names::maxBytes + 1)};
+      auto wrongType = names::encode("Name", "original.wav", before);
+      invalid.push_back(juce::JSON::toString(wrongType) + " trailing data");
+      invalid.push_back("{\"nested\":" + String::repeatedString("[", 32) + "0" +
+                        String::repeatedString("]", 32) + "}");
+      put(wrongType, "name", 123);
+      invalid.push_back(juce::JSON::toString(wrongType));
+      auto directory = names::encode("Name", "original.wav", before);
+      put(directory, "originalFilename", "/private/source.wav");
+      invalid.push_back(juce::JSON::toString(directory));
+      for (const auto &contents : invalid) {
+        textFile(sidecar, contents);
+        auto nameHash = hashFile(sidecar);
+        if (contents.length() > names::maxBytes)
+          check(fingerprint(sidecar) == "oversized filename metadata",
+                "Owned metadata fingerprinting also bounds reads to 64 KiB");
+        auto recovered = s.adopt(false);
+        check(!recovered.samples[0].protectedEntry &&
+                  recovered.samples[0].name == "Recovered card audio 1" &&
+                  recovered.samples[0].originalFilename.isEmpty() &&
+                  recovered.fingerprints.count("bank1/0.name.json") == 0 &&
+                  recovered.warnings.joinIntoString(" ").contains(
+                      "Filename persistence skipped") &&
+                  hashFile(sidecar) == nameHash && hashFile(f) == before,
+              "Invalid, unsupported, oversized or stale sidecar preserves "
+              "audio and falls back");
+      }
+      require(sidecar.deleteFile(), "Remove sidecar fixture");
+      durableJson(t.dir.getChildFile("bank1/2.name.json"),
+                  names::encode("Wrong slot", "wrong.wav", before));
+      auto noNames = s.adopt(false);
+      check(noNames.samples[0].name == "Recovered card audio 1" &&
+                noNames.samples[0].originalFilename.isEmpty(),
+            "Never search other slots for names even when audio hash matches");
+      auto legacy = noNames.samples[0].json();
+      legacy.getDynamicObject()->removeProperty("originalFilename");
+      check(Sample::fromJson(legacy).originalFilename.isEmpty(),
+            "Old schema-1 projects omit originalFilename without inventing it");
     }
     {
       card::Settings settings{{"clock_stop_sync", "on"},
                               {"grimoire/rune1/effect1", "off"}};
       auto files = card::settingsFiles(settings);
-      check(files["settings/clock_stop_sync-on"] &&
-                !files["settings/clock_stop_sync-off"],
+      check(files["settings/clock_stop_sync-on"] && !files["settings/clock_stop_sync-off"],
             "Exclusive settings replacements");
       check(files.size() == 4, "Only known edited settings are owned");
+      auto defaults = card::defaultSettings();
+      for (int effect = 1; effect <= 16; ++effect)
+        check(defaults.at("grimoire/rune1/effect" + String(effect)) == (effect == 5 ? "on" : "off"),
+              "Default first effect bank enables only Time Stretch");
+      check(defaults.at("grimoire/rune2/effect6") == "on" &&
+                defaults.at("grimoire/rune2/effect13") == "on" &&
+                defaults.at("grimoire/rune7/effect16") == "off",
+            "Other effect banks keep the website presets");
       Project p;
       for (int i = 0; i < 16; ++i) {
         Sample s;
@@ -183,9 +329,32 @@ int runTests() {
         s.protectedEntry = true;
         p.samples.push_back(s);
       }
-      check(p.freeSlot(0) == -1 && p.freeSlot(1) == 0,
-            "Sixteen slots per bank");
+      check(p.freeSlot(0) == -1 && p.freeSlot(1) == 0, "Sixteen slots per bank");
       p.validate();
+    }
+    {
+      Temp blank;
+      {
+        Storage storage(blank.dir);
+        auto initial = storage.open();
+        check(initial.settings == card::defaultSettings(),
+              "New settings are recorded in the initial manifest");
+      }
+      {
+        Storage storage(blank.dir);
+        auto reopened = storage.open();
+        check(reopened.settings == card::defaultSettings() && reopened.warnings.isEmpty(),
+              "Default settings reopen without external-change warnings");
+      }
+      Temp existing;
+      durableWrite(child(existing.dir, "settings/grimoire/rune1/effect1-on"), "", 0);
+      durableWrite(child(existing.dir, "settings/unrelated.txt"), "keep", 4);
+      Storage storage(existing.dir);
+      auto adopted = storage.open();
+      check(adopted.settings.size() == 1 && adopted.settings.at("grimoire/rune1/effect1") == "on" &&
+                !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
+                child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
+            "Opening existing settings preserves chosen effects and unrelated files");
     }
     {
       Manager manager;
@@ -199,6 +368,7 @@ int runTests() {
     }
     audioTests();
     importTests();
+    tempoTests();
     managerTests();
     recoveryTests();
     require(runVisualizerTests() == 0, "Visualizer parity tests");

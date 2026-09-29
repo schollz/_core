@@ -1,7 +1,32 @@
 #include "Manager.h"
+#include "NameMetadata.h"
+#include "Parallel.h"
 namespace core {
+namespace {
+String infoSettings(const Sample &s) {
+  auto sample = s.json();
+  var fields = object();
+  for (auto key : {"sourceBpm", "renderBpm", "rate", "channels", "playMode",
+                   "spliceTrigger", "oneShot", "tempoMatch", "spliceVariable",
+                   "slices", "transients"})
+    put(fields, key, sample[key]);
+  return juce::JSON::toString(fields);
+}
+} // namespace
+std::shared_ptr<const zv::Wave> ManagerState::editorWaveform(const String &sampleId) const {
+  const auto *sample = project.find(sampleId);
+  if (!sample)
+    return {};
+  if (const auto *completed = completedProject.find(sampleId))
+    for (const auto &entry : library.samples)
+      if (entry.bank == completed->bank && entry.sample == completed->slot && entry.wave)
+        return entry.wave;
+  auto source = sourceWaveforms.find(sample->sourceHash);
+  return source != sourceWaveforms.end() ? source->second : nullptr;
+}
 Manager::Manager() : worker([this] { run(); }) {}
 Manager::~Manager() {
+  diagnostics::Scope trace("MANAGER", "Stop worker");
   stopping = true;
   ++serial;
   wake.notify_all();
@@ -22,15 +47,24 @@ void Manager::post(Command c) {
     commands.push_back(std::move(c));
     ++serial;
     state.busy = true;
+    diagnostics::log("MANAGER", "Queued command generation=" +
+        String(juce::int64(serial.load())) + " queue_size=" + String(int(commands.size())));
   }
   wake.notify_one();
 }
 void Manager::publish(String status, String error) {
+  diagnostics::log("MANAGER", "Status=" + status + " error=" + error +
+      " samples=" + String(int(project.samples.size())) +
+      " revision=" + String(juce::int64(project.revision)) +
+      " completed_revision=" + String(juce::int64(project.completedRevision)));
   {
     std::lock_guard<std::mutex> lock(mutex);
     state.project = project;
     state.completedProject = committed;
     state.library = libraryState;
+    state.sourceWaveforms = sourceWaveforms;
+    state.importedSampleId = importedSampleId;
+    state.importGeneration = importGeneration;
     state.root = storage ? storage->root : File();
     state.status = std::move(status);
     state.error = std::move(error);
@@ -41,6 +75,7 @@ void Manager::publish(String status, String error) {
   sendChangeMessage();
 }
 void Manager::run() {
+  diagnostics::log("MANAGER", "Worker started");
   try {
     auto cache = stateRoot().getChildFile("visualizer/last-project.json");
     if (cache.existsAsFile()) {
@@ -86,6 +121,7 @@ void Manager::run() {
       else if (dirty && !failed)
         save(generation);
     } catch (const std::exception &e) {
+      diagnostics::log("MANAGER", "Worker exception: " + String(e.what()));
       if (String(e.what()) != "Cancelled") {
         failed = true;
         publish("Action required", e.what());
@@ -106,14 +142,27 @@ void Manager::run() {
 }
 void Manager::open(const File &root) {
   post([this, root] {
+    diagnostics::Scope trace("MANAGER", "Open folder " + root.getFullPathName());
     if (storage && dirty)
       throw std::runtime_error(
           "Finish or reconcile pending changes before opening another folder");
-    publish("Opening folder");
+    int lastProgress = -1;
+    auto report = [&](int percent) {
+      percent = juce::jlimit(0, 100, percent);
+      if (percent > lastProgress) {
+        lastProgress = percent;
+        publish("Opening folder..." + String(percent) + "%");
+      }
+    };
+    report(0);
     auto candidate = std::make_unique<Storage>(root);
-    auto loaded = candidate->open();
+    auto loaded = candidate->open([&](double fraction) {
+      report(int(fraction * 70.));
+    });
     storage = std::move(candidate);
     project = std::move(loaded);
+    sourceWaveforms.clear();
+    importedSampleId.clear();
     committed =
         Project::fromJson(parseJson(child(root, ".core-manager/project.json")));
     manifestHash = fingerprint(child(root, ".core-manager/project.json"));
@@ -123,21 +172,29 @@ void Manager::open(const File &root) {
       history.restore(parseJson(undoFile), project.id);
     dirty = project.revision > project.completedRevision;
     failed = false;
-    prepareVisualization();
+    prepareImportWaveforms();
+    if (dirty)
+      persist();
+    report(75);
+    prepareVisualization([&](const zv::LibraryState &progress) {
+      report(75 + 24 * progress.completed / std::max(1, progress.total));
+    });
+    report(100);
     publish(dirty ? "Processing" : "Ready");
   });
 }
 void Manager::persist() {
+  diagnostics::Scope trace("MANAGER", "Persist pending changes");
   require(storage != nullptr, "Open a project folder first");
   // A second recovery copy survives an unplugged/remounted project volume.
   auto local = stateRoot().getChildFile("recovery/" + project.id + ".json");
   durableJson(local, project.json());
   storage->savePending(project);
-  durableJson(child(storage->root, ".core-manager/history.json"),
-              history.json(project.id));
+  durableJson(child(storage->root, ".core-manager/history.json"), history.json(project.id));
 }
-void Manager::change(const String &label,
-                     const std::function<void(Project &)> &operation) {
+void Manager::change(const String &label, const std::function<void(Project &)> &operation,
+                     const std::function<void()> &onAccepted) {
+  diagnostics::Scope trace("MANAGER", "Change: " + label);
   require(storage && storage->root.isDirectory(),
           "Project volume is unavailable; reconnect it before editing");
   auto before = project;
@@ -159,25 +216,76 @@ void Manager::change(const String &label,
   project = std::move(candidate);
   dirty = true;
   failed = false;
+  if (onAccepted)
+    onAccepted();
+  prepareImportWaveforms();
   publish("Saving changes");
   persist();
   publish("Processing");
 }
+void Manager::prepareImportWaveforms() {
+  std::set<String> activeSources;
+  std::vector<const Sample *> pending;
+  for (const auto &sample : project.samples) {
+    if (sample.protectedEntry)
+      continue;
+    activeSources.insert(sample.sourceHash);
+    if (committed.find(sample.id) || sourceWaveforms.count(sample.sourceHash))
+      continue;
+    pending.push_back(&sample);
+  }
+  for (size_t index = 0; index < pending.size(); ++index) {
+    const auto &sample = *pending[index];
+    if (sourceWaveforms.count(sample.sourceHash))
+      continue;
+    publish("Preparing waveform " + String(int(index) + 1) + " of " + String(int(pending.size())) +
+            ": " + sample.name);
+    try {
+      sourceWaveforms[sample.sourceHash] = audio.sourceWaveform(child(storage->root, sample.source),
+                                                                [this] { return stopping.load(); });
+      diagnostics::log("WAVEFORM", "Imported waveform ready sample=" + sample.id +
+                                       " name=" + sample.name + " before hardware save");
+    } catch (const std::exception &e) {
+      if (stopping)
+        throw;
+      // A preview failure must not discard an otherwise usable import.
+      diagnostics::log("WAVEFORM", "Source preview unavailable sample=" + sample.id +
+                                       " error=" + String(e.what()));
+    }
+  }
+  for (auto it = sourceWaveforms.begin(); it != sourceWaveforms.end();)
+    if (!activeSources.count(it->first))
+      it = sourceWaveforms.erase(it);
+    else
+      ++it;
+}
 void Manager::import(const juce::StringArray &paths, int bank) {
   post([this, paths, bank] {
     require(storage != nullptr, "Open a folder first");
-    change("Import samples", [&](Project &p) {
-      for (const auto &path : paths) {
-        int slot = p.freeSlot(bank);
-        require(slot >= 0, "Bank is full (16 slots). Choose another bank; no "
-                           "sample was overwritten.");
-        p.samples.push_back(audio.import(*storage, File(path), bank, slot));
-      }
-    });
+    String firstImported;
+    change(
+        "Import samples",
+        [&](Project &p) {
+          int imported = 0;
+          for (const auto &path : paths) {
+            int slot = p.freeSlot(bank);
+            require(slot >= 0, "Bank is full (16 slots). Choose another bank; no "
+                               "sample was overwritten.");
+            publish("Importing " + String(++imported) + " of " + String(paths.size()) + ": " +
+                    File(path).getFileName());
+            auto sample = audio.import(*storage, File(path), bank, slot);
+            if (firstImported.isEmpty())
+              firstImported = sample.id;
+            p.samples.push_back(std::move(sample));
+          }
+        },
+        [&] {
+          importedSampleId = firstImported;
+          ++importGeneration;
+        });
   });
 }
-void Manager::edit(const String &id, const String &label,
-                   std::function<void(Sample &)> fn) {
+void Manager::edit(const String &id, const String &label, std::function<void(Sample &)> fn) {
   post([this, id, label, fn = std::move(fn)] {
     change(label, [&](Project &p) {
       auto *s = p.find(id);
@@ -185,6 +293,22 @@ void Manager::edit(const String &id, const String &label,
       fn(*s);
     });
   });
+}
+void Manager::editMarkers(const String &id, std::vector<Marker> slices,
+                          std::array<std::vector<double>, 3> transients) {
+  edit(id, "Edit markers",
+       [slices = std::move(slices), transients = std::move(transients)](Sample &s) {
+         const bool slicesChanged =
+             s.slices.size() != slices.size() ||
+             !std::equal(s.slices.begin(), s.slices.end(), slices.begin(),
+                         [](const Marker &a, const Marker &b) {
+                           return a.start == b.start && a.stop == b.stop && a.type == b.type;
+                         });
+         if (slicesChanged)
+           s.spliceVariable = true;
+         s.slices = slices;
+         s.transients = transients;
+       });
 }
 void Manager::remove(const std::vector<String> &ids) {
   post([this, ids] {
@@ -283,16 +407,22 @@ void Manager::merge(const std::vector<String> &ids, int bank) {
   });
 }
 void Manager::even(const String &id, int count) {
+  diagnostics::log("SLICES", "Even sample=" + id + " target=" + String(count));
   edit(id, "Even slices", [count](Sample &s) {
     require(count > 0 && count <= 1024,
             juce::String::fromUTF8("Choose 1–1024 slices"));
     s.slices.clear();
     for (int n = 0; n < count; ++n)
       s.slices.push_back({double(n) / count, double(n + 1) / count, 0});
+    s.spliceVariable = false;
   });
 }
-void Manager::detect(const String &id, String method, double spacing) {
-  post([this, id, method, spacing] {
+void Manager::detect(const String &id, int count, String method, double spacing) {
+  post([this, id, count, method, spacing] {
+    diagnostics::Scope trace("SLICES", "Auto sample=" + id + " target=" +
+        String(count) + " method=" + method + " spacing_ms=" + String(spacing));
+    require(count > 0 && count <= 1024,
+            juce::String::fromUTF8("Choose 1–1024 slices"));
     require(storage != nullptr, "Open a folder");
     auto *s = project.find(id);
     require(s && !s->protectedEntry, "Cannot analyse this entry");
@@ -300,10 +430,12 @@ void Manager::detect(const String &id, String method, double spacing) {
     auto generation = serial.load();
     auto markers =
         audio.detect(child(storage->root, s->source), method, spacing,
-                     [&] { return stopping || serial.load() != generation; });
+                     [&] { return stopping || serial.load() != generation; },
+                     count);
     change("Automatic slicing", [&](Project &p) {
       auto *target = p.find(id);
       target->slices = markers;
+      target->spliceVariable = true;
     });
   });
 }
@@ -328,6 +460,7 @@ void Manager::undo() {
       project.fingerprints = fingerprints;
       dirty = true;
       failed = false;
+      prepareImportWaveforms();
       persist();
       publish("Processing undo");
     }
@@ -345,6 +478,7 @@ void Manager::redo() {
       project.fingerprints = committed.fingerprints;
       dirty = true;
       failed = false;
+      prepareImportWaveforms();
       persist();
       publish("Processing redo");
     }
@@ -412,6 +546,12 @@ void Manager::reconcile() {
           break;
         }
       if (previous) {
+        auto primary = card::path(sample.bank, sample.slot);
+        auto oldPrimary = committed.fingerprints.find(primary);
+        auto newPrimary = adopted.fingerprints.find(primary);
+        bool sameAudio = oldPrimary != committed.fingerprints.end() &&
+                         newPrimary != adopted.fingerprints.end() &&
+                         oldPrimary->second == newPrimary->second;
         bool unchanged = sample.ownedPaths == previous->ownedPaths;
         for (const auto &path : sample.ownedPaths) {
           auto old = committed.fingerprints.find(path);
@@ -424,7 +564,10 @@ void Manager::reconcile() {
           sample = *previous;
         else {
           sample.id = previous->id;
-          sample.name = previous->name;
+          if (sameAudio) {
+            sample.name = previous->name;
+            sample.originalFilename = previous->originalFilename;
+          }
         }
       }
       sample.revision = sample.completedRevision = adopted.revision;
@@ -436,18 +579,38 @@ void Manager::reconcile() {
     project = adopted;
     committed = adopted;
     manifestHash = fingerprint(manifest);
-    dirty = false;
+    storage->queueNameBackfill(project);
+    dirty = project.revision > project.completedRevision;
     failed = false;
     persist();
     prepareVisualization();
-    publish("Ready");
+    publish(dirty ? "Processing" : "Ready");
   });
 }
-void Manager::prepareVisualization() {
+void Manager::prepareVisualization(
+    std::function<void(const zv::LibraryState &)> progress) {
+  diagnostics::Scope trace("VISUALIZER", "Prepare project waveforms");
   require(storage != nullptr, "Open a folder");
+  String currentFile;
+  auto report = [&](const zv::LibraryState &update) {
+    if (update.current != currentFile) {
+      currentFile = update.current;
+      diagnostics::log("VISUALIZER", "Analysing " + currentFile +
+          " completed=" + String(update.completed) + " total=" + String(update.total));
+    }
+    if (progress)
+      progress(update);
+  };
   libraryState =
       zv::Library::prepare(storage->root, zv::Library::defaultCache(),
-                           [this] { return stopping.load(); });
+                           [this] { return stopping.load(); }, report);
+  diagnostics::log("VISUALIZER", "Total=" + String(libraryState.total) +
+      " prepared=" + String(libraryState.prepared) + " reused=" +
+      String(libraryState.reused) + " error=" + libraryState.error +
+      " warning=" + libraryState.warning);
+  for (const auto &entry : libraryState.samples)
+    diagnostics::log("VISUALIZER", entry.path + " ready=" +
+        String(entry.wave ? 1 : 0) + " error=" + entry.error);
   var saved = object();
   put(saved, "root", storage->root.getFullPathName());
   put(saved, "projectId", committed.id);
@@ -461,21 +624,49 @@ void Manager::prepareVisualization() {
   durableJson(cache, saved);
 }
 void Manager::save(uint64_t generation) {
+  diagnostics::Scope trace("MANAGER", "Save generation=" + String(juce::int64(generation)));
   require(storage && storage->root.isDirectory(),
           "Project volume is unavailable. Reconnect it and Retry; pending "
           "edits are retained.");
+  publish("Checking card files");
   auto root = storage->root;
-  require(fingerprint(child(root, ".core-manager/project.json")) ==
-              manifestHash,
+  require(fingerprint(child(root, ".core-manager/project.json")) == manifestHash,
           "Project manifest is missing or changed externally. Reconnect or "
           "reconcile before saving.");
   auto cancel = [&] { return stopping || serial.load() != generation; };
   cancelled(cancel);
-  for (const auto &[path, expected] : committed.fingerprints)
-    require(fingerprint(child(root, path)) == expected,
-            "External change: " + path + ". Reload/reconcile before saving.");
+  // Check every owned file once. Later planning reuses these hashes for
+  // unchanged files; the transaction rechecks every actual replacement.
+  const auto verified = committed.fingerprints;
+  std::vector<std::pair<String, String>> checks(verified.begin(), verified.end());
+  {
+    diagnostics::Scope traceChecks("STORAGE", "Verify files before save");
+    parallelFor(checks.size(), [&](size_t index) {
+      const auto &[path, expected] = checks[index];
+      require(fingerprint(child(root, path), cancel) == expected,
+              "External change: " + path + ". Reload/reconcile before saving.");
+    });
+  }
+  cancelled(cancel);
+  auto checkedHash = [&](const File &file) {
+    const auto relative = file.getRelativePathFrom(root).replaceCharacter('\\', '/');
+    auto known = verified.find(relative);
+    return known != verified.end() && known->second != "missing" ? known->second
+                                                                 : hashFile(file, cancel);
+  };
   auto completed = project;
+  auto needsRender = [&](const Sample &sample) {
+    if (sample.protectedEntry)
+      return false;
+    const auto *previous = committed.find(sample.id);
+    return !previous || audioKey(sample) != audioKey(*previous) ||
+           (sample.oneShot && !sample.tempoMatch) != (previous->oneShot && !previous->tempoMatch);
+  };
+  const int renderCount =
+      int(std::count_if(completed.samples.begin(), completed.samples.end(), needsRender));
+  int renderedCount = 0;
   std::map<String, File> desired;
+  std::map<String, String> nameExpected;
   std::set<String> oldOwned;
   for (const auto &s : committed.samples)
     if (!s.protectedEntry)
@@ -486,27 +677,34 @@ void Manager::save(uint64_t generation) {
     if (s.protectedEntry)
       continue;
     auto *previous = committed.find(s.id);
-    bool changed = !previous || audioKey(s) != audioKey(*previous) ||
-                   (s.oneShot && !s.tempoMatch) !=
-                       (previous->oneShot && !previous->tempoMatch);
-    bool metadataChanged = !previous || s.revision != previous->revision;
+    auto encodeInfo = [&](const card::Info &info) {
+      try {
+        return card::encode(info);
+      } catch (const std::exception &e) {
+        throw std::runtime_error(("Bank " + String(s.bank + 1) + " slot " + String(s.slot + 1) +
+                                  " (" + s.name + "): " + String(e.what()))
+                                     .toStdString());
+      }
+    };
+    bool changed = needsRender(s);
+    bool metadataChanged = !previous || infoSettings(s) != infoSettings(*previous);
     if (changed) {
-      publish("Processing " + s.name);
+      publish("Processing audio " + String(++renderedCount) + " of " + String(renderCount) + ": " +
+              s.name);
       auto rendered = audio.render(root, s, cancel);
       s.rendered = rendered.preview;
       s.companion = rendered.companionPreview;
       s.renderKey = rendered.key;
       desired[card::path(s.bank, s.slot)] = child(root, rendered.padded);
       if (rendered.companionPadded.isNotEmpty())
-        desired[card::path(s.bank, s.slot, 1)] =
-            child(root, rendered.companionPadded);
+        desired[card::path(s.bank, s.slot, 1)] = child(root, rendered.companionPadded);
       for (int variant = 0;
            variant < (rendered.companionPadded.isNotEmpty() ? 2 : 1);
            ++variant) {
         auto info =
             sampleInfo(s, variant ? rendered.companionFrames : rendered.frames,
                        variant != 0);
-        auto bytes = card::encode(info);
+        auto bytes = encodeInfo(info);
         auto path = child(root, ".core-manager/cache/metadata-" + s.id + "-" +
                                     String(variant) + ".info");
         durableWrite(path, bytes.getData(), bytes.getSize());
@@ -517,6 +715,8 @@ void Manager::save(uint64_t generation) {
       s.companion = previous->companion;
       s.renderKey = previous->renderKey;
       for (const auto &path : previous->ownedPaths) {
+        if (path.endsWith(".name.json"))
+          continue; // Regenerate from this sample and its completed primary WAV.
         auto filename = path.fromLastOccurrenceOf(
             "/", false,
             false); // only use the basename; the project path remains relative
@@ -533,12 +733,36 @@ void Manager::save(uint64_t generation) {
             continue;
           auto w = card::inspect(found->second);
           auto info = sampleInfo(s, w.frames - w.rate, variant != 0);
-          auto bytes = card::encode(info);
+          auto bytes = encodeInfo(info);
           auto path = child(root, ".core-manager/cache/metadata-" + s.id + "-" +
                                       String(variant) + ".info");
           durableWrite(path, bytes.getData(), bytes.getSize());
           desired[wavePath + ".info"] = path;
         }
+    }
+    auto namePath = names::path(s.bank, s.slot);
+    auto primaryPath = card::path(s.bank, s.slot);
+    auto primaryHash = committed.fingerprints.find(primaryPath);
+    auto existingName =
+        names::read(root, s.bank, s.slot,
+                    primaryHash == committed.fingerprints.end() ? String() : primaryHash->second);
+    if (existingName.status == names::Metadata::invalid) {
+      completed.warnings.addIfNotAlreadyThere(existingName.warning);
+      oldOwned.erase(namePath);
+    } else {
+      auto audioHash = checkedHash(desired.at(primaryPath));
+      if (existingName.status == names::Metadata::valid && existingName.name == s.name &&
+          existingName.originalFilename == s.originalFilename &&
+          primaryHash != committed.fingerprints.end() && primaryHash->second == audioHash) {
+        desired[namePath] = child(root, namePath);
+      } else {
+        auto staged = child(root, ".core-manager/cache/name-" + s.id + ".json");
+        durableJson(staged, names::encode(s.name, s.originalFilename, audioHash));
+        desired[namePath] = staged;
+      }
+      nameExpected[namePath] = existingName.status == names::Metadata::valid
+                                   ? existingName.fingerprint
+                                   : String("missing");
     }
     s.ownedPaths.clear();
     auto prefix = "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".";
@@ -559,38 +783,41 @@ void Manager::save(uint64_t generation) {
   std::vector<Replacement> replacements;
   auto expected = [&](const String &path) {
     auto found = committed.fingerprints.find(path);
-    return found == committed.fingerprints.end() ? String("missing")
-                                                 : found->second;
+    if (found != committed.fingerprints.end())
+      return found->second;
+    auto name = nameExpected.find(path);
+    return name == nameExpected.end() ? String("missing") : name->second;
   };
   completed.fingerprints = committed.fingerprints;
   for (const auto &[path, file] : desired) {
     cancelled(cancel);
     auto before = expected(path);
-    require(fingerprint(child(root, path)) == before,
+    auto known = verified.find(path);
+    require((known == verified.end() ? fingerprint(child(root, path), cancel) : known->second) ==
+                before,
             "External change: " + path + ". Reload/reconcile before saving.");
-    auto after = hashFile(file);
+    auto after = checkedHash(file);
     if (after != before)
-      replacements.push_back({path, file, before});
+      replacements.push_back({path, file, before, after});
     completed.fingerprints[path] = after;
     oldOwned.erase(path);
   }
   for (const auto &path : oldOwned) {
     auto before = expected(path);
-    require(fingerprint(child(root, path)) == before,
-            "External change: " + path + ". Reload/reconcile before saving.");
+    cancelled(cancel);
     if (before != "missing")
       replacements.push_back({path, {}, before});
     completed.fingerprints[path] = "missing";
   }
   completed.completedRevision = completed.revision;
   cancelled(cancel);
-  require(fingerprint(child(root, ".core-manager/project.json")) ==
-              manifestHash,
+  require(fingerprint(child(root, ".core-manager/project.json")) == manifestHash,
           "Project manifest changed externally. Reconcile before saving.");
   publish("Saving");
   Transaction tx(root);
   tx.shouldCancel = cancel;
   tx.commit(replacements, completed);
+  publish("Updating waveforms");
   committed = completed;
   project = completed;
   manifestHash = fingerprint(child(root, ".core-manager/project.json"));

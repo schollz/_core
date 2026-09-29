@@ -34,12 +34,26 @@ void Device::refresh() {
     return count == 1 ? found : String();
   };
   auto in = select(inputs, inputId), out = select(outputs, outputId);
+  if (diagnostics::enabled()) {
+    String description = "Inputs:";
+    for (const auto &port : inputs)
+      description += " " + port.name + " (" + port.identifier + ")";
+    description += "; outputs:";
+    for (const auto &port : outputs)
+      description += " " + port.name + " (" + port.identifier + ")";
+    description += "; selected input=" + in + " output=" + out;
+    if (description != lastDiagnosticState) {
+      lastDiagnosticState = description;
+      diagnostics::log("MIDI", description);
+    }
+  }
   if (in.isEmpty() || out.isEmpty()) {
     link.reset();
     error = "Select MIDI input and output for your Core device";
     return;
   }
   if (!link || link->inputId != in || link->outputId != out) {
+    diagnostics::log("MIDI", "Connecting input=" + in + " output=" + out);
     link = zv::MidiLink::acquire(in, out);
     link->setTelemetry(telemetryRequested);
   }
@@ -53,6 +67,7 @@ void Device::choose(String input, String output) {
   save();
 }
 void Device::telemetry(bool enabled) {
+  diagnostics::log("MIDI", "Telemetry=" + String(enabled ? 1 : 0));
   telemetryRequested = enabled;
   if (link)
     link->setTelemetry(enabled);

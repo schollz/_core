@@ -14,14 +14,21 @@ void importTests() {
   AudioProcessing audio;
   for (int n = 0; n < ImportData::namedResourceListSize; ++n) {
     int size = 0;
-    auto *data =
-        ImportData::getNamedResource(ImportData::namedResourceList[n], size);
+    auto *data = ImportData::getNamedResource(ImportData::namedResourceList[n], size);
     auto name = String(ImportData::originalFilenames[n]);
     auto file = root.getChildFile(name);
     durableWrite(file, data, size_t(size));
     auto sample = audio.import(storage, file, 0, 0);
-    require(sample.sourceDuration > .9 && sample.sourceDuration < 1.1,
-            "Decode " + name);
+    require(!sample.preservePitch, "New imports default to speed/pitch conversion");
+    require(sample.originalFilename == name && sample.name == name &&
+                Sample::fromJson(sample.json()).originalFilename == name,
+            "Imported basename, including XRNI archive, survives serialization");
+    require(sample.sourceDuration > .9 && sample.sourceDuration < 1.1, "Decode " + name);
+    auto peaks = audio.sourceWaveform(child(root, sample.source));
+    require(peaks->channels == sample.channels &&
+                std::abs(peaks->duration - sample.sourceDuration) < 1e-9 &&
+                !peaks->peaks.empty() && !peaks->peaks[0].empty(),
+            "Editor waveform works before rendering for " + name);
     if (name == "cue.wav" || name == "op1.aif" || name == "import.xrni" ||
         name == "import.ogg")
       require(sample.slices.size() == 2 &&
@@ -41,6 +48,14 @@ void importTests() {
       require(child(root, sample.originalArchive).existsAsFile(),
               "XRNI original archive retained");
     if (name == "import.wav") {
+      require(sample.slices.size() == 16 && !sample.spliceVariable,
+              "Unmarked imports default to sixteen even slices");
+      for (size_t slice = 0; slice < sample.slices.size(); ++slice)
+        require(sample.slices[slice].start == double(slice) / 16 &&
+                    sample.slices[slice].stop == double(slice + 1) / 16,
+                "Default import slices cover the source evenly");
+      require(sample.renderAnchors.size() == 1,
+              "Default slicing does not change source render anchors");
       sample.oneShot = true;
       sample.tempoMatch = false;
       auto first = audio.render(root, sample);

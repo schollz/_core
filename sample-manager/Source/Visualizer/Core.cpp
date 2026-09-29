@@ -333,7 +333,8 @@ Wave analyse(const juce::File &wav, const juce::MemoryBlock &info, int bank,
              int sample, std::function<bool()> cancelled) {
   auto stream = wav.createInputStream();
   require(stream != nullptr, "Cannot read committed audio");
-  return analyseStream(*stream, wav.getSize(), info, bank, sample, cancelled);
+  juce::BufferedInputStream buffered(*stream, 256 * 1024);
+  return analyseStream(buffered, wav.getSize(), info, bank, sample, cancelled);
 }
 juce::var waveToJson(const Wave &w) {
   auto *o = new juce::DynamicObject;

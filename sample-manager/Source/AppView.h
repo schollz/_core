@@ -23,11 +23,33 @@ public:
   bool pending() const { return manager.snapshot().busy; }
 
 private:
+  class Divider final : public juce::StretchableLayoutResizerBar,
+                        public juce::SettableTooltipClient {
+  public:
+    using StretchableLayoutResizerBar::StretchableLayoutResizerBar;
+  };
+  class AdvancedButton final : public juce::Button {
+  public:
+    explicit AdvancedButton(Look &);
+    void setAnalysisRunning(bool);
+
+  private:
+    void paintButton(juce::Graphics &, bool highlighted, bool down) override;
+    Look &look;
+    bool analysisRunning = false;
+  };
   struct Rows : juce::ListBoxModel {
     std::function<int()> count;
     std::function<void(int, juce::Graphics &, int, int, bool)> paint;
     std::function<void(int)> select;
+    std::function<void(int)> click;
+    std::function<String(int)> description;
+    std::function<String(int)> tooltip;
     int getNumRows() override { return count ? count() : 0; }
+    String getNameForRow(int i) override {
+      return description ? description(i) : juce::ListBoxModel::getNameForRow(i);
+    }
+    String getTooltipForRow(int i) override { return tooltip ? tooltip(i) : getNameForRow(i); }
     void paintListBoxItem(int i, juce::Graphics &g, int w, int h,
                           bool s) override {
       if (paint)
@@ -36,6 +58,10 @@ private:
     void selectedRowsChanged(int i) override {
       if (select)
         select(i);
+    }
+    void listBoxItemClicked(int i, const juce::MouseEvent &) override {
+      if (click)
+        click(i);
     }
   };
   class AuxiliaryWindow final : public juce::DocumentWindow {
@@ -57,6 +83,7 @@ private:
   };
   void changeListenerCallback(juce::ChangeBroadcaster *) override;
   void timerCallback() override;
+  void chooseNewProject();
   void chooseFolder();
   void chooseImport();
   void chooseDuplicate();
@@ -65,7 +92,10 @@ private:
   void toggleVisualizer();
   void detachVisualizer();
   void selection();
+  void selectBank(int);
   void updateEditor();
+  void updatePresentation();
+  int layoutControls(int width);
   void editControls();
   void audition(double start = 0, double stop = 1);
   void showSettings();
@@ -84,36 +114,42 @@ private:
   ManagerState state;
   int bank = 0, presentation = 0;
   String selectedId, controlsId, localError;
+  std::array<String, 16> lastSelectedInBank;
+  String lastDiagnosticStatus, lastDiagnosticLayout;
   bool updating = false;
   Rows bankRows, sampleRows;
   juce::ListBox banks{"Banks", &bankRows}, samples{"Samples", &sampleRows};
-  juce::Component editor;
+  juce::Component editor, controls, advancedControls;
+  juce::Viewport controlsViewport;
+  AdvancedButton advancedButton{look};
   WaveformEditor waveform{look};
   juce::StretchableLayoutManager layout;
-  juce::StretchableLayoutResizerBar divider{&layout, 1, true};
+  Divider divider{&layout, 1, true};
   juce::TextButton open{"Open Folder"}, recent{"Recent"}, reveal{"Reveal"},
       duplicate{"Duplicate"}, importButton{"Import"},
       settingsButton{"Settings"}, deviceButton{"Device"},
       visualizerButton{"Visualizer"}, more{"More"};
   juce::ComboBox presentationBox, channel, playMode, markerMode, detector,
       moveBank;
-  juce::TextButton play{"Play / Stop"}, evenButton{"Even slices"},
-      autoButton{"Auto slice"}, onlineButton{"Analyze drums online"},
-      removeButton{"Remove"}, mergeButton{"Merge"},
-      up{juce::String::fromUTF8("↑")}, down{juce::String::fromUTF8("↓")},
-      undoButton{"Undo"}, redoButton{"Redo"}, empty{"Open a project folder"};
-  juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, spliceTrigger,
-      name;
+  juce::TextButton play{"Play / Stop"}, evenButton{"Even slices"}, autoButton{"Auto slice"},
+      onlineButton{"Analyze drums online"}, removeButton{"Remove"}, mergeButton{"Merge"},
+      up{juce::String::fromUTF8("↑")}, down{juce::String::fromUTF8("↓")}, undoButton{"Undo"},
+      redoButton{"Redo"}, createProject{"Create project"}, empty{"Open a project folder"};
+  juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, name;
   juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"},
       oneShot{"One-shot"}, variable{"Variable splice timing"};
-  juce::Label folderLabel, statusLabel, sourceLabel, sourceBpmLabel,
-      renderBpmLabel, channelLabel, playModeLabel, triggerLabel, hint,
-      advancedLabel;
+  juce::Label folderLabel, statusLabel, sourceLabel, sourceBpmLabel, renderBpmLabel, channelLabel,
+      playModeLabel, hint, tempoProcessingLabel, sliceTimingLabel, autoSliceLabel, detectorLabel,
+      spacingLabel, onlineAnalysisLabel;
+  double activityProgress = -1.;
+  juce::ProgressBar activity{activityProgress};
   std::unique_ptr<juce::FileChooser> chooser;
   std::unique_ptr<AuxiliaryWindow> settingsWindow;
   juce::StringArray recents;
   var preferences = object();
   juce::Image ectoLogo;
-  juce::TooltipWindow tooltips{this, 600};
+  std::array<std::unique_ptr<juce::Drawable>, 7> headerRunes;
+  juce::Colour headerRuneInk{0xff1a1a1a};
+  Tooltips tooltips{*this};
 };
 } // namespace core

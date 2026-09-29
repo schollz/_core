@@ -29,6 +29,7 @@ def notices(destination):
     destination.mkdir(parents=True, exist_ok=True)
     files = {'LICENSE':'Application-GPLv3.txt', 'Vendor/PROVENANCE.md':'PROVENANCE.md',
              'Vendor/rubberband/COPYING':'Rubber-Band-GPLv2.txt',
+             'Vendor/soundtouch/COPYING.TXT':'SoundTouch-LGPLv2.1.txt',
              '.cache/deps/juce-src/LICENSE.md':'JUCE-LICENSE.md'}
     for path in (ROOT/'Resources/Fonts').glob('*'):
         if path.suffix.lower() in ('.txt','.md'): files[str(path.relative_to(ROOT))] = path.name

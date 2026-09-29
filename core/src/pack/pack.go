@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/schollz/_core/core/src/sox"
-	"github.com/schollz/_core/core/src/utils"
 	"github.com/schollz/_core/core/src/zeptocore"
 	log "github.com/schollz/logger"
 )
@@ -39,7 +38,9 @@ type Data struct {
 
 func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename string, err error) {
 	zipStorage := path.Join(pathToStorage, "zips")
-	os.MkdirAll(zipStorage, 0777)
+	if err = os.MkdirAll(zipStorage, 0777); err != nil {
+		return
+	}
 
 	// get all the files
 	// each file is a folder inside pathToStorage
@@ -66,11 +67,13 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 
 	_, zipFilename = filepath.Split(pathToStorage)
 
-	// create a temporary folder to store the files
-	err = os.MkdirAll(path.Join(zipStorage, zipFilename), 0777)
+	// Each export owns its staging tree, including cleanup on sidecar failure.
+	staging, err := os.MkdirTemp(zipStorage, ".pack-")
 	if err != nil {
 		return
 	}
+	defer os.RemoveAll(staging)
+	mainFolder := path.Join(staging, zipFilename)
 
 	if !settingsOnly {
 		// create the bank folders
@@ -108,7 +111,6 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		return
 	}
 
-	mainFolder := path.Join(zipStorage, zipFilename)
 	err = os.MkdirAll(mainFolder, 0777)
 	if err != nil {
 		log.Error(err)
@@ -195,68 +197,26 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 				continue
 			}
 			log.Tracef("bank %d has %d files", i, len(bank.Files))
-			bankFolder := path.Join(zipStorage, zipFilename, fmt.Sprintf("bank%d", i+1))
+			bankFolder := path.Join(mainFolder, fmt.Sprintf("bank%d", i+1))
 			err = os.MkdirAll(bankFolder, 0777)
 			if err != nil {
 				return
 			}
 			// go through each file and copy it into the bank
 			for filei, file := range bank.Files {
-				log.Tracef("bank %d: %s", i, file)
-				filenameWithoutExtension := file[:len(file)-len(path.Ext(file))]
-				for i := 0; i < 2; i++ {
-					oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.wav", filenameWithoutExtension, i))
-					newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, i))
-					if _, err := os.Stat(oldFname); os.IsNotExist(err) {
-						break
-					}
-					// copy wav file
-					err = utils.CopyFile(oldFname, newFname)
-					if err != nil {
-						log.Error(err)
-						return
-					}
-					// copy info file
-					err = utils.CopyFile(oldFname+".info", newFname+".info")
-					if err != nil {
-						log.Error(err)
-						return
-					}
-					// copy the variations if they exist
-					for j := 1; j < 4; j++ {
-						oldFname := path.Join(pathToStorage, file, fmt.Sprintf("%s.%d.%d.wav", filenameWithoutExtension, i, j))
-						newFname := path.Join(bankFolder, fmt.Sprintf("%d.%d.wav", filei, 2+j*2+i))
-						if _, err := os.Stat(oldFname); os.IsNotExist(err) {
-							continue
-						}
-						// copy wav file
-						err = utils.CopyFile(oldFname, newFname)
-						if err != nil {
-							log.Error(err)
-						}
-					}
+				err = copySample(pathToStorage, bankFolder, filei, file)
+				if err != nil {
+					return
 				}
 			}
 		}
 	}
 
-	// zip the folder
-	cwd, _ := os.Getwd()
-	os.Chdir(zipStorage)
-	err = utils.ZipFolder(zipFilename)
-	if err != nil {
-		log.Error(err)
-	}
-
-	// remove the directory
-	err = os.RemoveAll(zipFilename)
-	if err != nil {
-		log.Error(err)
-	}
-
-	os.Chdir(cwd)
-
 	zipFilename = path.Join(zipStorage, zipFilename+".zip")
+	err = writePackZip(mainFolder, zipFilename)
+	if err != nil {
+		return
+	}
 	sox.Clean()
 	return
 }

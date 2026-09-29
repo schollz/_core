@@ -4,13 +4,15 @@
 #include "Visualizer/Core.h"
 namespace core {
 // Adapted from amenbreak WaveformDisplay: normalized marker hit testing, wheel
-// zoom, middle-button panning and drag gestures. Peaks share the completed
-// project waveform/spectrum cache with the integrated visualizer.
-class WaveformEditor final : public juce::Component {
+// zoom, middle-button panning and drag gestures. New imports show source peaks
+// immediately; completed peaks share the integrated visualizer's cache.
+class WaveformEditor final : public juce::Component, public juce::TooltipClient {
 public:
   explicit WaveformEditor(Look &);
   void set(const Sample *, std::shared_ptr<const zv::Wave>);
   void setPosition(double normalized);
+  void setTransientLanesVisible(bool);
+  String getTooltip() override;
   void paint(juce::Graphics &) override;
   void mouseDown(const juce::MouseEvent &) override;
   void mouseDrag(const juce::MouseEvent &) override;
@@ -30,6 +32,7 @@ private:
   std::shared_ptr<const zv::Wave> peaks;
   Sample sample;
   bool hasSample = false, dragging = false, changed = false;
+  bool showTransientLanes = true;
   int marker = -1;
   double zoom = 1, pan = 0, playhead = -1, dragPan = 0;
   float dragX = 0;

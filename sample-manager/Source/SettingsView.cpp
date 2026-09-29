@@ -7,6 +7,44 @@ const char *effectNames[]{
     "Time stretch", "Delay",     "Comb",      "Beat repeat",
     "Reverb",       "Auto pan",  "Slow down", "Speed up",
     "Reverse",      "Retrigger", "Repitch",   "Tape stop"};
+const char *effectHelp[]{"Add saturation and grit.",
+                         "Degrade the sound with digital loss.",
+                         "Reduce digital resolution for a crunchy sound.",
+                         "Change the tone with filtering.",
+                         "Stretch playback in time.",
+                         "Add repeating echoes.",
+                         "Add resonant comb filtering.",
+                         "Repeat short sections of the beat.",
+                         "Add reverberation.",
+                         "Move the sound between left and right.",
+                         "Slow playback down.",
+                         "Speed playback up.",
+                         "Play audio backwards.",
+                         "Restart audio for repeated attacks.",
+                         "Change the pitch.",
+                         "Slow playback to a stop like a tape machine."};
+String settingHelp(const card::Setting &setting) {
+  static const std::map<String, String> help{
+      {"brightness", "Set the hardware LED brightness from 0 to 100."},
+      {"clock_stop_sync",
+       "Stop playback when the external clock stops, and resume when it returns."},
+      {"clock_output_trig", "Send short trigger pulses from the clock output instead of gates."},
+      {"clock_behavior_sync_slice", "Sync the clock output to slice changes instead of the tempo."},
+      {"amen_cv",
+       "Choose whether Amen CV accepts positive-only or positive and negative control voltages."},
+      {"amen_behavior", "Choose how Amen CV changes playback: jump, repeat or split."},
+      {"break_cv",
+       "Choose whether Break CV accepts positive-only or positive and negative control voltages."},
+      {"sample_cv",
+       "Choose whether Sample CV accepts positive-only or positive and negative control voltages."},
+      {"override_with_reset",
+       "Choose which CV input acts as reset. None keeps the normal input functions."},
+      {"knobx_select_sample", "Let Zeptocore's X knob select samples."},
+      {"mash_mode_momentary",
+       "Keep MASH active only while held, instead of toggling it on and off."}};
+  const auto found = help.find(setting.key);
+  return found != help.end() ? found->second : "Choose " + setting.label + " for the hardware.";
+}
 const juce::juce_wchar glyphs[]{0xf6be, 0xf8d7, 0xf83e, 0xf0b0, 0xf252, 0xf1da,
                                 0xf55d, 0xf2f9, 0xf773, 0xf025, 0xf554, 0xf70c,
                                 0xf2ea, 0xf2a1, 0xf001, 0xf4db};
@@ -72,8 +110,10 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
       continue;
     definitions.push_back(&d);
     auto *label = labels.add(new juce::Label({}, d.label));
+    label->setTooltip(settingHelp(d));
     addAndMakeVisible(label);
     auto *combo = controls.add(new juce::ComboBox);
+    combo->setTooltip(settingHelp(d));
     int n = 1;
     for (const auto &v : d.values)
       combo->addItem(v, n++);
@@ -88,6 +128,8 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     addAndMakeVisible(combo);
   }
   heading.setText(look.theme.effectHeading, juce::dontSendNotification);
+  heading.setTooltip(
+      "Choose a bank below, then enable the effects available in that bank on the hardware.");
   addAndMakeVisible(heading);
   const char *roman[]{"I", "II", "III", "IV", "V", "VI", "VII"};
   for (int b = 0; b < 7; ++b) {
@@ -95,6 +137,8 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
         p == 2 ? static_cast<juce::TextButton *>(new RuneButton(look, b + 1))
                : new juce::TextButton(roman[b]));
     button->setClickingTogglesState(false);
+    button->setTooltip("Edit " + String(p == 2 ? "rune " : "effect bank ") + String(b + 1) +
+                       ". Choose it, then toggle the effects below.");
     button->onClick = [this, b] {
       bank = b;
       refreshEffects();
@@ -130,6 +174,10 @@ void SettingsView::refreshEffects() {
     auto it = values.find(key);
     effects[fx]->setToggleState(it != values.end() && it->second == "on",
                                 juce::dontSendNotification);
+    effects[fx]->setTooltip(String(effectNames[fx]) + ": " + effectHelp[fx] + "\n" +
+                            (effects[fx]->getToggleState() ? "Disable" : "Enable") + " in " +
+                            (presentation == 2 ? "rune " : "effect bank ") + String(bank + 1) +
+                            ".");
   }
 }
 void SettingsView::resized() {

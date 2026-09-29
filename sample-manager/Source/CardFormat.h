@@ -36,6 +36,7 @@ struct Setting {
 };
 const std::vector<Setting> &settingDefinitions();
 using Settings = std::map<String, String>;
+Settings defaultSettings();
 Settings readSettings(const File &, juce::StringArray &warnings);
 std::map<String, bool> settingsFiles(const Settings &);
 } // namespace core::card

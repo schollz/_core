@@ -14,13 +14,17 @@ public:
 private:
   juce::Typeface::Ptr regular, medium, icons;
 };
-class Editor final : public juce::Component, private juce::Timer {
+class Editor final : public juce::Component, public juce::TooltipClient, private juce::Timer {
 public:
   explicit Editor(Session &);
   void setActive(bool);
   void setDetached() {
     detach.setButtonText("FULL");
-    detach.setTooltip("Toggle full screen");
+    detach.setTooltip("Enter or leave fullscreen\nfor this visualizer window.");
+  }
+  juce::String getTooltip() override {
+    return "Waveform, effects and spectrum\nfor the selected Device or Preview source.\n"
+           "Use the sample editor to change markers.";
   }
   std::function<void()> onDetach;
   ~Editor() override;
@@ -46,7 +50,7 @@ private:
             bool bold = false);
   Session &session;
   MonoLook look;
-  juce::TooltipWindow tooltips{this, 700};
+  core::Tooltips tooltips{*this};
   juce::TextButton detach{"DETACH"};
   juce::ComboBox source;
   juce::ToggleButton motion{"REDUCED MOTION"};

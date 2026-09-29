@@ -10,7 +10,8 @@ Theme Theme::get(int p) {
             juce::Colour(0xffbdafeb),
             juce::Colour(0xffd2cde9),
             juce::Colour(0xff6d51c9),
-            juce::Colour(0xff9b82db)};
+            juce::Colour(0xff9b82db),
+            juce::Colour(0xffdcd6f7)};
   if (p == 2)
     return {"Ectocore",
             "Grimoire of Breaks:",
@@ -18,14 +19,16 @@ Theme Theme::get(int p) {
             juce::Colour(0xff5282d9),
             juce::Colour(0xff94acda),
             juce::Colour(0xff3478ff),
-            juce::Colour(0xff5282d9)};
+            juce::Colour(0xff5282d9),
+            juce::Colour(0xff94acda)};
   return {"Ezeptocore",
           "Effect banks:",
           juce::Colour(0xfff0f0f0),
           juce::Colour(0xff1a1a1a),
           juce::Colour(0xffd0d0d0),
           juce::Colour(0xffb39124),
-          juce::Colour(0xff77777b)};
+          juce::Colour(0xff77777b),
+          juce::Colour(0xffb0b0b0)};
 }
 Look::Look() {
   mono = juce::Typeface::createSystemTypefaceFor(
@@ -50,10 +53,27 @@ void Look::presentation(int p) {
   setColour(juce::TextButton::buttonOnColourId, theme.accent);
   setColour(juce::TextButton::textColourOffId, juce::Colour(0xff1a1a1a));
   setColour(juce::TextButton::textColourOnId, juce::Colours::white);
-  setColour(juce::ComboBox::backgroundColourId, juce::Colours::white);
+  setColour(juce::ComboBox::backgroundColourId, theme.background);
   setColour(juce::ComboBox::textColourId, juce::Colour(0xff1a1a1a));
-  setColour(juce::TextEditor::backgroundColourId, juce::Colours::white);
+  setColour(juce::ComboBox::outlineColourId, theme.sidebar);
+  setColour(juce::ComboBox::focusedOutlineColourId, theme.accent);
+  setColour(juce::ComboBox::arrowColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::PopupMenu::backgroundColourId, theme.background);
+  setColour(juce::PopupMenu::textColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::PopupMenu::headerTextColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::PopupMenu::highlightedBackgroundColourId, theme.sidebar);
+  setColour(juce::PopupMenu::highlightedTextColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::TextEditor::backgroundColourId, theme.background);
   setColour(juce::TextEditor::textColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::TextEditor::outlineColourId, theme.sidebar);
+  setColour(juce::TextEditor::focusedOutlineColourId, theme.accent);
+  setColour(juce::TextEditor::highlightColourId, theme.sidebar);
+  setColour(juce::TextEditor::highlightedTextColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::TextEditor::shadowColourId, juce::Colours::transparentBlack);
+  setColour(juce::CaretComponent::caretColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::TooltipWindow::backgroundColourId, theme.background);
+  setColour(juce::TooltipWindow::textColourId, juce::Colour(0xff1a1a1a));
+  setColour(juce::TooltipWindow::outlineColourId, theme.sidebar);
   setColour(juce::Label::textColourId, juce::Colour(0xff1a1a1a));
   setColour(juce::ToggleButton::textColourId, juce::Colour(0xff1a1a1a));
   setColour(juce::ToggleButton::tickColourId, theme.accent);

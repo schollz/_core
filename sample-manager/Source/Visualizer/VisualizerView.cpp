@@ -59,6 +59,11 @@ MonoLook::MonoLook() {
   setColour(juce::ComboBox::outlineColourId, quiet);
   setColour(juce::PopupMenu::backgroundColourId, juce::Colours::black);
   setColour(juce::PopupMenu::textColourId, grey);
+  setColour(juce::PopupMenu::highlightedBackgroundColourId, juce::Colour(0xff222222));
+  setColour(juce::PopupMenu::highlightedTextColourId, juce::Colours::white);
+  setColour(juce::TooltipWindow::backgroundColourId, juce::Colours::black);
+  setColour(juce::TooltipWindow::textColourId, grey);
+  setColour(juce::TooltipWindow::outlineColourId, quiet);
   setColour(juce::ToggleButton::textColourId, grey);
   setColour(juce::ToggleButton::tickColourId, juce::Colours::white);
 }
@@ -86,6 +91,7 @@ Editor::Editor(Session &s) : session(s) {
   addAndMakeVisible(source);
   source.addItem("Device", 1);
   source.addItem("Preview", 2);
+  source.setTooltip("Show live device playback, or\nfollow the sample manager's preview.");
   source.setSelectedId(1, juce::dontSendNotification);
   source.onChange = [this] {
     session.previewSource = source.getSelectedId() == 2;
@@ -96,6 +102,7 @@ Editor::Editor(Session &s) : session(s) {
     repaint();
   };
   addAndMakeVisible(motion);
+  motion.setTooltip("Reduce animation and visual motion.\nAlso respects the system setting.");
   motion.setToggleState(session.sharedDevice.reduceMotion,
                         juce::dontSendNotification);
   motion.onClick = [this] {
@@ -103,6 +110,7 @@ Editor::Editor(Session &s) : session(s) {
     session.sharedDevice.save();
   };
   addAndMakeVisible(detach);
+  detach.setTooltip("Move the visualizer into\nits own resizable window.");
   detach.onClick = [this] {
     if (onDetach)
       onDetach();

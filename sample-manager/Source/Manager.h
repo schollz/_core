@@ -9,6 +9,11 @@ namespace core {
 struct ManagerState {
   Project project, completedProject;
   zv::LibraryState library;
+  // Editor-only source peaks are available before hardware rendering/commit.
+  std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
+  std::shared_ptr<const zv::Wave> editorWaveform(const String &sampleId) const;
+  String importedSampleId;
+  uint64_t importGeneration = 0;
   File root;
   String status = "Open a folder to begin", error;
   bool busy = false, available = false;
@@ -23,12 +28,14 @@ public:
   void import(const juce::StringArray &, int bank);
   void edit(const String &id, const String &label,
             std::function<void(Sample &)>);
+  void editMarkers(const String &id, std::vector<Marker>,
+                    std::array<std::vector<double>, 3>);
   void remove(const std::vector<String> &ids);
   void clearBank(int bank);
   void move(const std::vector<String> &ids, int bank, int delta = 0);
   void merge(const std::vector<String> &ids, int bank);
   void even(const String &id, int slices);
-  void detect(const String &id, String method, double spacing);
+  void detect(const String &id, int count, String method, double spacing);
   void settings(const card::Settings &);
   void undo();
   void redo();
@@ -45,11 +52,15 @@ private:
   void post(Command);
   void run();
   void publish(String status, String error = {});
-  void change(const String &label, const std::function<void(Project &)> &);
+  void change(const String &label, const std::function<void(Project &)> &,
+              const std::function<void()> &onAccepted = {});
   void persist();
   void save(uint64_t generation);
-  void prepareVisualization();
+  void prepareImportWaveforms();
+  void prepareVisualization(
+      std::function<void(const zv::LibraryState &)> progress = {});
   zv::LibraryState libraryState;
+  std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
   mutable std::mutex mutex;
   std::condition_variable wake;
   std::deque<Command> commands;
@@ -63,6 +74,8 @@ private:
   bool dirty = false, failed = false;
   bool commandRunning = false;
   String manifestHash;
+  String importedSampleId;
+  uint64_t importGeneration = 0;
   std::thread worker;
 };
 } // namespace core

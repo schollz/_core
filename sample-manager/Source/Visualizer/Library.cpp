@@ -21,6 +21,11 @@ juce::String fingerprint(const juce::File &f) {
          juce::String((juce::int64)s.st_mtimespec.tv_nsec) + ":" +
          juce::String((juce::int64)s.st_ctimespec.tv_sec) + ":" +
          juce::String((juce::int64)s.st_ctimespec.tv_nsec);
+#elif JUCE_LINUX
+  return result + ":" + juce::String((juce::int64)s.st_mtim.tv_sec) + ":" +
+         juce::String((juce::int64)s.st_mtim.tv_nsec) + ":" +
+         juce::String((juce::int64)s.st_ctim.tv_sec) + ":" +
+         juce::String((juce::int64)s.st_ctim.tv_nsec);
 #else
   return result + ":" + juce::String((juce::int64)s.st_mtime) + ":" +
          juce::String((juce::int64)s.st_ctime);

@@ -32,5 +32,6 @@ private:
   std::atomic<double> progress{0};
   std::mutex mutex;
   String result;
+  Tooltips tooltips{*this};
 };
 } // namespace core

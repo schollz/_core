@@ -11,6 +11,24 @@ DeviceView::DeviceView(Device &d, Look &l) : device(d), look(l) {
   input.setTextWhenNothingSelected("MIDI input");
   output.setTextWhenNothingSelected("MIDI output");
   volume.setTextWhenNothingSelected("Detected RP2040 bootloader volume");
+  input.setTooltip(
+      "Choose the MIDI input that receives status and telemetry from your instrument.");
+  output.setTooltip("Choose the MIDI output used to send commands to your instrument.");
+  volume.setTooltip(
+      "Choose the connected RP2040 bootloader volume that will receive the selected firmware.");
+  refreshButton.setTooltip("Scan again for MIDI ports and connected bootloader volumes.");
+  version.setTooltip(
+      "Ask the selected instrument for its firmware version. The reply appears in the log.");
+  reset.setTooltip("Stop playback and restart the selected instrument in USB bootloader mode. "
+                   "You will be asked to confirm.");
+  choose.setTooltip(
+      "Choose and check a UF2 firmware file from this computer. Selecting it does not flash it.");
+  write.setTooltip("Write the selected UF2 to the chosen bootloader volume after confirmation. "
+                   "The instrument restarts when the copy completes.");
+  fileLabel.setTooltip("The selected firmware file and detected product appear here.");
+  log.setTooltip("Recent MIDI connection, status and device messages. Select text to copy it.");
+  instructions.setTooltip(
+      "These ports connect the device independently of the sample editor and presentation.");
   instructions.setText(
       "Device connection is independent of the presentation and edited "
       "sample.\nVisualization needs opt-in telemetry firmware; normal firmware "
@@ -70,9 +88,11 @@ DeviceView::DeviceView(Device &d, Look &l) : device(d), look(l) {
             safe->fileLabel.setText(info.product + ": " +
                                         safe->image.getFileName(),
                                     juce::dontSendNotification);
+            safe->fileLabel.setTooltip(info.product + "\n" + safe->image.getFullPathName());
           } catch (const std::exception &e) {
             safe->image = File();
             safe->fileLabel.setText(e.what(), juce::dontSendNotification);
+            safe->fileLabel.setTooltip(e.what());
           }
         });
   };
@@ -161,6 +181,7 @@ void DeviceView::timerCallback() {
     if (result.isNotEmpty())
       error.setText(result, juce::dontSendNotification);
   }
+  error.setTooltip(error.getText());
 }
 void DeviceView::paint(juce::Graphics &g) { g.fillAll(look.theme.background); }
 void DeviceView::resized() {

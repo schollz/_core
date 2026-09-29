@@ -1,4 +1,6 @@
 #include "Storage.h"
+#include "NameMetadata.h"
+#include "Parallel.h"
 #if JUCE_WINDOWS
 #include <windows.h>
 #else
@@ -92,6 +94,8 @@ void rollback(const File &root, const File &dir, const var &j) {
 }
 } // namespace
 void durableWrite(const File &target, const void *bytes, size_t size) {
+  diagnostics::log("STORAGE", "Write " + target.getFullPathName() +
+                                  " bytes=" + String(juce::int64(size)));
   ensureDirectory(target.getParentDirectory());
   auto temp = target.getSiblingFile(target.getFileName() + ".tmp-" + uuid());
   {
@@ -149,6 +153,9 @@ ProjectLock::~ProjectLock() {
 }
 void Transaction::commit(const std::vector<Replacement> &requested,
                          const Project &completed) {
+  diagnostics::Scope trace("STORAGE", "Commit revision=" +
+      String(juce::int64(completed.revision)) + " replacements=" +
+      String(int(requested.size())));
   completed.validate();
   auto dir = child(root, ".core-manager/transactions/" + uuid());
   ensureDirectory(dir);
@@ -167,24 +174,28 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     auto &r = items[n];
     require(unique.insert(r.path).second, "Duplicate transaction destination");
     auto dest = child(root, r.path);
-    require(fingerprint(dest) == r.expected,
-            "External change detected: " + r.path +
-                ". Reload/reconcile before saving.");
+    require(fingerprint(dest, shouldCancel) == r.expected,
+            "External change detected: " + r.path + ". Reload/reconcile before saving.");
     var e = object();
     put(e, "path", r.path);
     put(e, "existed", dest.existsAsFile());
     put(e, "before", r.expected);
     put(e, "remove", r.staged == File());
-    put(e, "after",
-        r.staged == File() ? String("missing") : hashFile(r.staged));
+    auto after = r.staged == File() ? String("missing") : hashFile(r.staged, shouldCancel);
+    require(r.contentHash.isEmpty() || after == r.contentHash,
+            "Staged file changed while preparing save: " + r.path);
+    put(e, "after", after);
     if (dest.existsAsFile()) {
       auto backup = dir.getChildFile("backup/" + String(int(n)));
       copyChecked(dest, backup);
-      require(hashFile(backup) == r.expected,
-              "File changed while preparing backup");
+      require(hashFile(backup, shouldCancel) == r.expected, "File changed while preparing backup");
     }
-    if (r.staged != File())
-      copyChecked(r.staged, dir.getChildFile("new/" + String(int(n))));
+    if (r.staged != File()) {
+      auto staged = dir.getChildFile("new/" + String(int(n)));
+      copyChecked(r.staged, staged);
+      require(hashFile(staged, shouldCancel) == after,
+              "Staged file changed during preparation: " + r.path);
+    }
     entries.add(e);
   }
   put(journal, "state", "prepared");
@@ -195,7 +206,8 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     for (size_t n = 0; n < items.size(); ++n) {
       cancelled(shouldCancel);
       auto dest = child(root, items[n].path);
-      require(fingerprint(dest) == items[n].expected,
+      diagnostics::log("STORAGE", "Commit file " + items[n].path);
+      require(fingerprint(dest, shouldCancel) == items[n].expected,
               "External change detected during save: " + items[n].path);
       auto staged = dir.getChildFile("new/" + String(int(n)));
       if (staged.existsAsFile()) {
@@ -209,6 +221,7 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     put(journal, "state", "complete");
     durableJson(dir.getChildFile("journal.json"), journal);
   } catch (...) {
+    diagnostics::log("STORAGE", "Commit interrupted; rolling back " + dir.getFullPathName());
     rollback(root, dir, journal);
     throw;
   }
@@ -218,6 +231,7 @@ void Transaction::commit(const std::vector<Replacement> &requested,
   renameFile(dir, history);
 }
 void Transaction::recover(const File &root) {
+  diagnostics::Scope trace("STORAGE", "Recover " + root.getFullPathName());
   auto transactions = child(root, ".core-manager/transactions");
   for (auto dir : transactions.findChildFiles(File::findDirectories, false)) {
     require(!dir.isSymbolicLink(), "Unsafe transaction path");
@@ -267,11 +281,22 @@ void Storage::savePending(const Project &p) {
           "folder");
   durableJson(child(root, ".core-manager/pending.json"), p.json());
 }
-Project Storage::open() {
+Project Storage::open(std::function<void(double)> progress) {
+  diagnostics::Scope trace("STORAGE", "Open " + root.getFullPathName());
+  auto report = [&](double fraction) {
+    if (progress)
+      progress(fraction);
+  };
+  report(0.);
   Transaction::recover(root);
+  report(0.05);
   auto file = child(root, ".core-manager/project.json");
-  Project p =
-      file.existsAsFile() ? Project::fromJson(parseJson(file)) : adopt();
+  Project p = file.existsAsFile()
+                  ? Project::fromJson(parseJson(file))
+                  : adopt(true, [&](double fraction) {
+                      report(0.05 + 0.45 * fraction);
+                    });
+  report(0.50);
   auto pending = child(root, ".core-manager/pending.json");
   if (pending.existsAsFile()) {
     auto next = Project::fromJson(parseJson(pending));
@@ -286,31 +311,121 @@ Project Storage::open() {
       p.warnings.add("Recovered pending edits from the local recovery copy.");
     }
   }
-  for (const auto &[path, hash] : p.fingerprints)
-    if (fingerprint(child(root, path)) != hash)
+  report(0.55);
+  std::vector<std::pair<String, String>> checks(p.fingerprints.begin(),
+                                                p.fingerprints.end());
+  std::vector<String> hashes(checks.size());
+  {
+    diagnostics::Scope checksTrace("STORAGE", "Verify file fingerprints");
+    parallelFor(
+        checks.size(),
+        [&](size_t index) {
+          const auto &path = checks[index].first;
+          hashes[index] = fingerprint(child(root, path));
+        },
+        [&](size_t completed) {
+          report(0.55 + 0.40 * double(completed) / double(checks.size()));
+        });
+  }
+  for (size_t index = 0; index < checks.size(); ++index) {
+    const auto &[path, expected] = checks[index];
+    if (hashes[index] != expected)
       p.warnings.addIfNotAlreadyThere("External change: " + path +
                                       ". Reload/reconcile before saving.");
-  for (const auto &s : p.samples)
+  }
+  report(0.95);
+  size_t checked = 0;
+  for (const auto &s : p.samples) {
     if (!s.protectedEntry)
       require(child(root, s.source).existsAsFile(),
               "Missing original: " + s.name);
+    report(0.95 + 0.05 * double(++checked) / double(p.samples.size()));
+  }
+  report(1.);
+  queueNameBackfill(p);
+  diagnostics::log("STORAGE",
+                   "Loaded samples=" + String(int(p.samples.size())) +
+                       " warnings=" + p.warnings.joinIntoString(" | "));
   return p;
 }
-Project Storage::adopt(bool writeManifest) {
+void Storage::queueNameBackfill(Project &p) {
+  bool needsSave = false;
+  for (const auto &s : p.samples) {
+    auto primary = p.fingerprints.find(card::path(s.bank, s.slot));
+    auto metadata = names::read(
+        root, s.bank, s.slot,
+        primary == p.fingerprints.end() ? String() : primary->second);
+    if (metadata.status == names::Metadata::invalid)
+      p.warnings.addIfNotAlreadyThere(metadata.warning);
+    if (!s.protectedEntry &&
+        (metadata.status == names::Metadata::missing ||
+         (metadata.status == names::Metadata::valid &&
+          (metadata.name != s.name ||
+           metadata.originalFilename != s.originalFilename ||
+           std::find(s.ownedPaths.begin(), s.ownedPaths.end(),
+                     names::path(s.bank, s.slot)) == s.ownedPaths.end()))))
+      needsSave = true;
+  }
+  // A normal pending save writes the names with the completed audio. Keep the
+  // sample revisions unchanged so backfill alone cannot rewrite WAV or .info.
+  if (needsSave && p.revision == p.completedRevision)
+    ++p.revision;
+}
+Project Storage::adopt(bool writeManifest,
+                       std::function<void(double)> progress) {
+  diagnostics::Scope trace("STORAGE", "Adopt card " + root.getFullPathName());
   Project p;
   p.settings = card::readSettings(root, p.warnings);
+  // Enumerate each bank once instead of stat-ing every possible variant of
+  // every empty slot. Unknown files stay outside the ownership set.
+  std::set<String> present;
+  for (int b = 0; b < 16; ++b) {
+    const auto bank = "bank" + String(b + 1);
+    const auto directory = child(root, bank);
+    if (directory.isDirectory())
+      for (const auto &file : directory.findChildFiles(File::findFiles, false))
+        present.insert(bank + "/" + file.getFileName());
+  }
+  std::vector<String> paths;
+  for (int b = 0; b < 16; ++b)
+    for (int slot = 0; slot < 16; ++slot)
+      for (int variant = 0; variant <= 9; ++variant)
+        for (const auto &suffix : juce::StringArray{"", ".info"}) {
+          auto path = card::path(b, slot, variant) + suffix;
+          if (present.count(path))
+            paths.push_back(path);
+        }
+  std::vector<String> hashes(paths.size());
+  {
+    diagnostics::Scope checksTrace("STORAGE", "Hash adopted card files");
+    parallelFor(
+        paths.size(),
+        [&](size_t index) {
+          hashes[index] = hashFile(child(root, paths[index]));
+        },
+        [&](size_t completed) {
+          if (progress)
+            progress(0.45 * double(completed) / double(paths.size()));
+        });
+  }
+  for (size_t index = 0; index < paths.size(); ++index)
+    p.fingerprints[paths[index]] = hashes[index];
   for (int b = 0; b < 16; ++b)
     for (int slot = 0; slot < 16; ++slot) {
+      if (progress)
+        progress(0.45 + 0.55 * double(b * 16 + slot) / 256.);
       auto relative = card::path(b, slot);
-      auto wav = child(root, relative);
-      auto info = child(root, relative + ".info");
-      bool occupied = wav.existsAsFile() || info.existsAsFile();
+      bool occupied =
+          present.count(relative) || present.count(relative + ".info");
       for (int variant = 1; variant <= 9 && !occupied; ++variant)
-        occupied =
-            child(root, card::path(b, slot, variant)).existsAsFile() ||
-            child(root, card::path(b, slot, variant) + ".info").existsAsFile();
+        occupied = present.count(card::path(b, slot, variant)) ||
+                   present.count(card::path(b, slot, variant) + ".info");
       if (!occupied)
         continue;
+      auto wav = child(root, relative);
+      auto info = child(root, relative + ".info");
+      diagnostics::log("STORAGE", "Adopt bank=" + String(b + 1) +
+                                      " slot=" + String(slot + 1));
       Sample s;
       s.bank = b;
       s.slot = slot;
@@ -319,12 +434,24 @@ Project Storage::adopt(bool writeManifest) {
       for (int v = 0; v <= 9; ++v)
         for (const auto &suffix : juce::StringArray{"", ".info"}) {
           auto path = card::path(b, slot, v) + suffix;
-          auto f = child(root, path);
-          if (f.existsAsFile()) {
+          if (present.count(path))
             s.ownedPaths.push_back(path);
-            p.fingerprints[path] = hashFile(f);
-          }
         }
+      auto namePath = names::path(b, slot);
+      auto primaryHash = p.fingerprints.find(relative);
+      auto metadata = names::read(
+          root, b, slot,
+          primaryHash == p.fingerprints.end() ? String() : primaryHash->second);
+      if (metadata.status == names::Metadata::valid) {
+        s.originalFilename = metadata.originalFilename;
+        if (metadata.name.isNotEmpty())
+          s.name = metadata.name;
+        else if (metadata.originalFilename.isNotEmpty())
+          s.name = metadata.originalFilename;
+        s.ownedPaths.push_back(namePath);
+        p.fingerprints[namePath] = metadata.fingerprint;
+      } else if (metadata.status == names::Metadata::invalid)
+        p.warnings.add(metadata.warning);
       try {
         juce::MemoryBlock bytes;
         require(info.loadFileAsData(bytes), "Missing .info");
@@ -390,17 +517,37 @@ Project Storage::adopt(bool writeManifest) {
   for (const auto &[path, enabled] : card::settingsFiles(p.settings))
     p.fingerprints[path] = fingerprint(child(root, path));
   p.validate();
-  if (writeManifest)
-    durableJson(child(root, ".core-manager/project.json"), p.json());
+  if (writeManifest) {
+    const auto settingsFolder = child(root, "settings");
+    if (p.samples.empty() && present.empty() && !settingsFolder.existsAsFile() &&
+        settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
+      diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
+      p.settings = card::defaultSettings();
+      auto marker = child(root, ".core-manager/cache/empty-marker");
+      durableWrite(marker, "", 0);
+      const auto emptyHash = hashFile(marker);
+      std::vector<Replacement> replacements;
+      for (const auto &[path, enabled] : card::settingsFiles(p.settings)) {
+        p.fingerprints[path] = enabled ? emptyHash : String("missing");
+        if (enabled)
+          replacements.push_back({path, marker, "missing", emptyHash});
+      }
+      // Settings and the first manifest become durable together. Recovery can
+      // retry initialization even if rollback left empty settings directories.
+      Transaction tx(root);
+      tx.commit(replacements, p);
+    } else
+      durableJson(child(root, ".core-manager/project.json"), p.json());
+  }
+  if (progress)
+    progress(1.);
   return p;
 }
 void Storage::duplicateTo(const File &destination) {
-  require(destination != root && !destination.isAChildOf(root) &&
-              !root.isAChildOf(destination),
+  require(destination != root && !destination.isAChildOf(root) && !root.isAChildOf(destination),
           "Choose a separate project folder");
   require(!destination.exists() ||
-              destination.findChildFiles(File::findFilesAndDirectories, false)
-                  .isEmpty(),
+              destination.findChildFiles(File::findFilesAndDirectories, false).isEmpty(),
           "Duplicate destination must be empty");
   require(destination.createDirectory().wasOk(),
           "Cannot create duplicate folder");

@@ -29,5 +29,6 @@ private:
   void timerCallback() override { refresh(); }
   std::shared_ptr<zv::MidiLink> link;
   bool telemetryRequested = false;
+  String lastDiagnosticState;
 };
 } // namespace core

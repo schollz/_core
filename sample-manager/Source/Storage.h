@@ -22,6 +22,7 @@ struct Replacement {
   String path;
   File staged;
   String expected;
+  String contentHash; // optional planned hash of staged bytes
 }; // empty staged = removal
 class Transaction {
 public:
@@ -39,12 +40,14 @@ class Storage {
 public:
   explicit Storage(File projectRoot);
   File root;
-  Project open();
+  Project open(std::function<void(double)> progress = {});
   String importSource(const File &, String &hash);
   void savePending(const Project &);
   void duplicateTo(const File &destination);
   void cleanup(const Project &, bool recoveryHistory);
-  Project adopt(bool writeManifest = true);
+  Project adopt(bool writeManifest = true,
+                std::function<void(double)> progress = {});
+  void queueNameBackfill(Project &);
 
 private:
   ProjectLock lock;

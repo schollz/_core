@@ -20,5 +20,6 @@ private:
   juce::OwnedArray<juce::TextButton> banks, effects;
   std::array<std::unique_ptr<juce::Drawable>, 7> runes;
   juce::Label heading;
+  Tooltips tooltips{*this};
 };
 } // namespace core

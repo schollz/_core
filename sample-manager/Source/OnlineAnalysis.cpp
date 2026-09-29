@@ -42,6 +42,7 @@ void OnlineAnalysis::start(const File &source, double duration,
   stopped = false;
   running = true;
   worker = std::thread([this, source, duration, done = std::move(done)] {
+    diagnostics::Scope trace("ONLINE", "Drum analysis " + source.getFullPathName());
     Lanes lanes;
     String error;
     auto dir = File::getSpecialLocation(File::tempDirectory)
@@ -94,6 +95,7 @@ void OnlineAnalysis::start(const File &source, double duration,
       }
       require(request->connect(nullptr),
               "Drum analysis could not connect. Local markers are unchanged.");
+      diagnostics::log("ONLINE", "Response HTTP " + String(request->getStatusCode()));
       require(request->getStatusCode() == 200,
               "Drum-analysis service returned HTTP " +
                   String(request->getStatusCode()));
@@ -116,6 +118,7 @@ void OnlineAnalysis::start(const File &source, double duration,
       lanes = parse(juce::JSON::parse(response.toString()), duration);
     } catch (const std::exception &e) {
       error = e.what();
+      diagnostics::log("ONLINE", "Error: " + error);
     }
     {
       std::lock_guard<std::mutex> lock(mutex);

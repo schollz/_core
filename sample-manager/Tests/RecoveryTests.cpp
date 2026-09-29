@@ -12,11 +12,18 @@ void crashTransaction(const File &root) {
   auto project = storage.open();
   auto replacement = child(root, ".core-manager/cache/crash-stage");
   durableWrite(replacement, "after", 5);
+  auto nameStage = child(root, ".core-manager/cache/crash-name");
+  durableWrite(nameStage, "new name", 8);
   project.revision = project.completedRevision = 1;
   Transaction tx(root);
-  tx.afterMutation = [](int) { std::_Exit(77); };
+  tx.afterMutation = [](int mutation) {
+    if (mutation == 1)
+      std::_Exit(77);
+  };
   tx.commit(
-      {{"bank1/probe", replacement, fingerprint(child(root, "bank1/probe"))}},
+      {{"bank1/probe", replacement, fingerprint(child(root, "bank1/probe"))},
+       {"bank1/0.name.json", nameStage,
+        fingerprint(child(root, "bank1/0.name.json"))}},
       project);
 }
 int diskFullTest(const File &root) {
@@ -114,6 +121,7 @@ void recoveryTests() {
     Storage storage(root);
     storage.open();
     durableWrite(child(root, "bank1/probe"), "before", 6);
+    durableWrite(child(root, "bank1/0.name.json"), "old name", 8);
   }
   juce::ChildProcess childProcess;
   require(childProcess.start(juce::StringArray{
@@ -126,10 +134,14 @@ void recoveryTests() {
           "Abrupt process exit during journaled replacement");
   require(child(root, "bank1/probe").loadFileAsString() == "after",
           "Crash leaves a partially applied transaction");
+  require(child(root, "bank1/0.name.json").loadFileAsString() == "new name",
+          "Crash occurs after both audio and name mutations");
   {
     Storage storage(root);
     auto project = storage.open();
     require(child(root, "bank1/probe").loadFileAsString() == "before" &&
+                child(root, "bank1/0.name.json").loadFileAsString() ==
+                    "old name" &&
                 project.completedRevision == 0,
             "Reopen rolls back process crash before resuming");
   }

@@ -9,6 +9,9 @@ void WaveformEditor::set(const Sample *s,
   if (dragging)
     return;
   bool identity = !s || !hasSample || sample.id != s->id;
+  if (s && (identity || peaks != cached))
+    diagnostics::log("WAVEFORM", "Display sample=" + s->id + " name=" + s->name +
+                                     " ready=" + String(cached && !cached->peaks.empty() ? 1 : 0));
   hasSample = s != nullptr;
   if (s)
     sample = *s;
@@ -24,6 +27,28 @@ void WaveformEditor::setPosition(double p) {
     playhead = p;
     repaint();
   }
+}
+void WaveformEditor::setTransientLanesVisible(bool visible) {
+  showTransientLanes = visible;
+  if (!visible)
+    lane = -1;
+  repaint();
+}
+String WaveformEditor::getTooltip() {
+  if (!hasSample)
+    return "Select a sample to view and edit its waveform.";
+  if (sample.protectedEntry)
+    return sample.problem;
+  String tip;
+  if (lane < 0)
+    tip = "Slices: click between boundaries to audition a slice. Right-click to add a boundary. "
+          "Drag a boundary to move it; double-click an internal boundary to remove it.";
+  else {
+    const char *names[]{"Kick", "Snare", "Other"};
+    tip = String(names[lane]) + " markers: click an empty position to add a marker. "
+                                "Drag a marker to move it; double-click it to remove it.";
+  }
+  return tip + "\nWheel to zoom. Shift-wheel or middle-drag to pan.";
 }
 double WaveformEditor::at(float px) const {
   return juce::jlimit(
@@ -67,7 +92,8 @@ void WaveformEditor::paint(juce::Graphics &g) {
     return;
   }
   auto wave = area;
-  wave.removeFromBottom(56);
+  if (showTransientLanes)
+    wave.removeFromBottom(56);
   g.setColour(look.theme.wave);
   if (peaks && !peaks->peaks.empty()) {
     float channelHeight = float(wave.getHeight()) / float(peaks->peaks.size());
@@ -100,19 +126,21 @@ void WaveformEditor::paint(juce::Graphics &g) {
     g.drawText(String(int(n + 1)), int(px) + 4, wave.getY() + 3, 30, 16,
                juce::Justification::left);
   }
-  const juce::Colour colours[]{juce::Colour(0xffb13f48),
-                               juce::Colour(0xff386bc4),
-                               juce::Colour(0xff568243)};
-  const char *names[]{"KICK", "SNARE", "OTHER"};
-  for (int l = 0; l < 3; ++l) {
-    float y = float(wave.getBottom() + 10 + l * 17);
-    g.setColour(colours[l].withAlpha(l == lane ? 1.f : .6f));
-    g.drawText(names[l], area.getX() + 4, int(y) - 7, 60, 15,
-               juce::Justification::left);
-    for (auto t : sample.transients[size_t(l)]) {
-      auto px = x(t / sample.sourceDuration);
-      if (px >= area.getX() && px < area.getRight())
-        g.fillEllipse(px - 3, y - 3, 6, 6);
+  if (showTransientLanes) {
+    g.setColour(look.theme.sidebar);
+    g.drawHorizontalLine(wave.getBottom(), float(area.getX()), float(area.getRight()));
+    const juce::Colour colours[]{juce::Colour(0xffb13f48), juce::Colour(0xff386bc4),
+                                 juce::Colour(0xff568243)};
+    const char *names[]{"KICK", "SNARE", "OTHER"};
+    for (int l = 0; l < 3; ++l) {
+      float y = float(wave.getBottom() + 10 + l * 17);
+      g.setColour(colours[l].withAlpha(l == lane ? 1.f : .6f));
+      g.drawText(names[l], area.getX() + 4, int(y) - 7, 60, 15, juce::Justification::left);
+      for (auto t : sample.transients[size_t(l)]) {
+        auto px = x(t / sample.sourceDuration);
+        if (px >= area.getX() && px < area.getRight())
+          g.fillEllipse(px - 3, y - 3, 6, 6);
+      }
     }
   }
   if (playhead >= 0) {

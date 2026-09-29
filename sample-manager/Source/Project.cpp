@@ -5,6 +5,7 @@ var Sample::json() const {
   var o = object();
   put(o, "id", id);
   put(o, "name", name);
+  put(o, "originalFilename", originalFilename);
   put(o, "source", source);
   put(o, "sourceHash", sourceHash);
   put(o, "originalArchive", originalArchive);
@@ -63,6 +64,7 @@ Sample Sample::fromJson(const var &o) {
   Sample s;
   s.id = o["id"].toString();
   s.name = o["name"].toString();
+  s.originalFilename = o["originalFilename"].toString();
   s.source = o["source"].toString();
   s.sourceHash = o["sourceHash"].toString();
   s.originalArchive = o["originalArchive"].toString();
@@ -151,6 +153,27 @@ Project Project::fromJson(const var &o) {
     for (const auto &x : *w)
       p.warnings.add(x.toString());
   p.validate();
+  // Older versions stored warnings for valid zero positions. Recheck only
+  // these range warnings, keeping any real incompatibility (also when names
+  // repeat across banks) and all unrelated recovery warnings.
+  std::set<String> rangeWarnings, stillInvalid;
+  for (const auto &sample : p.samples) {
+    for (size_t lane = 0; lane < 3; ++lane) {
+      auto warning = sample.name + ": Transient lane " + String(int(lane + 1)) +
+                     " has a position outside the device's encoding range.";
+      rangeWarnings.insert(warning);
+      if (sample.protectedEntry)
+        stillInvalid.insert(warning);
+      for (auto t : sample.transients[lane]) {
+        const auto frame = std::round(t * sample.ratio() * 44100.);
+        if (frame >= 65536. * 16)
+          stillInvalid.insert(warning);
+      }
+    }
+  }
+  for (const auto &warning : rangeWarnings)
+    if (!stillInvalid.count(warning))
+      p.warnings.removeString(warning);
   return p;
 }
 Sample *Project::find(const String &id) {

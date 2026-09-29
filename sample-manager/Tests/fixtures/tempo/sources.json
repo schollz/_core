@@ -1,0 +1,29 @@
+[
+  {
+    "originalFilename": "Clean Medium DnB 3 - 135 bpm.wav",
+    "originalSha256": "dab2a93ae3a6dc689efa49d323a10842b64abd0acc2739cd2d6319dd81c7c818",
+    "fixture": "135-clean.wav",
+    "fixtureSha256": "eed585f1eac122bcd6d1e83da9ed6e042399c26cf8b1f7199f86f32a5914ae27",
+    "frames": 170625,
+    "sampleRate": 24000,
+    "expectedBpm": 135
+  },
+  {
+    "originalFilename": "Comp Medium DnB 3 - 135 bpm.wav",
+    "originalSha256": "ad96ba9c430b1f6ba6dab198e18ae15585bfaa27317026577c11a8e88ca9ffe8",
+    "fixture": "135-comp.wav",
+    "fixtureSha256": "bfc5fc61c089fe16980dde339e86d5e08c3d1e18298d8d98745200d46282bbaf",
+    "frames": 170625,
+    "sampleRate": 24000,
+    "expectedBpm": 135
+  },
+  {
+    "originalFilename": "Vintage Medium DnB 3 - 135 bpm.wav",
+    "originalSha256": "4f2a15b5ee16ce6bf038a66b129b6a79fb4893e07a6cb5902af0b0a919490218",
+    "fixture": "135-vintage.wav",
+    "fixtureSha256": "1a83d7e56d6284b731f65ed6e1fa1a30c05848165375e437433835bb74aab6f2",
+    "frames": 170625,
+    "sampleRate": 24000,
+    "expectedBpm": 135
+  }
+]

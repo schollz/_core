@@ -15,9 +15,13 @@ ctest --test-dir sample-manager/build/macos-arm64 --output-on-failure
 open 'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/Core Sample Manager.app'
 ```
 
-Use the `macos-x86_64` preset for Intel. Both target macOS 11 or newer. Build tools are Xcode command-line tools, CMake 3.22+, and Ninja. CMake downloads the pinned JUCE archive and verifies its SHA-256; an existing `.cache/JUCE-9.0.3.tar.gz` supports offline configuration. Rubber Band and the local onset detector are vendored and compiled statically. See [source provenance](Vendor/PROVENANCE.md).
+Use the `macos-x86_64` preset for Intel. Both target macOS 11 or newer. Build tools are Xcode command-line tools, CMake 3.22+, and Ninja. CMake downloads the pinned JUCE archive and verifies its SHA-256; an existing `.cache/JUCE-9.0.3.tar.gz` supports offline configuration. Rubber Band, SoundTouch's tempo detector, and the local onset detector are vendored and compiled statically. See [source provenance](Vendor/PROVENANCE.md).
 
-`make -C sample-manager run` selects the host preset; `PRESET`, `JOBS`, and `VERSION` are overridable. Windows uses the PowerShell scripts, and Linux uses the `linux-x86_64` preset. Native Windows/Linux qualification remains a later host step. [Packaging instructions](Release/README.md) include platform dependencies, signing options, and local archive creation.
+`make sample-manager-run` from the repository root (or `make -C sample-manager run`) selects the host preset and captures configuration, verbose compiler output, and runtime diagnostics in **`sample-manager/logs/sample-manager.log`** while also printing them in the terminal. The previous run is kept as `sample-manager.previous.log` in the same directory. The app stays attached to the terminal, including on macOS; quit the app to finish the session. Build and application failures still produce a nonzero exit code.
+
+Share the current log when reporting a problem. It includes timestamps, thread IDs, operation timings, local file paths, project loading/saving, waveform analysis, UI actions and layout bounds, slicing targets/results, playback configuration, MIDI connections, and errors. Runtime diagnostics work in Release builds and are enabled by this run command with `CORE_MANAGER_DEBUG=1`. Logs are ignored by version control. Override the destination with `make sample-manager-run LOG_FILE=/absolute/path/session.log`; `PRESET`, `JOBS`, and `VERSION` are also overridable.
+
+Windows uses the PowerShell scripts, and Linux uses the `linux-x86_64` preset. Native Windows/Linux qualification remains a later host step. [Packaging instructions](Release/README.md) include platform dependencies, signing options, and local archive creation.
 
 ```sh
 python3 scripts/package_sample_manager.py --platform macos-arm64 --version 0.1.0
@@ -28,12 +32,16 @@ These commands create local artifacts under `sample-manager/dist/`. Application 
 
 ## Use a portable folder
 
-1. Choose **Open Folder**, then select an empty folder or an existing Core card folder. The first launch offers a chooser within the manager shell. Later launches reopen the last available project.
-2. Select one of the 16 banks and use **Import**, or drop audio files into the window. WAV, AIFF/AIF, FLAC, MP3, Ogg, and Renoise XRNI work offline. Each bank holds 16 samples; an overflowing import reports an error and never wraps to the first slot.
+1. In the empty manager, choose **Create project** and enter a new folder name and location, or choose **Open a project folder** to use an existing folder. Creating a project initializes its settings through the same opening flow; cancellation leaves the project unchanged, and existing destinations are refused. **Open Folder** in the toolbar opens an empty folder or an existing Core card folder. Later launches reopen the last available project.
+2. Select one of the 16 banks and use **Import**, or drop audio files into the window. WAV, AIFF/AIF, FLAC, MP3, Ogg, and Renoise XRNI work offline. The first sample in a successful import batch is selected automatically. Files without embedded slice markers start with 16 even slices (fewer for audio too short to encode 16 nonempty slices). Each bank holds 16 samples; an overflowing import reports an error and never wraps to the first slot.
 3. Select samples to edit, preview, reorder, merge, remove, or move them to another bank. Shift/Command selection works in the list. A merge follows list order, uses each sample's current audio settings, and leaves the original entries available.
 4. Wait for **Ready** before using the hardware output. Processing and Saving indicate unfinished work. Ready means the output transaction and completed manifest have finished.
 
-Slots appear as 1–16 in the app and use 0–15 in hardware filenames. **Reveal** opens the project folder; **Recent** reopens a previous folder. **Duplicate** copies the complete portable project into a new empty folder.
+Opening a folder displays **Opening folder...x%** as card adoption, file checks, and waveform preparation complete. Progress follows completed work in those stages; it is not an estimate of elapsed time.
+
+File checks read complete SHA-256 hashes through a 256 KiB buffer and use up to four workers. First-time card adoption enumerates each bank once and hashes recognized files concurrently. This retains the full external-change checks while avoiding thousands of unnecessary file probes and tiny disk reads. Waveform analysis also uses buffered reads; its existing cache is reused on later opens.
+
+Banks and sample slots occupy two adjacent vertical strips with matching tile sizes. The selected bank shares its background with the sample strip. Sample tiles show 01–16 and a filename when recorded; hover to read a long filename in full. Slots use 0–15 in hardware filenames. Switching banks restores the last selected sample in each bank while that project is open. If there is no remembered sample, the first occupied slot is selected automatically; empty banks stay unselected. This also works when clicking the initially active bank. **Reveal** opens the project folder; **Recent** reopens a previous folder. **Duplicate** copies the complete portable project into a new empty folder.
 
 ```text
 project/
@@ -41,6 +49,7 @@ project/
   bank1/0.0.wav.info
   bank1/0.1.wav
   bank1/0.1.wav.info
+  bank1/0.name.json
   ...
   settings/
   .core-manager/
@@ -51,25 +60,47 @@ project/
     recovery/
 ```
 
-Keep `.core-manager` when moving or copying an editable project. Its manifest uses relative paths and stable sample IDs. Source files are addressed by content hash and never stretched in place. Existing cards are adopted without rewriting their audio; unpadded `.0.wav` audio becomes a clearly identified recovered source when no original exists. Original filenames, recording resolution, and pre-normalized recordings cannot be recovered from a card. Damaged or unsupported entries remain protected, and unrelated files, savefiles, and unknown settings are preserved.
+Keep `.core-manager` when moving or copying an editable project. Its manifest uses relative paths and stable sample IDs. Source files are addressed by content hash and never stretched in place. Existing cards are adopted without rewriting their audio; unpadded `.0.wav` audio becomes a clearly identified recovered source when no original exists. Recording resolution and pre-normalized recordings cannot be recovered from a card. Damaged or unsupported entries remain protected, and unrelated files, savefiles, and unknown settings are preserved.
+
+Copying whole bank folders preserves sample names automatically, even without `.core-manager`. Each numbered sample has a UTF-8 sidecar such as `bank1/0.name.json`, shared by its primary WAV and companion variants. When copying an individual sample, include its sidecar along with its numbered WAV and `.info` files. If you change its slot number, change the sidecar's slot number too. The website includes these sidecars in full sample packs; settings-only packs are unchanged.
+
+The sidecar records an editable display name, the imported basename (including the extension, or the XRNI archive filename), and the SHA-256 of the complete primary `.0.wav`. Renaming changes only the display name. Newly merged samples and older projects with no recorded original filename use an empty original filename. Older cards without recorded names retain generic labels. Existing native projects keep their names and automatically save missing sidecars through the normal transaction.
+
+Recovery uses only the sidecar in the same slot whose audio hash matches. Missing or unusable metadata never prevents audio from opening. Malformed, unsupported, oversized (over 64 KiB), and mismatched sidecars are preserved with a warning that filename persistence was skipped; remove or repair those files outside the app, then reconcile to resume persistence. An intact native project remains authoritative for names while its primary audio is unchanged. Replaced audio gets its matching sidecar names or a generic label. The sidecars do not change numbered WAV filenames, binary `.info` formats, or firmware requirements.
 
 ## Edit and preview
 
-Click within a slice to audition it. **Play / Stop** previews the whole completed rendering. Right-click adds a slice boundary; drag moves it; double-click removes it. The mouse wheel zooms, and Shift-wheel or middle-drag pans. Select Kick, Snare, or Other in the marker selector to add, move, or remove transient markers. A completed drag is one undo operation.
+Imported samples display a source waveform before background rendering and saving finish. The editor switches to the completed waveform when available; playback and the device visualizer use completed output. Source peaks are kept in memory and shared for identical imported audio, and pending imports regain their waveform when reopened.
 
-**Even slices** divides the sample into the requested count. **Auto slice** uses the local onset detector, starting with HFC and a 15 ms refinement window. Detector method and minimum spacing are in the advanced controls. Local slicing never contacts a service. Imports preserve supported WAV cue/loop markers, XRNI slices, OP-1 AIFF markers, and the website's custom AIFF/Ogg slice metadata.
+During batch imports, the footer shows the current filename and file count, followed by waveform preparation, audio processing, and saving. An activity bar remains animated while work is in progress.
 
-**Source BPM** describes the source. Leave **Render BPM** empty to retain its tempo. Setting a render BPM changes duration by `source BPM / render BPM`; **Preserve pitch** is initially enabled and uses offline Rubber Band's finer engine with stereo channels together. Disabling it explicitly changes speed and pitch. Renders always start from the immutable original. Slice and transient positions follow the rendered timeline, and preview uses the same completed rendering as the output. **Tempo matching** separately controls subsequent behavior on the instrument.
+Below the waveform, interaction tips come first, followed by editing tools, source/channel/playback settings, playback options and sample actions. **Advanced** starts collapsed and remembers its expansion across sample and bank selections for the current session. It contains tempo processing (Render BPM and Preserve pitch), variable splice timing, auto-slice tuning and online analysis. Collapsing it keeps all settings and lets the waveform grow. At narrow widths, related controls wrap together; when expanded controls need more height, they scroll below the waveform.
 
-Channel mode, playback mode, one-shot behavior, splice ticks, and variable timing retain their card-format meaning. Newly rendered audio is normalized to −6 dB peak, written as canonical 16-bit PCM at 44.1 kHz, and circularly padded by half a second at both ends. Adopted 88.2 kHz settings are retained. The eight-times companion is generated unless one-shot is on and tempo matching is off.
+Click within a slice to audition it. **Play / Stop** previews the whole completed rendering. Right-click adds a slice boundary; drag moves it; double-click removes it. Manual slice-boundary edits enable **Variable splice timing**, which stays on through subsequent edits until you turn it off or choose **Even slices**. Editing transient markers alone leaves that setting unchanged. The mouse wheel zooms, and Shift-wheel or middle-drag pans. Select Kick, Snare, or Other in the marker selector to add, move, or remove transient markers. A completed drag and its timing setting form one undo operation.
 
-Hardware supports at most 255 slices and 16 markers per transient lane, with a bounded 16-frame transient encoding. The project retains full-resolution editing data. An unrepresentable edit reports an actionable compatibility error and leaves the last completed hardware files intact; reduce or move the markers, or undo the edit, to finish saving.
+**Even slices** divides the sample into the requested count and turns off **Variable splice timing**. **Auto slice**, beside it, uses the same count as a target and turns on **Variable splice timing**. Auto slicing uses the local onset detector, starting with HFC and a 15 ms refinement window, and selects the strongest detected attacks. The first slice starts at zero, so a target of 16 needs 15 internal cuts. Sparse audio or minimum-spacing limits can yield fewer slices. Detector method and minimum spacing remain in the advanced controls. Slice markers and their timing toggle change together, including through undo/redo. Local slicing never contacts a service. Imports preserve supported WAV cue/loop markers, XRNI slices, OP-1 AIFF markers, and the website's custom AIFF/Ogg slice metadata.
 
-Keyboard shortcuts: Command/Ctrl-O opens a folder, Command/Ctrl-I imports, Command/Ctrl-Z undoes, Shift-Command/Ctrl-Z redoes, Space previews, and Delete removes selected entries. Text fields keep normal text-editing behavior. Tab navigates controls, and the list/editor divider and main window resize.
+**Source BPM** is initialized from an explicit filename label such as `135 bpm`, `bpm135`, or `123.5BPM`, then embedded tempo metadata. For unlabeled loops, the app first checks whether duration fits one plausible integer tempo with 2/4/8/16/... beats. Ambiguous lengths use the vendored SoundTouch BPM detector and even-beat loop alignment, with at most 45 seconds of audio analyzed in bounded blocks. Half/double-time ambiguity is inherent; check the result for unusual meters or very slow/fast loops. Silence, very short audio, or failed detection retain 120 as a fallback; `[TEMPO]` logs identify the source of the estimate. Existing project tempos are retained.
+
+Leave **Render BPM** empty to retain the source tempo. Setting a render BPM changes duration by `source BPM / render BPM`; **Preserve pitch** is initially off, so this changes speed and pitch. Enabling it uses offline Rubber Band's finer engine with stereo channels together. Renders always start from the immutable original. Slice and transient positions follow the rendered timeline, and preview uses the same completed rendering as the output. **Tempo matching** separately controls subsequent behavior on the instrument.
+
+Channel mode, playback mode, one-shot behavior, and variable timing retain their card-format meaning. Splice ticks remain stored in the card format but are hidden in the editor, matching the website. The sample subtitle shows duration and output sample rate. Newly rendered audio is normalized to −6 dB peak, written as canonical 16-bit PCM at 44.1 kHz, and circularly padded by half a second at both ends. Adopted 88.2 kHz settings are retained. The eight-times companion is generated unless one-shot is on and tempo matching is off.
+
+Hardware supports at most 255 slices and 16 markers per transient lane, with a bounded 16-frame transient encoding. Counted zero positions are valid loop-start markers and are retained when adopting or editing cards. The project retains full-resolution editing data. An unrepresentable edit reports an actionable compatibility error identifying the bank and sample, and leaves the last completed hardware files intact; reduce or move the markers, or undo the edit, to finish saving.
+
+Keyboard shortcuts: Command/Ctrl-O opens a folder, Command/Ctrl-I imports, Command/Ctrl-Z undoes, Shift-Command/Ctrl-Z redoes, Space previews, and Delete removes selected entries. Text fields keep normal text-editing behavior. Tab navigates controls, and the visualizer/editor divider and main window resize.
 
 ## Presentation and device settings
 
+Opening a new folder initializes its `settings` files before any audio is imported. General settings use the existing app defaults; effect bank 1 enables only Time Stretch, and banks 2–7 use the website presets. The initial settings and project manifest are written in one recoverable transaction. Existing card settings are retained.
+
 The presentation selector changes branding and the settings controls shown for each product. It remembers your choice and does not convert audio or reconnect MIDI.
+
+Hover over controls for help with their behavior and relevant shortcuts, including in Settings and Device tools. Waveform help follows the selected slice or transient lane. Tooltips, dropdown fields, open menus and text inputs use the current theme's background, with contrasting text, selection highlights and focus borders. The visualizer uses its own dark theme for its menus and tooltips, both docked and detached.
+
+Zeptocore hides **One-shot**, the Kick/Snare/Other waveform lanes and their marker-selector options. The waveform uses the freed lane space. Switching presentations preserves one-shot settings and transient markers; Ezeptocore and Ectocore show them again. Their transient lanes have a thin separator above Kick that matches the waveform outline.
+
+Ezeptocore and Zeptocore display a header rune from the website's seven symbols, with a stable choice for each project. Ectocore uses its logo.
 
 | Presentation | Appearance | Effect selection |
 | --- | --- | --- |
@@ -98,6 +129,8 @@ The display estimates source position and spectrum; it does not measure the inst
 
 Edits save automatically after a short debounce. Metadata edits leave audio unchanged; slot moves reuse completed audio. Superseded render jobs are canceled, and late results cannot replace a newer revision. Pending changes and undo history are stored separately from active hardware files.
 
+Before saving, full file verification uses up to four workers and reuses those verified hashes while planning the same save. Hash reads cancel between buffered chunks when a new edit arrives, allowing queued actions such as Auto slice to proceed. Unchanged filename sidecars are reused. Actual replacements still undergo transaction conflict checks and verification of staged bytes.
+
 Output replacements use staged files, backups, and a recoverable journal on the destination filesystem. The manifest commits after the output set. Multiple renames are not an atomic filesystem operation: reopening rolls back an interrupted transaction before resuming pending work. Only one manager instance can write a project.
 
 Disk-full, permission, and disconnected-volume errors retain completed output and pending state, including a local recovery copy. After fixing the cause, choose **More → Retry pending save**. Externally changed owned files block replacement. **More → Reload / reconcile completed card** adopts current card contents while preserving edits and originals in recovery; the reload can be undone. **Clean unused originals and recovery history** explicitly clears unused data and undo/redo after confirmation.
@@ -106,6 +139,6 @@ On macOS, preferences, local recovery, and the last completed visualizer cache l
 
 ## Explicit online analysis
 
-**Analyze drums online** sends the chosen source as mono 44.1 kHz Ogg to `https://tool.getectocore.com/drumextract`. It is the only application action that initiates a network request. Click again to cancel. Timeouts, invalid replies, or a sample revision change leave current markers usable. The response supplies kick/snare/other markers; downloadable separated stems are outside this API contract.
+**Advanced → Analyze drums online** sends the chosen source as mono 44.1 kHz Ogg to `https://tool.getectocore.com/drumextract`. It is the only application action that initiates a network request. Collapsing Advanced leaves analysis running and shows an activity indicator beside its label. Reopen it and click **Cancel online analysis** to cancel. Timeouts, invalid replies, or a sample revision change leave current markers usable. The response supplies kick/snare/other markers; downloadable separated stems are outside this API contract.
 
 See [validation evidence and remaining host/device checks](VALIDATION.md) and the [implementation map](IMPLEMENTATION.md).

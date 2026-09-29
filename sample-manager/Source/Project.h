@@ -6,12 +6,12 @@ struct Marker {
   int type = 0;
 };
 struct Sample {
-  String id = uuid(), name, source, sourceHash, originalArchive,
+  String id = uuid(), name, originalFilename, source, sourceHash, originalArchive,
          origin = "imported", problem;
   int bank = 0, slot = 0, channels = 1, rate = 44100, playMode = 0,
       spliceTrigger = 96;
   double sourceBpm = 120, renderBpm = 0, sourceDuration = 0;
-  bool preservePitch = true, tempoMatch = true, oneShot = false,
+  bool preservePitch = false, tempoMatch = true, oneShot = false,
        spliceVariable = false, protectedEntry = false;
   int64_t revision = 1, completedRevision = 0;
   String rendered, companion, renderKey;
