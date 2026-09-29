@@ -1,0 +1,20 @@
+<svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="azurite" transform="matrix(1,0,0,1,-0.25,0.111111)">
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,861.027L226.923,886.355"
+                                        style="fill:none;stroke:#1a1a1a;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,869.715L242.693,869.715"
+                                        style="fill:none;stroke:#1a1a1a;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path
+                                        d="M242.693,869.715C242.693,869.715 235.243,879.001 235.243,883.816C235.243,893.689 247.575,893.689 247.575,883.816"
+                                        style="fill:none;stroke:#1a1a1a;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>

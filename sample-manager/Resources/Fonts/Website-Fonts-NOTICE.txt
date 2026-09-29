@@ -1,0 +1,25 @@
+Native SFNT files reconstructed losslessly from this repository’s website WOFF table data. Embedded copyright and license metadata follows.
+
+MonaspaceKrypton-Regular.otf / name 1: Monaspace Neon
+
+MonaspaceKrypton-Regular.otf / name 7: Copyright 2023 GitHub, Inc. (https://github.com/githubnext/monaspace), with Reserved Font Names 'Monaspace', 'Monaspace Argon', 'Monaspace Neon', 'Monaspace Xenon', 'Monaspace Radon', and 'Monaspace Krypton'.
+
+MonaspaceKrypton-Regular.otf / name 8: Lettermatic
+
+MonaspaceKrypton-Regular.otf / name 9: Riley Cran & the Lettermatic Team
+
+MonaspaceKrypton-Regular.otf / name 11: https://lettermatic.com
+
+MonaspaceKrypton-Regular.otf / name 13: SIL Open Font License 1.1 https://github.com/githubnext/monaspace/blob/main/LICENSE
+
+odin-rounded.regular.otf / name 0: Copyright (c) 2013 by Frank Hemmekam. All rights reserved.
+
+odin-rounded.regular.otf / name 1: Odin Rounded
+
+odin-rounded.regular.otf / name 7: Odin Bold is a trademark of Frank Hemmekam.
+
+odin-rounded.regular.otf / name 8: Frank Hemmekam
+
+odin-rounded.regular.otf / name 12: https://www.behance.net/hemmekam
+
+odin-rounded.regular.otf / name 13: Contact the designer for more information.

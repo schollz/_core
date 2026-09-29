@@ -48,12 +48,14 @@ The firmware for the zeptocore is written in C, and instructions for building it
 
 Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
 
-### visualizer
+### core sample manager and visualizer
 
 <a href="https://www.youtube.com/watch?v=YlEtNIeCu6k">
 <img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
 </a>
 
+
+Previously published standalone visualizer downloads (legacy):
 
 | Platform | Download |
 | --- | --- |
@@ -62,7 +64,9 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 | macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) |
 | Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) |
 
-The [visualizer](visualizer-juce/README.md) follows playback over USB MIDI, showing waveforms, slices, and effects. Flash the visualizer UF2, then copy the **entire contents of your SD card** into a folder on your computer. In the visualizer, click **CHOOSE FOLDER** and select that folder (the one containing `bank1`, `bank2`, etc.), then connect your zeptocore over USB.
+[Core Sample Manager](sample-manager/README.md) is the current native application. Open a local project or card folder, import and edit samples, and wait for **Ready**; hardware files save continuously. Its integrated **Visualizer** follows either the device over USB MIDI or the app’s preview transport. It shares completed project data and keeps a local visualization cache for use after the card is removed. Device mode uses the existing opt-in visualizer firmware.
+
+The app has switchable Ezeptocore, Zeptocore, and Ectocore presentations, offline slicing and pitch-preserving BPM conversion, shared MIDI tools, and explicit local UF2 handling. [Build and package it locally](sample-manager/Release/README.md); no Core Sample Manager release has been published by this change. The former native standalone/AU/VST3 project is retired. The website and [browser/kiosk visualizer](visualizer/) remain available.
 
 
 ## diy
@@ -104,7 +108,7 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 *default firmware
 
-For the [visualizer](visualizer-juce/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](sample-manager/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
 
 To build and upload the default 441-frame, overclocked firmware with USB MIDI
 visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
@@ -114,7 +118,7 @@ only after the build succeeds.
 
 To build without uploading, run `make ezeptocore ZEPTOCORE_VISUALIZER=ON` or
 `make ectocore ZEPTOCORE_VISUALIZER=ON`. These opt-in builds use USB MIDI in place
-of USB serial and work with the existing [visualizer](visualizer-juce/README.md).
+of USB serial and work with the existing [visualizer](sample-manager/README.md).
 Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
 all visualizer code and state, even after building an enabled version in the
 same directory. The new commands use the default latency and clock settings.
@@ -152,7 +156,7 @@ For latency, normal latency will work for most, but choose low if you encounter 
 | Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_low_latency.uf2)                 |
 | Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking_low_latency.uf2) |
 
-For the [visualizer](visualizer-juce/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](sample-manager/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
 
 
 ### diy

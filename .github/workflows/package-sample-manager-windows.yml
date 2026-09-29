@@ -1,0 +1,46 @@
+name: Package Core Sample Manager - Windows
+
+# Explicit native-host qualification. No push/PR trigger or release publication.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Application version (major.minor.patch; independent of firmware)'
+        type: string
+        required: true
+        default: '0.1.0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sample-manager-windows-package
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build, test and package Windows x64
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      SAMPLE_MANAGER_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build with the static MSVC runtime and run contract tests
+        run: ./sample-manager/Release/build-windows.ps1 -Version $env:SAMPLE_MANAGER_VERSION
+      - name: Package local unsigned application
+        run: ./sample-manager/Release/package-windows.ps1 -Version $env:SAMPLE_MANAGER_VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-sample-manager-${{ inputs.version }}-windows-x64
+          path: |
+            sample-manager/dist/windows-x64-*/*.zip
+            sample-manager/dist/windows-x64-*/manifest.json
+            sample-manager/dist/windows-x64-*/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

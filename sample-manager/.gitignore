@@ -1,0 +1,5 @@
+/build*/
+/.cache/
+/dist/
+
+__pycache__/

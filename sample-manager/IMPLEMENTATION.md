@@ -1,0 +1,43 @@
+# Core Sample Manager implementation map
+
+The application implements the accepted [specification](SPECIFICATION.md) as an independent JUCE 9.0.3 project. Version 0.1.0 has native Apple Silicon acceptance and separate Apple Silicon/Intel packages. [VALIDATION.md](VALIDATION.md) records the evidence and remaining host/device checks.
+
+## Ownership and data flow
+
+| Area | Primary sources | Responsibility |
+| --- | --- | --- |
+| Project | `Source/Project.*` | Versioned manifest, stable IDs, assignments, sample/device settings, full-resolution markers and completed revision |
+| Card format | `Source/CardFormat.*` | Canonical WAVs, explicit little-endian `.info`, limits and settings marker interpretation |
+| Storage | `Source/Storage.*`, `Common.h` | Hashed originals, adoption, writer lock, external fingerprints, staged replacements, journal recovery, duplication and cleanup |
+| Worker | `Source/Manager.*` | Debounce, undo/redo, revision checks, cancellation, pending recovery, committed snapshots and status |
+| Audio | `Source/AudioProcessing.*` | Block decoding, structural import metadata, sinc resampling, offline Rubber Band, normalization/padding, merging and onset detection |
+| Preview | `Source/Preview.*` | Buffered completed-audio playback, slice audition, output-only audio and actual transport position |
+| Native UI | `Source/AppView.*`, `WaveformEditor.*`, `SettingsView.*`, `Theme.*` | Bank/list/editor layout, three presentations, markers, settings, navigation and preference migration |
+| Device tools | `Source/Device.*`, `DeviceView.*`, `Uf2.*`, `Visualizer/Midi.*` | Shared MIDI, reconnection, telemetry leases, commands/logs and explicit local UF2 validation/copy |
+| Visualizer | `Source/Visualizer/{Core,Library,Session,VisualizerView}.*` | Migrated protocol/playhead/rendering, committed caches, Device/Preview selection and lifecycle |
+| Online analysis | `Source/OnlineAnalysis.*` | Explicit mono 44.1 kHz Ogg request, cancellation/timeouts, bounded parsing and stale-revision rejection |
+
+UI commands address stable sample IDs. The worker owns storage mutations and rendering. Pending state is saved before work; a completed transaction advances the committed snapshot used by playback and visualization. The audio callback reads a buffered transport and performs no analysis, network request or write.
+
+## Storage and processing invariants
+
+- Originals are content-addressed under `.core-manager/sources/`; manifest paths are relative. Rendering never modifies an original. Adoption identifies recovered card audio and its reduced provenance.
+- One writer owns a project. Unsupported entries and unrelated files are retained. External fingerprints are checked before staging and again before replacement. Conflicts stop saving; reconciliation preserves pending/completed state in recovery and remains undoable.
+- Staging and backups use the destination filesystem. A durable journal records replacements; outputs commit before the manifest. Reopening rolls back interrupted replacements. Multiple renames are not claimed to be atomic.
+- Local recovery retains pending edits when project storage is full or unavailable. Failed saves do not advance the completed revision. Directory creation refuses to recreate a disappeared selected root. Retry resumes after the cause is resolved.
+- Undo/recovery are separate from hardware files. Explicit cleanup requires confirmation. Slot changes reuse completed audio.
+- Audio decoding, resampling, waveform generation, Rubber Band and writing use bounded blocks. Preserve-pitch conversion uses the finer engine, channels together, pitch ratio 1.0 and complete offline study/process/drain passes.
+- Render cache identity covers audible processing and immutable anchors captured at import/adoption/merge. Editable markers do not unnecessarily invalidate audio. Hashes are verified before reuse. Metadata-only edits preserve WAV bytes and modification times; one-shot/tempo-match changes separately control companion requirements.
+- Merging uses current audio settings in list order, maps markers and retains original entries. Unrepresentable hardware markers remain in the project while the last compatible output stays intact.
+
+## Visualization and delivery
+
+The reusable renderer has no plugin-editor dependency. One shared library prepares completed waveform/spectrum data and persists the last completed bank mapping locally. Device selection is independent of editor selection; Preview follows the actual transport and clears hardware-only effect/pad state. Disabling visualization stops animation and lease renewal. Opening it never initializes an audio input.
+
+Only explicit online analysis creates an application network request. Local onset detection works offline. Local UF2 copying requires file/product/family/block checks, a detected bootloader volume and an explicit flash action. No real upload, device reset or flash was performed during validation.
+
+`CMakeLists.txt` verifies the JUCE archive checksum/version; `cmake/RubberBand.cmake` builds the vendored implementation statically. [Vendor/PROVENANCE.md](Vendor/PROVENANCE.md) records amenbreakvst and tape revisions. Notices accompany resources and packages. Protocol/parity fixtures and virtual-MIDI tests have moved into `Tests/`.
+
+Presets cover macOS ARM/Intel, Windows x64 and Linux x86_64. `Release/` provides local packaging and dependency audits. Windows selects static MSVC; Linux bundles non-glibc dependencies with installed notices. The root helper and manual Windows workflow do not publish releases.
+
+The old `visualizer-juce/` tracked source and standalone/AU/VST3 entrypoints were retired after integrated Mac acceptance. Website, browser/kiosk visualizer and firmware telemetry targets remain. No commit, push, branch, worktree, publication, deployment or hardware flashing was performed.

@@ -380,7 +380,7 @@ bass: .venv
 .PHONY: clean
 clean:
 	rm -rf build build-*/ test/*/build lib/test/*/build
-	rm -rf visualizer/dist visualizer/.cache visualizer-juce/build-*/
+	rm -rf visualizer/dist visualizer/.cache sample-manager/build/
 	rm -rf docs/public
 	rm -f *.uf2
 	rm -f amen_bpm170_beats16_mono.wav amen_bpm165_beats8_mono.wav \
@@ -499,3 +499,14 @@ docs:
 dev/madmom/.venv:
 	cd dev/madmom && uv venv
 	cd dev/madmom && . .venv/bin/activate && uv pip install -r requirements.txt
+
+# Standalone native sample preparation; separate from firmware and kiosk builds.
+.PHONY: sample-manager sample-manager-test sample-manager-run sample-manager-package
+sample-manager:
+	$(MAKE) -C sample-manager build
+sample-manager-test:
+	$(MAKE) -C sample-manager test
+sample-manager-run:
+	$(MAKE) -C sample-manager run
+sample-manager-package:
+	$(MAKE) -C sample-manager package
