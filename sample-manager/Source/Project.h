@@ -5,6 +5,7 @@ struct Marker {
   double start = 0, stop = 1;
   int type = 0;
 };
+enum class SpliceTimingCalculation { initialImport, evenSlices };
 struct Sample {
   String id = uuid(), name, originalFilename, source, sourceHash, originalArchive,
          origin = "imported", problem;
@@ -20,6 +21,7 @@ struct Sample {
   std::array<std::vector<double>, 3> transients; // original source seconds
   std::vector<String> ownedPaths;
   double ratio() const { return renderBpm > 0 ? sourceBpm / renderBpm : 1.; }
+  void updateSpliceTrigger(SpliceTimingCalculation);
   var json() const;
   static Sample fromJson(const var &);
 };

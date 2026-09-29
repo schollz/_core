@@ -45,11 +45,55 @@ void wav(const File &f, int channels, int rate, int frames) {
 void textFile(const File &f, const String &s) {
   durableWrite(f, s.toRawUTF8(), size_t(s.getNumBytesAsUTF8()));
 }
+void spliceTimingChecks() {
+  struct TimingCase {
+    double duration, bpm;
+    int slices, imported, even;
+  };
+  // Independent expected values from the website's import and Even slices
+  // calculations, including the two loops from the firmware export comparison.
+  for (auto c : {TimingCase{11.034479166666667, 174, 16, 384, 384},
+                 TimingCase{5.647074829931973, 170, 16, 192, 192},
+                 TimingCase{5.6, 120, 16, 132, 144},
+                 TimingCase{1., 120, 11, 35, 24},
+                 TimingCase{.01, 120, 16, 2, 2},
+                 TimingCase{400., 120, 1, 32767, 32767}}) {
+    Sample s;
+    s.sourceDuration = c.duration;
+    s.sourceBpm = c.bpm;
+    s.slices.clear();
+    for (int n = 0; n < c.slices; ++n)
+      s.slices.push_back({double(n) / c.slices, double(n + 1) / c.slices, 0});
+    s.updateSpliceTrigger(SpliceTimingCalculation::initialImport);
+    check(s.spliceTrigger == c.imported, "Imported splice interval matches website");
+    s.updateSpliceTrigger(SpliceTimingCalculation::evenSlices);
+    check(s.spliceTrigger == c.even, "Even splice interval matches website rounding");
+    auto key = audioKey(s);
+    s.renderBpm = c.bpm / 2.;
+    s.updateSpliceTrigger(SpliceTimingCalculation::evenSlices);
+    check(s.spliceTrigger == c.even, "Render tempo preserves loop beat count");
+    s.renderBpm = 0;
+    s.spliceTrigger = 72;
+    check(Sample::fromJson(s.json()).spliceTrigger == 72,
+          "Loading a saved interval does not recalculate it");
+    s.updateSpliceTrigger(SpliceTimingCalculation::evenSlices);
+    check(audioKey(s) == key, "Splice interval remains metadata-only");
+  }
+  Sample oneShot;
+  oneShot.sourceDuration = 4.;
+  oneShot.oneShot = true;
+  oneShot.updateSpliceTrigger(SpliceTimingCalculation::initialImport);
+  check(oneShot.spliceTrigger == 192, "One-shot import uses the website's one beat");
+  oneShot.slices.clear();
+  rejects([&] { oneShot.updateSpliceTrigger(SpliceTimingCalculation::evenSlices); },
+          "An empty slice list cannot calculate an interval");
+}
 } // namespace
 int runTests() {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    spliceTimingChecks();
     {
       Temp t;
       auto file = t.dir.getChildFile("hash.bin");

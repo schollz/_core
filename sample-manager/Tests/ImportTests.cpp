@@ -1,5 +1,6 @@
 #include "AudioProcessing.h"
 #include <ImportData.h>
+#include <cmath>
 #include <iostream>
 namespace core {
 void importTests() {
@@ -12,6 +13,39 @@ void importTests() {
   } clean{root};
   Storage storage(root);
   AudioProcessing audio;
+  struct LoopCase {
+    const char *name;
+    int frames, rate, ticks;
+  };
+  for (auto loop : {LoopCase{"beat_bpm174.wav", 529655, 48000, 384},
+                    LoopCase{"amen_bpm170_freak.wav", 249036, 44100, 192}}) {
+    auto file = root.getChildFile(loop.name);
+    {
+      juce::WavAudioFormat format;
+      std::unique_ptr<juce::OutputStream> stream(file.createOutputStream());
+      auto writer = format.createWriterFor(
+          stream, juce::AudioFormatWriterOptions()
+                      .withSampleRate(loop.rate)
+                      .withNumChannels(2)
+                      .withBitsPerSample(16));
+      require(writer != nullptr, "Create splice timing fixture");
+      juce::AudioBuffer<float> silence(2, loop.frames);
+      silence.clear();
+      require(writer->writeFromAudioSampleBuffer(silence, 0, loop.frames),
+              "Write splice timing fixture");
+    }
+    auto sample = audio.import(storage, file, 0, 0);
+    require(sample.slices.size() == 16 && !sample.spliceVariable &&
+                sample.spliceTrigger == loop.ticks,
+            "Loop import calculates website splice timing: " + String(loop.name));
+    for (bool companion : {false, true}) {
+      auto frames = uint64_t(std::llround(sample.sourceDuration * sample.rate));
+      auto info = card::decode(card::encode(sampleInfo(sample, frames * (companion ? 8 : 1),
+                                                      companion)));
+      require(info.spliceTrigger == loop.ticks && info.slices.size() == 16,
+              "Primary and stretched companion encode the same splice interval");
+    }
+  }
   for (int n = 0; n < ImportData::namedResourceListSize; ++n) {
     int size = 0;
     auto *data = ImportData::getNamedResource(ImportData::namedResourceList[n], size);

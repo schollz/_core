@@ -415,6 +415,7 @@ void Manager::even(const String &id, int count) {
     for (int n = 0; n < count; ++n)
       s.slices.push_back({double(n) / count, double(n + 1) / count, 0});
     s.spliceVariable = false;
+    s.updateSpliceTrigger(SpliceTimingCalculation::evenSlices);
   });
 }
 void Manager::detect(const String &id, int count, String method, double spacing) {

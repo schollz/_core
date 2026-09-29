@@ -376,6 +376,7 @@ Sample AudioProcessing::import(Storage &storage, const File &input, int bank,
     s.spliceVariable = false;
   } else
     s.renderAnchors = s.slices;
+  s.updateSpliceTrigger(SpliceTimingCalculation::initialImport);
   s.source = storage.importSource(audio, s.sourceHash);
   cancelled(cancel);
   return s;

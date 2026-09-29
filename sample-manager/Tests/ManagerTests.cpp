@@ -77,16 +77,34 @@ void pendingImportWaveform(const File &workspace, const File &input) {
   require(child(root, "bank1/0.0.wav.info").loadFileAsData(savedInfo) &&
               card::decode(savedInfo).spliceVariable && hashFile(foreign) == waveHash,
           "Transient and playback edits preserve variable timing without rewriting audio");
-  manager.even(id, 16);
+  const int previousInterval = moved.project.find(id)->spliceTrigger;
+  manager.even(id, 1);
   auto even = settle(manager);
   successful(even);
-  require(!even.project.find(id)->spliceVariable,
-          "Even slices explicitly disables variable timing");
+  require(!even.project.find(id)->spliceVariable &&
+              even.project.find(id)->spliceTrigger == 48 && previousInterval != 48,
+          "Even slices recalculates the interval and disables variable timing");
+  for (int variant : {0, 1}) {
+    require(child(root, card::path(0, 0, variant) + ".info").loadFileAsData(savedInfo) &&
+                card::decode(savedInfo).spliceTrigger == 48 &&
+                !card::decode(savedInfo).spliceVariable,
+            "Even slices saves the calculated interval to both firmware companions");
+  }
+  require(hashFile(foreign) == waveHash, "Recalculating splice timing preserves WAV bytes");
   manager.undo();
   auto undone = settle(manager);
   successful(undone);
-  require(undone.project.find(id)->spliceVariable,
-          "Undo restores manual slices and their variable timing together");
+  require(undone.project.find(id)->spliceVariable &&
+              undone.project.find(id)->spliceTrigger == previousInterval,
+          "Undo restores manual slices, variable timing and the previous interval together");
+  manager.redo();
+  auto redone = settle(manager);
+  successful(redone);
+  require(!redone.project.find(id)->spliceVariable &&
+              redone.project.find(id)->spliceTrigger == 48,
+          "Redo restores the calculated even interval");
+  manager.undo();
+  successful(settle(manager));
   manager.edit(id, "Disable variable timing manually", [](Sample &s) { s.spliceVariable = false; });
   lanes[0] = {.03};
   manager.editMarkers(id, slices, lanes);

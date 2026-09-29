@@ -1,5 +1,15 @@
 # Core Sample Manager 0.1.0 validation
 
+## Splice interval parity: coverage prepared, not executed
+
+Read-only comparison of the supplied Icarus exports found JUCE retaining the default 96 ticks for both loops. The website stored 384 ticks for `beat_bpm174.wav` (32 beats / 16 slices) and 192 for `amen_bpm170_freak.wav` (16 beats / 16 slices). The native importer and Even slices action had never recalculated `spliceTrigger`.
+
+Imports now calculate the interval from the rounded source beat count and slice count, following `core/src/zeptocore/zeptocore.go` (192 ticks per beat, quarter-tick rounding followed by integer conversion; one-shot imports use one beat). Even slices follows `createRegionsEvenly` in `core/src/server/static/app.js`, using unrounded beats and 24-tick divisions. Results are bounded to the firmware's valid 2–32767 ticks. Render BPM and the padded/eight-times output durations do not change the loop's beat count. Saved/adopted intervals are preserved until an explicit Even slices action, which updates markers, timing mode and interval in one undoable operation. Device-setting defaults, drum markers, project schema and audio processing are unchanged.
+
+Added regression coverage includes synthetic imports with the supplied loops' exact source frame counts/rates and tempo labels; primary/companion metadata; differing import/even rounding; short/dense and long-loop bounds; one-shot import; render-tempo independence; stored interval preservation; and manager saves with unchanged WAV hashes, undo and redo. Source review and whitespace checks passed. No builds, tests or native UI sessions were executed by the agent.
+
+Follow-up read-only inspection of the user's regenerated JUCE export confirmed 384 ticks for Beat and 192 for Amen in both primary and stretched `.info` files, matching the web export. Both retained 16 slices with variable timing off, and the native project reported matching completed revisions. The regenerated JUCE bank has the opposite sample order, so comparisons were matched by sample identity. Reopen and undo/redo acceptance remain unexecuted.
+
 ## Filename sidecars: coverage prepared, not executed
 
 The filename persistence changes add coverage to the existing native contract suite and `core/src/pack` tests. No builds, test execution, firmware edits, flashing, or hardware checks were performed for this change. The execution evidence below predates these changes.

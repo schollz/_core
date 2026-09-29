@@ -232,7 +232,8 @@ AppView::AppView() {
       "Target this many slices using the strongest detected attacks. "
       "Fewer may be found with sparse audio or larger minimum spacing. "
       "Enables variable splice timing.");
-  evenButton.setTooltip("Create evenly spaced slices and disable variable splice timing.");
+  evenButton.setTooltip("Create evenly spaced slices, calculate their timing from Source BPM "
+                        "and sample length, and disable variable splice timing.");
   onlineButton.onClick = [this] {
     if (online.busy()) {
       online.cancel();

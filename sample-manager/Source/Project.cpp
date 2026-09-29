@@ -1,6 +1,28 @@
 #include "Project.h"
 #include <cmath>
 namespace core {
+void Sample::updateSpliceTrigger(SpliceTimingCalculation calculation) {
+  require(std::isfinite(sourceDuration) && sourceDuration > 0 &&
+              std::isfinite(sourceBpm) && sourceBpm > 0 && !slices.empty(),
+          "Cannot calculate splice timing without duration, BPM and slices");
+  // Use the unpadded, normal-speed source timeline. Render BPM changes the
+  // duration inversely, so it does not change the number of beats in the loop.
+  double beats = sourceDuration / (60. / sourceBpm);
+  double ticks;
+  if (calculation == SpliceTimingCalculation::initialImport) {
+    // Website import (zeptocore.go): whole-loop beats, 192 ticks per beat,
+    // rounded to a quarter tick before conversion to the integer field.
+    beats = oneShot ? 1. : std::round(beats);
+    ticks = std::trunc(std::round(192. * beats / double(slices.size()) * 4.) / 4.);
+  } else {
+    // Website createRegionsEvenly (app.js) quantizes to 24-tick divisions.
+    ticks = std::round(beats * 192. / double(slices.size()) / 24.) * 24.;
+  }
+  require(std::isfinite(ticks), "Splice interval exceeds supported range");
+  // Very short/dense slices can round to zero on the website. Keep the native
+  // firmware field valid, including its 15-bit upper bound.
+  spliceTrigger = int(juce::jlimit(2., 32767., ticks));
+}
 var Sample::json() const {
   var o = object();
   put(o, "id", id);
