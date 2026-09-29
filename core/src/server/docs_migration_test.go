@@ -33,9 +33,9 @@ func TestEmbeddedZeptocoreLandingPointsToCanonicalStoreGuide(t *testing.T) {
 }
 
 func TestLegacyDocumentationPathsRedirectToStoreGuide(t *testing.T) {
-	previousEctocore := isEctocore
-	isEctocore = false
-	t.Cleanup(func() { isEctocore = previousEctocore })
+	previousProduct := websiteProduct
+	websiteProduct = ProductZeptocore
+	t.Cleanup(func() { websiteProduct = previousProduct })
 
 	tests := []struct {
 		path string

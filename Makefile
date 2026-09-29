@@ -466,7 +466,7 @@ core_server: docsbuild
 # ectocore builds
 .PHONY: ectocore_windows.exe
 ectocore_windows.exe: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X main.EctocoreDefault=yes" -o ../ectocore_windows.exe
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build -v -ldflags "-s -w -X main.DefaultProduct=ectocore" -o ../ectocore_windows.exe
 
 .PHONY: ectocore_macos_aarch64
 ectocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
@@ -474,7 +474,7 @@ ectocore_macos_aarch64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target aarch64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_aarch64
+	go1.21.13 build -ldflags "-s -w -X main.DefaultProduct=ectocore" -buildmode=pie -o ../ectocore_macos_aarch64
 
 .PHONY: ectocore_macos_amd64
 ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
@@ -482,11 +482,11 @@ ectocore_macos_amd64: install_go21 docsbuild core/MacOSX11.3.sdk
 	cd core && MACOS_MIN_VER=11.3 MACOS_SDK_PATH=$(PWD)/core/MacOSX11.3.sdk CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 \
 	CGO_LDFLAGS="-mmacosx-version-min=$${MACOS_MIN_VER} --sysroot $${MACOS_SDK_PATH} -F/System/Library/Frameworks -L/usr/lib" \
 	CC="zig cc -target x86_64-macos -isysroot $${MACOS_SDK_PATH} -iwithsysroot /usr/include -iframeworkwithsysroot /System/Library/Frameworks" \
-	go1.21.13 build -ldflags "-s -w -X main.EctocoreDefault=yes" -buildmode=pie -o ../ectocore_macos_amd64
+	go1.21.13 build -ldflags "-s -w -X main.DefaultProduct=ectocore" -buildmode=pie -o ../ectocore_macos_amd64
 
 .PHONY: ectocore_linux_amd64
 ectocore_linux_amd64: docsbuild
-	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.EctocoreDefault=yes" -v -o ../ectocore_linux_amd64
+	cd core && CGO_ENABLED=1 CC="zig cc -target x86_64-linux-gnu" GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.DefaultProduct=ectocore" -v -o ../ectocore_linux_amd64
 
 .PHONY: docs
 docs:

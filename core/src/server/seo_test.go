@@ -22,11 +22,18 @@ func renderStaticIndexForHost(t *testing.T, isZeptocore bool, host string) strin
 		t.Fatal(err)
 	}
 
-	purchase := purchaseDestinationForHost(host, isZeptocore)
+	product := ProductEzeptocore
+	if isZeptocore {
+		product = ProductZeptocore
+	}
+	purchase := purchaseDestinationForHost(host, product)
 	var rendered bytes.Buffer
 	err = tmpl.Execute(&rendered, map[string]any{
+		"Product":        product,
+		"ProductName":    product.Name(),
 		"IsZeptocore":    isZeptocore,
-		"IsEctocore":     !isZeptocore,
+		"IsEctocore":     false,
+		"IsEzeptocore":   !isZeptocore,
 		"BuyURL":         purchase.URL,
 		"BuyProductName": purchase.ProductName,
 	})
@@ -90,7 +97,11 @@ func TestPurchaseDestinationForHost(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := purchaseDestinationForHost(test.host, test.isZeptocore)
+			product := ProductEzeptocore
+			if test.isZeptocore {
+				product = ProductZeptocore
+			}
+			got := purchaseDestinationForHost(test.host, product)
 			if got.ProductName != test.wantProduct {
 				t.Errorf("product = %q, want %q", got.ProductName, test.wantProduct)
 			}

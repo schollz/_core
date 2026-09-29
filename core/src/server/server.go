@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -19,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -61,14 +63,14 @@ var chanString chan string
 var latestTag string
 var deviceVersion string
 var deviceType string
-var isEctocore bool
+var websiteProduct = ProductZeptocore
 
 type purchaseDestination struct {
 	ProductName string
 	URL         string
 }
 
-func purchaseDestinationForHost(hostport string, isZeptocore bool) purchaseDestination {
+func purchaseDestinationForHost(hostport string, product Product) purchaseDestination {
 	hostname := strings.ToLower(strings.TrimSpace(hostport))
 	if host, _, err := net.SplitHostPort(hostname); err == nil {
 		hostname = host
@@ -97,15 +99,9 @@ func purchaseDestinationForHost(hostport string, isZeptocore bool) purchaseDesti
 		}
 	}
 
-	if isZeptocore {
-		return purchaseDestination{
-			ProductName: "Zeptocore",
-			URL:         "https://shop.infinitedigits.co/collections/zeptocore/",
-		}
-	}
 	return purchaseDestination{
-		ProductName: "Ezeptocore",
-		URL:         "https://shop.infinitedigits.co/collections/ezeptocore/",
+		ProductName: product.Name(),
+		URL:         "https://shop.infinitedigits.co/collections/" + string(product) + "/",
 	}
 }
 
@@ -133,8 +129,8 @@ func stateLoad(place string) (state string, err error) {
 	return
 }
 
-func Serve(useEctocore bool, useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
-	isEctocore = useEctocore
+func Serve(product Product, useFiles bool, flagDontConnect bool, chanStringArg chan string, chanPrepareUploadArg chan bool, chanDeviceTypeArg chan string) (err error) {
+	websiteProduct = product
 	useFilesOnDisk = useFiles
 	chanPrepareUpload = chanPrepareUploadArg
 	chanDeviceType = chanDeviceTypeArg
@@ -253,13 +249,13 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		return
 	} else if r.URL.Path == "/favicon.ico" {
 		return handleFavicon(w, r)
-	} else if !isEctocore && (r.URL.Path == "/buy" || r.URL.Path == "/buy/") {
+	} else if websiteProduct == ProductZeptocore && (r.URL.Path == "/buy" || r.URL.Path == "/buy/") {
 		http.Redirect(w, r, "https://shop.infinitedigits.co/collections/zeptocore/", http.StatusPermanentRedirect)
 		return nil
-	} else if !isEctocore && strings.HasPrefix(r.URL.Path, "/docs/") && filepath.Ext(r.URL.Path) == "" {
+	} else if websiteProduct == ProductZeptocore && strings.HasPrefix(r.URL.Path, "/docs/") && filepath.Ext(r.URL.Path) == "" {
 		http.Redirect(w, r, "https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide", http.StatusPermanentRedirect)
 		return nil
-	} else if !isEctocore &&
+	} else if websiteProduct == ProductZeptocore &&
 		(strings.HasPrefix(r.URL.Path, "/docs") ||
 			strings.Contains(r.URL.Path, "buy") ||
 			strings.HasPrefix(r.URL.Path, "/guide") ||
@@ -326,20 +322,27 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 		}
 		serverID = codename.Generate(rng, 0)
 		if strings.Contains(filename, "static/index.html") {
+			// Revalidate rendered pages after a rebuild or a product-mode change.
+			w.Header().Set("Cache-Control", "no-cache")
+			w.Header().Del("Expires")
+			w.Header().Del("Last-Modified")
+			w.Header().Del("Pragma")
 
 			tmpl, errTemplate := template.New("index").Delims("[[", "]]").Parse(string(b))
 			if errTemplate != nil {
-				log.Errorf("could not parse template %s: %s", filename, errTemplate.Error())
-				return
+				return fmt.Errorf("could not parse template %s: %w", filename, errTemplate)
 			}
 
-			purchase := purchaseDestinationForHost(r.Host, !isEctocore)
+			purchase := purchaseDestinationForHost(r.Host, websiteProduct)
 			data := struct {
+				Product        Product
+				ProductName    string
 				IsFaq          bool
 				IsBuy          bool
 				IsMain         bool
 				IsZeptocore    bool
 				IsEctocore     bool
+				IsEzeptocore   bool
 				IsUpload       bool
 				VersionCurrent string
 				LatestVersion  string
@@ -348,23 +351,37 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 				BuyURL         string
 				BuyProductName string
 			}{
+				Product:        websiteProduct,
+				ProductName:    websiteProduct.Name(),
 				IsMain:         r.URL.Path == "/",
 				VersionCurrent: "v8.0.2",
 				LatestVersion:  latestTag,
 				GenURL1:        codename.Generate(rng, 0),
 				GenURL2:        names.Random(),
-				IsEctocore:     isEctocore,
-				IsZeptocore:    !isEctocore,
+				IsEctocore:     websiteProduct == ProductEctocore,
+				IsEzeptocore:   websiteProduct == ProductEzeptocore,
+				IsZeptocore:    websiteProduct == ProductZeptocore,
 				BuyURL:         purchase.URL,
 				BuyProductName: purchase.ProductName,
 			}
 			data.IsUpload = !(data.IsMain)
 
-			err = tmpl.Execute(w, data)
-			if err != nil {
-				log.Errorf("could not execute template %s: %s", filename, err.Error())
+			// Finish rendering before committing the response, so template errors
+			// can still produce a single HTTP error response.
+			var rendered bytes.Buffer
+			if err = tmpl.Execute(&rendered, data); err != nil {
+				return fmt.Errorf("could not execute template %s: %w", filename, err)
 			}
-			return
+			if _, writeErr := w.Write(rendered.Bytes()); writeErr != nil {
+				if r.Context().Err() != nil || errors.Is(writeErr, syscall.EPIPE) || errors.Is(writeErr, syscall.ECONNRESET) {
+					log.Tracef("client disconnected while sending %s: %v", r.URL.Path, writeErr)
+				} else {
+					log.Errorf("could not send page %s: %v", r.URL.Path, writeErr)
+				}
+			}
+			// A write has already committed the response; never try to send an
+			// additional HTTP error if the client disconnected or the write failed.
+			return nil
 		}
 		log.Tracef("serving %s with mime %s", filename, mimeType)
 		w.Write(b)
@@ -393,7 +410,11 @@ func handleFavicon(w http.ResponseWriter, r *http.Request) (err error) {
 	var b []byte
 
 	// b, err = os.ReadFile("static/favicon.ico")
-	b, err = staticFiles.ReadFile("static/favicon.ico")
+	iconPath := "static/favicon.ico"
+	if websiteProduct == ProductEctocore {
+		iconPath = "static/ectocore/favicon.ico"
+	}
+	b, err = staticFiles.ReadFile(iconPath)
 	if err != nil {
 		return
 	}

@@ -50,27 +50,31 @@
         }
     </script>
     [[ else ]]
-    <title>Ezeptocore Sample Tool</title>
-    <meta name="description" content="Prepare and manage audio samples for the Ezeptocore music instrument.">
+    <title>[[ .ProductName ]] Sample Tool</title>
+    <meta name="description" content="Prepare and manage audio samples for the [[ .ProductName ]] music instrument.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://get.ezeptocore.com/">
+    <link rel="canonical" href="[[ if .IsEctocore ]]https://ectocore.rocks/[[ else ]]https://get.ezeptocore.com/[[ end ]]">
     [[ end ]]
-    <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/[[ if .IsEctocore]]ecto/[[ end]]apple-icon-180x180.png">
+    [[ if .IsEctocore ]]
+    <link rel="icon" type="image/x-icon" href="/static/ectocore/favicon.ico">
+    <meta name="msapplication-config" content="/static/ectocore/browserconfig.xml">
+    [[ end ]]
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]apple-icon-180x180.png">
     <link rel="icon" type="image/png" sizes="192x192"
-        href="/static/[[ if .IsEctocore]]ecto/[[ end]]android-icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/[[ if .IsEctocore]]ecto/[[ end]]favicon-16x16.png">
-    <meta name="msapplication-TileImage" content="/static/[[ if .IsEctocore]]ecto/[[ end]]ms-icon-144x144.png">
-    <link rel="manifest" href="/static/[[ if .IsEctocore]]ecto/[[ end]]manifest.json">
+        href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]ms-icon-144x144.png">
+    <link rel="manifest" href="/static/[[ if .IsEctocore]]ectocore/[[ else if .IsEzeptocore]]ecto/[[ end]]manifest.json">
     [[ if .IsZeptocore ]]
     <meta name="msapplication-TileColor" content="#f0f4ff">
     <meta name="theme-color" content="#f0f4ff">
@@ -89,6 +93,26 @@
             --hover-color-light: #e6e3f4;
             --other-color: #6d51c9;
             --shadow-color: #6d51c915;
+        }
+    </style>
+    [[ else if .IsEctocore ]]
+    <meta name="msapplication-TileColor" content="#94acda">
+    <meta name="theme-color" content="#94acda">
+    <style>
+        /** ectocore **/
+        :root {
+            --background-color: #e6eeff;
+            --header-footer-background: #5282d9;
+            --banks-background: #94acda;
+            --highlight-color: #94acda;
+            --highlight-color-border: #5577c6;
+            --waveform-color: #5282d9;
+            --highlight-color-darker: #7799d6;
+            --highlight-color-darkerer: #5577c6;
+            --hover-color: #93a6c9;
+            --hover-color-light: #c3d1f0;
+            --other-color: #3478ff;
+            --shadow-color: #3478ff15;
         }
     </style>
     [[ else ]]
@@ -343,43 +367,220 @@
                 <a href="/#random-effects" style="color:inherit;z-index:99999999;position:relative;"
                     target="_blank"><strong>D+Y</strong></a> to activate):
                 [[else]]
-                Effect banks:
+                [[ if .IsEctocore ]]Grimoire of Breaks:[[ else ]]Effect banks:[[ end ]]
                 <br><small><em>Selecting only <i class="fas fa-hourglass-half"></i> makes the Break knob a stretch knob.</em></small>
                 [[end]]
             <div class="grimoire-container">
                 <div class="circle-container">
                     <div id="grimoire0" class="circle-icon" @click="grimoireClick(0);"
                         :class="{bright: grimoireSelected==0 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="amalgam">
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M232.275,457.876L232.275,476.84"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M224.112,463.113L240.438,463.113"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M226.7,468.748L237.85,468.748"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.407761,0,0,0.407761,-86.7129,-184.704)">
+                                    <path d="M221.325,487.305C225.333,473.18 238.896,473.523 243.226,487.305"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">I</span>
+                        [[ end ]]
                     </div>
                     <div id="grimoire1" class="circle-icon" @click="grimoireClick(1);"
                         :class="{bright: grimoireSelected==1 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="alum-inert" serif:id="alum inert">
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M243.339,550.932L221.437,550.932"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M232.388,554.351L232.388,536.573"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M237.763,536.573L226.613,536.573"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M243.339,551.02C234.235,554.634 237.705,566.785 243.339,561.151"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.461606,0,0,0.461606,-99.1127,-245.685)">
+                                    <path d="M221.212,551.02C230.315,554.634 226.846,566.785 221.212,561.151"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">II</span>
+                        [[ end ]]
                     </div>
 
                     <div id="grimoire2" class="circle-icon" @click="grimoireClick(2);"
                         :class="{bright: grimoireSelected==2 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 67 67" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <path d="M25.659,8.173l0,43.623" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M12.5,16.615l26.318,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path d="M16.672,25.699l17.974,-0" style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                            <path
+                                d="M25.659,52.178c5.8,-18.2 25.954,-22.572 23.304,-2.547c-0.29,2.188 -5.048,6.076 3.014,8.863"
+                                style="fill:none;stroke:inherit;stroke-width:6.72px;" />
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">III</span>
+                        [[ end ]]
                     </div>
 
                     <div id="grimoire3" class="circle-icon" @click="grimoireClick(3);"
                         :class="{bright: grimoireSelected==3 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="azurite" transform="matrix(1,0,0,1,-0.25,0.111111)">
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,861.027L226.923,886.355"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path d="M226.923,869.715L242.693,869.715"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.460004,0,0,0.384553,-100.385,-329.222)">
+                                    <path
+                                        d="M242.693,869.715C242.693,869.715 235.243,879.001 235.243,883.816C235.243,893.689 247.575,893.689 247.575,883.816"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">IV</span>
+                        [[ end ]]
                     </div>
 
                     <div id="grimoire4" class="circle-icon" @click="grimoireClick(4);"
                         :class="{bright: grimoireSelected==4 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="hermate" transform="matrix(1,0,0,1,0.125121,0)">
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <circle cx="232.275" cy="632.156" r="6.843"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M232.275,625.314L232.275,614.279"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M232.275,639.204L232.275,650.239"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M239.118,618.96L225.433,618.96"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.356195,0,0,0.356195,-74.7977,-217.303)">
+                                    <path d="M239.118,645.559L225.433,645.559"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">V</span>
+                        [[ end ]]
                     </div>
 
                     <div id="grimoire5" class="circle-icon" @click="grimoireClick(5);"
                         :class="{bright: grimoireSelected==5 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="sulphur">
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M221.325,432.985L243.226,432.985L232.475,420.103L221.325,432.985Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M232.275,432.985L232.275,447.535"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.417886,0,0,0.417886,-89.0647,-173.287)">
+                                    <path d="M225.195,442.308L239.355,442.308"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">VI</span>
+                        [[ end ]]
                     </div>
 
                     <div id="grimoire6" class="circle-icon" @click="grimoireClick(6);"
                         :class="{bright: grimoireSelected==6 }">
+                        [[ if .IsEctocore ]]
+                        <svg width="75%" height="75%" viewBox="0 0 16 16" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xml:space="preserve" xmlns:serif="http://www.serif.com/"
+                            style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                            <g id="brimstone">
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path
+                                        d="M234.819,799.598C234.819,799.598 241.608,795.07 243.904,795.07C250.341,795.07 250.499,805.177 243.445,805.177C241.15,805.177 234.819,799.598 234.819,799.598Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path
+                                        d="M234.819,799.598C234.819,799.598 228.03,795.07 225.734,795.07C219.297,795.07 219.139,805.177 226.193,805.177C228.489,805.177 234.819,799.598 234.819,799.598Z"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M234.819,800.124L234.819,778.846"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M230.521,782.496L239.118,782.496"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                                <g transform="matrix(0.424044,0,0,0.424044,-91.5736,-327.93)">
+                                    <path d="M227.862,788.862L241.777,788.862"
+                                        style="fill:none;stroke:inherit;stroke-width:4.17px;" />
+                                </g>
+                            </g>
+                        </svg>
+                        [[ else ]]
                         <span style="font-size: 1.5em; font-weight: bold;">VII</span>
+                        [[ end ]]
                     </div>
 
                     <!-- change knob degrees by Vue2.0 variable grimoireKnobDegrees -->
@@ -632,10 +833,13 @@
         <header>
             <a href=" /" id="headerIcon"
                 style="max-height: 32px; margin-left: -0.25em;float:right; position:relative;padding-right:1em;">
+                [[ if .IsEctocore ]]
+                <img src="/static/ectocore/apple-icon.png" alt="Ectocore" style="filter:brightness(0) invert(1); max-height:32px;">
+                [[ end ]]
             </a>
             <h1 style="margin:0; padding:0; font-size:1.5em;"><a
                     :href="window.location.protocol+'//'+window.location.host + title + '/'">[[ if .IsZeptocore
-                    ]]zeptocore.com[[else]]ezeptocore.com[[end]]{{title}}</a>
+                    ]]zeptocore.com[[else if .IsEctocore]]ectocore.rocks[[else]]ezeptocore.com[[end]]{{title}}</a>
             </h1>
             [[ if .IsMain ]]
             [[ else ]]
@@ -702,7 +906,7 @@
                         </span>
                     </span>
                     <span>
-                        <a href="[[ if .IsEctocore]]https://ezeptocore.com/quickstart[[else]]https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide[[end]]"
+                        <a href="[[ if .IsEctocore]]https://ectocore.rocks/quickstart[[else if .IsEzeptocore]]https://ezeptocore.com/quickstart[[else]]https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide[[end]]"
                             target="_blank" id="manualDownloadLink" style="font-size:1.0em;"><i
                                 class="fa-solid fa-book"></i></a>
                     </span>
@@ -759,14 +963,15 @@
                 [[ if .IsMain ]]
                 <div class="help-banner"
                     style="box-shadow: 12px 12px 2px 1px var(--hover-color-light); background: var(--background-color);">
-                    <h2>Welcome to [[ if .IsEctocore]] ezeptocore.com[[else]] the zeptocore tool[[end]]</h2>
+                    <h2>Welcome to [[ if .IsEctocore]] ectocore.rocks[[else if .IsEzeptocore]] ezeptocore.com[[else]] the zeptocore tool[[end]]</h2>
                     <p v-if="previousPages.length>0">
                         Previous workspaces: <span v-for="link in previousPages"><a
                                 :href="window.location.protocol+'//'+window.location.host +'/'+ link">{{link}}</a>&nbsp</span>
                     </p>
                     <p>
                         Use this website to allocate audio files onto the [[ if .IsZeptocore ]]<a
-                            href="https://shop.infinitedigits.co/collections/zeptocore/">zeptocore</a>[[end]][[ if .IsEctocore ]]<a
+                            href="https://shop.infinitedigits.co/collections/zeptocore/">zeptocore</a>[[else if .IsEctocore]]<a
+                            href="https://shop.infinitedigits.co/collections/ectocore/" target="_blank">ectocore</a>[[else]]<a
                             href="https://get.ezeptocore.com" target="_blank">ezeptocore</a>[[end]].
                     </p>
                     <p>There is no
@@ -785,7 +990,7 @@
                         Keep in mind: anyone with your URL can access your
                         data. This makes it easy to share with friends, but if you need to keep your data private by
                         you should choose a URL that no one can guess, or use the tool offline by
-                        following <a href="https://github.com/schollz/_core?tab=readme-ov-file#ezeptocore-offline-usage"
+                        following <a href="https://github.com/schollz/_core?tab=readme-ov-file#[[ .Product ]]-offline-usage"
                             target="_blank">these
                             instructions</a>.
                     </p>
@@ -1203,15 +1408,15 @@
             [[ end ]]
             <div style="margin-left: auto;">
                 <a id="windows_core"
-                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ezeptocore_tool_windows.zip[[else]]zeptocore_tool_windows.zip[[end]]'">
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ .Product ]]_tool_windows.zip'">
                     <i class="fa-brands fa-windows"></i>
                 </a>
                 <a id="macos_core"
-                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ezeptocore_tool_macos.zip[[else]]zeptocore_tool_macos.zip[[end]]'">
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ .Product ]]_tool_macos.zip'">
                     <i class="fa-brands fa-apple"></i>
                 </a>
                 <a id="linux_core"
-                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ if .IsEctocore]]ezeptocore_tool_linux.zip[[else]]zeptocore_tool_linux.zip[[end]]'">
+                    :href="'https://github.com/schollz/_core/releases/download/' + latestVersion + '/[[ .Product ]]_tool_linux.zip'">
                     <i class="fa-brands fa-linux"></i>
                 </a>
                 <!-- 
@@ -1250,6 +1455,8 @@
     <script>
         // global constants
         const isZeptocore = [[ if .IsZeptocore ]]true[[ else]]false[[end]];
+        const isEctocore = [[ if .IsEctocore ]]true[[ else ]]false[[ end ]];
+        const deviceName = '[[ .Product ]]';
 
         // Simple hash function for strings
         function hashCode(str) {
@@ -1266,7 +1473,6 @@
         function updateDocumentTitle() {
             const pathname = window.location.pathname;
             const projectName = pathname.split('/').filter(Boolean).pop() || '';
-            const deviceName = '[[ if .IsEctocore]]ezeptocore[[else]]zeptocore[[end]]';
 
             if (projectName) {
                 document.title = `${deviceName} · ${projectName}`;
@@ -1277,6 +1483,9 @@
 
         // Set header icon based on URL hash
         function setHeaderIcon() {
+            if (isEctocore) {
+                return; // Keep the original Ectocore header image.
+            }
             const url = window.location.pathname;
             const grimoireIndex = hashCode(url) % 7; // 7 grimoires (0-6)
 
