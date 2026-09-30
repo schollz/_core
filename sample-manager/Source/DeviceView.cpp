@@ -7,6 +7,7 @@ DeviceView::DeviceView(Device &d, Look &l, FirmwareHardware hardware)
   addAndMakeVisible(tabs);
   tabs.addTab("Connection", juce::Colours::transparentBlack, &connection, false);
   tabs.addTab("Firmware", juce::Colours::transparentBlack, &firmware, false);
+  tabs.setCurrentTabIndex(1);
   tabs.setTabBarDepth(36);
   tabs.setOutline(0);
   lookAndFeelChanged();
