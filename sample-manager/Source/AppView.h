@@ -24,6 +24,7 @@ public:
   bool pending() const { return manager.snapshot().busy; }
 
 private:
+  friend void firmwareViewTests();
   class Divider final : public juce::StretchableLayoutResizerBar,
                         public juce::SettableTooltipClient {
   public:

@@ -187,6 +187,8 @@ AppView::AppView() {
     savePreferences();
     sendLookAndFeelChange();
     if (deviceWindow) {
+      if (auto *view = dynamic_cast<DeviceView *>(deviceWindow->getContentComponent()))
+        view->setHardware(FirmwareHardware(presentation));
       deviceWindow->sendLookAndFeelChange();
       deviceWindow->repaint();
     }
@@ -444,6 +446,7 @@ AppView::AppView() {
   more.setTooltip("Retry saving, reconcile external card changes, clear this bank, "
                   "or clean unused originals and recovery history.");
   presentationBox.setTooltip("Choose Ezeptocore, Zeptocore or Ectocore appearance and controls. "
+                             "Also selects matching firmware in Device. "
                              "Switching keeps saved sample settings and the MIDI connection.");
   undoButton.setTooltip("Undo the last project edit. Ctrl/Cmd+Z.");
   redoButton.setTooltip("Redo an undone project edit. Ctrl/Cmd+Shift+Z.");

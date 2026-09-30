@@ -41,6 +41,8 @@ Firmware downloads and online analysis create network requests only after explic
 
 UF2 product recognition accepts the embedded model names in MIDI builds and the complete Pico SDK USB CDC device descriptor with VID `0x2e8a` / PID `0x1837` in Ectocore/Ezeptocore serial builds. Those builds have no model-name string; the filename alone is never sufficient identification. Diagnostic firmware logging records each request, HTTP response, validation, and final outcome.
 
+Presentation changes synchronize the Firmware hardware selector through `DeviceView::setHardware`, including while the auxiliary window is hidden. `FirmwareView` defers the latest selection during downloads, flashing, confirmations, and local file selection. Download completion is processed with its original hardware before applying a deferred change, so a theme switch cannot relabel a downloaded file. Synchronizing the selector starts no download or device command.
+
 `CMakeLists.txt` verifies the JUCE archive checksum/version; `cmake/RubberBand.cmake` builds the vendored implementation statically. [Vendor/PROVENANCE.md](Vendor/PROVENANCE.md) records amenbreakvst and tape revisions. Notices accompany resources and packages. Protocol/parity fixtures and virtual-MIDI tests have moved into `Tests/`.
 
 Presets cover macOS ARM/Intel, Windows x64 and Linux x86_64. `Release/` provides local packaging and dependency audits. Windows selects static MSVC; Linux bundles non-glibc dependencies with installed notices. The root helper and manual Windows workflow do not publish releases.

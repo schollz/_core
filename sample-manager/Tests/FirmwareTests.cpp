@@ -1,4 +1,4 @@
-#include "DeviceView.h"
+#include "AppView.h"
 #include <chrono>
 #include <iostream>
 
@@ -188,7 +188,8 @@ void firmwareViewTests() {
   Look look;
   for (int presentation = 0; presentation < 3; ++presentation) {
     look.presentation(presentation);
-    FirmwareView view(device, look, FirmwareHardware(presentation));
+    DeviceView deviceView(device, look, FirmwareHardware(presentation));
+    auto &view = deviceView.firmware;
     view.setSize(930, 765);
     check(view.selectedEntry().hardware == FirmwareHardware(presentation),
           "initial model follows presentation");
@@ -196,10 +197,16 @@ void firmwareViewTests() {
     check(view.entries.size() == (presentation == 1 ? 3 : 5), "model-specific build choices");
     check(server.requests == 0, "opening firmware does not download");
     look.presentation((presentation + 1) % 3);
+    deviceView.setHardware(FirmwareHardware((presentation + 1) % 3));
     view.sendLookAndFeelChange();
-    check(view.selectedEntry().hardware == FirmwareHardware(presentation),
-          "theme changes cannot retarget firmware");
+    check(view.selectedEntry().hardware == FirmwareHardware((presentation + 1) % 3) &&
+              view.selectedEntry().build == FirmwareBuild::normal &&
+              view.release.getText().contains(view.selectedEntry().filename) &&
+              view.docs.getButtonText().startsWith(firmwareHardwareName(view.selectedEntry().hardware)),
+          "presentation changes select matching hardware, filename and guide");
+    check(server.requests == 0, "changing presentation does not start a download");
     look.presentation(presentation);
+    deviceView.setHardware(FirmwareHardware(presentation));
     const auto preview = juce::SystemStats::getEnvironmentVariable("CORE_FIRMWARE_PREVIEW_DIR", "");
     if (File::isAbsolutePath(preview)) {
       File folder(preview);
@@ -265,22 +272,63 @@ void firmwareViewTests() {
   view.awaitingDownload = true;
   view.download.start(localEntry(server, "/serial"), temp.directory);
   waitFor(view.download);
-  view.timerCallback();
+  // Completion can arrive just before the presentation callback. Process it
+  // using the original hardware before applying the new model selection.
+  view.setHardware(FirmwareHardware::zeptocore);
   check(view.image != prior && view.image.existsAsFile() && !view.working,
         "success selects checked file without flashing");
+  check(view.selectedEntry().hardware == FirmwareHardware::zeptocore &&
+            view.fileLabel.getText().startsWith("Ezeptocore:"),
+        "theme change cannot relabel a completed download as another model");
   check(view.reveal.isEnabled() && !view.write.isEnabled(),
         "show downloaded file but require bootloader before flashing");
   Server stalled;
+  view.setHardware(FirmwareHardware::ezeptocore);
   view.awaitingDownload = true;
   view.download.start(localEntry(stalled, "/stall"), temp.directory);
   waitFor([&] { return stalled.requests.load() > 0; }, "stalled transfer");
+  view.setHardware(FirmwareHardware::zeptocore);
+  view.setHardware(FirmwareHardware::ectocore);
+  check(view.selectedEntry().hardware == FirmwareHardware::ezeptocore &&
+            !view.hardware.isEnabled(),
+        "theme changes defer while a download is active");
   auto selected = view.image;
   view.cancelDownload();
   waitFor(view.download);
   view.timerCallback();
   check(view.image == selected && view.download.snapshot().status == Status::cancelled,
         "window-close cancellation preserves selection");
+  check(view.selectedEntry().hardware == FirmwareHardware::ectocore,
+        "latest theme selection applies after cancellation");
+  view.working = true;
+  view.setHardware(FirmwareHardware::zeptocore);
+  check(view.selectedEntry().hardware == FirmwareHardware::ectocore,
+        "theme changes defer during flashing");
+  view.working = false;
+  view.timerCallback();
+  check(view.selectedEntry().hardware == FirmwareHardware::zeptocore,
+        "deferred selection applies when flashing finishes");
   noPartials(temp.directory);
+
+  // Exercise the app's actual presentation callback with an existing hidden
+  // Device window. Keep this app instance's preferences and project state private.
+  Temp appState;
+  juce::ScopedValueSetter<File> isolatedState(stateRootOverride, appState.directory);
+  check(preferencesFile().replaceWithText("{}"), "create isolated app preferences");
+  AppView app;
+  app.deviceButton.onClick();
+  auto *deviceView = dynamic_cast<DeviceView *>(app.deviceWindow->getContentComponent());
+  check(deviceView != nullptr, "create Device window from the app");
+  for (const int presentation : {2, 1, 0}) {
+    app.deviceWindow->closeButtonPressed();
+    app.presentationBox.setSelectedId(presentation + 1, juce::sendNotificationSync);
+    check(deviceView->firmware.selectedEntry().hardware == FirmwareHardware(presentation),
+          "app theme updates an existing hidden Device window");
+    app.deviceButton.onClick();
+    check(app.deviceWindow->isVisible() && deviceView->tabs.getCurrentTabIndex() == 1 &&
+              deviceView->firmware.download.snapshot().status == Status::idle,
+          "reopened Firmware tab retains the matching model without downloading");
+  }
 }
 void firmwareTests() {
   serialUf2Tests();

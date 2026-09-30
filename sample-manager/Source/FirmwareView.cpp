@@ -62,7 +62,8 @@ FirmwareView::FirmwareView(Device &d, Look &l, FirmwareHardware initial) : devic
   build.setTitle("Firmware build");
   volume.setTitle("Bootloader volume");
   hardware.setTooltip("Select the physical hardware to download its dedicated firmware. MIDI names "
-                      "do not distinguish Ectocore and Ezeptocore.");
+                      "do not distinguish Ectocore and Ezeptocore. Changing the app's theme also "
+                      "selects the matching hardware here.");
   build.setTooltip("Normal suits most uses. Choose Visualizer for full device visualization.");
   volume.setTextWhenNothingSelected("Select detected RPI-RP2 bootloader volume");
   volume.setTooltip("Select the connected RP2040 bootloader volume to receive the selected UF2.");
@@ -187,7 +188,12 @@ FirmwareView::~FirmwareView() {
   setLookAndFeel(nullptr);
 }
 bool FirmwareView::busy() const {
-  return working || confirming || choosing || download.snapshot().active();
+  return awaitingDownload || working || confirming || choosing || download.snapshot().active();
+}
+void FirmwareView::setHardware(FirmwareHardware model) {
+  // Keep the latest theme choice until an active operation has completed.
+  pendingHardwareId = int(model) + 1;
+  timerCallback();
 }
 void FirmwareView::updateBuilds() {
   entries.clear();
@@ -290,6 +296,11 @@ void FirmwareView::timerCallback() {
         selectImage(state.file, firmwareHardwareName(selectedEntry().hardware));
       }
     }
+  }
+  if (pendingHardwareId != 0 && !awaitingDownload && !busy()) {
+    const auto id = pendingHardwareId;
+    pendingHardwareId = 0;
+    hardware.setSelectedId(id, juce::sendNotificationSync);
   }
   const bool active = busy();
   for (auto *c :

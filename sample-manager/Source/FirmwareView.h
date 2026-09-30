@@ -11,6 +11,7 @@ public:
   void resized() override;
   void paint(juce::Graphics &g) override { g.fillAll(look.theme.background); }
   void cancelDownload() { download.cancel(); }
+  void setHardware(FirmwareHardware);
 
 private:
   friend void firmwareViewTests();
@@ -48,6 +49,7 @@ private:
   std::vector<const FirmwareEntry *> entries;
   FirmwareDownload download;
   bool awaitingDownload = false, confirming = false, choosing = false;
+  int pendingHardwareId = 0;
   juce::Array<File> volumes;
   File image, downloadedFile;
   std::unique_ptr<juce::FileChooser> chooser;

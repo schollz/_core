@@ -10,8 +10,10 @@ public:
   void paint(juce::Graphics &) override;
   void lookAndFeelChanged() override;
   void cancelDownload() { firmware.cancelDownload(); }
+  void setHardware(FirmwareHardware hardware) { firmware.setHardware(hardware); }
 
 private:
+  friend void firmwareViewTests();
   void timerCallback() override;
   void refresh();
   void layoutConnection();
