@@ -17,7 +17,7 @@ run:
 package:
 	python3 Release/package.py --platform $(PRESET) --version $(VERSION) --jobs $(JOBS)
 
-# Release entrypoints resolve and clone the latest published tag themselves.
+# Release entrypoints clone main and use the latest release version/destination.
 .PHONY: release-macosarm release-macos11 release-linux
 release-macosarm:
 	python3 Release/release-macosarm.py $(RELEASE_ARGS)

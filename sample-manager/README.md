@@ -30,7 +30,7 @@ python3 scripts/package_sample_manager.py --platform macos-arm64 --version 0.1.0
 python3 scripts/package_sample_manager.py --platform macos-x86_64 --version 0.1.0
 ```
 
-These packaging commands create local artifacts under `sample-manager/dist/` without uploading or flashing hardware. Local application versioning is independent of firmware versioning. The separate [release workflow and scripts](Release/README.md) clone the latest published release tag, use its version, build the standalone app, sign/notarize where applicable, and upload platform-specific assets to that same release.
+These packaging commands create local artifacts under `sample-manager/dist/` without uploading or flashing hardware. Local application versioning is independent of firmware versioning. The separate [release workflow and scripts](Release/README.md) clone the latest `main` commit, use the latest published release's version, build the standalone app, sign/notarize where applicable, and upload platform-specific assets to that release. Application updates do not require a new tag.
 
 ## Use a portable folder
 

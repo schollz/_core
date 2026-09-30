@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 def product_name(source_root):
-    # Release tooling also packages older tags: use the name of that source.
+    # The source checkout may differ from the release tooling: use its name.
     match = re.search(r'\bPRODUCT_NAME\s+"([A-Za-z0-9_ -]+)"',
                       (source_root / 'CMakeLists.txt').read_text())
     if not match:

@@ -1,7 +1,7 @@
 name: Release _core sample manager - Windows
 
-# Resolve the latest published release at execution time, independently of the
-# workflow ref. This does not create releases or react to firmware pushes.
+# Build main using the latest published release's version and upload destination,
+# independently of the workflow ref. This does not create releases.
 on:
   workflow_dispatch:
 
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   windows:
-    name: Build and sign latest release on Windows x64
+    name: Build and sign main on Windows x64
     runs-on: windows-2022
     timeout-minutes: 60
     defaults:
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Resolve latest release and clone its tagged application source
+      - name: Resolve latest release version and clone main application source
         env:
           GH_TOKEN: ${{ github.token }}
         run: python release-tools/sample-manager/Release/release-windows.py prepare

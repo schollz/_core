@@ -10,7 +10,7 @@ Set-StrictMode -Version Latest
 if ($Version -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') { throw 'Use major.minor.patch' }
 $project = [IO.Path]::GetFullPath($SourceRoot)
 $build = if ($BuildDirectory) { [IO.Path]::GetFullPath($BuildDirectory) } else { Join-Path $project 'build/windows-x64' }
-if (-not (Test-Path "$project/CMakeLists.txt")) { throw 'SourceRoot must contain the tagged sample-manager project' }
+if (-not (Test-Path "$project/CMakeLists.txt")) { throw 'SourceRoot must contain the sample-manager project' }
 $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
 $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if ($LASTEXITCODE -ne 0 -or -not $vs) { throw 'Install Visual Studio C++ x64 build tools' }

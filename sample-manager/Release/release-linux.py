@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Clone, build, package and upload the latest release directly on Linux x86_64."""
+"""Build main on Linux x86_64 using the latest release version, then package and upload."""
 from native_release import main
 
 if __name__ == '__main__':

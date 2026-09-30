@@ -1,7 +1,8 @@
 # Standalone application releases
 
 The release entrypoints build **_core sample manager** from a fresh clone of the
-latest published stable release of `schollz/_core`. Windows runs manually in
+latest `main` commit of `schollz/_core`, using the latest published stable release
+for the application version and upload destination. Windows runs manually in
 GitHub Actions; the macOS and Linux scripts run on your machines. Each uploads
 its platform's standalone archive, manifest and checksums to that same release.
 Packaging reads the application name from the selected source's `PRODUCT_NAME`,
@@ -13,20 +14,24 @@ No installer, AU, VST3, firmware build or hardware flashing is involved.
 The latest release must already exist, be mutable, and have a tag in
 `vMAJOR.MINOR.PATCH` or `MAJOR.MINOR.PATCH` form. The tag supplies the application
 version; each component must fit JUCE's 0–255 version fields. The release ID,
-tag and resolved commit are recorded before cloning. Each invocation gets a new
-source checkout and build directory, with no reuse of local application changes.
+tag and version are recorded separately from the selected `refs/heads/main`
+commit before cloning. Each invocation gets a new source checkout and build
+directory, with no reuse of local application changes.
 
 The scripts you invoke supply the release tooling. Application sources come
-only from the tagged clone, so the tag need not contain these release scripts.
-It **must** contain `sample-manager/CMakeLists.txt`. At implementation time,
-`v8.0.2` was the latest release and did not contain Sample Manager: publish a
-newer release containing the app before using these entrypoints. An older tag
-fails clearly; it never falls back to building `main`.
+from the recorded `main` commit, which must contain `sample-manager/CMakeLists.txt`.
+The release tag can predate Sample Manager entirely: no new tag or release is
+needed to publish application updates from `main`. For example, with latest
+release `v8.0.2`, a newer `main` build still reports version `8.0.2` and replaces
+that release's `8.0.2` application assets. The exact source commit is recorded in
+the manifest so successive builds with the same version remain distinguishable.
 
 Immediately before upload, the scripts resolve latest again and require the
-same release ID, tag, commit and version. A changed or immutable release aborts
-publication and retains the files. Rerunning replaces only the exact asset
-names for that version/platform; release metadata and other assets are left
+same release ID, tag and version. A changed or immutable release aborts
+publication and retains the files; rerun to build with the new release version.
+Advancing `main` during a run does not affect its pinned source or block upload.
+Rerunning replaces only the exact asset names for that version/platform;
+release metadata and other assets are left
 alone. No tag or GitHub release is created.
 
 GitHub CLI (`gh`) must be authenticated with access to read releases and upload
@@ -44,10 +49,10 @@ gh workflow run release-sample-manager-windows.yml --repo schollz/_core --ref ma
 
 The workflow uses GitHub's hosted `windows-2022` runner, which includes Git,
 GitHub CLI, Windows PowerShell and Visual Studio's C++ x64, CMake and Ninja tools.
-It provisions Python 3.11, .NET 8 and Tape's
-SHA-256-checked portable PowerShell 7.4.13 in runner tool caches. It clones the
-latest tag under `RUNNER_TEMP`, builds a Release executable with the static MSVC
-runtime, and skips application tests.
+It provisions Python 3.11, .NET 8 and Tape's SHA-256-checked portable PowerShell
+7.4.13 in runner tool caches. It clones the selected `main` commit under
+`RUNNER_TEMP`, builds a Release executable with the static MSVC runtime, and
+skips application tests.
 
 The pinned Azure Artifact Signing action signs the executable with SHA-256 and
 an RFC 3161 timestamp, using the existing repository secrets:
@@ -107,8 +112,8 @@ python3 sample-manager/Release/release-macosarm.py --notary-profile tape-notary
 NOTARY_PROFILE=tape-notary make sample-manager-release-macosarm
 ```
 
-This clones the latest tag locally, compiles the standalone ARM64 app inside
-that clone, then signs, notarizes and uploads it from this Mac.
+This clones the latest `main` commit locally, compiles the standalone ARM64 app
+inside that clone, then signs, notarizes and uploads it from this Mac.
 
 ### Intel — build remotely, sign here
 
@@ -126,8 +131,8 @@ rsync, and network access to GitHub for cloning and the pinned JUCE download.
 SSH and rsync must also be installed on the signing Mac; SSH agent forwarding
 is disabled.
 
-The controller clones the tag locally for packaging inputs. The Intel Mac
-creates its own fresh clone in a unique temporary directory and verifies the
+The controller clones the selected `main` commit locally for packaging inputs.
+The Intel Mac creates its own fresh clone in a unique temporary directory and verifies the
 same pinned commit before compiling. Only the app, build metadata and JUCE
 notice return from the builder; a `ditto` ZIP preserves bundle permissions and
 symlinks. The controller checks the returned architecture, version, deployment
@@ -159,8 +164,8 @@ python3 sample-manager/Release/release-linux.py
 make sample-manager-release-linux
 ```
 
-This clones and builds the latest tag locally, checks the ELF architecture,
-and packages the executable with a relative launcher and its resolved non-glibc
+This clones and builds the latest `main` commit locally, checks the ELF
+architecture, and packages the executable with a relative launcher and its resolved non-glibc
 runtime libraries. It includes installed Debian/Ubuntu library notices and
 records their package ownership; missing notices fail packaging. The archive
 includes libstdc++, libgcc when needed, ALSA, X11, FreeType, Fontconfig, libcurl
@@ -178,8 +183,8 @@ The three native entrypoints accept:
 - `--jobs N`: compiler parallelism, default 6.
 - `--output PATH`: parent of a unique run directory; defaults to
   `sample-manager/dist/releases/` beside the invoking tooling.
-- `--no-upload`: still clone the latest release and perform the full normal
-  build/package/sign/notarize path, but retain the assets locally.
+- `--no-upload`: still clone `main`, use the latest release version and perform
+  the full normal build/package/sign/notarize path, but retain the assets locally.
 
 Use `RELEASE_ARGS` with the Makefile shortcuts, for example:
 
@@ -198,7 +203,8 @@ _core-sample-manager-VERSION-PLATFORM-SHA256SUMS.txt
 
 The native run directory retains `source/`, the build inside it, `payload/`,
 `selection.json`, `release.log`, `assets/`, and macOS notarization evidence.
-The manifest records the selected release/commit, signed payload hashes,
+The manifest records the release ID/tag/version under `release` and the built
+repository/ref/commit under `source`, as well as signed payload hashes,
 platform and version, archive size/hash, signature/notarization evidence where
 applicable, and `applicationTestsRun: false`. Output is ignored by Git under the
 default destination. Previous runs are preserved.
@@ -215,20 +221,29 @@ release to replace that platform's full set.
 These new release paths do **not** run CTest, embedded self-tests, MIDI tests,
 application launches, or hardware tests. They do perform source/version,
 architecture, signature, notarization, packaging and upload-integrity checks.
-Implementation was reviewed as source only; no build, signing, notarization,
-workflow dispatch or upload was run to validate these entrypoints.
+Source-selection and publication regression tests use temporary Git repositories
+and simulated build/signing/upload commands:
+
+```sh
+python3 -m unittest discover -s sample-manager/Tests -p 'test_release.py' -v
+```
+
+These tests do not validate native compilation, real signing/notarization or
+live GitHub uploads.
 
 When exercising them yourself, check:
 
-1. Each of the four paths builds the latest tagged source, records its commit,
-   and attaches only that platform's archive, manifest and checksum file.
+1. Each of the four paths builds the selected `main` commit using the latest
+   release version, and attaches only that platform's archive, manifest and
+   checksum file to that release.
 2. ARM64 and Intel packages have accepted notarization and stapled tickets;
    Windows has valid timestamped Authenticode; Linux starts through its launcher.
-3. An older latest tag without Sample Manager fails without building `main`.
+3. An older latest tag without Sample Manager still works when `main` contains it.
 4. Missing tools/credentials, an unavailable Intel host, or rejected signing or
    notarization produces retained diagnostics and no upload/completion marker.
-5. Publishing a newer release or moving the selected tag during a build aborts
-   upload, retaining the finished package instead of attaching it elsewhere.
+5. Publishing a newer release during a build aborts upload and retains the
+   finished package. Advancing `main` does not change the source being built or
+   block upload to the unchanged latest release.
 6. `--no-upload` produces the normal signed/notarized macOS package and all
    metadata locally, without publishing or marking publication complete.
 
@@ -258,6 +273,6 @@ On Windows:
 Both PowerShell helpers accept `-SourceRoot` pointing at a sample-manager
 project and `-BuildDirectory`. The builder accepts `-SkipTests`; the packager
 accepts `-OutputDirectory` and `-RequireSignature`. The new release workflow
-supplies the fresh tagged project explicitly, skips application tests, and
+supplies the fresh `main` project explicitly, skips application tests, and
 requires signing. Ordinary local commands preserve their build/test and
 unsigned-packaging defaults.

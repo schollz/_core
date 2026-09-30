@@ -10,9 +10,9 @@ import subprocess
 from pathlib import Path
 
 from package import package_build, product_name
-from release_common import (REPOSITORY_URL, ROOT, SSH, ReleaseError, Runner,
-                            clone_release, finish_package, new_run, publish,
-                            require_tools, select_release, write_json)
+from release_common import (ROOT, SSH, ReleaseError, Runner,
+                            clone_source, finish_package, new_run, publish,
+                            require_tools, select_release, source_clone_commands, write_json)
 
 DEFAULT_REMOTE = 'zns@192.168.0.44'
 DEFAULT_IDENTITY = 'Developer ID Application: Zackary Scholl (KF253X8W3N)'
@@ -50,16 +50,14 @@ def remote_build_script(directory, selection, jobs, name):
     project = source / 'sample-manager'
     build = project / 'build/macos-x86_64'
     quote = shlex.quote
-    commands = build_commands(project, build, selection['version'], 'macos-x86_64', jobs)
+    commands = build_commands(project, build, selection['release']['version'], 'macos-x86_64', jobs)
     build_script = 'set -euo pipefail\n' + '\n'.join(shlex.join(c) for c in commands)
     return '\n'.join([
         'export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
         'test "$(uname -s)" = Darwin && test "$(uname -m)" = x86_64',
         'for tool in git cmake ninja xcrun ditto; do command -v "$tool" >/dev/null; done',
-        shlex.join(['git', 'clone', '--depth', '1', '--no-checkout', '--branch', selection['tag'],
-                    REPOSITORY_URL, str(source)]),
-        'test "$(git -C ' + quote(str(source)) + ' rev-parse HEAD)" = ' + quote(selection['commit']),
-        shlex.join(['git', '-C', str(source), 'checkout', '--detach', selection['commit']]),
+        *(shlex.join(command) for command in source_clone_commands(selection, source)),
+        'test "$(git -C ' + quote(str(source)) + ' rev-parse HEAD)" = ' + quote(selection['source']['commit']),
         'test -f ' + quote(str(project / 'CMakeLists.txt')),
         '/usr/bin/caffeinate -i /bin/bash -c ' + quote(build_script),
         shlex.join(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
@@ -83,7 +81,7 @@ def retrieve_intel(runner, host, directory, output, build):
 
 
 def main(platform_name):
-    parser = argparse.ArgumentParser(description='Clone, build and publish the latest stable _core sample manager release.')
+    parser = argparse.ArgumentParser(description='Build _core sample manager from main using the latest release version, and upload to that release.')
     remote = platform_name == 'macos-x86_64'
     mac = platform_name.startswith('macos')
     if remote:
@@ -91,7 +89,7 @@ def main(platform_name):
         parser.add_argument('--keep-remote', action='store_true', help='Keep the successful remote clone/build')
     parser.add_argument('--jobs', type=int, default=6)
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/releases', help='Parent for a unique run directory')
-    parser.add_argument('--no-upload', action='store_true', help='Build the latest tag and sign/package normally, retaining assets locally')
+    parser.add_argument('--no-upload', action='store_true', help='Build main with the latest release version and sign/package normally, retaining assets locally')
     if mac:
         parser.add_argument('--notary-profile', default=os.environ.get('NOTARY_PROFILE', ''), help='Existing local Keychain profile')
     args = parser.parse_args()
@@ -123,7 +121,8 @@ def main(platform_name):
         runner.log = output / 'release.log'
         selection = select_release(runner)
         write_json(output / 'selection.json', selection)
-        project = clone_release(runner, selection, output / 'source')
+        version = selection['release']['version']
+        project = clone_source(runner, selection, output / 'source')
         name = product_name(project)
         identity, credentials = mac_credentials(runner, args.notary_profile) if mac else (None, None)
         build = project / 'build' / platform_name
@@ -135,14 +134,14 @@ def main(platform_name):
             runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs, name))
             juce_license = retrieve_intel(runner, args.host, remote_dir, output, build)
         else:
-            for command in build_commands(project, build, selection['version'], platform_name, args.jobs):
+            for command in build_commands(project, build, version, platform_name, args.jobs):
                 runner.run(*(['/usr/bin/caffeinate', '-i'] if mac else []), *command)
         if not mac:
             header = runner.run('readelf', '-h', build / 'CoreSampleManager_artefacts/Release' / name)
             if not re.search(r'Class:\s+ELF64', header) or not re.search(r'Machine:\s+Advanced Micro Devices X86-64', header):
                 raise ReleaseError('Expected a Linux x86_64 executable')
         assets = output / 'assets'
-        archive, manifest = package_build(project, build, assets, platform_name, selection['version'],
+        archive, manifest = package_build(project, build, assets, platform_name, version,
             command=runner.run, sign_identity=identity, notary_credentials=credentials, juce_license=juce_license)
         manifest.update(buildHost=args.host if remote else platform.node(), signingHost=platform.node() if mac else None)
         finish_package(assets, archive, manifest, selection, platform_name, will_publish=not args.no_upload)

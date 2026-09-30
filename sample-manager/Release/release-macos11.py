@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the latest release on the Intel Mac; sign, notarize and upload on this Mac."""
+"""Build main on Intel using the latest release version; sign, notarize and upload locally."""
 from native_release import main
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 """Release selection, clean source clones, evidence and existing-release uploads.
 
-These helpers come from the invoking checkout. Application source always comes
-from the selected release tag, which need not contain these helpers.
+These helpers come from the invoking checkout. Application source comes from
+main; the latest published release supplies the version and upload destination.
 """
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from package import sha
 
 REPOSITORY = 'schollz/_core'
 REPOSITORY_URL = 'https://github.com/' + REPOSITORY + '.git'
+SOURCE_BRANCH = 'main'
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = re.compile(r'v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))')
 SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=no', '-o', 'ConnectTimeout=10']
@@ -110,20 +111,18 @@ def latest_release(runner):
             'version': match.group(1), 'url': release['html_url']}
 
 
-def tag_commit(runner, tag):
-    ref = 'refs/tags/' + tag
-    output = runner.run('git', 'ls-remote', '--exit-code', '--tags', REPOSITORY_URL, ref, ref + '^{}')
+def select_source(runner):
+    ref = 'refs/heads/' + SOURCE_BRANCH
+    output = runner.run('git', 'ls-remote', '--exit-code', '--heads', REPOSITORY_URL, ref)
     refs = dict(line.split()[::-1] for line in output.splitlines() if len(line.split()) == 2)
-    commit = refs.get(ref + '^{}', refs.get(ref, ''))
+    commit = refs.get(ref, '')
     if not re.fullmatch(r'[0-9a-f]{40}', commit):
-        raise ReleaseError('Cannot resolve the latest release tag to a commit')
-    return commit
+        raise ReleaseError('Cannot resolve main to a commit')
+    return {'repository': REPOSITORY, 'ref': ref, 'commit': commit}
 
 
 def select_release(runner):
-    selection = latest_release(runner)
-    selection['commit'] = tag_commit(runner, selection['tag'])
-    return selection
+    return {'release': latest_release(runner), 'source': select_source(runner)}
 
 
 def new_run(parent, platform_name):
@@ -131,26 +130,37 @@ def new_run(parent, platform_name):
     return Path(tempfile.mkdtemp(prefix=platform_name + '-', dir=str(parent.resolve())))
 
 
-def clone_release(runner, selection, destination):
-    runner.run('git', 'clone', '--config', 'core.longpaths=true', '--depth', '1', '--no-checkout', '--branch', selection['tag'],
-               REPOSITORY_URL, destination)
+def source_clone_commands(selection, destination):
+    commit = selection['source']['commit']
+    return [
+        ['git', 'clone', '--config', 'core.longpaths=true', '--depth', '1', '--no-checkout',
+         '--branch', SOURCE_BRANCH, REPOSITORY_URL, str(destination)],
+        # main may advance between selection and either the local or Intel clone.
+        # Fetch the recorded commit explicitly so both hosts build the same source.
+        ['git', '-C', str(destination), 'fetch', '--depth', '1', 'origin', commit],
+        ['git', '-C', str(destination), 'checkout', '--detach', commit],
+    ]
+
+
+def clone_source(runner, selection, destination):
+    for command in source_clone_commands(selection, destination):
+        runner.run(*command)
     actual = runner.run('git', '-C', destination, 'rev-parse', 'HEAD')
-    if actual != selection['commit']:
-        raise ReleaseError('Release tag moved while cloning; refusing different source')
-    runner.run('git', '-C', destination, 'checkout', '--detach', selection['commit'])
+    if actual != selection['source']['commit']:
+        raise ReleaseError('Source checkout does not match the selected main commit')
     project = destination / 'sample-manager'
     if not (project / 'CMakeLists.txt').is_file():
-        raise ReleaseError(f"Release {selection['tag']} does not contain Sample Manager. "
-                           'Publish a newer release containing sample-manager/ first.')
+        raise ReleaseError('Selected main commit does not contain sample-manager/CMakeLists.txt')
     return project
 
 
 def recheck_release(runner, selection):
-    if selection.get('repository') != REPOSITORY:
+    release = selection['release']
+    if release.get('repository') != REPOSITORY:
         raise ReleaseError('Unexpected repository in release metadata')
-    current = select_release(runner)
-    if any(current[key] != selection.get(key) for key in ('id', 'tag', 'commit', 'version')):
-        raise ReleaseError('Latest release or its tag changed during the build; upload aborted, artifacts retained')
+    current = latest_release(runner)
+    if any(current[key] != release.get(key) for key in ('id', 'tag', 'version')):
+        raise ReleaseError('Latest release changed during the build; upload aborted, artifacts retained')
 
 
 def asset_prefix(version, platform_name):
@@ -159,9 +169,9 @@ def asset_prefix(version, platform_name):
 
 def finish_package(output, archive, manifest, selection, platform_name, *, will_publish=True):
     """Write platform-specific metadata without marking the release complete."""
-    prefix = asset_prefix(selection['version'], platform_name)
-    manifest.update(version=selection['version'],
-                    platform=platform_name, release=selection,
+    prefix = asset_prefix(selection['release']['version'], platform_name)
+    manifest.update(version=selection['release']['version'],
+                    platform=platform_name, release=selection['release'], source=selection['source'],
                     created=datetime.now(timezone.utc).isoformat(),
                     publication='requested; see complete.json for confirmation' if will_publish else 'disabled by --no-upload',
                     applicationTestsRun=False,
@@ -179,8 +189,8 @@ def verify_package(output, platform_name):
         raise ReleaseError('Expected exactly one release manifest')
     report = reports[0]
     manifest = read_json(report)
-    selection = manifest['release']
-    prefix = asset_prefix(selection['version'], platform_name)
+    selection = {'release': manifest['release'], 'source': manifest['source']}
+    prefix = asset_prefix(selection['release']['version'], platform_name)
     extension = '.tar.gz' if platform_name.startswith('linux') else '.zip'
     archive = output / (prefix + extension)
     checksums = output / (prefix + '-SHA256SUMS.txt')
@@ -207,12 +217,13 @@ def verify_package(output, platform_name):
 def publish(runner, output, platform_name):
     selection, assets = verify_package(output, platform_name)
     recheck_release(runner, selection)
-    runner.run('gh', 'release', 'upload', selection['tag'], *assets, '--repo', REPOSITORY, '--clobber')
-    uploaded = json.loads(runner.run('gh', 'api', f"repos/{REPOSITORY}/releases/{selection['id']}"))
+    release = selection['release']
+    runner.run('gh', 'release', 'upload', release['tag'], *assets, '--repo', REPOSITORY, '--clobber')
+    uploaded = json.loads(runner.run('gh', 'api', f"repos/{REPOSITORY}/releases/{release['id']}"))
     for asset in assets:
         found = next((item for item in uploaded['assets'] if item['name'] == asset.name), None)
         if not found or found.get('size') != asset.stat().st_size or found.get('digest') != 'sha256:' + sha(asset):
             raise ReleaseError('Uploaded asset verification failed: ' + asset.name)
-    write_json(output / 'complete.json', {'release': selection, 'published': True,
+    write_json(output / 'complete.json', {**selection, 'published': True,
                                          'assets': {p.name: sha(p) for p in assets}})
-    runner.write('Published verified assets to ' + selection['url'])
+    runner.write('Published verified assets to ' + release['url'])

@@ -8,7 +8,7 @@ import platform
 import subprocess
 from pathlib import Path
 
-from release_common import (ROOT, ReleaseError, Runner, clone_release, finish_package,
+from release_common import (ROOT, ReleaseError, Runner, clone_source, finish_package,
                             new_run, publish, read_json, require_tools, select_release, write_json)
 
 
@@ -48,10 +48,10 @@ def main():
             runner.log = output / 'prepare.log'
             selection = select_release(runner)
             write_json(output / 'selection.json', selection)
-            project = clone_release(runner, selection, output / 'source')
+            project = clone_source(runner, selection, output / 'source')
             build = project / 'build/windows-x64'
             export_environment({'CORE_RELEASE_SOURCE': project, 'CORE_RELEASE_BUILD': build,
-                                'CORE_RELEASE_VERSION': selection['version'],
+                                'CORE_RELEASE_VERSION': selection['release']['version'],
                                 'CORE_RELEASE_SIGN_DIR': build / 'CoreSampleManager_artefacts/Release',
                                 'DOTNET_INSTALL_DIR': Path(os.environ['RUNNER_TOOL_CACHE']) / 'core-sample-manager-dotnet'})
             return 0
@@ -60,12 +60,13 @@ def main():
         selection = read_json(output / 'selection.json')
         project = output / 'source/sample-manager'
         build = project / 'build/windows-x64'
-        if runner.run('git', '-C', output / 'source', 'rev-parse', 'HEAD') != selection['commit']:
-            raise ReleaseError('Source checkout no longer matches the selected release')
+        if runner.run('git', '-C', output / 'source', 'rev-parse', 'HEAD') != selection['source']['commit']:
+            raise ReleaseError('Source checkout no longer matches the selected main commit')
+        version = selection['release']['version']
         script = ROOT / 'Release' / (args.operation + '-windows.ps1')
         command = ['powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
                    '-File', script, '-SourceRoot', project, '-BuildDirectory', build,
-                   '-Version', selection['version']]
+                   '-Version', version]
         if args.operation == 'build':
             runner.run(*command, '-SkipTests')
         else:
@@ -75,7 +76,7 @@ def main():
             manifest['buildHost'] = platform.node()
             assets = output / 'assets'
             assets.mkdir()
-            archive = staged / f"_core-sample-manager-{selection['version']}-windows-x64.zip"
+            archive = staged / f"_core-sample-manager-{version}-windows-x64.zip"
             destination = assets / archive.name
             archive.rename(destination)
             finish_package(assets, destination, manifest, selection, 'windows-x64')
