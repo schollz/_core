@@ -262,6 +262,7 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
     require((entry.hardware == FirmwareHardware::zeptocore) == (inspected.product == "Zeptocore"),
             "Downloaded UF2 identifies a different hardware family. Choose the correct firmware "
             "for your device.");
+    const auto checksum = hashFile(temporary, [this] { return stopped.load(); });
     // The final filename becomes visible only after the complete file validates.
     for (;;) {
       cancelled([this] { return stopped.load(); });
@@ -277,6 +278,8 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
           completed.file = destination;
           completed.received = received;
           completed.total = received;
+          completed.entry = entry;
+          completed.checksum = checksum;
           completed.message =
               "Downloaded and checked: " + destination.getFileName();
           finished = true;

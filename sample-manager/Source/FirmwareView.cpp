@@ -35,7 +35,7 @@ void FirmwareView::GuideStep::paint(juce::Graphics &g) {
     icon->drawWithin(g, {float(getWidth() - 42), 15.f, 26.f, 26.f},
                      juce::RectanglePlacement::centred, 1.f);
 }
-FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
+FirmwareView::FirmwareView(Device &d, Look &l, FirmwareHardware initial) : device(d), look(l) {
   setLookAndFeel(&look);
   addAndMakeVisible(viewport);
   viewport.setViewedComponent(&content, false);
@@ -44,21 +44,27 @@ FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
   for (auto *c : std::initializer_list<juce::Component *>{
            &heading, &hardwareLabel, &versionLabel, &buildLabel, &modelNote, &release,
            &description, &catalogStatus, &downloadStatus, &guideHeading, &hardware, &version,
-           &build, &get, &cancel, &reveal, &docs, &refresh, &progressBar})
+           &build, &get, &cancel, &reveal, &docs, &refresh, &progressBar, &installHeading,
+           &installStatus, &reset, &rescan, &volume, &write})
     content.addAndMakeVisible(c);
-  label(heading, "Firmware downloads");
+  label(heading, "Choose, download, install");
   label(hardwareLabel, "Hardware model");
   label(versionLabel, "Firmware version");
   label(buildLabel, "Firmware build");
   label(modelNote, "Choose your physical hardware. Ectocore may appear as ezeptocore over MIDI.");
   label(guideHeading, "How to install");
-  for (auto *h : {&heading, &guideHeading})
+  label(installHeading, "Install downloaded firmware");
+  label(installStatus, "Download the selected version to enable installation.");
+  for (auto *h : {&heading, &guideHeading, &installHeading})
     h->setFont(look.font(17));
   hardware.addItemList({"Ezeptocore", "Zeptocore", "Ectocore"}, 1);
   hardware.setSelectedId(int(initial) + 1, juce::dontSendNotification);
   hardware.setTitle("Hardware model");
   version.setTitle("Firmware version");
   build.setTitle("Firmware build");
+  volume.setTitle("Bootloader volume");
+  volume.setTextWhenNothingSelected("Connect your device in bootloader mode (RPI-RP2)");
+  volume.setTooltip("A single detected RPI-RP2 drive is selected automatically. Choose your device if several are connected.");
   hardware.setTooltip("Select your physical hardware. Changing the app's theme also selects the "
                       "matching hardware here.");
   version.setTooltip("Choose an available release. The latest version is selected by default.");
@@ -68,22 +74,26 @@ FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
   cancel.setTooltip("Cancel the download or version lookup.");
   reveal.setTooltip("Show the last successfully downloaded UF2 in your Downloads folder.");
   refresh.setTooltip("Check GitHub for available firmware versions and builds.");
+  reset.setTooltip("After downloading, stop playback and reset the MIDI-connected device to its USB bootloader after confirmation.");
+  rescan.setTooltip("Look for RPI-RP2 bootloader drives. Drives are also detected automatically after downloading.");
+  write.setTooltip("Install the validated download for the selected hardware, version, and build after confirmation.");
   progressBar.setPercentageDisplay(true);
   progressBar.setVisible(false);
   int order = 1;
   for (auto *c : std::initializer_list<juce::Component *>{&hardware, &version, &build, &refresh,
-                                                         &get, &cancel, &reveal, &docs})
+                                                         &get, &cancel, &reveal, &reset, &rescan,
+                                                         &volume, &write, &docs})
     c->setExplicitFocusOrder(order++);
   steps[0] = std::make_unique<GuideStep>(look, "1", "Choose firmware", "", "settings-2");
   steps[1] = std::make_unique<GuideStep>(
       look, "2", "Download the UF2",
-      "Click Download UF2. Once it is checked, use Show in folder to find it in Downloads.", "download");
+      "Click Download UF2. The checked file is saved in Downloads and becomes ready to install.", "download");
   steps[2] = std::make_unique<GuideStep>(
       look, "3", "Enter bootloader",
-      "Connect by USB and follow your hardware's bootloader guide below. A drive named RPI-RP2 appears.", "usb");
+      "Connect USB. Use Reset to bootloader with MIDI, or follow your hardware guide. Select the detected RPI-RP2 drive.", "usb");
   steps[3] = std::make_unique<GuideStep>(
-      look, "4", "Copy and reconnect",
-      "Drag the downloaded UF2 onto RPI-RP2 in Finder or your file manager. Wait for the copy to finish and the device to restart.", "file-up");
+      look, "4", "Install and reconnect",
+      "Click Install firmware and confirm the version and drive. Wait for installation to finish and the device to restart.", "file-up");
   for (auto &step : steps)
     content.addAndMakeVisible(*step);
   hardware.onChange = [this] { updateVersions(); };
@@ -114,6 +124,32 @@ FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
     if (!juce::URL(url).launchInDefaultBrowser())
       label(downloadStatus, "Could not open your browser. " + url);
   };
+  reset.onClick = [this] {
+    if (busy() || !downloadMatchesSelection() || !device.connected())
+      return;
+    confirming = true;
+    const auto epoch = ++confirmationEpoch;
+    timerCallback();
+    auto safe = juce::Component::SafePointer<FirmwareView>(this);
+    confirm(juce::MessageBoxOptions().withTitle("Reset connected device")
+                .withMessage("Stop playback and reset the selected MIDI device into its USB bootloader?")
+                .withButton("Reset").withButton("Cancel"),
+            [safe, epoch](int n) {
+              if (!safe || safe->confirmationEpoch != epoch)
+                return;
+              safe->confirming = false;
+              if (n == 1)
+                try {
+                  safe->device.command(0);
+                } catch (const std::exception &e) {
+                  label(safe->installStatus, e.what());
+                }
+              safe->refreshVolumes();
+              safe->timerCallback();
+            });
+  };
+  rescan.onClick = [this] { if (!busy()) refreshVolumes(); };
+  write.onClick = [this] { install(); };
   updateVersions();
   timerCallback();
   startTimer(100);
@@ -121,11 +157,14 @@ FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
 FirmwareView::~FirmwareView() {
   stopTimer();
   cancelDownload();
+  stopping = true;
+  if (installWorker.joinable())
+    installWorker.join();
   viewport.setViewedComponent(nullptr, false);
   setLookAndFeel(nullptr);
 }
 bool FirmwareView::busy() const {
-  return awaitingDownload || awaitingVersions || download.snapshot().active();
+  return awaitingDownload || awaitingVersions || download.snapshot().active() || confirming || awaitingInstall;
 }
 void FirmwareView::loadVersions() {
   if (!versionsLoaded && !busy())
@@ -174,6 +213,8 @@ const FirmwareEntry &FirmwareView::selectedEntry() const {
   return *entries.at(size_t(build.getSelectedId() - 1));
 }
 void FirmwareView::updateEntry() {
+  label(installStatus, downloadMatchesSelection() ? "Ready to install: " + downloadedFile.getFileName()
+                                                : "Download the selected version to enable installation.");
   const auto model = FirmwareHardware(hardware.getSelectedId() - 1);
   label(steps[0]->body, "Selected: " + firmwareHardwareName(model) +
         ". Choose a version and build. Visualizer enables full device visualization when available.");
@@ -188,6 +229,76 @@ void FirmwareView::updateEntry() {
   label(release, entry.filename);
   release.setTooltip(entry.url);
   label(description, firmwareDescription(entry));
+}
+bool FirmwareView::downloadMatchesSelection() const {
+  if (entries.empty() || build.getSelectedId() <= 0 || downloadedChecksum.isEmpty() ||
+      !downloadedFile.existsAsFile())
+    return false;
+  const auto &entry = selectedEntry();
+  return downloadedEntry.hardware == entry.hardware && downloadedEntry.version == entry.version &&
+         downloadedEntry.build == entry.build && downloadedEntry.filename == entry.filename;
+}
+void FirmwareView::refreshVolumes() {
+  const auto previous = volume.getSelectedId() > 0 ? volumes[volume.getSelectedId() - 1] : File();
+  volumes = findVolumes();
+  volume.clear(juce::dontSendNotification);
+  for (int i = 0; i < volumes.size(); ++i) {
+    volume.addItem(volumes[i].getFullPathName(), i + 1);
+    if (volumes[i] == previous || volumes.size() == 1)
+      volume.setSelectedId(i + 1, juce::dontSendNotification);
+  }
+}
+void FirmwareView::install() {
+  if (busy() || !downloadMatchesSelection() || volume.getSelectedId() == 0)
+    return;
+  const auto target = volumes[volume.getSelectedId() - 1];
+  confirming = true;
+  const auto epoch = ++confirmationEpoch;
+  timerCallback();
+  auto safe = juce::Component::SafePointer<FirmwareView>(this);
+  confirm(juce::MessageBoxOptions().withTitle("Install downloaded firmware")
+              .withMessage("Install " + downloadedFile.getFileName() + " for " +
+                           firmwareHardwareName(downloadedEntry.hardware) + " on " + target.getFullPathName() +
+                           "? Check that this is the correct device. It will restart after installation.")
+              .withButton("Install").withButton("Cancel"),
+          [safe, target, epoch](int n) {
+            if (!safe || safe->confirmationEpoch != epoch)
+              return;
+            safe->confirming = false;
+            if (n == 1)
+              safe->startInstall(target);
+            safe->timerCallback();
+          });
+}
+void FirmwareView::startInstall(const File &target) {
+  if (busy() || !downloadMatchesSelection())
+    return;
+  if (installWorker.joinable())
+    installWorker.join();
+  const auto file = downloadedFile;
+  const auto checksum = downloadedChecksum;
+  awaitingInstall = true;
+  installing = true;
+  installProgress = 0;
+  label(installStatus, "Installing " + file.getFileName() + "...");
+  installWorker = std::thread([this, file, target, checksum] {
+    String result;
+    try {
+      require(hashFile(file, [this] { return stopping.load(); }) == checksum,
+              "The downloaded file changed. Download it again before installing.");
+      copyFirmware(file, target, [this](double p) { installProgress = p; },
+                   [this] { return stopping.load(); });
+      result = "Installation completed. Wait for the device to restart and reconnect.";
+    } catch (const std::exception &error) {
+      result = error.what();
+    }
+    diagnostics::log("FIRMWARE", "Install " + file.getFileName() + ": " + result);
+    {
+      std::lock_guard<std::mutex> lock(installMutex);
+      installResult = result;
+    }
+    installing = false;
+  });
 }
 void FirmwareView::timerCallback() {
   if (awaitingVersions) {
@@ -212,8 +323,21 @@ void FirmwareView::timerCallback() {
     downloadProgress = state.total > 0 ? double(state.received) / double(state.total) : -1.;
     if (!state.active()) {
       awaitingDownload = false;
-      if (state.status == FirmwareDownload::Status::succeeded)
+      if (state.status == FirmwareDownload::Status::succeeded) {
         downloadedFile = state.file;
+        downloadedEntry = state.entry;
+        downloadedChecksum = state.checksum;
+        label(installStatus, "Ready to install: " + downloadedFile.getFileName());
+        refreshVolumes();
+      }
+    }
+  }
+  if (awaitingInstall) {
+    downloadProgress = installProgress.load();
+    if (!installing) {
+      awaitingInstall = false;
+      std::lock_guard<std::mutex> lock(installMutex);
+      label(installStatus, installResult);
     }
   }
   if (pendingHardwareId != 0 && !busy()) {
@@ -222,14 +346,22 @@ void FirmwareView::timerCallback() {
     hardware.setSelectedId(id, juce::sendNotificationSync);
   }
   const bool active = busy();
+  if (!active && downloadMatchesSelection() && ++volumeTicks >= 10) {
+    volumeTicks = 0;
+    refreshVolumes();
+  }
   hardware.setEnabled(!active);
   version.setEnabled(!active && !versions.isEmpty());
   build.setEnabled(!active && !entries.empty());
   get.setEnabled(!active && !entries.empty());
   refresh.setEnabled(!active);
+  reset.setEnabled(!active && downloadMatchesSelection() && device.connected());
+  rescan.setEnabled(!active);
+  volume.setEnabled(!active);
+  write.setEnabled(!active && downloadMatchesSelection() && volume.getSelectedId() > 0);
   cancel.setEnabled(state.active() || awaitingVersions);
   reveal.setEnabled(downloadedFile.existsAsFile());
-  progressBar.setVisible(state.active() || awaitingVersions);
+  progressBar.setVisible(state.active() || awaitingVersions || awaitingInstall);
   if (awaitingVersions)
     downloadProgress = -1.;
 }
@@ -262,10 +394,10 @@ void FirmwareView::resized() {
   }
   refresh.setBounds(20, y, refresh.preferredWidth(32), 32);
   y += 40;
-  line(catalogStatus, 48);
-  line(modelNote, 43);
-  line(release, 44, 4);
-  line(description, 76);
+  line(catalogStatus, 36, 4);
+  line(modelNote, 32, 4);
+  line(release, 30, 4);
+  line(description, 56);
   int x = 20;
   for (auto *button : {&get, &cancel, &reveal}) {
     const auto bw = button->preferredWidth(32);
@@ -278,7 +410,23 @@ void FirmwareView::resized() {
   }
   y += 40;
   line(progressBar, 14, 4);
-  line(downloadStatus, 78, 16);
+  line(downloadStatus, 48);
+  line(installHeading, 26, 4);
+  x = 20;
+  for (auto *button : {&reset, &rescan}) {
+    const auto bw = button->preferredWidth(32);
+    if (x + bw > 20 + column) {
+      x = 20;
+      y += 40;
+    }
+    button->setBounds(x, y, bw, 32);
+    x += bw + 8;
+  }
+  y += 40;
+  line(volume, 32);
+  write.setBounds(20, y, write.preferredWidth(32), 32);
+  y += 40;
+  line(installStatus, 48);
   const int leftHeight = y;
   const int guideX = sideBySide ? width - 310 : 20;
   const int guideWidth = sideBySide ? 290 : column;

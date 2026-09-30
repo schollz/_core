@@ -1,7 +1,7 @@
 #include "DeviceView.h"
 namespace core {
 DeviceView::DeviceView(Device &d, Look &l, FirmwareHardware hardware)
-    : device(d), look(l), firmware(l, hardware) {
+    : device(d), look(l), firmware(d, l, hardware) {
   setLookAndFeel(&look);
   connection.onResize = [this] { layoutConnection(); };
   addAndMakeVisible(tabs);
@@ -27,7 +27,7 @@ DeviceView::DeviceView(Device &d, Look &l, FirmwareHardware hardware)
   log.setTooltip("Recent MIDI connection, status and device messages. Select text to copy it.");
   instructions.setText(
       "Device connection is independent of the presentation and edited sample.\n"
-      "Open Firmware to choose a version, download a UF2, and view the installation guide.",
+      "Open Firmware to choose a version, download it, and install it on your device.",
       juce::dontSendNotification);
   log.setMultiLine(true);
   log.setReadOnly(true);

@@ -442,7 +442,7 @@ AppView::AppView() {
   settingsButton.setTooltip("Edit the project's hardware settings and effect banks. "
                             "Changes save to this project's folder.");
   deviceButton.setTooltip(
-      "Choose MIDI ports, or open Firmware to download a UF2 and follow the installation guide.");
+      "Choose MIDI ports, or open Firmware to choose a version, download it, and install it.");
   visualizerButton.setTooltip(
       "Show or hide the visualizer dock. Choose Device or Preview inside it.");
   more.setTooltip("Retry saving, reconcile external card changes, clear this bank, "

@@ -363,13 +363,12 @@ void firmwareViewTests() {
           "arrow keys select firmware build");
     view.build.setSelectedId(1, juce::sendNotificationSync);
   }
-  FirmwareView view(look, FirmwareHardware::ezeptocore);
+  FirmwareView view(device, look, FirmwareHardware::ezeptocore);
   view.setSize(930, 765);
   for (auto *child : view.content.getChildren()) {
     if (auto *button = dynamic_cast<juce::Button *>(child))
-      check(!juce::StringArray{"Choose local UF2", "Reset to bootloader", "Refresh drives",
-                               "Flash selected UF2"}.contains(button->getButtonText()),
-            "installation controls are removed from the view");
+      check(button->getButtonText() != "Choose local UF2",
+            "local firmware chooser remains removed");
     if (auto *label = dynamic_cast<juce::Label *>(child))
       check(label->getText() != "Install a UF2", "installation section is removed");
   }
@@ -413,6 +412,111 @@ void firmwareViewTests() {
         "latest theme selection applies after cancellation");
   noPartials(temp.directory);
 
+  // Exercise download -> confirmation -> installation without hardware.
+  FirmwareView installer(device, look, FirmwareHardware::ezeptocore);
+  const auto target = temp.directory.getChildFile("RPI-RP2");
+  check(target.createDirectory().wasOk(), "create simulated bootloader destination");
+  installer.findVolumes = [target] { return juce::Array<File>{target}; };
+  installer.refreshVolumes();
+  installer.timerCallback();
+  check(!installer.write.isEnabled(), "a drive alone cannot enable installation");
+  std::function<void(int)> pendingConfirmation;
+  installer.confirm = [&](auto options, auto callback) {
+    check(options.getMessage().contains("ezeptocore_v") && options.getMessage().contains("RPI-RP2"),
+          "confirmation identifies downloaded firmware and destination");
+    pendingConfirmation = std::move(callback);
+  };
+  std::atomic<int> copies{0};
+  std::atomic<bool> releaseCopy{false};
+  installer.copyFirmware = [&](const File &file, const File &destination, auto progress, auto cancelled) {
+    ++copies;
+    progress(.5);
+    while (!releaseCopy && !cancelled())
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    if (!cancelled())
+      check(file.copyFileTo(destination.getChildFile("CORE.UF2")), "copy downloaded firmware in fixture");
+  };
+  installer.awaitingDownload = true;
+  installer.download.start(localEntry(server, "/ok"), temp.directory);
+  waitFor(installer.download);
+  installer.timerCallback();
+  check(installer.write.isEnabled() && installer.volume.getSelectedId() == 1 && copies == 0 &&
+            installer.downloadedChecksum == hashFile(installer.downloadedFile),
+        "validated download enables explicit installation and selects the only drive");
+  installer.install();
+  check(installer.confirming && !installer.get.isEnabled() && copies == 0,
+        "installation waits for confirmation and locks downloads");
+  pendingConfirmation(0);
+  check(!installer.busy() && copies == 0, "cancelled confirmation never installs");
+  installer.build.setSelectedId(2, juce::sendNotificationSync);
+  installer.timerCallback();
+  installer.install();
+  check(!installer.write.isEnabled() && !installer.confirming,
+        "another build must be downloaded before installation");
+  installer.build.setSelectedId(1, juce::sendNotificationSync);
+  auto older = installer.selectedEntry();
+  older.version = "v0.0.1";
+  older.filename = "ezeptocore_v0.0.1.uf2";
+  installer.catalog.push_back(older);
+  installer.updateVersions();
+  installer.version.setSelectedId(2, juce::sendNotificationSync);
+  installer.timerCallback();
+  check(!installer.write.isEnabled(), "another version requires its own completed download");
+  installer.version.setSelectedId(1, juce::sendNotificationSync);
+  installer.setHardware(FirmwareHardware::ectocore);
+  check(!installer.write.isEnabled(), "a shared MIDI identity does not authorize another model's download");
+  installer.setHardware(FirmwareHardware::ezeptocore);
+  installer.install();
+  installer.cancelDownload();
+  pendingConfirmation(1);
+  check(!installer.awaitingInstall && copies == 0, "window closure invalidates pending confirmation");
+  installer.install();
+  pendingConfirmation(1);
+  waitFor([&] { return copies == 1; }, "install worker start");
+  installer.timerCallback();
+  check(!installer.get.isEnabled() && !installer.version.isEnabled() && !installer.write.isEnabled() &&
+            !installer.cancel.isEnabled() && installer.progressBar.isVisible(),
+        "installation locks conflicting operations and reports progress");
+  installer.setHardware(FirmwareHardware::zeptocore);
+  check(installer.selectedEntry().hardware == FirmwareHardware::ezeptocore,
+        "theme changes wait until installation finishes");
+  releaseCopy = true;
+  waitFor([&] { return !installer.installing; }, "install worker completion");
+  installer.timerCallback();
+  check(hashFile(target.getChildFile("CORE.UF2")) == installer.downloadedChecksum &&
+            installer.selectedEntry().hardware == FirmwareHardware::zeptocore && !installer.write.isEnabled(),
+        "installation copies the downloaded file then applies the pending theme");
+  installer.setHardware(FirmwareHardware::ezeptocore);
+  check(installer.downloadedFile.replaceWithText("modified download"), "modify downloaded file");
+  installer.install();
+  pendingConfirmation(1);
+  waitFor([&] { return !installer.installing; }, "changed download rejection");
+  installer.timerCallback();
+  check(copies == 1 && installer.installStatus.getText().contains("changed"),
+        "modified downloads cannot be substituted for selected firmware");
+  check(installer.downloadedFile.replaceWithData(bytes.getData(), bytes.getSize()), "restore downloaded file");
+  installer.copyFirmware = [](auto &, auto &, auto, auto) {
+    throw std::runtime_error("Selected bootloader volume is no longer connected");
+  };
+  installer.install();
+  pendingConfirmation(1);
+  waitFor([&] { return !installer.installing; }, "installation failure");
+  installer.timerCallback();
+  check(installer.installStatus.getText().contains("no longer connected") && installer.get.isEnabled(),
+        "installation errors restore controls and preserve the download");
+  {
+    auto closing = std::make_unique<FirmwareView>(device, look, FirmwareHardware::ezeptocore);
+    closing->downloadedFile = installer.downloadedFile;
+    closing->downloadedEntry = installer.downloadedEntry;
+    closing->downloadedChecksum = installer.downloadedChecksum;
+    closing->findVolumes = installer.findVolumes;
+    closing->confirm = installer.confirm;
+    closing->refreshVolumes();
+    closing->install();
+  }
+  pendingConfirmation(1);
+  check(copies == 1, "destroyed views cannot start an installation from a pending dialog");
+
   Server available(releaseRoutes());
   view.releaseEndpoint = available.url("/releases");
   view.loadVersions();
@@ -431,7 +535,7 @@ void firmwareViewTests() {
   waitFor(view.releases);
   view.timerCallback();
   check(view.selectedEntry().version == "v9.9.0", "refresh preserves an explicit version selection");
-  FirmwareView latest(look, FirmwareHardware::ectocore);
+  FirmwareView latest(device, look, FirmwareHardware::ectocore);
   latest.releaseEndpoint = available.url("/releases");
   latest.loadVersions();
   waitFor(latest.releases);
@@ -450,7 +554,7 @@ void firmwareViewTests() {
   view.timerCallback();
   check(view.selectedEntry().version == "v9.9.0" && view.catalogStatus.getText().contains("Keeping"),
         "failed refresh keeps the previous release list");
-  FirmwareView fallback(look, FirmwareHardware::ezeptocore);
+  FirmwareView fallback(device, look, FirmwareHardware::ezeptocore);
   fallback.releaseEndpoint = unavailable.url("/releases");
   fallback.loadVersions();
   waitFor(fallback.releases);
@@ -460,7 +564,7 @@ void firmwareViewTests() {
         "network failure keeps the bundled README firmware available");
   Server pending({{"/releases", {"", "", 200, -1, true}}});
   {
-    FirmwareView closing(look, FirmwareHardware::ezeptocore);
+    FirmwareView closing(device, look, FirmwareHardware::ezeptocore);
     closing.releaseEndpoint = pending.url("/releases");
     closing.loadVersions();
     waitFor([&] { return pending.requests.load() > 0; }, "lookup before close");

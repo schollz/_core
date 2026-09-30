@@ -1,5 +1,13 @@
 # _core sample manager 0.1.0 validation
 
+## Downloaded firmware installation restored: executed September 30, 2026
+
+Device → Firmware now follows choose hardware/version/build, download, enter bootloader mode, and explicitly install. The installer uses only the validated download matching the selected model, version, and build; the local UF2 picker remains removed. MIDI bootloader reset, automatic discovery of RPI-RP2 drives, manual refresh, destination selection, and confirmation are restored. A single detected drive is selected automatically. Pending confirmations are invalidated on window closure; an active copy continues while the window is hidden, and view destruction cancels and joins its worker.
+
+The macOS ARM64 Release build, strict codesign verification, four focused CTest cases (`firmware_downloads`, `firmware_catalog`, `midi_settings`, `native_midi`), focused `--self-test manager` suite, and eight Python packaging tests pass. Offline installation tests use a simulated drive/copier and verify the complete validated-download-to-confirmed-install sequence, exact copied bytes, no automatic installation, required matching model/version/build, checksum rejection of changed files, cancelled/destroyed-view confirmations, operation locking, progress, deferred theme changes, and disconnected-drive errors. Existing release lookup and download tests remain passing.
+
+Rendered previews cover all three presentations at normal and narrow widths, including the restored install controls and readable four-step guide. No physical device was reset or flashed; physical bootloader/copy/reconnection acceptance and Windows/Linux runtime checks remain outstanding.
+
 ## Version selection and simplified downloads: executed September 30, 2026
 
 Firmware now offers hardware, version, and build selection with Download, Cancel, Show in folder, and Refresh versions. The local-UF2 chooser, bootloader reset, drive selector, and in-app flash action have been removed. The illustrated guide describes manual bootloader entry and copying the download to RPI-RP2. Firmware remains the default Device tab, and theme changes continue to select matching hardware.

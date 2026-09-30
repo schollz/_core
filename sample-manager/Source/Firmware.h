@@ -61,6 +61,8 @@ public:
     Status status = Status::idle;
     juce::int64 received = 0, total = -1;
     File file;
+    FirmwareEntry entry{};
+    String checksum;
     String message;
     bool active() const { return status == Status::downloading; }
   };
