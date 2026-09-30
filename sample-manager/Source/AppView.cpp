@@ -592,6 +592,7 @@ void AppView::changeListenerCallback(juce::ChangeBroadcaster *) {
   auto previousProject = state.project.id;
   auto previousImport = state.importGeneration;
   auto next = manager.snapshot();
+  const bool projectChanged = next.root != before || next.project.id != previousProject;
   juce::SparseSet<int> movedRows;
   int focusedRow = -1;
   bool selectionMoved = false;
@@ -610,7 +611,7 @@ void AppView::changeListenerCallback(juce::ChangeBroadcaster *) {
     }
   }
   state = std::move(next);
-  if (state.root != before || state.project.id != previousProject) {
+  if (projectChanged) {
     lastSelectedInBank.fill({});
     samples.setSelectedRows({}, juce::dontSendNotification);
     selectedId.clear();
@@ -650,6 +651,18 @@ void AppView::changeListenerCallback(juce::ChangeBroadcaster *) {
       samples.selectRow(imported->slot);
       samples.scrollToEnsureRowIsOnscreen(imported->slot);
     }
+  if (projectChanged && !selected() && !state.project.samples.empty()) {
+    const auto first = std::min_element(
+        state.project.samples.begin(), state.project.samples.end(), [](const Sample &a, const Sample &b) {
+          return a.bank != b.bank ? a.bank < b.bank : a.slot < b.slot;
+        });
+    banks.selectRow(first->bank);
+    banks.scrollToEnsureRowIsOnscreen(first->bank);
+    // The bank may already be selected, so explicitly select its first track.
+    samples.setSelectedRows({}, juce::dontSendNotification);
+    samples.selectRow(first->slot);
+    samples.scrollToEnsureRowIsOnscreen(first->slot);
+  }
   banks.repaint();
   samples.repaint();
   updateEditor();
