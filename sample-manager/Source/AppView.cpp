@@ -195,8 +195,16 @@ AppView::AppView() {
     repaint();
   };
   deviceButton.onClick = [this] {
-    deviceWindow = std::make_unique<AuxiliaryWindow>(
-        "Local device tools", new DeviceView(device, look));
+    if (!deviceWindow) {
+      auto *view = new DeviceView(device, look, FirmwareHardware(presentation));
+      deviceWindow = std::make_unique<AuxiliaryWindow>("Device tools", view);
+      deviceWindow->setResizeLimits(540, 480, 1800, 1400);
+      deviceWindow->onClose = [safe = juce::Component::SafePointer<DeviceView>(view)] {
+        if (safe) safe->cancelDownload();
+      };
+    }
+    deviceWindow->setVisible(true);
+    deviceWindow->toFront(true);
   };
   visualizerButton.onClick = [this] { toggleVisualizer(); };
   projectButton.onClick = [this] { projectMenu(); };
@@ -430,7 +438,7 @@ AppView::AppView() {
   settingsButton.setTooltip("Edit the project's hardware settings and effect banks. "
                             "Changes save to this project's folder.");
   deviceButton.setTooltip(
-      "Choose MIDI ports, view device messages, or install a local firmware file.");
+      "Choose MIDI ports, or open Firmware to download a UF2 and follow the installation guide.");
   visualizerButton.setTooltip(
       "Show or hide the visualizer dock. Choose Device or Preview inside it.");
   more.setTooltip("Retry saving, reconcile external card changes, clear this bank, "

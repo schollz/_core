@@ -45,7 +45,8 @@ $productName $Version - Windows x64
 Extract this ZIP and open $productName.exe. Choose a local folder and import samples.
 Edits save automatically. Keep .core-manager when moving or copying a portable project.
 No installer, external audio tools, VC runtime installer, or plugins are needed.
-Visualizer Device mode needs opt-in telemetry firmware. Online analysis runs only on request.
+Visualizer Device mode needs opt-in telemetry firmware. Device > Firmware downloads the README-listed UF2 for your hardware to Downloads and includes an installation guide. Flashing requires a separate confirmed action.
+Firmware downloads and online drum analysis make network requests only when selected; there are no automatic update checks.
 Keep the Notices directory. No assets are published by this script.
 "@ | Set-Content "$payload/README.txt" -Encoding utf8
 $archive = Join-Path $out "_core-sample-manager-$Version-windows-x64.zip"

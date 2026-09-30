@@ -77,8 +77,7 @@ void OnlineAnalysis::start(const File &source, double duration,
       juce::MemoryBlock body;
       require(ogg.getSize() <= 256 * 1024 * 1024 && ogg.loadFileAsData(body),
               "Analysis upload exceeds 256 MB");
-      // The application's only network request. Reached only by the explicit UI
-      // action.
+      // Reached only by the explicit online-analysis UI action.
       auto request = std::make_shared<juce::WebInputStream>(
           juce::URL("https://tool.getectocore.com/drumextract")
               .withPOSTData(body),

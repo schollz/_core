@@ -1,48 +1,43 @@
 #include "DeviceView.h"
-#include <thread>
 namespace core {
-DeviceView::DeviceView(Device &d, Look &l) : device(d), look(l) {
-  setSize(780, 560);
+DeviceView::DeviceView(Device &d, Look &l, FirmwareHardware hardware)
+    : device(d), look(l), firmware(d, l, hardware) {
   setLookAndFeel(&look);
-  for (auto *c : std::initializer_list<juce::Component *>{
-           &input, &output, &volume, &refreshButton, &version, &reset, &choose,
-           &write, &instructions, &fileLabel, &error, &log})
-    addAndMakeVisible(c);
+  connection.onResize = [this] { layoutConnection(); };
+  addAndMakeVisible(tabs);
+  tabs.addTab("Connection", juce::Colours::transparentBlack, &connection, false);
+  tabs.addTab("Firmware", juce::Colours::transparentBlack, &firmware, false);
+  tabs.setTabBarDepth(36);
+  tabs.setOutline(0);
+  lookAndFeelChanged();
+  for (auto *c : std::initializer_list<juce::Component *>{&input, &output, &refreshButton, &version,
+                                                          &instructions, &error, &log})
+    connection.addAndMakeVisible(c);
   input.setTextWhenNothingSelected("MIDI input");
   output.setTextWhenNothingSelected("MIDI output");
-  volume.setTextWhenNothingSelected("Detected RP2040 bootloader volume");
+  input.setTitle("MIDI input");
+  output.setTitle("MIDI output");
   input.setTooltip(
       "Choose the MIDI input that receives status and telemetry from your instrument.");
   output.setTooltip("Choose the MIDI output used to send commands to your instrument.");
-  volume.setTooltip(
-      "Choose the connected RP2040 bootloader volume that will receive the selected firmware.");
-  refreshButton.setTooltip("Scan again for MIDI ports and connected bootloader volumes.");
+  refreshButton.setTooltip("Scan again for MIDI ports.");
   version.setTooltip(
       "Ask the selected instrument for its firmware version. The reply appears in the log.");
-  reset.setTooltip("Stop playback and restart the selected instrument in USB bootloader mode. "
-                   "You will be asked to confirm.");
-  choose.setTooltip(
-      "Choose and check a UF2 firmware file from this computer. Selecting it does not flash it.");
-  write.setTooltip("Write the selected UF2 to the chosen bootloader volume after confirmation. "
-                   "The instrument restarts when the copy completes.");
-  fileLabel.setTooltip("The selected firmware file and detected product appear here.");
   log.setTooltip("Recent MIDI connection, status and device messages. Select text to copy it.");
-  instructions.setTooltip(
-      "These ports connect the device independently of the sample editor and presentation.");
   instructions.setText(
-      "Device connection is independent of the presentation and edited "
-      "sample.\nVisualization needs opt-in telemetry firmware; normal firmware "
-      "supports legacy status.",
+      "Device connection is independent of the presentation and edited sample.\n"
+      "Open Firmware to download a UF2, view the installation guide, or flash your device.",
       juce::dontSendNotification);
   log.setMultiLine(true);
   log.setReadOnly(true);
+  int order = 1;
+  for (auto *c :
+       std::initializer_list<juce::Component *>{&input, &output, &refreshButton, &version, &log})
+    c->setExplicitFocusOrder(order++);
   auto selected = [this] {
-    device.choose(input.getSelectedId() > 0
-                      ? inputPorts[input.getSelectedId() - 1].identifier
-                      : String(),
-                  output.getSelectedId() > 0
-                      ? outputPorts[output.getSelectedId() - 1].identifier
-                      : String());
+    device.choose(
+        input.getSelectedId() > 0 ? inputPorts[input.getSelectedId() - 1].identifier : String(),
+        output.getSelectedId() > 0 ? outputPorts[output.getSelectedId() - 1].identifier : String());
   };
   input.onChange = selected;
   output.onChange = selected;
@@ -54,57 +49,13 @@ DeviceView::DeviceView(Device &d, Look &l) : device(d), look(l) {
       error.setText(e.what(), juce::dontSendNotification);
     }
   };
-  reset.onClick = [this] {
-    auto safe = juce::Component::SafePointer<DeviceView>(this);
-    juce::AlertWindow::showAsync(
-        juce::MessageBoxOptions()
-            .withTitle("Reset connected device")
-            .withMessage("Stop playback and reset the selected device into its "
-                         "USB bootloader?")
-            .withButton("Reset")
-            .withButton("Cancel"),
-        [safe](int n) {
-          if (safe && n == 1)
-            try {
-              safe->device.command(0);
-            } catch (const std::exception &e) {
-              safe->error.setText(e.what(), juce::dontSendNotification);
-            }
-        });
-  };
-  choose.onClick = [this] {
-    chooser = std::make_unique<juce::FileChooser>(
-        "Choose Core firmware from this computer", File(), "*.uf2");
-    auto safe = juce::Component::SafePointer<DeviceView>(this);
-    chooser->launchAsync(
-        juce::FileBrowserComponent::openMode |
-            juce::FileBrowserComponent::canSelectFiles,
-        [safe](const juce::FileChooser &f) {
-          if (!safe || !f.getResult().existsAsFile())
-            return;
-          try {
-            auto info = inspectUf2(f.getResult());
-            safe->image = f.getResult();
-            safe->fileLabel.setText(info.product + ": " +
-                                        safe->image.getFileName(),
-                                    juce::dontSendNotification);
-            safe->fileLabel.setTooltip(info.product + "\n" + safe->image.getFullPathName());
-          } catch (const std::exception &e) {
-            safe->image = File();
-            safe->fileLabel.setText(e.what(), juce::dontSendNotification);
-            safe->fileLabel.setTooltip(e.what());
-          }
-        });
-  };
-  write.onClick = [this] { flash(); };
   refresh();
+  setSize(940, 800);
   startTimer(250);
 }
 DeviceView::~DeviceView() {
   stopTimer();
-  stopping = true;
-  if (worker.joinable())
-    worker.join();
+  tabs.clearTabs();
   setLookAndFeel(nullptr);
 }
 void DeviceView::refresh() {
@@ -123,85 +74,31 @@ void DeviceView::refresh() {
     if (outputPorts[i].identifier == device.outputId)
       output.setSelectedId(i + 1, juce::dontSendNotification);
   }
-  volumes = bootloaderVolumes();
-  volume.clear(juce::dontSendNotification);
-  for (int i = 0; i < volumes.size(); ++i)
-    volume.addItem(volumes[i].getFullPathName(), i + 1);
-  if (volumes.size() == 1)
-    volume.setSelectedId(1, juce::dontSendNotification);
-}
-void DeviceView::flash() {
-  if (working || image == File() || volume.getSelectedId() == 0)
-    return;
-  auto target = volumes[volume.getSelectedId() - 1];
-  auto safe = juce::Component::SafePointer<DeviceView>(this);
-  juce::AlertWindow::showAsync(
-      juce::MessageBoxOptions()
-          .withTitle("Flash local firmware")
-          .withMessage("Write " + image.getFileName() + " to " +
-                       target.getFullPathName() + "? The device will restart.")
-          .withButton("Flash")
-          .withButton("Cancel"),
-      [safe, target](int n) {
-        if (!safe || n != 1)
-          return;
-        if (safe->worker.joinable())
-          safe->worker.join();
-        safe->working = true;
-        safe->progress = 0;
-        auto *self = safe.getComponent();
-        self->worker = std::thread([self, target, image = self->image] {
-          String result;
-          try {
-            flashLocalUf2(
-                image, target, [self](double p) { self->progress = p; },
-                [self] { return self->stopping.load(); });
-            result =
-                "Firmware copy completed. Wait for the device to reconnect.";
-          } catch (const std::exception &e) {
-            result = e.what();
-          }
-          {
-            std::lock_guard<std::mutex> lock(self->mutex);
-            self->result = result;
-          }
-          self->working = false;
-        });
-      });
 }
 void DeviceView::timerCallback() {
-  log.setText(device.log(), false);
-  write.setEnabled(!working && image.existsAsFile() &&
-                   volume.getSelectedId() > 0);
-  if (working)
-    error.setText("Copying firmware: " + String(int(progress * 100)) + "%",
-                  juce::dontSendNotification);
-  else {
-    std::lock_guard<std::mutex> lock(mutex);
-    if (result.isNotEmpty())
-      error.setText(result, juce::dontSendNotification);
-  }
+  const auto text = device.log();
+  if (text != log.getText())
+    log.setText(text, false);
   error.setTooltip(error.getText());
 }
 void DeviceView::paint(juce::Graphics &g) { g.fillAll(look.theme.background); }
-void DeviceView::resized() {
-  instructions.setBounds(20, 15, getWidth() - 40, 52);
-  int half = (getWidth() - 50) / 2;
-  input.setBounds(20, 80, half, 30);
-  output.setBounds(30 + half, 80, half, 30);
-  int x = 20;
-  for (auto *button : {&refreshButton, &version, &reset}) {
-    const int width = button->preferredWidth(30);
-    button->setBounds(x, 125, width, 30);
-    x += width + 10;
-  }
-  log.setBounds(20, 170, getWidth() - 40, getHeight() - 355);
-  choose.setBounds(20, getHeight() - 170, choose.preferredWidth(30), 30);
-  fileLabel.setBounds(choose.getRight() + 10, getHeight() - 170,
-                      getWidth() - choose.getRight() - 30, 30);
-  const int writeWidth = write.preferredWidth(30);
-  write.setBounds(getWidth() - 20 - writeWidth, getHeight() - 125, writeWidth, 30);
-  volume.setBounds(20, getHeight() - 125, write.getX() - 30, 30);
-  error.setBounds(20, getHeight() - 75, getWidth() - 40, 55);
+void DeviceView::lookAndFeelChanged() {
+  auto &bar = tabs.getTabbedButtonBar();
+  bar.setColour(juce::TabbedButtonBar::tabTextColourId, juce::Colour(0xff1a1a1a));
+  bar.setColour(juce::TabbedButtonBar::frontTextColourId, juce::Colour(0xff1a1a1a));
+  for (int i = 0; i < tabs.getNumTabs(); ++i)
+    tabs.setTabBackgroundColour(i, look.theme.sidebar);
+}
+void DeviceView::resized() { tabs.setBounds(getLocalBounds()); }
+void DeviceView::layoutConnection() {
+  const int width = connection.getWidth(), height = connection.getHeight();
+  instructions.setBounds(20, 15, width - 40, 70);
+  const int half = (width - 50) / 2;
+  input.setBounds(20, 100, half, 30);
+  output.setBounds(30 + half, 100, half, 30);
+  refreshButton.setBounds(20, 145, refreshButton.preferredWidth(30), 30);
+  version.setBounds(refreshButton.getRight() + 10, 145, version.preferredWidth(30), 30);
+  log.setBounds(20, 190, width - 40, std::max(100, height - 270));
+  error.setBounds(20, height - 65, width - 40, 50);
 }
 } // namespace core

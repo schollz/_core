@@ -23,6 +23,10 @@ if(NOT juce_version MATCHES "VERSION 9\\.0\\.3 ")
     message(FATAL_ERROR "_core sample manager requires JUCE 9.0.3")
 endif()
 include(cmake/RubberBand.cmake)
+include(cmake/FirmwareCatalog.cmake)
+set(firmware_readme "${CMAKE_CURRENT_SOURCE_DIR}/../README.md")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${firmware_readme}")
+core_firmware_catalog("${firmware_readme}" "${CMAKE_CURRENT_BINARY_DIR}/generated/FirmwareCatalogData.h")
 add_library(core_tempo STATIC
     Vendor/soundtouch/source/SoundTouch/BPMDetect.cpp
     Vendor/soundtouch/source/SoundTouch/FIFOSampleBuffer.cpp
@@ -52,7 +56,8 @@ juce_add_binary_data(CoreTempoFixtures HEADER_NAME TempoData.h NAMESPACE TempoDa
 target_link_libraries(CoreSampleManager PRIVATE CoreFixtures CoreImportFixtures CoreTempoFixtures)
 target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/Tempo.cpp Source/IconButton.cpp
     Source/Storage.cpp Source/AudioProcessing.cpp Source/Manager.cpp Source/Preview.cpp Source/Theme.cpp Source/WaveformEditor.cpp Source/SettingsView.cpp Source/AppView.cpp Source/Device.cpp Source/DeviceView.cpp Source/Uf2.cpp Source/OnlineAnalysis.cpp Source/Visualizer/Core.cpp Source/Visualizer/Library.cpp Source/Visualizer/Midi.cpp Source/Visualizer/Session.cpp Source/Visualizer/VisualizerView.cpp Tests/VisualizerTests.cpp Tests/Tests.cpp Tests/ImportTests.cpp Tests/AudioTests.cpp Tests/TempoTests.cpp Tests/RecoveryTests.cpp Tests/ManagerTests.cpp Tests/MidiTests.cpp ${onset_sources})
-target_include_directories(CoreSampleManager PRIVATE Source Vendor/amenbreak)
+target_sources(CoreSampleManager PRIVATE Source/Firmware.cpp Source/FirmwareView.cpp Tests/FirmwareTests.cpp)
+target_include_directories(CoreSampleManager PRIVATE Source Vendor/amenbreak "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_compile_definitions(CoreSampleManager PRIVATE JUCE_WEB_BROWSER=0
     JUCE_USE_MP3AUDIOFORMAT=1 JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:CoreSampleManager,JUCE_PRODUCT_NAME>"
     JUCE_APPLICATION_VERSION_STRING="${PROJECT_VERSION}")
@@ -81,6 +86,12 @@ endif()
 enable_testing()
 add_test(NAME manager_contract COMMAND CoreSampleManager --self-test)
 add_test(NAME midi_settings COMMAND CoreSampleManager --self-test midi-settings)
+add_test(NAME firmware_downloads COMMAND CoreSampleManager --self-test firmware)
+set_tests_properties(firmware_downloads PROPERTIES TIMEOUT 60 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
+add_test(NAME firmware_catalog COMMAND ${CMAKE_COMMAND}
+    -DCORE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+    -DTEST_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/firmware-catalog-test
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/Tests/FirmwareCatalogTests.cmake)
 set_tests_properties(midi_settings PROPERTIES TIMEOUT 60 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 set_tests_properties(manager_contract PROPERTIES TIMEOUT 120 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 

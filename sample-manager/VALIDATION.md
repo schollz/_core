@@ -1,5 +1,15 @@
 # _core sample manager 0.1.0 validation
 
+## Firmware downloads and guide: executed September 30, 2026
+
+The Apple Silicon Release build passes. `firmware_downloads`, `firmware_catalog`, `midi_settings`, and `native_midi` pass. Eight release/packaging Python tests pass. The focused `--self-test manager` run passes audio, background work, manager integration, recovery, permission-failure, and existing local-UF2 checks.
+
+The catalog test verifies all 13 URLs against the root README, version regeneration, and actionable configuration failures for missing, ambiguous, or mismatched links. Loopback HTTP tests exercise successful downloads, redirects, unknown content length, HTTP 404, redirect loops, invalid/truncated UF2s, wrong hardware families, oversized responses, connection/read timeouts, cancellation, destruction during a transfer, write-destination failure, and filename collisions. UI contracts verify model defaults and supported builds, presentation independence, transfer locks, preservation of the previous selection on failure/cancellation, selection after validation, and absence of automatic flashing. Test downloads and preferences use temporary isolated directories.
+
+Rendered previews cover all three themes at normal and narrow widths, including the scrolled installation guide. JUCE tests verify Tab traversal from hardware to build to download and arrow-key selection. This host’s native UI automation did not reliably deliver selector keyboard/menu actions, so interactive keyboard acceptance remains unverified. Native UI inspection confirms Device → Firmware, hardware/build labels, guide text, and a real request to the README’s Zeptocore v8.0.3 asset. That request returns HTTP 404; the app displays the unavailable-asset explanation, restores the controls, and keeps flashing disabled. A complete live release download remains unverified until those pinned assets are published. No device reset or physical flashing was performed. Windows/Linux native builds remain unverified on this macOS host.
+
+The full `manager_contract` run passes its first 250 checks plus firmware/audio/import coverage, then stops at the previously documented tempo assertion: **"Vendored detector handles real loops whose length is not an exact beat count"**. The isolated `--self-test tempo` run reproduces it. Tempo sources and fixtures are unchanged by this feature.
+
 ## Application name: executed September 30, 2026
 
 The Apple Silicon Release build and local packaging pass with `_core sample manager` as the app, executable, window and header name. The built bundle's `CFBundleName`, `CFBundleDisplayName` and `CFBundleExecutable` match, while its bundle identifier and preference directory remain `com.infinitedigits.coresamplemanager`. The local ZIP passes integrity and manifest-hash checks and contains the renamed bundle and executable; the packaged app passes `codesign --verify --deep --strict` with an ad-hoc signature.

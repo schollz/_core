@@ -12,6 +12,7 @@ void tempoTests();
 void recoveryTests();
 void managerTests();
 void midiSettingsTests();
+void firmwareTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -106,12 +107,17 @@ int runTests(const String &suite) {
       midiSettingsTests();
       return 0;
     }
+    if (suite == "firmware") {
+      firmwareTests();
+      return 0;
+    }
     if (suite == "tempo") {
       tempoTests();
       return 0;
     }
     require(suite.isEmpty(), "Unknown self-test suite: " + suite);
     spliceTimingChecks();
+    firmwareTests();
     {
       Temp t;
       auto file = t.dir.getChildFile("hash.bin");

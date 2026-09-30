@@ -126,7 +126,7 @@ Move the functionality from `visualizer-juce/` into the new application, then re
 - Use one shared MIDI connection service for visualization, version queries, reset commands, and device logging. Handle all three product names, including Ectocore hardware presenting as “ezeptocore.”
 - Stop telemetry lease renewal and animation work when the visualizer is disabled. Opening the visualizer alone must not open an audio input or request microphone access.
 - Keep the existing opt-in visualizer firmware and legacy fallback. Show clear guidance when normal firmware lacks MIDI telemetry.
-- Include flashing of a user-selected local UF2 to a detected bootloader volume, with device/file checks and progress. No automatic flashing, online firmware checks, or firmware downloads.
+- Include flashing of a downloaded or user-selected local UF2 to a detected bootloader volume, with device/file checks, progress, and explicit confirmation. Device → Firmware offers user-initiated downloads for Zeptocore, Ectocore, and Ezeptocore using the root README’s version-specific URLs bundled at build time, plus an illustrated installation guide. Downloads save to Downloads and become selected only after validation. No automatic flashing or online firmware checks.
 - Import usable preferences from the former visualizer on first launch. Move its relevant protocol/parity fixtures and tests into the new project before removing the old source/build/release entrypoints. Keep the browser/kiosk visualizer and firmware telemetry targets.
 
 ## 5. Delivery, validation, and implementation order

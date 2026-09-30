@@ -13,7 +13,7 @@ The application implements the accepted [specification](SPECIFICATION.md) as an 
 | Audio | `Source/AudioProcessing.*` | Block decoding, structural import metadata, sinc resampling, offline Rubber Band, normalization/padding, merging and onset detection |
 | Preview | `Source/Preview.*` | Buffered completed-audio playback, slice audition, output-only audio and actual transport position |
 | Native UI | `Source/AppView.*`, `WaveformEditor.*`, `SettingsView.*`, `Theme.*` | Bank/list/editor layout, three presentations, markers, settings, navigation and preference migration |
-| Device tools | `Source/Device.*`, `DeviceView.*`, `Uf2.*`, `Visualizer/Midi.*` | Shared MIDI, reconnection, telemetry leases, commands/logs and explicit local UF2 validation/copy |
+| Device tools | `Source/Device.*`, `DeviceView.*`, `Firmware.*`, `FirmwareView.*`, `Uf2.*`, `Visualizer/Midi.*` | Shared MIDI, commands/logs, README-pinned firmware downloads, illustrated guide and explicit local UF2 validation/copy |
 | Visualizer | `Source/Visualizer/{Core,Library,Session,VisualizerView}.*` | Migrated protocol/playhead/rendering, committed caches, Device/Preview selection and lifecycle |
 | Online analysis | `Source/OnlineAnalysis.*` | Explicit mono 44.1 kHz Ogg request, cancellation/timeouts, bounded parsing and stale-revision rejection |
 
@@ -37,7 +37,7 @@ Primary rendering and saving complete before eight-times companion work. The sam
 
 The reusable renderer has no plugin-editor dependency. One shared library prepares completed waveform/spectrum data and persists the last completed bank mapping locally. Device selection is independent of editor selection; Preview follows the actual transport and clears hardware-only effect/pad state. Disabling visualization stops animation and lease renewal. Opening it never initializes an audio input.
 
-Only explicit online analysis creates an application network request. Local onset detection works offline. Local UF2 copying requires file/product/family/block checks, a detected bootloader volume and an explicit flash action. No real upload, device reset or flash was performed during validation.
+Firmware downloads and online analysis create network requests only after explicit user actions. The build generates all 13 model/build URLs from the root README through `cmake/FirmwareCatalog.cmake`; firmware versions are independent of the application version and there are no automatic release checks. The download worker follows redirects, enforces time/size limits, validates the UF2, and saves it to Downloads without replacing existing files. Failed or cancelled transfers remove their temporary file and preserve the selected firmware. Local onset detection works offline. Local UF2 copying requires file/product/family/block checks, a detected bootloader volume and an explicit flash action. No real upload, device reset or flash was performed during validation.
 
 `CMakeLists.txt` verifies the JUCE archive checksum/version; `cmake/RubberBand.cmake` builds the vendored implementation statically. [Vendor/PROVENANCE.md](Vendor/PROVENANCE.md) records amenbreakvst and tape revisions. Notices accompany resources and packages. Protocol/parity fixtures and virtual-MIDI tests have moved into `Tests/`.
 

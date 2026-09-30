@@ -1,38 +1,36 @@
 #pragma once
 #include "Device.h"
-#include "IconButton.h"
-#include "Uf2.h"
-#include <mutex>
-#include <thread>
+#include "FirmwareView.h"
 namespace core {
 class DeviceView final : public juce::Component, private juce::Timer {
 public:
-  DeviceView(Device &, Look &);
+  DeviceView(Device &, Look &, FirmwareHardware);
   ~DeviceView() override;
   void resized() override;
   void paint(juce::Graphics &) override;
+  void lookAndFeelChanged() override;
+  void cancelDownload() { firmware.cancelDownload(); }
 
 private:
   void timerCallback() override;
   void refresh();
-  void flash();
+  void layoutConnection();
   Device &device;
   Look &look;
-  juce::ComboBox input, output, volume;
-  IconButton refreshButton{"Refresh ports", "refresh-cw"}, version{"Query version", "info"},
-      reset{"Reset to bootloader", "power"}, choose{"Choose local UF2", "file-up"},
-      write{"Flash selected UF2", "download"};
-  juce::Label instructions, fileLabel, error;
+  juce::TabbedComponent tabs{juce::TabbedButtonBar::TabsAtTop};
+  struct ConnectionPanel : juce::Component {
+    std::function<void()> onResize;
+    void resized() override {
+      if (onResize)
+        onResize();
+    }
+  } connection;
+  FirmwareView firmware;
+  juce::ComboBox input, output;
+  IconButton refreshButton{"Refresh ports", "refresh-cw"}, version{"Query version", "info"};
+  juce::Label instructions, error;
   juce::TextEditor log;
   juce::Array<juce::MidiDeviceInfo> inputPorts, outputPorts;
-  juce::Array<File> volumes;
-  File image;
-  std::unique_ptr<juce::FileChooser> chooser;
-  std::thread worker;
-  std::atomic<bool> stopping{false}, working{false};
-  std::atomic<double> progress{0};
-  std::mutex mutex;
-  String result;
   Tooltips tooltips{*this};
 };
 } // namespace core

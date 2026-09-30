@@ -124,7 +124,7 @@ def package_build(source_root, build, out, platform_name, version, *, command=ru
     name=product_name(source_root)
     payload=out/name;payload.mkdir(parents=True)
     notices(payload/'Notices', source_root, juce_license)
-    (payload/'README.txt').write_text(name+' '+version+'\n\nOpen the application, choose a local folder, and import samples. Edits save automatically.\nThe folder includes portable immutable sources under .core-manager; keep that folder when copying projects.\nVisualizer Device mode needs opt-in telemetry firmware. Local UF2 tools require an explicit action.\nOnline drum analysis is the only application network request and runs only when selected.\nNo plugins or external audio tools are required. Keep the Notices directory.\n',encoding='utf-8')
+    (payload/'README.txt').write_text(name+' '+version+'\n\nOpen the application, choose a local folder, and import samples. Edits save automatically.\nThe folder includes portable immutable sources under .core-manager; keep that folder when copying projects.\nVisualizer Device mode needs opt-in telemetry firmware. Device > Firmware downloads the README-listed UF2 for your hardware to Downloads and includes an installation guide. Flashing requires a separate confirmed action.\nFirmware downloads and online drum analysis make network requests only when selected; there are no automatic update checks.\nNo plugins or external audio tools are required. Keep the Notices directory.\n',encoding='utf-8')
     source=build/'CoreSampleManager_artefacts/Release'
     manifest={'application':name,'version':version,'platform':platform_name,
               'builtOn':platform.platform(),'created':stamp,'publication':'disabled; local artifacts only',
