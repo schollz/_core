@@ -16,6 +16,7 @@ struct Sample {
        spliceVariable = false, protectedEntry = false;
   int64_t revision = 1, completedRevision = 0;
   String rendered, companion, renderKey;
+  bool companionPending = false; // Primary is saved; background companion still needed.
   std::vector<Marker> slices{{0, 1, 0}};         // original normalized timeline
   std::vector<Marker> renderAnchors{{0, 1, 0}};  // immutable source key frames
   std::array<std::vector<double>, 3> transients; // original source seconds

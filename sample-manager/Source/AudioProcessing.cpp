@@ -592,13 +592,13 @@ void AudioProcessing::pcm(const File &from, const File &to, bool pad,
   require(out->getStatus().wasOk(), "Cannot flush PCM output");
 }
 Rendered AudioProcessing::render(const File &root, const Sample &sample,
-                                 const Cancel &cancel) {
+                                 const Cancel &cancel, bool includeCompanion) {
   diagnostics::Scope trace("AUDIO", "Render sample=" + sample.id +
       " name=" + sample.name + " rate=" + String(sample.rate) +
       " channels=" + String(sample.channels) + " ratio=" + String(sample.ratio(), 6) +
       " preserve_pitch=" + String(sample.preservePitch ? 1 : 0));
   cancelled(cancel);
-  require(hashFile(child(root, sample.source)) == sample.sourceHash,
+  require(hashFile(child(root, sample.source), cancel) == sample.sourceHash,
           "Immutable source was modified");
   Rendered result;
   result.key = audioKey(sample);
@@ -617,7 +617,7 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     auto f = dir.getChildFile(name);
     return f.existsAsFile() &&
            j[juce::Identifier(name)].toString().isNotEmpty() &&
-           hashFile(f) == j[juce::Identifier(name)].toString();
+           hashFile(f, cancel) == j[juce::Identifier(name)].toString();
   };
   auto converted = dir.getChildFile("converted.wav"),
        stretched = dir.getChildFile("stretched.wav");
@@ -639,7 +639,7 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     j = object();
   }
   result.frames = card::inspect(child(root, result.preview)).frames;
-  if (!(sample.oneShot && !sample.tempoMatch)) {
+  if (includeCompanion && !(sample.oneShot && !sample.tempoMatch)) {
     result.companionPreview = relative + "companion.wav";
     result.companionPadded = relative + "1.wav";
     if (!valid("companion.wav") || !valid("1.wav")) {
@@ -652,13 +652,16 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     result.companionFrames =
         card::inspect(child(root, result.companionPreview)).frames;
   }
-  for (auto name :
-       {String("preview.wav"), String("0.wav"), renderSource.getFileName(),
-        String("companion.wav"), String("1.wav")})
-    if (dir.getChildFile(name).existsAsFile())
-      put(j, name, hashFile(dir.getChildFile(name)));
+  // Only certify files completed by this pass. A cancelled companion may
+  // have left partial files beside the usable primary cache.
+  for (auto name : {String("preview.wav"), String("0.wav"), renderSource.getFileName()})
+    put(j, name, hashFile(dir.getChildFile(name), cancel));
+  if (result.companionPreview.isNotEmpty()) {
+    for (auto name : {"companion.wav", "1.wav"})
+      put(j, name, hashFile(dir.getChildFile(name), cancel));
+    put(j, "companionFrames", juce::int64(result.companionFrames));
+  }
   put(j, "frames", juce::int64(result.frames));
-  put(j, "companionFrames", juce::int64(result.companionFrames));
   cancelled(cancel);
   durableJson(ready, j);
   diagnostics::log("AUDIO", "Rendered frames=" + String(juce::int64(result.frames)) +

@@ -89,10 +89,23 @@ void spliceTimingChecks() {
           "An empty slice list cannot calculate an interval");
 }
 } // namespace
-int runTests() {
+int runTests(const String &suite) {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    // Focused suites let worker/recovery regressions run independently of DSP
+    // estimation fixtures. The default continues to run the full contract.
+    if (suite == "manager") {
+      audioTests();
+      managerTests();
+      recoveryTests();
+      return 0;
+    }
+    if (suite == "tempo") {
+      tempoTests();
+      return 0;
+    }
+    require(suite.isEmpty(), "Unknown self-test suite: " + suite);
     spliceTimingChecks();
     {
       Temp t;

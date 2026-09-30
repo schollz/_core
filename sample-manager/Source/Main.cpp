@@ -1,7 +1,7 @@
 #include "../Tests/NativeDragFixture.h"
 #include "AppView.h"
 namespace core {
-int runTests();
+int runTests(const String &suite);
 void crashTransaction(const juce::File &);
 int diskFullTest(const juce::File &);
 } // namespace core
@@ -47,7 +47,8 @@ public:
       return;
     }
     if (command.contains("--self-test")) {
-      setApplicationReturnValue(core::runTests());
+      setApplicationReturnValue(
+          core::runTests(command.fromFirstOccurrenceOf("--self-test", false, false).trim()));
       quit();
       return;
     }

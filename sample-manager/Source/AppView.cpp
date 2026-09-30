@@ -665,7 +665,7 @@ void AppView::updateEditor() {
   importButton.setEnabled(state.available);
   duplicate.setEnabled(state.available && !state.busy);
   settingsButton.setEnabled(state.available);
-  activity.setVisible(state.busy && state.error.isEmpty());
+  activity.setVisible((state.busy || state.backgroundBusy) && state.error.isEmpty());
   if (s) {
     bool editingText = name.hasKeyboardFocus(true) || sourceBpm.hasKeyboardFocus(true) ||
                        renderBpm.hasKeyboardFocus(true);
@@ -790,6 +790,8 @@ void AppView::timerCallback() {
   String message = localError.isNotEmpty()    ? localError
                    : state.error.isNotEmpty() ? state.error
                                               : state.status;
+  if (state.error.isEmpty() && state.companionError.isNotEmpty())
+    message += " - Companion: " + state.companionError;
   if (state.error.isEmpty() && !state.project.warnings.isEmpty())
     message += juce::String::fromUTF8(" · ") +
                state.project.warnings.joinIntoString(juce::String::fromUTF8(" · "));

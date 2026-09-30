@@ -1,5 +1,21 @@
 # Core Sample Manager 0.1.0 validation
 
+## Background companions: executed September 29, 2026
+
+The Apple Silicon Release build succeeds. `--self-test manager` passes audio processing, manager integration and recovery checks. The macOS `native_midi` CTest also passes. The focused test option uses the same isolated temporary state as the full self-test; `--self-test tempo` runs the tempo fixtures independently.
+
+The background regression imports two copies of an eight-second stereo test clip. Both primary outputs, preview readers and editor waveforms were ready in **1,113.6 ms**, with both companions still pending and the manager idle for user actions. An Even slices command interrupted active companion stretching and finished saving in **351.9 ms**, while companion work remained pending. These are synthetic fixture timings, not a rerun of the user's eight DivKid files.
+
+Passing checks cover metadata edits during stretching, moving and removing pending samples, undo, changing channel processing, opening another project, duplication before companion completion, resumption on reopening, latest companion metadata and slot placement, unchanged primary bytes, companion destination conflicts and retry, rejection of incomplete companion cache files, and cancellation during a large transaction copy before active output changes. Existing manager fixtures were isolated from the project being duplicated, and repeated metadata reads now clear their buffers before loading another file.
+
+The full `manager_contract` run passes its first 206 contract checks plus audio/import checks, then stops at the unchanged assertion **"Vendored detector handles real loops whose length is not an exact beat count"**. That assertion also fails when running only `--self-test tempo`; it remains unresolved. The independently executed manager/recovery suite passes. No physical card or new native UI session was exercised for this change.
+
+Reproduce the focused run after building:
+
+```sh
+'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/Core Sample Manager.app/Contents/MacOS/Core Sample Manager' --self-test manager
+```
+
 ## Splice interval parity: coverage prepared, not executed
 
 Read-only comparison of the supplied Icarus exports found JUCE retaining the default 96 ticks for both loops. The website stored 384 ticks for `beat_bpm174.wav` (32 beats / 16 slices) and 192 for `amen_bpm170_freak.wav` (16 beats / 16 slices). The native importer and Even slices action had never recalculated `spliceTrigger`.

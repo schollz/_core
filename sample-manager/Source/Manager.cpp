@@ -41,6 +41,11 @@ bool Manager::idle() const {
   auto s = snapshot();
   return !s.busy;
 }
+int Manager::pendingCompanions() const {
+  return int(std::count_if(project.samples.begin(), project.samples.end(), [](const Sample &s) {
+    return !s.protectedEntry && s.companionPending && !(s.oneShot && !s.tempoMatch);
+  }));
+}
 void Manager::post(Command c) {
   {
     std::lock_guard<std::mutex> lock(mutex);
@@ -53,6 +58,13 @@ void Manager::post(Command c) {
   wake.notify_one();
 }
 void Manager::publish(String status, String error) {
+  const int pending = pendingCompanions();
+  if (pending == 0)
+    companionError.clear();
+  if (status == "Ready" && pending > 0)
+    status += companionError.isEmpty()
+                  ? " (background companions: " + String(pending) + " remaining)"
+                  : " (companions paused; use Retry pending save)";
   diagnostics::log("MANAGER", "Status=" + status + " error=" + error +
       " samples=" + String(int(project.samples.size())) +
       " revision=" + String(juce::int64(project.revision)) +
@@ -68,6 +80,9 @@ void Manager::publish(String status, String error) {
     state.root = storage ? storage->root : File();
     state.status = std::move(status);
     state.error = std::move(error);
+    state.companionError = companionError;
+    state.pendingCompanions = pending;
+    state.backgroundBusy = pending > 0 && companionError.isEmpty() && !failed;
     state.busy = commandRunning || !commands.empty() || (dirty && !failed);
     state.available = storage && storage->root.isDirectory();
     ++state.generation;
@@ -95,14 +110,16 @@ void Manager::run() {
   while (true) {
     Command command;
     uint64_t generation = 0;
+    bool backgroundJob = false;
     {
       std::unique_lock<std::mutex> lock(mutex);
       wake.wait(lock, [&] {
-        return stopping || !commands.empty() || (dirty && !failed);
+        return stopping || !commands.empty() || (dirty && !failed) ||
+               (!dirty && !failed && pendingCompanions() > 0 && companionError.isEmpty());
       });
       if (stopping && commands.empty())
         break;
-      if (commands.empty()) {
+      if (commands.empty() && dirty) {
         wake.wait_for(lock, std::chrono::milliseconds(250),
                       [&] { return stopping || !commands.empty(); });
         if (stopping && commands.empty())
@@ -120,11 +137,22 @@ void Manager::run() {
         command();
       else if (dirty && !failed)
         save(generation);
+      else if (!dirty && !failed && pendingCompanions() > 0 && companionError.isEmpty()) {
+        // New commands cancel this job at the next audio/file block. Primary
+        // saves and user actions always run before optional companion work.
+        backgroundJob = true;
+        saveCompanion(generation);
+      }
     } catch (const std::exception &e) {
       diagnostics::log("MANAGER", "Worker exception: " + String(e.what()));
       if (String(e.what()) != "Cancelled") {
-        failed = true;
-        publish("Action required", e.what());
+        if (backgroundJob) {
+          companionError = e.what();
+          publish("Ready");
+        } else {
+          failed = true;
+          publish("Action required", e.what());
+        }
       }
     }
     {
@@ -161,6 +189,7 @@ void Manager::open(const File &root) {
     });
     storage = std::move(candidate);
     project = std::move(loaded);
+    companionError.clear();
     sourceWaveforms.clear();
     importedSampleId.clear();
     committed =
@@ -488,6 +517,7 @@ void Manager::redo() {
 void Manager::retry() {
   post([this] {
     failed = false;
+    companionError.clear();
     dirty = storage && project.revision > project.completedRevision;
     publish(dirty ? "Processing" : "Ready");
   });
@@ -579,6 +609,7 @@ void Manager::reconcile() {
     history.accept(project, "Before external reload");
     project = adopted;
     committed = adopted;
+    companionError.clear();
     manifestHash = fingerprint(manifest);
     storage->queueNameBackfill(project);
     dirty = project.revision > project.completedRevision;
@@ -692,28 +723,20 @@ void Manager::save(uint64_t generation) {
     if (changed) {
       publish("Processing audio " + String(++renderedCount) + " of " + String(renderCount) + ": " +
               s.name);
-      auto rendered = audio.render(root, s, cancel);
+      auto rendered = audio.render(root, s, cancel, false);
       s.rendered = rendered.preview;
-      s.companion = rendered.companionPreview;
+      s.companion.clear();
+      s.companionPending = !(s.oneShot && !s.tempoMatch);
       s.renderKey = rendered.key;
       desired[card::path(s.bank, s.slot)] = child(root, rendered.padded);
-      if (rendered.companionPadded.isNotEmpty())
-        desired[card::path(s.bank, s.slot, 1)] = child(root, rendered.companionPadded);
-      for (int variant = 0;
-           variant < (rendered.companionPadded.isNotEmpty() ? 2 : 1);
-           ++variant) {
-        auto info =
-            sampleInfo(s, variant ? rendered.companionFrames : rendered.frames,
-                       variant != 0);
-        auto bytes = encodeInfo(info);
-        auto path = child(root, ".core-manager/cache/metadata-" + s.id + "-" +
-                                    String(variant) + ".info");
-        durableWrite(path, bytes.getData(), bytes.getSize());
-        desired[card::path(s.bank, s.slot, variant) + ".info"] = path;
-      }
+      auto bytes = encodeInfo(sampleInfo(s, rendered.frames));
+      auto path = child(root, ".core-manager/cache/metadata-" + s.id + "-0.info");
+      durableWrite(path, bytes.getData(), bytes.getSize());
+      desired[card::path(s.bank, s.slot) + ".info"] = path;
     } else {
       s.rendered = previous->rendered;
       s.companion = previous->companion;
+      s.companionPending = previous->companionPending;
       s.renderKey = previous->renderKey;
       for (const auto &path : previous->ownedPaths) {
         if (path.endsWith(".name.json"))
@@ -829,6 +852,63 @@ void Manager::save(uint64_t generation) {
   dirty = false;
   failed = false;
   prepareVisualization();
+  publish("Ready");
+}
+void Manager::saveCompanion(uint64_t generation) {
+  auto found = std::find_if(project.samples.begin(), project.samples.end(), [](const Sample &s) {
+    return !s.protectedEntry && s.companionPending && !(s.oneShot && !s.tempoMatch);
+  });
+  if (found == project.samples.end())
+    return;
+  const auto sample = *found;
+  diagnostics::Scope trace("COMPANION", "Background sample=" + sample.id + " name=" + sample.name);
+  auto cancel = [&] { return stopping || serial.load() != generation; };
+  cancelled(cancel);
+  require(storage && storage->root.isDirectory(), "Reconnect the project folder and retry companions");
+  auto root = storage->root;
+  auto manifest = child(root, ".core-manager/project.json");
+  require(fingerprint(manifest, cancel) == manifestHash,
+          "Project manifest changed externally. Reconcile before saving companions.");
+  std::vector<std::pair<String, String>> checks(committed.fingerprints.begin(),
+                                              committed.fingerprints.end());
+  parallelFor(checks.size(), [&](size_t index) {
+    const auto &[path, expected] = checks[index];
+    require(fingerprint(child(root, path), cancel) == expected,
+            "External change: " + path + ". Reconcile before saving companions.");
+  });
+  auto rendered = audio.render(root, sample, cancel);
+  require(rendered.companionPadded.isNotEmpty(), "Companion output is missing");
+  auto completed = project;
+  auto *target = completed.find(sample.id);
+  target->companion = rendered.companionPreview;
+  target->companionPending = false;
+  auto wavePath = card::path(sample.bank, sample.slot, 1);
+  auto infoPath = wavePath + ".info";
+  auto metadata = child(root, ".core-manager/cache/metadata-" + sample.id + "-1.info");
+  auto bytes = card::encode(sampleInfo(sample, rendered.companionFrames, true));
+  durableWrite(metadata, bytes.getData(), bytes.getSize());
+  std::vector<Replacement> replacements;
+  for (const auto &[path, staged] :
+       std::vector<std::pair<String, File>>{{wavePath, child(root, rendered.companionPadded)},
+                                            {infoPath, metadata}}) {
+    auto known = committed.fingerprints.find(path);
+    auto expected = known == committed.fingerprints.end() ? String("missing") : known->second;
+    auto hash = hashFile(staged, cancel);
+    replacements.push_back({path, staged, expected, hash});
+    completed.fingerprints[path] = hash;
+    target->ownedPaths.push_back(path);
+  }
+  cancelled(cancel);
+  require(fingerprint(manifest, cancel) == manifestHash,
+          "Project manifest changed externally. Reconcile before saving companions.");
+  Transaction tx(root);
+  tx.shouldCancel = cancel;
+  tx.commit(replacements, completed);
+  committed = completed;
+  project = completed;
+  manifestHash = fingerprint(manifest);
+  // Primary audio and the visualizer are unchanged. Publishing the completed
+  // companion updates progress without interrupting playback or rebuilding peaks.
   publish("Ready");
 }
 } // namespace core

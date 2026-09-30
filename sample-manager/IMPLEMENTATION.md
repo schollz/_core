@@ -19,6 +19,8 @@ The application implements the accepted [specification](SPECIFICATION.md) as an 
 
 UI commands address stable sample IDs. The worker owns storage mutations and rendering. Pending state is saved before work; a completed transaction advances the committed snapshot used by playback and visualization. The audio callback reads a buffered transport and performs no analysis, network request or write.
 
+Primary rendering and saving complete before eight-times companion work. The same worker processes one interruptible companion at a time only when no user commands or primary saves are pending. Companion work never sets the editor's `busy` flag; `backgroundBusy`, `pendingCompanions`, and `companionError` report its separate progress. The per-sample `companionPending` manifest field survives reopening and duplication. A companion transaction updates only that sample's `.1.wav`, `.1.wav.info`, ownership/fingerprints and manifest; it neither advances user-edit revisions nor rebuilds primary waveforms. Commands cancel audio and hash work between blocks before changing project state, so old results cannot land after edits, moves, removal, or a project switch.
+
 ## Storage and processing invariants
 
 - Originals are content-addressed under `.core-manager/sources/`; manifest paths are relative. Rendering never modifies an original. Adoption identifies recovered card audio and its reduced provenance.
@@ -28,6 +30,7 @@ UI commands address stable sample IDs. The worker owns storage mutations and ren
 - Undo/recovery are separate from hardware files. Explicit cleanup requires confirmation. Slot changes reuse completed audio.
 - Audio decoding, resampling, waveform generation, Rubber Band and writing use bounded blocks. Preserve-pitch conversion uses the finer engine, channels together, pitch ratio 1.0 and complete offline study/process/drain passes.
 - Render cache identity covers audible processing and immutable anchors captured at import/adoption/merge. Editable markers do not unnecessarily invalidate audio. Hashes are verified before reuse. Metadata-only edits preserve WAV bytes and modification times; one-shot/tempo-match changes separately control companion requirements.
+- Primary cache completion never certifies partial companion files left by cancellation. Companion failures retain usable primary output and report separately from failed primary saves; Retry resumes them.
 - Merging uses current audio settings in list order, maps markers and retains original entries. Unrepresentable hardware markers remain in the project while the last compatible output stays intact.
 
 ## Visualization and delivery

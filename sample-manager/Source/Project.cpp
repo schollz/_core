@@ -51,6 +51,7 @@ var Sample::json() const {
   put(o, "completedRevision", juce::int64(completedRevision));
   put(o, "rendered", rendered);
   put(o, "companion", companion);
+  put(o, "companionPending", companionPending);
   put(o, "renderKey", renderKey);
   juce::Array<var> marks, lanes, paths;
   for (auto m : slices) {
@@ -110,6 +111,7 @@ Sample Sample::fromJson(const var &o) {
   s.completedRevision = juce::int64(o["completedRevision"]);
   s.rendered = o["rendered"].toString();
   s.companion = o["companion"].toString();
+  s.companionPending = bool(o["companionPending"]);
   s.renderKey = o["renderKey"].toString();
   s.slices.clear();
   if (auto *a = o["slices"].getArray())

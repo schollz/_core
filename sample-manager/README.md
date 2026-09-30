@@ -35,7 +35,7 @@ These commands create local artifacts under `sample-manager/dist/`. Application 
 1. In the empty manager, choose **Create project** and enter a new folder name and location, or choose **Open a project folder** to use an existing folder. Creating a project initializes its settings through the same opening flow; cancellation leaves the project unchanged, and existing destinations are refused. **Open Folder** in the toolbar opens an empty folder or an existing Core card folder. Later launches reopen the last available project.
 2. Select one of the 16 banks and use **Import**, or drop audio files into the window. WAV, AIFF/AIF, FLAC, MP3, Ogg, and Renoise XRNI work offline. The first sample in a successful import batch is selected automatically. Files without embedded slice markers start with 16 even slices (fewer for audio too short to encode 16 nonempty slices). Each bank holds 16 samples; an overflowing import reports an error and never wraps to the first slot.
 3. Select samples to edit, preview, reorder, merge, remove, or move them to another bank. Shift/Command selection works in the list. A merge follows list order, uses each sample's current audio settings, and leaves the original entries available.
-4. Wait for **Ready** before using the hardware output. Processing and Saving indicate unfinished work. Ready means the output transaction and completed manifest have finished.
+4. **Ready** means the primary audio and edits are saved and usable. Eight-times companions continue in the background; the footer shows how many remain. Preview, editing, visualization, imports, opening another project, and duplication remain available. Wait until the companion count clears before ejecting the card or using its complete eight-times output on hardware.
 
 Opening a folder displays **Opening folder...x%** as card adoption, file checks, and waveform preparation complete. Progress follows completed work in those stages; it is not an estimate of elapsed time.
 
@@ -70,9 +70,9 @@ Recovery uses only the sidecar in the same slot whose audio hash matches. Missin
 
 ## Edit and preview
 
-Imported samples display a source waveform before background rendering and saving finish. The editor switches to the completed waveform when available; playback and the device visualizer use completed output. Source peaks are kept in memory and shared for identical imported audio, and pending imports regain their waveform when reopened.
+Imported samples display a source waveform before primary rendering and saving finish. Once the primary audio is saved, playback and the device visualizer become available and the editor switches to the completed waveform, while eight-times companions are generated in the background. Source peaks are kept in memory and shared for identical imported audio, and pending imports regain their waveform when reopened.
 
-During batch imports, the footer shows the current filename and file count, followed by waveform preparation, audio processing, and saving. An activity bar remains animated while work is in progress.
+During batch imports, the footer shows the current filename and file count, followed by waveform preparation, primary audio processing, and saving. It then shows **Ready (background companions: N remaining)** until the companions finish. An activity bar remains animated while work is in progress without disabling project actions during companion generation.
 
 Below the waveform, interaction tips come first, followed by editing tools, source/channel/playback settings, playback options and sample actions. **Advanced** starts collapsed and remembers its expansion across sample and bank selections for the current session. It contains tempo processing (Render BPM and Preserve pitch), variable splice timing, auto-slice tuning and online analysis. Collapsing it keeps all settings and lets the waveform grow. At narrow widths, related controls wrap together; when expanded controls need more height, they scroll below the waveform.
 
@@ -127,7 +127,9 @@ The display estimates source position and spectrum; it does not measure the inst
 
 ## Recovery and external edits
 
-Edits save automatically after a short debounce. Metadata edits leave audio unchanged; slot moves reuse completed audio. Superseded render jobs are canceled, and late results cannot replace a newer revision. Pending changes and undo history are stored separately from active hardware files.
+Edits save automatically after a short debounce. Metadata edits leave audio unchanged; slot moves reuse completed audio. All primary audio in an import batch is saved before companion work begins. Companion jobs yield to queued actions and primary saves, and late results cannot replace a newer revision or recreate a removed sample. Each companion is saved in its own recoverable transaction. Pending companions are recorded in the completed manifest and resume when the project is reopened, including in a duplicate. Closing or switching projects does not require waiting for them. Pending changes and undo history are stored separately from active hardware files.
+
+A companion failure leaves primary playback and editing available. The footer reports the cause; after fixing it, choose **More → Retry pending save** to resume companion generation. Replacing a sample's audio removes its outdated companion until the new one is ready.
 
 Before saving, full file verification uses up to four workers and reuses those verified hashes while planning the same save. Hash reads cancel between buffered chunks when a new edit arrives, allowing queued actions such as Auto slice to proceed. Unchanged filename sidecars are reused. Actual replacements still undergo transaction conflict checks and verification of staged bytes.
 

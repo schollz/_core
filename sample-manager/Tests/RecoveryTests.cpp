@@ -40,7 +40,7 @@ int diskFullTest(const File &root) {
     auto settle = [](Manager &m) {
       for (int n = 0; n < 3000; ++n) {
         auto state = m.snapshot();
-        if (!state.busy)
+        if (!state.busy && !state.backgroundBusy)
           return state;
         juce::Thread::sleep(10);
       }
@@ -144,6 +144,36 @@ void recoveryTests() {
                     "old name" &&
                 project.completedRevision == 0,
             "Reopen rolls back process crash before resuming");
+  }
+  {
+    Storage storage(root);
+    auto project = storage.open();
+    auto source = child(root, ".core-manager/cache/background-copy");
+    juce::MemoryBlock data(8 * 1024 * 1024, true);
+    durableWrite(source, data.getData(), data.getSize());
+    const auto manifest = child(root, ".core-manager/project.json");
+    const auto manifestHash = hashFile(manifest);
+    Transaction tx(root);
+    File staged;
+    tx.shouldCancel = [&] {
+      if (staged == File())
+        for (const auto &dir : child(root, ".core-manager/transactions")
+                                   .findChildFiles(File::findDirectories, false)) {
+          auto candidate = dir.getChildFile("new/0");
+          if (candidate.existsAsFile())
+            staged = candidate;
+        }
+      return staged != File() && staged.getSize() >= 256 * 1024;
+    };
+    bool cancelledCopy = false;
+    try {
+      tx.commit({{"bank1/background-copy", source, "missing"}}, project);
+    } catch (const std::exception &e) {
+      cancelledCopy = String(e.what()) == "Cancelled";
+    }
+    require(cancelledCopy && staged.getSize() < source.getSize() &&
+                !child(root, "bank1/background-copy").exists() && hashFile(manifest) == manifestHash,
+            "Background transaction copies yield between blocks before modifying active output");
   }
 #if !JUCE_WINDOWS
   auto readOnly = child(root, "read-only");

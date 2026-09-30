@@ -45,19 +45,27 @@ void removeFile(const File &f) {
           "Cannot remove " + f.getFullPathName());
   syncDirectory(f.getParentDirectory());
 }
-void copyChecked(const File &from, const File &to) {
+void copyChecked(const File &from, const File &to,
+                 const std::function<bool()> &cancel = {}) {
   ensureDirectory(to.getParentDirectory());
   auto in = from.createInputStream();
   auto out = to.createOutputStream();
   require(in && out, "Cannot copy " + from.getFileName());
   out->setPosition(0);
   out->truncate();
-  require(out->writeFromInputStream(*in, -1) == from.getSize(),
-          "Incomplete copy");
+  std::array<char, 256 * 1024> buffer;
+  juce::int64 copied = 0;
+  while (!in->isExhausted()) {
+    cancelled(cancel);
+    auto count = in->read(buffer.data(), int(buffer.size()));
+    require(count > 0 && out->write(buffer.data(), size_t(count)), "Incomplete copy");
+    copied += count;
+  }
+  require(in->getStatus().wasOk() && copied == from.getSize(), "Incomplete copy");
   out->flush();
   require(out->getStatus().wasOk(),
           "Copy failed: " + out->getStatus().getErrorMessage());
-  require(hashFile(from) == hashFile(to), "Copy verification failed");
+  require(hashFile(from, cancel) == hashFile(to, cancel), "Copy verification failed");
   syncDirectory(to.getParentDirectory());
 }
 void rollback(const File &root, const File &dir, const var &j) {
@@ -187,12 +195,12 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     put(e, "after", after);
     if (dest.existsAsFile()) {
       auto backup = dir.getChildFile("backup/" + String(int(n)));
-      copyChecked(dest, backup);
+      copyChecked(dest, backup, shouldCancel);
       require(hashFile(backup, shouldCancel) == r.expected, "File changed while preparing backup");
     }
     if (r.staged != File()) {
       auto staged = dir.getChildFile("new/" + String(int(n)));
-      copyChecked(r.staged, staged);
+      copyChecked(r.staged, staged, shouldCancel);
       require(hashFile(staged, shouldCancel) == after,
               "Staged file changed during preparation: " + r.path);
     }

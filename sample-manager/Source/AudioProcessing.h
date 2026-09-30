@@ -14,7 +14,8 @@ public:
   Sample import(Storage &, const File &, int bank, int slot,
                 const Cancel & = {});
   std::shared_ptr<const zv::Wave> sourceWaveform(const File &, const Cancel & = {});
-  Rendered render(const File &root, const Sample &, const Cancel & = {});
+  Rendered render(const File &root, const Sample &, const Cancel & = {},
+                  bool includeCompanion = true);
   std::vector<Marker> detect(const File &, String method = "hfc",
                              double spacingMs = 80, const Cancel & = {},
                              int targetSlices = 0);

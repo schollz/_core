@@ -204,6 +204,23 @@ void audioTests() {
   require(child(projectRoot, first.source).existsAsFile() &&
               child(projectRoot, second.source).existsAsFile(),
           "Merge preserves original sources");
+  auto primary = audio.render(projectRoot, first, {}, false);
+  const auto primaryFile = child(projectRoot, primary.preview);
+  const auto primaryTime = primaryFile.getLastModificationTime();
+  auto cache = primaryFile.getParentDirectory();
+  require(primary.companionPreview.isEmpty() && !cache.getChildFile("companion.wav").exists(),
+          "Primary render completes without generating a companion");
+  // Model files left behind by an interrupted companion. A primary-only pass
+  // must never certify those incomplete outputs as a valid cache entry.
+  for (auto name : {"companion.wav", "1.wav"})
+    require(shortSource.copyFileTo(cache.getChildFile(name)), "Partial companion fixture");
+  audio.render(projectRoot, first, {}, false);
+  auto complete = audio.render(projectRoot, first);
+  require(complete.companionFrames == primary.frames * 8 &&
+              card::inspect(child(projectRoot, complete.companionPadded)).frames ==
+                  complete.companionFrames + first.rate &&
+              primaryFile.getLastModificationTime() == primaryTime,
+          "Companion resumes independently, rejects partial cache files and preserves primary audio");
   bool stopped = false;
   try {
     audio.stretch(resampled, folder.getChildFile("cancel.wav"), 8., {},

@@ -5,10 +5,10 @@
 #include <iostream>
 namespace core {
 namespace {
-ManagerState settle(Manager &m) {
+ManagerState settle(Manager &m, bool includeCompanions = true) {
   for (int n = 0; n < 2000; ++n) {
     auto s = m.snapshot();
-    if (!s.busy)
+    if (!s.busy && (!includeCompanions || !s.backgroundBusy))
       return s;
     juce::Thread::sleep(10);
   }
@@ -16,7 +16,140 @@ ManagerState settle(Manager &m) {
 }
 void successful(const ManagerState &s) {
   require(s.error.isEmpty(), "Manager: " + s.error);
+  require(s.companionError.isEmpty(), "Companion: " + s.companionError);
   require(!s.busy, "Manager still busy");
+}
+void backgroundCompanions(const File &workspace) {
+  auto root = workspace.getChildFile("background-companions");
+  auto other = workspace.getChildFile("other-project");
+  auto duplicate = workspace.getChildFile("background-copy");
+  require(root.createDirectory().wasOk() && other.createDirectory().wasOk(),
+          "Background companion fixture folders");
+  auto input = workspace.getChildFile("background-bpm120.wav");
+  {
+    auto out = input.createOutputStream();
+    card::writeHeader(*out, 44100 * 8, 44100, 2);
+    for (int n = 0; n < 44100 * 8; ++n)
+      for (int c = 0; c < 2; ++c)
+        out->writeShort(short(std::sin(n * .1 + c) * 10000));
+  }
+  String id, secondId, primaryHash;
+  double primaryMs = 0;
+  {
+    Manager manager;
+    manager.open(root);
+    successful(settle(manager));
+    auto started = juce::Time::getMillisecondCounterHiRes();
+    manager.import({input.getFullPathName(), input.getFullPathName()}, 0);
+    auto ready = settle(manager, false);
+    primaryMs = juce::Time::getMillisecondCounterHiRes() - started;
+    successful(ready);
+    require(ready.project.samples.size() == 2 && ready.pendingCompanions == 2 &&
+                ready.backgroundBusy && manager.idle() && ready.status.startsWith("Ready"),
+            "Every imported primary is ready and the manager is usable before companions finish");
+    id = ready.project.samples[0].id;
+    secondId = ready.project.samples[1].id;
+    AudioProcessing audio;
+    for (const auto &sample : ready.project.samples) {
+      require(ready.completedProject.find(sample.id) && sample.companionPending &&
+                  sample.completedRevision == sample.revision && ready.editorWaveform(sample.id) &&
+                  audio.reader(child(root, sample.rendered))->lengthInSamples == 44100 * 8 &&
+                  child(root, card::path(sample.bank, sample.slot)).existsAsFile(),
+              "Primary preview, editor waveform and saved output are available during companion work");
+    }
+    primaryHash = hashFile(child(root, "bank1/0.0.wav"));
+    // Interrupt actual stretching, not just a queued companion job.
+    auto partial = child(root, ".core-manager/cache/" + ready.project.find(id)->renderKey + "/long.wav");
+    for (int n = 0; n < 2000 && !partial.existsAsFile(); ++n)
+      juce::Thread::sleep(1);
+    require(partial.existsAsFile() && manager.snapshot().backgroundBusy,
+            "Companion rendering has started in the background");
+    started = juce::Time::getMillisecondCounterHiRes();
+    manager.even(id, 8);
+    ready = settle(manager, false);
+    auto editMs = juce::Time::getMillisecondCounterHiRes() - started;
+    successful(ready);
+    require(ready.project.find(id)->slices.size() == 8 && ready.pendingCompanions > 0 &&
+                hashFile(child(root, "bank1/0.0.wav")) == primaryHash,
+            "Even slices preempts companion work and saves without waiting for it");
+    manager.move({secondId}, 1);
+    ready = settle(manager, false);
+    successful(ready);
+    require(ready.project.find(secondId)->bank == 1 &&
+                child(root, "bank2/0.0.wav").existsAsFile() &&
+                !child(root, "bank1/1.1.wav").exists(),
+            "Move completes during background work without a stale companion at the old slot");
+    manager.remove({secondId});
+    ready = settle(manager, false);
+    successful(ready);
+    require(!ready.project.find(secondId) && !child(root, "bank2/0.0.wav").exists() &&
+                !child(root, "bank2/0.1.wav").exists(),
+            "Removal cancels pending companions without resurrecting deleted files");
+    manager.undo();
+    successful(settle(manager, false));
+    manager.edit(id, "Change audio during companion render", [](Sample &s) { s.channels = 1; });
+    ready = settle(manager, false);
+    successful(ready);
+    require(ready.project.find(id)->channels == 1 && ready.project.find(id)->companionPending &&
+                card::inspect(child(root, "bank1/0.0.wav")).channels == 1,
+            "A new audio setting replaces primary output before its new companion is ready");
+    primaryHash = hashFile(child(root, "bank1/0.0.wav"));
+    manager.duplicate(duplicate);
+    successful(settle(manager, false));
+    auto copied = Project::fromJson(parseJson(child(duplicate, ".core-manager/project.json")));
+    require(copied.id != ready.project.id && copied.find(id)->companionPending,
+            "Duplicate is usable immediately and retains resumable companions");
+    manager.open(other);
+    ready = settle(manager, false);
+    successful(ready);
+    require(ready.root == other && ready.pendingCompanions == 0,
+            "Opening another project cancels old companion work");
+    auto saved = Project::fromJson(parseJson(child(root, ".core-manager/project.json")));
+    require(saved.find(id)->companionPending && saved.revision == saved.completedRevision,
+            "Companion work is persisted separately from completed user edits");
+    std::cout << "PASS background primary ready in " << primaryMs << " ms; even-slice edit in "
+              << editMs << " ms while companions remain pending\n";
+  }
+  {
+    Manager reopened;
+    reopened.open(root);
+    auto ready = settle(reopened);
+    successful(ready);
+    require(ready.pendingCompanions == 0 && !ready.backgroundBusy &&
+                !ready.project.find(id)->companionPending &&
+                hashFile(child(root, "bank1/0.0.wav")) == primaryHash &&
+                child(root, "bank1/0.1.wav").existsAsFile() &&
+                card::inspect(child(root, "bank1/0.1.wav")).channels == 1 &&
+                child(root, "bank2/0.1.wav").existsAsFile() &&
+                !child(root, "bank1/1.1.wav").exists(),
+            "Reopening resumes companions at current slots without rewriting primary audio");
+    juce::MemoryBlock info;
+    require(child(root, "bank1/0.1.wav.info").loadFileAsData(info) &&
+                card::decode(info).slices.size() == 8,
+            "Finished companion uses the latest slice edit");
+  }
+  {
+    // A foreign companion destination exercises background failure and retry
+    // while all primary output remains usable.
+    auto foreign = child(duplicate, "bank1/0.1.wav");
+    durableWrite(foreign, "foreign", 7);
+    Manager manager;
+    manager.open(duplicate);
+    auto state = settle(manager);
+    require(state.error.isEmpty() && state.companionError.contains("External change") &&
+                !state.busy && !state.backgroundBusy && state.pendingCompanions > 0 &&
+                state.editorWaveform(id) && foreign.loadFileAsString() == "foreign",
+            "Companion failure preserves the usable editor and external files");
+    manager.edit(id, "Rename during companion failure", [](Sample &s) { s.name = "Still usable"; });
+    state = settle(manager, false);
+    require(state.error.isEmpty() && state.project.find(id)->name == "Still usable" &&
+                state.project.revision == state.project.completedRevision,
+            "Companion failure does not prevent subsequent primary saves");
+    require(foreign.deleteFile(), "Remove companion conflict fixture");
+    manager.retry();
+    successful(settle(manager));
+    require(manager.snapshot().pendingCompanions == 0, "Retry finishes deferred companions");
+  }
 }
 void sampleCVMappingChecks(const File &workspace) {
   auto root = workspace.getChildFile("sample-cv-mapping");
@@ -177,6 +310,7 @@ void pendingImportWaveform(const File &workspace, const File &input) {
               even.project.find(id)->spliceTrigger == 48 && previousInterval != 48,
           "Even slices recalculates the interval and disables variable timing");
   for (int variant : {0, 1}) {
+    savedInfo.reset();
     require(child(root, card::path(0, 0, variant) + ".info").loadFileAsData(savedInfo) &&
                 card::decode(savedInfo).spliceTrigger == 48 &&
                 !card::decode(savedInfo).spliceVariable,
@@ -283,6 +417,7 @@ void transientRecoveryCase(const File &workspace) {
               !state.project.warnings.contains(oldWarning) &&
               state.project.warnings.contains("Unrelated recovery warning"),
           "Pending slice save resumes and clears only obsolete range warnings");
+  bytes.reset();
   require(info.loadFileAsData(bytes), "Read saved slices");
   auto saved = card::decode(bytes);
   require(saved.spliceVariable && saved.slices.size() == 2 &&
@@ -368,14 +503,18 @@ void nameRecoveryCases(const File &workspace) {
 }
 } // namespace
 void managerTests() {
-  auto root = File::getSpecialLocation(File::tempDirectory)
+  auto workspace = File::getSpecialLocation(File::tempDirectory)
                   .getChildFile("core-manager-job-" + uuid());
-  require(root.createDirectory().wasOk(), "Manager test folder");
+  require(workspace.createDirectory().wasOk(), "Manager test folder");
   struct Clean {
     File root;
     ~Clean() { root.deleteRecursively(); }
-  } clean{root};
-  sampleCVMappingChecks(root);
+  } clean{workspace};
+  backgroundCompanions(workspace);
+  sampleCVMappingChecks(workspace);
+  // Keep independent project fixtures outside the project being duplicated.
+  auto root = workspace.getChildFile("project");
+  require(root.createDirectory().wasOk(), "Main manager fixture folder");
   auto audioFile = root.getChildFile("input.wav");
   {
     auto out = audioFile.createOutputStream();
@@ -469,7 +608,7 @@ void managerTests() {
               "bytes and times");
     }
     {
-      auto copied = root.getChildFile("bank-only-copy");
+      auto copied = workspace.getChildFile("bank-only-copy");
       require(root.getChildFile("bank1").copyDirectoryTo(
                   copied.getChildFile("bank1")),
               "Copy bank without native project");
