@@ -10,6 +10,7 @@ public:
 
 private:
   void refreshEffects();
+  void refreshSampleCVMapping();
   Manager &manager;
   Look &look;
   int presentation, bank = 0;

@@ -781,6 +781,10 @@ void Manager::save(uint64_t generation) {
     } else
       oldOwned.insert(path);
   }
+  auto mapping = child(root, ".core-manager/cache/sample-cv-mapping");
+  const auto mappingContent = card::sampleCVMappingContents(completed.settings);
+  durableWrite(mapping, mappingContent.toRawUTF8(), size_t(mappingContent.getNumBytesAsUTF8()));
+  desired[card::sampleCVMappingPath] = mapping;
   std::vector<Replacement> replacements;
   auto expected = [&](const String &path) {
     auto found = committed.fingerprints.find(path);

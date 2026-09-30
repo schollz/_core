@@ -1,5 +1,6 @@
 #include "Manager.h"
 #include "NameMetadata.h"
+#include "SettingsView.h"
 #include "Visualizer/Session.h"
 #include <iostream>
 namespace core {
@@ -16,6 +17,97 @@ ManagerState settle(Manager &m) {
 void successful(const ManagerState &s) {
   require(s.error.isEmpty(), "Manager: " + s.error);
   require(!s.busy, "Manager still busy");
+}
+void sampleCVMappingChecks(const File &workspace) {
+  auto root = workspace.getChildFile("sample-cv-mapping");
+  require(root.createDirectory().wasOk(), "Sample CV fixture folder");
+  const auto mapping = child(root, card::sampleCVMappingPath);
+  {
+    Manager manager;
+    manager.open(root);
+    successful(settle(manager));
+    require(mapping.loadFileAsString() == "bank\n", "Default mapping is written exactly");
+    manager.settings({{"sample_cv_mapping", "1voct"}});
+    successful(settle(manager));
+    require(mapping.loadFileAsString() == "1voct\n", "Native save matches the web export");
+    manager.undo();
+    successful(settle(manager));
+    require(mapping.loadFileAsString() == "bank\n", "Undo restores the firmware mapping");
+    manager.redo();
+    successful(settle(manager));
+    require(mapping.loadFileAsString() == "1voct\n", "Redo restores the firmware mapping");
+
+    Look look;
+    for (int presentation = 0; presentation < 3; ++presentation) {
+      manager.settings({{"override_with_reset", "sample"}});
+      successful(settle(manager));
+      look.presentation(presentation);
+      SettingsView view(manager, look, presentation);
+      juce::ComboBox *mappingControl = nullptr, *resetControl = nullptr;
+      for (auto *child : view.getChildren())
+        if (auto *combo = dynamic_cast<juce::ComboBox *>(child)) {
+          if (combo->getItemText(0) == "Bank divisions")
+            mappingControl = combo;
+          if (combo->getItemText(0) == "none")
+            resetControl = combo;
+        }
+      require((mappingControl != nullptr) == (presentation != 1),
+              "Sample CV mapping is hidden only in Zeptocore");
+      if (mappingControl) {
+        require(resetControl && !mappingControl->isEnabled() &&
+                    mappingControl->getText() == "1 V/oct" &&
+                    mappingControl->getTooltip().contains("firmware"),
+                "Reset disables mapping while preserving its display and help");
+        resetControl->setSelectedItemIndex(0, juce::sendNotificationSync);
+        successful(settle(manager));
+        require(mappingControl->isEnabled() && mappingControl->getText() == "1 V/oct",
+                "Removing Reset restores the saved mapping selection");
+        mappingControl->setSelectedItemIndex(0, juce::sendNotificationSync);
+        successful(settle(manager));
+        require(mapping.loadFileAsString() == "bank\n", "Dropdown saves the bank wire value");
+        mappingControl->setSelectedItemIndex(1, juce::sendNotificationSync);
+        successful(settle(manager));
+      }
+      require(mapping.loadFileAsString() == "1voct\n",
+              "Presentation and Reset changes retain the saved mapping");
+    }
+  }
+  {
+    Manager reopened;
+    reopened.open(root);
+    auto state = settle(reopened);
+    successful(state);
+    require(state.project.settings.at("sample_cv_mapping") == "1voct" &&
+                state.project.warnings.isEmpty(),
+            "Saved mapping reopens without external-change warnings");
+    // A card edited by another app must be reconciled before overwriting it.
+    durableWrite(mapping, "bank\n", 5);
+    reopened.settings({{"sample_cv_mapping", "bank"}});
+    require(settle(reopened).error.contains("External change") &&
+                mapping.loadFileAsString() == "bank\n",
+            "External mapping changes are protected by the normal transaction checks");
+  }
+  auto legacyRoot = workspace.getChildFile("legacy-sample-cv-mapping");
+  require(legacyRoot.createDirectory().wasOk(), "Legacy mapping fixture folder");
+  {
+    Storage storage(legacyRoot);
+    auto legacy = storage.open();
+    legacy.settings.erase("sample_cv_mapping");
+    legacy.fingerprints.erase(card::sampleCVMappingPath);
+    require(child(legacyRoot, card::sampleCVMappingPath).deleteFile(), "Legacy mapping is absent");
+    durableJson(child(legacyRoot, ".core-manager/project.json"), legacy.json());
+  }
+  {
+    Manager legacy;
+    legacy.open(legacyRoot);
+    successful(settle(legacy));
+    legacy.settings({{"sample_cv_mapping", "1voct"}});
+    successful(settle(legacy));
+    legacy.undo();
+    successful(settle(legacy));
+    require(child(legacyRoot, card::sampleCVMappingPath).loadFileAsString() == "bank\n",
+            "Undo in an older project restores the default without a schema migration");
+  }
 }
 void savedName(const File &root, int bank, int slot, const String &name,
                const String &original) {
@@ -283,6 +375,7 @@ void managerTests() {
     File root;
     ~Clean() { root.deleteRecursively(); }
   } clean{root};
+  sampleCVMappingChecks(root);
   auto audioFile = root.getChildFile("input.wav");
   {
     auto out = audioFile.createOutputStream();

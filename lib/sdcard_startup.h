@@ -1,3 +1,7 @@
+#ifdef INCLUDE_ECTOCORE
+#include "sample_cv_settings.h"
+#endif
+
 #ifdef INCLUDE_ZEPTOCORE
 void printStringWithDelay2(char *str) {
   int len = strlen(str);
@@ -102,6 +106,10 @@ int extractNumber(const char *str) {
 }
 
 void load_settings(const char *dir_name) {
+#ifdef INCLUDE_ECTOCORE
+  global_sample_cv_mapping =
+      sample_cv_load_mapping(dir_name, global_sample_cv_mapping);
+#endif
   DIR dj;      /* Directory object */
   FILINFO fno; /* File information */
   FRESULT fr;  /* File result error */

@@ -123,6 +123,28 @@ Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
 all visualizer code and state, even after building an enabled version in the
 same directory. The new commands use the default latency and clock settings.
 
+### Sample CV mapping (ectocore and ezeptocore)
+
+The webtool and sample manager offer **Sample CV mapping** in device settings:
+**Bank divisions** (the default) spreads samples across the selected CV range.
+**1 V/oct** selects sample 1 at 0 V and advances one sample per chromatic semitone
+(1/12 V), wrapping around the populated bank. For an eight-sample bank, +1 V
+selects sample 5. This selects samples; pitch and sample-switch timing are unchanged.
+
+With bipolar polarity, negative notes wrap backward: -1/12 V selects the last
+sample. With unipolar polarity, negative voltages select sample 1. While Sample
+CV is connected in 1 V/oct mode, it controls sample selection. The sample knob
+still supports bank selection and modifier gestures; unplug CV to resume normal
+knob selection. Assigning Sample CV to Reset disables this mapping without
+changing the saved choice. The option is hidden in the Zeptocore presentation.
+
+The sample manager saves `settings/sample_cv_mapping` automatically; webtool full
+and settings-only downloads include the same file. Its contents are `bank` or
+`1voct`, followed by a newline. Copy the settings to the card and restart the device.
+Missing settings use Bank divisions. This requires firmware with 1 V/oct sample
+CV support; older firmware ignores the setting. Detection uses the existing
+nominal voltage scale, nearest-semitone rounding and hysteresis to reduce jitter.
+
 ### diy
 
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)

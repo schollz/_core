@@ -516,10 +516,15 @@ Project Storage::adopt(bool writeManifest,
     }
   for (const auto &[path, enabled] : card::settingsFiles(p.settings))
     p.fingerprints[path] = fingerprint(child(root, path));
+  p.fingerprints[card::sampleCVMappingPath] =
+      fingerprint(child(root, card::sampleCVMappingPath));
+  if (child(root, "sample_cv_mapping").exists())
+    p.fingerprints["sample_cv_mapping"] = fingerprint(child(root, "sample_cv_mapping"));
   p.validate();
   if (writeManifest) {
     const auto settingsFolder = child(root, "settings");
     if (p.samples.empty() && present.empty() && !settingsFolder.existsAsFile() &&
+        !child(root, "sample_cv_mapping").exists() &&
         settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
       diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
       p.settings = card::defaultSettings();
@@ -532,6 +537,12 @@ Project Storage::adopt(bool writeManifest,
         if (enabled)
           replacements.push_back({path, marker, "missing", emptyHash});
       }
+      auto mapping = child(root, ".core-manager/cache/sample-cv-mapping");
+      const auto content = card::sampleCVMappingContents(p.settings);
+      durableWrite(mapping, content.toRawUTF8(), size_t(content.getNumBytesAsUTF8()));
+      const auto mappingHash = hashFile(mapping);
+      p.fingerprints[card::sampleCVMappingPath] = mappingHash;
+      replacements.push_back({card::sampleCVMappingPath, mapping, "missing", mappingHash});
       // Settings and the first manifest become durable together. Recovery can
       // retry initialization even if rollback left empty settings directories.
       Transaction tx(root);

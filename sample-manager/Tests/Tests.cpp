@@ -359,6 +359,14 @@ int runTests() {
             "Exclusive settings replacements");
       check(files.size() == 4, "Only known edited settings are owned");
       auto defaults = card::defaultSettings();
+      check(defaults.at("sample_cv_mapping") == "bank" &&
+                card::sampleCVMappingContents({}) == "bank\n" &&
+                card::sampleCVMappingContents({{"sample_cv_mapping", "1voct"}}) == "1voct\n",
+            "Default and explicit Sample CV mapping use exact firmware text");
+      check(card::settingsFiles({{"sample_cv_mapping", "1voct"}}).empty(),
+            "Sample CV mapping never creates competing marker files");
+      rejects([] { card::sampleCVMappingContents({{"sample_cv_mapping", "invalid"}}); },
+              "Invalid mapping cannot be written");
       for (int effect = 1; effect <= 16; ++effect)
         check(defaults.at("grimoire/rune1/effect" + String(effect)) == (effect == 5 ? "on" : "off"),
               "Default first effect bank enables only Time Stretch");
@@ -383,6 +391,8 @@ int runTests() {
         auto initial = storage.open();
         check(initial.settings == card::defaultSettings(),
               "New settings are recorded in the initial manifest");
+        check(child(blank.dir, card::sampleCVMappingPath).loadFileAsString() == "bank\n",
+              "Project initialization writes the default mapping with a newline");
       }
       {
         Storage storage(blank.dir);
@@ -399,6 +409,31 @@ int runTests() {
                 !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
                 child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
             "Opening existing settings preserves chosen effects and unrelated files");
+    }
+    {
+      Temp cardFolder;
+      juce::StringArray warnings;
+      auto read = [&] { return card::readSettings(cardFolder.dir, warnings); };
+      check(card::sampleCVMappingContents(read()) == "bank\n" && warnings.isEmpty(),
+            "Missing mapping uses Bank divisions");
+      textFile(child(cardFolder.dir, "sample_cv_mapping"), "1voct\n");
+      {
+        Storage storage(cardFolder.dir);
+        check(storage.open().settings.at("sample_cv_mapping") == "1voct",
+              "Adopting a root mapping does not initialize over it");
+      }
+      auto mapping = child(cardFolder.dir, card::sampleCVMappingPath);
+      textFile(mapping, "bank\n");
+      check(read().at("sample_cv_mapping") == "bank", "Settings directory overrides root mapping");
+      textFile(mapping, "1voct\r\n");
+      check(read().at("sample_cv_mapping") == "1voct", "Firmware mapping accepts CRLF");
+      for (const auto &invalid : {String(), String("unknown"), String(" 1voct"),
+                                  String("1voct0123456789012345")}) {
+        warnings.clear();
+        textFile(mapping, invalid);
+        check(read().at("sample_cv_mapping") == "bank" && !warnings.isEmpty(),
+              "Malformed mapping falls back to Bank divisions and reports a warning");
+      }
     }
     {
       Manager manager;

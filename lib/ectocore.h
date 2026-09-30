@@ -764,6 +764,7 @@ void __not_in_flash_func(input_handling)() {
 #endif
 
   int cv_amen_last_value = 0;
+  SampleCVState sample_cv_state = {0};
   uint8_t knob_selector = 0;
   EctoLoopstartTrigState loopstart_trig_state;
   ecto_loopstart_trig_state_init(&loopstart_trig_state);
@@ -921,6 +922,15 @@ void __not_in_flash_func(input_handling)() {
     gpio_put(GPIO_INPUTDETECT, 0);
     sleep_us(SIGNAL_SETTLE_TIME_US);
 
+    bool sample_cv_1voct_active =
+        global_sample_cv_mapping == SAMPLE_CV_MAPPING_1VOCT &&
+        cv_plugged[CV_SAMPLE] && cv_reset_override != CV_SAMPLE;
+#if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
+    if ((int32_t)(test_selection_until-current_time)>0)
+      sample_cv_1voct_active = false;
+#endif
+    if (!sample_cv_1voct_active) sample_cv_reset(&sample_cv_state);
+
     for (uint8_t i = 0; i < 3; i++) {
 #if defined(SEEK_TEST_CONTROLS) && SEEK_TEST_CONTROLS
       if(i==CV_SAMPLE && (int32_t)(test_selection_until-current_time)>0)continue;
@@ -1020,13 +1030,20 @@ void __not_in_flash_func(input_handling)() {
           }
           break_set(linlin(val, cv_min, 512, 0, 1024), true, false);
         } else if (i == CV_SAMPLE) {
-          // printf("[ectocore] cv_sample %d\n", val);
-          int16_t cv_min = 0;
-          if (global_sample_cv_bipolar) {
-            cv_min = -512;
+          if (sample_cv_1voct_active) {
+            sample_cv_update(&sample_cv_state, val + 512,
+                             global_sample_cv_bipolar);
+            if (!sample_cv_index(&sample_cv_state,
+                                 banks[sel_bank_next_new]->num_samples,
+                                 &sel_sample_next_new)) continue;
+          } else {
+            int16_t cv_min = 0;
+            if (global_sample_cv_bipolar) {
+              cv_min = -512;
+            }
+            sel_sample_next_new =
+                linlin(val, cv_min, 512, 0, banks[sel_bank_cur]->num_samples);
           }
-          sel_sample_next_new =
-              linlin(val, cv_min, 512, 0, banks[sel_bank_cur]->num_samples);
           if (sel_sample_cur != sel_sample_next_new) {
             debounce_file_change = 1;
             dont_wait = true;
@@ -1243,13 +1260,18 @@ void __not_in_flash_func(input_handling)() {
               !sync_using_sdcard) {
             sel_bank_next_new = bank_num;
             if (sel_bank_next_new != sel_bank_cur) {
-              sel_sample_next_new =
-                  roundf((float)(sel_sample_cur *
-                                 banks[sel_bank_next_new]->num_samples) /
-                         banks[sel_bank_cur]->num_samples);
-              if (sel_sample_next_new >=
-                  banks[sel_bank_next_new]->num_samples) {
-                sel_sample_next_new = banks[sel_bank_next_new]->num_samples - 1;
+              if (!(sample_cv_1voct_active &&
+                    sample_cv_index(&sample_cv_state,
+                                    banks[sel_bank_next_new]->num_samples,
+                                    &sel_sample_next_new))) {
+                sel_sample_next_new =
+                    roundf((float)(sel_sample_cur *
+                                   banks[sel_bank_next_new]->num_samples) /
+                           banks[sel_bank_cur]->num_samples);
+                if (sel_sample_next_new >=
+                    banks[sel_bank_next_new]->num_samples) {
+                  sel_sample_next_new = banks[sel_bank_next_new]->num_samples - 1;
+                }
               }
               debounce_file_change = DEBOUNCE_FILE_SWITCH;
               // printf("[ectocore] knob switch %d+%d/%d\n", sel_bank_next_new,
@@ -1282,7 +1304,7 @@ void __not_in_flash_func(input_handling)() {
                               45 + 200 - sf->fx_param[FX_TIGHTEN][0]);
             }
             ws2812_set_wheel(ws2812, val * 4, 255, 255, 0);
-          } else {
+          } else if (!sample_cv_1voct_active) {
             // sample selection
             val = (val * banks[sel_bank_cur]->num_samples) / 1024;
             if (val != sel_sample_next_new) {
@@ -1616,14 +1638,19 @@ void __not_in_flash_func(input_handling)() {
                   sel_bank_next_new != bank_num) {
                 sel_bank_next_new = bank_num;
                 if (sel_bank_next_new != sel_bank_cur) {
-                  sel_sample_next_new =
-                      roundf((float)(sel_sample_cur *
-                                     banks[sel_bank_next_new]->num_samples) /
-                             banks[sel_bank_cur]->num_samples);
-                  if (sel_sample_next_new >=
-                      banks[sel_bank_next_new]->num_samples) {
+                  if (!(sample_cv_1voct_active &&
+                        sample_cv_index(&sample_cv_state,
+                                        banks[sel_bank_next_new]->num_samples,
+                                        &sel_sample_next_new))) {
                     sel_sample_next_new =
-                        banks[sel_bank_next_new]->num_samples - 1;
+                        roundf((float)(sel_sample_cur *
+                                       banks[sel_bank_next_new]->num_samples) /
+                               banks[sel_bank_cur]->num_samples);
+                    if (sel_sample_next_new >=
+                        banks[sel_bank_next_new]->num_samples) {
+                      sel_sample_next_new =
+                          banks[sel_bank_next_new]->num_samples - 1;
+                    }
                   }
                   debounce_file_change = DEBOUNCE_FILE_SWITCH;
                   // printf("[ectocore] btn switch %d+%d/%d\n",

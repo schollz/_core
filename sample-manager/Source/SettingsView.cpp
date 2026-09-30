@@ -36,7 +36,14 @@ String settingHelp(const card::Setting &setting) {
       {"break_cv",
        "Choose whether Break CV accepts positive-only or positive and negative control voltages."},
       {"sample_cv",
-       "Choose whether Sample CV accepts positive-only or positive and negative control voltages."},
+       "Bank divisions spreads samples across 0 to +5 V (unipolar) or -5 to +5 V (bipolar). "
+       "In 1 V/oct mode, negative voltages wrap backward with bipolar polarity, "
+       "or select sample 1 with unipolar polarity."},
+      {"sample_cv_mapping",
+       "Bank divisions divides the CV range by the bank's sample count. "
+       "1 V/oct selects sample 1 at 0 V and advances one sample per semitone (1/12 V), "
+       "wrapping around the bank. Requires firmware with 1 V/oct sample CV support. "
+       "Inactive when Sample CV is assigned to Reset; the saved choice is retained."},
       {"override_with_reset",
        "Choose which CV input acts as reset. None keeps the normal input functions."},
       {"knobx_select_sample", "Let Zeptocore's X knob select samples."},
@@ -116,17 +123,25 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     combo->setTooltip(settingHelp(d));
     int n = 1;
     for (const auto &v : d.values)
-      combo->addItem(v, n++);
+      combo->addItem(d.key == "sample_cv_mapping"
+                         ? (v == "1voct" ? "1 V/oct" : "Bank divisions")
+                         : v,
+                     n++);
     auto found = values.find(d.key);
     combo->setSelectedItemIndex(
         d.values.indexOf(found == values.end() ? d.initial : found->second),
         juce::dontSendNotification);
-    combo->onChange = [this, combo, key = d.key] {
-      values[key] = combo->getText();
-      manager.settings({{key, combo->getText()}});
+    combo->onChange = [this, combo, key = d.key, choices = d.values] {
+      const auto index = combo->getSelectedItemIndex();
+      if (index < 0)
+        return;
+      values[key] = choices[index];
+      manager.settings({{key, values[key]}});
+      refreshSampleCVMapping();
     };
     addAndMakeVisible(combo);
   }
+  refreshSampleCVMapping();
   heading.setText(look.theme.effectHeading, juce::dontSendNotification);
   heading.setTooltip(
       "Choose a bank below, then enable the effects available in that bank on the hardware.");
@@ -165,6 +180,15 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
   }
   refreshEffects();
   setSize(780, p == 1 ? 460 : 690);
+}
+void SettingsView::refreshSampleCVMapping() {
+  const auto reset = values.find("override_with_reset");
+  const bool enabled = reset == values.end() || reset->second != "sample";
+  for (int n = 0; n < controls.size(); ++n)
+    if (definitions[size_t(n)]->key == "sample_cv_mapping") {
+      controls[n]->setEnabled(enabled);
+      labels[n]->setEnabled(enabled);
+    }
 }
 void SettingsView::refreshEffects() {
   for (int b = 0; b < 7; ++b)

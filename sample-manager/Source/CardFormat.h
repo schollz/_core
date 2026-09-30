@@ -26,7 +26,7 @@ void validatePair(const Wav &, const Info &);
 juce::StringArray compatibility(const Info &);
 String path(int bank, int slot, int variant = 0);
 void writeHeader(juce::OutputStream &, uint64_t frames, int rate, int channels);
-// A complete model of recognized marker values. Unrecognized files are never
+// A complete model of recognized settings. Unrecognized files are never
 // owned.
 struct Setting {
   String key, label;
@@ -39,4 +39,7 @@ using Settings = std::map<String, String>;
 Settings defaultSettings();
 Settings readSettings(const File &, juce::StringArray &warnings);
 std::map<String, bool> settingsFiles(const Settings &);
+// This setting uses one replaceable text file instead of exclusive markers.
+inline constexpr auto sampleCVMappingPath = "settings/sample_cv_mapping";
+String sampleCVMappingContents(const Settings &);
 } // namespace core::card

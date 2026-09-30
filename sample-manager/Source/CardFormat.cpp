@@ -1,4 +1,5 @@
 #include "CardFormat.h"
+#include <cstring>
 #include <limits>
 namespace core::card {
 namespace {
@@ -232,6 +233,11 @@ const std::vector<Setting> &settingDefinitions() {
          {"unipolar", "bipolar"},
          "unipolar",
          true},
+        {"sample_cv_mapping",
+         "Sample CV mapping",
+         {"bank", "1voct"},
+         "bank",
+         true},
         {"override_with_reset",
          "Reset override",
          {"none", "sample", "break", "amen", "clk"},
@@ -270,6 +276,8 @@ Settings defaultSettings() {
 std::map<String, bool> settingsFiles(const Settings &settings) {
   std::map<String, bool> files;
   for (const auto &d : settingDefinitions()) {
+    if (d.key == "sample_cv_mapping")
+      continue;
     auto found = settings.find(d.key);
     if (found == settings.end())
       continue;
@@ -290,6 +298,12 @@ std::map<String, bool> settingsFiles(const Settings &settings) {
     }
   return files;
 }
+String sampleCVMappingContents(const Settings &settings) {
+  const auto found = settings.find("sample_cv_mapping");
+  const auto value = found == settings.end() ? String("bank") : found->second;
+  require(value == "bank" || value == "1voct", "Invalid Sample CV mapping");
+  return value + "\n";
+}
 Settings readSettings(const File &root, juce::StringArray &warnings) {
   Settings values;
   auto read = [&](const String &key, const juce::StringArray &choices) {
@@ -306,7 +320,29 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
       values[key] = chosen;
   };
   for (const auto &d : settingDefinitions())
-    read(d.key, d.values);
+    if (d.key != "sample_cv_mapping")
+      read(d.key, d.values);
+  // Match firmware precedence: settings/ overrides the root-directory file.
+  auto mapping = child(root, sampleCVMappingPath);
+  if (!mapping.exists())
+    mapping = child(root, "sample_cv_mapping");
+  if (mapping.exists()) {
+    auto input = mapping.createInputStream();
+    char bytes[16]{};
+    const auto size = input ? input->getTotalLength() : -1;
+    const bool readable = size >= 0 && size <= 16 &&
+                          input->read(bytes, int(size)) == size && input->getStatus().wasOk();
+    int length = readable ? int(size) : 0;
+    while (length > 0 && (bytes[length - 1] == ' ' || bytes[length - 1] == '\t' ||
+                          bytes[length - 1] == '\r' || bytes[length - 1] == '\n' ||
+                          bytes[length - 1] == '\v' || bytes[length - 1] == '\f'))
+      --length;
+    const bool octave = length == 5 && std::memcmp(bytes, "1voct", 5) == 0;
+    const bool bank = length == 4 && std::memcmp(bytes, "bank", 4) == 0;
+    values["sample_cv_mapping"] = octave ? "1voct" : "bank";
+    if (!readable || (!octave && !bank))
+      warnings.add("Invalid Sample CV mapping; using Bank divisions.");
+  }
   for (int b = 1; b <= 7; ++b)
     for (int e = 1; e <= 16; ++e)
       read("grimoire/rune" + String(b) + "/effect" + String(e), {"on", "off"});
