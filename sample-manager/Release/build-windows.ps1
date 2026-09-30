@@ -39,4 +39,4 @@ $commands | Set-Content $cmdFile -Encoding ascii
 & $cmdFile
 if ($LASTEXITCODE -ne 0) { throw 'Native build or tests failed' }
 # MSVC /MT is set by CMake before targets are created. No VC runtime installer.
-Write-Host "Built Core Sample Manager $Version using the static MSVC runtime."
+Write-Host "Built sample manager $Version using the static MSVC runtime."

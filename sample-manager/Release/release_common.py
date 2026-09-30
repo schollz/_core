@@ -154,13 +154,13 @@ def recheck_release(runner, selection):
 
 
 def asset_prefix(version, platform_name):
-    return f'Core-Sample-Manager-{version}-{platform_name}'
+    return f'_core-sample-manager-{version}-{platform_name}'
 
 
 def finish_package(output, archive, manifest, selection, platform_name, *, will_publish=True):
     """Write platform-specific metadata without marking the release complete."""
     prefix = asset_prefix(selection['version'], platform_name)
-    manifest.update(application='Core Sample Manager', version=selection['version'],
+    manifest.update(version=selection['version'],
                     platform=platform_name, release=selection,
                     created=datetime.now(timezone.utc).isoformat(),
                     publication='requested; see complete.json for confirmation' if will_publish else 'disabled by --no-upload',
@@ -174,7 +174,7 @@ def finish_package(output, archive, manifest, selection, platform_name, *, will_
 
 
 def verify_package(output, platform_name):
-    reports = list(output.glob(f'Core-Sample-Manager-*-{platform_name}-manifest.json'))
+    reports = list(output.glob(f'_core-sample-manager-*-{platform_name}-manifest.json'))
     if len(reports) != 1:
         raise ReleaseError('Expected exactly one release manifest')
     report = reports[0]

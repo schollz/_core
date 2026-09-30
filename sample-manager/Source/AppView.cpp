@@ -1055,7 +1055,8 @@ void AppView::paint(juce::Graphics &g) {
   g.setColour(headerInk);
   g.drawText(look.theme.name, x, headerY + 13, 245, 28, juce::Justification::left);
   g.setFont(look.font(10));
-  g.drawText("CORE SAMPLE MANAGER", x, headerY + 39, 245, 17, juce::Justification::left);
+  g.drawText(JUCE_APPLICATION_NAME_STRING, x, headerY + 39, 245, 17,
+             juce::Justification::left);
   if (!selected() && state.root != File()) {
     g.setColour(juce::Colours::darkgrey);
     g.setFont(look.font(17));

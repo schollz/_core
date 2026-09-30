@@ -1,9 +1,11 @@
 # Standalone application releases
 
-The release entrypoints build **Core Sample Manager** from a fresh clone of the
+The release entrypoints build **_core sample manager** from a fresh clone of the
 latest published stable release of `schollz/_core`. Windows runs manually in
 GitHub Actions; the macOS and Linux scripts run on your machines. Each uploads
 its platform's standalone archive, manifest and checksums to that same release.
+Packaging reads the application name from the selected source's `PRODUCT_NAME`,
+so older release tags retain their original app and executable names.
 No installer, AU, VST3, firmware build or hardware flashing is involved.
 
 ## Release selection and source
@@ -33,7 +35,7 @@ copied into the source checkout or sent to the Intel builder.
 
 ## Windows x64 — manual GitHub Actions workflow
 
-Run **Release Core Sample Manager - Windows**, choosing `main` for the release
+Run **Release _core sample manager - Windows**, choosing `main` for the release
 tooling. It has no version input:
 
 ```sh
@@ -63,7 +65,7 @@ Linux job receives the finished package, verifies its hashes, rechecks the
 selected release, and uploads with `contents: write`. Build, packaging and
 publication logs are retained as Actions artifacts for 14 days. A failed
 publication leaves the downloadable signed package in the workflow artifacts.
-The existing **Package Core Sample Manager - Windows** workflow remains an
+The existing **Package _core sample manager - Windows** workflow remains an
 independent unsigned build/test/package tool.
 
 ## macOS credentials and prerequisites
@@ -188,10 +190,10 @@ NOTARY_PROFILE=tape-notary make sample-manager-release-macosarm RELEASE_ARGS='--
 Each platform uploads three files:
 
 ```text
-Core-Sample-Manager-VERSION-PLATFORM.zip      # macos-arm64, macos-x86_64, windows-x64
-Core-Sample-Manager-VERSION-linux-x86_64.tar.gz
-Core-Sample-Manager-VERSION-PLATFORM-manifest.json
-Core-Sample-Manager-VERSION-PLATFORM-SHA256SUMS.txt
+_core-sample-manager-VERSION-PLATFORM.zip      # macos-arm64, macos-x86_64, windows-x64
+_core-sample-manager-VERSION-linux-x86_64.tar.gz
+_core-sample-manager-VERSION-PLATFORM-manifest.json
+_core-sample-manager-VERSION-PLATFORM-SHA256SUMS.txt
 ```
 
 The native run directory retains `source/`, the build inside it, `payload/`,

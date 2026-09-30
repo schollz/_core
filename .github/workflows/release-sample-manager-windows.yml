@@ -1,4 +1,4 @@
-name: Release Core Sample Manager - Windows
+name: Release _core sample manager - Windows
 
 # Resolve the latest published release at execution time, independently of the
 # workflow ref. This does not create releases or react to firmware pushes.

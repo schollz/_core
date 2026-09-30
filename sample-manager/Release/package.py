@@ -15,6 +15,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+def product_name(source_root):
+    # Release tooling also packages older tags: use the name of that source.
+    match = re.search(r'\bPRODUCT_NAME\s+"([A-Za-z0-9_ -]+)"',
+                      (source_root / 'CMakeLists.txt').read_text())
+    if not match:
+        raise RuntimeError('Cannot read the application PRODUCT_NAME from CMakeLists.txt')
+    return match.group(1)
+
 def run(*args):
     print('+', ' '.join(map(str, args)), flush=True)
     return subprocess.check_output(list(map(str,args)), text=True, stderr=subprocess.STDOUT).strip()
@@ -113,16 +121,17 @@ def package_build(source_root, build, out, platform_name, version, *, command=ru
     cache=(build/'CMakeCache.txt').read_text()
     if not re.search(r'^CORE_MANAGER_VERSION:STRING='+re.escape(version)+r'$',cache,re.M): raise RuntimeError('Build version does not match requested package')
     stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
-    payload=out/'Core Sample Manager';payload.mkdir(parents=True)
+    name=product_name(source_root)
+    payload=out/name;payload.mkdir(parents=True)
     notices(payload/'Notices', source_root, juce_license)
-    (payload/'README.txt').write_text('Core Sample Manager '+version+'\n\nOpen the application, choose a local folder, and import samples. Edits save automatically.\nThe folder includes portable immutable sources under .core-manager; keep that folder when copying projects.\nVisualizer Device mode needs opt-in telemetry firmware. Local UF2 tools require an explicit action.\nOnline drum analysis is the only application network request and runs only when selected.\nNo plugins or external audio tools are required. Keep the Notices directory.\n',encoding='utf-8')
+    (payload/'README.txt').write_text(name+' '+version+'\n\nOpen the application, choose a local folder, and import samples. Edits save automatically.\nThe folder includes portable immutable sources under .core-manager; keep that folder when copying projects.\nVisualizer Device mode needs opt-in telemetry firmware. Local UF2 tools require an explicit action.\nOnline drum analysis is the only application network request and runs only when selected.\nNo plugins or external audio tools are required. Keep the Notices directory.\n',encoding='utf-8')
     source=build/'CoreSampleManager_artefacts/Release'
-    manifest={'application':'Core Sample Manager','version':version,'platform':platform_name,
+    manifest={'application':name,'version':version,'platform':platform_name,
               'builtOn':platform.platform(),'created':stamp,'publication':'disabled; local artifacts only',
               'juce':'9.0.3','juceArchiveSHA256':'a81e5508b8a0efa483917794ebeaff56aed3075730c405a947734413f40c1aba'}
     if mac:
-        app=payload/'Core Sample Manager.app';shutil.copytree(source/app.name,app,symlinks=True)
-        exe=app/'Contents/MacOS/Core Sample Manager'
+        app=payload/(name+'.app');shutil.copytree(source/app.name,app,symlinks=True)
+        exe=app/'Contents/MacOS'/name
         arch=run('lipo','-archs',exe)
         if arch!=platform_name.removeprefix('macos-'): raise RuntimeError('Unexpected Mach-O architecture '+arch)
         info=plistlib.loads((app/'Contents/Info.plist').read_bytes())
@@ -163,16 +172,16 @@ def package_build(source_root, build, out, platform_name, version, *, command=ru
             run('xcrun','stapler','staple',app);run('xcrun','stapler','validate',app)
             run('spctl','--assess','--type','execute',app)
             manifest['notarization']=result;request.unlink()
-        archive=out/('Core-Sample-Manager-'+version+'-'+platform_name+'.zip')
+        archive=out/('_core-sample-manager-'+version+'-'+platform_name+'.zip')
         run('ditto','-c','-k','--sequesterRsrc','--keepParent',payload,archive)
     else:
-        exe=payload/'Core Sample Manager';shutil.copy2(source/exe.name,exe);exe.chmod(0o755)
+        exe=payload/name;shutil.copy2(source/exe.name,exe);exe.chmod(0o755)
         manifest['bundledLibraries']=dependencies_linux(exe,payload/'lib',payload/'Notices/Linux-Libraries',run)
         manifest['glibc']=run('getconf','GNU_LIBC_VERSION')
         launcher=payload/'core-sample-manager'
-        launcher.write_text('#!/bin/sh\nset -eu\nHERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nexport LD_LIBRARY_PATH="$HERE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "$HERE/Core Sample Manager" "$@"\n')
+        launcher.write_text('#!/bin/sh\nset -eu\nHERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nexport LD_LIBRARY_PATH="$HERE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\nexec "$HERE/'+name+'" "$@"\n')
         launcher.chmod(0o755)
-        archive=out/('Core-Sample-Manager-'+version+'-'+platform_name+'.tar.gz')
+        archive=out/('_core-sample-manager-'+version+'-'+platform_name+'.tar.gz')
         with tarfile.open(archive,'w:gz') as tar: tar.add(payload,arcname=payload.name)
     manifest['files']={str(p.relative_to(payload)):sha(p) for p in sorted(payload.rglob('*')) if p.is_file()}
     manifest['archiveSHA256']=sha(archive)

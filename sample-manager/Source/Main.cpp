@@ -9,7 +9,7 @@ std::shared_ptr<void> startMidiTests(std::function<void(int)>);
 class CoreApplication final : public juce::JUCEApplication {
 public:
   const juce::String getApplicationName() override {
-    return "Core Sample Manager";
+    return JUCE_APPLICATION_NAME_STRING;
   }
   const juce::String getApplicationVersion() override {
     return JUCE_APPLICATION_VERSION_STRING;
@@ -71,7 +71,7 @@ private:
   class Window : public juce::DocumentWindow {
   public:
     explicit Window(bool dragAcceptance)
-        : DocumentWindow("Core Sample Manager", juce::Colour(0xfff0f0f0),
+        : DocumentWindow(JUCE_APPLICATION_NAME_STRING, juce::Colour(0xfff0f0f0),
                          allButtons) {
       setUsingNativeTitleBar(true);
       setContentOwned(new core::AppView, true);

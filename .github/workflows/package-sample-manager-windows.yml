@@ -1,4 +1,4 @@
-name: Package Core Sample Manager - Windows
+name: Package _core sample manager - Windows
 
 # Explicit native-host qualification. No push/PR trigger or release publication.
 on:

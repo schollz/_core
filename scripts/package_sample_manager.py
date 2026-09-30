@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and package Core Sample Manager locally, without publication."""
+"""Build and package _core sample manager locally, without publication."""
 from pathlib import Path
 import runpy
 

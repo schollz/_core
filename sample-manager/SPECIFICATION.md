@@ -1,8 +1,8 @@
-# Core Sample Manager: native sample preparation and integrated visualizer
+# _core sample manager: native sample preparation and integrated visualizer
 
 ## 1. Product and architecture
 
-Build **Core Sample Manager**, a standalone JUCE application that opens a local folder, manages its banks and samples, and continuously writes hardware-compatible files into that folder. The first implementation targets macOS, with a portable build and packaging structure for Windows and Linux.
+Build **_core sample manager**, a standalone JUCE application that opens a local folder, manages its banks and samples, and continuously writes hardware-compatible files into that folder. The first implementation targets macOS, with a portable build and packaging structure for Windows and Linux.
 
 - Create an independent `sample-manager/` CMake project in this repository, using **JUCE 9.0.3**, pinned and verified by archive checksum. Use `juce_add_gui_app`; no browser, localhost server, Go executable, Python runtime, or external audio-processing tools are required to run it. [JUCE 9.0.3 release](https://github.com/juce-framework/JUCE/releases/tag/9.0.3)
 - Keep one app identity and three switchable presentations:
@@ -137,7 +137,7 @@ Move the functionality from `visualizer-juce/` into the new application, then re
 - Provide build/run/package commands that work without sibling repositories or globally installed JUCE, SoX, Rubber Band, Node, or Python at application runtime.
 - Follow `tape`’s macOS and Windows packaging patterns, with publication disabled by default. Keep app versioning independent of firmware versioning.
 - Deliver and validate the native macOS app first. Prepare separate Apple Silicon and Intel builds, Windows x64 with the static MSVC runtime, and Linux x86_64 packaging with required non-system runtime libraries included.
-- Adapt the old visualizer packaging and documentation to Core Sample Manager. Windows/Linux runtime qualification remains a later native-host step; macOS compilation does not count as cross-platform verification.
+- Adapt the old visualizer packaging and documentation to _core sample manager. Windows/Linux runtime qualification remains a later native-host step; macOS compilation does not count as cross-platform verification.
 - Keep the current website available. Make implementation changes in the current checkout, without commits, pushes, releases, deployments, or hardware flashing.
 
 **Ordered implementation**

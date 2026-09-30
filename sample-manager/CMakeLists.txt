@@ -20,7 +20,7 @@ FetchContent_Declare(JUCE URL "${juce_archive}"
 FetchContent_MakeAvailable(JUCE)
 file(STRINGS "${juce_SOURCE_DIR}/CMakeLists.txt" juce_version REGEX "^project\\(JUCE VERSION")
 if(NOT juce_version MATCHES "VERSION 9\\.0\\.3 ")
-    message(FATAL_ERROR "Core Sample Manager requires JUCE 9.0.3")
+    message(FATAL_ERROR "_core sample manager requires JUCE 9.0.3")
 endif()
 include(cmake/RubberBand.cmake)
 add_library(core_tempo STATIC
@@ -31,7 +31,7 @@ target_include_directories(core_tempo PUBLIC Vendor/soundtouch/include)
 target_compile_definitions(core_tempo PUBLIC SOUNDTOUCH_FLOAT_SAMPLES=1)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS Resources/Icons/app-icon.png)
 juce_add_gui_app(CoreSampleManager COMPANY_NAME "INFINITE DIGITS"
-    BUNDLE_ID "com.infinitedigits.coresamplemanager" PRODUCT_NAME "Core Sample Manager"
+    BUNDLE_ID "com.infinitedigits.coresamplemanager" PRODUCT_NAME "_core sample manager"
     ICON_BIG Resources/Icons/app-icon.png
     MICROPHONE_PERMISSION_ENABLED FALSE NEEDS_CURL TRUE)
 juce_add_binary_data(CoreAssets SOURCES

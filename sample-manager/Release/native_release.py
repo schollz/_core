@@ -9,7 +9,7 @@ import shlex
 import subprocess
 from pathlib import Path
 
-from package import package_build
+from package import package_build, product_name
 from release_common import (REPOSITORY_URL, ROOT, SSH, ReleaseError, Runner,
                             clone_release, finish_package, new_run, publish,
                             require_tools, select_release, write_json)
@@ -44,7 +44,7 @@ def mac_credentials(runner, profile):
                       '--password', os.environ['APPLE_PASSWORD']]
 
 
-def remote_build_script(directory, selection, jobs):
+def remote_build_script(directory, selection, jobs, name):
     """Clone independently on the Intel Mac and require the pinned local commit."""
     source = Path(directory) / 'source'
     project = source / 'sample-manager'
@@ -63,7 +63,7 @@ def remote_build_script(directory, selection, jobs):
         'test -f ' + quote(str(project / 'CMakeLists.txt')),
         '/usr/bin/caffeinate -i /bin/bash -c ' + quote(build_script),
         shlex.join(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
-                    str(build / 'CoreSampleManager_artefacts/Release/Core Sample Manager.app'),
+                    str(build / 'CoreSampleManager_artefacts/Release' / (name + '.app')),
                     directory + '/app.zip']),
         shlex.join(['cp', str(build / 'CMakeCache.txt'), directory + '/CMakeCache.txt']),
         shlex.join(['cp', str(project / '.cache/deps/juce-src/LICENSE.md'), directory + '/JUCE-LICENSE.md']),
@@ -83,7 +83,7 @@ def retrieve_intel(runner, host, directory, output, build):
 
 
 def main(platform_name):
-    parser = argparse.ArgumentParser(description='Clone, build and publish the latest stable Core Sample Manager release.')
+    parser = argparse.ArgumentParser(description='Clone, build and publish the latest stable _core sample manager release.')
     remote = platform_name == 'macos-x86_64'
     mac = platform_name.startswith('macos')
     if remote:
@@ -124,6 +124,7 @@ def main(platform_name):
         selection = select_release(runner)
         write_json(output / 'selection.json', selection)
         project = clone_release(runner, selection, output / 'source')
+        name = product_name(project)
         identity, credentials = mac_credentials(runner, args.notary_profile) if mac else (None, None)
         build = project / 'build' / platform_name
         juce_license = None
@@ -131,13 +132,13 @@ def main(platform_name):
             remote_dir = runner.ssh(args.host, 'mktemp -d /tmp/core-sample-manager-intel.XXXXXX')
             if not REMOTE_DIRECTORY.fullmatch(remote_dir):
                 raise ReleaseError('Unexpected remote temporary directory')
-            runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs))
+            runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs, name))
             juce_license = retrieve_intel(runner, args.host, remote_dir, output, build)
         else:
             for command in build_commands(project, build, selection['version'], platform_name, args.jobs):
                 runner.run(*(['/usr/bin/caffeinate', '-i'] if mac else []), *command)
         if not mac:
-            header = runner.run('readelf', '-h', build / 'CoreSampleManager_artefacts/Release/Core Sample Manager')
+            header = runner.run('readelf', '-h', build / 'CoreSampleManager_artefacts/Release' / name)
             if not re.search(r'Class:\s+ELF64', header) or not re.search(r'Machine:\s+Advanced Micro Devices X86-64', header):
                 raise ReleaseError('Expected a Linux x86_64 executable')
         assets = output / 'assets'
@@ -146,7 +147,7 @@ def main(platform_name):
         manifest.update(buildHost=args.host if remote else platform.node(), signingHost=platform.node() if mac else None)
         finish_package(assets, archive, manifest, selection, platform_name, will_publish=not args.no_upload)
         # Keep payload and notarization diagnostics outside the upload directory.
-        (assets / 'Core Sample Manager').rename(output / 'payload')
+        (assets / name).rename(output / 'payload')
         if (assets / 'notarization.json').exists():
             (assets / 'notarization.json').rename(output / 'notarization.json')
         if args.no_upload:

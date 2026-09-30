@@ -10,7 +10,10 @@ Set-StrictMode -Version Latest
 if ($Version -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') { throw 'Use major.minor.patch' }
 $project = [IO.Path]::GetFullPath($SourceRoot)
 $build = if ($BuildDirectory) { [IO.Path]::GetFullPath($BuildDirectory) } else { Join-Path $project 'build/windows-x64' }
-$source = Join-Path $build 'CoreSampleManager_artefacts/Release/Core Sample Manager.exe'
+$productMatch = [regex]::Match((Get-Content (Join-Path $project 'CMakeLists.txt') -Raw), '\bPRODUCT_NAME\s+"([A-Za-z0-9_ -]+)"')
+if (-not $productMatch.Success) { throw 'Cannot read the application PRODUCT_NAME from CMakeLists.txt' }
+$productName = $productMatch.Groups[1].Value
+$source = Join-Path $build "CoreSampleManager_artefacts/Release/$productName.exe"
 if (-not (Test-Path $source)) { throw 'Run build-windows.ps1 first' }
 $actualVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($source).ProductVersion
 if ($actualVersion -notmatch ('^' + [regex]::Escape($Version) + '(?:\.0)?$')) { throw "Expected $Version, found $actualVersion" }
@@ -20,7 +23,7 @@ if ($RequireSignature -and ($signature.Status -ne 'Valid' -or -not $signature.Ti
 }
 $out = if ($OutputDirectory) { [IO.Path]::GetFullPath($OutputDirectory) } else { Join-Path $project ('dist/windows-x64-' + $Version + '-' + (Get-Date -Format 'yyyyMMddTHHmmss')) }
 if (Test-Path $out) { throw "Package output must be a new directory: $out" }
-$payload = Join-Path $out 'Core Sample Manager'
+$payload = Join-Path $out $productName
 $notices = Join-Path $payload 'Notices'
 New-Item -ItemType Directory -Force $notices | Out-Null
 Copy-Item $source $payload
@@ -38,14 +41,14 @@ foreach ($folder in @('Resources/Fonts', 'Resources/Icons/Lucide')) {
     }
 }
 @"
-Core Sample Manager $Version - Windows x64
-Extract this ZIP and open Core Sample Manager.exe. Choose a local folder and import samples.
+$productName $Version - Windows x64
+Extract this ZIP and open $productName.exe. Choose a local folder and import samples.
 Edits save automatically. Keep .core-manager when moving or copying a portable project.
 No installer, external audio tools, VC runtime installer, or plugins are needed.
 Visualizer Device mode needs opt-in telemetry firmware. Online analysis runs only on request.
 Keep the Notices directory. No assets are published by this script.
 "@ | Set-Content "$payload/README.txt" -Encoding utf8
-$archive = Join-Path $out "Core-Sample-Manager-$Version-windows-x64.zip"
+$archive = Join-Path $out "_core-sample-manager-$Version-windows-x64.zip"
 Compress-Archive -Path $payload -DestinationPath $archive
 $signatureEvidence = [ordered]@{
     status = $signature.Status.ToString()
@@ -58,7 +61,7 @@ Get-ChildItem $payload -File -Recurse | ForEach-Object {
     $relative = $_.FullName.Substring($payload.Length + 1).Replace('\', '/')
     $files[$relative] = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
 }
-$manifest = [ordered]@{ application='Core Sample Manager'; version=$Version; platform='windows-x64'; runtime='static MSVC'; signature=$signatureEvidence; files=$files; publication='disabled; local artifacts only'; juce='9.0.3'; archiveSHA256=(Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() }
+$manifest = [ordered]@{ application=$productName; version=$Version; platform='windows-x64'; runtime='static MSVC'; signature=$signatureEvidence; files=$files; publication='disabled; local artifacts only'; juce='9.0.3'; archiveSHA256=(Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() }
 $manifestPath = Join-Path $out 'manifest.json'
 $manifest | ConvertTo-Json -Depth 5 | Set-Content $manifestPath -Encoding utf8
 @($archive,$manifestPath) | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + '  ' + (Split-Path $_ -Leaf) } | Set-Content "$out/SHA256SUMS.txt" -Encoding ascii

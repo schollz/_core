@@ -1,4 +1,4 @@
-# Core Sample Manager implementation map
+# _core sample manager implementation map
 
 The application implements the accepted [specification](SPECIFICATION.md) as an independent JUCE 9.0.3 project. Version 0.1.0 has native Apple Silicon acceptance and separate Apple Silicon/Intel packages. [VALIDATION.md](VALIDATION.md) records the evidence and remaining host/device checks.
 

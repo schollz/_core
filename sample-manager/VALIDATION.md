@@ -1,4 +1,10 @@
-# Core Sample Manager 0.1.0 validation
+# _core sample manager 0.1.0 validation
+
+## Application name: executed September 30, 2026
+
+The Apple Silicon Release build and local packaging pass with `_core sample manager` as the app, executable, window and header name. The built bundle's `CFBundleName`, `CFBundleDisplayName` and `CFBundleExecutable` match, while its bundle identifier and preference directory remain `com.infinitedigits.coresamplemanager`. The local ZIP passes integrity and manifest-hash checks and contains the renamed bundle and executable; the packaged app passes `codesign --verify --deep --strict` with an ad-hoc signature.
+
+Python and launch-script syntax checks pass. Temporary fixtures verify both old and new source product names, generated Intel build-script syntax, and release manifest/checksum round trips for all four platform names. These fixtures do not exercise native Windows/Linux packaging or signing. No release assets were published, and the application test suite and native UI acceptance were not rerun for this rename.
 
 ## Grouped toolbar: executed September 29, 2026
 
@@ -29,7 +35,7 @@ The full `manager_contract` run passes its first 206 contract checks plus audio/
 Reproduce the focused run after building:
 
 ```sh
-'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/Core Sample Manager.app/Contents/MacOS/Core Sample Manager' --self-test manager
+'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/_core sample manager.app/Contents/MacOS/_core sample manager' --self-test manager
 ```
 
 ## Splice interval parity: coverage prepared, not executed
@@ -177,7 +183,7 @@ python3 sample-manager/Release/package.py --platform macos-arm64 --skip-build
 After extracting the package, substitute its executable path:
 
 ```sh
-APP='/path/to/Core Sample Manager.app/Contents/MacOS/Core Sample Manager'
+APP='/path/to/_core sample manager.app/Contents/MacOS/_core sample manager'
 "$APP" --self-test
 "$APP" --midi-test
 /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network*)' "$APP" --self-test

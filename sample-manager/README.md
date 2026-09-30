@@ -1,6 +1,6 @@
-# Core Sample Manager
+# _core sample manager
 
-Core Sample Manager opens a folder and keeps its Core hardware files up to date as you edit. The same folder holds the editable project, immutable imported originals, bank outputs, and settings. The integrated visualizer uses the last completed output, so there is no separate export or reference-folder step.
+_core sample manager opens a folder and keeps its Core hardware files up to date as you edit. The same folder holds the editable project, immutable imported originals, bank outputs, and settings. The integrated visualizer uses the last completed output, so there is no separate export or reference-folder step.
 
 This is a standalone JUCE 9.0.3 application. It runs without a browser, server, Node, Python, SoX, globally installed JUCE, or a sibling source checkout. The existing website and browser/kiosk visualizer remain available.
 
@@ -12,7 +12,7 @@ From the repository root on Apple Silicon:
 cmake --preset macos-arm64 -S sample-manager
 cmake --build sample-manager/build/macos-arm64 --parallel 6
 ctest --test-dir sample-manager/build/macos-arm64 --output-on-failure
-open 'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/Core Sample Manager.app'
+open 'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/_core sample manager.app'
 ```
 
 Use the `macos-x86_64` preset for Intel. Both target macOS 11 or newer. Build tools are Xcode command-line tools, CMake 3.22+, and Ninja. CMake downloads the pinned JUCE archive and verifies its SHA-256; an existing `.cache/JUCE-9.0.3.tar.gz` supports offline configuration. Rubber Band, SoundTouch's tempo detector, and the local onset detector are vendored and compiled statically. See [source provenance](Vendor/PROVENANCE.md).

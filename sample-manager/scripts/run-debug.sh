@@ -23,7 +23,7 @@ run_command() {
 
 run_session() (
     trap 'result=$?; printf "\n[%s] Session finished, exit code %s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$result"' EXIT
-    printf '[%s] Core Sample Manager diagnostic session\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf '[%s] _core sample manager diagnostic session\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     printf 'Log: %s\nWorking directory: %s\nPreset: %s\nVersion: %s\nJobs: %s\n' \
         "$log_file" "$PWD" "$preset" "$version" "$jobs"
     run_command uname -smr
@@ -31,9 +31,9 @@ run_session() (
     run_command cmake --preset "$preset" -S . "-DCORE_MANAGER_VERSION=$version"
     run_command cmake --build "$build_dir" --parallel "$jobs" --verbose
 
-    app="$build_dir/CoreSampleManager_artefacts/Release/Core Sample Manager"
+    app="$build_dir/CoreSampleManager_artefacts/Release/_core sample manager"
     if [[ "$(uname -s)" == Darwin ]]; then
-        app="$app.app/Contents/MacOS/Core Sample Manager"
+        app="$app.app/Contents/MacOS/_core sample manager"
     fi
     # Run the actual executable so stdout, stderr and its exit status stay here.
     # The runtime diagnostics are also enabled in Release builds.

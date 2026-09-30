@@ -18,7 +18,7 @@ def main():
     if sys.platform != 'darwin':
         parser.error('This acceptance harness requires macOS hdiutil')
     executable = args.executable.resolve(strict=True)
-    native_temp = pathlib.Path(tempfile.gettempdir()) / 'Core Sample Manager'
+    native_temp = pathlib.Path(tempfile.gettempdir()) / executable.name
     native_temp.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='core-disk-full-test-', dir=native_temp) as directory:
         root = pathlib.Path(directory)

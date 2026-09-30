@@ -75,7 +75,7 @@ def main():
             manifest['buildHost'] = platform.node()
             assets = output / 'assets'
             assets.mkdir()
-            archive = staged / f"Core-Sample-Manager-{selection['version']}-windows-x64.zip"
+            archive = staged / f"_core-sample-manager-{selection['version']}-windows-x64.zip"
             destination = assets / archive.name
             archive.rename(destination)
             finish_package(assets, destination, manifest, selection, 'windows-x64')
