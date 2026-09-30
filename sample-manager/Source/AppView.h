@@ -88,7 +88,7 @@ private:
   void chooseFolder();
   void chooseImport();
   void chooseDuplicate();
-  void recentMenu();
+  void projectMenu();
   void moreMenu();
   void toggleVisualizer();
   void detachVisualizer();
@@ -126,18 +126,17 @@ private:
   WaveformEditor waveform{look};
   juce::StretchableLayoutManager layout;
   Divider divider{&layout, 1, true};
-  IconButton open{"Open Folder", "folder-open"}, recent{"Recent", "clock"},
-      reveal{"Reveal", "folder-search"}, duplicate{"Duplicate", "copy"},
+  IconButton projectButton{String::fromUTF8("Project ▾"), "folder-open"},
       importButton{"Import", "file-plus"}, settingsButton{"Settings", "settings-2"},
       deviceButton{"Device", "usb"}, visualizerButton{"Visualizer", "audio-lines"},
-      more{"More", "ellipsis"};
+      more{"More", "ellipsis", true};
   juce::ComboBox presentationBox, channel, playMode, markerMode, detector,
       moveBank;
   IconButton play{"Play / Stop", "play"}, evenButton{"Even slices", "columns-3"},
       autoButton{"Auto slice", "wand-sparkles"}, onlineButton{"Analyze drums online", "cloud-upload"},
       removeButton{"Remove", "trash"}, mergeButton{"Merge", "merge"},
       up{"Move up", "arrow-up", true}, down{"Move down", "arrow-down", true},
-      undoButton{"Undo", "undo-2"}, redoButton{"Redo", "redo-2"},
+      undoButton{"Undo", "undo-2", true}, redoButton{"Redo", "redo-2", true},
       createProject{"Create project", "folder-plus"}, empty{"Open a project folder", "folder-open"};
   juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, name;
   juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"},

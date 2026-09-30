@@ -136,13 +136,17 @@ AppView::AppView() {
     headerRunes[i] = juce::Drawable::createFromImageData(data, size);
   }
   for (auto *c : std::initializer_list<juce::Component *>{
-           &open,         &recent,          &reveal,        &duplicate,
-           &importButton, &settingsButton,  &deviceButton,  &visualizerButton,
-           &more,         &presentationBox, &folderLabel,   &statusLabel,
-           &activity,     &banks,           &samples,       &divider,
-           &editor,       &empty,           &createProject, &undoButton,
-           &redoButton})
+           &importButton, &undoButton,     &redoButton,    &projectButton,
+           &visualizerButton, &settingsButton, &deviceButton, &more,
+           &presentationBox, &folderLabel, &statusLabel,   &activity,
+           &banks,        &samples,        &divider,       &editor,
+           &empty,        &createProject})
     addAndMakeVisible(c);
+  int focusOrder = 1;
+  for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
+                       &visualizerButton, &settingsButton, &deviceButton, &more})
+    button->setExplicitFocusOrder(focusOrder++);
+  projectButton.setTitle("Project");
   activity.setPercentageDisplay(false);
   activity.setStyle(juce::ProgressBar::Style::linear);
   activity.setVisible(false);
@@ -195,16 +199,10 @@ AppView::AppView() {
         "Local device tools", new DeviceView(device, look));
   };
   visualizerButton.onClick = [this] { toggleVisualizer(); };
-  open.onClick = [this] { chooseFolder(); };
-  empty.onClick = open.onClick;
+  projectButton.onClick = [this] { projectMenu(); };
+  empty.onClick = [this] { chooseFolder(); };
   createProject.onClick = [this] { chooseNewProject(); };
-  recent.onClick = [this] { recentMenu(); };
   importButton.onClick = [this] { chooseImport(); };
-  reveal.onClick = [this] {
-    if (state.root.isDirectory())
-      state.root.revealToUser();
-  };
-  duplicate.onClick = [this] { chooseDuplicate(); };
   settingsButton.onClick = [this] { showSettings(); };
   more.onClick = [this] { moreMenu(); };
   undoButton.onClick = [this] { manager.undo(); };
@@ -422,14 +420,11 @@ AppView::AppView() {
   layout.setItemLayout(2, 510, -1, -1);
   state = manager.snapshot();
   updateEditor();
-  open.setTooltip("Open an existing project or Core card folder. Ctrl/Cmd+O.");
-  empty.setTooltip(open.getTooltip());
+  projectButton.setTooltip("Create, open or reopen a project; reveal or duplicate its folder. "
+                           "Ctrl/Cmd+O opens a folder.");
+  empty.setTooltip("Open an existing project or Core card folder. Ctrl/Cmd+O.");
   createProject.setTooltip("Choose a name and location for a new project folder. "
                            "Existing folders are never overwritten.");
-  recent.setTooltip("Reopen one of your recently used project folders.");
-  reveal.setTooltip("Show the current project folder in your system's file manager.");
-  duplicate.setTooltip("Copy the whole project, including original audio and settings, "
-                       "to an empty folder. Wait for saving to finish first.");
   importButton.setTooltip("Add audio files or XRNI instruments to the selected bank. "
                           "Each bank holds up to 16 samples. Ctrl/Cmd+I.");
   settingsButton.setTooltip("Edit the project's hardware settings and effect banks. "
@@ -489,17 +484,10 @@ AppView::AppView() {
   onlineAnalysisLabel.setTooltip(onlineButton.getTooltip());
   hint.setTooltip("Choose Slices or a transient lane in the marker selector. "
                   "Hover over the waveform for editing instructions for that selection.");
-  for (auto *button : {&open,         &recent,
-                       &reveal,       &duplicate,
-                       &importButton, &settingsButton,
-                       &deviceButton, &visualizerButton,
-                       &more,         &undoButton,
-                       &redoButton,   &play,
-                       &evenButton,   &autoButton,
-                       &onlineButton, &removeButton,
-                       &mergeButton,  &up,
-                       &down,         &empty,
-                       &createProject}) {
+  for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
+                       &visualizerButton, &settingsButton, &deviceButton, &more,
+                       &play, &evenButton, &autoButton, &onlineButton, &removeButton,
+                       &mergeButton, &up, &down, &empty, &createProject}) {
     auto action = button->onClick;
     button->onClick = [button, action] {
       diagnostics::log("UI", "Click " + button->getButtonText());
@@ -663,7 +651,8 @@ void AppView::updateEditor() {
   createProject.setVisible(state.root == File());
   createProject.setEnabled(!state.busy);
   importButton.setEnabled(state.available);
-  duplicate.setEnabled(state.available && !state.busy);
+  undoButton.setEnabled(state.available && state.canUndo);
+  redoButton.setEnabled(state.available && state.canRedo);
   settingsButton.setEnabled(state.available);
   activity.setVisible((state.busy || state.backgroundBusy) && state.error.isEmpty());
   if (s) {
@@ -706,10 +695,12 @@ void AppView::updateEditor() {
       state.root == File()
           ? "Create a project or open a folder to keep your samples and hardware files together."
           : state.root.getFullPathName() +
-                "\nUse Reveal to open this folder in your file manager.");
+                "\nUse Project > Reveal folder to open this folder in your file manager.");
   updating = false;
 }
 void AppView::updatePresentation() {
+  importButton.setColour(juce::TextButton::buttonColourId, look.theme.accent);
+  importButton.setColour(juce::TextButton::textColourOffId, look.theme.accent.contrasting());
   const bool showTransients = presentation != 1;
   oneShot.setVisible(presentation != 1);
   waveform.setTransientLanesVisible(showTransients);
@@ -884,19 +875,53 @@ void AppView::filesDropped(const juce::StringArray &files, int, int) {
   else
     manager.import(files, bank);
 }
-void AppView::recentMenu() {
+void AppView::projectMenu() {
+  enum { create = 1, openFolder, revealFolder, duplicateProject, firstRecent = 100 };
+  const auto menuState = manager.snapshot();
+  const auto recentPaths = recents;
   juce::PopupMenu menu;
   menu.setLookAndFeel(&look);
-  for (int n = 0; n < recents.size(); ++n)
-    menu.addItem(n + 1, recents[n], File(recents[n]).isDirectory());
-  if (recents.isEmpty())
-    menu.addItem(1, "No recent folders", false);
+  menu.addItem(create, String::fromUTF8("Create project…"), !menuState.busy);
+  menu.addItem(openFolder, String::fromUTF8("Open folder…"));
+  juce::PopupMenu recentProjects;
+  recentProjects.setLookAndFeel(&look);
+  for (int n = 0; n < recentPaths.size(); ++n)
+    recentProjects.addItem(firstRecent + n, recentPaths[n], File(recentPaths[n]).isDirectory());
+  if (recentPaths.isEmpty())
+    recentProjects.addItem(firstRecent, "No recent projects", false);
+  menu.addSubMenu("Recent projects", recentProjects);
+  menu.addSeparator();
+  menu.addItem(revealFolder, "Reveal folder", menuState.root.isDirectory());
+  menu.addItem(duplicateProject, String::fromUTF8("Duplicate project…"),
+               menuState.available && !menuState.busy);
   auto safe = juce::Component::SafePointer<AppView>(this);
-  menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&recent),
-                     [safe](int n) {
-                       if (safe && n > 0 && n <= safe->recents.size())
-                         safe->manager.open(File(safe->recents[n - 1]));
-                     });
+  menu.showMenuAsync(
+      juce::PopupMenu::Options().withTargetComponent(&projectButton),
+      [safe, recentPaths, root = menuState.root](int n) {
+        if (!safe || n == 0)
+          return;
+        const auto current = safe->manager.snapshot();
+        if (n == create && !current.busy) {
+          diagnostics::log("UI", "Project > Create project");
+          safe->chooseNewProject();
+        } else if (n == openFolder) {
+          diagnostics::log("UI", "Project > Open folder");
+          safe->chooseFolder();
+        } else if (n == revealFolder && current.root == root && root.isDirectory()) {
+          diagnostics::log("UI", "Project > Reveal folder");
+          root.revealToUser();
+        } else if (n == duplicateProject && current.root == root && current.available &&
+                   !current.busy) {
+          diagnostics::log("UI", "Project > Duplicate project");
+          safe->chooseDuplicate();
+        } else if (n >= firstRecent && n - firstRecent < recentPaths.size()) {
+          const File folder(recentPaths[n - firstRecent]);
+          if (folder.isDirectory()) {
+            diagnostics::log("UI", "Project > Recent " + folder.getFullPathName());
+            safe->manager.open(folder);
+          }
+        }
+      });
 }
 void AppView::moreMenu() {
   juce::PopupMenu menu;
@@ -1165,25 +1190,37 @@ void AppView::resized() {
   const AppFrame frame(getLocalBounds());
   presentationBox.setBounds(frame.header.getRight() - 210,
                              frame.header.getY() + 20, 186, 28);
-  int x = frame.content.getX();
-  int toolbarY = frame.content.getY() + 3;
-  for (auto *button :
-       {&open, &recent, &reveal, &duplicate, &importButton, &settingsButton,
-        &deviceButton, &visualizerButton, &more}) {
-    const int w = button->preferredWidth(30);
-    if (x > frame.content.getX() && x + w > frame.content.getRight()) {
-      x = frame.content.getX();
-      toolbarY += 38;
+  constexpr int buttonHeight = 30, buttonGap = 7, groupGap = 18;
+  const std::initializer_list<IconButton *> primary{&importButton, &undoButton, &redoButton};
+  const std::initializer_list<IconButton *> tools{&visualizerButton, &settingsButton,
+                                                &deviceButton, &more};
+  auto groupWidth = [&](const std::initializer_list<IconButton *> &buttons) {
+    int width = -buttonGap;
+    for (auto *button : buttons)
+      width += button->preferredWidth(buttonHeight) + buttonGap;
+    return width;
+  };
+  auto placeGroup = [&](const std::initializer_list<IconButton *> &buttons, int x, int y) {
+    for (auto *button : buttons) {
+      const int width = button->preferredWidth(buttonHeight);
+      button->setBounds(x, y, width, buttonHeight);
+      x += width + buttonGap;
     }
-    button->setBounds(x, toolbarY, w, 30);
-    x += w + 7;
+  };
+  int toolbarY = frame.content.getY() + 3;
+  placeGroup(primary, frame.content.getX(), toolbarY);
+  const int projectWidth = projectButton.preferredWidth(buttonHeight);
+  const int secondaryWidth = projectWidth + groupGap + groupWidth(tools);
+  int secondaryX = frame.content.getRight() - secondaryWidth;
+  if (groupWidth(primary) + groupGap + secondaryWidth > frame.content.getWidth()) {
+    // The secondary group moves together; editing history always stays beside Import.
+    toolbarY += buttonHeight + 8;
+    secondaryX = frame.content.getX();
   }
+  projectButton.setBounds(secondaryX, toolbarY, projectWidth, buttonHeight);
+  placeGroup(tools, projectButton.getRight() + groupGap, toolbarY);
   const int metadataY = toolbarY + 39;
-  const int undoWidth = undoButton.preferredWidth(25), redoWidth = redoButton.preferredWidth(25);
-  redoButton.setBounds(frame.content.getRight() - redoWidth, metadataY, redoWidth, 25);
-  undoButton.setBounds(redoButton.getX() - 8 - undoWidth, metadataY, undoWidth, 25);
-  folderLabel.setBounds(frame.content.getX(), metadataY - 2,
-                        undoButton.getX() - frame.content.getX() - 18, 27);
+  folderLabel.setBounds(frame.content.getX(), metadataY - 2, frame.content.getWidth(), 27);
   auto statusBounds = frame.footer.reduced(16, 4);
   if (activity.isVisible()) {
     auto activityBounds = statusBounds.removeFromRight(100);

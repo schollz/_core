@@ -1,5 +1,13 @@
 # Core Sample Manager 0.1.0 validation
 
+## Grouped toolbar: executed September 29, 2026
+
+The Apple Silicon Release build passes. The focused `--self-test manager` run passes audio, manager integration and recovery checks, including new history-availability coverage for a fresh project, edits, undo/redo, a new edit after undo, persisted past/future history, cleanup, reopening and switching projects. Existing background-companion coverage also confirms that undo remains available while companion generation continues. `git diff --check` passes for the toolbar changes.
+
+Native screenshots at the default window size confirm the single-row grouped toolbar in Ezeptocore and Zeptocore, with Import and the two history arrows on the left, Project and the secondary controls on the right, and the project path below. Accessibility inspection confirms the visual control order, descriptive names/tooltips for the icon-only buttons, and disabled Import/Undo/Redo without an open project.
+
+Interactive native acceptance remains incomplete: this host's UI automation did not activate buttons or keyboard commands, including in a session with temporary empty preferences. An earlier startup also stalled opening the previous Downloads project at its writer-lock file; that session was terminated before project loading completed. Original preferences and cached project state were restored after validation. Project-menu commands, theme switching, minimum-size resizing, dock combinations, focus traversal and chooser cancellation still require interactive host acceptance. The menu callbacks, current-state guards, captured recent paths and measured group layout were reviewed in source. The previously documented full-suite tempo assertion was not rerun or changed.
+
 ## Desktop app icon: executed September 29, 2026
 
 The Apple Silicon Release app builds with `AppIcon.icns` in its resources and a matching `CFBundleIconFile` entry. `codesign --verify --deep --strict` passes after the incremental build relinks and signs the updated bundle. The generated Ninja rules track the source PNG for CMake regeneration and the generated icon for relinking, so icon-only changes run the signing step.

@@ -21,6 +21,7 @@ struct ManagerState {
   // Companion work does not make the editor busy or prevent preview/open/duplicate.
   bool backgroundBusy = false;
   bool busy = false, available = false;
+  bool canUndo = false, canRedo = false;
   uint64_t generation = 0;
 };
 class Manager final : public juce::ChangeBroadcaster {

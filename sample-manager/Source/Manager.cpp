@@ -85,6 +85,8 @@ void Manager::publish(String status, String error) {
     state.backgroundBusy = pending > 0 && companionError.isEmpty() && !failed;
     state.busy = commandRunning || !commands.empty() || (dirty && !failed);
     state.available = storage && storage->root.isDirectory();
+    state.canUndo = history.canUndo();
+    state.canRedo = history.canRedo();
     ++state.generation;
   }
   sendChangeMessage();

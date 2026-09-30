@@ -19,6 +19,58 @@ void successful(const ManagerState &s) {
   require(s.companionError.isEmpty(), "Companion: " + s.companionError);
   require(!s.busy, "Manager still busy");
 }
+void historyAvailability(const File &workspace) {
+  const auto root = workspace.getChildFile("history-availability");
+  require(root.createDirectory().wasOk(), "History availability fixture folder");
+  auto check = [](Manager &manager, bool undo, bool redo, const String &message) {
+    const auto state = settle(manager);
+    successful(state);
+    require(state.canUndo == undo && state.canRedo == redo, message);
+  };
+  {
+    Manager manager;
+    require(!manager.snapshot().canUndo && !manager.snapshot().canRedo,
+            "No project starts without undo or redo");
+    manager.open(root);
+    check(manager, false, false, "A fresh project has no history");
+    manager.settings({{"sample_cv_mapping", "1voct"}});
+    check(manager, true, false, "An edit enables undo only");
+    manager.undo();
+    check(manager, false, true, "Undoing the only edit enables redo only");
+    manager.redo();
+    check(manager, true, false, "Redo consumes the future history");
+    manager.undo();
+    check(manager, false, true, "The edit can be undone again");
+    manager.settings({{"sample_cv_mapping", "1voct"}});
+    check(manager, true, false, "A new edit after undo clears redo");
+    manager.settings({{"sample_cv_mapping", "bank"}});
+    check(manager, true, false, "A second edit extends undo history");
+    manager.undo();
+    check(manager, true, true, "Past and future history can both be available");
+  }
+  {
+    Manager manager;
+    manager.open(root);
+    check(manager, true, true, "Reopening restores both history availability flags");
+    manager.redo();
+    check(manager, true, false, "Restored redo remains usable");
+    manager.undo();
+    check(manager, true, true, "Restored undo remains usable");
+    manager.cleanup();
+    check(manager, false, false, "Cleaning recovery history clears both flags");
+  }
+  {
+    Manager manager;
+    manager.open(root);
+    check(manager, false, false, "Cleared history stays unavailable after reopening");
+    manager.settings({{"sample_cv_mapping", "bank"}});
+    check(manager, true, false, "Edits after cleanup start new history");
+    const auto other = workspace.getChildFile("history-other-project");
+    require(other.createDirectory().wasOk(), "Other history fixture folder");
+    manager.open(other);
+    check(manager, false, false, "Switching projects replaces history availability");
+  }
+}
 void backgroundCompanions(const File &workspace) {
   auto root = workspace.getChildFile("background-companions");
   auto other = workspace.getChildFile("other-project");
@@ -44,6 +96,7 @@ void backgroundCompanions(const File &workspace) {
     auto ready = settle(manager, false);
     primaryMs = juce::Time::getMillisecondCounterHiRes() - started;
     successful(ready);
+    require(ready.canUndo && !ready.canRedo, "History remains available during companion work");
     require(ready.project.samples.size() == 2 && ready.pendingCompanions == 2 &&
                 ready.backgroundBusy && manager.idle() && ready.status.startsWith("Ready"),
             "Every imported primary is ready and the manager is usable before companions finish");
@@ -510,6 +563,7 @@ void managerTests() {
     File root;
     ~Clean() { root.deleteRecursively(); }
   } clean{workspace};
+  historyAvailability(workspace);
   backgroundCompanions(workspace);
   sampleCVMappingChecks(workspace);
   // Keep independent project fixtures outside the project being duplicated.

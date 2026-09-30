@@ -45,6 +45,8 @@ public:
   void accept(const Project &before, const String &label);
   bool undo(Project &);
   bool redo(Project &);
+  bool canUndo() const { return !past.empty(); }
+  bool canRedo() const { return !future.empty(); }
   void clear() {
     past.clear();
     future.clear();
