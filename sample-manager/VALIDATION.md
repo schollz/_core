@@ -1,5 +1,13 @@
 # Core Sample Manager 0.1.0 validation
 
+## Desktop app icon: executed September 29, 2026
+
+The Apple Silicon Release app builds with `AppIcon.icns` in its resources and a matching `CFBundleIconFile` entry. `codesign --verify --deep --strict` passes after the incremental build relinks and signs the updated bundle. The generated Ninja rules track the source PNG for CMake regeneration and the generated icon for relinking, so icon-only changes run the signing step.
+
+The pinned JUCE `juceaide winicon` tool generated a valid Windows ICO from the same PNG on macOS. Its directory contains 16, 32, 48, and 256 pixel images with valid data offsets. Native Windows compilation and Explorer/taskbar display were not exercised; neither was a new macOS Dock UI session.
+
+`native_midi` passes. `manager_contract` passes its first 206 checks plus audio/import checks, then stops at the previously recorded tempo-detector assertion **"Vendored detector handles real loops whose length is not an exact beat count"**.
+
 ## Background companions: executed September 29, 2026
 
 The Apple Silicon Release build succeeds. `--self-test manager` passes audio processing, manager integration and recovery checks. The macOS `native_midi` CTest also passes. The focused test option uses the same isolated temporary state as the full self-test; `--self-test tempo` runs the tempo fixtures independently.

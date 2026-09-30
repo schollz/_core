@@ -29,8 +29,10 @@ add_library(core_tempo STATIC
     Vendor/soundtouch/source/SoundTouch/PeakFinder.cpp)
 target_include_directories(core_tempo PUBLIC Vendor/soundtouch/include)
 target_compile_definitions(core_tempo PUBLIC SOUNDTOUCH_FLOAT_SAMPLES=1)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS Resources/Icons/app-icon.png)
 juce_add_gui_app(CoreSampleManager COMPANY_NAME "INFINITE DIGITS"
     BUNDLE_ID "com.infinitedigits.coresamplemanager" PRODUCT_NAME "Core Sample Manager"
+    ICON_BIG Resources/Icons/app-icon.png
     MICROPHONE_PERMISSION_ENABLED FALSE NEEDS_CURL TRUE)
 juce_add_binary_data(CoreAssets SOURCES
     Resources/Fonts/IBMPlexMono-Regular.ttf Resources/Fonts/IBMPlexMono-Medium.ttf Resources/Fonts/IBMPlexMono-Bold.ttf
@@ -64,6 +66,9 @@ endif()
 if(APPLE)
     enable_language(OBJCXX)
     target_sources(CoreSampleManager PRIVATE Source/Visualizer/Platform_mac.mm)
+    # Icon-only changes must relink so the post-build signature covers the updated bundle.
+    set_property(TARGET CoreSampleManager APPEND PROPERTY LINK_DEPENDS
+        "$<TARGET_PROPERTY:CoreSampleManager,JUCE_ICON_FILE>")
     set(notices LICENSE Vendor/PROVENANCE.md Vendor/rubberband/COPYING Vendor/soundtouch/COPYING.TXT
         Resources/Fonts/IBM-Plex-LICENSE.txt Resources/Fonts/Font-Awesome-LICENSE.txt Resources/Fonts/Website-Fonts-NOTICE.txt Resources/Fonts/Monaspace-LICENSE.txt Resources/Icons/Lucide/Lucide-LICENSE.txt "${juce_SOURCE_DIR}/LICENSE.md")
     set_source_files_properties(${notices} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
