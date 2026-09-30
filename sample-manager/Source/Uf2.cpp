@@ -55,6 +55,20 @@ Uf2Image inspectUf2(const File &file) {
     image.product = "Zeptocore";
   else if (content.find("ectocore") != std::string::npos)
     image.product = "Ectocore";
+  else {
+    // Non-MIDI Ectocore/Ezeptocore builds use the Pico SDK's USB CDC
+    // descriptor, with no model-name string. Their USBD_PID is 0x1837
+    // (lib/cmake/*ctocore*_compile_definitions*.cmake), under VID 0x2e8a.
+    // Match the complete device descriptor, not an arbitrary PID byte pair
+    // or a filename, so ordinary Pico CDC images are still rejected.
+    constexpr uint8_t ectocoreSerialDescriptor[] = {
+        0x12, 0x01, 0x10, 0x02, 0xef, 0x02, 0x01, 0x40, 0x8a,
+        0x2e, 0x37, 0x18, 0x00, 0x01, 0x01, 0x02, 0x03, 0x01};
+    const std::string descriptor(reinterpret_cast<const char *>(ectocoreSerialDescriptor),
+                                 sizeof(ectocoreSerialDescriptor));
+    if (content.find(descriptor) != std::string::npos)
+      image.product = "Ezeptocore / Ectocore";
+  }
   require(image.product.isNotEmpty(), "UF2 does not identify Core firmware");
   return image;
 }

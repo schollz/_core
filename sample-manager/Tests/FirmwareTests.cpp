@@ -12,23 +12,32 @@ struct Temp {
   Temp() { check(directory.createDirectory().wasOk(), "create test directory"); }
   ~Temp() { directory.deleteRecursively(); }
 };
-juce::MemoryBlock uf2() {
-  juce::MemoryBlock bytes(512, true);
-  auto *p = static_cast<uint8_t *>(bytes.getData());
-  auto word = [&](int offset, uint32_t value) {
-    for (int i = 0; i < 4; ++i)
-      p[offset + i] = uint8_t(value >> (i * 8));
-  };
-  word(0, 0x0a324655);
-  word(4, 0x9e5d5157);
-  word(8, 0x2000);
-  word(12, 0x10000000);
-  word(16, 256);
-  word(20, 0);
-  word(24, 1);
-  word(28, 0xe48bff56);
-  word(508, 0x0ab16f30);
-  std::memcpy(p + 32, "ezeptocore", sizeof("ezeptocore") - 1);
+// USB descriptor bytes from the published Ectocore/Ezeptocore v8.0.3
+// non-MIDI payload. These builds contain no model-name string.
+const std::string serialIdentity("\x12\x01\x10\x02\xef\x02\x01\x40\x8a"
+                                 "\x2e\x37\x18\x00\x01\x01\x02\x03\x01", 18);
+juce::MemoryBlock uf2(const std::string &identity = "ezeptocore") {
+  const auto blocks = std::max(size_t(1), (identity.size() + 255) / 256);
+  juce::MemoryBlock bytes(blocks * 512, true);
+  for (size_t b = 0; b < blocks; ++b) {
+    auto *p = static_cast<uint8_t *>(bytes.getData()) + b * 512;
+    auto word = [&](int offset, uint32_t value) {
+      for (int i = 0; i < 4; ++i)
+        p[offset + i] = uint8_t(value >> (i * 8));
+    };
+    word(0, 0x0a324655);
+    word(4, 0x9e5d5157);
+    word(8, 0x2000);
+    word(12, 0x10000000 + uint32_t(b) * 256);
+    word(16, 256);
+    word(20, uint32_t(b));
+    word(24, uint32_t(blocks));
+    word(28, 0xe48bff56);
+    word(508, 0x0ab16f30);
+    if (b * 256 < identity.size())
+      std::memcpy(p + 32, identity.data() + b * 256,
+                  std::min(size_t(256), identity.size() - b * 256));
+  }
   return bytes;
 }
 // Real HTTP on loopback exercises JUCE redirects, response headers and stream
@@ -103,7 +112,9 @@ private:
           std::this_thread::sleep_for(std::chrono::milliseconds(5));
         continue;
       }
-      auto bytes = uf2();
+      auto bytes = uf2(path == "/serial" || path == "/wrong-serial-family" ? serialIdentity
+                       : path == "/unidentified"                         ? "Board CDC"
+                                                                         : "ezeptocore");
       if (path == "/invalid")
         static_cast<uint8_t *>(bytes.getData())[0] = 0;
       if (path != "/oversized")
@@ -119,7 +130,7 @@ FirmwareEntry localEntry(const Server &server, const String &path) {
   auto entry = *std::find_if(firmwareCatalog().begin(), firmwareCatalog().end(), [](const auto &e) {
     return e.hardware == FirmwareHardware::ezeptocore && e.build == FirmwareBuild::normal;
   });
-  if (path == "/wrong-family")
+  if (path == "/wrong-family" || path == "/wrong-serial-family")
     entry = firmwareCatalog().front();
   entry.url = server.url(path);
   return entry;
@@ -138,6 +149,36 @@ FirmwareDownload::State waitFor(FirmwareDownload &download) {
 void noPartials(const File &directory) {
   check(directory.findChildFiles(File::findFiles, false, ".core-download-*").isEmpty(),
         "remove partial files");
+}
+void serialUf2Tests() {
+  Temp temp;
+  auto file = temp.directory.getChildFile("ectocore_v8.0.3.uf2");
+  for (const auto &identity : {serialIdentity, std::string(250, '\0') + serialIdentity}) {
+    const auto bytes = uf2(identity);
+    check(file.replaceWithData(bytes.getData(), bytes.getSize()), "write serial UF2 fixture");
+    check(inspectUf2(file).product == "Ezeptocore / Ectocore",
+          "recognize USB serial firmware, including a descriptor split across blocks");
+  }
+  // A Core filename, a partial ID, another vendor/PID, or a malformed
+  // descriptor must not make an unrelated RP2040 image eligible for flashing.
+  std::vector<std::string> invalid = {"Board CDC", serialIdentity.substr(8, 4),
+                                      serialIdentity.substr(0, 17)};
+  for (size_t offset : {size_t(0), size_t(1), size_t(8), size_t(10), size_t(17)}) {
+    auto identity = serialIdentity;
+    identity[offset] = '\0';
+    invalid.push_back(identity);
+  }
+  for (const auto &identity : invalid) {
+    const auto bytes = uf2(identity);
+    check(file.replaceWithData(bytes.getData(), bytes.getSize()), "write foreign UF2 fixture");
+    bool rejected = false;
+    try {
+      inspectUf2(file);
+    } catch (const std::exception &) {
+      rejected = true;
+    }
+    check(rejected, "reject foreign USB serial firmware despite a Core filename");
+  }
 }
 } // namespace
 void firmwareViewTests() {
@@ -222,7 +263,7 @@ void firmwareViewTests() {
   check(view.image == prior && !view.working,
         "failed download preserves selection and cannot flash");
   view.awaitingDownload = true;
-  view.download.start(localEntry(server, "/ok"), temp.directory);
+  view.download.start(localEntry(server, "/serial"), temp.directory);
   waitFor(view.download);
   view.timerCallback();
   check(view.image != prior && view.image.existsAsFile() && !view.working,
@@ -242,6 +283,7 @@ void firmwareViewTests() {
   noPartials(temp.directory);
 }
 void firmwareTests() {
+  serialUf2Tests();
   check(firmwareCatalog().size() == 13, "all 13 build combinations exist");
   for (const auto &entry : firmwareCatalog()) {
     const auto model = firmwareHardwareName(entry.hardware).toLowerCase();
@@ -251,7 +293,7 @@ void firmwareTests() {
                            entry.filename,
           "asset URL matches pinned filename");
   }
-  for (const String path : {"/ok", "/redirect", "/unknown"}) {
+  for (const String path : {"/ok", "/redirect", "/unknown", "/serial"}) {
     Temp temp;
     Server server;
     FirmwareDownload download;
@@ -272,7 +314,8 @@ void firmwareTests() {
     noPartials(temp.directory);
   }
   for (const String path :
-       {"/missing", "/truncated", "/invalid", "/wrong-family", "/oversized", "/loop"}) {
+       {"/missing", "/truncated", "/invalid", "/wrong-family", "/wrong-serial-family",
+        "/unidentified", "/oversized", "/loop"}) {
     Temp temp;
     Server server;
     FirmwareDownload download;
@@ -334,5 +377,25 @@ void firmwareTests() {
   }
   firmwareViewTests();
   std::cout << "PASS firmware catalog, loopback downloads, cancellation and UI contracts\n";
+}
+// Explicit manual acceptance only: never part of CTest or the offline suite.
+// Exercise the production downloader against every README URL in a private
+// temporary directory, without selecting a volume, resetting or flashing.
+void firmwareReleaseTests() {
+  Temp temp;
+  for (const auto &entry : firmwareCatalog()) {
+    FirmwareDownload download;
+    std::cout << "Downloading release asset " << entry.filename << std::endl;
+    download.start(entry, temp.directory);
+    while (download.snapshot().active())
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    const auto state = download.snapshot();
+    check(state.status == Status::succeeded, entry.filename + ": " + state.message);
+    check(state.file.getFileName() == entry.filename &&
+              state.file.getSize() == state.received && inspectUf2(state.file).blocks > 0,
+          "complete release download validates again as a local file");
+    noPartials(temp.directory);
+    std::cout << "PASS " << entry.filename << " bytes=" << state.received << std::endl;
+  }
 }
 } // namespace core

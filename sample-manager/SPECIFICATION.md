@@ -108,7 +108,7 @@ Keep the existing card format and firmware compatibility for the first version; 
 - Respect firmware limits for slot counts, file sizes, slices, and transient encoding. Keep full-resolution editing data in the project; display a clear compatibility warning for markers that cannot be represented on the device instead of silently wrapping or truncating them.
 - Replace mutually exclusive settings marker files together so stale `-on`/`-off` files cannot contradict one another.
 
-**Only explicit drum analysis uses the network**
+**Network access requires an explicit action**
 
 Provide **Analyze drums online** as a user-triggered action. Reuse the existing API’s mono 44.1 kHz request and kick/snare/other marker response. Include cancellation, timeout/error handling, and revision checks so a late response cannot overwrite newer edits. Failed analysis leaves local slicing and existing markers usable. Downloadable separated stem audio is outside the current API contract.
 
@@ -156,7 +156,7 @@ Targeted automated tests are authorized for this new application, replacing the 
 - **Storage correctness:** existing-card adoption, reopen, duplicate/reorder/remove/undo, interrupted transactions, disk-full/read-only failures, unplug/reconnect, external edits, and stale background jobs.
 - **Audio correctness:** supported imports and embedded markers, short/silent/corrupt files, resampling, normalization, stretch duration, pitch retention, stereo alignment, and marker alignment.
 - **Visualizer:** retain existing protocol/parity coverage; add preview-source behavior, committed-revision refresh, missing-folder cache operation, source switching, and disable/re-enable lifecycle.
-- **Offline operation:** import, slicing, editing, conversion, saving, reopening, and preview with networking unavailable. Only the explicit online drum-analysis action may initiate an application network request.
+- **Offline operation:** import, slicing, editing, conversion, saving, reopening, and preview with networking unavailable. Only explicit firmware downloads and online drum analysis may initiate application network requests.
 - **macOS acceptance:** launch the packaged app outside the checkout; exercise all three themes, real drag/drop, preview and editing, settings, visualizer modes, and clean shutdown. Leave actual SD-card playback and connected-hardware/UF2 acceptance to a deliberate hardware check.
 
 Completion means the selected folder stays device-ready as edits finish, reopens as a portable editable project, and supplies the integrated visualizer without a separate export or reference-folder workflow.

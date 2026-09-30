@@ -13,6 +13,7 @@ void recoveryTests();
 void managerTests();
 void midiSettingsTests();
 void firmwareTests();
+void firmwareReleaseTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -109,6 +110,10 @@ int runTests(const String &suite) {
     }
     if (suite == "firmware") {
       firmwareTests();
+      return 0;
+    }
+    if (suite == "firmware-release") {
+      firmwareReleaseTests();
       return 0;
     }
     if (suite == "tempo") {

@@ -1,12 +1,26 @@
 # _core sample manager 0.1.0 validation
 
+## USB serial UF2 validation: executed September 30, 2026
+
+The diagnostic log recorded three `UF2 does not identify Core firmware` failures after selecting Ectocore. Published normal Ectocore/Ezeptocore builds omit the MIDI model-name string and instead contain the USB CDC device descriptor for VID `0x2e8a` / PID `0x1837`. The validator now recognizes that complete descriptor while retaining all existing UF2 processor, block, size, and hardware-family checks. Diagnostic downloads log the request, HTTP status, received bytes, validation result, and final destination or error.
+
+The macOS ARM64 Release build and strict codesign verification pass. `firmware_downloads`, `firmware_catalog`, `midi_settings`, `native_midi`, and the focused `--self-test manager` suite pass. New offline regressions cover serial firmware, descriptors crossing UF2 blocks, rejection of incomplete/foreign descriptors despite a Core filename, wrong-family downloads, and selecting validated serial firmware without flashing.
+
+The previously unavailable v8.0.3 assets are now published. All 13 README-pinned variants download and validate through the production JUCE worker, then pass local UF2 inspection again. This explicit live check uses temporary files and is separate from CTest and the offline suite:
+
+```sh
+'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/_core sample manager.app/Contents/MacOS/_core sample manager' --self-test firmware-release
+```
+
+Native UI acceptance also confirms Device opens on Firmware and **Download UF2** saves `ectocore_v8.0.3.uf2` (864,256 bytes) in the system Downloads folder. The UI displays “Downloaded and checked,” selects the file, enables **Show in folder**, and leaves flashing disabled without a bootloader volume. No device reset or flash was performed.
+
 ## Firmware downloads and guide: executed September 30, 2026
 
 The Apple Silicon Release build passes. `firmware_downloads`, `firmware_catalog`, `midi_settings`, and `native_midi` pass. Eight release/packaging Python tests pass. The focused `--self-test manager` run passes audio, background work, manager integration, recovery, permission-failure, and existing local-UF2 checks.
 
 The catalog test verifies all 13 URLs against the root README, version regeneration, and actionable configuration failures for missing, ambiguous, or mismatched links. Loopback HTTP tests exercise successful downloads, redirects, unknown content length, HTTP 404, redirect loops, invalid/truncated UF2s, wrong hardware families, oversized responses, connection/read timeouts, cancellation, destruction during a transfer, write-destination failure, and filename collisions. UI contracts verify model defaults and supported builds, presentation independence, transfer locks, preservation of the previous selection on failure/cancellation, selection after validation, and absence of automatic flashing. Test downloads and preferences use temporary isolated directories.
 
-Rendered previews cover all three themes at normal and narrow widths, including the scrolled installation guide. JUCE tests verify Tab traversal from hardware to build to download and arrow-key selection. This host’s native UI automation did not reliably deliver selector keyboard/menu actions, so interactive keyboard acceptance remains unverified. Native UI inspection confirms Device → Firmware, hardware/build labels, guide text, and a real request to the README’s Zeptocore v8.0.3 asset. That request returns HTTP 404; the app displays the unavailable-asset explanation, restores the controls, and keeps flashing disabled. A complete live release download remains unverified until those pinned assets are published. No device reset or physical flashing was performed. Windows/Linux native builds remain unverified on this macOS host.
+Rendered previews cover all three themes at normal and narrow widths, including the scrolled installation guide. JUCE tests verify Tab traversal from hardware to build to download and arrow-key selection. This host’s native UI automation did not reliably deliver selector keyboard/menu actions, so interactive keyboard acceptance remains unverified. Native UI inspection confirms Device → Firmware, hardware/build labels, guide text, and a real request to the README’s Zeptocore v8.0.3 asset. During the initial run that request returned HTTP 404; the app displayed the unavailable-asset explanation, restored the controls, and kept flashing disabled. Subsequent successful live downloads are recorded above. No device reset or physical flashing was performed. Windows/Linux native builds remain unverified on this macOS host.
 
 The full `manager_contract` run passes its first 250 checks plus firmware/audio/import coverage, then stops at the previously documented tempo assertion: **"Vendored detector handles real loops whose length is not an exact beat count"**. The isolated `--self-test tempo` run reproduces it. Tempo sources and fixtures are unchanged by this feature.
 

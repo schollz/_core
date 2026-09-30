@@ -165,6 +165,10 @@ void FirmwareDownload::start(FirmwareEntry entry, File directory, int timeoutMs)
   worker = std::thread([this, entry, directory, timeoutMs] { run(entry, directory, timeoutMs); });
 }
 void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
+  diagnostics::Scope operation("FIRMWARE", "Download " + entry.filename);
+  diagnostics::log("FIRMWARE", "Request model=" + firmwareHardwareName(entry.hardware) +
+                                   " build=" + firmwareBuildName(entry.build) + " url=" + entry.url +
+                                   " directory=" + directory.getFullPathName());
   File temporary;
   State completed;
   bool finished = false;
@@ -207,6 +211,8 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
     const bool connected = request->connect(nullptr);
     cancelled([this] { return stopped.load(); });
     const int status = request->getStatusCode();
+    diagnostics::log("FIRMWARE", "HTTP status=" + String(status) +
+                                     " content_length=" + String(request->getTotalLength()));
     require(status != 404,
             "Firmware " + entry.version +
                 " is unavailable (HTTP 404). The README's release asset "
@@ -241,7 +247,10 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
     out->flush();
     require(out->getStatus().wasOk(), "Could not finish writing firmware to Downloads");
     out.reset();
+    diagnostics::log("FIRMWARE", "Received bytes=" + String(received) + "; validating UF2");
     const auto inspected = inspectUf2(temporary);
+    diagnostics::log("FIRMWARE", "Validated product=" + inspected.product +
+                                     " blocks=" + String(inspected.blocks));
     require((entry.hardware == FirmwareHardware::zeptocore) == (inspected.product == "Zeptocore"),
             "Downloaded UF2 identifies a different hardware family. Choose the correct firmware "
             "for your device.");
@@ -275,6 +284,9 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
                         : stopped ? "Download cancelled."
                                   : String(error.what());
   }
+  diagnostics::log("FIRMWARE", completed.message + (completed.file == File()
+                                                       ? String()
+                                                       : " path=" + completed.file.getFullPathName()));
   if (temporary != File())
     temporary.deleteFile();
   {
