@@ -102,7 +102,7 @@ The presentation selector changes branding and the settings controls shown for e
 
 Hover over controls for help with their behavior and relevant shortcuts, including in Settings and Device tools. Waveform help follows the selected slice or transient lane. Tooltips, dropdown fields, open menus and text inputs use the current theme's background, with contrasting text, selection highlights and focus borders. The visualizer uses its own dark theme for its menus and tooltips, both docked and detached.
 
-Zeptocore hides **One-shot**, the Kick/Snare/Other waveform lanes and their marker-selector options. The waveform uses the freed lane space. Switching presentations preserves one-shot settings and transient markers; Ezeptocore and Ectocore show them again. Their transient lanes have a thin separator above Kick that matches the waveform outline.
+**One-shot** is visible on Zeptocore and hidden on Ezeptocore and Ectocore. Saved one-shot values are preserved when switching presentations or editing other sample settings while the toggle is hidden. Zeptocore hides the Kick/Snare/Other waveform lanes and their marker-selector options, and the waveform uses the freed lane space. Switching presentations preserves transient markers; Ezeptocore and Ectocore show those lanes again, with a thin separator above Kick that matches the waveform outline.
 
 Ezeptocore and Zeptocore display a header rune from the website's seven symbols, with a stable choice for each project. Ectocore uses its logo.
 

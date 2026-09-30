@@ -702,7 +702,8 @@ void AppView::updatePresentation() {
   importButton.setColour(juce::TextButton::buttonColourId, look.theme.accent);
   importButton.setColour(juce::TextButton::textColourOffId, look.theme.accent.contrasting());
   const bool showTransients = presentation != 1;
-  oneShot.setVisible(presentation != 1);
+  // Only Zeptocore exposes one-shot; hidden presentations retain saved values.
+  oneShot.setVisible(presentation == 1);
   waveform.setTransientLanesVisible(showTransients);
   const int marker = std::max(1, markerMode.getSelectedId());
   markerMode.clear(juce::dontSendNotification);
