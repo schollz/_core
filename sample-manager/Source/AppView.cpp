@@ -137,14 +137,14 @@ AppView::AppView() {
   }
   for (auto *c : std::initializer_list<juce::Component *>{
            &importButton, &undoButton,     &redoButton,    &projectButton,
-           &visualizerButton, &settingsButton, &deviceButton, &more,
+           &settingsButton, &visualizerButton, &deviceButton, &more,
            &presentationBox, &folderLabel, &statusLabel,   &activity,
            &banks,        &samples,        &divider,       &editor,
            &empty,        &createProject})
     addAndMakeVisible(c);
   int focusOrder = 1;
   for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
-                       &visualizerButton, &settingsButton, &deviceButton, &more})
+                       &settingsButton, &visualizerButton, &deviceButton, &more})
     button->setExplicitFocusOrder(focusOrder++);
   projectButton.setTitle("Project");
   activity.setPercentageDisplay(false);
@@ -485,7 +485,7 @@ AppView::AppView() {
   hint.setTooltip("Choose Slices or a transient lane in the marker selector. "
                   "Hover over the waveform for editing instructions for that selection.");
   for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
-                       &visualizerButton, &settingsButton, &deviceButton, &more,
+                       &settingsButton, &visualizerButton, &deviceButton, &more,
                        &play, &evenButton, &autoButton, &onlineButton, &removeButton,
                        &mergeButton, &up, &down, &empty, &createProject}) {
     auto action = button->onClick;
@@ -1192,7 +1192,7 @@ void AppView::resized() {
                              frame.header.getY() + 20, 186, 28);
   constexpr int buttonHeight = 30, buttonGap = 7, groupGap = 18;
   const std::initializer_list<IconButton *> primary{&importButton, &undoButton, &redoButton};
-  const std::initializer_list<IconButton *> tools{&visualizerButton, &settingsButton,
+  const std::initializer_list<IconButton *> tools{&settingsButton, &visualizerButton,
                                                 &deviceButton, &more};
   auto groupWidth = [&](const std::initializer_list<IconButton *> &buttons) {
     int width = -buttonGap;
