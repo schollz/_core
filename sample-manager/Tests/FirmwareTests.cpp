@@ -44,7 +44,12 @@ juce::MemoryBlock uf2(const std::string &identity = "ezeptocore") {
 // cancellation on each platform, without GitHub or a connected instrument.
 class Server {
 public:
-  Server() {
+  struct Response {
+    String body, headers;
+    int status = 200, declaredLength = -1;
+    bool stall = false;
+  };
+  explicit Server(std::map<String, Response> routes = {}) : responses(std::move(routes)) {
     check(listener.createListener(0, "127.0.0.1"), "open loopback HTTP listener");
     port = listener.getBoundPort();
     thread = std::thread([this] { run(); });
@@ -83,6 +88,21 @@ private:
       auto writeText = [&](const String &text) {
         client->write(text.toRawUTF8(), text.getNumBytesAsUTF8());
       };
+      auto response = responses.find(path);
+      if (response == responses.end())
+        response = responses.find(path.upToFirstOccurrenceOf("?", false, false));
+      if (response != responses.end()) {
+        const auto &r = response->second;
+        if (r.stall) {
+          while (!stopped)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+          continue;
+        }
+        writeText("HTTP/1.1 " + String(r.status) + " Test\r\nContent-Length: " +
+                  String(r.declaredLength >= 0 ? r.declaredLength : r.body.getNumBytesAsUTF8()) +
+                  "\r\nConnection: close\r\n" + r.headers + "\r\n" + r.body);
+        continue;
+      }
       if (path == "/redirect") {
         writeText("HTTP/1.1 302 Found\r\nLocation: " + url("/ok") +
                   "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
@@ -122,6 +142,7 @@ private:
     }
   }
   juce::StreamingSocket listener;
+  const std::map<String, Response> responses;
   std::atomic<bool> stopped{false};
   int port = 0;
   std::thread thread;
@@ -145,6 +166,93 @@ template <typename F> void waitFor(F predicate, const String &reason) {
 FirmwareDownload::State waitFor(FirmwareDownload &download) {
   waitFor([&] { return !download.snapshot().active(); }, "download completion");
   return download.snapshot();
+}
+FirmwareReleases::State waitFor(FirmwareReleases &releases) {
+  waitFor([&] { return !releases.snapshot().active(); }, "release lookup completion");
+  return releases.snapshot();
+}
+var releaseFixture(const String &tag, std::initializer_list<String> filenames) {
+  auto release = object();
+  put(release, "tag_name", tag);
+  put(release, "draft", false);
+  put(release, "prerelease", false);
+  juce::Array<var> assets;
+  for (const auto &name : filenames) {
+    auto asset = object();
+    put(asset, "name", name);
+    put(asset, "state", "uploaded");
+    put(asset, "browser_download_url", "https://github.com/schollz/_core/releases/download/" + tag + "/" + name);
+    assets.add(asset);
+  }
+  put(release, "assets", assets);
+  return release;
+}
+String releaseFixtureJson(const String &tag, bool visualizer) {
+  auto release = releaseFixture(tag, {"ectocore_" + tag + ".uf2", "ezeptocore_" + tag + ".uf2",
+                                       "zeptocore_" + tag + ".uf2"});
+  if (visualizer) {
+    const auto extra = releaseFixture(tag, {"ectocore_" + tag + "_visualizer.uf2"});
+    release["assets"].getArray()->add(extra["assets"][0]);
+  }
+  return juce::JSON::toString(var(juce::Array<var>{release}));
+}
+std::map<String, Server::Response> releaseRoutes() {
+  return {{"/releases?per_page=100&page=1",
+           {releaseFixtureJson("v9.9.0", false), "Link: <http://untrusted.invalid/next>; rel=\"next\"\r\n"}},
+          {"/releases?per_page=100&page=2", {releaseFixtureJson("v10.0.0", true), ""}}};
+}
+void releaseTests() {
+  using ReleaseStatus = FirmwareReleases::Status;
+  auto ignoredDraft = releaseFixture("v99.0.0", {"ectocore_v99.0.0.uf2"});
+  put(ignoredDraft, "draft", true);
+  auto ignoredPrerelease = releaseFixture("v98.0.0", {"ectocore_v98.0.0.uf2"});
+  put(ignoredPrerelease, "prerelease", true);
+  auto wrongUrl = releaseFixture("v97.0.0", {"ectocore_v97.0.0.uf2"});
+  auto badAsset = wrongUrl["assets"][0];
+  put(badAsset, "browser_download_url", "https://example.com/foreign.uf2");
+  const auto parsed = parseFirmwareReleases(juce::JSON::toString(var(juce::Array<var>{
+      ignoredDraft, ignoredPrerelease, wrongUrl,
+      releaseFixture("v7.0.0", {"ezeptocore_v7.0.0.uf2", "ezeptocore_v7.0.0_ultralow_latency.uf2",
+                                  "ezeptocore_v7.0.0_no_overclocking_ultralow_latency.uf2",
+                                  "ectocore_beta_hardware_v7.0.0.uf2", "zeptoboard_v7.0.0.uf2",
+                                  "ectocore_v6.0.0.uf2"}),
+      releaseFixture("v10.0.0", {"ectocore_v10.0.0.uf2"}),
+      releaseFixture("v9.9.0", {"ectocore_v9.9.0.uf2"})})));
+  check(parsed.size() == 5 && parsed[0].version == "v10.0.0" && parsed[1].version == "v9.9.0",
+        "sort versions numerically and exclude drafts, prereleases, foreign URLs and wrong assets");
+  check(parsed[3].build == FirmwareBuild::ultraLowLatency &&
+            parsed[4].build == FirmwareBuild::noOverclockingUltraLowLatency,
+        "offer published historical low-latency variants");
+  {
+    Server server(releaseRoutes());
+    FirmwareReleases releases;
+    releases.start(server.url("/releases"));
+    auto state = waitFor(releases);
+    check(state.status == ReleaseStatus::succeeded && state.entries.size() == 7 &&
+              state.entries.front().version == "v10.0.0" && server.requests == 2,
+          "paginate on the original endpoint and sort the combined release list");
+  }
+  for (const auto response : {Server::Response{"{}", ""}, {"[", ""}, {"[]", ""},
+                              {"[]", "", 404}, {"[]", "", 403}, {"[]", "", 429},
+                              {"[]", "", 200, 100}, {"", "", 200, 8388609}}) {
+    Server server({{"/releases", response}});
+    FirmwareReleases releases;
+    releases.start(server.url("/releases"));
+    auto state = waitFor(releases);
+    check(state.status == ReleaseStatus::failed && state.entries.empty(),
+          "invalid, empty, truncated, oversized and HTTP-error lists cannot become selectable");
+  }
+  for (bool cancel : {false, true}) {
+    Server server({{"/releases", {"", "", 200, -1, true}}});
+    FirmwareReleases releases;
+    releases.start(server.url("/releases"), cancel ? 30000 : 200);
+    waitFor([&] { return server.requests.load() > 0; }, "release request");
+    if (cancel)
+      releases.cancel();
+    auto state = waitFor(releases);
+    check(state.status == (cancel ? ReleaseStatus::cancelled : ReleaseStatus::failed),
+          "release lookup cancellation and timeout");
+  }
 }
 void noPartials(const File &directory) {
   check(directory.findChildFiles(File::findFiles, false, ".core-download-*").isEmpty(),
@@ -240,9 +348,10 @@ void firmwareViewTests() {
           "keyboard order starts with selectors");
     view.setVisible(true);
     juce::KeyboardFocusTraverser focus;
-    check(focus.getNextComponent(&view.hardware) == &view.build &&
-              focus.getNextComponent(&view.build) == &view.get,
-          "Tab traverses hardware, build, then download");
+    check(focus.getNextComponent(&view.hardware) == &view.version &&
+              focus.getNextComponent(&view.version) == &view.build &&
+              focus.getNextComponent(&view.build) == &view.refresh,
+          "Tab traverses hardware, version, build, then refresh");
     const int direction = presentation == 2 ? -1 : 1;
     check(view.hardware.keyPressed(
               juce::KeyPress(direction > 0 ? juce::KeyPress::downKey : juce::KeyPress::upKey)) &&
@@ -254,34 +363,37 @@ void firmwareViewTests() {
           "arrow keys select firmware build");
     view.build.setSelectedId(1, juce::sendNotificationSync);
   }
-  FirmwareView view(device, look, FirmwareHardware::ezeptocore);
+  FirmwareView view(look, FirmwareHardware::ezeptocore);
   view.setSize(930, 765);
+  for (auto *child : view.content.getChildren()) {
+    if (auto *button = dynamic_cast<juce::Button *>(child))
+      check(!juce::StringArray{"Choose local UF2", "Reset to bootloader", "Refresh drives",
+                               "Flash selected UF2"}.contains(button->getButtonText()),
+            "installation controls are removed from the view");
+    if (auto *label = dynamic_cast<juce::Label *>(child))
+      check(label->getText() != "Install a UF2", "installation section is removed");
+  }
   auto prior = temp.directory.getChildFile("previous.uf2");
   const auto bytes = uf2();
-  check(prior.replaceWithData(bytes.getData(), bytes.getSize()), "create previously selected UF2");
-  view.selectImage(prior, "Existing firmware");
+  check(prior.replaceWithData(bytes.getData(), bytes.getSize()), "create previous download");
+  view.downloadedFile = prior;
   view.awaitingDownload = true;
   view.download.start(localEntry(server, "/missing"), temp.directory);
   view.timerCallback();
-  check(!view.hardware.isEnabled() && !view.choose.isEnabled() && !view.write.isEnabled(),
-        "lock actions during download");
+  check(!view.hardware.isEnabled() && !view.version.isEnabled() && !view.get.isEnabled(),
+        "lock selectors during download");
   waitFor(view.download);
   view.timerCallback();
-  check(view.image == prior && !view.working,
-        "failed download preserves selection and cannot flash");
+  check(view.downloadedFile == prior, "failed download preserves the last completed file");
   view.awaitingDownload = true;
   view.download.start(localEntry(server, "/serial"), temp.directory);
   waitFor(view.download);
-  // Completion can arrive just before the presentation callback. Process it
-  // using the original hardware before applying the new model selection.
   view.setHardware(FirmwareHardware::zeptocore);
-  check(view.image != prior && view.image.existsAsFile() && !view.working,
-        "success selects checked file without flashing");
+  check(view.downloadedFile != prior && view.downloadedFile.existsAsFile() && view.reveal.isEnabled(),
+        "success reveals the checked file");
   check(view.selectedEntry().hardware == FirmwareHardware::zeptocore &&
-            view.fileLabel.getText().startsWith("Ezeptocore:"),
-        "theme change cannot relabel a completed download as another model");
-  check(view.reveal.isEnabled() && !view.write.isEnabled(),
-        "show downloaded file but require bootloader before flashing");
+            view.downloadStatus.getText().contains("ezeptocore"),
+        "theme change preserves the actual downloaded filename");
   Server stalled;
   view.setHardware(FirmwareHardware::ezeptocore);
   view.awaitingDownload = true;
@@ -289,26 +401,73 @@ void firmwareViewTests() {
   waitFor([&] { return stalled.requests.load() > 0; }, "stalled transfer");
   view.setHardware(FirmwareHardware::zeptocore);
   view.setHardware(FirmwareHardware::ectocore);
-  check(view.selectedEntry().hardware == FirmwareHardware::ezeptocore &&
-            !view.hardware.isEnabled(),
+  check(view.selectedEntry().hardware == FirmwareHardware::ezeptocore && !view.hardware.isEnabled(),
         "theme changes defer while a download is active");
-  auto selected = view.image;
+  auto selected = view.downloadedFile;
   view.cancelDownload();
   waitFor(view.download);
   view.timerCallback();
-  check(view.image == selected && view.download.snapshot().status == Status::cancelled,
-        "window-close cancellation preserves selection");
+  check(view.downloadedFile == selected && view.download.snapshot().status == Status::cancelled,
+        "window-close cancellation preserves the last completed file");
   check(view.selectedEntry().hardware == FirmwareHardware::ectocore,
         "latest theme selection applies after cancellation");
-  view.working = true;
-  view.setHardware(FirmwareHardware::zeptocore);
-  check(view.selectedEntry().hardware == FirmwareHardware::ectocore,
-        "theme changes defer during flashing");
-  view.working = false;
-  view.timerCallback();
-  check(view.selectedEntry().hardware == FirmwareHardware::zeptocore,
-        "deferred selection applies when flashing finishes");
   noPartials(temp.directory);
+
+  Server available(releaseRoutes());
+  view.releaseEndpoint = available.url("/releases");
+  view.loadVersions();
+  check(!view.hardware.isEnabled() && !view.version.isEnabled() && !view.get.isEnabled(),
+        "lock download selectors while loading versions");
+  waitFor(view.releases);
+  view.timerCallback();
+  check(view.version.getNumItems() == 2 && view.selectedEntry().version == "v10.0.0" &&
+            view.version.getText().contains("latest") && view.entries.size() == 2,
+        "latest published model version and normal build are selected by default");
+  view.version.setSelectedId(2, juce::sendNotificationSync);
+  check(view.selectedEntry().version == "v9.9.0" && view.entries.size() == 1 &&
+            view.selectedEntry().filename == "ectocore_v9.9.0.uf2",
+        "older versions use their actual asset and omit unavailable builds");
+  view.refreshVersions();
+  waitFor(view.releases);
+  view.timerCallback();
+  check(view.selectedEntry().version == "v9.9.0", "refresh preserves an explicit version selection");
+  FirmwareView latest(look, FirmwareHardware::ectocore);
+  latest.releaseEndpoint = available.url("/releases");
+  latest.loadVersions();
+  waitFor(latest.releases);
+  latest.timerCallback();
+  Server newer({{"/releases", {releaseFixtureJson("v11.0.0", false), ""}}});
+  latest.releaseEndpoint = newer.url("/releases");
+  latest.refreshVersions();
+  waitFor(latest.releases);
+  latest.timerCallback();
+  check(latest.selectedEntry().version == "v11.0.0",
+        "refresh follows a newer release when the user has kept the default");
+  Server unavailable({{"/releases", {"", "", 403}}});
+  view.releaseEndpoint = unavailable.url("/releases");
+  view.refreshVersions();
+  waitFor(view.releases);
+  view.timerCallback();
+  check(view.selectedEntry().version == "v9.9.0" && view.catalogStatus.getText().contains("Keeping"),
+        "failed refresh keeps the previous release list");
+  FirmwareView fallback(look, FirmwareHardware::ezeptocore);
+  fallback.releaseEndpoint = unavailable.url("/releases");
+  fallback.loadVersions();
+  waitFor(fallback.releases);
+  fallback.timerCallback();
+  check(fallback.get.isEnabled() && fallback.version.getText().contains("bundled") &&
+            fallback.catalogStatus.getText().contains("bundled"),
+        "network failure keeps the bundled README firmware available");
+  Server pending({{"/releases", {"", "", 200, -1, true}}});
+  {
+    FirmwareView closing(look, FirmwareHardware::ezeptocore);
+    closing.releaseEndpoint = pending.url("/releases");
+    closing.loadVersions();
+    waitFor([&] { return pending.requests.load() > 0; }, "lookup before close");
+    closing.cancelDownload();
+    check(waitFor(closing.releases).status == FirmwareReleases::Status::cancelled,
+          "closing Device cancels version lookup");
+  }
 
   // Exercise the app's actual presentation callback with an existing hidden
   // Device window. Keep this app instance's preferences and project state private.
@@ -316,9 +475,12 @@ void firmwareViewTests() {
   juce::ScopedValueSetter<File> isolatedState(stateRootOverride, appState.directory);
   check(preferencesFile().replaceWithText("{}"), "create isolated app preferences");
   AppView app;
+  auto *deviceView = new DeviceView(app.device, app.look, FirmwareHardware::ezeptocore);
+  deviceView->firmware.releaseEndpoint = available.url("/releases");
+  app.deviceWindow = std::make_unique<AppView::AuxiliaryWindow>("Device tools", deviceView);
   app.deviceButton.onClick();
-  auto *deviceView = dynamic_cast<DeviceView *>(app.deviceWindow->getContentComponent());
-  check(deviceView != nullptr, "create Device window from the app");
+  waitFor(deviceView->firmware.releases);
+  deviceView->firmware.timerCallback();
   for (const int presentation : {2, 1, 0}) {
     app.deviceWindow->closeButtonPressed();
     app.presentationBox.setSelectedId(presentation + 1, juce::sendNotificationSync);
@@ -332,6 +494,7 @@ void firmwareViewTests() {
 }
 void firmwareTests() {
   serialUf2Tests();
+  releaseTests();
   check(firmwareCatalog().size() == 13, "all 13 build combinations exist");
   for (const auto &entry : firmwareCatalog()) {
     const auto model = firmwareHardwareName(entry.hardware).toLowerCase();
@@ -427,11 +590,37 @@ void firmwareTests() {
   std::cout << "PASS firmware catalog, loopback downloads, cancellation and UI contracts\n";
 }
 // Explicit manual acceptance only: never part of CTest or the offline suite.
-// Exercise the production downloader against every README URL in a private
-// temporary directory, without selecting a volume, resetting or flashing.
+// Exercise the live release catalog, all latest builds and the oldest normal
+// build per model in a private temporary directory, without touching hardware.
 void firmwareReleaseTests() {
   Temp temp;
-  for (const auto &entry : firmwareCatalog()) {
+  FirmwareReleases releases;
+  releases.start();
+  while (releases.snapshot().active())
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  const auto published = releases.snapshot();
+  check(published.status == FirmwareReleases::Status::succeeded, published.message);
+  std::vector<FirmwareEntry> downloads;
+  for (auto hardware : {FirmwareHardware::ezeptocore, FirmwareHardware::zeptocore,
+                        FirmwareHardware::ectocore}) {
+    juce::StringArray versions;
+    for (const auto &entry : published.entries)
+      if (entry.hardware == hardware) {
+        versions.addIfNotAlreadyThere(entry.version);
+        if (entry.version == versions[0])
+          downloads.push_back(entry);
+      }
+    check(!versions.isEmpty(), "published versions for " + firmwareHardwareName(hardware));
+    std::cout << firmwareHardwareName(hardware) << ": " << versions.size()
+              << " versions, latest=" << versions[0] << std::endl;
+    for (auto it = published.entries.rbegin(); it != published.entries.rend(); ++it)
+      if (it->hardware == hardware && it->build == FirmwareBuild::normal) {
+        if (it->version != versions[0])
+          downloads.push_back(*it);
+        break;
+      }
+  }
+  for (const auto &entry : downloads) {
     FirmwareDownload download;
     std::cout << "Downloading release asset " << entry.filename << std::endl;
     download.start(entry, temp.directory);

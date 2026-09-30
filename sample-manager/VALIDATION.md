@@ -1,5 +1,15 @@
 # _core sample manager 0.1.0 validation
 
+## Version selection and simplified downloads: executed September 30, 2026
+
+Firmware now offers hardware, version, and build selection with Download, Cancel, Show in folder, and Refresh versions. The local-UF2 chooser, bootloader reset, drive selector, and in-app flash action have been removed. The illustrated guide describes manual bootloader entry and copying the download to RPI-RP2. Firmware remains the default Device tab, and theme changes continue to select matching hardware.
+
+The macOS ARM64 Release build and strict codesign verification pass. All four focused CTest cases (`firmware_downloads`, `firmware_catalog`, `midi_settings`, `native_midi`), the focused `--self-test manager` suite, and eight Python release/packaging tests pass. Deterministic loopback tests cover release pagination, numeric version sorting, stable-release filtering, exact model/build/URL matching, historical ultra-low-latency builds, latest defaults, unavailable variants, explicit older-version selection, refresh preservation, HTTP errors/rate limits, malformed/truncated/oversized responses, timeouts, cancellation, and bundled fallback. Existing download validation/collision/cancellation and all-three-theme UI checks continue to pass; ordinary tests make no GitHub requests.
+
+The explicit `--self-test firmware-release` live check finds 23 Zeptocore, 20 Ectocore, and 19 Ezeptocore versions, all defaulting to v8.0.3. All 13 current builds download and validate, as do normal Ectocore v6.4.3, Zeptocore v6.4.3, and Ezeptocore v7.0.0. These 16 test downloads use temporary files and touch no device.
+
+Native UI inspection confirms the simplified screen, successful live version loading, v8.0.3 marked latest, and the manual-copy guide. Rendered previews cover all three themes, narrow scrolling layouts, and the guide. Version switching itself is covered by automated JUCE control tests; native menu interaction remains subject to the host automation limitation recorded below. No hardware reset or flash was performed. Windows/Linux runtime qualification remains outstanding.
+
 ## Theme and firmware selection: executed September 30, 2026
 
 The macOS ARM64 Release build, strict codesign verification, and all four focused CTest cases (`firmware_downloads`, `firmware_catalog`, `midi_settings`, `native_midi`) pass. Automated UI checks exercise the app's actual presentation callback for Ectocore, Zeptocore, and Ezeptocore with an existing hidden Device window, then reopen it and verify the matching hardware on the default Firmware tab without starting a download. Component checks verify the matching filename and guide, Normal build selection, deferral during downloads/flashing, latest-choice application after cancellation, and preservation of the original model label when a download completes during a theme change.

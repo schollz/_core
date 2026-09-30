@@ -55,10 +55,14 @@ String firmwareBuildName(FirmwareBuild build) {
     return "Normal";
   case FirmwareBuild::lowLatency:
     return "Low latency";
+  case FirmwareBuild::ultraLowLatency:
+    return "Ultra-low latency";
   case FirmwareBuild::noOverclocking:
     return "No overclocking";
   case FirmwareBuild::noOverclockingLowLatency:
     return "No overclocking + low latency";
+  case FirmwareBuild::noOverclockingUltraLowLatency:
+    return "No overclocking + ultra-low latency";
   case FirmwareBuild::visualizer:
     return "Visualizer";
   }
@@ -70,11 +74,15 @@ String firmwareDescription(const FirmwareEntry &entry) {
            String(entry.hardware == FirmwareHardware::zeptocore ? "." : ", overclocked.");
   const bool low = entry.build == FirmwareBuild::lowLatency ||
                    entry.build == FirmwareBuild::noOverclockingLowLatency;
-  String text =
-      low ? "Lower latency; less CPU bandwidth for effects." : "Normal latency suits most uses.";
+  const bool ultra = entry.build == FirmwareBuild::ultraLowLatency ||
+                     entry.build == FirmwareBuild::noOverclockingUltraLowLatency;
+  String text = ultra ? "Lowest latency; least CPU bandwidth for effects."
+               : low ? "Lower latency; less CPU bandwidth for effects."
+                     : "Normal latency suits most uses.";
   if (entry.hardware != FirmwareHardware::zeptocore) {
     const bool unclocked = entry.build == FirmwareBuild::noOverclocking ||
-                           entry.build == FirmwareBuild::noOverclockingLowLatency;
+                           entry.build == FirmwareBuild::noOverclockingLowLatency ||
+                           entry.build == FirmwareBuild::noOverclockingUltraLowLatency;
     text += unclocked
                 ? " No overclocking: stable internal timing, less FX headroom."
                 : " Overclocked: more FX headroom; external clock recommended to avoid drift.";
@@ -196,7 +204,7 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
          parent = parent.getParentDirectory())
       require(!parent.getChildFile("INFO_UF2.TXT").existsAsFile() &&
                   !parent.getChildFile("INFO_UF2.txt").existsAsFile(),
-              "Choose local UF2 to flash; Downloads must not be a bootloader volume");
+              "Downloads must not be a bootloader volume. Use a folder on your computer.");
     temporary = directory.getChildFile(".core-download-" + uuid() + ".uf2");
     auto out = temporary.createOutputStream();
     require(out && out->openedOk(), "Cannot write to Downloads: " + directory.getFullPathName());
@@ -215,8 +223,8 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
                                      " content_length=" + String(request->getTotalLength()));
     require(status != 404,
             "Firmware " + entry.version +
-                " is unavailable (HTTP 404). The README's release asset "
-                "may not have been published yet. Retry later or choose a local UF2.");
+                " is unavailable (HTTP 404). The release asset may have been removed. "
+                "Refresh versions or choose another release.");
     require(connected && status == 200,
             "Firmware download failed" +
                 (status > 0 ? " (HTTP " + String(status) + ")" : String()) +
@@ -270,7 +278,7 @@ void FirmwareDownload::run(FirmwareEntry entry, File directory, int timeoutMs) {
           completed.received = received;
           completed.total = received;
           completed.message =
-              "Downloaded and checked. Ready to flash: " + destination.getFileName();
+              "Downloaded and checked: " + destination.getFileName();
           finished = true;
           break;
         }

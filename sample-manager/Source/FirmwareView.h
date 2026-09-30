@@ -1,17 +1,21 @@
 #pragma once
-#include "Device.h"
 #include "Firmware.h"
 #include "IconButton.h"
+#include "Theme.h"
 
 namespace core {
 class FirmwareView final : public juce::Component, private juce::Timer {
 public:
-  FirmwareView(Device &, Look &, FirmwareHardware);
+  FirmwareView(Look &, FirmwareHardware);
   ~FirmwareView() override;
   void resized() override;
   void paint(juce::Graphics &g) override { g.fillAll(look.theme.background); }
-  void cancelDownload() { download.cancel(); }
+  void cancelDownload() {
+    download.cancel();
+    releases.cancel();
+  }
   void setHardware(FirmwareHardware);
+  void loadVersions();
 
 private:
   friend void firmwareViewTests();
@@ -25,38 +29,33 @@ private:
     std::unique_ptr<juce::Drawable> icon;
   };
   void timerCallback() override;
+  void refreshVersions();
+  void updateVersions(const String &preferred = {});
   void updateBuilds();
   void updateEntry();
   const FirmwareEntry &selectedEntry() const;
-  void refreshVolumes();
-  void flash();
-  void selectImage(const File &, const String &product);
   bool busy() const;
-  Device &device;
   Look &look;
   juce::Viewport viewport;
   juce::Component content;
-  juce::Label heading, hardwareLabel, buildLabel, modelNote, release, description, downloadStatus,
-      installHeading, fileLabel, error, guideHeading;
-  juce::ComboBox hardware, build, volume;
+  juce::Label heading, hardwareLabel, versionLabel, buildLabel, modelNote, release, description,
+      catalogStatus, downloadStatus, guideHeading;
+  juce::ComboBox hardware, version, build;
   IconButton get{"Download UF2", "download"}, cancel{"Cancel", "x"},
       reveal{"Show in folder", "folder-open"}, docs{"Bootloader guide", "external-link"},
-      reset{"Reset to bootloader", "power"}, rescan{"Refresh drives", "refresh-cw"},
-      choose{"Choose local UF2", "file-up"}, write{"Flash selected UF2", "file-up"};
+      refresh{"Refresh versions", "refresh-cw"};
   double downloadProgress = 0;
   juce::ProgressBar progressBar{downloadProgress};
   std::array<std::unique_ptr<GuideStep>, 4> steps;
+  std::vector<FirmwareEntry> catalog = firmwareCatalog();
+  juce::StringArray versions;
   std::vector<const FirmwareEntry *> entries;
   FirmwareDownload download;
-  bool awaitingDownload = false, confirming = false, choosing = false;
+  FirmwareReleases releases;
+  String releaseEndpoint = firmwareReleasesUrl(), preferredVersion;
+  bool awaitingDownload = false, awaitingVersions = false, versionsLoaded = false, onlineCatalog = false;
+  bool versionChosen = false;
   int pendingHardwareId = 0;
-  juce::Array<File> volumes;
-  File image, downloadedFile;
-  std::unique_ptr<juce::FileChooser> chooser;
-  std::thread worker;
-  std::atomic<bool> stopping{false}, working{false};
-  std::atomic<double> flashProgress{0};
-  std::mutex mutex;
-  String result;
+  File downloadedFile;
 };
 } // namespace core

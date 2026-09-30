@@ -45,8 +45,8 @@ $productName $Version - Windows x64
 Extract this ZIP and open $productName.exe. Choose a local folder and import samples.
 Edits save automatically. Keep .core-manager when moving or copying a portable project.
 No installer, external audio tools, VC runtime installer, or plugins are needed.
-Visualizer Device mode needs opt-in telemetry firmware. Device > Firmware downloads the README-listed UF2 for your hardware to Downloads and includes an installation guide. Flashing requires a separate confirmed action.
-Firmware downloads and online drum analysis make network requests only when selected; there are no automatic update checks.
+Visualizer Device mode needs opt-in telemetry firmware. Device > Firmware lets you choose hardware, version, and build, defaulting to the latest available release. Download the UF2 to Downloads, then follow the guide to copy it onto RPI-RP2.
+Opening Device or choosing Refresh versions loads published firmware releases. Firmware downloads and online drum analysis run only when selected; there are no startup or scheduled update checks.
 Keep the Notices directory. No assets are published by this script.
 "@ | Set-Content "$payload/README.txt" -Encoding utf8
 $archive = Join-Path $out "_core-sample-manager-$Version-windows-x64.zip"

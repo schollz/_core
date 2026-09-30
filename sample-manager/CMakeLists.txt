@@ -56,7 +56,7 @@ juce_add_binary_data(CoreTempoFixtures HEADER_NAME TempoData.h NAMESPACE TempoDa
 target_link_libraries(CoreSampleManager PRIVATE CoreFixtures CoreImportFixtures CoreTempoFixtures)
 target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/Tempo.cpp Source/IconButton.cpp
     Source/Storage.cpp Source/AudioProcessing.cpp Source/Manager.cpp Source/Preview.cpp Source/Theme.cpp Source/WaveformEditor.cpp Source/SettingsView.cpp Source/AppView.cpp Source/Device.cpp Source/DeviceView.cpp Source/Uf2.cpp Source/OnlineAnalysis.cpp Source/Visualizer/Core.cpp Source/Visualizer/Library.cpp Source/Visualizer/Midi.cpp Source/Visualizer/Session.cpp Source/Visualizer/VisualizerView.cpp Tests/VisualizerTests.cpp Tests/Tests.cpp Tests/ImportTests.cpp Tests/AudioTests.cpp Tests/TempoTests.cpp Tests/RecoveryTests.cpp Tests/ManagerTests.cpp Tests/MidiTests.cpp ${onset_sources})
-target_sources(CoreSampleManager PRIVATE Source/Firmware.cpp Source/FirmwareView.cpp Tests/FirmwareTests.cpp)
+target_sources(CoreSampleManager PRIVATE Source/Firmware.cpp Source/FirmwareReleases.cpp Source/FirmwareView.cpp Tests/FirmwareTests.cpp)
 target_include_directories(CoreSampleManager PRIVATE Source Vendor/amenbreak "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_compile_definitions(CoreSampleManager PRIVATE JUCE_WEB_BROWSER=0
     JUCE_USE_MP3AUDIOFORMAT=1 JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:CoreSampleManager,JUCE_PRODUCT_NAME>"

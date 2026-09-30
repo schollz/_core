@@ -35,75 +35,66 @@ void FirmwareView::GuideStep::paint(juce::Graphics &g) {
     icon->drawWithin(g, {float(getWidth() - 42), 15.f, 26.f, 26.f},
                      juce::RectanglePlacement::centred, 1.f);
 }
-FirmwareView::FirmwareView(Device &d, Look &l, FirmwareHardware initial) : device(d), look(l) {
+FirmwareView::FirmwareView(Look &l, FirmwareHardware initial) : look(l) {
   setLookAndFeel(&look);
   addAndMakeVisible(viewport);
   viewport.setViewedComponent(&content, false);
   viewport.setScrollBarsShown(true, false);
   viewport.setScrollOnDragMode(juce::Viewport::ScrollOnDragMode::never);
   for (auto *c : std::initializer_list<juce::Component *>{
-           &heading,        &hardwareLabel,  &buildLabel, &modelNote, &release,      &description,
-           &downloadStatus, &installHeading, &fileLabel,  &error,     &guideHeading, &hardware,
-           &build,          &volume,         &get,        &cancel,    &reveal,       &docs,
-           &reset,          &rescan,         &choose,     &write,     &progressBar})
+           &heading, &hardwareLabel, &versionLabel, &buildLabel, &modelNote, &release,
+           &description, &catalogStatus, &downloadStatus, &guideHeading, &hardware, &version,
+           &build, &get, &cancel, &reveal, &docs, &refresh, &progressBar})
     content.addAndMakeVisible(c);
   label(heading, "Firmware downloads");
   label(hardwareLabel, "Hardware model");
+  label(versionLabel, "Firmware version");
   label(buildLabel, "Firmware build");
   label(modelNote, "Choose your physical hardware. Ectocore may appear as ezeptocore over MIDI.");
-  label(installHeading, "Install a UF2");
-  label(fileLabel, "Download firmware above or choose a local UF2.");
-  label(guideHeading, "Download and install");
-  for (auto *h : {&heading, &installHeading, &guideHeading})
+  label(guideHeading, "How to install");
+  for (auto *h : {&heading, &guideHeading})
     h->setFont(look.font(17));
   hardware.addItemList({"Ezeptocore", "Zeptocore", "Ectocore"}, 1);
   hardware.setSelectedId(int(initial) + 1, juce::dontSendNotification);
   hardware.setTitle("Hardware model");
+  version.setTitle("Firmware version");
   build.setTitle("Firmware build");
-  volume.setTitle("Bootloader volume");
-  hardware.setTooltip("Select the physical hardware to download its dedicated firmware. MIDI names "
-                      "do not distinguish Ectocore and Ezeptocore. Changing the app's theme also "
-                      "selects the matching hardware here.");
-  build.setTooltip("Normal suits most uses. Choose Visualizer for full device visualization.");
-  volume.setTextWhenNothingSelected("Select detected RPI-RP2 bootloader volume");
-  volume.setTooltip("Select the connected RP2040 bootloader volume to receive the selected UF2.");
-  get.setTooltip("Download this README-listed build to Downloads and check it. Flashing is a "
-                 "separate action.");
-  cancel.setTooltip("Cancel the current firmware download and remove its partial file.");
+  hardware.setTooltip("Select your physical hardware. Changing the app's theme also selects the "
+                      "matching hardware here.");
+  version.setTooltip("Choose an available release. The latest version is selected by default.");
+  build.setTooltip("Only builds published for this hardware and version are shown. "
+                   "Choose Visualizer for full device visualization.");
+  get.setTooltip("Download the selected UF2 to Downloads and check the completed file.");
+  cancel.setTooltip("Cancel the download or version lookup.");
   reveal.setTooltip("Show the last successfully downloaded UF2 in your Downloads folder.");
-  reset.setTooltip("Stop playback and reset the MIDI-connected device to its USB bootloader after "
-                   "confirmation.");
-  rescan.setTooltip("Scan for bootloader drives after resetting or connecting your instrument.");
-  choose.setTooltip("Choose and check a UF2 from this computer. Selecting it does not flash it.");
-  write.setTooltip("Copy the selected UF2 to the selected bootloader volume after confirmation. "
-                   "The device then restarts.");
+  refresh.setTooltip("Check GitHub for available firmware versions and builds.");
   progressBar.setPercentageDisplay(true);
   progressBar.setVisible(false);
   int order = 1;
-  for (auto *c :
-       std::initializer_list<juce::Component *>{&hardware, &build, &get, &cancel, &reveal, &choose,
-                                                &reset, &rescan, &volume, &write, &docs})
+  for (auto *c : std::initializer_list<juce::Component *>{&hardware, &version, &build, &refresh,
+                                                         &get, &cancel, &reveal, &docs})
     c->setExplicitFocusOrder(order++);
-  steps[0] = std::make_unique<GuideStep>(look, "1", "Choose hardware", "", "settings-2");
+  steps[0] = std::make_unique<GuideStep>(look, "1", "Choose firmware", "", "settings-2");
   steps[1] = std::make_unique<GuideStep>(
       look, "2", "Download the UF2",
-      "Click Download UF2. The checked file is saved in Downloads and selected for installation.",
-      "download");
-  steps[2] =
-      std::make_unique<GuideStep>(look, "3", "Enter bootloader",
-                                  "Connect USB. Use Reset to bootloader with MIDI, or follow your "
-                                  "hardware guide. Refresh drives and select RPI-RP2.",
-                                  "usb");
-  steps[3] = std::make_unique<GuideStep>(look, "4", "Flash and reconnect",
-                                         "Check the filename and drive. Click Flash selected UF2, "
-                                         "confirm, and wait for the device to restart.",
-                                         "file-up");
+      "Click Download UF2. Once it is checked, use Show in folder to find it in Downloads.", "download");
+  steps[2] = std::make_unique<GuideStep>(
+      look, "3", "Enter bootloader",
+      "Connect by USB and follow your hardware's bootloader guide below. A drive named RPI-RP2 appears.", "usb");
+  steps[3] = std::make_unique<GuideStep>(
+      look, "4", "Copy and reconnect",
+      "Drag the downloaded UF2 onto RPI-RP2 in Finder or your file manager. Wait for the copy to finish and the device to restart.", "file-up");
   for (auto &step : steps)
     content.addAndMakeVisible(*step);
-  hardware.onChange = [this] { updateBuilds(); };
+  hardware.onChange = [this] { updateVersions(); };
+  version.onChange = [this] {
+    versionChosen = true;
+    updateBuilds();
+  };
   build.onChange = [this] { updateEntry(); };
+  refresh.onClick = [this] { refreshVersions(); };
   get.onClick = [this] {
-    if (busy())
+    if (busy() || entries.empty())
       return;
     try {
       download.start(selectedEntry(), firmwareDownloadsDirectory());
@@ -113,213 +104,134 @@ FirmwareView::FirmwareView(Device &d, Look &l, FirmwareHardware initial) : devic
     }
     timerCallback();
   };
-  cancel.onClick = [this] { download.cancel(); };
+  cancel.onClick = [this] { cancelDownload(); };
   reveal.onClick = [this] {
     if (downloadedFile.existsAsFile())
       downloadedFile.revealToUser();
   };
   docs.onClick = [this] {
-    if (!juce::URL(firmwareGuideUrl(selectedEntry().hardware)).launchInDefaultBrowser())
-      label(error, "Could not open your browser. " + firmwareGuideUrl(selectedEntry().hardware));
+    const auto url = firmwareGuideUrl(FirmwareHardware(hardware.getSelectedId() - 1));
+    if (!juce::URL(url).launchInDefaultBrowser())
+      label(downloadStatus, "Could not open your browser. " + url);
   };
-  reset.onClick = [this] {
-    if (busy())
-      return;
-    confirming = true;
-    timerCallback();
-    auto safe = juce::Component::SafePointer<FirmwareView>(this);
-    juce::AlertWindow::showAsync(
-        juce::MessageBoxOptions()
-            .withTitle("Reset connected device")
-            .withMessage(
-                "Stop playback and reset the selected MIDI device into its USB bootloader?")
-            .withButton("Reset")
-            .withButton("Cancel"),
-        [safe](int n) {
-          if (!safe)
-            return;
-          safe->confirming = false;
-          if (n == 1)
-            try {
-              safe->device.command(0);
-            } catch (const std::exception &e) {
-              label(safe->error, e.what());
-            }
-          safe->timerCallback();
-        });
-  };
-  rescan.onClick = [this] { refreshVolumes(); };
-  choose.onClick = [this] {
-    if (busy())
-      return;
-    choosing = true;
-    timerCallback();
-    chooser = std::make_unique<juce::FileChooser>("Choose Core firmware from this computer", File(),
-                                                  "*.uf2");
-    auto safe = juce::Component::SafePointer<FirmwareView>(this);
-    chooser->launchAsync(juce::FileBrowserComponent::openMode |
-                             juce::FileBrowserComponent::canSelectFiles,
-                         [safe](const juce::FileChooser &f) {
-                           if (!safe)
-                             return;
-                           safe->choosing = false;
-                           if (f.getResult().existsAsFile())
-                             try {
-                               safe->selectImage(f.getResult(), inspectUf2(f.getResult()).product);
-                             } catch (const std::exception &e) {
-                               label(safe->error, e.what());
-                             }
-                           safe->timerCallback();
-                         });
-  };
-  write.onClick = [this] { flash(); };
-  updateBuilds();
-  refreshVolumes();
+  updateVersions();
   timerCallback();
   startTimer(100);
 }
 FirmwareView::~FirmwareView() {
   stopTimer();
-  download.cancel();
-  stopping = true;
-  if (worker.joinable())
-    worker.join();
+  cancelDownload();
   viewport.setViewedComponent(nullptr, false);
   setLookAndFeel(nullptr);
 }
 bool FirmwareView::busy() const {
-  return awaitingDownload || working || confirming || choosing || download.snapshot().active();
+  return awaitingDownload || awaitingVersions || download.snapshot().active();
+}
+void FirmwareView::loadVersions() {
+  if (!versionsLoaded && !busy())
+    refreshVersions();
+}
+void FirmwareView::refreshVersions() {
+  if (busy())
+    return;
+  preferredVersion = onlineCatalog && versionChosen && version.getSelectedId() > 0
+                         ? versions[version.getSelectedId() - 1] : String();
+  releases.start(releaseEndpoint);
+  awaitingVersions = true;
+  timerCallback();
 }
 void FirmwareView::setHardware(FirmwareHardware model) {
-  // Keep the latest theme choice until an active operation has completed.
   pendingHardwareId = int(model) + 1;
   timerCallback();
+}
+void FirmwareView::updateVersions(const String &preferred) {
+  versions.clear();
+  version.clear(juce::dontSendNotification);
+  for (const auto &entry : catalog)
+    if (entry.hardware == FirmwareHardware(hardware.getSelectedId() - 1))
+      versions.addIfNotAlreadyThere(entry.version);
+  for (int i = 0; i < versions.size(); ++i)
+    version.addItem(versions[i] + (i == 0 ? (onlineCatalog ? " (latest)" : " (bundled)") : ""), i + 1);
+  const auto preferredIndex = versions.indexOf(preferred);
+  versionChosen = preferredIndex >= 0;
+  version.setSelectedId(versions.isEmpty() ? 0 : std::max(0, preferredIndex) + 1,
+                        juce::dontSendNotification);
+  updateBuilds();
 }
 void FirmwareView::updateBuilds() {
   entries.clear();
   build.clear(juce::dontSendNotification);
-  for (const auto &entry : firmwareCatalog())
-    if (entry.hardware == FirmwareHardware(hardware.getSelectedId() - 1)) {
+  for (const auto &entry : catalog)
+    if (entry.hardware == FirmwareHardware(hardware.getSelectedId() - 1) &&
+        version.getSelectedId() > 0 && entry.version == versions[version.getSelectedId() - 1]) {
       entries.push_back(&entry);
       build.addItem(firmwareBuildName(entry.build), int(entries.size()));
     }
-  build.setSelectedId(1, juce::dontSendNotification);
+  build.setSelectedId(entries.empty() ? 0 : 1, juce::dontSendNotification);
   updateEntry();
 }
 const FirmwareEntry &FirmwareView::selectedEntry() const {
   return *entries.at(size_t(build.getSelectedId() - 1));
 }
 void FirmwareView::updateEntry() {
+  const auto model = FirmwareHardware(hardware.getSelectedId() - 1);
+  label(steps[0]->body, "Selected: " + firmwareHardwareName(model) +
+        ". Choose a version and build. Visualizer enables full device visualization when available.");
+  docs.setButtonText(firmwareHardwareName(model) + " bootloader guide");
+  docs.setTooltip("Open your hardware documentation for manual bootloader entry.\n" + firmwareGuideUrl(model));
+  if (entries.empty()) {
+    label(release, "No published UF2s for this hardware.");
+    label(description, "Try Refresh versions or check the hardware selection.");
+    return;
+  }
   const auto &entry = selectedEntry();
-  label(release, entry.version + "  /  " + entry.filename);
+  label(release, entry.filename);
   release.setTooltip(entry.url);
   label(description, firmwareDescription(entry));
-  label(steps[0]->body,
-        "Selected: " + firmwareHardwareName(entry.hardware) +
-            ". Choose Normal for everyday use, or Visualizer for full device visualization.");
-  docs.setButtonText(firmwareHardwareName(entry.hardware) + " bootloader guide");
-  docs.setTooltip("Open your hardware documentation for manual bootloader entry.\n" +
-                  firmwareGuideUrl(entry.hardware));
-}
-void FirmwareView::selectImage(const File &file, const String &product) {
-  image = file;
-  label(fileLabel, product + ": " + file.getFileName());
-  fileLabel.setTooltip(file.getFullPathName());
-  label(error, "");
-}
-void FirmwareView::refreshVolumes() {
-  const auto previous = volume.getSelectedId() > 0 ? volumes[volume.getSelectedId() - 1] : File();
-  volumes = bootloaderVolumes();
-  volume.clear(juce::dontSendNotification);
-  for (int i = 0; i < volumes.size(); ++i) {
-    volume.addItem(volumes[i].getFullPathName(), i + 1);
-    if (volumes[i] == previous || volumes.size() == 1)
-      volume.setSelectedId(i + 1, juce::dontSendNotification);
-  }
-}
-void FirmwareView::flash() {
-  if (busy() || !image.existsAsFile() || volume.getSelectedId() == 0)
-    return;
-  const auto target = volumes[volume.getSelectedId() - 1];
-  const auto selected = image;
-  confirming = true;
-  timerCallback();
-  auto safe = juce::Component::SafePointer<FirmwareView>(this);
-  juce::AlertWindow::showAsync(
-      juce::MessageBoxOptions()
-          .withTitle("Flash local firmware")
-          .withMessage("Write " + selected.getFileName() + " to " + target.getFullPathName() +
-                       "? Check that the UF2 matches your hardware. The device will restart.")
-          .withButton("Flash")
-          .withButton("Cancel"),
-      [safe, target, selected](int n) {
-        if (!safe)
-          return;
-        safe->confirming = false;
-        if (n != 1) {
-          safe->timerCallback();
-          return;
-        }
-        if (safe->worker.joinable())
-          safe->worker.join();
-        safe->working = true;
-        safe->flashProgress = 0;
-        safe->timerCallback();
-        auto *self = safe.getComponent();
-        self->worker = std::thread([self, target, selected] {
-          String message;
-          try {
-            flashLocalUf2(
-                selected, target, [self](double p) { self->flashProgress = p; },
-                [self] { return self->stopping.load(); });
-            message = "Firmware copy completed. Wait for the device to reconnect.";
-          } catch (const std::exception &e) {
-            message = e.what();
-          }
-          {
-            std::lock_guard<std::mutex> lock(self->mutex);
-            self->result = message;
-          }
-          self->working = false;
-        });
-      });
 }
 void FirmwareView::timerCallback() {
+  if (awaitingVersions) {
+    auto state = releases.snapshot();
+    label(catalogStatus, state.message);
+    if (!state.active()) {
+      awaitingVersions = false;
+      versionsLoaded = state.status != FirmwareReleases::Status::cancelled;
+      if (state.status == FirmwareReleases::Status::succeeded) {
+        catalog = std::move(state.entries);
+        onlineCatalog = true;
+        updateVersions(preferredVersion);
+      } else {
+        label(catalogStatus, state.message + (onlineCatalog ? " Keeping the previous version list."
+                                                           : " Showing bundled firmware; try Refresh versions."));
+      }
+    }
+  }
   const auto state = download.snapshot();
   if (awaitingDownload) {
     label(downloadStatus, state.message);
     downloadProgress = state.total > 0 ? double(state.received) / double(state.total) : -1.;
     if (!state.active()) {
       awaitingDownload = false;
-      if (state.status == FirmwareDownload::Status::succeeded) {
+      if (state.status == FirmwareDownload::Status::succeeded)
         downloadedFile = state.file;
-        selectImage(state.file, firmwareHardwareName(selectedEntry().hardware));
-      }
     }
   }
-  if (pendingHardwareId != 0 && !awaitingDownload && !busy()) {
+  if (pendingHardwareId != 0 && !busy()) {
     const auto id = pendingHardwareId;
     pendingHardwareId = 0;
     hardware.setSelectedId(id, juce::sendNotificationSync);
   }
   const bool active = busy();
-  for (auto *c :
-       std::initializer_list<juce::Component *>{&hardware, &build, &get, &choose, &volume, &rescan})
-    c->setEnabled(!active);
-  reset.setEnabled(!active && device.connected());
-  write.setEnabled(!active && image.existsAsFile() && volume.getSelectedId() > 0);
-  cancel.setEnabled(state.active());
+  hardware.setEnabled(!active);
+  version.setEnabled(!active && !versions.isEmpty());
+  build.setEnabled(!active && !entries.empty());
+  get.setEnabled(!active && !entries.empty());
+  refresh.setEnabled(!active);
+  cancel.setEnabled(state.active() || awaitingVersions);
   reveal.setEnabled(downloadedFile.existsAsFile());
-  progressBar.setVisible(state.active());
-  if (working)
-    label(error, "Copying firmware: " + String(int(flashProgress * 100)) + "%");
-  else {
-    std::lock_guard<std::mutex> lock(mutex);
-    if (result.isNotEmpty()) {
-      label(error, result);
-      result.clear();
-    }
-  }
+  progressBar.setVisible(state.active() || awaitingVersions);
+  if (awaitingVersions)
+    downloadProgress = -1.;
 }
 void FirmwareView::resized() {
   viewport.setBounds(getLocalBounds());
@@ -332,19 +244,25 @@ void FirmwareView::resized() {
     y += height + gap;
   };
   line(heading, 26);
+  line(hardwareLabel, 22, 2);
+  line(hardware, 32);
   if (column >= 540) {
-    hardwareLabel.setBounds(20, y, column / 2 - 10, 22);
-    buildLabel.setBounds(20 + column / 2, y, column / 2, 22);
+    const int half = (column - 10) / 2;
+    versionLabel.setBounds(20, y, half, 22);
+    buildLabel.setBounds(30 + half, y, half, 22);
     y += 24;
-    hardware.setBounds(20, y, column / 2 - 10, 32);
-    build.setBounds(20 + column / 2, y, column / 2, 32);
+    version.setBounds(20, y, half, 32);
+    build.setBounds(30 + half, y, half, 32);
     y += 42;
   } else {
-    line(hardwareLabel, 22, 2);
-    line(hardware, 32);
+    line(versionLabel, 22, 2);
+    line(version, 32);
     line(buildLabel, 22, 2);
     line(build, 32, 10);
   }
+  refresh.setBounds(20, y, refresh.preferredWidth(32), 32);
+  y += 40;
+  line(catalogStatus, 48);
   line(modelNote, 43);
   line(release, 44, 4);
   line(description, 76);
@@ -361,25 +279,6 @@ void FirmwareView::resized() {
   y += 40;
   line(progressBar, 14, 4);
   line(downloadStatus, 78, 16);
-  line(installHeading, 26);
-  choose.setBounds(20, y, choose.preferredWidth(32), 32);
-  y += 40;
-  line(fileLabel, 48);
-  x = 20;
-  for (auto *button : {&reset, &rescan}) {
-    const auto bw = button->preferredWidth(32);
-    if (x + bw > 20 + column) {
-      x = 20;
-      y += 40;
-    }
-    button->setBounds(x, y, bw, 32);
-    x += bw + 8;
-  }
-  y += 40;
-  line(volume, 32);
-  write.setBounds(20, y, write.preferredWidth(32), 32);
-  y += 40;
-  line(error, 72);
   const int leftHeight = y;
   const int guideX = sideBySide ? width - 310 : 20;
   const int guideWidth = sideBySide ? 290 : column;

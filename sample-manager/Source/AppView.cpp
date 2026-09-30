@@ -207,6 +207,8 @@ AppView::AppView() {
     }
     deviceWindow->setVisible(true);
     deviceWindow->toFront(true);
+    if (auto *view = dynamic_cast<DeviceView *>(deviceWindow->getContentComponent()))
+      view->loadVersions();
   };
   visualizerButton.onClick = [this] { toggleVisualizer(); };
   projectButton.onClick = [this] { projectMenu(); };

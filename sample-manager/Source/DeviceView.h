@@ -11,6 +11,7 @@ public:
   void lookAndFeelChanged() override;
   void cancelDownload() { firmware.cancelDownload(); }
   void setHardware(FirmwareHardware hardware) { firmware.setHardware(hardware); }
+  void loadVersions() { firmware.loadVersions(); }
 
 private:
   friend void firmwareViewTests();
