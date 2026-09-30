@@ -151,7 +151,7 @@ AppView::AppView() {
     editor.addAndMakeVisible(c);
   controlsViewport.setViewedComponent(&controls, false);
   controlsViewport.setScrollBarsShown(true, false);
-  controlsViewport.setScrollOnDragEnabled(false);
+  controlsViewport.setScrollOnDragMode(juce::Viewport::ScrollOnDragMode::never);
   for (auto *c : std::initializer_list<juce::Component *>{
            &hint,         &play,       &markerMode,     &sliceCount,
            &evenButton,   &autoButton, &sourceBpmLabel, &sourceBpm,
@@ -774,6 +774,7 @@ void AppView::timerCallback() {
   const String onlineText = analysing ? "Cancel online analysis" : "Analyze drums online";
   if (onlineButton.getButtonText() != onlineText) {
     onlineButton.setButtonText(onlineText);
+    onlineButton.setIcon(analysing ? "x" : "cloud-upload");
     onlineButton.setTooltip(
         analysing ? "Cancel the running online drum analysis. Existing markers are kept."
                   : "Upload this sample as mono 44.1 kHz audio to tool.getectocore.com for "
@@ -1084,14 +1085,16 @@ int AppView::layoutControls(int width) {
   hint.setBounds(18, 0, width - 36, tipHeight);
 
   ControlRow tools(width, tipHeight + 6);
-  auto transport = tools.next(296, 29);
-  play.setBounds(transport.removeFromLeft(122));
+  const int playWidth = play.preferredWidth(29);
+  auto transport = tools.next(playWidth + 8 + 166, 29);
+  play.setBounds(transport.removeFromLeft(playWidth));
   transport.removeFromLeft(8);
   markerMode.setBounds(transport);
-  auto slicing = tools.next(283, 29);
+  const int evenWidth = evenButton.preferredWidth(29);
+  auto slicing = tools.next(40 + 8 + evenWidth + 8 + autoButton.preferredWidth(29), 29);
   sliceCount.setBounds(slicing.removeFromLeft(40));
   slicing.removeFromLeft(8);
-  evenButton.setBounds(slicing.removeFromLeft(117));
+  evenButton.setBounds(slicing.removeFromLeft(evenWidth));
   slicing.removeFromLeft(8);
   autoButton.setBounds(slicing);
 
@@ -1111,12 +1114,14 @@ int AppView::layoutControls(int width) {
     oneShot.setBounds(playback.next(110, 27));
 
   ControlRow actions(width, playback.bottom() + 8);
-  auto sampleActions = actions.next(176, 27);
-  removeButton.setBounds(sampleActions.removeFromLeft(88));
+  const int removeWidth = removeButton.preferredWidth(27);
+  auto sampleActions = actions.next(removeWidth + 8 + mergeButton.preferredWidth(27), 27);
+  removeButton.setBounds(sampleActions.removeFromLeft(removeWidth));
   sampleActions.removeFromLeft(8);
   mergeButton.setBounds(sampleActions);
-  auto reorder = actions.next(80, 27);
-  up.setBounds(reorder.removeFromLeft(36));
+  const int upWidth = up.preferredWidth(27);
+  auto reorder = actions.next(upWidth + 8 + down.preferredWidth(27), 27);
+  up.setBounds(reorder.removeFromLeft(upWidth));
   reorder.removeFromLeft(8);
   down.setBounds(reorder);
   moveBank.setBounds(actions.next(180, 27));
@@ -1148,10 +1153,7 @@ int AppView::layoutControls(int width) {
   y = tuning.bottom() + 12;
 
   heading(onlineAnalysisLabel);
-  const int onlineWidth =
-      juce::GlyphArrangement::getStringWidthInt(look.getTextButtonFont(onlineButton, 27),
-                                                onlineButton.getButtonText()) +
-      24;
+  const int onlineWidth = onlineButton.preferredWidth(27);
   onlineButton.setBounds(18, y, std::min(width - 36, onlineWidth), 27);
   y += 31;
   advancedControls.setBounds(0, advancedTop, width, y);
@@ -1162,23 +1164,24 @@ void AppView::resized() {
   presentationBox.setBounds(frame.header.getRight() - 210,
                              frame.header.getY() + 20, 186, 28);
   int x = frame.content.getX();
+  int toolbarY = frame.content.getY() + 3;
   for (auto *button :
        {&open, &recent, &reveal, &duplicate, &importButton, &settingsButton,
         &deviceButton, &visualizerButton, &more}) {
-    int w = button == &open               ? 128
-            : button == &visualizerButton ? 114
-            : button == &settingsButton   ? 100
-            : button == &more             ? 48
-                                          : 88;
-    button->setBounds(x, frame.content.getY() + 3, w, 30);
+    const int w = button->preferredWidth(30);
+    if (x > frame.content.getX() && x + w > frame.content.getRight()) {
+      x = frame.content.getX();
+      toolbarY += 38;
+    }
+    button->setBounds(x, toolbarY, w, 30);
     x += w + 7;
   }
-  undoButton.setBounds(frame.content.getRight() - 148,
-                       frame.content.getY() + 42, 70, 25);
-  redoButton.setBounds(frame.content.getRight() - 70,
-                       frame.content.getY() + 42, 70, 25);
-  folderLabel.setBounds(frame.content.getX(), frame.content.getY() + 40,
-                        frame.content.getWidth() - 166, 27);
+  const int metadataY = toolbarY + 39;
+  const int undoWidth = undoButton.preferredWidth(25), redoWidth = redoButton.preferredWidth(25);
+  redoButton.setBounds(frame.content.getRight() - redoWidth, metadataY, redoWidth, 25);
+  undoButton.setBounds(redoButton.getX() - 8 - undoWidth, metadataY, undoWidth, 25);
+  folderLabel.setBounds(frame.content.getX(), metadataY - 2,
+                        undoButton.getX() - frame.content.getX() - 18, 27);
   auto statusBounds = frame.footer.reduced(16, 4);
   if (activity.isVisible()) {
     auto activityBounds = statusBounds.removeFromRight(100);
@@ -1188,7 +1191,7 @@ void AppView::resized() {
   statusLabel.setBounds(statusBounds);
   banks.setBounds(frame.bankRail.reduced(0, 12));
   samples.setBounds(frame.sampleRail.reduced(0, 12));
-  auto columnsArea = frame.content.withTrimmedTop(81);
+  auto columnsArea = frame.content.withTrimmedTop(metadataY - frame.content.getY() + 39);
   divider.setVisible(visualizer != nullptr);
   if (visualizer) {
     juce::Component *columns[]{visualizer.get(), &divider, &editor};

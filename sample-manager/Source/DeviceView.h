@@ -1,5 +1,6 @@
 #pragma once
 #include "Device.h"
+#include "IconButton.h"
 #include "Uf2.h"
 #include <mutex>
 #include <thread>
@@ -18,9 +19,9 @@ private:
   Device &device;
   Look &look;
   juce::ComboBox input, output, volume;
-  juce::TextButton refreshButton{"Refresh ports"}, version{"Query version"},
-      reset{"Reset to bootloader"}, choose{"Choose local UF2"},
-      write{"Flash selected UF2"};
+  IconButton refreshButton{"Refresh ports", "refresh-cw"}, version{"Query version", "info"},
+      reset{"Reset to bootloader", "power"}, choose{"Choose local UF2", "file-up"},
+      write{"Flash selected UF2", "download"};
   juce::Label instructions, fileLabel, error;
   juce::TextEditor log;
   juce::Array<juce::MidiDeviceInfo> inputPorts, outputPorts;

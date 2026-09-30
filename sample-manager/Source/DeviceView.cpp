@@ -189,14 +189,19 @@ void DeviceView::resized() {
   int half = (getWidth() - 50) / 2;
   input.setBounds(20, 80, half, 30);
   output.setBounds(30 + half, 80, half, 30);
-  refreshButton.setBounds(20, 125, 150, 30);
-  version.setBounds(180, 125, 150, 30);
-  reset.setBounds(340, 125, 200, 30);
+  int x = 20;
+  for (auto *button : {&refreshButton, &version, &reset}) {
+    const int width = button->preferredWidth(30);
+    button->setBounds(x, 125, width, 30);
+    x += width + 10;
+  }
   log.setBounds(20, 170, getWidth() - 40, getHeight() - 355);
-  choose.setBounds(20, getHeight() - 170, 185, 30);
-  fileLabel.setBounds(215, getHeight() - 170, getWidth() - 235, 30);
-  volume.setBounds(20, getHeight() - 125, getWidth() - 260, 30);
-  write.setBounds(getWidth() - 225, getHeight() - 125, 205, 30);
+  choose.setBounds(20, getHeight() - 170, choose.preferredWidth(30), 30);
+  fileLabel.setBounds(choose.getRight() + 10, getHeight() - 170,
+                      getWidth() - choose.getRight() - 30, 30);
+  const int writeWidth = write.preferredWidth(30);
+  write.setBounds(getWidth() - 20 - writeWidth, getHeight() - 125, writeWidth, 30);
+  volume.setBounds(20, getHeight() - 125, write.getX() - 30, 30);
   error.setBounds(20, getHeight() - 75, getWidth() - 40, 55);
 }
 } // namespace core

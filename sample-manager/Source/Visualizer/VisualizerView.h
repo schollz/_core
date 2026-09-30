@@ -1,5 +1,6 @@
 #pragma once
 #include "Session.h"
+#include "../IconButton.h"
 namespace zv {
 class MonoLook final : public juce::LookAndFeel_V4 {
 public:
@@ -20,7 +21,9 @@ public:
   void setActive(bool);
   void setDetached() {
     detach.setButtonText("FULL");
+    detach.setIcon("maximize");
     detach.setTooltip("Enter or leave fullscreen\nfor this visualizer window.");
+    resized();
   }
   juce::String getTooltip() override {
     return "Waveform, effects and spectrum\nfor the selected Device or Preview source.\n"
@@ -51,7 +54,7 @@ private:
   Session &session;
   MonoLook look;
   core::Tooltips tooltips{*this};
-  juce::TextButton detach{"DETACH"};
+  core::IconButton detach{"DETACH", "external-link"};
   juce::ComboBox source;
   juce::ToggleButton motion{"REDUCED MOTION"};
   bool setup = false, updating = false;

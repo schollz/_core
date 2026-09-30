@@ -1,5 +1,6 @@
 #pragma once
 #include "DeviceView.h"
+#include "IconButton.h"
 #include "OnlineAnalysis.h"
 #include "Preview.h"
 #include "SettingsView.h"
@@ -125,16 +126,19 @@ private:
   WaveformEditor waveform{look};
   juce::StretchableLayoutManager layout;
   Divider divider{&layout, 1, true};
-  juce::TextButton open{"Open Folder"}, recent{"Recent"}, reveal{"Reveal"},
-      duplicate{"Duplicate"}, importButton{"Import"},
-      settingsButton{"Settings"}, deviceButton{"Device"},
-      visualizerButton{"Visualizer"}, more{"More"};
+  IconButton open{"Open Folder", "folder-open"}, recent{"Recent", "clock"},
+      reveal{"Reveal", "folder-search"}, duplicate{"Duplicate", "copy"},
+      importButton{"Import", "file-plus"}, settingsButton{"Settings", "settings-2"},
+      deviceButton{"Device", "usb"}, visualizerButton{"Visualizer", "audio-lines"},
+      more{"More", "ellipsis"};
   juce::ComboBox presentationBox, channel, playMode, markerMode, detector,
       moveBank;
-  juce::TextButton play{"Play / Stop"}, evenButton{"Even slices"}, autoButton{"Auto slice"},
-      onlineButton{"Analyze drums online"}, removeButton{"Remove"}, mergeButton{"Merge"},
-      up{juce::String::fromUTF8("↑")}, down{juce::String::fromUTF8("↓")}, undoButton{"Undo"},
-      redoButton{"Redo"}, createProject{"Create project"}, empty{"Open a project folder"};
+  IconButton play{"Play / Stop", "play"}, evenButton{"Even slices", "columns-3"},
+      autoButton{"Auto slice", "wand-sparkles"}, onlineButton{"Analyze drums online", "cloud-upload"},
+      removeButton{"Remove", "trash"}, mergeButton{"Merge", "merge"},
+      up{"Move up", "arrow-up", true}, down{"Move down", "arrow-down", true},
+      undoButton{"Undo", "undo-2"}, redoButton{"Redo", "redo-2"},
+      createProject{"Create project", "folder-plus"}, empty{"Open a project folder", "folder-open"};
   juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, name;
   juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"},
       oneShot{"One-shot"}, variable{"Variable splice timing"};

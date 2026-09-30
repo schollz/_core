@@ -133,10 +133,18 @@ void Editor::updateControls() {
   reduceMotion = session.sharedDevice.reduceMotion || systemReducedMotion();
 }
 void Editor::resized() {
-  source.setBounds(getWidth() - 330, 12, 104, 26);
-  motion.setBounds(getWidth() - 218, 12, 138, 26);
-  detach.setBounds(getWidth() - 78, 12, 68, 26);
-  int scopeTop = getWidth() < 720 ? 80 : 52;
+  const int detachWidth = detach.preferredWidth(26);
+  const int controlsWidth = 104 + 8 + 138 + 8 + detachWidth;
+  const bool wrap = getWidth() < controlsWidth + 20;
+  detach.setBounds(getWidth() - 10 - detachWidth, 12, detachWidth, 26);
+  if (wrap) {
+    source.setBounds(10, 12, 104, 26);
+    motion.setBounds(10, 46, 138, 26);
+  } else {
+    source.setBounds(getWidth() - 10 - controlsWidth, 12, 104, 26);
+    motion.setBounds(source.getRight() + 8, 12, 138, 26);
+  }
+  int scopeTop = wrap ? 86 : getWidth() < 720 ? 80 : 52;
   scope = {20, float(scopeTop), float(getWidth() - 40),
            float(std::max(70, getHeight() - scopeTop - 73))};
 }

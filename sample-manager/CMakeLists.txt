@@ -31,11 +31,14 @@ target_include_directories(core_tempo PUBLIC Vendor/soundtouch/include)
 target_compile_definitions(core_tempo PUBLIC SOUNDTOUCH_FLOAT_SAMPLES=1)
 juce_add_gui_app(CoreSampleManager COMPANY_NAME "INFINITE DIGITS"
     BUNDLE_ID "com.infinitedigits.coresamplemanager" PRODUCT_NAME "Core Sample Manager"
-    MICROPHONE_PERMISSION_ENABLED FALSE)
+    MICROPHONE_PERMISSION_ENABLED FALSE NEEDS_CURL TRUE)
 juce_add_binary_data(CoreAssets SOURCES
     Resources/Fonts/IBMPlexMono-Regular.ttf Resources/Fonts/IBMPlexMono-Medium.ttf Resources/Fonts/IBMPlexMono-Bold.ttf
     Resources/Fonts/fa-solid-900.ttf Resources/Fonts/MonaspaceKrypton-Regular.otf Resources/Fonts/odin-rounded.regular.otf
     Resources/Artwork/rune1.svg Resources/Artwork/rune2.svg Resources/Artwork/rune3.svg Resources/Artwork/rune4.svg Resources/Artwork/rune5.svg Resources/Artwork/rune6.svg Resources/Artwork/rune7.svg Resources/Artwork/ectocore.png)
+file(GLOB lucide_icons CONFIGURE_DEPENDS Resources/Icons/Lucide/*.svg)
+juce_add_binary_data(CoreIcons HEADER_NAME LucideData.h NAMESPACE LucideData SOURCES
+    ${lucide_icons} Resources/Icons/Lucide/Lucide-LICENSE.txt)
 file(GLOB onset_sources CONFIGURE_DEPENDS Vendor/amenbreak/Onsets/*.cpp)
 list(FILTER onset_sources EXCLUDE REGEX "(ExampleUsage|SliceAnalyzer)\\.cpp$")
 juce_add_binary_data(CoreFixtures HEADER_NAME FixtureData.h NAMESPACE FixtureData SOURCES Tests/parity.json Tests/fixtures/website-name.json Tests/fixtures/website-1-44100.info Tests/fixtures/website-1-88200.info Tests/fixtures/website-2-44100.info Tests/fixtures/website-2-88200.info)
@@ -45,18 +48,16 @@ juce_add_binary_data(CoreImportFixtures HEADER_NAME ImportData.h NAMESPACE Impor
 juce_add_binary_data(CoreTempoFixtures HEADER_NAME TempoData.h NAMESPACE TempoData SOURCES
     Tests/fixtures/tempo/135-clean.wav Tests/fixtures/tempo/135-comp.wav Tests/fixtures/tempo/135-vintage.wav)
 target_link_libraries(CoreSampleManager PRIVATE CoreFixtures CoreImportFixtures CoreTempoFixtures)
-target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/Tempo.cpp
+target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/Tempo.cpp Source/IconButton.cpp
     Source/Storage.cpp Source/AudioProcessing.cpp Source/Manager.cpp Source/Preview.cpp Source/Theme.cpp Source/WaveformEditor.cpp Source/SettingsView.cpp Source/AppView.cpp Source/Device.cpp Source/DeviceView.cpp Source/Uf2.cpp Source/OnlineAnalysis.cpp Source/Visualizer/Core.cpp Source/Visualizer/Library.cpp Source/Visualizer/Midi.cpp Source/Visualizer/Session.cpp Source/Visualizer/VisualizerView.cpp Tests/VisualizerTests.cpp Tests/Tests.cpp Tests/ImportTests.cpp Tests/AudioTests.cpp Tests/TempoTests.cpp Tests/RecoveryTests.cpp Tests/ManagerTests.cpp Tests/MidiTests.cpp ${onset_sources})
 target_include_directories(CoreSampleManager PRIVATE Source Vendor/amenbreak)
 target_compile_definitions(CoreSampleManager PRIVATE JUCE_WEB_BROWSER=0
     JUCE_USE_MP3AUDIOFORMAT=1 JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:CoreSampleManager,JUCE_PRODUCT_NAME>"
     JUCE_APPLICATION_VERSION_STRING="${PROJECT_VERSION}")
-target_link_libraries(CoreSampleManager PRIVATE CoreAssets core_rubberband core_tempo
+target_link_libraries(CoreSampleManager PRIVATE CoreAssets CoreIcons core_rubberband core_tempo
     juce::juce_audio_utils juce::juce_dsp juce::juce_cryptography juce::juce_recommended_config_flags)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    find_package(CURL REQUIRED)
-    target_compile_definitions(CoreSampleManager PRIVATE JUCE_USE_CURL=1 JUCE_LOAD_CURL_SYMBOLS_LAZILY=0)
-    target_link_libraries(CoreSampleManager PRIVATE CURL::libcurl)
+    target_compile_definitions(CoreSampleManager PRIVATE JUCE_LOAD_CURL_SYMBOLS_LAZILY=0)
 else()
     target_compile_definitions(CoreSampleManager PRIVATE JUCE_USE_CURL=0)
 endif()
@@ -64,7 +65,7 @@ if(APPLE)
     enable_language(OBJCXX)
     target_sources(CoreSampleManager PRIVATE Source/Visualizer/Platform_mac.mm)
     set(notices LICENSE Vendor/PROVENANCE.md Vendor/rubberband/COPYING Vendor/soundtouch/COPYING.TXT
-        Resources/Fonts/IBM-Plex-LICENSE.txt Resources/Fonts/Font-Awesome-LICENSE.txt Resources/Fonts/Website-Fonts-NOTICE.txt Resources/Fonts/Monaspace-LICENSE.txt "${juce_SOURCE_DIR}/LICENSE.md")
+        Resources/Fonts/IBM-Plex-LICENSE.txt Resources/Fonts/Font-Awesome-LICENSE.txt Resources/Fonts/Website-Fonts-NOTICE.txt Resources/Fonts/Monaspace-LICENSE.txt Resources/Icons/Lucide/Lucide-LICENSE.txt "${juce_SOURCE_DIR}/LICENSE.md")
     set_source_files_properties(${notices} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     target_sources(CoreSampleManager PRIVATE ${notices})
     add_custom_command(TARGET CoreSampleManager POST_BUILD
