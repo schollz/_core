@@ -92,6 +92,86 @@ On 2026-09-16, `make zeptocore` passed on macOS at `c5f884b` (PR #830 merged),
 with three conversion warnings in `lib/mcp23017/mcp23017_lib.c`. No hardware
 flashing or playback validation was performed during that build.
 
+## Automatic server updates and cleanup
+
+On each Linux server checkout, add this line to **root's crontab** (`sudo crontab -e`):
+
+```cron
+* * * * * /www/ezeptocore/dev/auto_update.py
+```
+
+Replace `/www/ezeptocore` with that checkout's absolute path. The executable
+[auto_update.py](../dev/auto_update.py) locates the repository from its own path,
+so cron needs no `cd` or arguments. The repository folder name selects the
+service: `ezeptocore` restarts `zns.ezeptocore.service`, `ectocore` restarts
+`zns.ectocore.service`, and `zeptocore` restarts `zns.zeptocore.service`.
+
+For a persistent log, use this entry instead and include the log in the server's
+normal log rotation:
+
+```cron
+* * * * * /www/ezeptocore/dev/auto_update.py >> /var/log/ezeptocore-update.log 2>&1
+```
+
+The cron account needs noninteractive Git access, write access to the checkout,
+and permission to restart its existing systemd service. Install Python 3.8+,
+Git, Make, Go, Hugo, `uv`, and the server's existing build dependencies first.
+The cleanup utility requires Python 3.11+ and its inline `click` and `rich`
+dependencies, which `uv` manages. The script extends cron's `PATH` with standard
+system directories, `/usr/local/go/bin`, and the account's `.local/bin`, `bin`,
+`go/bin`, `node/bin`, and `.cargo/bin`. It does not load interactive shell
+configuration; custom tool locations must be included in cron's `PATH`.
+
+Each invocation fetches the checked-out branch's configured upstream and
+fast-forwards to the fetched commit. Detached checkouts, missing upstreams,
+local commits ahead of upstream, divergent history, and conflicting local
+edits stop deployment with an error. Git preserves nonconflicting local edits;
+those edits remain part of the build. No reset or stash is performed. Git hooks
+are disabled for the script's commands so older post-merge hooks cannot trigger
+duplicate builds or restarts.
+
+After an update, the script runs `make core_server`, including the Hugo docs
+build, then restarts the service and checks `systemctl is-active`. A failed
+build does not trigger a restart. Build and restart failures stay pending and
+retry on the next invocation, even if Git is already up to date. Deployment
+requires a successful fetch. The first invocation assumes an existing
+`core_server` already matches the current commit; a missing binary triggers a
+build. A successful immediate service check does not monitor later crashes or
+provide automatic rollback.
+
+Cleanup runs on the first invocation and then once every 24 hours. It calls
+[delete_old_folders.py](../dev/delete_old_folders.py) with `--delete --yes` for:
+
+| Directory relative to the checkout | Retention |
+| --- | --- |
+| `drum_separation_model_output/modelo_final` | 30 days |
+| `storage` | 60 days |
+
+The existing utility deletes immediate, nonhidden child folders only when their
+newest file anywhere inside is older than the retention period. Empty folders,
+folders with no files, and files directly inside the target directory are left
+alone. Missing target directories are skipped. Both cleanup commands are
+attempted even if one fails, and a deployment error does not prevent cleanup.
+The daily timestamp records an **attempt**, including failed or interrupted
+scans, so another attempt waits 24 hours.
+
+The lock and state live under the checkout's Git metadata directory, normally
+`.git/auto-update/`: `lock`, `deployment.json`, and `cleanup-attempt.json`.
+Deployment records the last successful commit and whether work remains pending;
+state files are replaced atomically. Overlapping invocations exit quietly.
+Unchanged checks are quiet; actions and command output have timestamps, and
+command failures return a nonzero exit status. The script never installs cron
+entries itself. Use `dev/auto_update.py --help` to read usage without running it.
+
+Run the isolated regression tests with:
+
+```sh
+python3 -m unittest discover -s test/auto_update -v
+```
+
+Tests use temporary Git repositories and stub build/service commands. If `uv`
+is available, they also exercise the real cleanup utility on temporary data.
+
 ## Current seek/audio behavior
 
 The fast-seeking work was merged in PR #830. Maps describe contiguous runs of
