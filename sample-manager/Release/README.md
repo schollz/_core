@@ -70,8 +70,6 @@ Linux job receives the finished package, verifies its hashes, rechecks the
 selected release, and uploads with `contents: write`. Build, packaging and
 publication logs are retained as Actions artifacts for 14 days. A failed
 publication leaves the downloadable signed package in the workflow artifacts.
-The existing **Package _core sample manager - Windows** workflow remains an
-independent unsigned build/test/package tool.
 
 ## macOS credentials and prerequisites
 
