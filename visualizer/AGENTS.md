@@ -314,9 +314,22 @@ This repository adds opt-in reporting to Zeptocore and Ectocore/Ezeptocore build
 Older MIDI-enabled firmware still supplies bank/sample status but the page
 explicitly displays **SLICE TRACKING UNAVAILABLE**.
 
-The page sends `[0x89, 5, 0]` (channel 10, Note Off, note 5, velocity 0) every
-500 ms. This requests a snapshot and renews a two-second lease. Existing
-`[0x89, 4, 0]` status queries are used until new telemetry arrives.
+The page first negotiates management using `core_cmd=1,hello` text SysEx,
+retrying at 500 ms. `core_caps=1` selects the modern protocol. After 1 second
+without acknowledgment it probes with `[0xB0, 1, 0]`; only a `version=` reply
+selects legacy mode. No response by 2 seconds reports management unavailable.
+Reconnect resets negotiation. A modern acknowledgment takes precedence.
+
+Modern firmware receives text SysEx `core_cmd=1,view` every 500 ms to request a
+snapshot and renew a two-second lease. `core_cmd=1,info` requests status until
+fresh telemetry arrives. Confirmed older firmware uses `[0x89, 5, 0]` and
+`[0x89, 4, 0]` respectively. New Zeptocore firmware reserves no musical channel
+for management; receive channel 10 works normally. Update this client with the
+firmware. Other devices continue to work through legacy negotiation.
+
+The shared browser helper is `core/src/server/static/core-midi.js`; Vite bundles
+it into the visualizer. Keep its documentation-site static copy identical;
+`node test/midi/test_management.cjs` checks parity and negotiation behavior.
 
 Snapshots are ASCII between `F0` and `F7`:
 

@@ -42,4 +42,7 @@ std::map<String, bool> settingsFiles(const Settings &);
 // This setting uses one replaceable text file instead of exclusive markers.
 inline constexpr auto sampleCVMappingPath = "settings/sample_cv_mapping";
 String sampleCVMappingContents(const Settings &);
+inline constexpr auto midiChannelPath = "settings/midi_channel";
+String midiChannelContents(const Settings &);
+std::map<String, String> textSettingsContents(const Settings &);
 } // namespace core::card

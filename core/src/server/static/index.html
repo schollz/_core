@@ -266,6 +266,27 @@
                 <input id="settingsKnobXSample" type="checkbox" v-model="settingsKnobXSample">
                 <span v-if="settingsKnobXSample">on</span><span v-else>off</span>
             </p>
+            <p>
+                <label for="settingsMidiChannel">MIDI receive channel</label>
+                <select id="settingsMidiChannel" v-model="settingsMidiChannel" title="Listen for notes and CCs on this channel. Requires supporting firmware. Copy the settings to the card and restart Zeptocore to apply.">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                </select>
+            </p>
             <p id="pSettingsMashMode">
                 <label for="settingsMashMode" style="padding-right:1em;">MASH mode buttons</label>
                 <input id="settingsMashMode" type="checkbox" v-model="settingsMashMode">
@@ -1534,6 +1555,7 @@
         // Set initial latestVersion from server
         window.initialLatestVersion = "[[ .LatestVersion ]]";
     </script>
+    <script src="/static/core-midi.js"></script>
     <script src="/static/app.js"></script>
     <script>
         $(function () {

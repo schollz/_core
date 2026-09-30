@@ -806,10 +806,11 @@ void Manager::save(uint64_t generation) {
     } else
       oldOwned.insert(path);
   }
-  auto mapping = child(root, ".core-manager/cache/sample-cv-mapping");
-  const auto mappingContent = card::sampleCVMappingContents(completed.settings);
-  durableWrite(mapping, mappingContent.toRawUTF8(), size_t(mappingContent.getNumBytesAsUTF8()));
-  desired[card::sampleCVMappingPath] = mapping;
+  for (const auto &[path, content] : card::textSettingsContents(completed.settings)) {
+    auto textFile = child(root, ".core-manager/cache/" + path.fromLastOccurrenceOf("/", false, false));
+    durableWrite(textFile, content.toRawUTF8(), size_t(content.getNumBytesAsUTF8()));
+    desired[path] = textFile;
+  }
   std::vector<Replacement> replacements;
   auto expected = [&](const String &path) {
     auto found = committed.fingerprints.find(path);

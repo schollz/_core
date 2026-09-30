@@ -25,43 +25,47 @@ var outputMidiDevice = null;
 var checkMidiInterval = null;
 
 
+var midiManagement = null;
+var midiManagementTimer = null;
 function midiStartup() {
+    if (midiManagementTimer) clearInterval(midiManagementTimer);
+    midiManagement = new CoreMidiManagement(sendToOutputMidiDevice,
+        () => { app.midiIsSetup = true; midiManagement.command('version'); },
+        message => addToMidiConsole(message));
+    midiManagement.start();
+    midiManagementTimer = setInterval(() => midiManagement.tick(), 100);
     app.midiIsSetup = true;
-    midiGetVersion();
+}
+var coreMidiAccess = null;
+var coreMidiAccessPending = false;
+function refreshCoreMidiPorts() {
+    if (!coreMidiAccess) return;
+    const matches = port => port.state === 'connected' && /zeptocore|ectocore/i.test(port.name || '');
+    const input = Array.from(coreMidiAccess.inputs.values()).find(matches);
+    const output = Array.from(coreMidiAccess.outputs.values()).find(matches);
+    if (input === inputMidiDevice && output === outputMidiDevice && midiManagement) return;
+    if (inputMidiDevice) inputMidiDevice.onmidimessage = null;
+    if (midiManagement) midiManagement.reset();
+    if (midiManagementTimer) clearInterval(midiManagementTimer);
+    midiManagement = null;
+    inputMidiDevice = input || null;
+    outputMidiDevice = output || null;
+    app.midiIsSetup = false;
+    if (input && output) {
+        setupMidiInputListener();
+        midiStartup();
+    }
 }
 function listMidiPorts() {
-    if (!navigator.requestMIDIAccess) {
-        console.log('Web MIDI API is not supported in this browser.');
-        return;
-    }
-
-    navigator.requestMIDIAccess({ sysex: true }) // Enable Sysex messages
-        .then(midiAccess => {
-            midiAccess.inputs.forEach(input => {
-                if (input.name.toLowerCase().includes("zeptocore") || input.name.toLowerCase().includes("ectocore") || input.name.toLowerCase().includes("ezeptocore")) {
-                    inputMidiDevice = input; // Ensure global scope if needed
-                    console.log(`Selected input MIDI device: ${input.name}`);
-                    setupMidiInputListener();
-                    if (outputMidiDevice) {
-                        midiStartup();
-                    }
-                }
-            });
-
-            midiAccess.outputs.forEach(output => {
-                if (output.name.toLowerCase().includes("zeptocore") || output.name.toLowerCase().includes("ectocore") || output.name.toLowerCase().includes("ezeptocore")) {
-                    outputMidiDevice = output; // Ensure global scope if needed
-                    console.log(`Selected output MIDI device: ${output.name}`);
-                    if (inputMidiDevice) {
-                        midiStartup();
-                    }
-                }
-            });
-
-        })
-        .catch(error => {
-            // console.error('Error accessing MIDI devices:', error);
-        });
+    if (!navigator.requestMIDIAccess || coreMidiAccessPending) return;
+    if (coreMidiAccess) { refreshCoreMidiPorts(); return; }
+    coreMidiAccessPending = true;
+    navigator.requestMIDIAccess({ sysex: true }).then(access => {
+        coreMidiAccess = access;
+        coreMidiAccess.onstatechange = refreshCoreMidiPorts;
+        refreshCoreMidiPorts();
+    }).catch(error => console.error('MIDI access failed:', error))
+      .finally(() => { coreMidiAccessPending = false; });
 }
 
 function addToMidiConsole(message) {
@@ -82,6 +86,7 @@ function addToMidiConsole(message) {
 function setupMidiInputListener() {
     if (window.inputMidiDevice) {
         window.inputMidiDevice.onmidimessage = (midiMessage) => {
+            if (midiManagement) midiManagement.receive(midiMessage.data);
             // check if sysex
             if (midiMessage.data[0] == 0xf0) {
                 // convert the sysex to string 
@@ -100,23 +105,16 @@ function setupMidiInputListener() {
                 addToMidiConsole(midiMessage.data);
             }
         };
-        // receive SySex messages
-        window.inputMidiDevice.onstatechange = (event) => {
-            console.log('MIDI device state changed:', event.port.name, event.port.state);
-            if (event.port.state === 'disconnected') {
-                inputMidiDevice = null;
-                app.midiIsSetup = false;
-            }
-        };
+
     }
 }
 
 function midiGetVersion() {
-    sendToOutputMidiDevice([0xB0, 1, 0]);
+    try { if (midiManagement) midiManagement.command('version'); } catch (e) { addToMidiConsole(e.message); }
 }
 
 function midiResetDevice() {
-    sendToOutputMidiDevice([0xB0, 0, 0]);
+    try { if (midiManagement) midiManagement.command('bootloader'); } catch (e) { addToMidiConsole(e.message); }
 }
 
 function sendToOutputMidiDevice(data) {
@@ -328,6 +326,7 @@ const socketMessageListener = (e) => {
         if (savedState.settingsSampleCV) {
             app.settingsSampleCV = savedState.settingsSampleCV;
         }
+        app.settingsMidiChannel = /^(?:[1-9]|1[0-6])$/.test(savedState.settingsMidiChannel || "") ? String(savedState.settingsMidiChannel) : "1";
         app.settingsSampleCVMapping = savedState.settingsSampleCVMapping === "1voct" ? "1voct" : "bank";
         if (savedState.settingsOverrideWithReset) {
             app.settingsOverrideWithReset = savedState.settingsOverrideWithReset;
@@ -531,6 +530,7 @@ app = new Vue({
         settingsBreakCV: "bipolar",
         settingsSampleCV: "bipolar",
         settingsSampleCVMapping: "bank",
+        settingsMidiChannel: "1",
         settingsOverrideWithReset: "none",
         settingsKnobXSample: false,
         settingsMashMode: false,
@@ -592,6 +592,7 @@ app = new Vue({
         settingsBreakCV: 'saveState',
         settingsSampleCV: 'saveState',
         settingsSampleCVMapping: 'saveState',
+        settingsMidiChannel: 'saveState',
         settingsOverrideWithReset: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
@@ -1033,6 +1034,7 @@ app = new Vue({
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
+                settingsMidiChannel: app.settingsMidiChannel,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
@@ -1438,6 +1440,7 @@ app = new Vue({
                 settingsBreakCV: app.settingsBreakCV,
                 settingsSampleCV: app.settingsSampleCV,
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
+                settingsMidiChannel: app.settingsMidiChannel,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,

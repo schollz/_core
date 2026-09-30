@@ -46,6 +46,8 @@ static unsigned generic_count;
 static uint8_t generic_event[4], cc_event[3];
 static char sysex[128];
 static unsigned stream_writes;
+static bool mounted = true;
+static bool tud_mounted(void) { return mounted; }
 static bool tud_ready(void) { return true; }
 static uint32_t tud_midi_n_stream_write(uint8_t itf, uint8_t cable,
                                       const uint8_t *data, uint32_t count) {
@@ -97,6 +99,22 @@ static void drain(void) {
     midi_comm_task(generic, on, off, start, resume, stop, clock_tick, cc);
   packet_count = packet_index = 0;
 }
+
+#ifdef INCLUDE_ZEPTOCORE
+static void command(const char *text) {
+  uint8_t bytes[256];
+  size_t length = strlen(text);
+  assert(length + 2 <= sizeof bytes);
+  bytes[0] = 0xf0; memcpy(bytes + 1, text, length); bytes[++length] = 0xf7; ++length;
+  for (size_t i = 0; i < length;) {
+    size_t count = length - i;
+    if (count > 3) count = 3;
+    uint8_t cin = i + count < length ? 4 : (uint8_t)(4 + count);
+    queue(cin, bytes[i], count > 1 ? bytes[i + 1] : 0, count > 2 ? bytes[i + 2] : 0);
+    i += count;
+  }
+}
+#endif
 
 static void test_notes(void) {
   unsigned before = jumps;
@@ -191,15 +209,28 @@ static void test_usb(void) {
     queue(0x08, 0x80 | channel, 60, 64);
   }
   drain();
+#ifdef INCLUDE_ZEPTOCORE
+  assert(jumps == before && generic_count == 0);
+  command("core_cmd=1,key,49"); drain();
+#else
   assert(jumps == before && generic_count == 30);
+#endif
   queue(0x08, 0x89, 49, 1); // Existing channel 10 command, unchanged payload.
   drain();
   assert(generic_event[0] == 0x80 && generic_event[1] == 9 &&
          generic_event[2] == 49 && generic_event[3] == 1);
+#ifdef INCLUDE_ZEPTOCORE
+  command("core_cmd=1,version");
+#else
   queue(0x0b, 0xb0, 1, 0);
+#endif
   drain();
   assert(strcmp(sysex, "version=v8.0.2") == 0);
+#ifdef INCLUDE_ZEPTOCORE
+  command("core_cmd=1,bootloader");
+#else
   queue(0x0b, 0xb0, 0, 0);
+#endif
   drain();
   assert(resets == 1 && strcmp(sysex, "command=reset") == 0);
 
@@ -228,6 +259,80 @@ static void test_usb(void) {
   midi_comm_task(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
+#ifdef INCLUDE_ZEPTOCORE
+static void test_receive_channels(void) {
+  do_stop_playback = playback_stopped = false;
+  for (unsigned selected = 1; selected <= 16; ++selected) {
+    midi_receive_channel = selected;
+    for (unsigned channel = 0; channel < 16; ++channel) {
+      unsigned on_before = note_ons, off_before = note_offs, cc_before = ccs;
+      unsigned generic_before = generic_count, reset_before = resets;
+      usb_midi_present = false;
+      queue(9, 0x90 | channel, 60, 100);
+      queue(8, 0x80 | channel, 60, 1);
+      queue(9, 0x90 | channel, 60, 0);
+      queue(11, 0xb0 | channel, 7, 64);
+      drain();
+      bool match = channel == selected - 1;
+      assert(note_ons == on_before + match && note_offs == off_before + 2 * match);
+      assert(ccs == cc_before + match && usb_midi_present == match);
+      assert(generic_count == generic_before && resets == reset_before);
+    }
+    unsigned clocks_before = clocks, starts_before = starts, stops_before = stops;
+    queue(15, 0xf8, 0, 0); queue(15, 0xfa, 0, 0); queue(15, 0xfc, 0, 0);
+    queue(15, 0xfb, 0, 0); drain();
+    assert(clocks == clocks_before + 1 && starts == starts_before + 2 && stops == stops_before + 1);
+  }
+  midi_receive_channel = 10;
+  unsigned generic_before = generic_count, reset_before = resets;
+  for (unsigned note = 0; note < 128; ++note)
+    for (unsigned velocity = 0; velocity < 128; ++velocity) {
+      queue(8, 0x89, note, velocity); drain();
+    }
+  midi_receive_channel = 1;
+  queue(11, 0xb0, 0, 0); queue(11, 0xb0, 1, 0); drain();
+  assert(generic_count == generic_before && resets == reset_before);
+  usb_midi_present = false;
+  queue(14, 0xe0, 0, 64); queue(10, 0xa0, 60, 64); drain();
+  assert(!usb_midi_present);
+}
+static void test_commands(void) {
+  midi_receive_channel = 10;
+  command("core_cmd=1,hello"); drain(); assert(strcmp(sysex, "core_caps=1") == 0);
+  const char *operations[] = {"info", "slices", "view", "key,0", "key,127"};
+  for (unsigned i = 0; i < 5; ++i) {
+    char text[64]; snprintf(text, sizeof text, "core_cmd=1,%s", operations[i]);
+    unsigned count = generic_count;
+    command(text); drain(); assert(generic_count == count + 1);
+  }
+  unsigned before = generic_count, writes = stream_writes, reset_before = resets;
+  const char *invalid[] = {"core_cmd=2,bootloader", "core_cmd=1,unknown", "core_cmd=1,key,",
+    "core_cmd=1,key,-1", "core_cmd=1,key,128", "core_cmd=1,key,1000", "core_cmd=1,key,1x",
+    "core_cmd=1,key,1,2", "core_cmd=1,bootloader,x", "other_cmd=1,bootloader",
+    "core_cmd=1,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"};
+  for (unsigned i = 0; i < sizeof invalid / sizeof *invalid; ++i) { command(invalid[i]); drain(); }
+  // Complete payload without F7 is inert. Disconnect clears it.
+  command("core_cmd=1,key,49"); --packet_count; drain();
+  mounted = false; midi_comm_task(generic, on, off, start, resume, stop, clock_tick, cc);
+  mounted = true; queue(5, 0xf7, 0, 0); drain();
+  // Malformed continuation must not supply the ending of a prior command.
+  command("core_cmd=1,key,49"); --packet_count; drain();
+  queue(4, 0x01, 0x02, 0x03); queue(5, 0xf7, 0, 0); drain();
+  assert(generic_count == before && stream_writes == writes && resets == reset_before);
+  command("core_cmd=1,key,49"); --packet_count; drain();
+  // New start abandons a partial frame; realtime does not.
+  command("core_cmd=1,hello");
+  for (unsigned i = 0; i + 1 < packet_count; ++i)
+    midi_comm_task(generic, on, off, start, resume, stop, clock_tick, cc);
+  // Insert realtime ahead of the final packet.
+  uint8_t end[4]; memcpy(end, packets[packet_count - 1], 4);
+  memcpy(packets[packet_count - 1], (uint8_t[]){15, 0xf8, 0, 0}, 4);
+  queue(end[0], end[1], end[2], end[3]); drain();
+  assert(strcmp(sysex, "core_caps=1") == 0 && generic_count == before);
+  midi_receive_channel = 1;
+}
+#endif
+
 #if ZV_ENABLED
 static void visualizer_only_probe(void) {}
 static unsigned realtime_written;
@@ -255,6 +360,10 @@ int main(void) {
   ZV_CALL(visualizer_only_probe());
   test_notes();
   test_usb();
+#ifdef INCLUDE_ZEPTOCORE
+  test_receive_channels();
+  test_commands();
+#endif
   test_clock_output();
   printf("MIDI tests passed (MIDI_NOTE_KEY=%d)\n", MIDI_NOTE_KEY);
   return 0;

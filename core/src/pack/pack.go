@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/schollz/_core/core/src/sox"
@@ -16,6 +17,7 @@ import (
 var Storage = "zips"
 
 type Data struct {
+	SettingsMIDIChannel       string   `json:"settingsMidiChannel"`
 	Oversampling              string   `json:"oversampling"`
 	StereoMono                string   `json:"stereoMono"`
 	Resampling                string   `json:"resampling"`
@@ -167,6 +169,15 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		mapping = "1voct"
 	}
 	err = os.WriteFile(path.Join(settingsFolder, "sample_cv_mapping"), []byte(mapping+"\n"), 0666)
+	if err != nil {
+		return
+	}
+
+	channel, parseErr := strconv.Atoi(data.SettingsMIDIChannel)
+	if parseErr != nil || channel < 1 || channel > 16 || strconv.Itoa(channel) != data.SettingsMIDIChannel {
+		channel = 1
+	}
+	err = os.WriteFile(path.Join(settingsFolder, "midi_channel"), []byte(strconv.Itoa(channel)+"\n"), 0666)
 	if err != nil {
 		return
 	}

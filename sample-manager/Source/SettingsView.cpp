@@ -25,6 +25,7 @@ const char *effectHelp[]{"Add saturation and grit.",
                          "Slow playback to a stop like a tape machine."};
 String settingHelp(const card::Setting &setting) {
   static const std::map<String, String> help{
+      {"midi_channel", "Listen for notes and CCs on this MIDI channel. Requires firmware with configurable MIDI receive channel support. Copy the settings to the card and restart Zeptocore to apply."},
       {"brightness", "Set the hardware LED brightness from 0 to 100."},
       {"clock_stop_sync",
        "Stop playback when the external clock stops, and resume when it returns."},
@@ -112,7 +113,8 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
   setLookAndFeel(&look);
   for (const auto &d : card::settingDefinitions()) {
     bool knob =
-        d.key == "knobx_select_sample" || d.key == "mash_mode_momentary";
+        d.key == "knobx_select_sample" || d.key == "mash_mode_momentary" ||
+        d.key == "midi_channel";
     if ((p == 1) != knob)
       continue;
     definitions.push_back(&d);

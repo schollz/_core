@@ -7,6 +7,7 @@ import sys
 import termios
 import time
 from pathlib import Path
+from zeptocore_midi import reset_management
 
 
 MATCH_WORDS = (
@@ -140,9 +141,11 @@ def reset_via_midi(wait, dry_run=False):
     if dry_run:
         return True
 
-    for _ in range(3):
-        subprocess.run(["amidi", "-p", port, "-S", "B00000"], check=False)
-        time.sleep(0.1)
+    try:
+        reset_management(port)
+    except (RuntimeError, OSError, subprocess.SubprocessError) as error:
+        print(f"MIDI reset unavailable: {error}", file=sys.stderr)
+        return False
     time.sleep(wait)
     return True
 

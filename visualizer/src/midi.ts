@@ -1,3 +1,4 @@
+import '../../core/src/server/static/core-midi.js';
 import { decodeMessage, isFresh, type LegacyInfo } from './protocol';
 import type { Playback } from './types';
 import { SampleTransition } from './transition';
@@ -31,6 +32,7 @@ export class MidiConnection {
   private timer?: ReturnType<typeof setInterval>;
   private listeners = new Set<() => void>();
   private generation = 0;
+  private management?: CoreMidiManagement;
   private transition = new SampleTransition();
   constructor(private request = () => navigator.requestMIDIAccess({ sysex: true }), private now = () => performance.now()) {}
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
@@ -52,7 +54,7 @@ export class MidiConnection {
 
   reconnect() {
     // Retry existing permission/access after USB errors or missed port events.
-    if (this.access && (this.state.connection === 'disconnected' || this.state.connection === 'error')) this.refreshPorts();
+    if (this.access && this.state.connection === 'disconnected') this.refreshPorts();
   }
 
   async connect() {
@@ -101,6 +103,7 @@ export class MidiConnection {
       if (token !== this.generation) return;
       input.onmidimessage = event => {
         if (token !== this.generation) return;
+        if (event.data) this.management?.receive(event.data);
         const message = event.data ? decodeMessage(event.data) : null;
         if (!message) return;
         const at = event.timeStamp || this.now();
@@ -122,14 +125,22 @@ export class MidiConnection {
         else this.update({ legacy: message.state, legacyAt: at });
       };
       this.update({ connection: 'connected', connectedAt: this.now(), error: undefined });
+      this.management = new CoreMidiManagement(data => output.send(data),
+        () => { this.update({ connection: 'connected', error: undefined }); },
+        error => this.update({ connection: 'error', error }), this.now);
       const poll = () => {
         try {
-          output.send([0x89, 5, 0]);
-          if (!isFresh(this.state.receivedAt, this.now())) output.send([0x89, 4, 0]);
+          this.management?.tick();
+          if (this.management?.mode) {
+            this.management.command('view');
+            if (!isFresh(this.state.receivedAt, this.now())) this.management.command('info');
+          }
         } catch (error) {
           this.detach(); this.update({ connection: 'disconnected', error: String(error) });
         }
       };
+      try { this.management.start(); }
+      catch (error) { this.detach(); this.update({ connection: 'disconnected', error: String(error) }); return; }
       poll();
       if (token === this.generation) this.timer = setInterval(poll, 500);
     } catch (error) {
@@ -140,6 +151,8 @@ export class MidiConnection {
 
   private detach() {
     this.generation++;
+    this.management?.reset();
+    this.management = undefined;
     this.transition = new SampleTransition();
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;

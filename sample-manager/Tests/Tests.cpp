@@ -11,6 +11,7 @@ void importTests();
 void tempoTests();
 void recoveryTests();
 void managerTests();
+void midiSettingsTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -99,6 +100,10 @@ int runTests(const String &suite) {
       audioTests();
       managerTests();
       recoveryTests();
+      return 0;
+    }
+    if (suite == "midi-settings") {
+      midiSettingsTests();
       return 0;
     }
     if (suite == "tempo") {
@@ -380,6 +385,13 @@ int runTests(const String &suite) {
             "Sample CV mapping never creates competing marker files");
       rejects([] { card::sampleCVMappingContents({{"sample_cv_mapping", "invalid"}}); },
               "Invalid mapping cannot be written");
+      check(card::midiChannelContents({}) == "1\n", "Missing MIDI channel defaults to 1");
+      for (int channel = 1; channel <= 16; ++channel) {
+        const card::Settings midi{{"midi_channel", String(channel)}};
+        check(card::midiChannelContents(midi) == String(channel) + "\n" && card::settingsFiles(midi).empty(),
+              "MIDI channel uses one canonical text setting");
+      }
+      rejects([] { card::midiChannelContents({{"midi_channel", "17"}}); }, "Reject invalid MIDI channel writes");
       for (int effect = 1; effect <= 16; ++effect)
         check(defaults.at("grimoire/rune1/effect" + String(effect)) == (effect == 5 ? "on" : "off"),
               "Default first effect bank enables only Time Stretch");
@@ -418,12 +430,25 @@ int runTests(const String &suite) {
       durableWrite(child(existing.dir, "settings/unrelated.txt"), "keep", 4);
       Storage storage(existing.dir);
       auto adopted = storage.open();
-      check(adopted.settings.size() == 1 && adopted.settings.at("grimoire/rune1/effect1") == "on" &&
+      check(adopted.settings.size() == 2 && adopted.settings.at("midi_channel") == "1" &&
+                adopted.settings.at("grimoire/rune1/effect1") == "on" &&
                 !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
                 child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
             "Opening existing settings preserves chosen effects and unrelated files");
     }
     {
+      Temp midiFolder;
+      juce::StringArray midiWarnings;
+      textFile(child(midiFolder.dir, "midi_channel"), "10\n");
+      check(card::readSettings(midiFolder.dir, midiWarnings).at("midi_channel") == "10", "Root MIDI channel is adopted");
+      for (int channel = 1; channel <= 16; ++channel) {
+        textFile(child(midiFolder.dir, card::midiChannelPath), String(channel) + "\r\n");
+        check(card::readSettings(midiFolder.dir, midiWarnings).at("midi_channel") == String(channel), "Settings override root MIDI channel, including CRLF");
+      }
+      for (auto invalid : {"", "0", "17", "01", "-1", " 2", "1.0", "10x", "12345678901234567890"}) {
+        midiWarnings.clear(); textFile(child(midiFolder.dir, card::midiChannelPath), invalid);
+        check(card::readSettings(midiFolder.dir, midiWarnings).at("midi_channel") == "1" && !midiWarnings.isEmpty(), "Invalid MIDI channel warns and defaults to 1");
+      }
       Temp cardFolder;
       juce::StringArray warnings;
       auto read = [&] { return card::readSettings(cardFolder.dir, warnings); };

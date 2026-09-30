@@ -295,6 +295,56 @@ void sampleCVMappingChecks(const File &workspace) {
             "Undo in an older project restores the default without a schema migration");
   }
 }
+void midiChannelChecks(const File &workspace) {
+  auto root = workspace.getChildFile("midi-channel");
+  require(root.createDirectory().wasOk(), "MIDI settings folder");
+  auto setting = child(root, card::midiChannelPath);
+  {
+    Manager manager; manager.open(root); successful(settle(manager));
+    require(setting.loadFileAsString() == "1\n", "Initial MIDI setting");
+    manager.settings({{"midi_channel", "10"}}); successful(settle(manager));
+    require(setting.loadFileAsString() == "10\n", "Save MIDI channel 10");
+    manager.undo(); successful(settle(manager));
+    require(setting.loadFileAsString() == "1\n", "Undo MIDI setting");
+    manager.redo(); successful(settle(manager));
+    Look look;
+    for (int presentation = 0; presentation < 3; ++presentation) {
+      look.presentation(presentation); SettingsView view(manager, look, presentation);
+      juce::ComboBox *control = nullptr;
+      for (auto *child : view.getChildren())
+        if (auto *combo = dynamic_cast<juce::ComboBox *>(child))
+          if (combo->getTooltip().contains("Listen for notes and CCs")) control = combo;
+      require((control != nullptr) == (presentation == 1), "MIDI channel visible only for Zeptocore");
+      if (control) {
+        require(control->getNumItems() == 16 && control->getText() == "10", "All channels shown including 10");
+        control->setSelectedItemIndex(15, juce::sendNotificationSync); successful(settle(manager));
+        require(setting.loadFileAsString() == "16\n", "UI MIDI selection saved");
+      }
+    }
+    require(manager.snapshot().project.settings.at("midi_channel") == "16", "Hidden presentation preserves MIDI setting");
+    auto copy = workspace.getChildFile("midi-copy"); manager.duplicate(copy); successful(settle(manager));
+    require(child(copy, card::midiChannelPath).loadFileAsString() == "16\n", "Duplicate preserves MIDI setting");
+  }
+  {
+    Manager reopened; reopened.open(root); successful(settle(reopened));
+    require(reopened.snapshot().project.settings.at("midi_channel") == "16", "Reopen MIDI setting");
+    durableWrite(setting, "2\n", 2); reopened.settings({{"midi_channel", "3"}});
+    require(settle(reopened).error.contains("External change") && setting.loadFileAsString() == "2\n", "External MIDI edits are protected");
+  }
+  auto oldRoot = workspace.getChildFile("midi-legacy"); require(oldRoot.createDirectory().wasOk(), "Legacy MIDI folder");
+  {
+    Storage storage(oldRoot); auto legacy = storage.open();
+    legacy.settings.erase("midi_channel"); legacy.fingerprints.erase(card::midiChannelPath);
+    require(child(oldRoot, card::midiChannelPath).deleteFile(), "Remove new setting from legacy fixture");
+    durableJson(child(oldRoot, ".core-manager/project.json"), legacy.json());
+  }
+  {
+    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    legacy.settings({{"midi_channel", "10"}}); successful(settle(legacy));
+    legacy.undo(); successful(settle(legacy));
+    require(child(oldRoot, card::midiChannelPath).loadFileAsString() == "1\n", "Older project undo restores channel 1");
+  }
+}
 void savedName(const File &root, int bank, int slot, const String &name,
                const String &original) {
   auto metadata = names::read(root, bank, slot,
@@ -555,6 +605,13 @@ void nameRecoveryCases(const File &workspace) {
   }
 }
 } // namespace
+void midiSettingsTests() {
+  auto workspace = File::getSpecialLocation(File::tempDirectory).getChildFile("core-midi-settings-" + uuid());
+  require(workspace.createDirectory().wasOk(), "MIDI settings test folder");
+  struct Clean { File root; ~Clean() { root.deleteRecursively(); } } clean{workspace};
+  midiChannelChecks(workspace);
+  std::cout << "PASS MIDI settings save, undo/redo, reopen, visibility, duplication and conflict protection\n";
+}
 void managerTests() {
   auto workspace = File::getSpecialLocation(File::tempDirectory)
                   .getChildFile("core-manager-job-" + uuid());
@@ -566,6 +623,7 @@ void managerTests() {
   historyAvailability(workspace);
   backgroundCompanions(workspace);
   sampleCVMappingChecks(workspace);
+  midiChannelChecks(workspace);
   // Keep independent project fixtures outside the project being duplicated.
   auto root = workspace.getChildFile("project");
   require(root.createDirectory().wasOk(), "Main manager fixture folder");

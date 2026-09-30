@@ -47,7 +47,14 @@ test('connects, renews telemetry, falls back for old firmware and reconnects wit
   const connection = new MidiConnection(async () => access as unknown as MIDIAccess, () => now);
   await connection.connect(); await Promise.resolve(); await Promise.resolve();
   expect(connection.state.connection).toBe('connected');
-  expect(output.send.mock.calls.map((c: unknown[]) => c[0])).toEqual([[0x89, 5, 0], [0x89, 4, 0]]);
+  expect(output.send.mock.calls.map((c: unknown[]) => c[0])).toEqual([CoreMidiManagement.frame('hello')]);
+  now += 500; await vi.advanceTimersByTimeAsync(500);
+  expect(output.send).toHaveBeenLastCalledWith(CoreMidiManagement.frame('hello'));
+  now += 500; await vi.advanceTimersByTimeAsync(500);
+  expect(output.send).toHaveBeenLastCalledWith([0xb0, 1, 0]);
+  input.onmidimessage({ data: sysex('version=v8.0.2'), timeStamp: now });
+  now += 500; await vi.advanceTimersByTimeAsync(500);
+  expect(output.send.mock.calls.slice(-2).map((c: unknown[]) => c[0])).toEqual([[0x89, 5, 0], [0x89, 4, 0]]);
   input.onmidimessage({ data: sysex('info=0,0,120,180,0,0,0'), timeStamp: now });
   expect(connection.state.playback).toBeUndefined(); expect(connection.state.legacy?.bpm).toBe(120);
   input.onmidimessage({ data: sysex('view=1,0,0,0,1,120,1,0,0,1'), timeStamp: now });
@@ -57,8 +64,9 @@ test('connects, renews telemetry, falls back for old firmware and reconnects wit
   expect(connection.state.connection).toBe('disconnected'); expect(input.onmidimessage).toBeNull();
   input.state = output.state = 'connected'; access.onstatechange!(); await Promise.resolve(); await Promise.resolve();
   expect(connection.state.connection).toBe('connected');
+  input.onmidimessage({ data: sysex('core_caps=1'), timeStamp: now });
   output.send.mockClear(); now += 500; await vi.advanceTimersByTimeAsync(500);
-  expect(output.send.mock.calls).toHaveLength(2); // one renewal + one legacy query until a new snapshot
+  expect(output.send.mock.calls.map((c: unknown[]) => c[0])).toEqual([CoreMidiManagement.frame('view'), CoreMidiManagement.frame('info')]);
   connection.dispose(); output.send.mockClear(); await vi.advanceTimersByTimeAsync(1000);
   expect(output.send).not.toHaveBeenCalled();
 });

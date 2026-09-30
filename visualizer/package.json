@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build && vite build --config vite.server.config.ts",
     "preview": "node dist/server.mjs",
-    "test": "vitest run",
+    "test": "vitest run && node ../test/midi/test_management.cjs && node ../test/midi/test_web_midi.cjs && node ../test/midi/test_webtool.cjs",
     "start": "node dist/server.mjs"
   },
   "dependencies": {

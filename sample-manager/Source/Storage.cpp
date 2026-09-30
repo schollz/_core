@@ -319,6 +319,14 @@ Project Storage::open(std::function<void(double)> progress) {
       p.warnings.add("Recovered pending edits from the local recovery copy.");
     }
   }
+  if (p.settings.find("midi_channel") == p.settings.end()) {
+    auto cardSettings = card::readSettings(root, p.warnings);
+    auto found = cardSettings.find("midi_channel");
+    p.settings["midi_channel"] = found == cardSettings.end() ? String("1") : found->second;
+    p.fingerprints[card::midiChannelPath] = fingerprint(child(root, card::midiChannelPath));
+    if (child(root, "midi_channel").exists())
+      p.fingerprints["midi_channel"] = fingerprint(child(root, "midi_channel"));
+  }
   report(0.55);
   std::vector<std::pair<String, String>> checks(p.fingerprints.begin(),
                                                 p.fingerprints.end());
@@ -524,8 +532,10 @@ Project Storage::adopt(bool writeManifest,
     }
   for (const auto &[path, enabled] : card::settingsFiles(p.settings))
     p.fingerprints[path] = fingerprint(child(root, path));
-  p.fingerprints[card::sampleCVMappingPath] =
-      fingerprint(child(root, card::sampleCVMappingPath));
+  for (const auto &[path, contents] : card::textSettingsContents(p.settings))
+    p.fingerprints[path] = fingerprint(child(root, path));
+  if (child(root, "midi_channel").exists())
+    p.fingerprints["midi_channel"] = fingerprint(child(root, "midi_channel"));
   if (child(root, "sample_cv_mapping").exists())
     p.fingerprints["sample_cv_mapping"] = fingerprint(child(root, "sample_cv_mapping"));
   p.validate();
@@ -533,6 +543,7 @@ Project Storage::adopt(bool writeManifest,
     const auto settingsFolder = child(root, "settings");
     if (p.samples.empty() && present.empty() && !settingsFolder.existsAsFile() &&
         !child(root, "sample_cv_mapping").exists() &&
+        !child(root, "midi_channel").exists() &&
         settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
       diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
       p.settings = card::defaultSettings();
@@ -545,12 +556,13 @@ Project Storage::adopt(bool writeManifest,
         if (enabled)
           replacements.push_back({path, marker, "missing", emptyHash});
       }
-      auto mapping = child(root, ".core-manager/cache/sample-cv-mapping");
-      const auto content = card::sampleCVMappingContents(p.settings);
-      durableWrite(mapping, content.toRawUTF8(), size_t(content.getNumBytesAsUTF8()));
-      const auto mappingHash = hashFile(mapping);
-      p.fingerprints[card::sampleCVMappingPath] = mappingHash;
-      replacements.push_back({card::sampleCVMappingPath, mapping, "missing", mappingHash});
+      for (const auto &[path, content] : card::textSettingsContents(p.settings)) {
+        auto textFile = child(root, ".core-manager/cache/" + path.fromLastOccurrenceOf("/", false, false));
+        durableWrite(textFile, content.toRawUTF8(), size_t(content.getNumBytesAsUTF8()));
+        const auto textHash = hashFile(textFile);
+        p.fingerprints[path] = textHash;
+        replacements.push_back({path, textFile, "missing", textHash});
+      }
       // Settings and the first manifest become durable together. Recovery can
       // retry initialization even if rollback left empty settings directories.
       Transaction tx(root);

@@ -80,6 +80,8 @@ else()
 endif()
 enable_testing()
 add_test(NAME manager_contract COMMAND CoreSampleManager --self-test)
+add_test(NAME midi_settings COMMAND CoreSampleManager --self-test midi-settings)
+set_tests_properties(midi_settings PROPERTIES TIMEOUT 60 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 set_tests_properties(manager_contract PROPERTIES TIMEOUT 120 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 
 if(APPLE)

@@ -3,6 +3,8 @@
 #endif
 
 #ifdef INCLUDE_ZEPTOCORE
+#include "midi_receive.h"
+#include "midi_channel_settings.h"
 void printStringWithDelay2(char *str) {
   int len = strlen(str);
   for (int i = 0; i < len; i++) {
@@ -106,6 +108,9 @@ int extractNumber(const char *str) {
 }
 
 void load_settings(const char *dir_name) {
+#ifdef INCLUDE_ZEPTOCORE
+  midi_receive_channel = midi_channel_load(dir_name, midi_receive_channel);
+#endif
 #ifdef INCLUDE_ECTOCORE
   global_sample_cv_mapping =
       sample_cv_load_mapping(dir_name, global_sample_cv_mapping);

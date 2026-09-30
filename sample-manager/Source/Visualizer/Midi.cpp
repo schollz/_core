@@ -38,6 +38,8 @@ void MidiLink::close() {
   head = tail = 0;
   overflow = false;
   state = {};
+  protocol = Protocol::unknown;
+  probeStage = 0;
 }
 void MidiLink::refresh() {
   const auto inputs = juce::MidiInput::getAvailableDevices(),
@@ -67,6 +69,8 @@ void MidiLink::refresh() {
   error.clear();
   input->start();
   polled = -1e9;
+  probingAt = nowMs();
+  sendHello();
 }
 void MidiLink::handleIncomingMidiMessage(juce::MidiInput *,
                                          const juce::MidiMessage &message) {
@@ -110,30 +114,58 @@ void MidiLink::timerCallback() {
       packet = queue[tail];
       tail = (tail + 1) % queue.size();
     }
-    if (packet.data[0] == 0xf0 && packet.size > 2)
-      log.add(juce::String::fromUTF8(
-          reinterpret_cast<const char *>(packet.data.data() + 1),
-          int(packet.size - 2)));
-    else
+    if (packet.data[0] == 0xf0 && packet.size > 2 && packet.data[packet.size - 1] == 0xf7) {
+      auto text = juce::String::fromUTF8(
+          reinterpret_cast<const char *>(packet.data.data() + 1), int(packet.size - 2));
+      log.add(text);
+      if (text == "core_caps=1") { protocol = Protocol::sysex; error.clear(); }
+      else if (probeStage >= 2 && text.startsWith("version=") && text.length() > 8 &&
+               protocol != Protocol::sysex) { protocol = Protocol::legacy; error.clear(); }
+    } else
       log.add(juce::String::toHexString(packet.data.data(), int(packet.size)));
     while (log.size() > 500)
       log.remove(0);
     if (auto m = decode(packet.data.data(), packet.size))
       state.receive(*m, packet.at);
   }
-  if (telemetry && connected() && now - polled >= 500) {
+  if (connected() && protocol == Protocol::unknown) {
+    const auto elapsed = now - probingAt;
+    if (probeStage == 0 && elapsed >= 500) { probeStage = 1; sendHello(); }
+    if (probeStage == 1 && elapsed >= 1000) {
+      probeStage = 2;
+      output->sendMessageNow(juce::MidiMessage::controllerEvent(1, 1, 0));
+    }
+    if (probeStage == 2 && elapsed >= 2000) {
+      probeStage = 3;
+      error = "Device management is unavailable: no protocol response. Reconnect to retry.";
+    }
+  }
+  if (telemetry && connected() && protocol != Protocol::unknown && now - polled >= 500) {
     const uint8_t lease[]{0x89, 5, 0}, legacy[]{0x89, 4, 0};
-    output->sendMessageNow(juce::MidiMessage(lease, 3));
-    if (!fresh(state.receivedAt, now))
-      output->sendMessageNow(juce::MidiMessage(legacy, 3));
+    sendManagement("view", lease);
+    if (!fresh(state.receivedAt, now)) sendManagement("info", legacy);
     polled = now;
   }
 }
+void MidiLink::sendHello() {
+  const juce::String text = "core_cmd=1,hello";
+  output->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+}
+void MidiLink::sendManagement(const juce::String &operation, const uint8_t *legacy) {
+  if (protocol == Protocol::unknown)
+    throw std::runtime_error("Device management is not ready. Wait for protocol detection or reconnect.");
+  if (protocol == Protocol::sysex) {
+    const auto text = "core_cmd=1," + operation;
+    output->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+  } else output->sendMessageNow(juce::MidiMessage(legacy, 3));
+}
+
 void MidiLink::command(int command) {
   if (!connected())
     throw std::runtime_error("Select a connected device first");
   if (command < 0 || command > 1)
     throw std::runtime_error("Unsupported device command");
-  output->sendMessageNow(juce::MidiMessage::controllerEvent(1, command, 0));
+  const uint8_t legacy[]{0xb0, uint8_t(command), 0};
+  sendManagement(command ? "version" : "bootloader", legacy);
 }
 } // namespace zv

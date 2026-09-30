@@ -51,11 +51,28 @@ private:
   void handleIncomingMidiMessage(juce::MidiInput *,
                                  const juce::MidiMessage &m) override {
     const auto *b = m.getRawData();
-    if (m.getRawDataSize() == 3 && b[0] == 0x89 && b[2] == 0) {
-      if (b[1] == 5)
-        ++leases;
-      if (b[1] == 4)
-        ++legacy;
+    auto reply = [this](const juce::String &text) {
+      tx->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+    };
+    if (m.isSysEx()) {
+      auto text = juce::String::fromUTF8(reinterpret_cast<const char *>(m.getSysExData()), m.getSysExDataSize());
+      if (text == "core_cmd=1,hello") {
+        ++hellos;
+        if (!legacyFirmware) reply("core_caps=1");
+      } else if (!legacyFirmware) {
+        if (text == "core_cmd=1,view") ++leases;
+        if (text == "core_cmd=1,info") ++legacy;
+        if (text == "core_cmd=1,version") ++versions;
+        if (text == "core_cmd=1,bootloader") ++resets;
+      }
+    } else if (m.getRawDataSize() == 3) {
+      if (legacyFirmware && b[0] == 0xb0 && b[1] == 1) { ++versions; reply("version=v8.0.2"); }
+      if (legacyFirmware && b[0] == 0xb0 && b[1] == 0) ++resets;
+      if (b[0] == 0x89 && b[2] == 0) {
+        if (!legacyFirmware) ++unexpectedLegacy;
+        if (b[1] == 5) ++leases;
+        if (b[1] == 4) ++legacy;
+      }
     }
   }
   void timerCallback() override {
@@ -75,12 +92,14 @@ private:
           --stage;
           break;
         }
+        link->command(1); link->command(0);
         const juce::String body = "view=2,0,0,1,65535,120,1,0,0,1,17";
         tx->sendMessageNow(juce::MidiMessage::createSysExMessage(
             body.toRawUTF8(), (int)body.getNumBytesAsUTF8()));
         break;
       }
       case 2: {
+        check(versions == 1 && resets == 1 && unexpectedLegacy == 0, "modern management uses SysEx only");
         check(link->state.playback && link->state.playback->trigger == 65535 &&
                   link->state.playback->effects == 17,
               "complete native SysEx reception");
@@ -130,6 +149,7 @@ private:
         break;
       case 6:
         check(leases == before, "last subscriber closes polling");
+        legacyFirmware = true;
         tx = juce::MidiOutput::createNewDevice(name + "-source");
         check(tx != nullptr, "reconnect virtual device");
         startTimer(100);
@@ -141,7 +161,16 @@ private:
         }
         break;
       case 8:
-        check(leases > before, "reconnect resumes polling");
+        if (leases <= before) {
+          check(++attempts < 60, "legacy reconnect negotiates before polling");
+          --stage; break;
+        }
+        check(hellos >= 3 && versions >= 2, "legacy mode requires hello attempts and a version reply");
+        link->command(0);
+        stage = 11;
+        break;
+      case 11:
+        check(resets == 2, "legacy bootloader command after confirmed negotiation");
         stopTimer();
         std::cout << "PASS native MIDI / SysEx, pads, subscriptions, shared "
                      "instances, "
@@ -158,7 +187,8 @@ private:
   }
   std::function<void(int)> finished;
   juce::String name;
-  std::atomic<int> leases{0}, legacy{0};
+  std::atomic<int> leases{0}, legacy{0}, hellos{0}, versions{0}, resets{0}, unexpectedLegacy{0};
+  std::atomic<bool> legacyFirmware{false};
   int stage = 0, before = 0, fallback = 0, attempts = 0;
   juce::MidiDeviceListConnection notifications;
   std::unique_ptr<juce::MidiOutput> tx;

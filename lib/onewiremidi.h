@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include <stdint.h>
+#include "midi_receive.h"
 
 #include "onewiremidi.pio.h"
 
@@ -72,6 +73,7 @@ Onewiremidi *Onewiremidi_new(PIO pio, unsigned char sm, const uint pin,
   self->sm = sm;
   self->status = 0;
   self->previous = 0;
+  self->last_time = 0;
   self->midi_note_on = midi_note_on;
   self->midi_note_off = midi_note_off;
   self->midi_start = midi_start;
@@ -152,14 +154,26 @@ void Onewiremidi_receive_(Onewiremidi *self) {
     msg.data[0] = self->previous ^ DATA0_PRESENT;
     msg.data[1] = b;
     self->previous = 0;
-    if (msg.status == MIDI_NOTE_ON) {
+    if (!midi_receive_matches(msg.status)) return;
+    uint8_t kind = msg.status & 0xf0;
+    if (kind == MIDI_NOTE_ON) {
+#ifdef INCLUDE_ZEPTOCORE
+      if (msg.data[1] == 0) {
+        if (self->midi_note_off != NULL) self->midi_note_off(msg.data[0]);
+        return;
+      }
+#endif
       if (self->midi_note_on != NULL) {
         self->midi_note_on(msg.data[0], msg.data[1]);
       }
-    } else if (msg.status == MIDI_NOTE_OFF) {
+    } else if (kind == MIDI_NOTE_OFF) {
       if (self->midi_note_off != NULL) {
         self->midi_note_off(msg.data[0]);
       }
+#ifdef INCLUDE_ZEPTOCORE
+    } else if (kind == MIDI_CONTROL_CHANGE && self->midi_control_change != NULL) {
+      self->midi_control_change(msg.status & 15, msg.data[0], msg.data[1]);
+#endif
     }
   } else {
     self->previous = b | DATA0_PRESENT;

@@ -1,3 +1,4 @@
+#include "../../lib/midi_channel.h"
 #include "CardFormat.h"
 #include <cstring>
 #include <limits>
@@ -243,6 +244,8 @@ const std::vector<Setting> &settingDefinitions() {
          {"none", "sample", "break", "amen", "clk"},
          "none",
          true},
+        {"midi_channel", "MIDI receive channel",
+         {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"}, "1"},
         {"knobx_select_sample", "Knob selects sample", {"on", "off"}, "off"},
         {"mash_mode_momentary", "Momentary MASH", {"on", "off"}, "off"}};
     defs.front().values.clear();
@@ -276,7 +279,7 @@ Settings defaultSettings() {
 std::map<String, bool> settingsFiles(const Settings &settings) {
   std::map<String, bool> files;
   for (const auto &d : settingDefinitions()) {
-    if (d.key == "sample_cv_mapping")
+    if (d.key == "sample_cv_mapping" || d.key == "midi_channel")
       continue;
     auto found = settings.find(d.key);
     if (found == settings.end())
@@ -304,6 +307,17 @@ String sampleCVMappingContents(const Settings &settings) {
   require(value == "bank" || value == "1voct", "Invalid Sample CV mapping");
   return value + "\n";
 }
+String midiChannelContents(const Settings &settings) {
+  const auto found = settings.find("midi_channel");
+  const auto value = found == settings.end() ? String("1") : found->second;
+  const auto channel = midi_channel_parse(value.toRawUTF8(), size_t(value.getNumBytesAsUTF8()));
+  require(channel && value == String(channel), "Invalid MIDI receive channel");
+  return value + "\n";
+}
+std::map<String, String> textSettingsContents(const Settings &settings) {
+  return {{sampleCVMappingPath, sampleCVMappingContents(settings)},
+          {midiChannelPath, midiChannelContents(settings)}};
+}
 Settings readSettings(const File &root, juce::StringArray &warnings) {
   Settings values;
   auto read = [&](const String &key, const juce::StringArray &choices) {
@@ -320,7 +334,7 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
       values[key] = chosen;
   };
   for (const auto &d : settingDefinitions())
-    if (d.key != "sample_cv_mapping")
+    if (d.key != "sample_cv_mapping" && d.key != "midi_channel")
       read(d.key, d.values);
   // Match firmware precedence: settings/ overrides the root-directory file.
   auto mapping = child(root, sampleCVMappingPath);
@@ -342,6 +356,18 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
     values["sample_cv_mapping"] = octave ? "1voct" : "bank";
     if (!readable || (!octave && !bank))
       warnings.add("Invalid Sample CV mapping; using Bank divisions.");
+  }
+  auto midiFile = child(root, midiChannelPath);
+  if (!midiFile.exists()) midiFile = child(root, "midi_channel");
+  if (midiFile.exists()) {
+    auto input = midiFile.createInputStream();
+    char bytes[16]{};
+    const auto size = input ? input->getTotalLength() : -1;
+    const bool readable = size >= 0 && size <= 16 &&
+                          input->read(bytes, int(size)) == size && input->getStatus().wasOk();
+    auto channel = readable ? midi_channel_parse(bytes, size_t(size)) : 0;
+    values["midi_channel"] = String(channel ? channel : 1);
+    if (!channel) warnings.add("Invalid MIDI receive channel; using channel 1.");
   }
   for (int b = 1; b <= 7; ++b)
     for (int e = 1; e <= 16; ++e)

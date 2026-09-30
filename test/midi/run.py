@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import subprocess
+import sys
 import tempfile
 
 root = Path(__file__).resolve().parents[2]
@@ -25,6 +26,16 @@ for device in ("ectocore", "ezeptocore"):
     configurations[f"{device}_telemetry"] = definitions + ["-DINCLUDE_MIDI=1", "-DZV_HOST_TEST=1", "-DZEPTOCORE_VISUALIZER=1"]
 
 with tempfile.TemporaryDirectory() as directory:
+    serial = (root / "lib/onewiremidi.h").read_text().split("typedef struct midi_message", 1)[1]
+    (Path(directory) / "serial_decoder.h").write_text("typedef struct midi_message" + serial)
+    for name in ("settings", "serial"):
+        exe = str(Path(directory) / ("test-" + name))
+        subprocess.run([
+            os.environ.get("CC", "cc"), "-std=c11", "-O1", "-g", "-Wall", "-Wextra", "-Werror",
+            "-fsanitize=address,undefined", "-DINCLUDE_ZEPTOCORE=1", "-Ilib", "-Itest/sample_cv",
+            f"-I{directory}", f"test/midi/test_{name}.c", "-o", exe,
+        ], cwd=root, check=True)
+        subprocess.run([exe], cwd=directory, check=True, timeout=30)
     for name, defines in configurations.items():
         exe = str(Path(directory) / name)
         telemetry = ["lib/visualizer_telemetry.c"] if name.endswith("_telemetry") else []
@@ -72,3 +83,5 @@ with tempfile.TemporaryDirectory() as directory:
         ], input='#include "visualizer_telemetry.h"\n', cwd=root, text=True, capture_output=True)
         assert result.returncode != 0 and "ZEPTOCORE_VISUALIZER requires" in result.stderr
     print("Visualizer default/OFF/ON and invalid-target checks passed")
+
+subprocess.run([sys.executable, "test/midi/test_bootloader.py"], cwd=root, check=True)

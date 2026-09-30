@@ -40,12 +40,7 @@ upload: resetpico2 changebaud build
 	fi
 
 resetpico2:
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
-	sleep 0.1
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
-	sleep 0.1
-	-amidi -p $$(amidi -l | grep 'zeptocore\|zeptoboard\|ectocore' | awk '{print $$2}') -S "B00000"
-	sleep 0.1
+	python3 ../../scripts/enter_bootsel_1200.py --midi-fallback
 
 changebaud:
 	-curl localhost:7083

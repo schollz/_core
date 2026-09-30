@@ -1,3 +1,9 @@
+var keyboardManagement = null;
+var keyboardManagementTimer = null;
+function keyboardCommand(operation, argument) {
+    try { if (keyboardManagement) keyboardManagement.command(operation, argument); }
+    catch (error) { addToMidiConsole(error.message); }
+}
 var total_slices = 0;
 var time_received_total_slices = 0;
 var key_to_jump = [49, 50, 51, 52, 113, 119, 101, 114,
@@ -74,6 +80,7 @@ function addToMidiConsole(message) {
 function setupMidiInputListener() {
     if (window.inputMidiDevice) {
         window.inputMidiDevice.onmidimessage = (midiMessage) => {
+            if (keyboardManagement) keyboardManagement.receive(midiMessage.data);
             // check if sysex
             if (midiMessage.data[0] == 0xf0) {
                 // convert the sysex to string 
@@ -133,13 +140,26 @@ function setupMidiInputListener() {
     }
 }
 
-function setupMidi() {
+var keyboardProtocolLoading = null;
+function setupMidi(force = false) {
+    if (!globalThis.CoreMidiManagement) {
+        if (!keyboardProtocolLoading) keyboardProtocolLoading = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/static/core-midi.js';
+            script.onload = resolve; script.onerror = reject;
+            document.head.appendChild(script);
+        });
+        keyboardProtocolLoading.then(() => setupMidi(force)).catch(error => console.error(error));
+        return;
+    }
     navigator.requestMIDIAccess({ sysex: true })
         .then((midiAccess) => {
+            if (!force && keyboardManagement && keyboardManagement.started !== null &&
+                window.inputMidiDevice?.state === 'connected' && window.zeptoboardDevice?.state === 'connected') return;
             // Input setup
             const inputs = midiAccess.inputs.values();
             for (let input of inputs) {
-                if (input.name.includes("zeptoboard") || input.name.includes("zeptocore") || input.name.includes("ectocore") || input.name.includes("ezeptocore")) {
+                if (input.state === "connected" && /zeptoboard|zeptocore|ectocore/i.test(input.name || "")) {
                     window.inputMidiDevice = input;
                     setupMidiInputListener();
                     console.log("input device connected");
@@ -151,8 +171,19 @@ function setupMidi() {
             const outputs = midiAccess.outputs.values();
             for (let output of outputs) {
                 // console.log(output.name);
-                if (output.name.includes("zeptoboard") || output.name.includes("zeptocore") || output.name.includes("ectocore") || output.name.includes("ezeptocore")) {
+                if (output.state === "connected" && window.inputMidiDevice?.state === "connected" && /zeptoboard|zeptocore|ectocore/i.test(output.name || "")) {
                     window.zeptoboardDevice = output;
+                    if (keyboardManagementTimer) clearInterval(keyboardManagementTimer);
+                    keyboardManagement = new CoreMidiManagement(data => output.send(data),
+                        () => {}, message => addToMidiConsole(message));
+                    keyboardManagement.start();
+                    keyboardManagementTimer = setInterval(() => keyboardManagement.tick(), 100);
+                    midiAccess.onstatechange = event => {
+                        if (event.port.state === 'disconnected') {
+                            keyboardManagement.reset();
+                            clearInterval(keyboardManagementTimer);
+                        } else if (event.port.state === 'connected') setupMidi();
+                    };
                     // console.log("output device connected");
                     // show modal
                     modal.style.display = "block";
@@ -174,25 +205,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // get bank,sample,tempo
         setInterval(() => {
-            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, 4, 0]);
+            keyboardCommand('info');
         }, 213);
         // get slice info
         setInterval(() => {
-            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, 3, 0]);
+            keyboardCommand('slices');
         }, 517);
         setInterval(() => {
             let current_time = Date.now();
-            if (current_time - time_received_total_slices > 2000) {
+            if (current_time - time_received_total_slices > 4000 &&
+                (!keyboardManagement || keyboardManagement.started === null ||
+                 current_time - keyboardManagement.started > 4000)) {
                 // console.log("reconnecting", current_time - time_received_total_slices);
                 modal.style.display = "none";
-                setupMidi();
+                setupMidi(true);
             }
         }, 673);
 
         // Listen for keypress events
         document.addEventListener('keypress', (e) => {
             console.log(e.key.charCodeAt(0));
-            window.zeptoboardDevice && window.zeptoboardDevice.send([0x89, e.key.charCodeAt(0), 1]);
+            keyboardCommand('key', e.key.charCodeAt(0));
         });
     }
 

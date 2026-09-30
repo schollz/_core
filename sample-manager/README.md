@@ -114,6 +114,20 @@ Ezeptocore and Zeptocore display a header rune from the website's seven symbols,
 
 **Settings** includes brightness, clock behavior, CV behavior/polarity, reset override, product-specific knob/MASH options, and the seven-by-sixteen effect matrix in website order. Changing an exclusive marker replaces its on/off alternatives together.
 
+**MIDI receive channel** appears in Zeptocore Settings. Choose 1–16 (default 1);
+notes and performance CCs on USB and serial MIDI follow this setting. Clock and
+transport remain channel-independent. The manager saves `settings/midi_channel`
+automatically; restart the device with that card to apply it. There is no live
+channel change or Omni mode. Other presentations hide the control and retain
+its value. The web manager writes the same file in full and settings-only packs.
+Older firmware ignores the setting.
+
+Firmware with configurable channels uses SysEx for management so all 16 channels,
+including channel 10, are safe for musical input. Update the manager and firmware
+together: older manager commands no longer work with new Zeptocore firmware.
+This manager detects the protocol and supports older firmware after a read-only
+version query succeeds. See [MIDI channels and management protocol](../docs/midi-slice-triggering.md).
+
 ## Visualizer and local device tools
 
 **Visualizer** is initially off. It opens a dock beside the editor; **Detach** opens a separate window, whose **Full** control enters fullscreen. Close or disable it to stop animation and telemetry lease renewal. Reduced motion is available in the panel and respects macOS's system setting.

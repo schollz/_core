@@ -29,6 +29,12 @@ private:
                                  const juce::MidiMessage &) override;
   void timerCallback() override;
   void close();
+  void sendManagement(const juce::String &operation, const uint8_t *legacy);
+  void sendHello();
+  enum class Protocol { unknown, sysex, legacy };
+  Protocol protocol = Protocol::unknown;
+  double probingAt = 0;
+  int probeStage = 0;
   struct Packet {
     std::array<uint8_t, 128> data{};
     size_t size = 0;
