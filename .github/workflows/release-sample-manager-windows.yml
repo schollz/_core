@@ -15,7 +15,7 @@ concurrency:
 jobs:
   windows:
     name: Build and sign latest release on Windows x64
-    runs-on: [self-hosted, Windows, X64]
+    runs-on: windows-2022
     timeout-minutes: 60
     defaults:
       run:

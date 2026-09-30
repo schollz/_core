@@ -40,9 +40,9 @@ tooling. It has no version input:
 gh workflow run release-sample-manager-windows.yml --repo schollz/_core --ref main
 ```
 
-The workflow uses the registered `[self-hosted, Windows, X64]` runner, which must
-be online with Git, GitHub CLI, Windows PowerShell and Visual Studio's C++ x64,
-CMake and Ninja tools installed. It provisions Python 3.11, .NET 8 and Tape's
+The workflow uses GitHub's hosted `windows-2022` runner, which includes Git,
+GitHub CLI, Windows PowerShell and Visual Studio's C++ x64, CMake and Ninja tools.
+It provisions Python 3.11, .NET 8 and Tape's
 SHA-256-checked portable PowerShell 7.4.13 in runner tool caches. It clones the
 latest tag under `RUNNER_TEMP`, builds a Release executable with the static MSVC
 runtime, and skips application tests.
