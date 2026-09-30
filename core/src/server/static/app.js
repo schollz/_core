@@ -1765,15 +1765,6 @@ window.addEventListener('load', (event) => {
         tippy("#editingKick", {
             content: "Click waveform to add kick trig, hold to drag around."
         });
-        tippy('#windows_core', {
-            content: 'Click to download an offline version of this tool for windows.'
-        });
-        tippy('#macos_core', {
-            content: 'Click to download an offline version of this tool for macs.'
-        });
-        tippy('#linux_core', {
-            content: 'Click to download an offline version of this tool for linux.'
-        });
         tippy('#downloadZipButton', {
             content: 'After downloading, extract the contents to the SD card.',
         });
