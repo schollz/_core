@@ -86,12 +86,12 @@ class ReleaseTests(unittest.TestCase):
         self.git('-C', str(self.repository), 'config', 'user.name', 'Release Test')
         (self.repository / 'README.md').write_text('release predates the app\n')
         self.commit('old release')
-        self.git('-C', str(self.repository), 'tag', 'v8.0.2')
+        self.git('-C', str(self.repository), 'tag', 'v8.0.3')
         project = self.repository / 'sample-manager'
         project.mkdir()
         (project / 'CMakeLists.txt').write_text('PRODUCT_NAME "_core sample manager"\n')
         self.source_commit = self.commit('add app on main')
-        self.release = {'id': 123, 'tag_name': 'v8.0.2', 'html_url': 'https://example.invalid/releases/v8.0.2',
+        self.release = {'id': 123, 'tag_name': 'v8.0.3', 'html_url': 'https://example.invalid/releases/v8.0.3',
                         'draft': False, 'prerelease': False, 'immutable': False}
         self.runner = FixtureRunner(self.release)
         repository_url = patch.object(common, 'REPOSITORY_URL', self.repository.as_uri())
@@ -121,7 +121,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_main_source_is_independent_of_release_tag_and_later_branch_updates(self):
         selection = common.select_release(self.runner)
-        self.assertEqual(selection['release']['version'], '8.0.2')
+        self.assertEqual(selection['release']['version'], '8.0.3')
         self.assertEqual(selection['source']['ref'], 'refs/heads/main')
         self.assertEqual(selection['source']['commit'], self.source_commit)
         self.assertNotEqual(self.advance_main(), self.source_commit)
@@ -135,12 +135,12 @@ class ReleaseTests(unittest.TestCase):
         self.advance_main()
         common.publish(self.runner, output, 'linux-x86_64')
         upload = next(command for command in self.runner.commands if command[:3] == ['gh', 'release', 'upload'])
-        self.assertEqual(upload[3], 'v8.0.2')
+        self.assertEqual(upload[3], 'v8.0.3')
         self.assertIn('--clobber', upload)
         self.assertEqual(len(self.runner.uploaded), 3)
-        self.assertTrue(all(asset.name.startswith('_core-sample-manager-8.0.2-linux-x86_64')
+        self.assertTrue(all(asset.name.startswith('_core-sample-manager-8.0.3-linux-x86_64')
                             for asset in self.runner.uploaded))
-        report = common.read_json(output / '_core-sample-manager-8.0.2-linux-x86_64-manifest.json')
+        report = common.read_json(output / '_core-sample-manager-8.0.3-linux-x86_64-manifest.json')
         self.assertEqual(report['release'], selection['release'])
         self.assertEqual(report['source']['commit'], self.source_commit)
         self.assertEqual(common.read_json(output / 'complete.json')['source'], selection['source'])
@@ -164,7 +164,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertFalse(self.runner.uploaded)
 
     def test_invalid_release_version_is_rejected(self):
-        for tag in ('nightly', 'v256.0.0', 'v8.0.2-rc1'):
+        for tag in ('nightly', 'v256.0.0', 'v8.0.3-rc1'):
             with self.subTest(tag=tag):
                 self.release['tag_name'] = tag
                 with self.assertRaises(common.ReleaseError):
@@ -206,13 +206,13 @@ class ReleaseTests(unittest.TestCase):
                     stack.enter_context(patch.object(native_release.platform, 'machine', return_value='arm64' if platform_name == 'macos-arm64' else 'x86_64'))
                     stack.enter_context(patch.object(sys, 'argv', ['release'] + (['--no-upload'] if no_upload else [])))
                     self.assertEqual(native_release.main(platform_name), 0, runner.messages)
-                    self.assertEqual(package_versions, ['8.0.2'])
+                    self.assertEqual(package_versions, ['8.0.3'])
                     if platform_name == 'macos-x86_64':
                         self.assertIn('--branch main', runner.remote_script)
                         self.assertIn('checkout --detach ' + self.source_commit, runner.remote_script)
-                        self.assertIn('-DCORE_MANAGER_VERSION=8.0.2', runner.remote_script)
+                        self.assertIn('-DCORE_MANAGER_VERSION=8.0.3', runner.remote_script)
                     else:
-                        self.assertTrue(any('-DCORE_MANAGER_VERSION=8.0.2' in command for command in runner.commands))
+                        self.assertTrue(any('-DCORE_MANAGER_VERSION=8.0.3' in command for command in runner.commands))
                     self.assertEqual(bool(runner.uploaded), not no_upload)
                     self.assertEqual((output / 'assets/complete.json').exists(), not no_upload)
 
@@ -230,19 +230,19 @@ class ReleaseTests(unittest.TestCase):
             with patch.object(sys, 'argv', ['release-windows', 'prepare']):
                 self.assertEqual(windows.main(), 0, self.runner.messages)
             environment = dict(line.split('=', 1) for line in github_env.read_text().splitlines())
-            self.assertEqual(environment['CORE_RELEASE_VERSION'], '8.0.2')
+            self.assertEqual(environment['CORE_RELEASE_VERSION'], '8.0.3')
             self.advance_main()
             stack.enter_context(patch.dict(os.environ, environment))
             for operation in ('build', 'package'):
                 with patch.object(sys, 'argv', ['release-windows', operation]):
                     self.assertEqual(windows.main(), 0, self.runner.messages)
             for command in (command for command in self.runner.commands if command[0] == 'powershell'):
-                self.assertEqual(command[command.index('-Version') + 1], '8.0.2')
+                self.assertEqual(command[command.index('-Version') + 1], '8.0.3')
             with patch.object(sys, 'argv', ['release-windows', 'publish', '--assets', str(output / 'assets')]):
                 self.assertEqual(windows.main(), 0, self.runner.messages)
-            report = common.read_json(output / 'assets/_core-sample-manager-8.0.2-windows-x64-manifest.json')
+            report = common.read_json(output / 'assets/_core-sample-manager-8.0.3-windows-x64-manifest.json')
             self.assertEqual(report['source']['commit'], self.source_commit)
-            self.assertEqual(report['version'], '8.0.2')
+            self.assertEqual(report['version'], '8.0.3')
             self.assertEqual(len(self.runner.uploaded), 3)
 
 

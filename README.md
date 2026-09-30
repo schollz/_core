@@ -44,7 +44,7 @@ The firmware for the zeptocore is written in C, and instructions for building it
 
 | Normal | Low latency | Visualizer |
 | --- | --- | --- |
-| [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2.uf2) | [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2_low_latency.uf2) | [v8.0.2 UF2](https://github.com/schollz/_core/releases/download/v8.0.2/zeptocore_v8.0.2_visualizer.uf2) |
+| [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3.uf2) | [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3_low_latency.uf2) | [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3_visualizer.uf2) |
 
 Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
 
@@ -103,12 +103,12 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                            | Low Latency                                                                                                           |
 | ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3.uf2)*                | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_no_overclocking.uf2) | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_no_overclocking_low_latency.uf2) |
 
 *default firmware
 
-For the [visualizer](sample-manager/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ezeptocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](sample-manager/README.md), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
 
 To build and upload the default 441-frame, overclocked firmware with USB MIDI
 visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
@@ -175,10 +175,10 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2.uf2)*                | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking.uf2) | [v8.0.2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3.uf2)*                | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_no_overclocking.uf2) | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_no_overclocking_low_latency.uf2) |
 
-For the [visualizer](sample-manager/README.md), download the [v8.0.2 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.2/ectocore_v8.0.2_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](sample-manager/README.md), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
 
 
 ### diy

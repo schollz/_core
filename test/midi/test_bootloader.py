@@ -13,9 +13,9 @@ class Negotiation(unittest.TestCase):
             if kind == 'modern':
                 return [b'\xf0core_caps=1\xf7']
             if kind == 'legacy' and bytes([0xb0, 1, 0]) in sent:
-                return [b'\xf0version=v8.0.2\xf7']
+                return [b'\xf0version=v8.0.3\xf7']
             if kind == 'both' and bytes([0xb0, 1, 0]) in sent:
-                return [b'\xf0version=v8.0.2\xf7', b'\xf0core_caps=1\xf7']
+                return [b'\xf0version=v8.0.3\xf7', b'\xf0core_caps=1\xf7']
             return []
         return now, sent, receive
     def test_protocols(self):

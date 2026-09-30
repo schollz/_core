@@ -16,7 +16,7 @@ function fixture() {
 const modern = fixture(); modern.link.start();
 assert.deepEqual(modern.sent, [CoreMidiManagement.frame('hello')]);
 assert.throws(() => modern.link.command('bootloader'), /not ready/);
-modern.link.receive(frame('version=v8.0.2')); assert.equal(modern.link.mode, null);
+modern.link.receive(frame('version=v8.0.3')); assert.equal(modern.link.mode, null);
 modern.link.receive(frame('core_caps=1')); assert.equal(modern.link.mode, 'sysex');
 for (const op of ['version', 'bootloader', 'info', 'slices', 'view']) {
     modern.link.command(op); assert.deepEqual(modern.sent.at(-1), CoreMidiManagement.frame(op));

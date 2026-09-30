@@ -22,8 +22,8 @@ The scripts you invoke supply the release tooling. Application sources come
 from the recorded `main` commit, which must contain `sample-manager/CMakeLists.txt`.
 The release tag can predate Sample Manager entirely: no new tag or release is
 needed to publish application updates from `main`. For example, with latest
-release `v8.0.2`, a newer `main` build still reports version `8.0.2` and replaces
-that release's `8.0.2` application assets. The exact source commit is recorded in
+release `v8.0.3`, a newer `main` build still reports version `8.0.3` and replaces
+that release's `8.0.3` application assets. The exact source commit is recorded in
 the manifest so successive builds with the same version remain distinguishable.
 
 Immediately before upload, the scripts resolve latest again and require the

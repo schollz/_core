@@ -52,7 +52,7 @@ test('connects, renews telemetry, falls back for old firmware and reconnects wit
   expect(output.send).toHaveBeenLastCalledWith(CoreMidiManagement.frame('hello'));
   now += 500; await vi.advanceTimersByTimeAsync(500);
   expect(output.send).toHaveBeenLastCalledWith([0xb0, 1, 0]);
-  input.onmidimessage({ data: sysex('version=v8.0.2'), timeStamp: now });
+  input.onmidimessage({ data: sysex('version=v8.0.3'), timeStamp: now });
   now += 500; await vi.advanceTimersByTimeAsync(500);
   expect(output.send.mock.calls.slice(-2).map((c: unknown[]) => c[0])).toEqual([[0x89, 5, 0], [0x89, 4, 0]]);
   input.onmidimessage({ data: sysex('info=0,0,120,180,0,0,0'), timeStamp: now });
