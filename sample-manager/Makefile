@@ -2,6 +2,8 @@ PRESET ?= $(shell if [ "$$(uname -s)" = Darwin ]; then if [ "$$(uname -m)" = arm
 JOBS ?= 6
 VERSION ?= 0.1.0
 LOG_FILE ?= $(CURDIR)/logs/sample-manager.log
+RELEASE_ARGS ?=
+MACOS_RELEASE_HOST ?= zns@192.168.0.44
 BUILD := build/$(PRESET)
 .PHONY: configure build run test package
 configure:
@@ -14,3 +16,12 @@ run:
 	@bash scripts/run-debug.sh "$(PRESET)" "$(JOBS)" "$(VERSION)" "$(LOG_FILE)"
 package:
 	python3 Release/package.py --platform $(PRESET) --version $(VERSION) --jobs $(JOBS)
+
+# Release entrypoints resolve and clone the latest published tag themselves.
+.PHONY: release-macosarm release-macos11 release-linux
+release-macosarm:
+	python3 Release/release-macosarm.py $(RELEASE_ARGS)
+release-macos11:
+	python3 Release/release-macos11.py "$(MACOS_RELEASE_HOST)" $(RELEASE_ARGS)
+release-linux:
+	python3 Release/release-linux.py $(RELEASE_ARGS)

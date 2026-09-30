@@ -1,0 +1,120 @@
+name: Release Core Sample Manager - Windows
+
+# Resolve the latest published release at execution time, independently of the
+# workflow ref. This does not create releases or react to firmware pushes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sample-manager-windows-release
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build and sign latest release on Windows x64
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: powershell
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: release-tools
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Resolve latest release and clone its tagged application source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python release-tools/sample-manager/Release/release-windows.py prepare
+      - name: Build standalone with static MSVC runtime, without application tests
+        run: python release-tools/sample-manager/Release/release-windows.py build
+      - name: Prepare pinned portable PowerShell for Azure signing
+        run: ./release-tools/sample-manager/Release/prepare-signing-windows.ps1
+      - name: Prepare signing runtime
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Authenticode sign and RFC 3161 timestamp standalone
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0, as in Tape
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_CODE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+          files-folder: ${{ env.CORE_RELEASE_SIGN_DIR }}
+          files-folder-filter: exe
+          files-folder-recurse: false
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          exclude-environment-credential: false
+          exclude-workload-identity-credential: true
+          exclude-managed-identity-credential: true
+          exclude-shared-token-cache-credential: true
+          exclude-visual-studio-credential: true
+          exclude-visual-studio-code-credential: true
+          exclude-azure-cli-credential: true
+          exclude-azure-powershell-credential: true
+          exclude-azure-developer-cli-credential: true
+          exclude-interactive-browser-credential: true
+      - name: Require valid timestamped signature and package standalone
+        run: python release-tools/sample-manager/Release/release-windows.py package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sample-manager-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.CORE_RELEASE_ROOT }}/assets/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain build and packaging diagnostics
+        if: always() && env.CORE_RELEASE_ROOT != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-manager-windows-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.CORE_RELEASE_ROOT }}/*.log
+            ${{ env.CORE_RELEASE_ROOT }}/selection.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  publish:
+    name: Upload to the same latest release
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: release-tools
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: sample-manager-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-assets
+      - name: Recheck release, verify package, upload and verify asset digests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python release-tools/sample-manager/Release/release-windows.py publish --assets release-assets
+      - name: Retain publication result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sample-manager-windows-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            release-assets/publish.log
+            release-assets/complete.json
+          if-no-files-found: warn
+          retention-days: 14

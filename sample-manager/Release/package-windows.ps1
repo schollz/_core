@@ -1,9 +1,16 @@
-param([string]$Version = '0.1.0', [switch]$RequireSignature)
+param(
+    [string]$Version = '0.1.0',
+    [switch]$RequireSignature,
+    [string]$SourceRoot = (Split-Path $PSScriptRoot -Parent),
+    [string]$BuildDirectory = '',
+    [string]$OutputDirectory = ''
+)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($Version -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') { throw 'Use major.minor.patch' }
-$project = Split-Path $PSScriptRoot -Parent
-$source = Join-Path $project 'build/windows-x64/CoreSampleManager_artefacts/Release/Core Sample Manager.exe'
+$project = [IO.Path]::GetFullPath($SourceRoot)
+$build = if ($BuildDirectory) { [IO.Path]::GetFullPath($BuildDirectory) } else { Join-Path $project 'build/windows-x64' }
+$source = Join-Path $build 'CoreSampleManager_artefacts/Release/Core Sample Manager.exe'
 if (-not (Test-Path $source)) { throw 'Run build-windows.ps1 first' }
 $actualVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($source).ProductVersion
 if ($actualVersion -notmatch ('^' + [regex]::Escape($Version) + '(?:\.0)?$')) { throw "Expected $Version, found $actualVersion" }
@@ -11,7 +18,8 @@ $signature = Get-AuthenticodeSignature $source
 if ($RequireSignature -and ($signature.Status -ne 'Valid' -or -not $signature.TimeStamperCertificate)) {
     throw 'An explicitly requested signed package requires valid Authenticode and timestamp certificates'
 }
-$out = Join-Path $project ('dist/windows-x64-' + $Version + '-' + (Get-Date -Format 'yyyyMMddTHHmmss'))
+$out = if ($OutputDirectory) { [IO.Path]::GetFullPath($OutputDirectory) } else { Join-Path $project ('dist/windows-x64-' + $Version + '-' + (Get-Date -Format 'yyyyMMddTHHmmss')) }
+if (Test-Path $out) { throw "Package output must be a new directory: $out" }
 $payload = Join-Path $out 'Core Sample Manager'
 $notices = Join-Path $payload 'Notices'
 New-Item -ItemType Directory -Force $notices | Out-Null
@@ -19,8 +27,16 @@ Copy-Item $source $payload
 Copy-Item "$project/LICENSE" "$notices/Application-GPLv3.txt"
 Copy-Item "$project/Vendor/PROVENANCE.md" $notices
 Copy-Item "$project/Vendor/rubberband/COPYING" "$notices/Rubber-Band-GPLv2.txt"
+Copy-Item "$project/Vendor/soundtouch/COPYING.TXT" "$notices/SoundTouch-LGPLv2.1.txt"
 Copy-Item "$project/.cache/deps/juce-src/LICENSE.md" "$notices/JUCE-LICENSE.md"
-Get-ChildItem "$project/Resources/Fonts" -File | Where-Object { $_.Extension -in '.txt','.md' } | Copy-Item -Destination $notices
+foreach ($folder in @('Resources/Fonts', 'Resources/Icons/Lucide')) {
+    # Older application tags may predate the optional Lucide resource folder.
+    if (-not (Test-Path (Join-Path $project $folder))) { continue }
+    Get-ChildItem (Join-Path $project $folder) -File | Where-Object { $_.Extension -in '.txt','.md' } | ForEach-Object {
+        $name = if ($_.Name -eq 'README.md') { (Split-Path $folder -Leaf) + '-README.md' } else { $_.Name }
+        Copy-Item $_.FullName (Join-Path $notices $name)
+    }
+}
 @"
 Core Sample Manager $Version - Windows x64
 Extract this ZIP and open Core Sample Manager.exe. Choose a local folder and import samples.
@@ -31,7 +47,18 @@ Keep the Notices directory. No assets are published by this script.
 "@ | Set-Content "$payload/README.txt" -Encoding utf8
 $archive = Join-Path $out "Core-Sample-Manager-$Version-windows-x64.zip"
 Compress-Archive -Path $payload -DestinationPath $archive
-$manifest = [ordered]@{ application='Core Sample Manager'; version=$Version; platform='windows-x64'; runtime='static MSVC'; signature=$signature.Status.ToString(); publication='disabled; local artifacts only'; juce='9.0.3'; archiveSHA256=(Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() }
+$signatureEvidence = [ordered]@{
+    status = $signature.Status.ToString()
+    publisher = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
+    certificate = if ($signature.SignerCertificate) { $signature.SignerCertificate.Thumbprint } else { $null }
+    timestampCertificate = if ($signature.TimeStamperCertificate) { $signature.TimeStamperCertificate.Thumbprint } else { $null }
+}
+$files = [ordered]@{}
+Get-ChildItem $payload -File -Recurse | ForEach-Object {
+    $relative = $_.FullName.Substring($payload.Length + 1).Replace('\', '/')
+    $files[$relative] = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+}
+$manifest = [ordered]@{ application='Core Sample Manager'; version=$Version; platform='windows-x64'; runtime='static MSVC'; signature=$signatureEvidence; files=$files; publication='disabled; local artifacts only'; juce='9.0.3'; archiveSHA256=(Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() }
 $manifestPath = Join-Path $out 'manifest.json'
 $manifest | ConvertTo-Json -Depth 5 | Set-Content $manifestPath -Encoding utf8
 @($archive,$manifestPath) | ForEach-Object { (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + '  ' + (Split-Path $_ -Leaf) } | Set-Content "$out/SHA256SUMS.txt" -Encoding ascii

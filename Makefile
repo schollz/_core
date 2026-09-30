@@ -510,3 +510,11 @@ sample-manager-run:
 	$(MAKE) -C sample-manager run
 sample-manager-package:
 	$(MAKE) -C sample-manager package
+
+.PHONY: sample-manager-release-macosarm sample-manager-release-macos11 sample-manager-release-linux
+sample-manager-release-macosarm:
+	$(MAKE) -C sample-manager release-macosarm
+sample-manager-release-macos11:
+	$(MAKE) -C sample-manager release-macos11
+sample-manager-release-linux:
+	$(MAKE) -C sample-manager release-linux

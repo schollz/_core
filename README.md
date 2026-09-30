@@ -66,7 +66,7 @@ Previously published standalone visualizer downloads (legacy):
 
 [Core Sample Manager](sample-manager/README.md) is the current native application. Open a local project or card folder, import and edit samples, and wait for **Ready**; hardware files save continuously. Its integrated **Visualizer** follows either the device over USB MIDI or the app’s preview transport. It shares completed project data and keeps a local visualization cache for use after the card is removed. Device mode uses the existing opt-in visualizer firmware.
 
-The app has switchable Ezeptocore, Zeptocore, and Ectocore presentations, offline slicing and pitch-preserving BPM conversion, shared MIDI tools, and explicit local UF2 handling. [Build and package it locally](sample-manager/Release/README.md); no Core Sample Manager release has been published by this change. The former native standalone/AU/VST3 project is retired. The website and [browser/kiosk visualizer](visualizer/) remain available.
+The app has switchable Ezeptocore, Zeptocore, and Ectocore presentations, offline slicing and pitch-preserving BPM conversion, shared MIDI tools, and explicit local UF2 handling. [Build, package, and release it](sample-manager/Release/README.md) using local packaging, the manual signed Windows workflow, or the macOS/Linux release scripts. Releases build a fresh clone of the latest published tag; that tag must contain `sample-manager/`. The former native standalone/AU/VST3 project is retired. The website and [browser/kiosk visualizer](visualizer/) remain available.
 
 
 ## diy
