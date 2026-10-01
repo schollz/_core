@@ -517,4 +517,4 @@ sample-manager-release-linux:
 .PHONY: install
 install:
 	$(MAKE) -C rack $(if $(RACK_DIR),RACK_DIR="$(abspath $(RACK_DIR))") install
-	@echo "Installed Ectocore / Ezeptocore. Restart VCV Rack to load the plugin."
+	@echo "Installed Infinite Digits EZEPTOCORE. Restart VCV Rack to load the plugin."

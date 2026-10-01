@@ -41,7 +41,7 @@ jobs:
           python3 rack/scripts/source.py
       - uses: actions/upload-artifact@v4
         with:
-          name: InfiniteDigitsCore-${{ matrix.arch }}
+          name: InfiniteDigits-${{ matrix.arch }}
           path: |
             rack/dist/*.vcvplugin
             rack/dist/*-source.tar.gz
@@ -71,7 +71,7 @@ jobs:
           python rack/scripts/source.py
       - uses: actions/upload-artifact@v4
         with:
-          name: InfiniteDigitsCore-win-x64
+          name: InfiniteDigits-win-x64
           path: |
             rack/dist/*.vcvplugin
             rack/dist/*-source.tar.gz

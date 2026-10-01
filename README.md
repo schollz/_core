@@ -64,7 +64,7 @@ Previously published standalone visualizer downloads (legacy):
 | macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) |
 | Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) |
 
-[Ectocore / Ezeptocore for VCV Rack 2](rack/README.md) uses the shared firmware engine with switchable panels and reads completed sample-manager exports directly. With the Rack SDK and build tools installed, run `make install` here to build and copy it to Rack's plugin folder, then restart Rack. See its README for setup, loading a sample folder, and the current port boundaries.
+[EZEPTOCORE for VCV Rack 2](rack/README.md) uses the shared firmware engine with an alternate Ectocore panel and reads completed sample-manager exports directly. With the Rack SDK and build tools installed, run `make install` here to build and copy it to Rack's plugin folder, then restart Rack. See its README for setup, loading a sample folder, and the current port boundaries.
 
 [_core sample manager](sample-manager/README.md) is the current native application. Open a local project or card folder, import and edit samples, and wait for **Ready**; hardware files save continuously. Its integrated **Visualizer** follows either the device over USB MIDI or the app’s preview transport. It shares completed project data and keeps a local visualization cache for use after the card is removed. Device mode uses the existing opt-in visualizer firmware.
 

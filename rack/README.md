@@ -1,6 +1,6 @@
-# Ectocore / Ezeptocore for VCV Rack 2
+# EZEPTOCORE for VCV Rack 2
 
-One 8 HP module with the Ectocore and Ezeptocore control layouts. **Ezeptocore appearance** in the module's right-click menu changes the colors and swaps the large Amen/Break knob positions. Parameters, cables, sound, and saved automation keep their identities.
+One 8 HP module with the EZEPTOCORE layout by default. **Ectocore appearance** in the module's right-click menu selects the alternate blue panel and swaps the large Amen/Break knob positions. Parameters, cables, sound, and saved automation keep their identities. The plugin slug is `InfiniteDigits` and the module slug is `EZEPTOCORE`.
 
 The Ectocore panel uses the original website's Odin Rounded Regular typeface by Frank Hemmekam. The font is bundled with the plugin; no system font installation is needed.
 
@@ -11,7 +11,7 @@ The plugin compiles the existing firmware's fixed-point renderer, sixteen effect
 When building from source with the prerequisites below, run `make install` from the repository root (or `make install` inside `rack/`). It builds and packages the plugin, creates Rack's platform-specific plugin directory if needed, and copies the `.vcvplugin` there. Restart Rack afterward.
 
 1. Copy the `.vcvplugin` file for your OS and CPU to your Rack user folder's `plugins-<platform>` directory, then restart Rack. The platform names are `mac-arm64`, `mac-x64`, `win-x64`, and `lin-x64`. Use **Help → Open user folder** to locate it.
-2. Add **Infinite Digits → Ectocore / Ezeptocore**.
+2. Add **Infinite Digits → EZEPTOCORE**.
 3. Right-click its panel and choose **Choose sample folder…**. Select the exported folder containing `bank1`, `bank2`, and so on. Wait for the sample manager to finish preparing the files before loading them.
 4. Connect **L OUT** and **R OUT** to your Rack audio interface. Audio uses ±5 V full scale. Clock and transient outputs use 0/10 V; the clock input uses a 1 V rising threshold and a 0.1 V falling threshold.
 

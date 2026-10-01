@@ -22,7 +22,7 @@ struct Ectocore : engine::Module {
     ecto::Queue<CoreState,8> snapshots;
     CoreState initial{},uiState{},restoreState{};
     bool restorePending=false;
-    std::atomic<bool> ezeptocore{false};
+    std::atomic<bool> ezeptocore{true};
     std::atomic<unsigned> latch{0};
     std::atomic<bool> resetRequested{false};
     std::atomic<unsigned> selectedBank{0},selectedSlot{0};
@@ -139,7 +139,7 @@ struct Ectocore : engine::Module {
     }
     void dataFromJson(json_t *j) override {
         latch=0;for(int p=MODE;p<=TAP;++p)params[p].setValue(0);
-        ezeptocore=json_is_true(json_object_get(j,"ezeptocore"));restoreState=initial;
+        ezeptocore=!json_is_false(json_object_get(j,"ezeptocore"));restoreState=initial;
         restorePending=ecto::stateFromJson(json_object_get(j,"state"),restoreState);hasPatchSettings=restorePending;
         if(restorePending&&!core_engine_set_state(engine,&restoreState))restorePending=hasPatchSettings=false;
         auto *path=json_string_value(json_object_get(j,"folder"));if(path){
@@ -243,16 +243,20 @@ struct EctocoreWidget : app::ModuleWidget {
         addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(28,107)),m,Ectocore::TRIGGER_LIGHT));
         addChild(createLightCentered<SmallLight<GreenLight>>(mm2px(Vec(38,107)),m,Ectocore::CLOCK_LIGHT));
         addChild(createWidget<ScrewSilver>(mm2px(Vec(2,1))));addChild(createWidget<ScrewSilver>(mm2px(Vec(2,123))));
+        setAppearance(m?m->ezeptocore.load():true);
     }
-    void step() override {
-        auto *m=getModule<Ectocore>();bool eze=m&&m->ezeptocore.load();
-        if(m){m->collectUi();bool focused=glfwGetWindowAttrib(APP->window->win,GLFW_FOCUSED);if(wasFocused&&!focused){m->latch=0;for(int p=Ectocore::MODE;p<=Ectocore::TAP;++p)m->params[p].setValue(0);}wasFocused=focused;}
+    void setAppearance(bool eze) {
         for(auto *r:runes)r->visible=!eze;
         face->eze=eze;for(auto *k:knobs)k->eze=eze;for(auto *b:buttons)b->eze=eze;for(auto *p:ports)p->eze=eze;
         if(eze!=lastEze){
             Vec top=mm2px(Vec(20.32f,24)),side=mm2px(Vec(8.5f,50));
             for(unsigned i:{0u,2u}){bool big=(eze?i==2:i==0);knobs[i]->box.size=mm2px(Vec(big?16:12,big?16:12));knobs[i]->box.pos=(big?top:side)-knobs[i]->box.size.div(2);}lastEze=eze;
         }
+    }
+    void step() override {
+        auto *m=getModule<Ectocore>();
+        if(m){m->collectUi();bool focused=glfwGetWindowAttrib(APP->window->win,GLFW_FOCUSED);if(wasFocused&&!focused){m->latch=0;for(int p=Ectocore::MODE;p<=Ectocore::TAP;++p)m->params[p].setValue(0);}wasFocused=focused;}
+        setAppearance(m?m->ezeptocore.load():true);
         ModuleWidget::step();
     }
     void appendContextMenu(ui::Menu *menu) override {
@@ -262,7 +266,7 @@ struct EctocoreWidget : app::ModuleWidget {
         menu->addChild(createMenuItem("Reload sample folder","",[m]{auto path=m->getFolder();if(!path.empty())m->storage.load(path,m->selectedBank.load());}));
         menu->addChild(createMenuItem("Import settings from sample folder","",[m]{auto path=m->getFolder();if(!path.empty())m->storage.load(path,m->selectedBank.load(),true);}));
         menu->addChild(createMenuItem("Reveal sample folder","",[m]{auto path=m->getFolder();if(!path.empty())system::openDirectory(path);}));
-        menu->addChild(createCheckMenuItem("Ezeptocore appearance","",[m]{return m->ezeptocore.load();},[m]{m->ezeptocore=!m->ezeptocore.load();}));
+        menu->addChild(createCheckMenuItem("Ectocore appearance","",[m]{return !m->ezeptocore.load();},[m]{m->ezeptocore=!m->ezeptocore.load();}));
         menu->addChild(createMenuItem("Release held buttons","",[m]{m->latch=0;}));
         menu->addChild(createMenuItem("Reboot module","",[m]{m->resetRequested=true;}));
         menu->addChild(createMenuLabel("Bank "+std::to_string(m->selectedBank+1)+" · Sample "+std::to_string(m->selectedSlot+1)));
@@ -283,5 +287,5 @@ struct EctocoreWidget : app::ModuleWidget {
         }));
     }
 };
-Model *modelEctocore=createModel<Ectocore,EctocoreWidget>("Ectocore");
-void init(Plugin *p){pluginInstance=p;p->addModel(modelEctocore);}
+Model *modelEzeptocore=createModel<Ectocore,EctocoreWidget>("EZEPTOCORE");
+void init(Plugin *p){pluginInstance=p;p->addModel(modelEzeptocore);}

@@ -3,9 +3,9 @@
 from pathlib import Path
 import hashlib,json,tarfile,io
 root=Path(__file__).resolve().parents[2]
-version=json.loads((root/'rack/plugin.json').read_text())['version']
+plugin=json.loads((root/'rack/plugin.json').read_text())
 output=root/'rack/dist';output.mkdir(exist_ok=True)
-name=f'InfiniteDigitsCore-{version}-source'
+name=f"{plugin['slug']}-{plugin['version']}-source"
 files=[root/'LICENSE',root/'Makefile',root/'main.c',root/'.github/workflows/build-rack.yml']
 files+=list((root/'lib').glob('*.h'))+[root/'lib/pcg_basic.c']
 for directory in ['lib/core_engine','rack','test/rack']:
