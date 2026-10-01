@@ -1,0 +1,20 @@
+Odin Rounded Regular
+Copyright (c) 2013 by Frank Hemmekam. All rights reserved.
+Odin Bold is a trademark of Frank Hemmekam.
+Designer: Frank Hemmekam
+Designer URL: https://www.behance.net/hemmekam
+Original project: https://www.behance.net/gallery/13437769/Odin-Rounded-Free-font
+
+Source: sample-manager/Resources/Fonts/odin-rounded.regular.otf in this repository.
+The native SFNT container was reconstructed from the repository's website WOFF
+tables without changing glyph data. This plugin bundles that file unchanged.
+
+The January 7, 2025 archive of getectocore.com explicitly uses Odin Rounded,
+normal style, weight 400, from odin-rounded.regular.3106f89e.woff:
+https://web.archive.org/web/20250107143857id_/https://getectocore.com/index.b1d5ec91.css
+
+The font's embedded license metadata reads:
+"Contact the designer for more information."
+
+The font retains its own copyright and notices; the plugin's GPL license does
+not replace them.

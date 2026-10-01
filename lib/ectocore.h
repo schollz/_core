@@ -164,7 +164,7 @@ void ws2812_set_wheel_section(WS2812 *ws2812, uint8_t val, uint8_t max,
   debounce_ws2812_set_wheel = debounce_ws2812_set_wheel_time;
   ws2812_wheel_clear(ws2812);
 
-  static uint8_t n = 16;
+  enum { n = 16 };
   bool rhythm[n];
   uint8_t arr[n];
 
@@ -523,6 +523,7 @@ bool break_set(int16_t val, bool ignore_taptempo_btn, bool show_wheel) {
     hue_to_rgb2(val2, &r, &g, &b);
     ws2812_set_wheel2(ws2812, val, r, g, b);
   }
+  return false;
 }
 
 void dust_1() {

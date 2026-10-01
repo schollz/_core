@@ -512,3 +512,9 @@ sample-manager-release-macos11:
 	$(MAKE) -C sample-manager release-macos11
 sample-manager-release-linux:
 	$(MAKE) -C sample-manager release-linux
+
+# Package and install the VCV Rack plugin using the SDK's platform-specific path.
+.PHONY: install
+install:
+	$(MAKE) -C rack $(if $(RACK_DIR),RACK_DIR="$(abspath $(RACK_DIR))") install
+	@echo "Installed Ectocore / Ezeptocore. Restart VCV Rack to load the plugin."

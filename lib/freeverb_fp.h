@@ -200,8 +200,8 @@ void FV_Reverb_set_damp(FV_Reverb *self, int32_t damp) {
 void FV_Reverb_set_wet(FV_Reverb *self, int32_t wet) {
   self->wet = q16_16_multiply(wet, FV_SCALEWET);
   self->dry = q16_16_multiply(Q16_16_1 - wet, FV_SCALEDRY);
-  self->wet1 = self->wet * (self->width / 2 + 0.5);
-  self->wet2 = self->wet * ((1 - self->width) / 2);
+  self->wet1 = q16_16_multiply(self->wet, self->width / 2 + Q16_16_0_5);
+  self->wet2 = q16_16_multiply(self->wet, (Q16_16_1 - self->width) / 2);
 }
 
 FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
@@ -227,8 +227,8 @@ FV_Reverb *FV_Reverb_malloc(int32_t roomsize, int32_t damp, int32_t wet,
   self->damp = q16_16_multiply(damp, FV_SCALEDAMP);
   self->wet = q16_16_multiply(wet, FV_SCALEWET);
   self->dry = q16_16_multiply(dry, FV_SCALEDRY);
-  self->wet1 = self->wet * (self->width / 2 + 0.5);
-  self->wet2 = self->wet * ((1 - self->width) / 2);
+  self->wet1 = q16_16_multiply(self->wet, self->width / 2 + Q16_16_0_5);
+  self->wet2 = q16_16_multiply(self->wet, (Q16_16_1 - self->width) / 2);
 
   self->gain =
       q16_16_float_to_fp(1.0 / (float)(num_combs + num_allpasses) / 6.0f);

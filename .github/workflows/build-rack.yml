@@ -1,0 +1,78 @@
+name: Build Rack plugin
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['rack/**', 'lib/**', 'main.c', 'test/rack/**', '.github/workflows/build-rack.yml']
+  push:
+    branches: [main]
+    paths: ['rack/**', 'lib/**', 'main.c', 'test/rack/**', '.github/workflows/build-rack.yml']
+permissions:
+  contents: read
+jobs:
+  unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-14, arch: mac-arm64}
+          - {os: macos-15-intel, arch: mac-x64}
+          - {os: ubuntu-22.04, arch: lin-x64}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: {python-version: '3.12'}
+      - name: Install build tools
+        run: |
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            brew install jq zstd
+          else
+            sudo apt-get update
+            sudo apt-get install -y clang g++ make jq zstd libx11-6 libgl1 libasound2
+          fi
+      - run: python3 rack/scripts/sdk.py ${{ matrix.arch }}
+      - name: Engine and storage checks
+        run: python3 test/rack/run.py --sanitize address,undefined
+      - name: Build and integration checks
+        run: |
+          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" -j4
+          python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
+          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" dist
+          python3 rack/scripts/source.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: InfiniteDigitsCore-${{ matrix.arch }}
+          path: |
+            rack/dist/*.vcvplugin
+            rack/dist/*-source.tar.gz
+          if-no-files-found: error
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run: {shell: 'msys2 {0}'}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make jq zstd
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-clang
+            mingw-w64-x86_64-python
+      - run: python rack/scripts/sdk.py win-x64
+      - name: Engine, storage, and plugin
+        run: |
+          CC=gcc CXX=g++ python test/rack/run.py
+          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++ -j4
+          # The Windows SDK supplies an import library, not the Rack runtime DLL.
+          # Runtime listening/GUI checks require an installed Rack application.
+          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++ dist
+          python rack/scripts/source.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: InfiniteDigitsCore-win-x64
+          path: |
+            rack/dist/*.vcvplugin
+            rack/dist/*-source.tar.gz
+          if-no-files-found: error

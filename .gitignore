@@ -105,3 +105,11 @@ test/**/__pycache__/
 /zeptocore_nooverclock_visualizer.uf2
 /ezeptocore_visualizer.uf2
 /ectocore_visualizer.uf2
+
+# VCV Rack native builds and local SDKs
+/rack/build/
+/rack/dist/
+/rack/plugin.dylib
+/rack/plugin.so
+/rack/plugin.dll
+/lib/core_engine/__pycache__/

@@ -1,0 +1,101 @@
+# Ectocore / Ezeptocore for VCV Rack 2
+
+One 8 HP module with the Ectocore and Ezeptocore control layouts. **Ezeptocore appearance** in the module's right-click menu changes the colors and swaps the large Amen/Break knob positions. Parameters, cables, sound, and saved automation keep their identities.
+
+The Ectocore panel uses the original website's Odin Rounded Regular typeface by Frank Hemmekam. The font is bundled with the plugin; no system font installation is needed.
+
+The plugin compiles the existing firmware's fixed-point renderer, sixteen effects, clock/trigger logic, CV interpretation, performance gestures, and LED logic from `../lib`. It does not run the sample manager or convert samples. This initial version targets Rack 2.6.6 and later compatible Rack 2 releases. MIDI is deferred.
+
+## Install and play
+
+When building from source with the prerequisites below, run `make install` from the repository root (or `make install` inside `rack/`). It builds and packages the plugin, creates Rack's platform-specific plugin directory if needed, and copies the `.vcvplugin` there. Restart Rack afterward.
+
+1. Copy the `.vcvplugin` file for your OS and CPU to your Rack user folder's `plugins-<platform>` directory, then restart Rack. The platform names are `mac-arm64`, `mac-x64`, `win-x64`, and `lin-x64`. Use **Help → Open user folder** to locate it.
+2. Add **Infinite Digits → Ectocore / Ezeptocore**.
+3. Right-click its panel and choose **Choose sample folder…**. Select the exported folder containing `bank1`, `bank2`, and so on. Wait for the sample manager to finish preparing the files before loading them.
+4. Connect **L OUT** and **R OUT** to your Rack audio interface. Audio uses ±5 V full scale. Clock and transient outputs use 0/10 V; the clock input uses a 1 V rising threshold and a 0.1 V falling threshold.
+
+The Sample/Tunnel knob selects samples. Break controls effect probability, Grimoire/Effects selects one of seven effect banks, Amen controls sequence behavior, and Random/Jump controls jump probability or the Amen CV range. The firmware's Mode, Mult, Bank, and Tap button combinations and shifted knob functions remain available. See the hardware manuals in the repository's main README for their complete performance mappings.
+
+A mouse can hold one button while turning a knob. For combinations involving multiple buttons, right-click a button and select **Temporarily hold**; an orange outline shows the hold. Release it from the same menu or use **Release held buttons** on the module menu. Holds clear when Rack loses focus, when a patch loads, and when the module reboots. They are never saved in a patch.
+
+CV inputs are calibrated virtual inputs: nominal bipolar −5 to +5 V and unipolar 0 to +5 V are translated to the original ADC scale and then pass through the original control processing. Cable presence comes from Rack. **Device settings** controls polarity, Amen CV behavior, sample mapping (Bank divisions or 1 V/oct), reset-input assignment, clock behavior, and brightness. **Grimoire / effect banks** edits the seven-by-sixteen effect matrix.
+
+## Prepared sample folders
+
+A typical export is:
+
+```
+my-card/
+  bank1/
+    0.0.wav
+    0.0.wav.info
+    0.1.wav
+    0.1.wav.info
+    0.name.json          # optional; not needed for playback
+    15.0.wav            # sparse slots are supported
+    ...
+  bank16/
+    ...
+  settings/
+    brightness-50
+    amen_cv-bipolar
+    sample_cv_mapping
+    grimoire/rune1/effect1-on
+    ...
+```
+
+The reader accepts the manager's PCM16 mono/stereo files at 44.1 or 88.2 kHz, metadata versions 0 and 1, up to 16 banks and 16 slots per bank, up to 255 slices, and 16 transient markers per lane. It validates the RIFF chunks, metadata boundaries, channel/rate agreement, circular half-second head/tail padding, and eight-times companion size. A companion is required except for a non-tempo-matched one-shot. Optional `.name.json` files are ignored in this version; the menu identifies samples by bank and slot.
+
+A malformed entry is skipped with a message in the module menu. Other valid samples remain available. If a new folder cannot load, the previous bank stays playable. The active primary bank is loaded into RAM by a worker. Companions use a per-module **64 MiB** page cache and background reads. During a cache miss the output fades to silence and recovers with a short fade when data arrives; the musical clock continues. Fast, local storage is recommended for long companions and rapid random seeks. Bank changes are asynchronous, with the previous bank available until the next bank is ready; the new bank starts at its loop boundary.
+
+The plugin opens the source folder for reading only. It does not write WAVs, `.info` files, settings, caches, savefiles, or seek maps there. **Reload sample folder** rereads files while retaining patch settings. Choosing a different folder imports that folder's settings. **Import settings from sample folder** explicitly replaces the patch's device settings and effect banks. Missing rune directories get the engine's initial random effect-bank assignments, matching the firmware's fallback.
+
+## Patches and resets
+
+Rack saves the absolute folder path, panel choice, knob parameters, sample selection, tempo/division, transport/mute, device settings, effect parameters, effect banks, sequence, and random-generator state. The schema uses named JSON fields and explicit integer ranges, so it does not depend on C struct layout or CPU architecture. Unknown future fields are ignored; invalid known values are rejected.
+
+The sample folder is external: move it with your patch, then use **Choose sample folder…** to relink it. Reverb/delay buffers, stream-cache contents, current sample phase, button holds, and hardware flash contents are not embedded. Playback restarts from a loop boundary on reload. **Reboot module** recreates the engine on a worker, including when the module has no UI. Rack's Initialize command also resets the Rack parameters.
+
+## Build
+
+Build from this repository or the matching source archive. Required tools: Python 3, Clang with JSON AST support, a C/C++17 compiler, GNU Make, jq, and zstd. macOS also needs the Xcode command-line tools; Linux/Windows builds use the corresponding Rack SDK and native toolchain. Generation must run for the target OS, since the generated translation unit contains that platform's C library declarations.
+
+From the repository root on Apple Silicon:
+
+```sh
+python3 rack/scripts/sdk.py mac-arm64
+make install -j4
+python3 rack/scripts/source.py
+```
+
+`make install` finds the SDK downloaded into `artifacts/rack-sdk/Rack-SDK`, with `artifacts/Rack-SDK` as a fallback. To use another SDK, pass `RACK_DIR=/path/to/Rack-SDK`; a relative path is resolved from the directory where you run Make. To package without installing, use `make -C rack dist`.
+
+The SDK chooses the destination from the build's OS and CPU: `~/Library/Application Support/Rack2/plugins-mac-arm64/` on Apple Silicon, `plugins-mac-x64/` alongside it on Intel Macs, `$XDG_DATA_HOME/Rack2/plugins-lin-x64/` on Linux (default `~/.local/share/Rack2/plugins-lin-x64/`), and `$LOCALAPPDATA/Rack2/plugins-win-x64/` on Windows. For a custom Rack user folder, run `make install RACK_USER_DIR="/absolute/path/to/Rack2"`. No `sudo` is needed.
+
+Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
+
+`make dist` signs macOS binaries ad hoc and adjusts their Rack-library path. Install packaged artifacts instead of copying a raw `plugin.dylib`: a raw SDK-linked binary can load a second Rack library. No developer certificate is required for the local build. No notarization, VCV Library submission, or public release is performed by these scripts.
+
+## Architecture and verification
+
+`lib/core_engine/prepare.py` expands the original musical headers, substitutes the desktop hardware boundary, converts the perpetual input loop to a timed step, and uses Clang declaration/reference identities to move mutable globals and persistent locals into `CoreEngine`. The generated state-field inventory is written alongside the generated C. A scoped thread-local pointer selects the current instance only during a synchronous engine call; musical state is owned by each instance. Calls for a given engine must not run concurrently, as with Rack's normal per-module processing contract.
+
+The engine runs at 44,100 frames/sec with the original 441-frame renderer. The host advances its clock from audio frames and compensates for the firmware's hardware timer calibration. Rack's Speex converter handles output resampling. File parsing, primary-bank allocation, companion reads, engine allocation and reclamation happen off the audio thread. The audio path uses fixed queues, atomics, resident buffers, and nonblocking cache reads. Source I/O and errors are handled by the storage worker.
+
+Run:
+
+```sh
+python3 test/rack/run.py
+python3 test/rack/run.py --sanitize undefined
+python3 test/rack/run.py --sanitize address,undefined
+python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
+```
+
+The standalone suite exercises all sixteen effect paths with CV/buttons/clock input, deterministic interleaving and parallel processing of independent engines, thread migration, state validation, settings updates, truncated metadata, sparse slots across all sixteen banks, mono 88.2 kHz samples, missing-folder recovery, and companion reads beyond the cache size against file bytes. It checks source-folder hashes before and after loading. The Rack integration suite checks audible finite output at 32/44.1/48/96/192 kHz, skin and state serialization, and headless reboot. Existing DSP, audio-source and sample-CV regression suites remain applicable.
+
+This is a source-sharing desktop port, not an assertion of measured analog equivalence: ADC noise, DAC output circuitry, hardware bootloader/calibration storage, and USB/TRS MIDI are outside this release. A hardware capture comparison and Windows/Linux runtime listening checks remain release qualification steps. The implementation shares the hardware control paths, but the automated suite does not exhaust every possible button timing combination.
+
+## License
+
+GPL-3.0-only. See `LICENSE.txt` and `THIRD_PARTY.md`. Ship matching source alongside binary packages. No sample packs are bundled.

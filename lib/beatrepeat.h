@@ -95,7 +95,7 @@ void BeatRepeat_process(BeatRepeat *self, int16_t *samples,
       self->repeat_index++;
       if (self->repeat_index == self->repeat_end) {
         self->repeat_index = self->repeat_start;
-      } else if (self->repeat_index > BEATREPEAT_RINGBUFFER_SIZE) {
+      } else if (self->repeat_index >= BEATREPEAT_RINGBUFFER_SIZE) {
         self->repeat_index = 0;
       }
       samples[ii] = sample;

@@ -1,0 +1,17 @@
+{
+  "slug": "InfiniteDigitsCore",
+  "name": "Infinite Digits Core",
+  "version": "2.0.0",
+  "license": "GPL-3.0-only",
+  "brand": "Infinite Digits",
+  "author": "Zack Scholl",
+  "authorUrl": "https://infinitedigits.co",
+  "sourceUrl": "https://github.com/schollz/_core",
+  "manualUrl": "https://github.com/schollz/_core/blob/main/rack/README.md",
+  "modules": [{
+    "slug": "Ectocore",
+    "name": "Ectocore / Ezeptocore",
+    "description": "The original fixed-point sample mangler, with switchable Ectocore and Ezeptocore panels",
+    "tags": ["Sampler", "Sequencer", "Random", "Effect"]
+  }]
+}
