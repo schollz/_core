@@ -104,6 +104,9 @@ void backgroundCompanions(const File &workspace) {
     secondId = ready.project.samples[1].id;
     AudioProcessing audio;
     for (const auto &sample : ready.project.samples) {
+      require(!ready.renderStatus(sample.id).pending &&
+                  ready.renderStatus(sample.id).completed.duration() == 8.,
+              "Completed primary duration stays ready while companions are pending");
       require(ready.completedProject.find(sample.id) && sample.companionPending &&
                   sample.completedRevision == sample.revision && ready.editorWaveform(sample.id) &&
                   audio.reader(child(root, sample.rendered))->lengthInSamples == 44100 * 8 &&
@@ -193,6 +196,8 @@ void backgroundCompanions(const File &workspace) {
                 !state.busy && !state.backgroundBusy && state.pendingCompanions > 0 &&
                 state.editorWaveform(id) && foreign.loadFileAsString() == "foreign",
             "Companion failure preserves the usable editor and external files");
+    require(!state.renderStatus(id).pending && !state.renderStatus(id).failed,
+            "A failed companion never marks the completed primary as failed or rendering");
     manager.edit(id, "Rename during companion failure", [](Sample &s) { s.name = "Still usable"; });
     state = settle(manager, false);
     require(state.error.isEmpty() && state.project.find(id)->name == "Still usable" &&

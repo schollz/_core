@@ -13,6 +13,58 @@ String infoSettings(const Sample &s) {
   return juce::JSON::toString(fields);
 }
 } // namespace
+String SampleRenderStatus::text() const {
+  const auto separator = String::fromUTF8(" · ");
+  String result = "Original: " + String(original, 2) + " s" + separator;
+  if (pending && !failed)
+    return result + "Target: " + String(target, 2) + String::fromUTF8(" s (rendering…)");
+  if (completed.frames > 0) {
+    result += String(failed ? "Last rendered: " : "Rendered: ") +
+              String(completed.duration(), 2) + " s";
+    if (failed)
+      result += separator + "Update failed";
+    return result + separator + String(completed.rate / 1000., 1) + " kHz output";
+  }
+  if (failed && completed.path.isNotEmpty())
+    return result + "Last rendered: unavailable" + separator + "Update failed";
+  return result + (failed ? "Target: " + String(target, 2) +
+                               " s (update failed; no completed render)"
+                         : "Rendered: unavailable");
+}
+String SampleRenderStatus::tooltip() const {
+  return text() + "\nOriginal is the imported audio duration. Target uses Source BPM / Render BPM. "
+                  "Rendered is the actual completed, unpadded audio heard in preview. "
+                  "The saved hardware WAV has an additional half-second of circular padding "
+                  "at each end (one second total).";
+}
+String SampleRenderStatus::previewTooltip() const {
+  if (completed.path.isEmpty())
+    return failed ? "The render update failed. No completed render is available for preview."
+                  : "Preview will be available when the first render completes.";
+  String result = failed ? "The render update failed. " : pending ? "Rendering update. " : "";
+  result += "Preview uses the last completed render";
+  if (completed.frames > 0)
+    result += " (" + String(completed.duration(), 2) + " s)";
+  return result + ". Play the selected sample, or stop the current preview. Space.";
+}
+SampleRenderStatus ManagerState::renderStatus(const String &sampleId) const {
+  SampleRenderStatus result;
+  if (const auto *sample = project.find(sampleId)) {
+    result.original = sample->sourceDuration;
+    result.target = sample->sourceDuration * sample->ratio();
+    const auto *previous = completedProject.find(sampleId);
+    result.pending = !previous || previous->rendered.isEmpty() ||
+                     audioKey(*sample) != audioKey(*previous);
+    result.failed = result.pending && primaryUpdateFailed;
+    if (previous) {
+      result.completed.path = previous->rendered;
+      const auto cached = completedAudio.find(sampleId);
+      if (cached != completedAudio.end() && cached->second.path == previous->rendered)
+        result.completed = cached->second;
+    }
+  }
+  return result;
+}
 std::shared_ptr<const zv::Wave> ManagerState::editorWaveform(const String &sampleId) const {
   const auto *sample = project.find(sampleId);
   if (!sample)
@@ -73,6 +125,8 @@ void Manager::publish(String status, String error) {
     std::lock_guard<std::mutex> lock(mutex);
     state.project = project;
     state.completedProject = committed;
+    state.completedAudio = completedAudio;
+    state.primaryUpdateFailed = failed && dirty;
     state.library = libraryState;
     state.sourceWaveforms = sourceWaveforms;
     state.importedSampleId = importedSampleId;
@@ -83,7 +137,7 @@ void Manager::publish(String status, String error) {
     state.companionError = companionError;
     state.pendingCompanions = pending;
     state.backgroundBusy = pending > 0 && companionError.isEmpty() && !failed;
-    state.busy = commandRunning || !commands.empty() || (dirty && !failed);
+    state.busy = foregroundRunning || !commands.empty() || (dirty && !failed);
     state.available = storage && storage->root.isDirectory();
     state.canUndo = history.canUndo();
     state.canRedo = history.canRedo();
@@ -130,8 +184,10 @@ void Manager::run() {
       if (!commands.empty()) {
         command = std::move(commands.front());
         commands.pop_front();
-        commandRunning = true;
       }
+      // Primary audio can be committed before waveform preparation finishes.
+      // Publishing that completion must not make the whole manager idle early.
+      foregroundRunning = bool(command) || (dirty && !failed);
       generation = serial.load();
     }
     try {
@@ -159,7 +215,7 @@ void Manager::run() {
     }
     {
       std::lock_guard<std::mutex> lock(mutex);
-      commandRunning = false;
+      foregroundRunning = false;
       state.busy = !commands.empty() || (dirty && !failed);
     }
     sendChangeMessage();
@@ -193,6 +249,7 @@ void Manager::open(const File &root) {
     project = std::move(loaded);
     companionError.clear();
     sourceWaveforms.clear();
+    completedAudio.clear();
     importedSampleId.clear();
     committed =
         Project::fromJson(parseJson(child(root, ".core-manager/project.json")));
@@ -621,10 +678,31 @@ void Manager::reconcile() {
     publish(dirty ? "Processing" : "Ready");
   });
 }
+void Manager::prepareCompletedAudio() {
+  std::map<String, CompletedAudio> next;
+  for (const auto &sample : committed.samples) {
+    if (sample.protectedEntry || sample.rendered.isEmpty())
+      continue;
+    const auto cached = completedAudio.find(sample.id);
+    if (cached != completedAudio.end() && cached->second.path == sample.rendered) {
+      next.emplace(sample.id, cached->second);
+      continue;
+    }
+    try {
+      const auto header = card::inspect(child(storage->root, sample.rendered));
+      next.emplace(sample.id, CompletedAudio{sample.rendered, header.frames, double(header.rate)});
+    } catch (const std::exception &e) {
+      diagnostics::log("AUDIO", "Completed preview metadata unavailable: " + String(e.what()));
+    }
+  }
+  completedAudio = std::move(next);
+}
 void Manager::prepareVisualization(
     std::function<void(const zv::LibraryState &)> progress) {
   diagnostics::Scope trace("VISUALIZER", "Prepare project waveforms");
   require(storage != nullptr, "Open a folder");
+  prepareCompletedAudio();
+  publish("Updating waveforms");
   String currentFile;
   auto report = [&](const zv::LibraryState &update) {
     if (update.current != currentFile) {
@@ -848,7 +926,6 @@ void Manager::save(uint64_t generation) {
   Transaction tx(root);
   tx.shouldCancel = cancel;
   tx.commit(replacements, completed);
-  publish("Updating waveforms");
   committed = completed;
   project = completed;
   manifestHash = fingerprint(child(root, ".core-manager/project.json"));

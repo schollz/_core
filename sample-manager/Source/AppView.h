@@ -25,6 +25,7 @@ public:
 
 private:
   friend void firmwareViewTests();
+  friend void renderStatusTests();
   class Divider final : public juce::StretchableLayoutResizerBar,
                         public juce::SettableTooltipClient {
   public:

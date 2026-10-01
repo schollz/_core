@@ -11,6 +11,7 @@ void importTests();
 void tempoTests();
 void recoveryTests();
 void managerTests();
+void renderStatusTests();
 void midiSettingsTests();
 void firmwareTests();
 void firmwareReleaseTests();
@@ -101,7 +102,12 @@ int runTests(const String &suite) {
     if (suite == "manager") {
       audioTests();
       managerTests();
+      renderStatusTests();
       recoveryTests();
+      return 0;
+    }
+    if (suite == "render-status") {
+      renderStatusTests();
       return 0;
     }
     if (suite == "midi-settings") {
@@ -498,6 +504,7 @@ int runTests(const String &suite) {
     importTests();
     tempoTests();
     managerTests();
+    renderStatusTests();
     recoveryTests();
     require(runVisualizerTests() == 0, "Visualizer parity tests");
     std::cout << "PASS " << checks << " contract checks\n";

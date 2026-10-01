@@ -6,8 +6,26 @@
 #include <mutex>
 #include <thread>
 namespace core {
+struct CompletedAudio {
+  String path;
+  uint64_t frames = 0;
+  double rate = 0;
+  double duration() const { return rate > 0 ? double(frames) / rate : 0.; }
+};
+struct SampleRenderStatus {
+  bool pending = false, failed = false;
+  double original = 0, target = 0;
+  CompletedAudio completed;
+  String text() const;
+  String tooltip() const;
+  String previewTooltip() const;
+};
 struct ManagerState {
   Project project, completedProject;
+  // Unpadded preview headers are cached by the worker, never read by the UI.
+  std::map<String, CompletedAudio> completedAudio;
+  SampleRenderStatus renderStatus(const String &sampleId) const;
+  bool primaryUpdateFailed = false;
   zv::LibraryState library;
   // Editor-only source peaks are available before hardware rendering/commit.
   std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
@@ -64,10 +82,12 @@ private:
   void saveCompanion(uint64_t generation);
   int pendingCompanions() const;
   void prepareImportWaveforms();
+  void prepareCompletedAudio();
   void prepareVisualization(
       std::function<void(const zv::LibraryState &)> progress = {});
   zv::LibraryState libraryState;
   std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
+  std::map<String, CompletedAudio> completedAudio;
   mutable std::mutex mutex;
   std::condition_variable wake;
   std::deque<Command> commands;
@@ -80,7 +100,7 @@ private:
   AudioProcessing audio;
   bool dirty = false, failed = false;
   String companionError;
-  bool commandRunning = false;
+  bool foregroundRunning = false;
   String manifestHash;
   String importedSampleId;
   uint64_t importGeneration = 0;

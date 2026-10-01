@@ -1,5 +1,22 @@
 # _core sample manager 0.1.0 validation
 
+## Original and rendered durations: executed September 30, 2026
+
+The subtitle now distinguishes original, target, completed, and failed-update durations for the selected sample. Completed durations use cached frame counts and sample rates from the unpadded preview headers. The worker refreshes this metadata when primary output commits and on project open; UI updates do not read audio files. Preview resolves the sample in the completed project, including during Undo/Redo. Primary completion can be displayed during waveform preparation without declaring the manager idle before that foreground work finishes.
+
+The macOS ARM64 Release build and strict codesign verification pass. The focused `--self-test manager` suite passes audio, manager integration, render-status, and recovery checks. The new `render_status` CTest passes, along with `midi_settings`, `firmware_downloads`, `firmware_catalog`, and `native_midi`. The full `manager_contract` CTest still stops after 250 checks at the previously documented assertion **"Vendored detector handles real loops whose length is not an exact beat count"**; tempo detection is unchanged.
+
+The new tests render an eight-second, 120 BPM fixture to 150 BPM (6.40 seconds), 60 BPM (16.00 seconds), and cleared Render BPM (8.00 seconds), with Preserve pitch off and on. They check pending target text and preview tooltips, pitch-only changes with equal durations, successive edits after processing starts, Undo/Redo, a missing-source failure with retained completed audio, retry, project reopening, actual frame/rate metadata, and hardware padding exclusion. Companion-pending and companion-failure tests confirm completed primaries stay ready; editing or failing another sample does not change the selected completed sample's status.
+
+JUCE component snapshots cover Ezeptocore, Zeptocore, and Ectocore at the 1120 × 840 minimum window size, with and without the visualizer dock. The divider is moved to the editor's 510-pixel minimum. Completed, equal-duration, rendering, and failed-update labels are checked, with Advanced expanded to exercise scrolling. Visual review confirms readable duration text and wrapping of the longer failure message without overlap. These are rendered component snapshots and automated control checks; a separate manual mouse/keyboard session was not performed.
+
+To regenerate the 24 layout previews:
+
+```sh
+CORE_RENDER_PREVIEW_DIR="$PWD/sample-manager/build/render-status-previews" \
+  'sample-manager/build/macos-arm64/CoreSampleManager_artefacts/Release/_core sample manager.app/Contents/MacOS/_core sample manager' --self-test render-status
+```
+
 ## Downloaded firmware installation restored: executed September 30, 2026
 
 Device → Firmware now follows choose hardware/version/build, download, enter bootloader mode, and explicitly install. The installer uses only the validated download matching the selected model, version, and build; the local UF2 picker remains removed. MIDI bootloader reset, automatic discovery of RPI-RP2 drives, manual refresh, destination selection, and confirmation are restored. A single detected drive is selected automatically. Pending confirmations are invalidated on window closure; an active copy continues while the window is hidden, and view destruction cancels and joins its worker.

@@ -154,6 +154,8 @@ AppView::AppView() {
        std::initializer_list<juce::Component *>{&waveform, &name, &sourceLabel, &controlsViewport})
     editor.addAndMakeVisible(c);
   controlsViewport.setViewedComponent(&controls, false);
+  sourceLabel.setJustificationType(juce::Justification::topLeft);
+  sourceLabel.setMinimumHorizontalScale(1.f);
   controlsViewport.setScrollBarsShown(true, false);
   controlsViewport.setScrollOnDragMode(juce::Viewport::ScrollOnDragMode::never);
   for (auto *c : std::initializer_list<juce::Component *>{
@@ -697,15 +699,11 @@ void AppView::updateEditor() {
       oneShot.setToggleState(s->oneShot, juce::dontSendNotification);
     }
     variable.setToggleState(s->spliceVariable, juce::dontSendNotification);
-    sourceLabel.setText(s->protectedEntry
-                            ? s->problem
-                            : String(s->sourceDuration, 2) + juce::String::fromUTF8(" s · ") +
-                                  String(s->rate) + " Hz output",
+    const auto renderStatus = state.renderStatus(s->id);
+    sourceLabel.setText(s->protectedEntry ? s->problem : renderStatus.text(),
                         juce::dontSendNotification);
-    sourceLabel.setTooltip(s->protectedEntry
-                               ? s->problem
-                               : "Original duration and hardware output sample rate.\n" +
-                                     sourceLabel.getText());
+    sourceLabel.setTooltip(s->protectedEntry ? s->problem : renderStatus.tooltip());
+    play.setTooltip(renderStatus.previewTooltip());
     waveform.set(s, state.editorWaveform(s->id));
     editor.setEnabled(!s->protectedEntry && state.available);
   } else {
@@ -723,6 +721,7 @@ void AppView::updateEditor() {
           : state.root.getFullPathName() +
                 "\nUse Project > Reveal folder to open this folder in your file manager.");
   updating = false;
+  resized(); // Duration/status text can wrap differently after a selection or render update.
 }
 void AppView::updatePresentation() {
   importButton.setColour(juce::TextButton::buttonColourId, look.theme.accent);
@@ -782,9 +781,10 @@ void AppView::audition(double a, double b) {
   if (!s)
     return;
   safely([&] {
-    require(s->completedRevision > 0 && s->rendered.isNotEmpty(),
+    const auto *completed = state.completedProject.find(s->id);
+    require(completed && completed->rendered.isNotEmpty(),
             "Finish rendering before preview");
-    preview.play(child(state.root, s->rendered), s->id, a, b);
+    preview.play(child(state.root, completed->rendered), s->id, a, b);
   });
 }
 void AppView::timerCallback() {
@@ -1271,8 +1271,18 @@ void AppView::resized() {
   empty.setBounds(frame.content.getCentreX() - 145, createProject.getBottom() + 10, 290, 44);
   auto w = editor.getWidth();
   name.setBounds(18, 0, w - 36, 31);
-  sourceLabel.setBounds(18, 34, w - 36, 22);
-  constexpr int waveTop = 65, minWaveHeight = 145, controlGap = 8;
+  const auto durationFont = look.getLabelFont(sourceLabel);
+  juce::AttributedString durationText;
+  durationText.append(sourceLabel.getText(), durationFont);
+  juce::TextLayout durationLayout;
+  durationLayout.createLayout(durationText,
+      float(std::max(1, w - 36 - sourceLabel.getBorderSize().getLeftAndRight())));
+  const int durationHeight = std::max(22, int(std::ceil(std::max(durationLayout.getHeight(),
+      durationLayout.getNumLines() * durationFont.getHeight()))) +
+      sourceLabel.getBorderSize().getTopAndBottom() + 4);
+  sourceLabel.setBounds(18, 34, w - 36, durationHeight);
+  const int waveTop = sourceLabel.getBottom() + 9;
+  constexpr int minWaveHeight = 145, controlGap = 8;
   const int maxControlsHeight =
       std::max(0, editor.getHeight() - waveTop - minWaveHeight - controlGap);
   int controlsWidth = w;
