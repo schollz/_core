@@ -198,9 +198,7 @@ struct Faceplate : widget::Widget {
         nvgFontFaceId(vg,font->handle);
         auto label=[&](float x,float y,const char *s,float size=2.5f){nvgFontSize(vg,size);nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);nvgFillColor(vg,ink(eze));nvgText(vg,x,y,s,nullptr);};
         label(23,4.5f,eze?"EZEPTOCORE":"Ectocore",eze?3.6f:4.5f);
-        // Traces echo the etched hardware panel without baking controls into a photo.
         nvgStrokeColor(vg,eze?nvgRGBA(191,160,94,110):nvgRGBA(53,178,217,90));
-        for(int i=0;i<5;++i){float x=4+i*7.f;nvgBeginPath(vg);nvgMoveTo(vg,x,40);nvgLineTo(vg,x,43+i);nvgLineTo(vg,20+i*.6f,48+i);nvgLineTo(vg,20+i*.6f,78);nvgStroke(vg);}
         nvgBeginPath(vg);nvgCircle(vg,20.32f,24,14.2f);nvgCircle(vg,20.32f,24,13.7f);nvgStroke(vg);
         label(20.32f,38,eze?"AMEN":"Break",3);
         label(8.5f,57,eze?"BREAK":"Amen",2.9f);label(31.3f,51.5f,eze?"EFFECTS":"Grimoire",2.6f);
