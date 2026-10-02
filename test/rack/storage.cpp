@@ -13,7 +13,8 @@ static void check_start_tempo(const fs::path &source) {
     auto root=fs::temp_directory_path()/("rack-start-tempo-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     fs::create_directories(root/"settings");
     struct Cleanup {fs::path root;~Cleanup(){fs::remove_all(root);}} cleanup{root};
-    fs::create_directory_symlink(source/"bank1",root/"bank1");
+    // A regular copy also works on Windows, where MinGW may not support symlinks.
+    fs::copy(source/"bank1",root/"bank1",fs::copy_options::recursive);
     auto check=[&](unsigned expected,bool warning){auto l=Storage::catalogue(root,43);CoreState state{};state.tempo=145;applySettings(*l,state);assert(state.start_tempo==expected&&state.tempo==145);assert(l->warnings.empty()!=warning);};
     check(0,false);
     {std::ofstream(root/"start_tempo")<<"130\n";}check(130,false);
