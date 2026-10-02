@@ -12,6 +12,10 @@
 #include <string.h>
 #include <time.h>
 #include <setjmp.h>
+// The firmware uses this extension; strict C11 libc headers need not expose it.
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 static CoreEngine *core_enter(CoreEngine *);
 static void core_leave(CoreEngine *);
 static void *host_allocations[512];
