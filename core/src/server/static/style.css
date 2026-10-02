@@ -97,6 +97,40 @@ header {
 footer {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 5px;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sample-manager-downloads {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.sample-manager-downloads a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    color: inherit;
+    border-radius: 0.25rem;
+}
+
+.sample-manager-downloads i,
+.sample-manager-downloads svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    text-align: center;
+}
+
+.sample-manager-downloads a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
 }
 
 main {
