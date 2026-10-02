@@ -29,7 +29,7 @@ jobs:
             brew install jq zstd
           else
             sudo apt-get update
-            sudo apt-get install -y clang g++ make jq zstd libx11-6 libgl1 libasound2
+            sudo apt-get install -y clang g++ make jq zstd libx11-6 libgl1 libasound2 libjack-jackd2-0 libpulse0
           fi
       - run: python3 rack/scripts/sdk.py ${{ matrix.arch }}
       - name: Engine and storage checks

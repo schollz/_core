@@ -96,6 +96,8 @@ python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
 
 The standalone suite exercises all sixteen effect paths with CV/buttons/clock input, deterministic interleaving and parallel processing of independent engines, thread migration, state validation, settings updates, truncated metadata, sparse slots across all sixteen banks, mono 88.2 kHz samples, missing-folder recovery, and companion reads beyond the cache size against file bytes. It checks source-folder hashes before and after loading. The Rack integration suite checks audible finite output at 32/44.1/48/96/192 kHz, skin and state serialization, and headless reboot. Existing DSP, audio-source and sample-CV regression suites remain applicable.
 
+On Ubuntu, the integration suite also needs the Rack runtime libraries: `libx11-6 libgl1 libasound2 libjack-jackd2-0 libpulse0`.
+
 This is a source-sharing desktop port, not an assertion of measured analog equivalence: ADC noise, DAC output circuitry, hardware bootloader/calibration storage, and USB/TRS MIDI are outside this release. A hardware capture comparison and Windows/Linux runtime listening checks remain release qualification steps. The implementation shares the hardware control paths, but the automated suite does not exhaust every possible button timing combination.
 
 ## License
