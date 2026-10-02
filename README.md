@@ -28,6 +28,34 @@ The digital signal processing for all the *core things was written by Zack, from
 - [tape delay](https://github.com/schollz/_core/blob/main/lib/tapedelay.h) 
 - [transfer](https://github.com/schollz/_core/blob/main/lib/transfer.h) which can also be used for wave shaping
 
+## `_core` sample manager and visualizer
+
+
+<div align="center">
+<img src="docs/static/img/core_sample_manager.webp" width="70%">
+</div>
+
+
+
+The [_core sample manager](https://shop.infinitedigits.co/guides/sample-manager/) is a native app for macOS, Windows, and Linux that prepares Zeptocore, EZEPTOCORE, and Ectocore SD cards offline. It imports sounds, organizes banks, edits slices and tempo, and saves audio and settings directly to your card or project folder, with a built-in firmware installer. The [Zeptocore](https://zeptocore.com/tool), [EZEPTOCORE](https://ezeptocore.com/), and [Ectocore](https://ectocore.rocks/) web managers remain available, and their downloads also work in the desktop app.
+
+It also has a built-in visualizer:
+
+<a href="https://www.youtube.com/watch?v=YlEtNIeCu6k">
+<img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
+</a>
+
+
+Download the best version for your system:
+
+| Platform | Download |
+| --- | --- |
+| macOS (Apple Silicon) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-arm64.zip) |
+| macOS (Intel) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-x86_64.zip) |
+| Windows (x64) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-windows-x64.zip) |
+| Linux (x86_64) | [v8.0.3 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-linux-x86_64.tar.gz) |
+
+
 ## zeptocore
 
 the zeptocore device is a versatile, open-source, handmade audio player and synthesizer, featuring stereo playback of 16-bit audio files at a 44.1 kHz sampling rate. 
@@ -42,6 +70,7 @@ the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can
 
 The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/guides/zeptocore/#zeptocore-firmware).
 
+
 ### zeptocore firmware
 
 | Normal | Low latency | Visualizer |
@@ -49,23 +78,6 @@ The firmware for the zeptocore is written in C, and instructions for building it
 | [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3.uf2) | [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3_low_latency.uf2) | [v8.0.3 UF2](https://github.com/schollz/_core/releases/download/v8.0.3/zeptocore_v8.0.3_visualizer.uf2) |
 
 Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
-
-### core sample manager and visualizer
-
-<a href="https://www.youtube.com/watch?v=YlEtNIeCu6k">
-<img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
-</a>
-
-The [_core sample manager](https://shop.infinitedigits.co/guides/sample-manager/) is a native app for macOS, Windows, and Linux that prepares Zeptocore, EZEPTOCORE, and Ectocore SD cards offline. It imports sounds, organizes banks, edits slices and tempo, and saves audio and settings directly to your card or project folder, with a built-in visualizer and firmware installer. The [Zeptocore](https://zeptocore.com/tool), [EZEPTOCORE](https://ezeptocore.com/), and [Ectocore](https://ectocore.rocks/) web managers remain available, and their downloads also work in the desktop app.
-
-
-| Platform | Download |
-| --- | --- |
-| macOS (Apple Silicon) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-arm64.zip) |
-| macOS (Intel) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-x86_64.zip) |
-| Windows (x64) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-windows-x64.zip) |
-| Linux (x86_64) | [v8.0.3 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-linux-x86_64.tar.gz) |
-
 
 
 ## diy
@@ -111,43 +123,9 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
 
-To build and upload the default 441-frame, overclocked firmware with USB MIDI
-visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
-hardware, use `make ectocore-visualizer` to retain its knob mapping. These produce
-`ezeptocore_visualizer.uf2` and `ectocore_visualizer.uf2`, respectively, and upload
-only after the build succeeds.
-
-To build without uploading, run `make ezeptocore ZEPTOCORE_VISUALIZER=ON` or
-`make ectocore ZEPTOCORE_VISUALIZER=ON`. These opt-in builds use USB MIDI in place
-of USB serial and work with the existing [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer).
-Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
-all visualizer code and state, even after building an enabled version in the
-same directory. The new commands use the default latency and clock settings.
-
-### Sample CV mapping (ectocore and ezeptocore)
-
-The webtool and sample manager offer **Sample CV mapping** in device settings:
-**Bank divisions** (the default) spreads samples across the selected CV range.
-**1 V/oct** selects sample 1 at 0 V and advances one sample per chromatic semitone
-(1/12 V), wrapping around the populated bank. For an eight-sample bank, +1 V
-selects sample 5. This selects samples; pitch and sample-switch timing are unchanged.
-
-With bipolar polarity, negative notes wrap backward: -1/12 V selects the last
-sample. With unipolar polarity, negative voltages select sample 1. While Sample
-CV is connected in 1 V/oct mode, it controls sample selection. The sample knob
-still supports bank selection and modifier gestures; unplug CV to resume normal
-knob selection. Assigning Sample CV to Reset disables this mapping without
-changing the saved choice. The option is hidden in the Zeptocore presentation.
-
-The sample manager saves `settings/sample_cv_mapping` automatically; webtool full
-and settings-only downloads include the same file. Its contents are `bank` or
-`1voct`, followed by a newline. Copy the settings to the card and restart the device.
-Missing settings use Bank divisions. This requires firmware with 1 V/oct sample
-CV support; older firmware ignores the setting. Detection uses the existing
-nominal voltage scale, nearest-semitone rounding and hysteresis to reduce jitter.
-
 ### diy
 
+- [Guide](https://shop.infinitedigits.co/guides/ezeptocore/)
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/ezeptocore-schematic.pdf)
 - [Source code](https://github.com/schollz/_core)
 - [Firmware](https://github.com/schollz/_core/releases)

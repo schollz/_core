@@ -198,7 +198,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/static/style.css?v=sample-manager-downloads">
+    <link rel="stylesheet" href="/static/style.css?v=sample-manager-downloads-compact">
     <link rel="stylesheet" href="/static/all.min.css">
     <link rel="stylesheet" href="/static/jquery-ui.css">
     <style>
@@ -1438,11 +1438,11 @@
             [[ end ]]
             <div class="sample-manager-downloads" role="group" aria-label="Download the offline _core sample manager">
                 <a href="https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-arm64.zip"
-                    title="Download for macOS 11+ (Apple Silicon)" aria-label="Download _core sample manager for macOS (Apple Silicon)">
+                    data-tippy-content="Click to download the offline sample manager for macOS 11+ (Apple Silicon)." aria-label="Download _core sample manager for macOS (Apple Silicon)">
                     <i class="fa-brands fa-apple" aria-hidden="true"></i>
                 </a>
                 <a href="https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-x86_64.zip"
-                    title="Download for macOS 11+ (older Intel Macs)" aria-label="Download _core sample manager for macOS (Intel)">
+                    data-tippy-content="Click to download the offline sample manager for macOS 11+ (older Intel Macs)." aria-label="Download _core sample manager for macOS (Intel)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                         <rect x="5" y="2" width="14" height="19" rx="1.5" />
@@ -1452,11 +1452,11 @@
                     </svg>
                 </a>
                 <a href="https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-windows-x64.zip"
-                    title="Download for Windows (x64)" aria-label="Download _core sample manager for Windows (x64)">
+                    data-tippy-content="Click to download the offline sample manager for Windows (x64)." aria-label="Download _core sample manager for Windows (x64)">
                     <i class="fa-brands fa-windows" aria-hidden="true"></i>
                 </a>
                 <a href="https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-linux-x86_64.tar.gz"
-                    title="Download for Linux (x86_64)" aria-label="Download _core sample manager for Linux (x86_64)">
+                    data-tippy-content="Click to download the offline sample manager for Linux (x86_64)." aria-label="Download _core sample manager for Linux (x86_64)">
                     <i class="fa-brands fa-linux" aria-hidden="true"></i>
                 </a>
             </div>
@@ -1561,7 +1561,7 @@
         window.initialLatestVersion = "[[ .LatestVersion ]]";
     </script>
     <script src="/static/core-midi.js"></script>
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=sample-manager-downloads-compact"></script>
     <script>
         $(function () {
             $("#dialog2").dialog({

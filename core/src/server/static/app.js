@@ -1765,6 +1765,7 @@ window.addEventListener('load', (event) => {
         tippy("#editingKick", {
             content: "Click waveform to add kick trig, hold to drag around."
         });
+        tippy('.sample-manager-downloads a');
         tippy('#downloadZipButton', {
             content: 'After downloading, extract the contents to the SD card.',
         });
