@@ -25,6 +25,8 @@ A mouse can hold one button while turning a knob. For combinations involving mul
 
 CV inputs are calibrated virtual inputs: nominal bipolar −5 to +5 V and unipolar 0 to +5 V are translated to the original ADC scale and then pass through the original control processing. Cable presence comes from Rack. **Device settings** controls polarity, Amen CV behavior, sample mapping (Bank divisions or 1 V/oct), reset-input assignment, clock behavior, and brightness. **Grimoire / effect banks** edits the seven-by-sixteen effect matrix.
 
+**Stop when clock stops** silences playback and holds clock output at 0 V after the external clock times out (about two input-clock intervals). This applies to square and trigger output, including when the clock follows slices. Enable it on every module in a clock chain to propagate stops; each module waits for its own timeout. Once the chain has stopped, the returning clock restarts each module at the beginning in normal forward playback. Slice sequences, random jumps, and reverse playback retain their selected behavior. With no external clock acquired, the internal clock continues normally.
+
 ## Prepared sample folders
 
 A typical export is:

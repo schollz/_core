@@ -239,6 +239,8 @@ volatile uint32_t clock_in_last_time = 0;
 uint32_t clock_in_last_last_time = 0;
 uint8_t led_text_time = 200;
 
+#include "clock_stop.h"
+
 typedef struct SampleSelection {
   uint8_t bank : 4;    // 0-15
   uint8_t sample : 4;  // 0-15

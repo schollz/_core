@@ -18,6 +18,14 @@ static void ecto_emit_trigger(void) {
 #endif
 
 bool __not_in_flash_func(timer_step)() {
+#ifdef INCLUDE_ECTOCORE
+  const bool clock_output_stopped = clock_input_should_stop(time_us_32());
+  if (clock_output_stopped) {
+    // Release a high clock even when media/transport checks return early.
+    gpio_put(GPIO_CLOCK_OUT, 0);
+    clock_output_trig_time = 0;
+  }
+#endif
   if(!audio_media_timer_allowed() || !metadata_ready(sel_bank_cur))return true;
   if (!fil_is_open) {
     return true;
@@ -101,7 +109,7 @@ bool __not_in_flash_func(timer_step)() {
 
 // ectocore clocking
 #ifdef INCLUDE_ECTOCORE
-  if (clock_behavior_sync_slice) {
+  if (!clock_output_stopped && clock_behavior_sync_slice) {
     if (bpm_timer_counter %
             (banks[sel_bank_cur]
                  ->sample[sel_sample_cur]
@@ -126,7 +134,7 @@ bool __not_in_flash_func(timer_step)() {
       // main loop
       gpio_put(GPIO_CLOCK_OUT, 0);
     }
-  } else {
+  } else if (!clock_output_stopped) {
     if (bpm_timer_counter %
             (192 *
              ectocore_clock_out_divisions[ectocore_clock_selected_division] /
