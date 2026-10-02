@@ -1,8 +1,12 @@
 # EZEPTOCORE for VCV Rack 2
 
-One 8 HP module with the EZEPTOCORE layout by default. **Ectocore appearance** in the module's right-click menu selects the alternate blue panel and swaps the large Amen/Break knob positions. Parameters, cables, sound, and saved automation keep their identities. The plugin slug is `InfiniteDigits` and the module slug is `EZEPTOCORE`.
+One 8 HP module with the original black-and-gold EZEPTOCORE artwork by default. **Ectocore appearance** in the module's right-click menu selects the original blue hardware artwork and its control layout, including the large Break knob and illuminated Tap button. Parameters, cables, sound, and saved automation keep their identities. The plugin slug is `InfiniteDigits` and the module slug is `EZEPTOCORE`.
 
-The Ectocore panel uses the original website's Odin Rounded Regular typeface by Frank Hemmekam. The font is bundled with the plugin; no system font installation is needed.
+The EZEPTOCORE panel in `res/ezeptocore.svg` is adapted from the supplied design, preserving its decorative traces, double Amen ring, mode icons, gold output groups, and Infinite Digits / Maneco Labs attribution. Its live knobs, buttons, jacks, and LED lenses follow the artwork's original centers. Monaspace Neon lettering is outlined and the small footer marks are vector contours, so the panel needs no system fonts or embedded bitmaps. The SD slot is decorative.
+
+The Ectocore panel uses the supplied hardware SVG's original vector lettering, ghost ring, geometric background, runes, and output groups. The artwork is cropped to 8 HP in `res/ectocore.svg`; controls and LEDs align with the hardware coordinates. Mock controls, drill guides, the embedded thumbnail, and the hardware-only MIDI legend are omitted. The SD slot is decorative; use **Choose sample folder…** to load samples. No system font installation is needed.
+
+Around Break, the same sixteen RGB LED widgets used by the EZEPTOCORE appearance illuminate the original spiral lines. The frosted surface shows their live colors and brightness spreading softly across adjacent lines, including at the default 50% device brightness. **Device settings → LED brightness** adjusts the illumination immediately, including while a knob indication is held; 0% turns it off. A subtle edge glow follows Rack's halo brightness. The tagged `break-diffuser-*` paths in the panel SVG define these apertures; Ectocore does not draw separate LED bulbs over them.
 
 The plugin compiles the existing firmware's fixed-point renderer, sixteen effects, clock/trigger logic, CV interpretation, performance gestures, and LED logic from `../lib`. It does not run the sample manager or convert samples. This initial version targets Rack 2.6.6 and later compatible Rack 2 releases. MIDI is deferred.
 

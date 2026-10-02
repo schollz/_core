@@ -105,7 +105,12 @@ void core_engine_process(CoreEngine *e,int16_t out[2]) {
 void core_engine_display(CoreEngine *e,CoreDisplay *v) {
     CoreEngine *old=core_enter(e);memset(v,0,sizeof *v);
     if(ws2812)for(unsigned i=0;i<18;++i) {
-        uint32_t d=ws2812->data[i];v->rgb[i][0]=(d>>16)&255;v->rgb[i][1]=(d>>24)&255;v->rgb[i][2]=(d>>8)&255;
+        // The desktop LED buffer stores unscaled colors so brightness edits
+        // also update a held pattern, without waiting for another LED write.
+        uint32_t d=ws2812->data[i],brightness=ws2812->brightness;
+        v->rgb[i][0]=((d>>16)&255)*brightness/255;
+        v->rgb[i][1]=((d>>24)&255)*brightness/255;
+        v->rgb[i][2]=((d>>8)&255)*brightness/255;
     }
     for(unsigned i=0;i<4;++i)v->mode[i]=!host_pins[gpio_mode_leds[i]];
     v->tap=!host_pins[GPIO_LED_TAPTEMPO];v->clock=host_pins[GPIO_CLOCK_OUT];v->trigger=host_pins[GPIO_TRIG_OUT];

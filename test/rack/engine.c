@@ -29,7 +29,35 @@ static void *thread_trace(void *arg){
     for(unsigned i=0;i<CORE_RATE;++i){int16_t pcm[2];core_engine_process(trace->engine,pcm);for(unsigned c=0;c<2;++c)trace->hash=(trace->hash^(uint16_t)pcm[c])*1099511628211ULL;}
     return NULL;
 }
+static void check_led_brightness(void) {
+    CoreEngine *a=create(901),*b=create(901);
+    CoreControls controls={.knobs={.75f,.5f,0,.5f,0}};
+    core_engine_controls(a,&controls);core_engine_controls(b,&controls);
+    for(unsigned frame=0;frame<CORE_RATE/2;++frame){int16_t pcm[2];core_engine_process(a,pcm);core_engine_process(b,pcm);}
+    CoreDisplay original,display,unrelated;core_engine_display(a,&original);core_engine_display(b,&unrelated);
+    assert(!memcmp(original.rgb,unrelated.rgb,sizeof original.rgb));
+    unsigned energy=0;for(unsigned i=0;i<18;++i)for(unsigned c=0;c<3;++c)energy+=original.rgb[i][c];
+    assert(energy>0);
+    CoreState state;core_engine_get_state(a,&state);assert(state.brightness==50);
+    unsigned previous=0;
+    for(unsigned brightness=0;brightness<=100;brightness+=25){
+        state.brightness=brightness;assert(core_engine_update_settings(a,&state));
+        // No audio/control tick or knob movement: even a held pattern must
+        // immediately follow the menu setting and survive an off/on cycle.
+        core_engine_display(a,&display);energy=0;
+        for(unsigned i=0;i<18;++i)for(unsigned c=0;c<3;++c)energy+=display.rgb[i][c];
+        assert(brightness?energy>previous:energy==0);previous=energy;
+        core_engine_display(b,&unrelated);assert(!memcmp(original.rgb,unrelated.rgb,sizeof original.rgb));
+        if(brightness==50)assert(!memcmp(original.rgb,display.rgb,sizeof original.rgb));
+    }
+    state.brightness=0;assert(core_engine_update_settings(a,&state));
+    state.brightness=50;assert(core_engine_update_settings(a,&state));
+    core_engine_display(a,&display);assert(!memcmp(original.rgb,display.rgb,sizeof original.rgb));
+    core_engine_destroy(a);core_engine_destroy(b);
+    puts("engine: held LED brightness updates immediately at 0/25/50/75/100%, restores colors, isolates instances");
+}
 int main(void) {
+    check_led_brightness();
     CoreEngine *a=create(123),*b=create(123),*other=create(789);
     int16_t x[2],y[2],z[2];unsigned audible=0;
     for(unsigned frame=0;frame<CORE_RATE*3;++frame) {

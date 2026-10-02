@@ -32,6 +32,15 @@ def prepare(out):
         'audio_restart.h': '#define AUDIO_RESTART_ENABLED 0\n#define AUDIO_RESTART_WAKE_ENABLED 0\n',
         'WS2812.pio.h': 'static int ws2812_program;\nstatic uint pio_add_program(PIO p,void *v){return 0;}\nstatic void ws2812_program_init(PIO p,uint s,uint o,uint pin,uint freq,uint bits){}\nstatic void pio_sm_put_blocking(PIO p,uint s,uint v){}\n',
     }
+    # Keep the virtual LEDs' unscaled colors. The display boundary applies the
+    # current brightness, including while the firmware holds a knob indication.
+    leds = read('WS2812.h')
+    for channel in ('red', 'green', 'blue'):
+        statement = f'  {channel} = ({channel} * ws->brightness) / 255;'
+        assert leds.count(statement) == 1
+        leds = leds.replace(statement, '')
+    overrides['WS2812.h'] = leds.replace('  // scale by brightness level',
+        '  // Desktop display applies brightness when reading these colors.')
     # These headers are ignored build products in the firmware checkout. Always
     # use the shared generators, so clean checkouts and source archives build
     # the same tables without relying on an earlier hardware build.
