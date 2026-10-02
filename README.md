@@ -56,7 +56,7 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 <img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
 </a>
 
-[Read the sample manager and visualizer guide](https://shop.infinitedigits.co/guides/sample-manager/).
+The [_core sample manager](https://shop.infinitedigits.co/guides/sample-manager/) is a native app for macOS, Windows, and Linux that prepares Zeptocore, EZEPTOCORE, and Ectocore SD cards offline. It imports sounds, organizes banks, edits slices and tempo, and saves audio and settings directly to your card or project folder, with a built-in visualizer and firmware installer. The [Zeptocore](https://zeptocore.com/tool), [EZEPTOCORE](https://ezeptocore.com/), and [Ectocore](https://ectocore.rocks/) web managers remain available, and their downloads also work in the desktop app.
 
 
 | Platform | Download |
