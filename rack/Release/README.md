@@ -11,7 +11,7 @@ Local uncommitted changes and existing build/SDK directories are not used.
 The scripts you invoke supply release orchestration and ZIP verification.
 
 The plugin version comes from `rack/plugin.json` (currently `2.0.0`), independently
-of the GitHub release tag (for example `v8.0.3`), just like the Windows workflow.
+of the GitHub release tag (for example `v8.0.4`), just like the Windows workflow.
 Rack 2 plugins must keep their `2.x` compatibility version. The scripts create
 neither tags nor releases. Immediately before upload they require the selected
 release to remain latest, stable, and mutable; a change stops publication and

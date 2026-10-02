@@ -4,8 +4,7 @@ namespace {
 class MidiTest final : private juce::MidiInputCallback, private juce::Timer {
 public:
   explicit MidiTest(std::function<void(int)> completion)
-      : finished(std::move(completion)),
-        name("visualizer-test-" + juce::Uuid().toString()) {
+      : finished(std::move(completion)), name("visualizer-test-" + juce::Uuid().toString()) {
     notifications = juce::MidiDeviceListConnection::make([] {});
     tx = juce::MidiOutput::createNewDevice(name + "-source");
     rx = juce::MidiInput::createNewDevice(name + "-destination", this);
@@ -48,30 +47,43 @@ private:
     link->setTelemetry(true);
     return true;
   }
-  void handleIncomingMidiMessage(juce::MidiInput *,
-                                 const juce::MidiMessage &m) override {
+  void handleIncomingMidiMessage(juce::MidiInput *, const juce::MidiMessage &m) override {
     const auto *b = m.getRawData();
     auto reply = [this](const juce::String &text) {
-      tx->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+      tx->sendMessageNow(
+          juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
     };
     if (m.isSysEx()) {
-      auto text = juce::String::fromUTF8(reinterpret_cast<const char *>(m.getSysExData()), m.getSysExDataSize());
+      auto text = juce::String::fromUTF8(reinterpret_cast<const char *>(m.getSysExData()),
+                                         m.getSysExDataSize());
       if (text == "core_cmd=1,hello") {
         ++hellos;
-        if (!legacyFirmware) reply("core_caps=1");
+        if (!legacyFirmware)
+          reply("core_caps=1");
       } else if (!legacyFirmware) {
-        if (text == "core_cmd=1,view") ++leases;
-        if (text == "core_cmd=1,info") ++legacy;
-        if (text == "core_cmd=1,version") ++versions;
-        if (text == "core_cmd=1,bootloader") ++resets;
+        if (text == "core_cmd=1,view")
+          ++leases;
+        if (text == "core_cmd=1,info")
+          ++legacy;
+        if (text == "core_cmd=1,version")
+          ++versions;
+        if (text == "core_cmd=1,bootloader")
+          ++resets;
       }
     } else if (m.getRawDataSize() == 3) {
-      if (legacyFirmware && b[0] == 0xb0 && b[1] == 1) { ++versions; reply("version=v8.0.2"); }
-      if (legacyFirmware && b[0] == 0xb0 && b[1] == 0) ++resets;
+      if (legacyFirmware && b[0] == 0xb0 && b[1] == 1) {
+        ++versions;
+        reply("version=v8.0.4");
+      }
+      if (legacyFirmware && b[0] == 0xb0 && b[1] == 0)
+        ++resets;
       if (b[0] == 0x89 && b[2] == 0) {
-        if (!legacyFirmware) ++unexpectedLegacy;
-        if (b[1] == 5) ++leases;
-        if (b[1] == 4) ++legacy;
+        if (!legacyFirmware)
+          ++unexpectedLegacy;
+        if (b[1] == 5)
+          ++leases;
+        if (b[1] == 4)
+          ++legacy;
       }
     }
   }
@@ -92,14 +104,16 @@ private:
           --stage;
           break;
         }
-        link->command(1); link->command(0);
+        link->command(1);
+        link->command(0);
         const juce::String body = "view=2,0,0,1,65535,120,1,0,0,1,17";
-        tx->sendMessageNow(juce::MidiMessage::createSysExMessage(
-            body.toRawUTF8(), (int)body.getNumBytesAsUTF8()));
+        tx->sendMessageNow(
+            juce::MidiMessage::createSysExMessage(body.toRawUTF8(), (int)body.getNumBytesAsUTF8()));
         break;
       }
       case 2: {
-        check(versions == 1 && resets == 1 && unexpectedLegacy == 0, "modern management uses SysEx only");
+        check(versions == 1 && resets == 1 && unexpectedLegacy == 0,
+              "modern management uses SysEx only");
         check(link->state.playback && link->state.playback->trigger == 65535 &&
                   link->state.playback->effects == 17,
               "complete native SysEx reception");
@@ -108,15 +122,13 @@ private:
         break;
       }
       case 3:
-        check(link->state.press && link->state.press->button == 7,
-              "native pad reception");
+        check(link->state.press && link->state.press->button == 7, "native pad reception");
         before = leases;
         fallback = legacy;
         startTimer(600);
         break;
       case 4:
-        check(leases - before >= 1 && leases - before <= 2 &&
-                  legacy == fallback,
+        check(leases - before >= 1 && leases - before <= 2 && legacy == fallback,
               "single renewal stream while fresh");
         stage = 9;
         link->setTelemetry(false);
@@ -163,9 +175,11 @@ private:
       case 8:
         if (leases <= before) {
           check(++attempts < 60, "legacy reconnect negotiates before polling");
-          --stage; break;
+          --stage;
+          break;
         }
-        check(hellos >= 3 && versions >= 2, "legacy mode requires hello attempts and a version reply");
+        check(hellos >= 3 && versions >= 2,
+              "legacy mode requires hello attempts and a version reply");
         link->command(0);
         stage = 11;
         break;

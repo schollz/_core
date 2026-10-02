@@ -19,7 +19,7 @@ import rack_release
 
 class FakeRunner:
     def __init__(self):
-        self.release = {'id': 123, 'tag_name': 'v8.0.3', 'html_url': 'https://example.invalid/v8.0.3'}
+        self.release = {'id': 123, 'tag_name': 'v8.0.4', 'html_url': 'https://example.invalid/v8.0.4'}
         self.commands = []
         self.uploaded = {}
         self.corrupt = False
@@ -138,7 +138,7 @@ class ReleaseTests(unittest.TestCase):
             rack_release.clone_source(self.runner, selection, clone)
         self.assertEqual(rack_package.read_plugin(clone)['version'], '2.0.0')
         self.assertEqual(git('-C', str(clone), 'rev-parse', 'HEAD'), selection['source']['commit'])
-        self.assertEqual(selection['release']['tag'], 'v8.0.3')
+        self.assertEqual(selection['release']['tag'], 'v8.0.4')
 
     def test_intel_shell_is_valid_and_pins_the_source(self):
         script = rack_release.remote_build_script('/tmp/core-rack-intel.fixture', self.selection, 3)
@@ -206,7 +206,7 @@ class ReleaseTests(unittest.TestCase):
             prefix = 'InfiniteDigits-2.0.0-mac-arm64/'
             build = json.loads(archive.read(prefix + 'BUILD.json'))
             self.assertEqual(build['version'], '2.0.0')
-            self.assertEqual(build['release']['tag'], 'v8.0.3')
+            self.assertEqual(build['release']['tag'], 'v8.0.4')
             self.assertFalse(build['runtime_tests_run'])
             for line in archive.read(prefix + 'SHA256SUMS.txt').decode().splitlines():
                 expected, name = line.split('  ')

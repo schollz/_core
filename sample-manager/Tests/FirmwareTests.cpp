@@ -12,10 +12,11 @@ struct Temp {
   Temp() { check(directory.createDirectory().wasOk(), "create test directory"); }
   ~Temp() { directory.deleteRecursively(); }
 };
-// USB descriptor bytes from the published Ectocore/Ezeptocore v8.0.3
+// USB descriptor bytes from the published Ectocore/Ezeptocore v8.0.4
 // non-MIDI payload. These builds contain no model-name string.
 const std::string serialIdentity("\x12\x01\x10\x02\xef\x02\x01\x40\x8a"
-                                 "\x2e\x37\x18\x00\x01\x01\x02\x03\x01", 18);
+                                 "\x2e\x37\x18\x00\x01\x01\x02\x03\x01",
+                                 18);
 juce::MemoryBlock uf2(const std::string &identity = "ezeptocore") {
   const auto blocks = std::max(size_t(1), (identity.size() + 255) / 256);
   juce::MemoryBlock bytes(blocks * 512, true);
@@ -133,8 +134,8 @@ private:
         continue;
       }
       auto bytes = uf2(path == "/serial" || path == "/wrong-serial-family" ? serialIdentity
-                       : path == "/unidentified"                         ? "Board CDC"
-                                                                         : "ezeptocore");
+                       : path == "/unidentified"                           ? "Board CDC"
+                                                                           : "ezeptocore");
       if (path == "/invalid")
         static_cast<uint8_t *>(bytes.getData())[0] = 0;
       if (path != "/oversized")
@@ -181,15 +182,16 @@ var releaseFixture(const String &tag, std::initializer_list<String> filenames) {
     auto asset = object();
     put(asset, "name", name);
     put(asset, "state", "uploaded");
-    put(asset, "browser_download_url", "https://github.com/schollz/_core/releases/download/" + tag + "/" + name);
+    put(asset, "browser_download_url",
+        "https://github.com/schollz/_core/releases/download/" + tag + "/" + name);
     assets.add(asset);
   }
   put(release, "assets", assets);
   return release;
 }
 String releaseFixtureJson(const String &tag, bool visualizer) {
-  auto release = releaseFixture(tag, {"ectocore_" + tag + ".uf2", "ezeptocore_" + tag + ".uf2",
-                                       "zeptocore_" + tag + ".uf2"});
+  auto release = releaseFixture(
+      tag, {"ectocore_" + tag + ".uf2", "ezeptocore_" + tag + ".uf2", "zeptocore_" + tag + ".uf2"});
   if (visualizer) {
     const auto extra = releaseFixture(tag, {"ectocore_" + tag + "_visualizer.uf2"});
     release["assets"].getArray()->add(extra["assets"][0]);
@@ -198,7 +200,8 @@ String releaseFixtureJson(const String &tag, bool visualizer) {
 }
 std::map<String, Server::Response> releaseRoutes() {
   return {{"/releases?per_page=100&page=1",
-           {releaseFixtureJson("v9.9.0", false), "Link: <http://untrusted.invalid/next>; rel=\"next\"\r\n"}},
+           {releaseFixtureJson("v9.9.0", false),
+            "Link: <http://untrusted.invalid/next>; rel=\"next\"\r\n"}},
           {"/releases?per_page=100&page=2", {releaseFixtureJson("v10.0.0", true), ""}}};
 }
 void releaseTests() {
@@ -213,9 +216,9 @@ void releaseTests() {
   const auto parsed = parseFirmwareReleases(juce::JSON::toString(var(juce::Array<var>{
       ignoredDraft, ignoredPrerelease, wrongUrl,
       releaseFixture("v7.0.0", {"ezeptocore_v7.0.0.uf2", "ezeptocore_v7.0.0_ultralow_latency.uf2",
-                                  "ezeptocore_v7.0.0_no_overclocking_ultralow_latency.uf2",
-                                  "ectocore_beta_hardware_v7.0.0.uf2", "zeptoboard_v7.0.0.uf2",
-                                  "ectocore_v6.0.0.uf2"}),
+                                "ezeptocore_v7.0.0_no_overclocking_ultralow_latency.uf2",
+                                "ectocore_beta_hardware_v7.0.0.uf2", "zeptoboard_v7.0.0.uf2",
+                                "ectocore_v6.0.0.uf2"}),
       releaseFixture("v10.0.0", {"ectocore_v10.0.0.uf2"}),
       releaseFixture("v9.9.0", {"ectocore_v9.9.0.uf2"})})));
   check(parsed.size() == 5 && parsed[0].version == "v10.0.0" && parsed[1].version == "v9.9.0",
@@ -232,9 +235,14 @@ void releaseTests() {
               state.entries.front().version == "v10.0.0" && server.requests == 2,
           "paginate on the original endpoint and sort the combined release list");
   }
-  for (const auto response : {Server::Response{"{}", ""}, {"[", ""}, {"[]", ""},
-                              {"[]", "", 404}, {"[]", "", 403}, {"[]", "", 429},
-                              {"[]", "", 200, 100}, {"", "", 200, 8388609}}) {
+  for (const auto response : {Server::Response{"{}", ""},
+                              {"[", ""},
+                              {"[]", ""},
+                              {"[]", "", 404},
+                              {"[]", "", 403},
+                              {"[]", "", 429},
+                              {"[]", "", 200, 100},
+                              {"", "", 200, 8388609}}) {
     Server server({{"/releases", response}});
     FirmwareReleases releases;
     releases.start(server.url("/releases"));
@@ -260,7 +268,7 @@ void noPartials(const File &directory) {
 }
 void serialUf2Tests() {
   Temp temp;
-  auto file = temp.directory.getChildFile("ectocore_v8.0.3.uf2");
+  auto file = temp.directory.getChildFile("ectocore_v8.0.4.uf2");
   for (const auto &identity : {serialIdentity, std::string(250, '\0') + serialIdentity}) {
     const auto bytes = uf2(identity);
     check(file.replaceWithData(bytes.getData(), bytes.getSize()), "write serial UF2 fixture");
@@ -310,7 +318,8 @@ void firmwareViewTests() {
     check(view.selectedEntry().hardware == FirmwareHardware((presentation + 1) % 3) &&
               view.selectedEntry().build == FirmwareBuild::normal &&
               view.release.getText().contains(view.selectedEntry().filename) &&
-              view.docs.getButtonText().startsWith(firmwareHardwareName(view.selectedEntry().hardware)),
+              view.docs.getButtonText().startsWith(
+                  firmwareHardwareName(view.selectedEntry().hardware)),
           "presentation changes select matching hardware, filename and guide");
     check(server.requests == 0, "changing presentation does not start a download");
     look.presentation(presentation);
@@ -388,7 +397,8 @@ void firmwareViewTests() {
   view.download.start(localEntry(server, "/serial"), temp.directory);
   waitFor(view.download);
   view.setHardware(FirmwareHardware::zeptocore);
-  check(view.downloadedFile != prior && view.downloadedFile.existsAsFile() && view.reveal.isEnabled(),
+  check(view.downloadedFile != prior && view.downloadedFile.existsAsFile() &&
+            view.reveal.isEnabled(),
         "success reveals the checked file");
   check(view.selectedEntry().hardware == FirmwareHardware::zeptocore &&
             view.downloadStatus.getText().contains("ezeptocore"),
@@ -428,13 +438,15 @@ void firmwareViewTests() {
   };
   std::atomic<int> copies{0};
   std::atomic<bool> releaseCopy{false};
-  installer.copyFirmware = [&](const File &file, const File &destination, auto progress, auto cancelled) {
+  installer.copyFirmware = [&](const File &file, const File &destination, auto progress,
+                               auto cancelled) {
     ++copies;
     progress(.5);
     while (!releaseCopy && !cancelled())
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
     if (!cancelled())
-      check(file.copyFileTo(destination.getChildFile("CORE.UF2")), "copy downloaded firmware in fixture");
+      check(file.copyFileTo(destination.getChildFile("CORE.UF2")),
+            "copy downloaded firmware in fixture");
   };
   installer.awaitingDownload = true;
   installer.download.start(localEntry(server, "/ok"), temp.directory);
@@ -464,18 +476,21 @@ void firmwareViewTests() {
   check(!installer.write.isEnabled(), "another version requires its own completed download");
   installer.version.setSelectedId(1, juce::sendNotificationSync);
   installer.setHardware(FirmwareHardware::ectocore);
-  check(!installer.write.isEnabled(), "a shared MIDI identity does not authorize another model's download");
+  check(!installer.write.isEnabled(),
+        "a shared MIDI identity does not authorize another model's download");
   installer.setHardware(FirmwareHardware::ezeptocore);
   installer.install();
   installer.cancelDownload();
   pendingConfirmation(1);
-  check(!installer.awaitingInstall && copies == 0, "window closure invalidates pending confirmation");
+  check(!installer.awaitingInstall && copies == 0,
+        "window closure invalidates pending confirmation");
   installer.install();
   pendingConfirmation(1);
   waitFor([&] { return copies == 1; }, "install worker start");
   installer.timerCallback();
-  check(!installer.get.isEnabled() && !installer.version.isEnabled() && !installer.write.isEnabled() &&
-            !installer.cancel.isEnabled() && installer.progressBar.isVisible(),
+  check(!installer.get.isEnabled() && !installer.version.isEnabled() &&
+            !installer.write.isEnabled() && !installer.cancel.isEnabled() &&
+            installer.progressBar.isVisible(),
         "installation locks conflicting operations and reports progress");
   installer.setHardware(FirmwareHardware::zeptocore);
   check(installer.selectedEntry().hardware == FirmwareHardware::ezeptocore,
@@ -484,7 +499,8 @@ void firmwareViewTests() {
   waitFor([&] { return !installer.installing; }, "install worker completion");
   installer.timerCallback();
   check(hashFile(target.getChildFile("CORE.UF2")) == installer.downloadedChecksum &&
-            installer.selectedEntry().hardware == FirmwareHardware::zeptocore && !installer.write.isEnabled(),
+            installer.selectedEntry().hardware == FirmwareHardware::zeptocore &&
+            !installer.write.isEnabled(),
         "installation copies the downloaded file then applies the pending theme");
   installer.setHardware(FirmwareHardware::ezeptocore);
   check(installer.downloadedFile.replaceWithText("modified download"), "modify downloaded file");
@@ -494,7 +510,8 @@ void firmwareViewTests() {
   installer.timerCallback();
   check(copies == 1 && installer.installStatus.getText().contains("changed"),
         "modified downloads cannot be substituted for selected firmware");
-  check(installer.downloadedFile.replaceWithData(bytes.getData(), bytes.getSize()), "restore downloaded file");
+  check(installer.downloadedFile.replaceWithData(bytes.getData(), bytes.getSize()),
+        "restore downloaded file");
   installer.copyFirmware = [](auto &, auto &, auto, auto) {
     throw std::runtime_error("Selected bootloader volume is no longer connected");
   };
@@ -502,7 +519,8 @@ void firmwareViewTests() {
   pendingConfirmation(1);
   waitFor([&] { return !installer.installing; }, "installation failure");
   installer.timerCallback();
-  check(installer.installStatus.getText().contains("no longer connected") && installer.get.isEnabled(),
+  check(installer.installStatus.getText().contains("no longer connected") &&
+            installer.get.isEnabled(),
         "installation errors restore controls and preserve the download");
   {
     auto closing = std::make_unique<FirmwareView>(device, look, FirmwareHardware::ezeptocore);
@@ -534,7 +552,8 @@ void firmwareViewTests() {
   view.refreshVersions();
   waitFor(view.releases);
   view.timerCallback();
-  check(view.selectedEntry().version == "v9.9.0", "refresh preserves an explicit version selection");
+  check(view.selectedEntry().version == "v9.9.0",
+        "refresh preserves an explicit version selection");
   FirmwareView latest(device, look, FirmwareHardware::ectocore);
   latest.releaseEndpoint = available.url("/releases");
   latest.loadVersions();
@@ -552,7 +571,8 @@ void firmwareViewTests() {
   view.refreshVersions();
   waitFor(view.releases);
   view.timerCallback();
-  check(view.selectedEntry().version == "v9.9.0" && view.catalogStatus.getText().contains("Keeping"),
+  check(view.selectedEntry().version == "v9.9.0" &&
+            view.catalogStatus.getText().contains("Keeping"),
         "failed refresh keeps the previous release list");
   FirmwareView fallback(device, look, FirmwareHardware::ezeptocore);
   fallback.releaseEndpoint = unavailable.url("/releases");
@@ -628,9 +648,8 @@ void firmwareTests() {
     check(server.requests == (path == "/redirect" ? 2 : 1), "follow redirects only when requested");
     noPartials(temp.directory);
   }
-  for (const String path :
-       {"/missing", "/truncated", "/invalid", "/wrong-family", "/wrong-serial-family",
-        "/unidentified", "/oversized", "/loop"}) {
+  for (const String path : {"/missing", "/truncated", "/invalid", "/wrong-family",
+                            "/wrong-serial-family", "/unidentified", "/oversized", "/loop"}) {
     Temp temp;
     Server server;
     FirmwareDownload download;
@@ -705,8 +724,8 @@ void firmwareReleaseTests() {
   const auto published = releases.snapshot();
   check(published.status == FirmwareReleases::Status::succeeded, published.message);
   std::vector<FirmwareEntry> downloads;
-  for (auto hardware : {FirmwareHardware::ezeptocore, FirmwareHardware::zeptocore,
-                        FirmwareHardware::ectocore}) {
+  for (auto hardware :
+       {FirmwareHardware::ezeptocore, FirmwareHardware::zeptocore, FirmwareHardware::ectocore}) {
     juce::StringArray versions;
     for (const auto &entry : published.entries)
       if (entry.hardware == hardware) {
@@ -732,8 +751,8 @@ void firmwareReleaseTests() {
       std::this_thread::sleep_for(std::chrono::milliseconds(20));
     const auto state = download.snapshot();
     check(state.status == Status::succeeded, entry.filename + ": " + state.message);
-    check(state.file.getFileName() == entry.filename &&
-              state.file.getSize() == state.received && inspectUf2(state.file).blocks > 0,
+    check(state.file.getFileName() == entry.filename && state.file.getSize() == state.received &&
+              inspectUf2(state.file).blocks > 0,
           "complete release download validates again as a local file");
     noPartials(temp.directory);
     std::cout << "PASS " << entry.filename << " bytes=" << state.received << std::endl;
