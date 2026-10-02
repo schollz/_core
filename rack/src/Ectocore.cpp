@@ -80,9 +80,12 @@ struct Ectocore : engine::Module {
     void onReset(const ResetEvent &e) override {Module::onReset(e);latch=0;resetRequested=true;}
     void process(const ProcessArgs &args) override {
         if(auto *fresh=preparedEngine.exchange(nullptr)){
+            CoreState previous;core_engine_get_state(engine,&previous);
             auto *old=engine;engine=fresh;retiredEngine.store(old);latch=0;resetRequested=false;
             for(int p=MODE;p<=TAP;++p)params[p].setValue(0);
             if(active){core_engine_set_catalogue(engine,active->library->banks.data(),read,this);core_engine_set_resident_bank(engine,active->index);CoreState s;core_engine_get_state(engine,&s);ecto::applySettings(*active->library,s);core_engine_update_settings(engine,&s);}
+            CoreState reboot;core_engine_get_state(engine,&reboot);reboot.start_tempo=previous.start_tempo;
+            core_engine_update_settings(engine,&reboot);core_engine_apply_start_tempo(engine);
             outCount=outRead=outWrite=0;
         }
         ecto::Bank *bank;
@@ -90,12 +93,14 @@ struct Ectocore : engine::Module {
             if(active&&bank->library->generation<active->library->generation)storage.retired.push(bank);
             else {
                 bool same=active&&active->library->generation==bank->library->generation;
+                bool startup=!active||active->library->root!=bank->library->root||restorePending;
                 if(active)storage.retired.push(active);
                 active=bank;storage.activeGeneration=bank->library->generation;
                 core_engine_set_catalogue(engine,bank->library->banks.data(),read,this);
                 if(restorePending){core_engine_set_state(engine,&restoreState);restorePending=false;}
                 core_engine_set_resident_bank(engine,bank->index);
-                if(!same&&(!hasPatchSettings||bank->library->importSettings)){auto s=initial;ecto::applySettings(*bank->library,s);core_engine_update_settings(engine,&s);}
+                if(!same&&(!hasPatchSettings||bank->library->importSettings)){auto s=initial;ecto::applySettings(*bank->library,s);core_engine_update_settings(engine,&s);hasPatchSettings=true;}
+                if(startup)core_engine_apply_start_tempo(engine);
                 requestedBank=-1;
             }
         }
@@ -141,11 +146,25 @@ struct Ectocore : engine::Module {
         latch=0;for(int p=MODE;p<=TAP;++p)params[p].setValue(0);
         ezeptocore=!json_is_false(json_object_get(j,"ezeptocore"));restoreState=initial;
         restorePending=ecto::stateFromJson(json_object_get(j,"state"),restoreState);hasPatchSettings=restorePending;
+        if(restorePending)restoreState.tempo=start_tempo_resolve(restoreState.start_tempo,restoreState.tempo);
         if(restorePending&&!core_engine_set_state(engine,&restoreState))restorePending=hasPatchSettings=false;
         auto *path=json_string_value(json_object_get(j,"folder"));if(path){
             {std::lock_guard<std::mutex> lock(pathMutex);folder=path;}
             storage.load(path,restorePending?restoreState.bank:0);
         }
+    }
+};
+
+struct StartTempoField : ui::TextField {
+    Ectocore *module=nullptr;
+    void onAction(const ActionEvent &e) override {
+        uint16_t bpm=0;
+        if(start_tempo_parse(text.data(),text.size(),&bpm)&&bpm){
+            auto state=module->uiState;state.start_tempo=bpm;
+            if(module->edits.push({state}))module->uiState=state;
+        }
+        setText(module->uiState.start_tempo?std::to_string(module->uiState.start_tempo):"130");
+        e.consume(this);
     }
 };
 
@@ -375,6 +394,13 @@ struct EctocoreWidget : app::ModuleWidget {
         menu->addChild(createMenuLabel("Bank "+std::to_string(m->selectedBank+1)+" · Sample "+std::to_string(m->selectedSlot+1)));
         menu->addChild(createMenuLabel("Companion cache: 64 MiB · misses "+std::to_string(m->storage.misses.load())));
         menu->addChild(createSubmenuItem("Device settings","",[m](ui::Menu *sub){
+            sub->addChild(createSubmenuItem("Start tempo",m->uiState.start_tempo?std::to_string(m->uiState.start_tempo)+" BPM":"Default",[m](ui::Menu *mnu){
+                mnu->addChild(createCheckMenuItem("Default (no override)","",[m]{return m->uiState.start_tempo==0;},[m]{auto s=m->uiState;s.start_tempo=0;if(m->edits.push({s}))m->uiState=s;}));
+                mnu->addChild(createMenuLabel("Fixed BPM (30–300): enter to save"));
+                auto *field=new StartTempoField;field->module=m;field->box.size=Vec(240,28);
+                field->setText(m->uiState.start_tempo?std::to_string(m->uiState.start_tempo):"130");mnu->addChild(field);
+                mnu->addChild(createMenuLabel("Applies on patch open or reboot."));
+            }));
             auto toggle=[&](const char *label,bool CoreState::*field){sub->addChild(createCheckMenuItem(label,"",[m,field]{return m->uiState.*field;},[m,field]{auto s=m->uiState;s.*field=!(s.*field);m->edits.push({s});}));};
             toggle("Stop when clock stops",&CoreState::clock_stop);toggle("Clock output is a trigger",&CoreState::clock_trigger);toggle("Clock follows slices",&CoreState::clock_slice);
             const char *names[]={"Amen CV bipolar","Break CV bipolar","Sample CV bipolar"};

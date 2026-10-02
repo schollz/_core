@@ -1,3 +1,4 @@
+#include "start_tempo_settings.h"
 #ifdef INCLUDE_ECTOCORE
 #include "sample_cv_settings.h"
 #endif
@@ -108,6 +109,7 @@ int extractNumber(const char *str) {
 }
 
 void load_settings(const char *dir_name) {
+  global_start_tempo = start_tempo_load(dir_name, global_start_tempo);
 #ifdef INCLUDE_ZEPTOCORE
   midi_receive_channel = midi_channel_load(dir_name, midi_receive_channel);
 #endif
@@ -555,6 +557,10 @@ static bool savefile_load_state(bool reopen) {
     if(!SaveFile_load(sf, savefile_current)) {
       audio_media_release();return false;
     }
+    // Boot overrides saved tempo before tempo-dependent effects initialize.
+    // Runtime preset recall keeps its ordinary saved tempo.
+    if (!reopen)
+      sf->bpm_tempo = start_tempo_resolve(global_start_tempo, sf->bpm_tempo);
     if(reopen)audio_file_open(fil_current_name);
     // update all the fx
     for (uint8_t i = 0; i < 16; i++) {
@@ -647,6 +653,7 @@ void sdcard_startup() {
   // load save file
   // load new save file
   sf = SaveFile_malloc();
+  sf->bpm_tempo = start_tempo_resolve(global_start_tempo, sf->bpm_tempo);
 
   // initialize sequencers
   for (uint8_t j = 0; j < 16; j++) {

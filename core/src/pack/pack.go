@@ -17,6 +17,7 @@ import (
 var Storage = "zips"
 
 type Data struct {
+	SettingsStartTempo        string   `json:"settingsStartTempo"`
 	SettingsMIDIChannel       string   `json:"settingsMidiChannel"`
 	Oversampling              string   `json:"oversampling"`
 	StereoMono                string   `json:"stereoMono"`
@@ -39,6 +40,17 @@ type Data struct {
 	} `json:"banks"`
 }
 
+func startTempoContents(value string) (string, error) {
+	if value == "" || value == "default" {
+		return "default\n", nil
+	}
+	bpm, err := strconv.Atoi(value)
+	if err != nil || bpm < 30 || bpm > 300 || strconv.Itoa(bpm) != value {
+		return "", fmt.Errorf("start tempo must be default or a whole-number BPM from 30 to 300")
+	}
+	return value + "\n", nil
+}
+
 func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename string, err error) {
 	zipStorage := path.Join(pathToStorage, "zips")
 	if err = os.MkdirAll(zipStorage, 0777); err != nil {
@@ -52,6 +64,10 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	if err != nil {
 		log.Error(err)
 		return
+	}
+	tempoContents, err := startTempoContents(data.SettingsStartTempo)
+	if err != nil {
+		return "", err
 	}
 	log.Tracef("data: %+v", data)
 	log.Debugf("oversampling: %s", data.Oversampling)
@@ -126,6 +142,9 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 		return
 	}
 	// if data.Resampling == "linear" {
+	if err = os.WriteFile(path.Join(settingsFolder, "start_tempo"), []byte(tempoContents), 0666); err != nil {
+		return
+	}
 	// 	os.Create(path.Join(settingsFolder, "resampling_quadratic-off"))
 	// } else {
 	// 	os.Create(path.Join(settingsFolder, "resampling_quadratic-on"))

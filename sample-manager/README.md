@@ -84,7 +84,7 @@ Click within a slice to audition it. **Play / Stop** previews the whole complete
 
 **Even slices** divides the sample into the requested count, recalculates the fixed splice interval from Source BPM and sample length using the website's 24-tick rounding, and turns off **Variable splice timing**. **Auto slice**, beside it, uses the same count as a target and turns on **Variable splice timing**. Auto slicing uses the local onset detector, starting with HFC and a 15 ms refinement window, and selects the strongest detected attacks. The first slice starts at zero, so a target of 16 needs 15 internal cuts. Sparse audio or minimum-spacing limits can yield fewer slices. Detector method and minimum spacing remain in the advanced controls. Slice markers, their interval and timing toggle change together, including through undo/redo. Local slicing never contacts a service. Imports preserve supported WAV cue/loop markers, XRNI slices, OP-1 AIFF markers, and the website's custom AIFF/Ogg slice metadata.
 
-**Source BPM** is initialized from an explicit filename label such as `135 bpm`, `bpm135`, or `123.5BPM`, then embedded tempo metadata. For unlabeled loops, the app first checks whether duration fits one plausible integer tempo with 2/4/8/16/... beats. Ambiguous lengths use the vendored SoundTouch BPM detector and even-beat loop alignment, with at most 45 seconds of audio analyzed in bounded blocks. Half/double-time ambiguity is inherent; check the result for unusual meters or very slow/fast loops. Silence, very short audio, or failed detection retain 120 as a fallback; `[TEMPO]` logs identify the source of the estimate. Existing project tempos are retained.
+**Source BPM** is initialized from an explicit filename label such as `135 bpm`, `bpm135`, or `123.5BPM`, then embedded tempo metadata. For unlabeled loops, the app first checks whether duration fits one plausible integer tempo with 2/4/8/16/... beats. Ambiguous lengths use the vendored SoundTouch BPM detector and even-beat loop alignment. If SoundTouch cannot resolve a tempo, the app compares repeating attacks in the audio, including half- and double-beat intervals. Each analysis pass reads at most the first 45 seconds in bounded blocks and can be cancelled. Half/double-time ambiguity is inherent; check the result for unusual meters or very slow/fast loops. Silence, very short audio, or failed detection retain 120 as a fallback; `[TEMPO]` logs identify the source of the estimate. Existing project tempos are retained.
 
 Leave **Render BPM** empty to retain the source tempo. Setting a render BPM changes duration by `source BPM / render BPM`; **Preserve pitch** is initially off, so this changes speed and pitch. Enabling it uses offline Rubber Band's finer engine with stereo channels together. Renders always start from the immutable original. Slice and transient positions follow the rendered timeline, and preview uses the same completed rendering as the output. **Tempo matching** separately controls subsequent behavior on the instrument.
 
@@ -115,6 +115,25 @@ Ezeptocore and Zeptocore display a header rune from the website's seven symbols,
 | Ectocore | Blue palette, restored logo | Grimoire of Breaks: seven runes |
 
 **Settings** includes brightness, clock behavior, CV behavior/polarity, reset override, product-specific knob/MASH options, and the seven-by-sixteen effect matrix in website order. Changing an exclusive marker replaces its on/off alternatives together.
+
+**Start tempo** appears in all three presentations and in the web managers. Leave it
+at **Default (no override)** to keep the existing startup behavior, including a
+saved preset's tempo. Choose **Fixed BPM** and enter a whole number from 30 to 300
+to start at that tempo instead; the first suggested value is 130. Press Enter or
+leave the BPM field to save. Copy web exports onto the card and restart the device
+to apply the setting. Supporting firmware is required; older firmware ignores it.
+
+The fixed value applies only at startup. Tap tempo, Zeptocore tempo controls,
+external clock/MIDI, runtime preset recall, and the EZEPTOCORE/Ectocore combination
+to restore the current sample's tempo keep working normally. Changing samples or
+banks does not reapply it. Sample BPM metadata and tempo matching are unchanged.
+
+Both managers write `settings/start_tempo` containing `default` or a decimal BPM,
+followed by a newline. Full and settings-only web exports include the file, so
+switching back to Default replaces a previous override. A root-level
+`start_tempo` file is also accepted, with the settings-directory file taking
+precedence. Missing or invalid values disable the override; the native manager
+reports invalid values. VCV Rack reads the same file.
 
 **MIDI receive channel** appears in Zeptocore Settings. Choose 1–16 (default 1);
 notes and performance CCs on USB and serial MIDI follow this setting. Clock and

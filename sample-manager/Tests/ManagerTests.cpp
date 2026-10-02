@@ -300,6 +300,68 @@ void sampleCVMappingChecks(const File &workspace) {
             "Undo in an older project restores the default without a schema migration");
   }
 }
+void startTempoChecks(const File &workspace) {
+  auto root = workspace.getChildFile("start-tempo");
+  require(root.createDirectory().wasOk(), "Start tempo fixture");
+  auto file = child(root, card::startTempoPath);
+  {
+    Manager manager; manager.open(root); successful(settle(manager));
+    require(file.loadFileAsString() == "default\n", "Initial startup tempo disabled");
+    manager.settings({{"start_tempo", "130"}}); successful(settle(manager));
+    require(file.loadFileAsString() == "130\n", "Save startup tempo");
+    manager.undo(); successful(settle(manager));
+    require(file.loadFileAsString() == "default\n", "Undo startup tempo");
+    manager.redo(); successful(settle(manager));
+    Look look;
+    for (int p = 0; p < 3; ++p) {
+      look.presentation(p); SettingsView view(manager, look, p);
+      auto *mode = dynamic_cast<juce::ComboBox *>(view.findChildWithID("startTempoMode"));
+      auto *bpm = dynamic_cast<juce::TextEditor *>(view.findChildWithID("startTempoBpm"));
+      require(mode && bpm && mode->getSelectedId() == 2, "Startup tempo present in every presentation");
+      for (auto *component : view.getChildren())
+        require(view.getLocalBounds().contains(component->getBounds()), "Settings controls fit the window");
+      const auto preview = juce::SystemStats::getEnvironmentVariable("CORE_SETTINGS_PREVIEW_DIR", "");
+      if (File::isAbsolutePath(preview)) {
+        File folder(preview); require(folder.createDirectory().wasOk(), "Settings preview folder");
+        auto out = folder.getChildFile(String(p) + ".png").createOutputStream();
+        auto shot = view.createComponentSnapshot(view.getLocalBounds());
+        require(out && out->setPosition(0) && out->truncate().wasOk() &&
+                    juce::PNGImageFormat().writeImageToStream(shot, *out), "Settings preview image");
+      }
+      bpm->setText("145", false); bpm->onReturnKey(); successful(settle(manager));
+      require(file.loadFileAsString() == "145\n", "UI saves BPM");
+      bpm->setText("301", false); bpm->onReturnKey(); successful(settle(manager));
+      require(file.loadFileAsString() == "145\n" && bpm->getText() == "145", "Invalid UI edit preserves BPM");
+      mode->setSelectedId(1, juce::sendNotificationSync); successful(settle(manager));
+      require(!bpm->isEnabled() && file.loadFileAsString() == "default\n", "Default clears override");
+      mode->setSelectedId(2, juce::sendNotificationSync); successful(settle(manager));
+      require(file.loadFileAsString() == "145\n", "Re-enable retains edited BPM");
+    }
+    auto copy = workspace.getChildFile("start-tempo-copy"); manager.duplicate(copy); successful(settle(manager));
+    require(child(copy, card::startTempoPath).loadFileAsString() == "145\n", "Duplicate preserves startup tempo");
+  }
+  {
+    Manager reopened; reopened.open(root); successful(settle(reopened));
+    require(reopened.snapshot().project.settings.at("start_tempo") == "145", "Reopen startup tempo");
+    durableWrite(file, "160\n", 4); reopened.settings({{"start_tempo", "170"}});
+    require(settle(reopened).error.contains("External change") && file.loadFileAsString() == "160\n", "Protect external tempo edits");
+  }
+  auto oldRoot = workspace.getChildFile("start-tempo-legacy");
+  require(oldRoot.createDirectory().wasOk(), "Legacy startup tempo fixture");
+  {
+    Storage storage(oldRoot); auto legacy = storage.open();
+    legacy.settings.erase("start_tempo"); legacy.fingerprints.erase(card::startTempoPath);
+    durableJson(child(oldRoot, ".core-manager/project.json"), legacy.json());
+    durableWrite(child(oldRoot, card::startTempoPath), "150\n", 4);
+  }
+  {
+    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    require(legacy.snapshot().project.settings.at("start_tempo") == "150", "Legacy manifest adopts card tempo");
+    legacy.settings({{"start_tempo", "130"}}); successful(settle(legacy));
+    legacy.undo(); successful(settle(legacy));
+    require(child(oldRoot, card::startTempoPath).loadFileAsString() == "150\n", "Legacy undo restores adopted tempo");
+  }
+}
 void midiChannelChecks(const File &workspace) {
   auto root = workspace.getChildFile("midi-channel");
   require(root.createDirectory().wasOk(), "MIDI settings folder");
@@ -610,6 +672,13 @@ void nameRecoveryCases(const File &workspace) {
   }
 }
 } // namespace
+void startTempoTests() {
+  auto workspace = File::getSpecialLocation(File::tempDirectory).getChildFile("core-start-tempo-" + uuid());
+  require(workspace.createDirectory().wasOk(), "Start tempo test folder");
+  struct Clean { File root; ~Clean() { root.deleteRecursively(); } } clean{workspace};
+  startTempoChecks(workspace);
+  std::cout << "PASS start tempo persistence, UI, undo, legacy adoption and conflicts\n";
+}
 void midiSettingsTests() {
   auto workspace = File::getSpecialLocation(File::tempDirectory).getChildFile("core-midi-settings-" + uuid());
   require(workspace.createDirectory().wasOk(), "MIDI settings test folder");
@@ -629,6 +698,7 @@ void managerTests() {
   backgroundCompanions(workspace);
   sampleCVMappingChecks(workspace);
   midiChannelChecks(workspace);
+  startTempoChecks(workspace);
   // Keep independent project fixtures outside the project being duplicated.
   auto root = workspace.getChildFile("project");
   require(root.createDirectory().wasOk(), "Main manager fixture folder");

@@ -1,6 +1,7 @@
 // Copyright 2026 Zack Scholl. SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 #include "../../lib/core_engine/core_engine.h"
+#include "../../lib/start_tempo.h"
 #include <jansson.h>
 #include <cstdio>
 #include <cstdlib>
@@ -13,7 +14,7 @@ namespace ecto {
 // Named fields, not a memory dump: portable between CPU architectures and
 // future engine layouts. New fields retain the engine's defaults on old patches.
 #define CORE_STATE_NUMBERS(X) \
- X(version) X(tempo) X(volume) X(bank) X(slot) X(rune) X(division) X(trigger_mode) X(pitch) \
+ X(version) X(tempo) X(start_tempo) X(volume) X(bank) X(slot) X(rune) X(division) X(trigger_mode) X(pitch) \
  X(brightness) X(amen_behavior) X(sample_mapping) X(reset_input) X(amiga) X(saturation) \
  X(smear) X(jitter) X(chaos) X(jump_probability) X(retrigger_probability) X(filter_index) X(filter_type) X(sequence_length)
 #define CORE_STATE_BOOLS(X) X(stopped) X(muted) X(stay_in_sync) X(clock_stop) X(clock_trigger) X(clock_slice)
@@ -44,6 +45,6 @@ inline bool stateFromJson(json_t *j,CoreState &s) {
     for(auto pair:{std::pair<const char*,uint64_t*>("random_state",&s.random_state),{"random_increment",&s.random_increment}}){
         if(auto *v=json_object_get(j,pair.first)){auto *text=json_string_value(v);if(!text||strlen(text)!=16)return false;for(unsigned i=0;i<16;++i)if(!std::isxdigit(static_cast<unsigned char>(text[i])))return false;char *end;auto n=strtoull(text,&end,16);if(*end)return false;*pair.second=n;}
     }
-    return s.version==1&&s.bank<16&&s.slot<16&&s.rune<7&&s.trigger_mode<4&&s.sample_mapping<2&&s.amen_behavior<3&&s.reset_input>=-1&&s.reset_input<=3&&s.sequence_length<=64;
+    return start_tempo_valid(s.start_tempo)&&s.tempo>=30&&s.tempo<=300&&s.version==1&&s.bank<16&&s.slot<16&&s.rune<7&&s.trigger_mode<4&&s.sample_mapping<2&&s.amen_behavior<3&&s.reset_input>=-1&&s.reset_input<=3&&s.sequence_length<=64;
 }
 }

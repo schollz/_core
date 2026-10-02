@@ -1,4 +1,5 @@
 #include "SettingsView.h"
+#include "../../lib/start_tempo.h"
 #include <BinaryData.h>
 namespace core {
 namespace {
@@ -111,7 +112,39 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     : manager(m), look(l), presentation(p),
       values(m.snapshot().project.settings) {
   setLookAndFeel(&look);
+  const String tempoHelp = "Choose the tempo used at startup. Default keeps existing startup behavior. "
+      "Fixed BPM overrides a saved tempo at startup only; normal tempo controls still work. "
+      "Requires supporting firmware. Restart with this card to apply.";
+  startTempoLabel.setText("Start tempo", juce::dontSendNotification);
+  startTempoLabel.setTooltip(tempoHelp);
+  startTempoMode.addItem("Default (no override)", 1);
+  startTempoMode.addItem("Fixed BPM", 2);
+  startTempoMode.setTooltip(tempoHelp);
+  startTempoMode.setComponentID("startTempoMode");
+  auto tempo = values.find("start_tempo");
+  uint16_t bpm = 0;
+  if (tempo != values.end())
+    start_tempo_parse(tempo->second.toRawUTF8(), size_t(tempo->second.getNumBytesAsUTF8()), &bpm);
+  startTempoMode.setSelectedId(bpm ? 2 : 1, juce::dontSendNotification);
+  startTempoBpm.setComponentID("startTempoBpm");
+  startTempoBpm.setTitle("Start tempo BPM");
+  startTempoBpm.setTooltip("Whole-number BPM from 30 to 300. Applies at the next startup.");
+  startTempoBpm.setInputRestrictions(3, "0123456789");
+  addAndMakeVisible(startTempoBpm);
+  startTempoBpm.setText(String(bpm ? bpm : 130), false);
+  startTempoBpm.setEnabled(bpm != 0);
+  startTempoBpm.onReturnKey = [this] { commitStartTempo(); };
+  startTempoBpm.onFocusLost = [this] { commitStartTempo(); };
+  startTempoMode.onChange = [this] {
+    startTempoBpm.setEnabled(startTempoMode.getSelectedId() == 2);
+    commitStartTempo();
+  };
+  addAndMakeVisible(startTempoLabel);
+  addAndMakeVisible(startTempoMode);
+  startTempoBpmLabel.setText("BPM", juce::dontSendNotification);
+  addAndMakeVisible(startTempoBpmLabel);
   for (const auto &d : card::settingDefinitions()) {
+    if (d.key == "start_tempo") continue;
     bool knob =
         d.key == "knobx_select_sample" || d.key == "mash_mode_momentary" ||
         d.key == "midi_channel";
@@ -181,7 +214,24 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     addAndMakeVisible(button);
   }
   refreshEffects();
-  setSize(780, p == 1 ? 460 : 690);
+  setSize(780, p == 1 ? 522 : 752);
+}
+void SettingsView::commitStartTempo() {
+  String value = "default";
+  if (startTempoMode.getSelectedId() == 2) {
+    value = startTempoBpm.getText();
+    uint16_t bpm = 0;
+    if (!start_tempo_parse(value.toRawUTF8(), size_t(value.getNumBytesAsUTF8()), &bpm) || !bpm) {
+      const auto previous = values.find("start_tempo");
+      value = previous != values.end() && previous->second != "default" ? previous->second : String("130");
+      startTempoBpm.setText(value, false);
+      return;
+    }
+  }
+  if (values["start_tempo"] != value) {
+    values["start_tempo"] = value;
+    manager.settings({{"start_tempo", value}});
+  }
 }
 void SettingsView::refreshSampleCVMapping() {
   const auto reset = values.find("override_with_reset");
@@ -207,7 +257,11 @@ void SettingsView::refreshEffects() {
   }
 }
 void SettingsView::resized() {
-  int y = 24;
+  startTempoLabel.setBounds(24, 24, getWidth() - 48, 22);
+  startTempoMode.setBounds(24, 48, 330, 28);
+  startTempoBpm.setBounds(378, 48, 110, 28);
+  startTempoBpmLabel.setBounds(496, 48, 70, 28);
+  int y = 86;
   int width = (getWidth() - 72) / 2;
   for (int n = 0; n < labels.size(); ++n) {
     int column = n % 2, row = n / 2;

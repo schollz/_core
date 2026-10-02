@@ -33,14 +33,13 @@ func Unzip(src, dest string) error {
 
 		fpath := filepath.Join(dest, f.Name)
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(fpath, f.Mode())
-		} else {
-			var fdir string
-			if lastIndex := strings.LastIndex(fpath, string(os.PathSeparator)); lastIndex > -1 {
-				fdir = fpath[:lastIndex]
+			if err := os.MkdirAll(fpath, f.Mode()); err != nil {
+				return err
 			}
-
-			err = os.MkdirAll(fdir, f.Mode())
+		} else {
+			// ZIPs need not include directory entries. Parents must be traversable
+			// even when the file itself is read-only or has no execute bits.
+			err = os.MkdirAll(filepath.Dir(fpath), 0755)
 			if err != nil {
 				log.Error(err)
 				return err

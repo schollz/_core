@@ -253,6 +253,16 @@ void Manager::open(const File &root) {
     importedSampleId.clear();
     committed =
         Project::fromJson(parseJson(child(root, ".core-manager/project.json")));
+    // Adopt newly recognized card settings into the committed baseline too.
+    // Pending/history state can contain edits, so read the actual card value.
+    if (committed.settings.find("start_tempo") == committed.settings.end()) {
+      const auto settings = card::readSettings(root, project.warnings);
+      const auto found = settings.find("start_tempo");
+      committed.settings["start_tempo"] = found == settings.end() ? String("default") : found->second;
+      committed.fingerprints[card::startTempoPath] = fingerprint(child(root, card::startTempoPath));
+      if (child(root, "start_tempo").exists())
+        committed.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
+    }
     manifestHash = fingerprint(child(root, ".core-manager/project.json"));
     history.clear();
     auto undoFile = child(root, ".core-manager/history.json");

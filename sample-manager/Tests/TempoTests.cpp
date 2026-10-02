@@ -4,6 +4,18 @@
 #include <iostream>
 
 namespace core {
+namespace {
+void writeTempoAudio(const File &file, const juce::AudioBuffer<float> &data, double rate) {
+  juce::WavAudioFormat format;
+  std::unique_ptr<juce::OutputStream> stream(file.createOutputStream());
+  auto writer = format.createWriterFor(stream, juce::AudioFormatWriterOptions()
+                                                   .withSampleRate(rate)
+                                                   .withNumChannels(data.getNumChannels())
+                                                   .withBitsPerSample(16));
+  require(writer != nullptr, "Write tempo fixture");
+  require(writer->writeFromAudioSampleBuffer(data, 0, data.getNumSamples()), "Save tempo audio");
+}
+} // namespace
 void tempoTests() {
   for (const auto &name :
        juce::StringArray{"Vintage Medium DnB 3 - 135 bpm.wav", "135BPM.wav", "loop_bpm135.wav",
@@ -48,33 +60,53 @@ void tempoTests() {
             "Embedded Apple loop beat count supplies tempo");
     reader->metadataValues.clear();
     // Extend the same real loop with a short tail so its duration no longer
-    // fits an integer-tempo regular loop. This must invoke the C++ detector.
+    // fits an integer-tempo regular loop. SoundTouch cannot resolve these
+    // syncopated loops; onset correlation must recover the beat from the audio.
     juce::AudioBuffer<float> data(1, int(reader->lengthInSamples) + 7440);
     data.clear();
     require(reader->read(&data, 0, int(reader->lengthInSamples), 0, true, false),
             "Read tempo fixture");
     auto extended = root.getChildFile("tail-" + String(i) + ".wav");
-    juce::WavAudioFormat format;
-    std::unique_ptr<juce::OutputStream> stream(extended.createOutputStream());
-    auto writer = format.createWriterFor(stream, juce::AudioFormatWriterOptions()
-                                                     .withSampleRate(reader->sampleRate)
-                                                     .withNumChannels(1)
-                                                     .withBitsPerSample(16));
-    require(writer != nullptr, "Write tempo fixture with tail");
-    require(writer->writeFromAudioSampleBuffer(data, 0, data.getNumSamples()), "Save tempo tail");
-    writer.reset();
+    writeTempoAudio(extended, data, reader->sampleRate);
+    const auto originalHash = hashFile(extended);
     auto withTail = audio.reader(extended);
     auto fallback = detectTempo(*withTail, "untagged.wav");
-    require(fallback.method.startsWith("SoundTouch") && std::abs(fallback.bpm - 135) < 2.,
-            "Vendored detector handles real loops whose length is not an exact beat count");
-    bool cancelledRead = false;
-    int cancelChecks = 0;
-    try {
-      detectTempo(*withTail, "untagged.wav", [&] { return ++cancelChecks > 3; });
-    } catch (const std::exception &e) {
-      cancelledRead = String(e.what()) == "Cancelled";
+    require(fallback.method == "onset correlation" && std::abs(fallback.bpm - 135) < 2.,
+            "Audio analysis handles real loops whose length is not an exact beat count: " +
+                String(TempoData::namedResourceList[i]) + " detected " + String(fallback.bpm) +
+                " BPM using " + fallback.method);
+    // Cancel during the initial analysis, fallback decoding and correlation.
+    for (int after : {3, 150, 300}) {
+      bool cancelledRead = false;
+      int cancelChecks = 0;
+      try {
+        detectTempo(*withTail, "untagged.wav", [&] { return ++cancelChecks > after; });
+      } catch (const std::exception &e) {
+        cancelledRead = String(e.what()) == "Cancelled";
+      }
+      require(cancelledRead, "Tempo analysis cancels during each analysis pass");
     }
-    require(cancelledRead, "Tempo analysis cancels between decoded blocks");
+    require(hashFile(extended) == originalHash, "Tempo analysis leaves the source untouched");
+    if (i == 0)
+      for (int rate : {44100, 48000}) {
+        juce::AudioBuffer<float> stereo(2, int(std::round(double(data.getNumSamples()) * rate /
+                                                        reader->sampleRate)));
+        for (int frame = 0; frame < stereo.getNumSamples(); ++frame) {
+          const double position = frame * reader->sampleRate / rate;
+          const int a = int(position), b = std::min(a + 1, data.getNumSamples() - 1);
+          const float value = .25f * (data.getSample(0, a) + float(position - a) *
+                                         (data.getSample(0, b) - data.getSample(0, a)));
+          stereo.setSample(0, frame, value);
+          stereo.setSample(1, frame, -value);
+        }
+        auto variant = root.getChildFile("stereo-" + String(rate) + ".wav");
+        writeTempoAudio(variant, stereo, rate);
+        auto stereoReader = audio.reader(variant);
+        const auto detected = detectTempo(*stereoReader, "untagged.wav");
+        require(detected.method == "onset correlation" && std::abs(detected.bpm - 135) < 2.,
+                "Fallback handles quiet opposite-phase stereo at " + String(rate) +
+                    " Hz: " + String(detected.bpm) + " using " + detected.method);
+      }
   }
   auto silence = root.getChildFile("silence.wav");
   {
@@ -86,6 +118,28 @@ void tempoTests() {
   auto silent = audio.reader(silence);
   require(detectTempo(*silent, "silence.wav").bpm == 0,
           "A silent even-length file does not invent a detected tempo");
-  std::cout << "PASS explicit, embedded, loop-length and SoundTouch tempo detection\n";
+  auto steady = root.getChildFile("steady.wav");
+  juce::AudioBuffer<float> constant(1, 24000 * 8 + 7440);
+  juce::FloatVectorOperations::fill(constant.getWritePointer(0), .25f, constant.getNumSamples());
+  writeTempoAudio(steady, constant, 24000);
+  auto steadyReader = audio.reader(steady);
+  require(detectTempo(*steadyReader, "untagged.wav").bpm == 0,
+          "Non-silent audio without repeating attacks does not invent a fallback tempo");
+  auto regular = root.getChildFile("regular.wav");
+  juce::AudioBuffer<float> clicks(1, int(13.123 * 24000));
+  clicks.clear();
+  for (int beat = 0; beat < 26; ++beat)
+    for (int frame = 0; frame < 720; ++frame) {
+      const double time = frame / 24000.;
+      clicks.setSample(0, beat * 12000 + frame,
+                       float(.7 * std::sin(2 * juce::MathConstants<double>::pi * 1000 * time) *
+                             std::exp(-100 * time)));
+    }
+  writeTempoAudio(regular, clicks, 24000);
+  auto regularReader = audio.reader(regular);
+  const auto soundTouch = detectTempo(*regularReader, "untagged.wav");
+  require(soundTouch.method.startsWith("SoundTouch") && std::abs(soundTouch.bpm - 120) < 2.,
+          "Successful SoundTouch estimates remain the preferred audio result");
+  std::cout << "PASS explicit, embedded, loop-length and audio tempo detection\n";
 }
 } // namespace core

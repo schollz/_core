@@ -327,6 +327,14 @@ Project Storage::open(std::function<void(double)> progress) {
     if (child(root, "midi_channel").exists())
       p.fingerprints["midi_channel"] = fingerprint(child(root, "midi_channel"));
   }
+  if (p.settings.find("start_tempo") == p.settings.end()) {
+    auto cardSettings = card::readSettings(root, p.warnings);
+    auto found = cardSettings.find("start_tempo");
+    p.settings["start_tempo"] = found == cardSettings.end() ? String("default") : found->second;
+    p.fingerprints[card::startTempoPath] = fingerprint(child(root, card::startTempoPath));
+    if (child(root, "start_tempo").exists())
+      p.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
+  }
   report(0.55);
   std::vector<std::pair<String, String>> checks(p.fingerprints.begin(),
                                                 p.fingerprints.end());
@@ -579,12 +587,15 @@ Project Storage::adopt(bool writeManifest,
     p.fingerprints["midi_channel"] = fingerprint(child(root, "midi_channel"));
   if (child(root, "sample_cv_mapping").exists())
     p.fingerprints["sample_cv_mapping"] = fingerprint(child(root, "sample_cv_mapping"));
+  if (child(root, "start_tempo").exists())
+    p.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
   p.validate();
   if (writeManifest) {
     const auto settingsFolder = child(root, "settings");
     if (p.samples.empty() && present.empty() && !settingsFolder.existsAsFile() &&
         !child(root, "sample_cv_mapping").exists() &&
         !child(root, "midi_channel").exists() &&
+        !child(root, "start_tempo").exists() &&
         settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
       diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
       p.settings = card::defaultSettings();

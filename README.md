@@ -57,6 +57,13 @@ Download the best version for your system:
 | Linux (x86_64) | [v8.0.3 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-linux-x86_64.tar.gz) |
 
 
+The managers' **Start tempo** setting lets every hardware model start at a fixed
+30–300 BPM. Default keeps the existing startup behavior; Fixed BPM overrides any
+saved tempo at startup. Normal tempo controls still work afterward. VCV Rack reads
+the same setting and exposes it in its Device settings menu. See the
+[sample manager settings](sample-manager/README.md) and [Rack guide](rack/README.md)
+for details. Hardware requires firmware with Start tempo support.
+
 ## zeptocore
 
 the zeptocore device is a versatile, open-source, handmade audio player and synthesizer, featuring stereo playback of 16-bit audio files at a 44.1 kHz sampling rate. 

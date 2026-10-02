@@ -40,8 +40,47 @@ static void check_led_brightness(void) {
     core_engine_destroy(a);core_engine_destroy(b);
     puts("engine: held LED brightness updates immediately at 0/25/50/75/100%, restores colors, isolates instances");
 }
+static void check_start_tempo(void) {
+    CoreEngine *a=create(901),*b=create(902);
+    CoreState state,after,other;core_engine_get_state(a,&state);core_engine_get_state(b,&other);
+    unsigned original=state.tempo;assert(state.start_tempo==0);
+    for(unsigned bpm=30;bpm<=300;++bpm) {
+        state.start_tempo=bpm;assert(core_engine_update_settings(a,&state));
+        core_engine_get_state(a,&after);assert(after.tempo==original&&after.start_tempo==bpm);
+    }
+    for(unsigned invalid=1;invalid<30;++invalid){state.start_tempo=invalid;assert(!core_engine_update_settings(a,&state));assert(!core_engine_set_state(a,&state));}
+    state.start_tempo=301;assert(!core_engine_update_settings(a,&state));assert(!core_engine_set_state(a,&state));
+    state.start_tempo=130;assert(core_engine_update_settings(a,&state));
+    core_engine_apply_start_tempo(a);core_engine_get_state(a,&state);assert(state.tempo==130);
+    core_engine_get_state(b,&after);assert(after.tempo==other.tempo&&after.start_tempo==0);
+    state.tempo=145;assert(core_engine_set_state(a,&state));
+    core_engine_set_resident_bank(a,0);core_engine_get_state(a,&state);assert(state.tempo==145);
+    CoreControls controls={.knobs={0,0,0,.5f,0}};int16_t pcm[2];
+    // Warm the real input handler, then tap a steady 120 BPM.
+    for(unsigned f=0;f<CORE_RATE*2;++f)core_engine_process(a,pcm);
+    for(unsigned f=0;f<CORE_RATE*3;++f){controls.buttons[3]=(f%(CORE_RATE/2))<2205;core_engine_controls(a,&controls);core_engine_process(a,pcm);}
+    core_engine_get_state(a,&state);assert(state.tempo==120&&state.start_tempo==130);
+    controls.buttons[3]=false;core_engine_controls(a,&controls);
+    for(unsigned f=0;f<CORE_RATE;++f)core_engine_process(a,pcm);
+    state.tempo=145;assert(core_engine_set_state(a,&state));
+    // TAP + MODE still recalls the fixture sample's original 120 BPM.
+    controls.buttons[3]=true;core_engine_controls(a,&controls);
+    for(unsigned f=0;f<4410;++f)core_engine_process(a,pcm);
+    controls.buttons[0]=true;core_engine_controls(a,&controls);
+    for(unsigned f=0;f<4410;++f)core_engine_process(a,pcm);
+    core_engine_get_state(a,&state);assert(state.tempo==120&&state.start_tempo==130);
+    memset(controls.buttons,0,sizeof controls.buttons);core_engine_controls(a,&controls);
+    core_engine_apply_start_tempo(a);
+    for(unsigned f=0;f<CORE_RATE*6;++f){core_engine_clock(a,f%11025<200);core_engine_process(a,pcm);}
+    core_engine_get_state(a,&state);assert(state.tempo==120&&state.start_tempo==130);
+    state.start_tempo=0;assert(core_engine_update_settings(a,&state));core_engine_apply_start_tempo(a);
+    core_engine_get_state(a,&after);assert(after.tempo==120&&after.start_tempo==0);
+    core_engine_destroy(a);core_engine_destroy(b);
+    puts("engine: startup override, bounds, independent instances, tap, sample-tempo reset and external clock passed");
+}
 int main(void) {
     check_led_brightness();
+    check_start_tempo();
     CoreEngine *a=create(123),*b=create(123),*other=create(789);
     int16_t x[2],y[2],z[2];unsigned audible=0;
     for(unsigned frame=0;frame<CORE_RATE*3;++frame) {

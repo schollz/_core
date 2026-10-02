@@ -25,6 +25,24 @@ A mouse can hold one button while turning a knob. For combinations involving mul
 
 CV inputs are calibrated virtual inputs: nominal bipolar −5 to +5 V and unipolar 0 to +5 V are translated to the original ADC scale and then pass through the original control processing. Cable presence comes from Rack. **Device settings** controls polarity, Amen CV behavior, sample mapping (Bank divisions or 1 V/oct), reset-input assignment, clock behavior, and brightness. **Grimoire / effect banks** edits the seven-by-sixteen effect matrix.
 
+**Device settings → Start tempo** sets the tempo used when opening a patch, loading
+a first or different sample folder, or rebooting the module. **Default (no override)**
+keeps the existing behavior. For a fixed tempo, enter a whole-number BPM from 30
+to 300 and press Enter. For example, a patch saved while playing at 145 BPM with
+Start tempo set to 130 opens at 130 BPM. Normal tap tempo, sample-tempo reset, and
+external clock control remain available afterward.
+
+Start tempo is saved per module in the patch and survives **Reboot module**.
+Changing the setting takes effect on the next startup. Reloading a sample folder,
+importing settings while playing, or switching samples/banks keeps the playing
+tempo. Choosing a different folder imports and applies its startup setting.
+Older patches without this setting retain their saved playing tempo.
+
+The manager exports `settings/start_tempo` as `default` or a decimal BPM followed
+by a newline. Rack also accepts a root-level `start_tempo`; the settings-directory
+file takes precedence. Invalid values produce a warning and disable the override.
+Rack reads these files without changing the source folder.
+
 **Stop when clock stops** silences playback and holds clock output at 0 V after the external clock times out (about two input-clock intervals). This applies to square and trigger output, including when the clock follows slices. Enable it on every module in a clock chain to propagate stops; each module waits for its own timeout. Once the chain has stopped, the returning clock restarts each module at the beginning in normal forward playback. Slice sequences, random jumps, and reverse playback retain their selected behavior. With no external clock acquired, the internal clock continues normally.
 
 Clock tempo is retained across stops and isolated irregular intervals. Tempo estimation updates only when two consecutive eligible intervals agree within 2%, then uses the existing smoothing to follow the measured rate. After a restart, playback begins immediately at the previous tempo; confirmation takes two complete input intervals (about half a second at 120 BPM). A rapidly varying clock holds the previous estimate until two intervals agree, while gentle tempo changes continue to track.

@@ -14,6 +14,10 @@ var ccolor, ccolor2, wavecolor, selected_color;
 var hasSavedToCookie = false;
 
 
+function validStartTempo(value) {
+    return typeof value === 'string' && /^(?:[3-9][0-9]|[12][0-9]{2}|300)$/.test(value);
+}
+
 function GetLatestReleaseInfo() {
     // Latest version is now provided by the server via WebSocket
     // No need to fetch from external API
@@ -326,6 +330,9 @@ const socketMessageListener = (e) => {
         if (savedState.settingsSampleCV) {
             app.settingsSampleCV = savedState.settingsSampleCV;
         }
+        app.settingsStartTempo = validStartTempo(savedState.settingsStartTempo) ? savedState.settingsStartTempo : "default";
+        app.startTempoBpm = app.settingsStartTempo === "default" ? "130" : app.settingsStartTempo;
+        app.startTempoError = "";
         app.settingsMidiChannel = /^(?:[1-9]|1[0-6])$/.test(savedState.settingsMidiChannel || "") ? String(savedState.settingsMidiChannel) : "1";
         app.settingsSampleCVMapping = savedState.settingsSampleCVMapping === "1voct" ? "1voct" : "bank";
         if (savedState.settingsOverrideWithReset) {
@@ -531,6 +538,9 @@ app = new Vue({
         settingsSampleCV: "bipolar",
         settingsSampleCVMapping: "bank",
         settingsMidiChannel: "1",
+        settingsStartTempo: "default",
+        startTempoBpm: "130",
+        startTempoError: "",
         settingsOverrideWithReset: "none",
         settingsKnobXSample: false,
         settingsMashMode: false,
@@ -593,6 +603,7 @@ app = new Vue({
         settingsSampleCV: 'saveState',
         settingsSampleCVMapping: 'saveState',
         settingsMidiChannel: 'saveState',
+        settingsStartTempo: 'saveState',
         settingsOverrideWithReset: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
@@ -1035,6 +1046,7 @@ app = new Vue({
                 settingsSampleCV: app.settingsSampleCV,
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsMidiChannel: app.settingsMidiChannel,
+                settingsStartTempo: app.settingsStartTempo,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
@@ -1417,10 +1429,28 @@ app = new Vue({
             this.banks[this.selectedBank].files[index1] = this.banks[this.selectedBank].files[index2];
             this.banks[this.selectedBank].files[index2] = temp;
         },
+        setStartTempoMode(mode) {
+            if (mode === "default") {
+                this.settingsStartTempo = "default";
+                this.startTempoError = "";
+            } else {
+                this.commitStartTempo();
+            }
+        },
+        commitStartTempo() {
+            if (!validStartTempo(this.startTempoBpm)) {
+                this.startTempoError = "Enter a whole-number BPM from 30 to 300.";
+                return false;
+            }
+            this.startTempoError = "";
+            this.settingsStartTempo = this.startTempoBpm;
+            return true;
+        },
         doSubmitForm() {
             this.submitForm(false);
         },
         submitForm(settingsOnly) {
+            if (this.settingsStartTempo !== "default" && !this.commitStartTempo()) return;
             app.uploading = true;
             app.processing = false;
             app.downloading = false;
@@ -1441,6 +1471,7 @@ app = new Vue({
                 settingsSampleCV: app.settingsSampleCV,
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsMidiChannel: app.settingsMidiChannel,
+                settingsStartTempo: app.settingsStartTempo,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,

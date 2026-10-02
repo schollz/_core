@@ -1,6 +1,8 @@
 #include "Tempo.h"
 #include <BPMDetect.h>
 #include <cmath>
+#include <juce_dsp/juce_dsp.h>
+#include <numeric>
 #include <regex>
 
 namespace core {
@@ -44,6 +46,96 @@ std::vector<LoopTempo> loopTempos(double duration) {
 double roundedTempo(double bpm) {
   return std::abs(bpm - std::round(bpm)) < .15 ? std::round(bpm) : std::round(bpm * 100.) / 100.;
 }
+
+// Syncopated loops can put SoundTouch's strongest correlation at its search
+// boundary, where getBpm() returns zero. In that case compare repeating attacks
+// at half-, single- and double-beat intervals instead of relying on waveform
+// similarity or the total file length (which may include a reverb/silent tail).
+double onsetTempo(juce::AudioFormatReader &reader, int channel,
+                  const std::function<bool()> &cancel) {
+  const int order = std::clamp(int(std::round(std::log2(reader.sampleRate * .04))), 8, 13);
+  const int size = 1 << order, hop = std::max(1, int(reader.sampleRate / 200.));
+  const double frameRate = reader.sampleRate / hop;
+  juce::dsp::FFT fft(order);
+  std::vector<float> ring(size), window(size), spectrum(size * 2), previous(size / 2 + 1);
+  juce::dsp::WindowingFunction<float>::fillWindowingTables(
+      window.data(), size_t(size), juce::dsp::WindowingFunction<float>::hann, false);
+  std::vector<double> flux;
+  const auto frames = std::min(reader.lengthInSamples, juce::int64(reader.sampleRate * 45.));
+  juce::AudioBuffer<float> input(int(reader.numChannels), 4096);
+  int cursor = 0, filled = 0, sinceFrame = 0;
+  bool first = true;
+  for (juce::int64 offset = 0; offset < frames; offset += input.getNumSamples()) {
+    cancelled(cancel);
+    const int count = int(std::min<juce::int64>(input.getNumSamples(), frames - offset));
+    require(reader.read(&input, 0, count, offset, true, true),
+            "Cannot read audio for tempo analysis");
+    for (int n = 0; n < count; ++n) {
+      ring[cursor] = input.getSample(channel, n);
+      cursor = (cursor + 1) % size;
+      if (filled < size && ++filled < size)
+        continue;
+      if (++sinceFrame < hop)
+        continue;
+      sinceFrame = 0;
+      for (int i = 0; i < size; ++i)
+        spectrum[i] = ring[(cursor + i) % size] * window[i];
+      fft.performFrequencyOnlyForwardTransform(spectrum.data(), true);
+      double onset = 0;
+      for (int i = 0; i <= size / 2; ++i) {
+        const float magnitude = std::log1p(10.f * spectrum[i]);
+        onset += std::max(0.f, magnitude - previous[i]);
+        previous[i] = magnitude;
+      }
+      if (!first)
+        flux.push_back(onset);
+      first = false;
+    }
+  }
+  const int lastLag = int(std::ceil(120. * frameRate / 70.)) + 1;
+  if (int(flux.size()) <= 2 * lastLag)
+    return 0.;
+  const double mean = std::accumulate(flux.begin(), flux.end(), 0.) / flux.size();
+  for (auto &value : flux)
+    value -= mean;
+  const double energy = std::inner_product(flux.begin(), flux.end(), flux.begin(), 0.);
+  if (energy < 1e-8)
+    return 0.;
+  std::vector<double> correlation(size_t(lastLag + 1));
+  for (int lag = 0; lag <= lastLag; ++lag) {
+    cancelled(cancel);
+    const auto count = flux.size() - size_t(lag);
+    const double sum = std::inner_product(flux.begin(), flux.begin() + count,
+                                         flux.begin() + lag, 0.);
+    correlation[lag] = sum / energy * double(flux.size()) / double(count);
+  }
+  auto at = [&](double lag) {
+    const auto i = size_t(lag);
+    return correlation[i] + (lag - double(i)) * (correlation[i + 1] - correlation[i]);
+  };
+  int bestLag = 0;
+  double bestScore = .6;
+  for (int lag = int(std::ceil(60. * frameRate / 200.));
+       lag <= int(std::floor(60. * frameRate / 70.)); ++lag) {
+    if (correlation[lag] < .2 || correlation[lag] < correlation[lag - 1] ||
+        correlation[lag] < correlation[lag + 1])
+      continue;
+    const double score = at(lag / 2.) + at(lag) + at(lag * 2.);
+    if (score > bestScore) {
+      bestScore = score;
+      bestLag = lag;
+    }
+  }
+  if (bestLag == 0)
+    return 0.;
+  double lag = bestLag;
+  // Equally strong intervening attacks support the faster pulse, e.g. 160
+  // rather than 80 BPM. Keep the same 70–200 BPM range as loop analysis.
+  if (120. * frameRate / lag <= 200. && at(lag / 2.) > .9 * at(lag))
+    lag /= 2.;
+  return 60. * frameRate / lag;
+}
+
 TempoEstimate audioTempo(juce::AudioFormatReader &reader, const std::function<bool()> &cancel) {
   constexpr int block = 4096;
   const double duration = double(reader.lengthInSamples) / reader.sampleRate;
@@ -110,8 +202,13 @@ TempoEstimate audioTempo(juce::AudioFormatReader &reader, const std::function<bo
       strongest = channelEnergy[channel];
     }
   }
-  if (!validTempo(bpm))
-    return {};
+  if (!validTempo(bpm)) {
+    const int channel = int(std::max_element(channelEnergy.begin(), channelEnergy.end()) -
+                            channelEnergy.begin());
+    const double onset = onsetTempo(reader, channel, cancel);
+    return validTempo(onset) ? TempoEstimate{roundedTempo(onset), "onset correlation"}
+                            : TempoEstimate{};
+  }
   while (bpm < 70.)
     bpm *= 2.;
   // Refine a detected pulse against complete even-beat loops. SoundTouch can

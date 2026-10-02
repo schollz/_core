@@ -29,6 +29,7 @@ unsigned int fil_bytes_read;
 unsigned int fil_bytes_read2;
 // uint16_t sf->bpm_tempo = 185;
 uint16_t bpm_last = 185;
+uint16_t global_start_tempo = 0;
 volatile uint8_t sel_sample_cur = 0;
 volatile uint8_t sel_sample_next = 0;
 volatile uint8_t sel_bank_cur = 0;

@@ -44,5 +44,7 @@ inline constexpr auto sampleCVMappingPath = "settings/sample_cv_mapping";
 String sampleCVMappingContents(const Settings &);
 inline constexpr auto midiChannelPath = "settings/midi_channel";
 String midiChannelContents(const Settings &);
+inline constexpr auto startTempoPath = "settings/start_tempo";
+String startTempoContents(const Settings &);
 std::map<String, String> textSettingsContents(const Settings &);
 } // namespace core::card

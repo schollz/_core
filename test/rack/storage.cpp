@@ -9,8 +9,26 @@ static Bank *awaitBank(Storage &s) {
     for(unsigned i=0;i<10000&&!s.ready.pop(b);++i)std::this_thread::sleep_for(std::chrono::milliseconds(1));
     assert(b);s.activeGeneration=b->library->generation;return b;
 }
+static void check_start_tempo(const fs::path &source) {
+    auto root=fs::temp_directory_path()/("rack-start-tempo-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    fs::create_directories(root/"settings");
+    struct Cleanup {fs::path root;~Cleanup(){fs::remove_all(root);}} cleanup{root};
+    fs::create_directory_symlink(source/"bank1",root/"bank1");
+    auto check=[&](unsigned expected,bool warning){auto l=Storage::catalogue(root,43);CoreState state{};state.tempo=145;applySettings(*l,state);assert(state.start_tempo==expected&&state.tempo==145);assert(l->warnings.empty()!=warning);};
+    check(0,false);
+    {std::ofstream(root/"start_tempo")<<"130\n";}check(130,false);
+    for(auto value:{"30","145","300","default"}) {
+        {std::ofstream(root/"settings/start_tempo")<<value<<"\r\n";}
+        check(std::string(value)=="default"?0:std::stoul(value),false);
+    }
+    for(auto value:{"","0","29","301","0130","130.5","130x","10000000000000000000"}) {
+        {std::ofstream(root/"settings/start_tempo")<<value;}check(0,true);
+    }
+    fs::remove(root/"settings/start_tempo");check(130,false);
+    std::cout<<"storage: startup tempo imports, default, bounds, precedence and invalid-file warnings passed\n";
+}
 int main(int argc,char **argv){
-    assert(argc==2);
+    assert(argc==2);check_start_tempo(fs::absolute(argv[1]));
     {std::ifstream in(fs::path(argv[1])/"bank1/15.0.wav.info",std::ios::binary);std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(in)),{});CoreCardInfo info;char error[128];
         assert(core_card_decode(bytes.data(),bytes.size(),&info,error,sizeof error));
         for(size_t n=0;n<bytes.size();++n)assert(!core_card_decode(bytes.data(),n,&info,error,sizeof error));

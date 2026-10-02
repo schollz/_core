@@ -1,4 +1,5 @@
 #include "../../lib/midi_channel.h"
+#include "../../lib/start_tempo.h"
 #include "CardFormat.h"
 #include <cstring>
 #include <limits>
@@ -208,6 +209,7 @@ const std::vector<Setting> &settingDefinitions() {
          {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
           "13", "14", "15"},
          "8"},
+        {"start_tempo", "Start tempo", {"default"}, "default"},
         {"clock_stop_sync", "Clock stop", {"on", "off"}, "on"},
         {"clock_output_trig", "Clock output trigger", {"on", "off"}, "off"},
         {"clock_behavior_sync_slice",
@@ -279,7 +281,7 @@ Settings defaultSettings() {
 std::map<String, bool> settingsFiles(const Settings &settings) {
   std::map<String, bool> files;
   for (const auto &d : settingDefinitions()) {
-    if (d.key == "sample_cv_mapping" || d.key == "midi_channel")
+    if (d.key == "sample_cv_mapping" || d.key == "midi_channel" || d.key == "start_tempo")
       continue;
     auto found = settings.find(d.key);
     if (found == settings.end())
@@ -314,9 +316,18 @@ String midiChannelContents(const Settings &settings) {
   require(channel && value == String(channel), "Invalid MIDI receive channel");
   return value + "\n";
 }
+String startTempoContents(const Settings &settings) {
+  const auto found = settings.find("start_tempo");
+  const auto value = found == settings.end() ? String("default") : found->second;
+  uint16_t bpm = 0;
+  require(start_tempo_parse(value.toRawUTF8(), size_t(value.getNumBytesAsUTF8()), &bpm) &&
+              value == (bpm ? String(bpm) : String("default")), "Invalid start tempo");
+  return value + "\n";
+}
 std::map<String, String> textSettingsContents(const Settings &settings) {
   return {{sampleCVMappingPath, sampleCVMappingContents(settings)},
-          {midiChannelPath, midiChannelContents(settings)}};
+          {midiChannelPath, midiChannelContents(settings)},
+          {startTempoPath, startTempoContents(settings)}};
 }
 Settings readSettings(const File &root, juce::StringArray &warnings) {
   Settings values;
@@ -334,7 +345,7 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
       values[key] = chosen;
   };
   for (const auto &d : settingDefinitions())
-    if (d.key != "sample_cv_mapping" && d.key != "midi_channel")
+    if (d.key != "sample_cv_mapping" && d.key != "midi_channel" && d.key != "start_tempo")
       read(d.key, d.values);
   // Match firmware precedence: settings/ overrides the root-directory file.
   auto mapping = child(root, sampleCVMappingPath);
@@ -368,6 +379,19 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
     auto channel = readable ? midi_channel_parse(bytes, size_t(size)) : 0;
     values["midi_channel"] = String(channel ? channel : 1);
     if (!channel) warnings.add("Invalid MIDI receive channel; using channel 1.");
+  }
+  auto tempoFile = child(root, startTempoPath);
+  if (!tempoFile.exists()) tempoFile = child(root, "start_tempo");
+  if (tempoFile.exists()) {
+    auto input = tempoFile.createInputStream();
+    char bytes[16]{};
+    const auto size = input ? input->getTotalLength() : -1;
+    const bool readable = size >= 0 && size <= 16 &&
+                          input->read(bytes, int(size)) == size && input->getStatus().wasOk();
+    uint16_t bpm = 0;
+    const bool valid = readable && start_tempo_parse(bytes, size_t(size), &bpm);
+    values["start_tempo"] = valid && bpm ? String(bpm) : String("default");
+    if (!valid) warnings.add("Invalid start tempo; using Default (no override).");
   }
   for (int b = 1; b <= 7; ++b)
     for (int e = 1; e <= 16; ++e)

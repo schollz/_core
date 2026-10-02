@@ -124,6 +124,7 @@ void core_engine_display(CoreEngine *e,CoreDisplay *v) {
 void core_engine_get_state(CoreEngine *e,CoreState *v) {
     CoreEngine *old=core_enter(e);memset(v,0,sizeof *v);v->version=1;
     v->tempo=sf->bpm_tempo;v->volume=sf->vol;v->pitch=sf->pitch_val_index;
+    v->start_tempo=global_start_tempo;
     v->bank=sel_bank_cur;v->slot=metadata_filename_index(sel_bank_cur,sel_sample_cur);
     v->rune=grimoire_rune;v->division=ectocore_clock_selected_division;v->trigger_mode=ectocore_trigger_mode;
     v->stopped=playback_stopped;v->muted=button_mute;v->stay_in_sync=sf->stay_in_sync;
@@ -140,10 +141,12 @@ void core_engine_get_state(CoreEngine *e,CoreState *v) {
     core_leave(old);
 }
 bool core_engine_set_state(CoreEngine *e,const CoreState *v) {
+    if(!start_tempo_valid(v->start_tempo))return false;
     if(v->version!=1||v->tempo<30||v->tempo>300||v->bank>15||v->slot>15||v->rune>6||v->pitch>=PITCH_VAL_MAX||
        v->division>=ECTOCORE_CLOCK_NUM_DIVISIONS||v->trigger_mode>3||v->amen_behavior>2||v->sample_mapping>1||
        v->reset_input< -1||v->reset_input>3||v->sequence_length>64||v->filter_index>resonantfilter_fc_max||v->amiga>37||v->saturation>100||v->smear>100||v->jitter>100||v->chaos>100||v->jump_probability>100||v->retrigger_probability>100)return false;
     CoreEngine *old=core_enter(e);sf->bpm_tempo=v->tempo;sf->vol=v->volume>VOLUME_STEPS?VOLUME_STEPS:v->volume;sf->pitch_val_index=v->pitch;
+    global_start_tempo=v->start_tempo;
     sel_bank_next=v->bank;int ordinal=metadata_ordinal(v->bank,v->slot);sel_sample_next=ordinal<0?0:ordinal;
     if(total_number_samples){fil_current_change=true;if(host_resident!=v->bank)host_requested=v->bank;}
     grimoire_rune=v->rune;ectocore_clock_selected_division=v->division;ectocore_trigger_mode=v->trigger_mode;
@@ -167,12 +170,20 @@ bool core_engine_set_state(CoreEngine *e,const CoreState *v) {
     core_leave(old);return true;
 }
 bool core_engine_update_settings(CoreEngine *e,const CoreState *v) {
+    if(!start_tempo_valid(v->start_tempo))return false;
     if(v->amen_behavior>2||v->sample_mapping>1||v->reset_input< -1||v->reset_input>3)return false;
     CoreEngine *old=core_enter(e);
+    global_start_tempo=v->start_tempo;
     global_brightness=v->brightness>100?100:v->brightness;
     global_amen_cv_behavior=v->amen_behavior;global_sample_cv_mapping=v->sample_mapping;
     global_amen_cv_bipolar=v->bipolar[0];global_break_cv_bipolar=v->bipolar[1];global_sample_cv_bipolar=v->bipolar[2];
     clock_start_stop_sync=v->clock_stop;clock_output_trig=v->clock_trigger;clock_behavior_sync_slice=v->clock_slice;cv_reset_override=v->reset_input;
     memcpy(grimoire_rune_effect,v->runes,sizeof v->runes);
     WS2812_set_brightness(ws2812,global_brightness);core_leave(old);return true;
+}
+void core_engine_apply_start_tempo(CoreEngine *e) {
+    CoreEngine *old=core_enter(e);
+    sf->bpm_tempo=start_tempo_resolve(global_start_tempo,sf->bpm_tempo);
+    update_repeating_timer_to_bpm(sf->bpm_tempo);
+    core_leave(old);
 }

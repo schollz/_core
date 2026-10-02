@@ -260,6 +260,25 @@
             <!-- X in right corner -->
             <button id="close-settings" style="position: absolute; right: 2em; top: 2em; padding: 0.5em;">X</button>
             <h2>Settings</h2>
+            <p>
+                <label for="settingsStartTempo">Start tempo</label>
+                <select id="settingsStartTempo" :value="settingsStartTempo === 'default' ? 'default' : 'fixed'"
+                    @change="setStartTempoMode($event.target.value)">
+                    <option value="default">Default (no override)</option>
+                    <option value="fixed">Fixed BPM</option>
+                </select>
+                <label for="startTempoBpm">BPM</label>
+                <input id="startTempoBpm" type="number" min="30" max="300" step="1" style="width: 6em;"
+                    :disabled="settingsStartTempo === 'default'" :value="startTempoBpm"
+                    @input="startTempoBpm = $event.target.value; startTempoError = ''"
+                    @change="commitStartTempo()" @keydown.enter.prevent="commitStartTempo()"
+                    :aria-invalid="!!startTempoError" aria-describedby="start-tempo-help start-tempo-error">
+                <small id="start-tempo-help" style="display: block; margin-top: 0.4em;">
+                    Fixed BPM overrides a saved tempo at startup only. Normal tempo controls still work.
+                    Requires supporting firmware; restart with the updated card to apply.
+                </small>
+                <span id="start-tempo-error" role="alert" v-if="startTempoError">{{startTempoError}}</span>
+            </p>
             [[ if .IsZeptocore ]]
             <p>
                 <label for="settingsKnobXSample" style="padding-right:1em;">Knob X switches samples</label>

@@ -2,6 +2,7 @@
 // Desktop hardware boundary. The renderer and performance handlers remain the
 // firmware sources; none of these adapters touches the filesystem.
 #include "core_engine.h"
+#include "../start_tempo.h"
 #include <assert.h>
 #include <ctype.h>
 #include <limits.h>

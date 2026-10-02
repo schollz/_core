@@ -14,6 +14,7 @@ void recoveryTests();
 void managerTests();
 void renderStatusTests();
 void midiSettingsTests();
+void startTempoTests();
 void firmwareTests();
 void firmwareReleaseTests();
 namespace {
@@ -93,6 +94,28 @@ void spliceTimingChecks() {
   rejects([&] { oneShot.updateSpliceTrigger(SpliceTimingCalculation::evenSlices); },
           "An empty slice list cannot calculate an interval");
 }
+void startTempoContractChecks() {
+  check(card::startTempoContents({}) == "default\n", "Start tempo defaults to no override");
+  for (auto value : {"default", "30", "130", "300"})
+    check(card::startTempoContents({{"start_tempo", value}}) == String(value) + "\n", "Start tempo encoding");
+  for (auto value : {"", "0", "29", "301", "130.5", "0130"})
+    rejects([&] { card::startTempoContents({{"start_tempo", value}}); }, "Reject invalid start tempo writes");
+  check(card::settingsFiles({{"start_tempo", "130"}}).empty(), "Start tempo has no marker files");
+  Temp folder;
+  juce::StringArray warnings;
+  auto read = [&] { warnings.clear(); return card::readSettings(folder.dir, warnings); };
+  textFile(child(folder.dir, "start_tempo"), "130\n");
+  check(read().at("start_tempo") == "130", "Adopt root start tempo");
+  const auto file = child(folder.dir, card::startTempoPath);
+  for (auto value : {"30", "145", "300", "default"}) {
+    textFile(file, String(value) + "\r\n");
+    check(read().at("start_tempo") == value, "Settings start tempo overrides root, including default");
+  }
+  for (auto value : {"", "29", "301", "130.5", "0130", "130x", "10000000000000000000"}) {
+    textFile(file, value);
+    check(read().at("start_tempo") == "default" && !warnings.isEmpty(), "Invalid tempo warns and disables override");
+  }
+}
 } // namespace
 int runTests(const String &suite) {
   Temp privateState;
@@ -155,6 +178,11 @@ int runTests(const String &suite) {
       check(broken.samples[0].protectedEntry, "Damaged primary remains protected");
       return 0;
     }
+    if (suite == "start-tempo") {
+      startTempoContractChecks();
+      startTempoTests();
+      return 0;
+    }
     if (suite == "manager") {
       audioTests();
       managerTests();
@@ -183,6 +211,7 @@ int runTests(const String &suite) {
       return 0;
     }
     require(suite.isEmpty(), "Unknown self-test suite: " + suite);
+    startTempoContractChecks();
     spliceTimingChecks();
     firmwareTests();
     {
@@ -503,7 +532,7 @@ int runTests(const String &suite) {
       durableWrite(child(existing.dir, "settings/unrelated.txt"), "keep", 4);
       Storage storage(existing.dir);
       auto adopted = storage.open();
-      check(adopted.settings.size() == 2 && adopted.settings.at("midi_channel") == "1" &&
+      check(adopted.settings.size() == 3 && adopted.settings.at("midi_channel") == "1" &&
                 adopted.settings.at("grimoire/rune1/effect1") == "on" &&
                 !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
                 child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
