@@ -3,9 +3,9 @@
 [![build workflow](https://github.com/schollz/_core/actions/workflows/build.yml/badge.svg)](https://github.com/schollz/_core/actions/workflows/build.yml) [![GitHub Release](https://img.shields.io/github/v/release/schollz/_core)](https://github.com/schollz/_core/releases/latest)
 
 
-this is the monorepo for [zeptocore](https://shop.infinitedigits.co/collections/zeptocore/), [zeptoboard](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-zeptoboard), ectocore, and [ezeptocore](https://get.ezeptocore.com) music devices, their firmware, and the tools to interact with them.
+this is the monorepo for [zeptocore](https://shop.infinitedigits.co/collections/zeptocore/), [zeptoboard](https://shop.infinitedigits.co/guides/zeptocore/#zeptocore-zeptoboard), ectocore, and [ezeptocore](https://get.ezeptocore.com) music devices, their firmware, and the tools to interact with them.
 
-for purchasing and the complete maintained documentation, visit the [Zeptocore collection guide](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide). prepare samples with the [Zeptocore tool](https://tool.zeptocore.com/). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
+for purchasing, visit the [Zeptocore collection](https://shop.infinitedigits.co/collections/zeptocore/). complete maintained documentation is available in the [guides](https://shop.infinitedigits.co/guides/). prepare samples with the [Zeptocore tool](https://tool.zeptocore.com/). demos are available [on youtube](https://www.youtube.com/watch?v=FZ2C9VIMgeI&list=PLCNN6FnBNdpWQUyHAQO_wCQkbMl95-293).
 
 For contributors and coding agents, start with the [repository documentation
 index](docs/README.md): repository layout, build and test commands, current
@@ -32,13 +32,15 @@ The digital signal processing for all the *core things was written by Zack, from
 
 the zeptocore device is a versatile, open-source, handmade audio player and synthesizer, featuring stereo playback of 16-bit audio files at a 44.1 kHz sampling rate. 
 
+[Read the Zeptocore guide](https://shop.infinitedigits.co/guides/zeptocore/).
+
 <div align="center">
 <img src="docs/static/img/zeptocore_noche.png" width="70%">
 </div>
 
 the zeptocore supports SD-card storage for up to 32 gigabytes of samples and can recall up to 256 audio files organized into 16 banks of 16 tracks each. the zeptocore has 16 different audio effects - saturation, fuzz, delay, comb, beat repeater, filter, tape stop, reverb + more - and includes a single-cycle wavetable synthesizer. The device offers a real-time sequencer with optional quantization, optional clock sync out, and MIDI input and [MIDI output](https://www.youtube.com/watch?v=Rl_LBdM1FQw) over USB. the device has a built-in 8-ohm speaker and can be powered by two AAA batteries or USB-C.
 
-The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-firmware).
+The firmware for the zeptocore is written in C, and instructions for building it are in the [documentation](https://shop.infinitedigits.co/guides/zeptocore/#zeptocore-firmware).
 
 ### zeptocore firmware
 
@@ -54,6 +56,9 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 <img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
 </a>
 
+[Read the sample manager and visualizer guide](https://shop.infinitedigits.co/guides/sample-manager/).
+
+
 | Platform | Download |
 | --- | --- |
 | macOS (Apple Silicon) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-arm64.zip) |
@@ -65,11 +70,11 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 
 ## diy
 
-- [Product and documentation](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-guide)
+- [Guide](https://shop.infinitedigits.co/guides/zeptocore/)
 - [Schematic](https://github.com/schollz/_core/blob/main/schematics/zeptocore_v28.pdf)
 - [Source code](https://github.com/schollz/_core)
 - [Firmware](https://shop.infinitedigits.co/firmware/zeptocore/)
-- [Instructions for uploading firmware](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-upload)
+- [Instructions for uploading firmware](https://shop.infinitedigits.co/guides/zeptocore/#zeptocore-upload)
 - [Video demonstration](https://www.youtube.com/watch?v=WBvos0TkcSY)
 - [Video DIY guide](https://www.youtube.com/watch?v=FH1R4RCh0vU)
 
@@ -78,6 +83,8 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 ## EZEPTOCORE
 
 The EZEPTOCORE is a eurorack version of the zeptocore developed by Infinite Digits in collaboration with Maneco Labs (full attributions [here](https://infinitedigits.co/posts/eurorack-zeptocore/)).
+
+[Read the EZEPTOCORE guide](https://shop.infinitedigits.co/guides/ezeptocore/).
 
 <div align="center">
 <a href="https://get.ezeptocore.com">
@@ -102,7 +109,7 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 *default firmware
 
-For the [visualizer](sample-manager/README.md), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ezeptocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
 
 To build and upload the default 441-frame, overclocked firmware with USB MIDI
 visualizer telemetry enabled, run `make ezeptocore-visualizer`. For ectocore
@@ -112,7 +119,7 @@ only after the build succeeds.
 
 To build without uploading, run `make ezeptocore ZEPTOCORE_VISUALIZER=ON` or
 `make ectocore ZEPTOCORE_VISUALIZER=ON`. These opt-in builds use USB MIDI in place
-of USB serial and work with the existing [visualizer](sample-manager/README.md).
+of USB serial and work with the existing [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer).
 Both devices appear as **ezeptocore** in the MIDI port list. Normal builds omit
 all visualizer code and state, even after building an enabled version in the
 same directory. The new commands use the default latency and clock settings.
@@ -150,8 +157,10 @@ nominal voltage scale, nearest-semitone rounding and hysteresis to reduce jitter
 
 the ectocore is the eurorack version of the zeptocore developed by Infinite Digits in collaboration with Toadstool Tech (full attributions [here](https://infinitedigits.co/posts/eurorack-zeptocore/)).
 
+[Read the Ectocore guide](https://shop.infinitedigits.co/guides/ectocore/).
+
 <div align="center">
-<a href="https://infinitedigits.co/docs/products/ectocore/">
+<a href="https://shop.infinitedigits.co/guides/ectocore/">
 <img src="docs/static/img/ectocore_2.png" height="300px">
 </a>
 </div>
@@ -172,7 +181,7 @@ For latency, normal latency will work for most, but choose low if you encounter 
 | Overclocking     | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3.uf2)*                | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_low_latency.uf2)                 |
 | Non-Overclocking | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_no_overclocking.uf2) | [v8.0.3](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_no_overclocking_low_latency.uf2) |
 
-For the [visualizer](sample-manager/README.md), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.3 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.3/ectocore_v8.0.3_visualizer.uf2) (normal latency, overclocked).
 
 
 ### diy
@@ -186,7 +195,7 @@ For the [visualizer](sample-manager/README.md), download the [v8.0.3 visualizer 
 
 ## zeptoboard
 
-zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware. more information is in the [Zeptocore guide](https://shop.infinitedigits.co/collections/zeptocore/#zeptocore-zeptoboard).
+zeptoboard is the breadboard variant of the zeptocore. It has most of the same functionality, but instead of using the buttons on the handheld device, you can utilize your keyboard. This version requires some knowledge of breadboarding, but it is ideal if you want to develop your ideas based on the firmware. more information is in the [Zeptoboard section of the Zeptocore guide](https://shop.infinitedigits.co/guides/zeptocore/#zeptocore-zeptoboard).
 
 <div align="center">
 <img src="docs/static/img/zeptoboard_img.png" height="350px">
