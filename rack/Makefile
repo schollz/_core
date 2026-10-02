@@ -1,7 +1,14 @@
+PYTHON ?= python3
+RELEASE_ARGS ?=
+MACOS_RELEASE_HOST ?= zns@192.168.0.44
+RELEASE_GOALS := release-macosarm release-macos11 release-linux
+
+# Release commands fetch their own SDK inside a fresh clone. Ordinary builds
+# retain the SDK's default goal and existing local SDK selection.
+ifneq ($(strip $(filter-out $(RELEASE_GOALS),$(or $(MAKECMDGOALS),all))),)
 # Prefer the download helper's location; retain the original local SDK layout.
 RACK_DIR ?= $(if $(wildcard ../artifacts/rack-sdk/Rack-SDK/plugin.mk),../artifacts/rack-sdk/Rack-SDK,../artifacts/Rack-SDK)
 CLANG ?= clang
-PYTHON ?= python3
 ENGINE_TARGET ?= $(CROSS_COMPILE)
 SOURCES += $(wildcard src/*.cpp)
 OBJECTS += build/core-engine.o build/card-format.o build/pcg.o
@@ -34,3 +41,12 @@ test:
 	$(PYTHON) ../test/rack/run.py
 
 .PHONY: test install
+endif
+
+.PHONY: $(RELEASE_GOALS)
+release-macosarm:
+	$(PYTHON) Release/release-macosarm.py $(RELEASE_ARGS)
+release-macos11:
+	$(PYTHON) Release/release-macos11.py "$(MACOS_RELEASE_HOST)" $(RELEASE_ARGS)
+release-linux:
+	$(PYTHON) Release/release-linux.py $(RELEASE_ARGS)

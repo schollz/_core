@@ -513,6 +513,14 @@ sample-manager-release-macos11:
 sample-manager-release-linux:
 	$(MAKE) -C sample-manager release-linux
 
+.PHONY: rack-release-macosarm rack-release-macos11 rack-release-linux
+rack-release-macosarm:
+	$(MAKE) -C rack release-macosarm
+rack-release-macos11:
+	$(MAKE) -C rack release-macos11
+rack-release-linux:
+	$(MAKE) -C rack release-linux
+
 # Package and install the VCV Rack plugin using the SDK's platform-specific path.
 .PHONY: install
 install:

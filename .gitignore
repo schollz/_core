@@ -112,4 +112,5 @@ test/**/__pycache__/
 /rack/plugin.dylib
 /rack/plugin.so
 /rack/plugin.dll
+/rack/Release/__pycache__/
 /lib/core_engine/__pycache__/
