@@ -9,10 +9,13 @@ clang=os.environ.get('CLANG','clang')
 subprocess.run([sys.executable,str(root/'lib/core_engine/prepare.py'),'--out',str(out),'--clang',clang],check=True)
 flags=['-std=c11','-O2','-g','-fwrapv','-ffp-contract=off','-Wno-everything','-pthread']
 if a.sanitize:flags+=['-fsanitize='+a.sanitize,'-fno-sanitize-recover=all','-fno-sanitize=shift-base']
+subprocess.run([clang,*flags,'-I'+str(root/'lib'),str(root/'test/rack/clock_input.c'),'-lm','-o',str(out/'clock-input-test')],check=True)
+subprocess.run([str(out/'clock-input-test')],check=True,timeout=45)
 subprocess.run([clang,*flags,'-c',str(out/'engine.c'),'-o',str(out/'engine.o')],check=True)
-for name in ['engine','clock']:
+for name in ['engine','clock','tempo']:
     subprocess.run([clang,*flags,'-I'+str(root/'lib/core_engine'),str(out/'engine.o'),str(root/'lib/pcg_basic.c'),str(root/f'test/rack/{name}.c'),'-lm','-o',str(out/f'{name}-test')],check=True)
-    subprocess.run([str(out/f'{name}-test')],check=True,timeout=45)
+    # The tempo matrix simulates long low-BPM chains, including under ASan.
+    subprocess.run([str(out/f'{name}-test')],check=True,timeout=120 if name=='tempo' else 45)
 # Exercise the real asynchronous storage worker against generated card exports.
 import tempfile, hashlib
 from fixtures import create

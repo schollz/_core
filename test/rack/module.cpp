@@ -23,6 +23,7 @@ static void check_clock_stop(Ectocore &m,float rate){
             float clock=m.outputs[Ectocore::CLOCK_OUT].getVoltage();
             float audio=m.outputs[Ectocore::LEFT].getVoltage();
             assert(clock==0.f||clock==10.f);
+            if(f>=int64_t(rate)){CoreDisplay d;core_engine_display(m.engine,&d);assert(d.tempo==120);}
             bool high=clock>0;
             if(f>=int64_t(rate)&&f<int64_t(rate*2)){activeEdges+=high&&!previous;activeAudio+=std::abs(audio)>1e-6f;}
             if(f>=int64_t(rate*3)&&f<int64_t(rate*4)){assert(!high);assert(std::abs(audio)<1e-6f);}
@@ -37,6 +38,43 @@ static void check_clock_stop(Ectocore &m,float rate){
     }
     std::cout<<"module: "<<rate<<" Hz, square/trigger and tempo/slice clock stop, 0/10 V and restart at slice zero passed\n";
 }
+static void check_clock_tempo(Ectocore &m,const char *folder,float rate){
+    Ectocore downstream;load(downstream,folder,rate);
+    for(auto *module:{&m,&downstream}){
+        CoreState s;core_engine_get_state(module->engine,&s);
+        s.clock_stop=true;s.clock_slice=false;s.clock_trigger=false;
+        assert(core_engine_update_settings(module->engine,&s));
+        module->inputs[Ectocore::CLOCK_IN].setChannels(1);
+    }
+    int64_t frame=0;
+    auto step=[&](bool input,unsigned expected){
+        m.inputs[Ectocore::CLOCK_IN].setVoltage(input?10.f:0.f);
+        m.process({rate,1.f/rate,frame});
+        downstream.inputs[Ectocore::CLOCK_IN].setVoltage(m.outputs[Ectocore::CLOCK_OUT].getVoltage());
+        downstream.process({rate,1.f/rate,frame++});
+        if(expected)for(auto *module:{&m,&downstream}){
+            CoreDisplay d;core_engine_display(module->engine,&d);assert(d.tempo==expected);
+        }
+    };
+    auto drive=[&](unsigned bpm,unsigned seconds,bool settled){
+        int64_t period=std::llround(rate*30.0/bpm);
+        for(int64_t f=0;f<int64_t(rate*seconds);++f)
+            step(f%period<int64_t(rate*.01f),settled||f>=int64_t(rate*(seconds-1))?bpm:0);
+    };
+    drive(120,4,false);
+    for(unsigned repeat=0;repeat<2;++repeat){
+        for(int64_t f=0;f<int64_t(rate*.5f);++f)step(false,120);
+        drive(120,3,true);
+    }
+    for(int64_t f=0;f<int64_t(rate*2);++f)step(false,120);
+    for(auto *module:{&m,&downstream})assert(module->outputs[Ectocore::CLOCK_OUT].getVoltage()==0.f);
+    step(true,120);
+    for(auto *module:{&m,&downstream}){
+        CoreDisplay d;core_engine_display(module->engine,&d);assert(d.slice==0&&d.clock);
+    }
+    drive(120,2,true);drive(180,10,false);
+    std::cout<<"module: "<<rate<<" Hz, chained tempo holds through short/long pauses and follows a real 120-to-180 BPM change\n";
+}
 int main(int argc,char **argv){
     assert(argc==2);rack::Context context;rack::contextSet(&context);context.engine=new rack::engine::Engine;
     for(float rate:{32000.f,44100.f,48000.f,96000.f,192000.f}){
@@ -47,6 +85,7 @@ int main(int argc,char **argv){
         {Ectocore restored;restored.dataFromJson(json);assert(restored.ezeptocore.load()==m.ezeptocore.load()&&restored.getFolder()==m.getFolder());CoreState a,b;core_engine_get_state(m.engine,&a);core_engine_get_state(restored.engine,&b);if(a.random_state!=b.random_state||a.tempo!=b.tempo||a.clock_stop!=b.clock_stop){std::cerr<<json_dumps(json,JSON_INDENT(2))<<"\nrestore="<<restored.restorePending<<" rng "<<a.random_state<<" vs "<<b.random_state<<" tempo "<<a.tempo<<" vs "<<b.tempo<<"\n";}assert(a.random_state==b.random_state&&a.tempo==b.tempo&&a.clock_stop==b.clock_stop);}
         json_decref(json);
         check_clock_stop(m,rate);
+        check_clock_tempo(m,argv[1],rate);
         // A reboot must also work without a ModuleWidget/UI thread.
         auto *previous=m.engine;m.resetRequested=true;
         for(unsigned i=0;i<1000&&m.engine==previous;++i){m.process({rate,1.f/rate,int64_t(i)});std::this_thread::sleep_for(std::chrono::milliseconds(1));}

@@ -27,6 +27,8 @@ CV inputs are calibrated virtual inputs: nominal bipolar −5 to +5 V and unipol
 
 **Stop when clock stops** silences playback and holds clock output at 0 V after the external clock times out (about two input-clock intervals). This applies to square and trigger output, including when the clock follows slices. Enable it on every module in a clock chain to propagate stops; each module waits for its own timeout. Once the chain has stopped, the returning clock restarts each module at the beginning in normal forward playback. Slice sequences, random jumps, and reverse playback retain their selected behavior. With no external clock acquired, the internal clock continues normally.
 
+Clock tempo is retained across stops and isolated irregular intervals. Tempo estimation updates only when two consecutive eligible intervals agree within 2%, then uses the existing smoothing to follow the measured rate. After a restart, playback begins immediately at the previous tempo; confirmation takes two complete input intervals (about half a second at 120 BPM). A rapidly varying clock holds the previous estimate until two intervals agree, while gentle tempo changes continue to track.
+
 ## Prepared sample folders
 
 A typical export is:

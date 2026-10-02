@@ -11,6 +11,7 @@ typedef struct ClockInput {
   bool last_state;
   uint32_t last_time;
   uint32_t last_diff;
+  uint32_t candidate_diff; // Previous eligible tempo interval; zero after restart.
   FilterExpUint32 *filter;
   callback_int callback_up;
   callback_int callback_down;
@@ -39,6 +40,7 @@ ClockInput *ClockInput_create(uint8_t gpio, callback_int callback_up,
   ci->callback_start = callback_start;
   ci->filter = FilterExpUint32_create(180);
   ci->last_diff = 0;
+  ci->candidate_diff = 0;
 
   // initialize filter to reasonable level (120 bpm)
   for (uint8_t i = 0; i < 100; i++) {
@@ -66,10 +68,23 @@ void ClockInput_update_raw(ClockInput *ci, uint8_t clock_pin) {
       uint32_t time_diff = now_time - ci->last_time;
       // printf("[clock_input] time diff: %d\n", time_diff);
       if (time_diff < 2 * ci->last_diff && time_diff > 1000) {
+        // A short stop can look like one slower pulse. Only feed the tempo
+        // filter when two consecutive intervals agree within 2% of the shorter.
+        uint32_t shorter = time_diff < ci->candidate_diff ?
+            time_diff : ci->candidate_diff;
+        uint32_t difference = time_diff > ci->candidate_diff ?
+            time_diff - ci->candidate_diff : ci->candidate_diff - time_diff;
+        if (ci->candidate_diff && difference <= shorter / 50) {
+          FilterExpUint32_update(ci->filter, time_diff);
+        }
+        ci->candidate_diff = time_diff;
         if (ci->callback_up != NULL) {
-          ci->callback_up(FilterExpUint32_update(ci->filter, time_diff));
+          // Beat/phase handling still sees every edge while tempo is held.
+          ci->callback_up(ci->filter->filtered);
         }
       } else {
+        // Keep the last tempo, but never use a transport gap as a candidate.
+        ci->candidate_diff = 0;
         if (ci->callback_start != NULL) {
           ci->callback_start();
         }
