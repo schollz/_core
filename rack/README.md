@@ -59,7 +59,7 @@ The sample folder is external: move it with your patch, then use **Choose sample
 
 ## Build
 
-Build from this repository or the matching source archive. Required tools: Python 3, Clang with JSON AST support, a C/C++17 compiler, GNU Make, jq, and zstd. macOS also needs the Xcode command-line tools; Linux/Windows builds use the corresponding Rack SDK and native toolchain. Generation must run for the target OS, since the generated translation unit contains that platform's C library declarations.
+Build from this repository or the matching source archive. Required tools: Python 3.10 or later with NumPy, Clang with JSON AST support, a C/C++17 compiler, GNU Make, jq, and zstd. The build generates its DSP tables from the shared firmware scripts; no prior hardware build is needed. macOS also needs the Xcode command-line tools; Linux/Windows builds use the corresponding Rack SDK and native toolchain. Generation must run for the target OS, since the generated translation unit contains that platform's C library declarations.
 
 From the repository root on Apple Silicon:
 
@@ -73,7 +73,7 @@ python3 rack/scripts/source.py
 
 The SDK chooses the destination from the build's OS and CPU: `~/Library/Application Support/Rack2/plugins-mac-arm64/` on Apple Silicon, `plugins-mac-x64/` alongside it on Intel Macs, `$XDG_DATA_HOME/Rack2/plugins-lin-x64/` on Linux (default `~/.local/share/Rack2/plugins-lin-x64/`), and `$LOCALAPPDATA/Rack2/plugins-win-x64/` on Windows. For a custom Rack user folder, run `make install RACK_USER_DIR="/absolute/path/to/Rack2"`. No `sudo` is needed.
 
-Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
+Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, NumPy (`mingw-w64-x86_64-python-numpy`), Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
 
 `make dist` signs macOS binaries ad hoc and adjusts their Rack-library path. Install packaged artifacts instead of copying a raw `plugin.dylib`: a raw SDK-linked binary can load a second Rack library. No developer certificate is required for the local build. No notarization, VCV Library submission, or public release is performed by these scripts.
 

@@ -8,6 +8,7 @@ output=root/'rack/dist';output.mkdir(exist_ok=True)
 name=f"{plugin['slug']}-{plugin['version']}-source"
 files=[root/'LICENSE',root/'Makefile',root/'main.c',root/'.github/workflows/build-rack.yml']
 files+=list((root/'lib').glob('*.h'))+[root/'lib/pcg_basic.c']
+files += [root/'lib'/name for name in ['crossfade4.py', 'fuzz.py', 'resonantfilter.py']]
 for directory in ['lib/core_engine','rack','test/rack']:
     files += [p for p in (root/directory).rglob('*') if p.is_file() and not any(x in p.relative_to(root/directory).parts for x in ['build','dist','__pycache__']) and p.suffix not in ['.dylib','.dll','.so','.pyc']]
 manifest={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set(files))}

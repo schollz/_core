@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with: {python-version: '3.12'}
+      - run: python3 -m pip install numpy
       - name: Install build tools
         run: |
           if [[ "$RUNNER_OS" == macOS ]]; then
@@ -59,7 +60,7 @@ jobs:
           install: >-
             make jq zstd
             mingw-w64-x86_64-gcc mingw-w64-x86_64-clang
-            mingw-w64-x86_64-python
+            mingw-w64-x86_64-python mingw-w64-x86_64-python-numpy
       - run: python rack/scripts/sdk.py win-x64
       - name: Engine, storage, and plugin
         run: |

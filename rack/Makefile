@@ -14,7 +14,7 @@ endif
 
 include $(RACK_DIR)/plugin.mk
 
-build/generated/engine.c: $(wildcard ../lib/*.h) ../lib/core_engine/prepare.py $(wildcard ../lib/core_engine/*.h) $(wildcard ../lib/core_engine/*.inc) ../main.c
+build/generated/engine.c: $(wildcard ../lib/*.h) ../lib/crossfade4.py ../lib/fuzz.py ../lib/resonantfilter.py ../lib/core_engine/prepare.py $(wildcard ../lib/core_engine/*.h) $(wildcard ../lib/core_engine/*.inc) ../main.c
 	$(PYTHON) ../lib/core_engine/prepare.py --out build/generated --clang $(CLANG) $(if $(ENGINE_TARGET),--target $(ENGINE_TARGET))
 
 build/core-engine.o: build/generated/engine.c

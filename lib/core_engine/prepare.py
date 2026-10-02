@@ -11,6 +11,7 @@ import argparse
 import json
 import re
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 LIB = ROOT / 'lib'
@@ -31,11 +32,25 @@ def prepare(out):
         'audio_restart.h': '#define AUDIO_RESTART_ENABLED 0\n#define AUDIO_RESTART_WAKE_ENABLED 0\n',
         'WS2812.pio.h': 'static int ws2812_program;\nstatic uint pio_add_program(PIO p,void *v){return 0;}\nstatic void ws2812_program_init(PIO p,uint s,uint o,uint pin,uint freq,uint bits){}\nstatic void pio_sm_put_blocking(PIO p,uint s,uint v){}\n',
     }
+    # These headers are ignored build products in the firmware checkout. Always
+    # use the shared generators, so clean checkouts and source archives build
+    # the same tables without relying on an earlier hardware build.
+    for name, command in {
+        'crossfade4_441.h': ['crossfade4.py', '441'],
+        'fuzz.h': ['fuzz.py'],
+        'resonantfilter_data.h': ['resonantfilter.py'],
+    }.items():
+        overrides[name] = subprocess.check_output(
+            [sys.executable, str(LIB / command[0]), *command[1:]], text=True)
     seen=set()
     def expand(name):
+        # Leave system headers and inactive hardware-only includes for Clang.
+        # A genuinely missing active dependency must produce an include error.
+        if name not in overrides and not (LIB/name).is_file():
+            return '#include "'+name+'"\n'
         if name in seen:return ''
         seen.add(name)
-        text=overrides.get(name,read(name) if (LIB/name).exists() else '')
+        text=overrides[name] if name in overrides else read(name)
         return '\n'+re.sub(r'^[ \t]*#include "([^"]+)".*$',lambda m:expand(m[1]),text,flags=re.M)+'\n'
     pre=['definitions.h','pcg_basic.h','fixedpoint.h','slew.h','utils.h','volume.h',
          'crossfade4_441.h','bitcrush.h','fuzz.h','saturation.h','shaper.h','random.h',
@@ -100,7 +115,9 @@ def generate(out,clang,target=None):
     # Large immutable lookup tables need not be expanded into 100k AST nodes.
     analysis=re.sub(r'(const\s+\w+\s+\w+\[\d+\]\s*=\s*)(\{[^{}]{4000,}\})',
                     lambda m:m[1]+'{0}'+(' '*(len(m[2])-3)),cpp)
-    unit=out/'analysis.c';unit.write_text(analysis)
+    # Clang reports byte offsets; Windows newline translation would make those
+    # offsets disagree with the preprocessed string that we rewrite below.
+    unit=out/'analysis.c';unit.write_text(analysis, newline='\n')
     with (out/'ast.json').open('w') as f:
         subprocess.run([clang,*flags,'-Xclang','-ast-dump=json','-fsyntax-only',str(unit)],stdout=f,check=True)
     ast=json.loads((out/'ast.json').read_text())

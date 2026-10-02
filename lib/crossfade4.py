@@ -1,7 +1,6 @@
 import sys
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 Q16_16_Q_BITS = 16
 Q16_16_FRACTIONAL_BITS = 1 << Q16_16_Q_BITS
