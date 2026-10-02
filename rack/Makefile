@@ -18,7 +18,9 @@ build/generated/engine.c: $(wildcard ../lib/*.h) ../lib/crossfade4.py ../lib/fuz
 	$(PYTHON) ../lib/core_engine/prepare.py --out build/generated --clang $(CLANG) $(if $(ENGINE_TARGET),--target $(ENGINE_TARGET))
 
 build/core-engine.o: build/generated/engine.c
-	$(CC) $(CFLAGS) -std=c11 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Wno-format -c $< -o $@
+	# The generated unit contains Clang's preprocessed libc and atomic builtins.
+	# -fno-gnu-unique is a GCC-only flag added by the Linux Rack SDK.
+	$(CLANG) $(filter-out -fno-gnu-unique,$(CFLAGS)) -std=c11 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Wno-format -c $< -o $@
 
 build/card-format.o: ../lib/core_engine/card_format.c ../lib/core_engine/card_format.h
 	mkdir -p build

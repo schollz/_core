@@ -216,11 +216,10 @@ def generate(out,clang,target=None):
 CoreEngine *core_engine_create(uint64_t seed) {
     CoreEngine *e=calloc(1,sizeof(CoreEngine));if(!e)return 0;
     CoreEngine *old=core_enter(e);core_defaults();
-    if(setjmp(engine_current->s_host_create_failure)) {
+    if(!host_start_engine(seed)) {
         core_leave(old);core_engine_destroy(e);return 0;
     }
-    pcg32_srandom_r(&engine_current->s_rng,seed,54);
-    host_initialize();input_handling();core_leave(old);return e;
+    core_leave(old);return e;
 }
 void core_engine_destroy(CoreEngine *e) {
     if(!e)return;

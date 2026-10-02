@@ -22,6 +22,14 @@ static void host_initialize(void) {
     update_repeating_timer_to_bpm(sf->bpm_tempo);
 }
 
+// Keep setjmp inside the preprocessed firmware unit: some platforms expose it
+// only as a macro. Its stack frame stays alive throughout allocating startup.
+static bool host_start_engine(uint64_t seed) {
+    if(setjmp(host_create_failure))return false;
+    pcg32_srandom_r(&rng,seed,54);
+    host_initialize();input_handling();return true;
+}
+
 void core_engine_set_catalogue(CoreEngine *e,const CoreBank catalog[16],CoreRead reader,void *user) {
     CoreEngine *old=core_enter(e);host_read=reader;host_read_user=user;
     banks_with_samples_num=0;total_number_samples=0;
