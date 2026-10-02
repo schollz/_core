@@ -70,6 +70,58 @@ func TestExportPaddingAndCompanion(t *testing.T) {
 					if len(wav) != 44+bodyBytes+2*padBytes || string(wav[36:40]) != "data" {
 						t.Fatalf("variant %d: got %d bytes, want one WAV header + %d audio bytes + two %d-byte pads", variant, len(wav), bodyBytes, padBytes)
 					}
+					if gotChannels := int(binary.LittleEndian.Uint16(wav[22:])); gotChannels != channels {
+						t.Fatalf("variant %d: WAV has %d channels, want %d", variant, gotChannels, channels)
+					}
+					f := File{Channels: channels - 1, Oversampling: rate / 44100, BPM: 120, SpliceTrigger: 24, Transients: [][]int{{}, {}, {}}}
+					if err := f.updateInfo(output); err != nil {
+						t.Fatal(err)
+					}
+					metadata, err := os.ReadFile(output + ".info")
+					if err != nil {
+						t.Fatal(err)
+					}
+					if got := int(binary.LittleEndian.Uint32(metadata)); got != bodyBytes {
+						t.Fatalf("metadata body size %d, want %d", got, bodyBytes)
+					}
+					if variant == 1 && channels == 2 {
+						// A legacy companion may claim mono while its metadata says stereo.
+						broken := append([]byte(nil), wav...)
+						binary.LittleEndian.PutUint16(broken[22:], 1)
+						binary.LittleEndian.PutUint32(broken[28:], uint32(rate*2))
+						binary.LittleEndian.PutUint16(broken[32:], 2)
+						companion := filepath.Join(folder, "source.1.wav")
+						if err := os.WriteFile(companion, broken, 0600); err != nil {
+							t.Fatal(err)
+						}
+						if err := f.updateInfo(companion); err == nil {
+							t.Fatal("mismatched WAV must not receive stereo metadata")
+						}
+						f.PathToAudio = source
+						if err := f.repairCompanionFormat(); err != nil {
+							t.Fatal(err)
+						}
+						repaired, err := os.ReadFile(companion)
+						if err != nil || binary.LittleEndian.Uint16(repaired[22:]) != 2 || len(repaired) != len(wav) {
+							t.Fatalf("companion recovery failed: %v", err)
+						}
+						metadata, err := os.ReadFile(companion + ".info")
+						if err != nil {
+							t.Fatal(err)
+						}
+						flags := binary.LittleEndian.Uint32(metadata[4:])
+						binary.LittleEndian.PutUint32(metadata[4:], flags&^(1<<15))
+						if err := os.WriteFile(companion+".info", metadata, 0600); err != nil {
+							t.Fatal(err)
+						}
+						if err := f.repairCompanionFormat(); err != nil {
+							t.Fatal(err)
+						}
+						metadata, err = os.ReadFile(companion + ".info")
+						if err != nil || binary.LittleEndian.Uint32(metadata[4:])&(1<<15) == 0 {
+							t.Fatalf("metadata-only recovery failed: %v", err)
+						}
+					}
 					pcm := wav[44:]
 					// Both circular pads must copy the opposite end of the body.
 					// SoX dithering may differ by up to two PCM16 units per copy.

@@ -1,6 +1,7 @@
 package zeptocore
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -72,7 +73,10 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		log.Debugf("loaded %s from disk", pathToOriginal)
 		f.debounceSave = debounce.New(321 * time.Millisecond)
 		f.debounceRegen = debounce.New(321 * time.Millisecond)
-		err = f.ensureWaveformPreview()
+		err = f.repairCompanionFormat()
+		if err == nil {
+			err = f.ensureWaveformPreview()
+		}
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
@@ -468,6 +472,7 @@ func (f File) Regenerate() {
 			err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels+1, f.Oversampling)
 			if err != nil {
 				log.Error(err)
+				return
 			}
 			log.Trace("-------------------------")
 			log.Tracef("slices: %+v", f.SliceStart)
@@ -714,6 +719,50 @@ func (f *File) SetTempoMatch(TempoMatch bool) {
 	}()
 }
 
+// repairCompanionFormat upgrades cached exports made by older online tools.
+// Regenerate from the original rather than guessing how mismatched PCM is laid out.
+func (f File) repairCompanionFormat() error {
+	if f.OneShot && !f.TempoMatch {
+		return nil
+	}
+	folder, filename := filepath.Split(f.PathToAudio)
+	companion := filepath.Join(folder, strings.TrimSuffix(filename, filepath.Ext(filename))+".1.wav")
+	if _, err := os.Stat(companion); os.IsNotExist(err) {
+		return nil
+	}
+	rate, channels, precision, err := sox.Info(companion)
+	if err == nil && rate == 44100*f.Oversampling && channels == f.Channels+1 && precision == 16 {
+		// A correct header can still have stale format/size metadata.
+		metadata, readErr := os.ReadFile(companion + ".info")
+		stat, statErr := os.Stat(companion)
+		if readErr == nil && statErr == nil && len(metadata) >= 11 {
+			flags := binary.LittleEndian.Uint32(metadata[4:])
+			body := stat.Size() - 44 - int64(rate*channels*2)
+			if int64(binary.LittleEndian.Uint32(metadata)) == body &&
+				int((flags>>15)&1)+1 == channels && int((flags>>14)&1)+1 == f.Oversampling {
+				return nil
+			}
+		}
+		return f.updateInfo(companion)
+	}
+	staging, err := os.MkdirTemp(folder, ".companion-repair-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(staging)
+	output := filepath.Join(staging, filepath.Base(companion))
+	if err := createTimeStretched(f.PathToAudio, output, 0.125, f.Channels+1, f.Oversampling); err != nil {
+		return err
+	}
+	if err := f.updateInfo(output); err != nil {
+		return err
+	}
+	if err := os.Rename(output, companion); err != nil {
+		return err
+	}
+	return os.Rename(output+".info", companion+".info")
+}
+
 // createTimeStretched will create timestretched file from input
 // and process it to format it for zeptocore
 func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channels int, oversampling int) (err error) {
@@ -753,6 +802,11 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 		return
 	}
 	pieceJoin, err := sox.Join(pieceEnd, fnameIn, pieceFront)
+	if err != nil {
+		os.Remove(pieceFront)
+		os.Remove(pieceEnd)
+		return err
+	}
 	tempRaw := sox.Tmpfile()
 	defer func() {
 		os.Remove(pieceFront)

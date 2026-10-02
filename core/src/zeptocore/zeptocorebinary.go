@@ -2,6 +2,9 @@ package zeptocore
 
 import (
 	"encoding/binary"
+	"fmt"
+
+	"github.com/schollz/_core/core/src/sox"
 	"math"
 	"os"
 	"strings"
@@ -166,6 +169,14 @@ func (sip *SampleInfoPack) WriteToFile(filename string) error {
 }
 
 func (f File) updateInfo(fnameIn string) (err error) {
+	// Never stamp requested-format metadata onto a different WAV format.
+	rate, channels, precision, err := sox.Info(fnameIn)
+	if err != nil {
+		return err
+	}
+	if rate != 44100*f.Oversampling || channels != f.Channels+1 || precision != 16 {
+		return fmt.Errorf("unexpected exported WAV format: %d Hz, %d channels, %d bits", rate, channels, precision)
+	}
 	// determine the size
 	finfo, err := os.Stat(fnameIn)
 	if err != nil {

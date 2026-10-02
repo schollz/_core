@@ -163,6 +163,8 @@ The display estimates source position and spectrum; it does not measure the inst
 
 Edits save automatically after a short debounce. Metadata edits leave audio unchanged; slot moves reuse completed audio. All primary audio in an import batch is saved before companion work begins. Companion jobs yield to queued actions and primary saves, and late results cannot replace a newer revision or recreate a removed sample. Each companion is saved in its own recoverable transaction. Pending companions are recorded in the completed manifest and resume when the project is reopened, including in a duplicate. Closing or switching projects does not require waiting for them. Pending changes and undo history are stored separately from active hardware files.
 
+When an adopted card has valid primary audio but incompatible companion audio or metadata, the manager silently queues a replacement companion in the background. Existing entries protected only by a companion format mismatch are recovered on reopening, and obsolete warnings are cleared. The primary WAV and sample settings are preserved.
+
 A companion failure leaves primary playback and editing available. The footer reports the cause; after fixing it, choose **More → Retry pending save** to resume companion generation. Replacing a sample's audio removes its outdated companion until the new one is ready.
 
 Before saving, full file verification uses up to four workers and reuses those verified hashes while planning the same save. Hash reads cancel between buffered chunks when a new edit arrives, allowing queued actions such as Auto slice to proceed. Unchanged filename sidecars are reused. Actual replacements still undergo transaction conflict checks and verification of staged bytes.

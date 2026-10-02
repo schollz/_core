@@ -350,6 +350,40 @@ Project Storage::open(std::function<void(double)> progress) {
                                       ". Reload/reconcile before saving.");
   }
   report(0.95);
+  // Older manifests protected the entire sample for companion-only failures.
+  // Retry only when the owned files still match their recorded fingerprints;
+  // external changes continue through the normal reconciliation workflow.
+  for (auto &s : p.samples) {
+    if (!s.protectedEntry ||
+        s.problem != "WAV and metadata disagree about format or circular padding" ||
+        s.source.isEmpty() || !child(root, s.source).existsAsFile())
+      continue;
+    bool unchanged = true;
+    for (const auto &path : s.ownedPaths) {
+      auto expected = p.fingerprints.find(path);
+      if (expected == p.fingerprints.end() ||
+          fingerprint(child(root, path)) != expected->second)
+        unchanged = false;
+    }
+    if (!unchanged)
+      continue;
+    try {
+      const auto primary = card::path(s.bank, s.slot);
+      juce::MemoryBlock bytes;
+      require(child(root, primary + ".info").loadFileAsData(bytes), "Missing .info");
+      card::validatePair(card::inspect(child(root, primary)), card::decode(bytes));
+      s.protectedEntry = false;
+      p.warnings.removeString("Bank " + String(s.bank + 1) + " slot " +
+                              String(s.slot + 1) + ": " + s.problem);
+      s.problem.clear();
+      s.companion.clear();
+      s.companionPending = !(s.oneShot && !s.tempoMatch);
+    } catch (const std::exception &) {
+      // A damaged primary still needs explicit recovery.
+    }
+  }
+  // Re-evaluate persisted transient warnings after releasing protected entries.
+  p = Project::fromJson(p.json());
   size_t checked = 0;
   for (const auto &s : p.samples) {
     if (!s.protectedEntry)
@@ -514,10 +548,17 @@ Project Storage::adopt(bool writeManifest,
           auto other = child(root, card::path(b, slot, v));
           if (other.existsAsFile()) {
             juce::MemoryBlock meta;
-            require(child(root, card::path(b, slot, v) + ".info")
-                        .loadFileAsData(meta),
-                    "Companion metadata missing");
-            card::validatePair(card::inspect(other), card::decode(meta));
+            try {
+              require(child(root, card::path(b, slot, v) + ".info")
+                          .loadFileAsData(meta),
+                      "Companion metadata missing");
+              card::validatePair(card::inspect(other), card::decode(meta));
+            } catch (const std::exception &) {
+              // The primary has already been validated and recovered. Rebuild
+              // a legacy/broken companion from it instead of protecting audio
+              // that is otherwise usable. The worker replaces it transactionally.
+              s.companionPending = !(s.oneShot && !s.tempoMatch);
+            }
           }
         }
         for (const auto &warning : card::compatibility(i))

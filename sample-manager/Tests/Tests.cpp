@@ -1,4 +1,5 @@
 #include "NameMetadata.h"
+#include "Manager.h"
 #include "Parallel.h"
 #include "SettingsView.h"
 #include "Storage.h"
@@ -99,6 +100,61 @@ int runTests(const String &suite) {
   try {
     // Focused suites let worker/recovery regressions run independently of DSP
     // estimation fixtures. The default continues to run the full contract.
+    if (suite == "companion-repair") {
+      Temp t;
+      auto primary = child(t.dir, "bank1/0.0.wav");
+      ensureDirectory(primary.getParentDirectory());
+      wav(primary, 2, 44100, 88200);
+      Sample sample;
+      sample.channels = 2;
+      auto info = card::encode(sampleInfo(sample, 44100));
+      durableWrite(child(t.dir, "bank1/0.0.wav.info"), info.getData(), info.getSize());
+      // Reproduce the online pack: stereo metadata with a mono WAV header.
+      wav(child(t.dir, "bank1/0.1.wav"), 1, 44100, 749700);
+      info = card::encode(sampleInfo(sample, 352800, true));
+      durableWrite(child(t.dir, "bank1/0.1.wav.info"), info.getData(), info.getSize());
+      const auto before = hashFile(primary);
+      {
+        Storage store(t.dir);
+        auto adopted = store.open();
+        check(!adopted.samples[0].protectedEntry && adopted.samples[0].companionPending &&
+                  adopted.warnings.isEmpty(), "Broken companion queues silent recovery");
+        auto &legacy = adopted.samples[0];
+        legacy.protectedEntry = true;
+        legacy.problem = "WAV and metadata disagree about format or circular padding";
+        adopted.warnings.add("Bank 1 slot 1: " + legacy.problem);
+        adopted.warnings.add(legacy.name + ": Transient lane 1 has a position outside the device's encoding range.");
+        durableJson(child(t.dir, ".core-manager/project.json"), adopted.json());
+        auto reopened = store.open();
+        check(!reopened.samples[0].protectedEntry && reopened.samples[0].companionPending &&
+                  reopened.warnings.isEmpty(), "Existing protected manifest recovers and clears stale warnings");
+        check(hashFile(primary) == before, "Repair preserves primary WAV bytes");
+      }
+      {
+        Manager manager;
+        manager.open(t.dir);
+        for (int n = 0; n < 2000; ++n) {
+          auto state = manager.snapshot();
+          if (state.available && !state.busy && !state.backgroundBusy)
+            break;
+          juce::Thread::sleep(10);
+        }
+        auto state = manager.snapshot();
+        check(state.available && state.error.isEmpty() && state.companionError.isEmpty() &&
+                  state.pendingCompanions == 0 && state.project.warnings.isEmpty(),
+              "Background worker completes silent companion repair");
+        juce::MemoryBlock bytes;
+        check(child(t.dir, "bank1/0.1.wav.info").loadFileAsData(bytes), "Repaired metadata exists");
+        card::validatePair(card::inspect(child(t.dir, "bank1/0.1.wav")), card::decode(bytes));
+        check(hashFile(primary) == before, "Completed repair preserves primary WAV");
+      }
+      // Invalid primaries must never be released by companion recovery.
+      Storage store(t.dir);
+      wav(primary, 1, 44100, 88200);
+      auto broken = store.adopt(false);
+      check(broken.samples[0].protectedEntry, "Damaged primary remains protected");
+      return 0;
+    }
     if (suite == "manager") {
       audioTests();
       managerTests();

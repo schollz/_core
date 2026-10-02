@@ -662,6 +662,13 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     put(j, "companionFrames", juce::int64(result.companionFrames));
   }
   put(j, "frames", juce::int64(result.frames));
+  // Check the actual encoded files before certifying the cache or saving
+  // metadata derived from the requested sample settings.
+  card::validatePair(card::inspect(child(root, result.padded)),
+                     sampleInfo(sample, result.frames));
+  if (result.companionPadded.isNotEmpty())
+    card::validatePair(card::inspect(child(root, result.companionPadded)),
+                       sampleInfo(sample, result.companionFrames, true));
   cancelled(cancel);
   durableJson(ready, j);
   diagnostics::log("AUDIO", "Rendered frames=" + String(juce::int64(result.frames)) +

@@ -276,3 +276,10 @@ These are ad-hoc-signed local builds, not notarized public releases. Each `dist/
 - Actual SD-card playback/removal timing, physical MIDI hardware and deliberate local UF2 copying.
 - An authorized live drum-analysis request, service availability and cancellation under real network conditions.
 - Developer ID/notarization, public distribution and large-library performance qualification.
+
+
+## Legacy companion recovery: October 2, 2026
+
+The Linux Release build, `--self-test companion-repair`, and the broader `--self-test manager` suite pass. The fixture reproduces stereo metadata paired with a mono companion WAV header, checks silent adoption and reopening of an older protected manifest, clears stale transient warnings, runs background repair through the manager, validates the replacement pair and confirms unchanged primary WAV bytes. A damaged primary remains protected. Generated WAV/metadata pairs are validated before render cache certification.
+
+The Go `TestExportPaddingAndCompanion` test passes for mono/stereo at 44.1/88.2 kHz, including channel headers, metadata sizes, padding and repair of cached mismatched companions. The complete zeptocore package suite could not pass because existing audio fixtures including `amen.xrni` are absent. No user card files were modified by these checks.
