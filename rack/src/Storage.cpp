@@ -33,6 +33,17 @@ Wav Storage::inspect(const fs::path &p){
     }
     require(fmt&&data&&w.bytes%(w.channels*2)==0,"Missing or unaligned PCM");return w;
 }
+static bool legacyServerHeader(const fs::path &p,const Wav &w){
+    // Older core servers wrote a temporary WAV, then read the whole file as
+    // raw PCM. Verify that extra header before accepting its size discrepancy.
+    if(w.bytes<44)return false;
+    std::ifstream in(p,std::ios::binary);uint8_t h[44]{};in.seekg(std::streamoff(w.offset));
+    return bool(in.read((char*)h,sizeof h))&&!memcmp(h,"RIFF",4)&&uint64_t(u32(h+4))+8==w.bytes
+        &&!memcmp(h+8,"WAVEfmt ",8)&&u32(h+16)==16&&u16(h+20)==1
+        &&u16(h+22)==w.channels&&u32(h+24)==w.rate&&u32(h+28)==w.rate*w.channels*2
+        &&u16(h+32)==w.channels*2&&u16(h+34)==16&&!memcmp(h+36,"data",4)
+        &&uint64_t(u32(h+40))+44==w.bytes;
+}
 std::shared_ptr<Library> Storage::catalogue(const fs::path &root,uint64_t generation){
     require(fs::is_directory(root),"Sample folder is missing");auto l=std::make_shared<Library>();l->root=fs::absolute(root);l->generation=generation;
     unsigned count=0;
@@ -48,7 +59,14 @@ std::shared_ptr<Library> Storage::catalogue(const fs::path &root,uint64_t genera
             if(e->companion){
                 e->wav[1]=inspect(companion);auto ci=companion;ci+=".info";auto cd=bytes(ci,8192);CoreCardInfo temp;
                 require(core_card_decode(cd.data(),cd.size(),&temp,error,sizeof error),error);
-                require(e->wav[1].channels==c.channels&&e->wav[1].rate==e->wav[0].rate&&uint64_t(temp.sample.size)==uint64_t(c.size)*8&&e->wav[1].bytes==uint64_t(temp.sample.size)+uint64_t(e->wav[1].rate)*c.channels*2,"Invalid eight-times companion");
+                uint64_t primarySize=c.size,companionSize=temp.sample.size;
+                if(primarySize>44&&companionSize>44&&legacyServerHeader(p,e->wav[0])&&legacyServerHeader(companion,e->wav[1])){
+                    primarySize-=44;companionSize-=44;
+                }
+                require(e->wav[1].channels==c.channels&&e->wav[1].rate==e->wav[0].rate
+                    &&temp.sample.channels==c.channels&&temp.sample.rate_multiple==c.rate_multiple
+                    &&companionSize==primarySize*8
+                    &&e->wav[1].bytes==uint64_t(temp.sample.size)+uint64_t(e->wav[1].rate)*c.channels*2,"Invalid eight-times companion");
             }
             require(e->companion||(c.one_shot&&!c.tempo_match),"Required .1.wav companion missing; wait for sample manager to finish");
             l->banks[b].samples[l->banks[b].count++]=e->info.sample;l->entries[b][s]=std::move(e);++count;

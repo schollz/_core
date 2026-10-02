@@ -761,7 +761,9 @@ func processSound(fnameIn string, fnameOut string, channels int, oversampling in
 		os.Remove(tempRaw)
 	}()
 
-	_, _, err = utils.Run(sox.GetBinary(), pieceJoin, "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", tempRaw, "norm", "gain", "-6")
+	// Tmpfile has a .wav suffix; force raw output to avoid reading a WAV header
+	// as audio in the raw-to-WAV conversion below.
+	_, _, err = utils.Run(sox.GetBinary(), pieceJoin, "-t", "raw", "-c", fmt.Sprint(channels), "-r", fmt.Sprint(44100*oversampling), "--bits", "16", "--encoding", "signed-integer", "--endian", "little", tempRaw, "norm", "gain", "-6")
 	if err != nil {
 		log.Error(err)
 		return

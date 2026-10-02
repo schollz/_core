@@ -16,9 +16,11 @@ int main(int argc,char **argv){
         for(size_t n=0;n<bytes.size();++n)assert(!core_card_decode(bytes.data(),n,&info,error,sizeof error));
         bytes[7]|=128;assert(!core_card_decode(bytes.data(),bytes.size(),&info,error,sizeof error));}
     auto l=Storage::catalogue(argv[1],42);
-    assert(l->banks[0].count==2&&l->banks[15].count==1&&l->warnings.size()==1);
+    assert(l->banks[0].count==2&&l->banks[15].count==1&&l->warnings.size()==5);
     assert(l->banks[0].samples[0].slot==0&&l->banks[0].samples[1].slot==15);
     assert(l->banks[0].samples[0].rate_multiple==2&&l->banks[0].samples[0].channels==1);
+    assert(l->banks[2].count==5&&l->banks[3].count==1);
+    for(unsigned slot=0;slot<4;++slot){assert(l->entries[2][slot]);assert(!l->entries[3][slot]);}
     CoreState settings{};settings.runes[6][15]=true;applySettings(*l,settings);
     assert(settings.brightness==75&&settings.clock_stop&&!settings.bipolar[0]&&settings.sample_mapping==1);
     assert(settings.runes[0][0]&&!settings.runes[0][1]&&settings.runes[6][15]);
@@ -40,5 +42,5 @@ int main(int argc,char **argv){
     assert(storage.status().find("missing")!=std::string::npos);
     assert(storage.read(b,15,15,0,44,actual,sizeof actual)); // previous bank survives failure
     delete b;
-    std::cout<<"storage: 16 banks, sparse slots, 88.2 kHz mono, settings, bounded streaming, invalid folder passed\n";
+    std::cout<<"storage: 16 banks, sparse slots, legacy core server exports, malformed companions, 88.2 kHz mono, settings, bounded streaming, invalid folder passed\n";
 }
