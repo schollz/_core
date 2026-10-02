@@ -79,7 +79,9 @@ Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Wind
 
 Rack CI runs only on demand, not on pushes or pull requests. Start it from GitHub **Actions → Build Rack plugin → Run workflow**, or run `gh workflow run build-rack.yml --ref main`.
 
-`make dist` signs macOS binaries ad hoc and adjusts their Rack-library path. Install packaged artifacts instead of copying a raw `plugin.dylib`: a raw SDK-linked binary can load a second Rack library. No developer certificate is required for the local build. No notarization, VCV Library submission, or public release is performed by these scripts.
+To publish the Windows package, use **Actions → Release Rack plugin - Windows → Run workflow**, or run `gh workflow run release-rack-windows.yml --ref main`. This separate workflow also runs only on demand. It checks out `main`, runs the engine/storage tests, builds Windows x64, and uploads a ZIP plus its SHA-256 checksum to the latest published GitHub release at upload time. The ZIP contains the `.vcvplugin`, matching source, installation instructions, and build metadata. The plugin version comes from `rack/plugin.json`, independently of the release tag; reruns replace only the matching Windows ZIP and checksum assets. The workflow downloads the published assets again and verifies them before reporting success.
+
+`make dist` signs macOS binaries ad hoc and adjusts their Rack-library path. Install packaged artifacts instead of copying a raw `plugin.dylib`: a raw SDK-linked binary can load a second Rack library. No developer certificate is required for the local build. Local build commands do not publish a release; the manual Windows release workflow above does. Neither performs notarization or submits to the VCV Library.
 
 ## Architecture and verification
 

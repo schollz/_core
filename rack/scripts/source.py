@@ -6,7 +6,7 @@ root=Path(__file__).resolve().parents[2]
 plugin=json.loads((root/'rack/plugin.json').read_text())
 output=root/'rack/dist';output.mkdir(exist_ok=True)
 name=f"{plugin['slug']}-{plugin['version']}-source"
-files=[root/'LICENSE',root/'Makefile',root/'main.c',root/'.github/workflows/build-rack.yml']
+files=[root/'LICENSE',root/'Makefile',root/'main.c',root/'.github/workflows/build-rack.yml',root/'.github/workflows/release-rack-windows.yml']
 files+=list((root/'lib').glob('*.h'))+[root/'lib/pcg_basic.c']
 files += [root/'lib'/name for name in ['crossfade4.py', 'fuzz.py', 'resonantfilter.py']]
 for directory in ['lib/core_engine','rack','test/rack']:

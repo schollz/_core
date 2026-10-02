@@ -1,0 +1,83 @@
+name: Release Rack plugin - Windows
+
+# Only an explicit Run workflow request builds or publishes this plugin.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rack-windows-release
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build and package Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: 'msys2 {0}'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make jq zstd
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-clang
+            mingw-w64-x86_64-python mingw-w64-x86_64-python-numpy
+      - name: Download and verify Rack SDK
+        run: python rack/scripts/sdk.py win-x64
+      - name: Check engine and storage
+        run: CC=gcc CXX=g++ python test/rack/run.py
+      - name: Build plugin and sharing ZIP
+        run: |
+          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++ -j4 dist
+          python rack/scripts/source.py
+          python rack/scripts/package-windows.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rack-windows-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            rack/dist/*-win-x64.zip
+            rack/dist/*-win-x64-SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Upload to latest published release
+    needs: windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: rack-windows-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-assets
+      - name: Upload ZIP and verify published checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          sha256sum --check ./*-win-x64-SHA256SUMS.txt
+          release_tag="$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name)"
+          gh release upload --clobber -- "$release_tag" ./*-win-x64.zip ./*-win-x64-SHA256SUMS.txt
+          mkdir verified
+          for asset in ./*-win-x64.zip ./*-win-x64-SHA256SUMS.txt; do
+            gh release download --dir verified --pattern "$(basename "$asset")" -- "$release_tag"
+            cmp "$asset" "verified/$(basename "$asset")"
+          done
+          (cd verified && sha256sum --check ./*-win-x64-SHA256SUMS.txt)
+          release_url="$(gh release view "$release_tag" --json url --jq .url)"
+          echo "Published and verified Windows Rack package: $release_url" >> "$GITHUB_STEP_SUMMARY"
