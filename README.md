@@ -54,21 +54,13 @@ Normal suits most uses; low latency reduces available FX bandwidth. Choose visua
 <img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
 </a>
 
-
-Previously published standalone visualizer downloads (legacy):
-
 | Platform | Download |
 | --- | --- |
-| Linux (x86_64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Linux-x86_64-Standalone.zip) |
-| macOS (Apple Silicon) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-arm64-Standalone.zip) |
-| macOS (Intel) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-macOS-x86_64-Standalone.zip) |
-| Windows (x64) | [v8.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.1/zeptocore-visualizer-8.0.1-Windows-x64-Standalone.zip) |
+| macOS (Apple Silicon) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-arm64.zip) |
+| macOS (Intel) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-macos-x86_64.zip) |
+| Windows (x64) | [v8.0.3 ZIP](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-windows-x64.zip) |
+| Linux (x86_64) | [v8.0.3 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.3/_core-sample-manager-8.0.3-linux-x86_64.tar.gz) |
 
-[EZEPTOCORE for VCV Rack 2](rack/README.md) uses the shared firmware engine with an alternate Ectocore panel and reads completed sample-manager exports directly. With the Rack SDK and build tools installed, run `make install` here to build and copy it to Rack's plugin folder, then restart Rack. See its README for setup, loading a sample folder, and the current port boundaries.
-
-[_core sample manager](sample-manager/README.md) is the current native application. Open a local project or card folder, import and edit samples, and wait for **Ready**; hardware files save continuously. Its integrated **Visualizer** follows either the device over USB MIDI or the app’s preview transport. It shares completed project data and keeps a local visualization cache for use after the card is removed. Device mode uses the existing opt-in visualizer firmware.
-
-The app has switchable Ezeptocore, Zeptocore, and Ectocore presentations, offline slicing and pitch-preserving BPM conversion, shared MIDI tools, and model-specific UF2 downloads with an illustrated installation guide under **Device → Firmware**. Choose a firmware version and build, with the latest available version selected by default. Download the UF2, enter bootloader mode, then click **Install firmware** and confirm. The installer uses the downloaded file; there is no local UF2 picker. [Build, package, and release it](sample-manager/Release/README.md) using local packaging, the manual signed Windows workflow, or the macOS/Linux release scripts. Releases build a fresh clone of the latest `main` commit, use the latest published release's version, and upload assets to that release without requiring a new tag. The former native standalone/AU/VST3 project is retired. The website and [browser/kiosk visualizer](visualizer/) remain available.
 
 
 ## diy
