@@ -1,11 +1,6 @@
 name: Build Rack plugin
 on:
   workflow_dispatch:
-  pull_request:
-    paths: ['rack/**', 'lib/**', 'main.c', 'test/rack/**', '.github/workflows/build-rack.yml']
-  push:
-    branches: [main]
-    paths: ['rack/**', 'lib/**', 'main.c', 'test/rack/**', '.github/workflows/build-rack.yml']
 permissions:
   contents: read
 jobs:

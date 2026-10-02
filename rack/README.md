@@ -77,6 +77,8 @@ The SDK chooses the destination from the build's OS and CPU: `~/Library/Applicat
 
 Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, NumPy (`mingw-w64-x86_64-python-numpy`), Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
 
+Rack CI runs only on demand, not on pushes or pull requests. Start it from GitHub **Actions → Build Rack plugin → Run workflow**, or run `gh workflow run build-rack.yml --ref main`.
+
 `make dist` signs macOS binaries ad hoc and adjusts their Rack-library path. Install packaged artifacts instead of copying a raw `plugin.dylib`: a raw SDK-linked binary can load a second Rack library. No developer certificate is required for the local build. No notarization, VCV Library submission, or public release is performed by these scripts.
 
 ## Architecture and verification
