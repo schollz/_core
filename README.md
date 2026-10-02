@@ -41,10 +41,11 @@ The [_core sample manager](https://shop.infinitedigits.co/guides/sample-manager/
 
 It also has a built-in visualizer:
 
+<div align="center">
 <a href="https://www.youtube.com/watch?v=YlEtNIeCu6k">
-<img width="1018" height="601" alt="2026-09-18_09-21" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
+<img width="70%" src="https://github.com/user-attachments/assets/e68e0806-3978-47b1-bbff-63f823d6fed1" />
 </a>
-
+</div>
 
 Download the best version for your system:
 
