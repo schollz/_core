@@ -57,10 +57,10 @@ Download the best version for your system:
 
 | Platform | Download |
 | --- | --- |
-| macOS (Apple Silicon) | [v8.0.4 ZIP](https://github.com/schollz/_core/releases/download/v8.0.4/_core-sample-manager-8.0.4-macos-arm64.zip) |
-| macOS (Intel) | [v8.0.4 ZIP](https://github.com/schollz/_core/releases/download/v8.0.4/_core-sample-manager-8.0.4-macos-x86_64.zip) |
-| Windows (x64) | [v8.0.4 ZIP](https://github.com/schollz/_core/releases/download/v8.0.4/_core-sample-manager-8.0.4-windows-x64.zip) |
-| Linux (x86_64) | [v8.0.4 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.4/_core-sample-manager-8.0.4-linux-x86_64.tar.gz) |
+| macOS (Apple Silicon) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-macos-arm64.zip) |
+| macOS (Intel) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-macos-x86_64.zip) |
+| Windows (x64) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-windows-x64.zip) |
+| Linux (x86_64) | [v8.0.5 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-linux-x86_64.tar.gz) |
 
 
 The managers' **Start tempo** setting lets every hardware model start at a fixed
