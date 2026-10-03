@@ -157,7 +157,7 @@ static void midi_command_execute(midi_comm_callback callback)
   }
   else if (strcmp(operation, "version") == 0)
   {
-    send_text_as_sysex("version=v8.0.4");
+    send_text_as_sysex("version=v8.0.5");
   }
   else if (strcmp(operation, "bootloader") == 0)
   {
@@ -338,7 +338,7 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     }
     else if (channel == 0 && midi_buffer[1] == 1)
     {
-      send_text_as_sysex("version=v8.0.4");
+      send_text_as_sysex("version=v8.0.5");
       return;
     }
 #endif

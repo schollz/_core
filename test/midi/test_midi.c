@@ -302,7 +302,7 @@ static void test_usb(void)
   queue(0x0b, 0xb0, 1, 0);
 #endif
   drain();
-  assert(strcmp(sysex, "version=v8.0.4") == 0);
+  assert(strcmp(sysex, "version=v8.0.5") == 0);
 #ifdef INCLUDE_ZEPTOCORE
   command("core_cmd=1,bootloader");
 #else
