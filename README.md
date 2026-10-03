@@ -39,6 +39,12 @@ The digital signal processing for all the *core things was written by Zack, from
 
 The [_core sample manager](https://shop.infinitedigits.co/guides/sample-manager/) is a native app for macOS, Windows, and Linux that prepares Zeptocore, EZEPTOCORE, and Ectocore SD cards offline. It imports sounds, organizes banks, edits slices and tempo, and saves audio and settings directly to your card or project folder, with a built-in firmware installer. The [Zeptocore](https://zeptocore.com/tool), [EZEPTOCORE](https://ezeptocore.com/), and [Ectocore](https://ectocore.rocks/) web managers remain available, and their downloads also work in the desktop app.
 
+The current source uses granular Time Stretch up to **16×**, with an **8×**
+triggered effect. New sample-manager and web-tool exports contain primary audio
+only. Update device firmware to the matching granular-only build before using
+these exports; earlier release downloads may still require companions. Existing
+cards work without regeneration, and old companion files are left unused.
+
 It also has a built-in visualizer:
 
 <div align="center">

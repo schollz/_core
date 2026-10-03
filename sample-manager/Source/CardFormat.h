@@ -25,6 +25,8 @@ Wav inspect(juce::InputStream &, juce::int64 fileSize);
 void validatePair(const Wav &, const Info &);
 juce::StringArray compatibility(const Info &);
 String path(int bank, int slot, int variant = 0);
+// Recognize only canonical, obsolete odd-numbered card audio/metadata paths.
+bool isCompanionPath(const String &);
 void writeHeader(juce::OutputStream &, uint64_t frames, int rate, int channels);
 // A complete model of recognized settings. Unrecognized files are never
 // owned.

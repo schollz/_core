@@ -19,7 +19,7 @@ static void audio_switch_while_silent(void) {
   sel_bank_cur = bank;
   sel_sample_cur = sample;
   format_sample_filename(fil_current_name, bank, sample,
-                         sel_variation + audio_variant * 2);
+                         audio_variant * 2);
   FRESULT result = audio_file_open(fil_current_name);
   do_open_file_ready = fil_current_change_force = false;
   if (result == FR_OK) {

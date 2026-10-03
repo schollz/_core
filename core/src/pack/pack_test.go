@@ -73,6 +73,13 @@ func TestPack(t *testing.T) {
 	}
 	fixtureFile(t, filepath.Join(storage, name, stem+".0.wav"), wav)
 	fixtureFile(t, filepath.Join(storage, name, stem+".0.wav.info"), info)
+	// Cached companions, including malformed metadata and alternative variants,
+	// must be ignored without repair and omitted from fresh packs.
+	obsolete := []string{stem + ".1.wav", stem + ".1.wav.info", stem + ".1.1.wav"}
+	for _, name := range obsolete {
+		fixtureFile(t, filepath.Join(storage, want.OriginalFilename, name), []byte("old companion"))
+	}
+	fixtureFile(t, filepath.Join(storage, name, stem+".0.1.wav"), wav)
 	// Cache avoids running SoX or detection: this test exercises the real pack
 	// writer with already completed numbered audio, as an export normally does.
 	cached, err := json.Marshal(zeptocore.File{
@@ -109,6 +116,21 @@ func TestPack(t *testing.T) {
 		hash := sha256.Sum256(b)
 		if hex.EncodeToString(hash[:]) != got.AudioSHA256 {
 			t.Fatal("sidecar must hash all extracted primary WAV bytes")
+		}
+	}
+	for _, slot := range []string{"0", "1"} {
+		for _, variant := range []string{"1", "3", "5", "7", "9"} {
+			if _, err := os.Stat(filepath.Join(bank, slot+"."+variant+".wav")); !os.IsNotExist(err) {
+				t.Fatal("companion exported", slot, variant)
+			}
+		}
+		if _, err := os.Stat(filepath.Join(bank, slot+".4.wav")); err != nil {
+			t.Fatal("normal-speed alternative lost", err)
+		}
+	}
+	for _, obsoleteName := range obsolete {
+		if got, err := os.ReadFile(filepath.Join(storage, name, obsoleteName)); err != nil || string(got) != "old companion" {
+			t.Fatal("cached companion modified", err)
 		}
 	}
 	settingsArchive, err := Zip(storage, payload, true)

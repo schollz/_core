@@ -359,7 +359,7 @@ Project Storage::open(std::function<void(double)> progress) {
   }
   report(0.95);
   // Older manifests protected the entire sample for companion-only failures.
-  // Retry only when the owned files still match their recorded fingerprints;
+  // Recover only when the primary owned files still match their fingerprints;
   // external changes continue through the normal reconciliation workflow.
   for (auto &s : p.samples) {
     if (!s.protectedEntry ||
@@ -384,8 +384,6 @@ Project Storage::open(std::function<void(double)> progress) {
       p.warnings.removeString("Bank " + String(s.bank + 1) + " slot " +
                               String(s.slot + 1) + ": " + s.problem);
       s.problem.clear();
-      s.companion.clear();
-      s.companionPending = !(s.oneShot && !s.tempoMatch);
     } catch (const std::exception &) {
       // A damaged primary still needs explicit recovery.
     }
@@ -447,7 +445,7 @@ Project Storage::adopt(bool writeManifest,
   std::vector<String> paths;
   for (int b = 0; b < 16; ++b)
     for (int slot = 0; slot < 16; ++slot)
-      for (int variant = 0; variant <= 9; ++variant)
+      for (int variant = 0; variant <= 8; variant += 2)
         for (const auto &suffix : juce::StringArray{"", ".info"}) {
           auto path = card::path(b, slot, variant) + suffix;
           if (present.count(path))
@@ -475,7 +473,7 @@ Project Storage::adopt(bool writeManifest,
       auto relative = card::path(b, slot);
       bool occupied =
           present.count(relative) || present.count(relative + ".info");
-      for (int variant = 1; variant <= 9 && !occupied; ++variant)
+      for (int variant = 2; variant <= 8 && !occupied; variant += 2)
         occupied = present.count(card::path(b, slot, variant)) ||
                    present.count(card::path(b, slot, variant) + ".info");
       if (!occupied)
@@ -489,7 +487,7 @@ Project Storage::adopt(bool writeManifest,
       s.slot = slot;
       s.name = "Recovered card audio " + String(slot + 1);
       s.origin = "recovered card audio";
-      for (int v = 0; v <= 9; ++v)
+      for (int v = 0; v <= 8; v += 2)
         for (const auto &suffix : juce::StringArray{"", ".info"}) {
           auto path = card::path(b, slot, v) + suffix;
           if (present.count(path))
@@ -552,23 +550,6 @@ Project Storage::adopt(bool writeManifest,
         s.rendered = s.source;
         s.renderKey = audioKey(s);
         s.completedRevision = s.revision;
-        for (int v = 1; v < 2; ++v) {
-          auto other = child(root, card::path(b, slot, v));
-          if (other.existsAsFile()) {
-            juce::MemoryBlock meta;
-            try {
-              require(child(root, card::path(b, slot, v) + ".info")
-                          .loadFileAsData(meta),
-                      "Companion metadata missing");
-              card::validatePair(card::inspect(other), card::decode(meta));
-            } catch (const std::exception &) {
-              // The primary has already been validated and recovered. Rebuild
-              // a legacy/broken companion from it instead of protecting audio
-              // that is otherwise usable. The worker replaces it transactionally.
-              s.companionPending = !(s.oneShot && !s.tempoMatch);
-            }
-          }
-        }
         for (const auto &warning : card::compatibility(i))
           p.warnings.add(s.name + ": " + warning);
       } catch (const std::exception &e) {

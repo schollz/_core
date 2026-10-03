@@ -175,6 +175,20 @@ void validatePair(const Wav &w, const Info &i) {
                   uint64_t(i.size) + uint64_t(w.rate) * w.channels * 2,
           "WAV and metadata disagree about format or circular padding");
 }
+bool isCompanionPath(const String &value) {
+  auto directory = value.upToFirstOccurrenceOf("/", false, false);
+  auto parts = juce::StringArray::fromTokens(value.fromFirstOccurrenceOf("/", false, false), ".", "");
+  if (!directory.startsWith("bank") || (parts.size() != 3 && parts.size() != 4) ||
+      parts[2] != "wav" || (parts.size() == 4 && parts[3] != "info") ||
+      !parts[0].containsOnly("0123456789") || !parts[1].containsOnly("0123456789"))
+    return false;
+  int bank = directory.substring(4).getIntValue() - 1;
+  int slot = parts[0].getIntValue(), variant = parts[1].getIntValue();
+  return bank >= 0 && bank < 16 && slot >= 0 && slot < 16 && variant > 0 &&
+         variant <= 255 && (variant & 1) &&
+         value == "bank" + String(bank + 1) + "/" + String(slot) + "." + String(variant) +
+                      ".wav" + (parts.size() == 4 ? ".info" : "");
+}
 String path(int bank, int slot, int variant) {
   require(bank >= 0 && bank < 16 && slot >= 0 && slot < 16 && variant >= 0 &&
               variant <= 9,

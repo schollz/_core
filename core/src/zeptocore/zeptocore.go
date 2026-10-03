@@ -1,7 +1,6 @@
 package zeptocore
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -73,10 +72,7 @@ func Get(pathToOriginal string, dropaudiofilemode ...string) (f File, err error)
 		log.Debugf("loaded %s from disk", pathToOriginal)
 		f.debounceSave = debounce.New(321 * time.Millisecond)
 		f.debounceRegen = debounce.New(321 * time.Millisecond)
-		err = f.repairCompanionFormat()
-		if err == nil {
-			err = f.ensureWaveformPreview()
-		}
+		err = f.ensureWaveformPreview()
 		return
 	}
 	log.Debugf("creating new %s, could not find cache", pathToOriginal)
@@ -466,86 +462,6 @@ func (f File) Regenerate() {
 		}
 
 		log.Tracef("slices: %+v", f.SliceStart)
-		fname1 := path.Join(folder, fmt.Sprintf("%s.1.wav", filenameWithouExt))
-		// Skip time-stretching for oneshot files without tempo matching
-		if !f.OneShot || f.TempoMatch {
-			err = createTimeStretched(f.PathToAudio, fname1, 0.125, f.Channels+1, f.Oversampling)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-			log.Trace("-------------------------")
-			log.Tracef("slices: %+v", f.SliceStart)
-			log.Tracef("slice types: %+v", f.SliceType)
-			log.Trace("-------------------------")
-			err = f.updateInfo(fname1)
-			if err != nil {
-				log.Error(err)
-			}
-		} else {
-			log.Debugf("skipping time-stretch for oneshot file: %s", f.PathToFile)
-		}
-
-		// create the variatoins
-
-		// // create tape emulations
-		// _, err = exec.LookPath("lv2file")
-		// if err == nil {
-		// 	// create worker group
-		// 	emulations := []string{"TC-260", "808 Comp and Tone", "That Dirty LoFi", "Old Telephone"}
-		// 	var wg sync.WaitGroup
-		// 	wg.Add(len(emulations))
-		// 	for i, emulation := range emulations {
-		// 		go func(i int, emulation string) {
-		// 			defer wg.Done()
-		// 			log.Tracef("emulation: %s on file %d", emulation, i)
-		// 			// convert fname0 to stereo
-		// 			fname0_stereo, err := sox.Stereo(fname0)
-		// 			if err != nil {
-		// 				log.Error(err)
-		// 				return
-		// 			}
-		// 			defer os.Remove(fname0_stereo)
-		// 			fnameEmulation := path.Join(folder, fmt.Sprintf("%s.0.%d.wav", filenameWithouExt, i))
-		// 			cmdString := []string{"lv2file", "-i", fname0_stereo, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel"}
-		// 			cmd := exec.Command(cmdString[0], cmdString[1:]...)
-		// 			stdout, errRun := cmd.CombinedOutput()
-		// 			if errRun != nil {
-		// 				log.Errorf("cmd: %+v", cmdString)
-		// 				log.Errorf("stdout: %s", stdout)
-		// 				log.Error(errRun)
-		// 				return
-		// 			}
-		// 			// convert fname0 to stereo
-		// 			fname1_stereo, err := sox.Stereo(fname1)
-		// 			if err != nil {
-		// 				log.Error(err)
-		// 				return
-		// 			}
-		// 			defer os.Remove(fname1_stereo)
-		// 			fnameEmulation = path.Join(folder, fmt.Sprintf("%s.1.%d.wav", filenameWithouExt, i))
-		// 			cmd = exec.Command("lv2file", "-i", fname1_stereo, "-o", fnameEmulation, "-P", emulation, "https://github.com/jatinchowdhury18/AnalogTapeModel")
-		// 			stdout, errRun = cmd.CombinedOutput()
-		// 			if errRun != nil {
-		// 				log.Errorf("cmd: %+v", cmdString)
-		// 				log.Errorf("stdout: %s", stdout)
-		// 				log.Error(errRun)
-		// 				return
-		// 			}
-		// 		}(i, emulation)
-		// 	}
-		// 	wg.Wait()
-		// }
-
-		// fname2 := path.Join(folder, fmt.Sprintf("%s.2.wav", filenameWithouExt))
-		// err = createTimeStretched(f.PathToAudio, fname2, 0.125, f.Channels, f.Oversampling)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-		// err = f.updateInfo(fname2)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
 
 	}
 	f.debounceRegen(fu)
@@ -717,69 +633,6 @@ func (f *File) SetTempoMatch(TempoMatch bool) {
 			f.Regenerate()
 		}
 	}()
-}
-
-// repairCompanionFormat upgrades cached exports made by older online tools.
-// Regenerate from the original rather than guessing how mismatched PCM is laid out.
-func (f File) repairCompanionFormat() error {
-	if f.OneShot && !f.TempoMatch {
-		return nil
-	}
-	folder, filename := filepath.Split(f.PathToAudio)
-	companion := filepath.Join(folder, strings.TrimSuffix(filename, filepath.Ext(filename))+".1.wav")
-	if _, err := os.Stat(companion); os.IsNotExist(err) {
-		return nil
-	}
-	rate, channels, precision, err := sox.Info(companion)
-	if err == nil && rate == 44100*f.Oversampling && channels == f.Channels+1 && precision == 16 {
-		// A correct header can still have stale format/size metadata.
-		metadata, readErr := os.ReadFile(companion + ".info")
-		stat, statErr := os.Stat(companion)
-		if readErr == nil && statErr == nil && len(metadata) >= 11 {
-			flags := binary.LittleEndian.Uint32(metadata[4:])
-			body := stat.Size() - 44 - int64(rate*channels*2)
-			if int64(binary.LittleEndian.Uint32(metadata)) == body &&
-				int((flags>>15)&1)+1 == channels && int((flags>>14)&1)+1 == f.Oversampling {
-				return nil
-			}
-		}
-		return f.updateInfo(companion)
-	}
-	staging, err := os.MkdirTemp(folder, ".companion-repair-")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(staging)
-	output := filepath.Join(staging, filepath.Base(companion))
-	if err := createTimeStretched(f.PathToAudio, output, 0.125, f.Channels+1, f.Oversampling); err != nil {
-		return err
-	}
-	if err := f.updateInfo(output); err != nil {
-		return err
-	}
-	if err := os.Rename(output, companion); err != nil {
-		return err
-	}
-	return os.Rename(output+".info", companion+".info")
-}
-
-// createTimeStretched will create timestretched file from input
-// and process it to format it for zeptocore
-func createTimeStretched(fnameIn string, fnameOut string, ratio float64, channels int, oversampling int) (err error) {
-	log.Tracef("creating timestretched %s", fnameOut)
-	tempWav := sox.Tmpfile()
-	defer os.Remove(tempWav)
-	_, _, err = utils.Run(sox.GetBinary(), fnameIn, tempWav, "tempo", "-m", fmt.Sprintf("%2.8f", ratio))
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	err = processSound(tempWav, fnameOut, channels, oversampling)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	return
 }
 
 // processSound takes a sound file and processes it to be ready for the zeptocore

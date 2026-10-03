@@ -343,23 +343,24 @@ static void manifest_capacity(void) {
     ok(f_mkfs("0:",&options,work,sizeof work));ok(f_mount(&fs,"0:",1));
     ok(f_mkdir("bank1"));ok(f_mkdir("bank16"));
     for(unsigned i=0;i<256;++i) {
-        char path[32];snprintf(path,sizeof path,"bank1/0.%u.wav",i);create_file(path,7+i%3);
+        char path[32];snprintf(path,sizeof path,"bank1/%u.%u.wav",i/128,(i%128)*2);create_file(path,7+i%3);
     }
-    create_file("bank16/15.255.wav",2);
-    const char *initial="bank16/15.255.wav";
+    create_file("bank1/0.1.wav",3); // Legacy companions do not consume manifest capacity.
+    create_file("bank16/15.254.wav",2);
+    const char *initial="bank16/15.254.wav";
     ok(seek_maps_prepare(&fs,cid,test_sectors,initial));
     assert(seek_maps_stats.files==256&&seek_maps_stats.builds==256&&seek_maps_stats.capacity==1);
     assert(!seek_maps_stats.failures&&seek_maps_stats.commits==1);
     ok(audio_file_open(initial));assert(fil_current.cltbl);ok(audio_file_close());
-    ok(audio_file_open("bank1/0.255.wav"));assert(!fil_current.cltbl);
-    assert(seek_maps_request("bank1/0.255.wav")==SEEK_MAP_IDLE);
+    ok(audio_file_open("bank1/1.254.wav"));assert(!fil_current.cltbl);
+    assert(seek_maps_request("bank1/1.254.wav")==SEEK_MAP_IDLE);
     BYTE data[8];UINT n;ok(f_read(&fil_current,data,sizeof data,&n));
     for(unsigned i=0;i<n;++i)assert(data[i]==pattern(i));ok(audio_file_close());
     reboot(&fs);unsigned writes=test_writes;ok(seek_maps_prepare(&fs,cid,test_sectors,initial));
     assert(!seek_maps_stats.builds&&!seek_maps_stats.writes&&test_writes==writes);
     assert(seek_maps_stats.reused==256&&seek_maps_stats.capacity==1);
     assert(seek_maps_unmount());ok(f_mount(NULL,"0:",0));
-    puts("manifest cap: 256 persisted files, ID 65535, excess-file playback and unchanged reuse pass");
+    puts("manifest cap: 256 primary files, ID 65534, ignored companions, excess-file playback and unchanged reuse pass");
 }
 static void saved_selection(void) {
     SaveFile *source=SaveFile_malloc(),*target=SaveFile_malloc();

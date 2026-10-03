@@ -199,10 +199,6 @@ int16_t dub_step_break = -1;
 uint16_t dub_step_divider = 0;
 uint8_t dub_step_beat = 0;
 
-// add variable to keep track of variation
-volatile uint8_t sel_variation = 0;
-volatile int8_t sel_variation_next = 0;
-bool sel_variation_fadeout = false;
 uint8_t global_brightness = 50;  // 0 - 100
 bool global_amen_cv_bipolar = true;
 #define AMEN_CV_BEHAVIOR_JUMP 0
@@ -642,14 +638,12 @@ void do_update_phase_from_beat_current() {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
                     .snd[FILEZERO]
-                    ->slice_start[slice] *
-                sel_variation_scale[sel_variation];
+                    ->slice_start[slice];
   } else {
     phase_new = banks[sel_bank_cur]
                     ->sample[sel_sample_cur]
                     .snd[FILEZERO]
-                    ->slice_stop[slice] *
-                sel_variation_scale[sel_variation];
+                    ->slice_stop[slice];
   }
   mute_because_of_playback_type = false;
   CL_CALL(cl_phase(beat_current, phase_new));

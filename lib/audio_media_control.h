@@ -33,20 +33,6 @@ void __not_in_flash_func(zd_application_control_snapshot)(void) {
     x[31]=audio_media_stats.wait_max_us;
 }
 #endif
-static bool audio_file_change_variation(void) {
-    if(bank_transition_busy() || !metadata_ready(sel_bank_cur))return false;
-    if(!audio_media_acquire())return false;
-    format_sample_filename(fil_current_name,sel_bank_cur,sel_sample_cur,
-                           sel_variation_next+audio_variant*2);
-    FRESULT result=audio_file_open(fil_current_name);
-    if(!result) {
-        phases[0]=round(((float)phases[0]*sel_variation_scale[sel_variation_next])/
-                        sel_variation_scale[sel_variation]);
-        sel_variation=sel_variation_next;
-        realtime_stretch_reset_from_playback_phase();
-    }
-    audio_media_release();return result==FR_OK;
-}
 static void audio_media_poll(void) {
     bank_transition_service();
     if(bank_transition_busy())return;

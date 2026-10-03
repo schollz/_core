@@ -34,10 +34,6 @@ struct ManagerState {
   uint64_t importGeneration = 0;
   File root;
   String status = "Open a folder to begin", error;
-  String companionError;
-  int pendingCompanions = 0;
-  // Companion work does not make the editor busy or prevent preview/open/duplicate.
-  bool backgroundBusy = false;
   bool busy = false, available = false;
   bool canUndo = false, canRedo = false;
   uint64_t generation = 0;
@@ -79,8 +75,6 @@ private:
               const std::function<void()> &onAccepted = {});
   void persist();
   void save(uint64_t generation);
-  void saveCompanion(uint64_t generation);
-  int pendingCompanions() const;
   void prepareImportWaveforms();
   void prepareCompletedAudio();
   void prepareVisualization(
@@ -99,7 +93,6 @@ private:
   History history;
   AudioProcessing audio;
   bool dirty = false, failed = false;
-  String companionError;
   bool foregroundRunning = false;
   String manifestHash;
   String importedSampleId;

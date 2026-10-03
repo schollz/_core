@@ -6,8 +6,9 @@
 
 static bool read_pcm(void *u,unsigned bank,unsigned slot,unsigned variant,uint64_t offset,void *out,size_t n) {
     (void)u;(void)bank;(void)slot;
+    assert(variant==0); // Every effect, including time stretch, reads primary PCM.
     int16_t *p=out;
-    for(size_t i=0;i<n/2;++i) p[i]=(int16_t)(12000*sin(6.283185307179586*220*((offset+i*2)/4)/(44100*(variant?8:1))));
+    for(size_t i=0;i<n/2;++i) p[i]=(int16_t)(12000*sin(6.283185307179586*220*((offset+i*2)/4)/44100));
     return true;
 }
 static CoreEngine *create(uint64_t seed) {

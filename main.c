@@ -208,8 +208,8 @@ bool __not_in_flash_func(timer_step)() {
 #endif
 
     // check if need to do tunneling
-    // avoid tunneling if we are in a timestretched variation
-    if (sel_variation == 0 && !realtime_stretch_is_active()) {
+    // Let granular stretching advance its own source position.
+    if (!realtime_stretch_is_active()) {
       if (tunneling_is_on > 0) {
         if (tunneling_is_on < 4 && probability_of_random_tunnel > 750) {
           tunneling_is_on++;
@@ -418,9 +418,8 @@ bool __not_in_flash_func(timer_step)() {
              // TODO if splice_trigger is 0, but we are sequencing, then need to
              // continue here!
 
-             // do not iterate the beat if we are in a timestretched variation,
-             // let it roll
-             && sel_variation == 0 && !realtime_stretch_is_active()) {
+             // Let granular stretching advance without beat retriggering.
+             && !realtime_stretch_is_active()) {
     retrig_vol = 1.0;
     retrig_pitch = PITCH_VAL_MID;
     retrig_pitch_change = 0;
@@ -693,7 +692,7 @@ bool __not_in_flash_func(timer_step)() {
 
   // check to see if a phase crossed a boundary of a transient
   // only check if not timestretching
-  if (sel_variation == 0 && !realtime_stretch_is_active()) {
+  if (!realtime_stretch_is_active()) {
     int32_t phase_sample = phases[0] / 2 /
                                (banks[sel_bank_cur]
                                     ->sample[sel_sample_cur]
@@ -959,10 +958,8 @@ int main() {
   // LEDS_show_blinking_z(leds, 2);
 
   sel_sample_next = 0;
-  sel_variation_next = 0;
   sel_bank_cur = 0;
   sel_sample_cur = 0;
-  sel_variation = 0;
 
   // printf("startup!\n");
   sdcard_startup();

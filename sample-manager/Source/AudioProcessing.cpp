@@ -592,7 +592,7 @@ void AudioProcessing::pcm(const File &from, const File &to, bool pad,
   require(out->getStatus().wasOk(), "Cannot flush PCM output");
 }
 Rendered AudioProcessing::render(const File &root, const Sample &sample,
-                                 const Cancel &cancel, bool includeCompanion) {
+                                 const Cancel &cancel) {
   diagnostics::Scope trace("AUDIO", "Render sample=" + sample.id +
       " name=" + sample.name + " rate=" + String(sample.rate) +
       " channels=" + String(sample.channels) + " ratio=" + String(sample.ratio(), 6) +
@@ -639,40 +639,18 @@ Rendered AudioProcessing::render(const File &root, const Sample &sample,
     j = object();
   }
   result.frames = card::inspect(child(root, result.preview)).frames;
-  if (includeCompanion && !(sample.oneShot && !sample.tempoMatch)) {
-    result.companionPreview = relative + "companion.wav";
-    result.companionPadded = relative + "1.wav";
-    if (!valid("companion.wav") || !valid("1.wav")) {
-      diagnostics::log("AUDIO", "Rendering eight-times companion");
-      auto longFile = dir.getChildFile("long.wav");
-      stretch(renderSource, longFile, 8., sample.renderAnchors, cancel);
-      pcm(longFile, child(root, result.companionPreview), false, cancel);
-      pcm(longFile, child(root, result.companionPadded), true, cancel);
-    }
-    result.companionFrames =
-        card::inspect(child(root, result.companionPreview)).frames;
-  }
-  // Only certify files completed by this pass. A cancelled companion may
-  // have left partial files beside the usable primary cache.
+  // Retain old cache files, but certify only the primary output used today.
+  j = object();
   for (auto name : {String("preview.wav"), String("0.wav"), renderSource.getFileName()})
     put(j, name, hashFile(dir.getChildFile(name), cancel));
-  if (result.companionPreview.isNotEmpty()) {
-    for (auto name : {"companion.wav", "1.wav"})
-      put(j, name, hashFile(dir.getChildFile(name), cancel));
-    put(j, "companionFrames", juce::int64(result.companionFrames));
-  }
   put(j, "frames", juce::int64(result.frames));
   // Check the actual encoded files before certifying the cache or saving
   // metadata derived from the requested sample settings.
   card::validatePair(card::inspect(child(root, result.padded)),
                      sampleInfo(sample, result.frames));
-  if (result.companionPadded.isNotEmpty())
-    card::validatePair(card::inspect(child(root, result.companionPadded)),
-                       sampleInfo(sample, result.companionFrames, true));
   cancelled(cancel);
   durableJson(ready, j);
-  diagnostics::log("AUDIO", "Rendered frames=" + String(juce::int64(result.frames)) +
-      " companion_frames=" + String(juce::int64(result.companionFrames)));
+  diagnostics::log("AUDIO", "Rendered frames=" + String(juce::int64(result.frames)));
   return result;
 }
 std::vector<Marker> AudioProcessing::detect(const File &source, String method,

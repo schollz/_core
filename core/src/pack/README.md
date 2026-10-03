@@ -9,7 +9,7 @@ Schema 1 uses UTF-8 JSON with `schema`, `name`, `originalFilename`, and
 `audioSha256`. Both names initially contain the website's source basename,
 including its extension. No source directory is stored. The SHA-256 covers the
 entire copied primary `S.0.wav`, including its header and padding. One sidecar
-covers all companion variants of that slot. Metadata must fit within 64 KiB.
+covers all normal-speed variants of that slot. Metadata must fit within 64 KiB.
 Failure to write required metadata fails the full export.
 
 The native sample manager recovers these names without `.core-manager`, using
@@ -19,3 +19,9 @@ existing numbered WAV and binary `.info` filenames and formats.
 
 `pack_test.go` prepares a full ZIP/extraction contract against the same Unicode
 sidecar fixture used by native adoption. These new checks have not been executed.
+
+Full packs contain primary audio and any normal-speed alternatives. Cached
+companion WAVs and their metadata are omitted and left untouched in storage.
+New packs require firmware with granular-only Time Stretch support (up to 16×).
+Release updated firmware before deploying this exporter. Settings-only packs
+retain their existing format.

@@ -9,7 +9,7 @@ static bool sync_using_sdcard, fil_current_change, fil_current_change_force;
 static bool do_open_file_ready, phase_change, mute_because_of_playback_type;
 static bool button_mute = true, playback_stopped = true;
 static uint8_t sel_bank_cur, sel_bank_next, sel_sample_cur, sel_sample_next;
-static uint8_t sel_variation, audio_variant;
+static uint8_t audio_variant;
 static int phases[2], phase_new;
 static char fil_current_name[32];
 static struct Bank { unsigned num_samples; } storage[16], *banks[16];

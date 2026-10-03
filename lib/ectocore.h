@@ -1752,12 +1752,6 @@ void __not_in_flash_func(input_handling)() {
       break_fx_update();
     }
 
-    // load the new sample if variation changed
-    if (sel_variation_next != sel_variation) {
-      dont_wait=false;
-      audio_file_change_variation();
-    }
-
     // Fallback trig at playback start or strict loop wrap when a selected
     // mode has a transient at the beginning of the file.
     if(metadata_ready(sel_bank_cur) && !bank_transition_busy()) {

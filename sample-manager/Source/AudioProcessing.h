@@ -3,8 +3,8 @@
 #include "Visualizer/Core.h"
 namespace core {
 struct Rendered {
-  String preview, padded, companionPreview, companionPadded, key;
-  uint64_t frames = 0, companionFrames = 0;
+  String preview, padded, key;
+  uint64_t frames = 0;
 };
 class AudioProcessing {
 public:
@@ -14,8 +14,7 @@ public:
   Sample import(Storage &, const File &, int bank, int slot,
                 const Cancel & = {});
   std::shared_ptr<const zv::Wave> sourceWaveform(const File &, const Cancel & = {});
-  Rendered render(const File &root, const Sample &, const Cancel & = {},
-                  bool includeCompanion = true);
+  Rendered render(const File &root, const Sample &, const Cancel & = {});
   std::vector<Marker> detect(const File &, String method = "hfc",
                              double spacingMs = 80, const Cancel & = {},
                              int targetSlices = 0);

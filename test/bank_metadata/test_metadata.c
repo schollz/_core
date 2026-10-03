@@ -120,9 +120,8 @@ static uint32_t getFreeHeap(void) {return 64000;}
 static bool fil_is_open,fil_current_change,fil_current_change_force,do_open_file_ready;
 static bool audio_was_muted,first_loop_ever,phase_change,mute_because_of_playback_type;
 static bool button_mute,playback_stopped,phase_forward;
-static uint8_t sel_bank_cur,sel_bank_next,sel_sample_cur,sel_sample_next,sel_variation,audio_variant;
+static uint8_t sel_bank_cur,sel_bank_next,sel_sample_cur,sel_sample_next,audio_variant;
 static int32_t phases[2],phase_new,beat_current;
-static float sel_variation_scale[2]={1,0.5};
 static _Atomic unsigned audio_media_recovery;
 static unsigned ownership,resets;
 static int playback_fail_bank=-1;
@@ -155,6 +154,8 @@ static void transition_tests(void) {
     phases[0]=4096;phases[1]=2048;phase_new=400;beat_current=1;
     unsigned allocation_count=allocations;
     request(2,3);drain();assert(sel_bank_cur==2&&sel_sample_cur==3&&phases[0]==4096&&fil_is_open);
+    assert(audio_was_muted&&first_loop_ever&&resets==1);
+    assert(!do_open_file_ready&&!fil_current_change_force);
     button_mute=true;playback_stopped=true;phase_forward=false;mute_because_of_playback_type=true;
     request(3,4);drain();assert(sel_bank_cur==3&&!phases[0]&&!mute_because_of_playback_type);
     assert(button_mute&&playback_stopped&&!phase_forward);
@@ -177,9 +178,8 @@ static void transition_tests(void) {
     while(atomic_load(&bank_transition_state)!=BANK_ROLLBACK)step();
     request(1,9);drain();assert(sel_bank_cur==1&&sel_sample_cur==9&&metadata_ready(1));
     read_fail_bank=-1;
-    // Preserve the existing scaled relative-phase behavior for variation 1.
-    sel_variation=1;phases[0]=16000;request(3,2);drain();assert(phases[0]==4000);
-    sel_variation=0;
+    // Bank changes retain primary-source coordinates without companion scaling.
+    phases[0]=16000;request(3,2);drain();assert(phases[0]==16000);
     // Deadline expiration has one independent rollback deadline.
     request(4,0);while(atomic_load(&bank_transition_state)!=BANK_LOADING||bank_job.stage<2)step();
     now+=2000001;step();assert(atomic_load(&bank_transition_state)==BANK_ROLLBACK);

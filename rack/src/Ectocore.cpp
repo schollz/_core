@@ -392,7 +392,6 @@ struct EctocoreWidget : app::ModuleWidget {
         menu->addChild(createMenuItem("Release held buttons","",[m]{m->latch=0;}));
         menu->addChild(createMenuItem("Reboot module","",[m]{m->resetRequested=true;}));
         menu->addChild(createMenuLabel("Bank "+std::to_string(m->selectedBank+1)+" · Sample "+std::to_string(m->selectedSlot+1)));
-        menu->addChild(createMenuLabel("Companion cache: 64 MiB · misses "+std::to_string(m->storage.misses.load())));
         menu->addChild(createSubmenuItem("Device settings","",[m](ui::Menu *sub){
             sub->addChild(createSubmenuItem("Start tempo",m->uiState.start_tempo?std::to_string(m->uiState.start_tempo)+" BPM":"Default",[m](ui::Menu *mnu){
                 mnu->addChild(createCheckMenuItem("Default (no override)","",[m]{return m->uiState.start_tempo==0;},[m]{auto s=m->uiState;s.start_tempo=0;if(m->edits.push({s}))m->uiState=s;}));

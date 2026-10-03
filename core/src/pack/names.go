@@ -56,33 +56,28 @@ func writeNameMetadata(primary, sidecar, sourceFilename string) error {
 // Used by full packs after processing; settings-only exports never call this.
 func copySample(storage, bankFolder string, slot int, filename string) error {
 	stem := strings.TrimSuffix(filename, filepath.Ext(filename))
-	for variant := 0; variant < 2; variant++ {
-		source := filepath.Join(storage, filename, fmt.Sprintf("%s.%d.wav", stem, variant))
-		target := filepath.Join(bankFolder, fmt.Sprintf("%d.%d.wav", slot, variant))
-		if _, err := os.Stat(source); os.IsNotExist(err) && variant != 0 {
-			break
+	// Odd-numbered files are obsolete stretched companions. Never export them,
+	// even if a previous server version left them in the cache.
+	source := filepath.Join(storage, filename, stem+".0.wav")
+	target := filepath.Join(bankFolder, fmt.Sprintf("%d.0.wav", slot))
+	if err := utils.CopyFile(source, target); err != nil {
+		return err
+	}
+	sidecar := filepath.Join(bankFolder, fmt.Sprintf("%d.name.json", slot))
+	if err := writeNameMetadata(target, sidecar, filename); err != nil {
+		return fmt.Errorf("persist filename for bank sample %d: %w", slot, err)
+	}
+	if err := utils.CopyFile(source+".info", target+".info"); err != nil {
+		return err
+	}
+	for variation := 1; variation < 4; variation++ {
+		source := filepath.Join(storage, filename, fmt.Sprintf("%s.0.%d.wav", stem, variation))
+		target := filepath.Join(bankFolder, fmt.Sprintf("%d.%d.wav", slot, 2+variation*2))
+		if _, err := os.Stat(source); os.IsNotExist(err) {
+			continue
 		}
 		if err := utils.CopyFile(source, target); err != nil {
 			return err
-		}
-		if variant == 0 {
-			sidecar := filepath.Join(bankFolder, fmt.Sprintf("%d.name.json", slot))
-			if err := writeNameMetadata(target, sidecar, filename); err != nil {
-				return fmt.Errorf("persist filename for bank sample %d: %w", slot, err)
-			}
-		}
-		if err := utils.CopyFile(source+".info", target+".info"); err != nil {
-			return err
-		}
-		for variation := 1; variation < 4; variation++ {
-			source := filepath.Join(storage, filename, fmt.Sprintf("%s.%d.%d.wav", stem, variant, variation))
-			target := filepath.Join(bankFolder, fmt.Sprintf("%d.%d.wav", slot, 2+variation*2+variant))
-			if _, err := os.Stat(source); os.IsNotExist(err) {
-				continue
-			}
-			if err := utils.CopyFile(source, target); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

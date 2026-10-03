@@ -40,7 +40,7 @@ int diskFullTest(const File &root) {
     auto settle = [](Manager &m) {
       for (int n = 0; n < 3000; ++n) {
         auto state = m.snapshot();
-        if (!state.busy && !state.backgroundBusy)
+        if (!state.busy)
           return state;
         juce::Thread::sleep(10);
       }

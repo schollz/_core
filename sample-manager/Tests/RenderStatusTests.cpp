@@ -66,14 +66,9 @@ void renderStatusTests() {
     id = ready.project.samples[0].id;
     otherId = ready.project.samples[1].id;
     checkCompleted(ready, id, 8.);
-    require(ready.pendingCompanions > 0 && !ready.renderStatus(id).pending,
-            "Primary completion is independent of the eight-times companion");
-    for (const auto &sampleId : {id, otherId})
-      manager.edit(sampleId, "Skip companions in tempo fixture", [](Sample &s) {
-        s.oneShot = true;
-        s.tempoMatch = false;
-      });
-    ready = settle(manager);
+    require(ready.status == "Ready" && !ready.renderStatus(id).pending &&
+                !child(root, "bank1/0.1.wav").exists(),
+            "Primary completion is final; no companion work is scheduled");
     for (bool preserve : {false, true}) {
       for (double bpm : {150., 60., 0.}) {
         const double expected = bpm == 150. ? 6.4 : bpm == 60. ? 16. : 8.;

@@ -15,8 +15,7 @@ struct Sample {
   bool preservePitch = false, tempoMatch = true, oneShot = false,
        spliceVariable = false, protectedEntry = false;
   int64_t revision = 1, completedRevision = 0;
-  String rendered, companion, renderKey;
-  bool companionPending = false; // Primary is saved; background companion still needed.
+  String rendered, renderKey;
   std::vector<Marker> slices{{0, 1, 0}};         // original normalized timeline
   std::vector<Marker> renderAnchors{{0, 1, 0}};  // immutable source key frames
   std::array<std::vector<double>, 3> transients; // original source seconds
@@ -61,7 +60,6 @@ private:
   };
   std::vector<Entry> past, future;
 };
-card::Info sampleInfo(const Sample &, uint64_t renderedFrames,
-                      bool companion = false);
+card::Info sampleInfo(const Sample &, uint64_t renderedFrames);
 String audioKey(const Sample &);
 } // namespace core

@@ -256,7 +256,7 @@ static void enumerate_bank(unsigned bank) {
         if(length>14)continue;
         for(unsigned i=0;i<length;++i)if(name[i]>='A'&&name[i]<='Z')name[i]+='a'-'A';
         snprintf(path,sizeof path,"bank%u/%.14s",bank,name);
-        uint16_t id;if(seek_maps_file_id(path,&id))add(id);
+        uint16_t id;if(seek_maps_file_id(path,&id) && !(id&1u))add(id);
     }
     if(r) {error(r);sm.manifest_complete=false;}
     r=f_closedir(&sm.work.scan.dir);if(r){error(r);sm.manifest_complete=false;}

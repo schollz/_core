@@ -1274,7 +1274,7 @@ bool button_handler(ButtonMatrix *bm) {
       LEDS_set(leds, 3, LED_BLINK);
     }
     if ((mode_buttons16 == MODE_MASH) || mode_buttons16 == MODE_JUMP) {
-      if (sel_variation == 0) {
+      if (!realtime_stretch_is_active()) {
         LEDS_set(leds, beat_current_show % 16 + 4, LED_DIM);
       } else {
         LEDS_set(

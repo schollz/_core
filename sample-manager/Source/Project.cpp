@@ -50,8 +50,6 @@ var Sample::json() const {
   put(o, "revision", juce::int64(revision));
   put(o, "completedRevision", juce::int64(completedRevision));
   put(o, "rendered", rendered);
-  put(o, "companion", companion);
-  put(o, "companionPending", companionPending);
   put(o, "renderKey", renderKey);
   juce::Array<var> marks, lanes, paths;
   for (auto m : slices) {
@@ -110,8 +108,6 @@ Sample Sample::fromJson(const var &o) {
   s.revision = juce::int64(o["revision"]);
   s.completedRevision = juce::int64(o["completedRevision"]);
   s.rendered = o["rendered"].toString();
-  s.companion = o["companion"].toString();
-  s.companionPending = bool(o["companionPending"]);
   s.renderKey = o["renderKey"].toString();
   s.slices.clear();
   if (auto *a = o["slices"].getArray())
@@ -133,7 +129,8 @@ Sample Sample::fromJson(const var &o) {
   }
   if (auto *a = o["ownedPaths"].getArray())
     for (auto &p : *a)
-      s.ownedPaths.push_back(p.toString());
+      if (!card::isCompanionPath(p.toString()))
+        s.ownedPaths.push_back(p.toString());
   return s;
 }
 var Project::json() const {
@@ -172,10 +169,19 @@ Project Project::fromJson(const var &o) {
       p.settings[kv.name.toString()] = kv.value.toString();
   if (auto *f = o["fingerprints"].getDynamicObject())
     for (const auto &kv : f->getProperties())
-      p.fingerprints[kv.name.toString()] = kv.value.toString();
+      if (!card::isCompanionPath(kv.name.toString()))
+        p.fingerprints[kv.name.toString()] = kv.value.toString();
   if (auto *w = o["warnings"].getArray())
     for (const auto &x : *w)
       p.warnings.add(x.toString());
+  // Legacy companions are left on disk, outside the active ownership set.
+  // This also applies to pending edits and every restored undo/redo snapshot.
+  for (int i = p.warnings.size(); --i >= 0;) {
+    auto warning = p.warnings[i];
+    if (warning.startsWith("External change: ") &&
+        card::isCompanionPath(warning.substring(17).upToFirstOccurrenceOf(". Reload/reconcile", false, false)))
+      p.warnings.remove(i);
+  }
   p.validate();
   // Older versions stored warnings for valid zero positions. Recheck only
   // these range warnings, keeping any real incompatibility (also when names
@@ -331,7 +337,7 @@ String audioKey(const Sample &s) {
   return juce::SHA256(key.toRawUTF8(), size_t(key.getNumBytesAsUTF8()))
       .toHexString();
 }
-card::Info sampleInfo(const Sample &s, uint64_t frames, bool companion) {
+card::Info sampleInfo(const Sample &s, uint64_t frames) {
   require(frames > 0 && frames <= uint64_t(INT32_MAX) / (s.channels * 2),
           "Sample exceeds firmware file size limit");
   card::Info i;
@@ -350,9 +356,7 @@ card::Info sampleInfo(const Sample &s, uint64_t frames, bool companion) {
                         int8_t(m.type)});
   for (size_t l = 0; l < 3; ++l)
     for (auto t : s.transients[l]) {
-      // Firmware transients use the normal-speed 44.1 kHz timeline in both
-      // companions.
-      juce::ignoreUnused(companion);
+      // Firmware transients use the normal-speed 44.1 kHz timeline.
       auto value = t * s.ratio() * 44100;
       require(value <= UINT32_MAX, "Transient exceeds supported timeline");
       i.transients[l].push_back(uint32_t(std::llround(value)));

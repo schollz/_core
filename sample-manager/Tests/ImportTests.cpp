@@ -38,13 +38,10 @@ void importTests() {
     require(sample.slices.size() == 16 && !sample.spliceVariable &&
                 sample.spliceTrigger == loop.ticks,
             "Loop import calculates website splice timing: " + String(loop.name));
-    for (bool companion : {false, true}) {
-      auto frames = uint64_t(std::llround(sample.sourceDuration * sample.rate));
-      auto info = card::decode(card::encode(sampleInfo(sample, frames * (companion ? 8 : 1),
-                                                      companion)));
-      require(info.spliceTrigger == loop.ticks && info.slices.size() == 16,
-              "Primary and stretched companion encode the same splice interval");
-    }
+    auto frames = uint64_t(std::llround(sample.sourceDuration * sample.rate));
+    auto info = card::decode(card::encode(sampleInfo(sample, frames)));
+    require(info.spliceTrigger == loop.ticks && info.slices.size() == 16,
+            "Primary metadata encodes the import splice interval");
   }
   for (int n = 0; n < ImportData::namedResourceListSize; ++n) {
     int size = 0;

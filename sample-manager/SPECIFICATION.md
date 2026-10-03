@@ -82,7 +82,7 @@ Preserve the current per-sample controls: channel mode, source BPM, tempo matchi
 - Preserve existing special imports: WAV cue/loop markers, Renoise XRNI sample/slice data, OP-1 AIFF markers, and the website’s custom slice metadata. Parse metadata structurally rather than copying fragile fixed-offset assumptions.
 - Merge selected samples in list order, retaining their slice boundaries in the combined source and leaving the original entries available until explicitly removed.
 - Reuse the local onset implementation from `amenbreakvst`. Start with HFC and the website’s 15 ms refinement window; put detector method and spacing options in an advanced section. Automatic slicing must not make a network request.
-- Use background, block-based decoding, resampling, stretching, waveform generation, and file writing. Do not load an entire bank—or an entire eight-times-longer companion—into RAM.
+- Use background, block-based decoding, resampling, stretching, waveform generation, and file writing. Keep processing block-based rather than loading an entire bank into RAM.
 - Use band-limited resampling, replacing the existing C++ exporter’s linear-resampling shortcut. Keep preview file reads buffered off the audio callback; no analysis, rendering, network requests, or disk writes run in the callback.
 
 **New pitch-preserving BPM conversion**
@@ -103,7 +103,7 @@ Keep the existing card format and firmware compatibility for the first version; 
 
 - Write canonical 16-bit little-endian PCM WAVs with the expected 44-byte header, normal 44.1 kHz output, and half-second circular padding at both ends. Preserve supported 88.2 kHz settings when importing existing cards.
 - Preserve the website’s −6 dB peak-normalization behavior for newly rendered output. Handle silence and samples shorter than half a second correctly.
-- Generate the required eight-times-longer `.1.wav` companion using the adapted exporter’s Rubber Band path. Retain the current one-shot/no-tempo-match exception.
+- Generate primary WAVs only for all playback modes. Firmware uses live granular Time Stretch up to 16×, with an 8× triggered effect. Leave existing companion files unused on disk and ignore legacy pending jobs. Require updated firmware for newly prepared cards. Keep Rubber Band for pitch-preserving tempo edits.
 - Encode `.info` explicitly in little-endian form, including flags, aligned slice offsets, slice types, and transient groups. Do not serialize C++ struct memory.
 - Respect firmware limits for slot counts, file sizes, slices, and transient encoding. Keep full-resolution editing data in the project; display a clear compatibility warning for markers that cannot be represented on the device instead of silently wrapping or truncating them.
 - Replace mutually exclusive settings marker files together so stale `-on`/`-off` files cannot contradict one another.
@@ -152,7 +152,7 @@ Move the functionality from `visualizer-juce/` into the new application, then re
 
 Targeted automated tests are authorized for this new application, replacing the earlier no-tests constraint for this work.
 
-- **Format compatibility:** independently generated website/firmware fixtures; mono/stereo, both supported sample rates, padding, settings flags, slice offsets, one-shot cases, companion files, and numeric boundaries.
+- **Format compatibility:** independently generated website/firmware fixtures; mono/stereo, both supported sample rates, padding, settings flags, slice offsets, one-shot cases, primary-only output, preserved legacy companion files, and numeric boundaries.
 - **Storage correctness:** existing-card adoption, reopen, duplicate/reorder/remove/undo, interrupted transactions, disk-full/read-only failures, unplug/reconnect, external edits, and stale background jobs.
 - **Audio correctness:** supported imports and embedded markers, short/silent/corrupt files, resampling, normalization, stretch duration, pitch retention, stereo alignment, and marker alignment.
 - **Visualizer:** retain existing protocol/parity coverage; add preview-source behavior, committed-revision refresh, missing-folder cache operation, source switching, and disable/re-enable lifecycle.

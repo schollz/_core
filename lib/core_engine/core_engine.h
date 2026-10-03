@@ -25,8 +25,8 @@ typedef struct {
     const uint16_t *transients[3];
 } CoreSample;
 typedef struct { uint8_t count; CoreSample samples[16]; } CoreBank;
-// Called synchronously by the engine. Must only copy resident PCM/cache pages;
-// a cache miss returns false and queues IO in the owner's non-realtime worker.
+// Called synchronously by the engine. Must only copy resident PCM; no IO or
+// allocations are allowed on the audio thread. Unavailable data returns false.
 typedef bool (*CoreRead)(void *, unsigned bank, unsigned slot, unsigned variant,
                          uint64_t byte_offset, void *dst, size_t bytes);
 typedef struct {

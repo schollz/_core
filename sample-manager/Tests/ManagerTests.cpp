@@ -5,10 +5,10 @@
 #include <iostream>
 namespace core {
 namespace {
-ManagerState settle(Manager &m, bool includeCompanions = true) {
+ManagerState settle(Manager &m) {
   for (int n = 0; n < 2000; ++n) {
     auto s = m.snapshot();
-    if (!s.busy && (!includeCompanions || !s.backgroundBusy))
+    if (!s.busy)
       return s;
     juce::Thread::sleep(10);
   }
@@ -16,7 +16,6 @@ ManagerState settle(Manager &m, bool includeCompanions = true) {
 }
 void successful(const ManagerState &s) {
   require(s.error.isEmpty(), "Manager: " + s.error);
-  require(s.companionError.isEmpty(), "Companion: " + s.companionError);
   require(!s.busy, "Manager still busy");
 }
 void historyAvailability(const File &workspace) {
@@ -71,142 +70,87 @@ void historyAvailability(const File &workspace) {
     check(manager, false, false, "Switching projects replaces history availability");
   }
 }
-void backgroundCompanions(const File &workspace) {
-  auto root = workspace.getChildFile("background-companions");
-  auto other = workspace.getChildFile("other-project");
-  auto duplicate = workspace.getChildFile("background-copy");
-  require(root.createDirectory().wasOk() && other.createDirectory().wasOk(),
-          "Background companion fixture folders");
-  auto input = workspace.getChildFile("background-bpm120.wav");
+void primaryOnlyAndLegacyCompanions(const File &workspace) {
+  auto root = workspace.getChildFile("primary-only");
+  require(root.createDirectory().wasOk(), "Primary-only fixture folder");
+  auto input = workspace.getChildFile("granular-bpm120.wav");
   {
     auto out = input.createOutputStream();
-    card::writeHeader(*out, 44100 * 8, 44100, 2);
-    for (int n = 0; n < 44100 * 8; ++n)
-      for (int c = 0; c < 2; ++c)
-        out->writeShort(short(std::sin(n * .1 + c) * 10000));
-  }
-  String id, secondId, primaryHash;
-  double primaryMs = 0;
-  {
-    Manager manager;
-    manager.open(root);
-    successful(settle(manager));
-    auto started = juce::Time::getMillisecondCounterHiRes();
-    manager.import({input.getFullPathName(), input.getFullPathName()}, 0);
-    auto ready = settle(manager, false);
-    primaryMs = juce::Time::getMillisecondCounterHiRes() - started;
-    successful(ready);
-    require(ready.canUndo && !ready.canRedo, "History remains available during companion work");
-    require(ready.project.samples.size() == 2 && ready.pendingCompanions == 2 &&
-                ready.backgroundBusy && manager.idle() && ready.status.startsWith("Ready"),
-            "Every imported primary is ready and the manager is usable before companions finish");
-    id = ready.project.samples[0].id;
-    secondId = ready.project.samples[1].id;
-    AudioProcessing audio;
-    for (const auto &sample : ready.project.samples) {
-      require(!ready.renderStatus(sample.id).pending &&
-                  ready.renderStatus(sample.id).completed.duration() == 8.,
-              "Completed primary duration stays ready while companions are pending");
-      require(ready.completedProject.find(sample.id) && sample.companionPending &&
-                  sample.completedRevision == sample.revision && ready.editorWaveform(sample.id) &&
-                  audio.reader(child(root, sample.rendered))->lengthInSamples == 44100 * 8 &&
-                  child(root, card::path(sample.bank, sample.slot)).existsAsFile(),
-              "Primary preview, editor waveform and saved output are available during companion work");
+    card::writeHeader(*out, 44100, 44100, 2);
+    for (int n = 0; n < 44100; ++n) {
+      out->writeShort(short(std::sin(n * .03) * 10000));
+      out->writeShort(short(std::sin(n * .07) * 10000));
     }
-    primaryHash = hashFile(child(root, "bank1/0.0.wav"));
-    // Interrupt actual stretching, not just a queued companion job.
-    auto partial = child(root, ".core-manager/cache/" + ready.project.find(id)->renderKey + "/long.wav");
-    for (int n = 0; n < 2000 && !partial.existsAsFile(); ++n)
-      juce::Thread::sleep(1);
-    require(partial.existsAsFile() && manager.snapshot().backgroundBusy,
-            "Companion rendering has started in the background");
-    started = juce::Time::getMillisecondCounterHiRes();
-    manager.even(id, 8);
-    ready = settle(manager, false);
-    auto editMs = juce::Time::getMillisecondCounterHiRes() - started;
-    successful(ready);
-    require(ready.project.find(id)->slices.size() == 8 && ready.pendingCompanions > 0 &&
-                hashFile(child(root, "bank1/0.0.wav")) == primaryHash,
-            "Even slices preempts companion work and saves without waiting for it");
-    manager.move({secondId}, 1);
-    ready = settle(manager, false);
-    successful(ready);
-    require(ready.project.find(secondId)->bank == 1 &&
-                child(root, "bank2/0.0.wav").existsAsFile() &&
-                !child(root, "bank1/1.1.wav").exists(),
-            "Move completes during background work without a stale companion at the old slot");
-    manager.remove({secondId});
-    ready = settle(manager, false);
-    successful(ready);
-    require(!ready.project.find(secondId) && !child(root, "bank2/0.0.wav").exists() &&
-                !child(root, "bank2/0.1.wav").exists(),
-            "Removal cancels pending companions without resurrecting deleted files");
-    manager.undo();
-    successful(settle(manager, false));
-    manager.edit(id, "Change audio during companion render", [](Sample &s) { s.channels = 1; });
-    ready = settle(manager, false);
-    successful(ready);
-    require(ready.project.find(id)->channels == 1 && ready.project.find(id)->companionPending &&
-                card::inspect(child(root, "bank1/0.0.wav")).channels == 1,
-            "A new audio setting replaces primary output before its new companion is ready");
-    primaryHash = hashFile(child(root, "bank1/0.0.wav"));
-    manager.duplicate(duplicate);
-    successful(settle(manager, false));
-    auto copied = Project::fromJson(parseJson(child(duplicate, ".core-manager/project.json")));
-    require(copied.id != ready.project.id && copied.find(id)->companionPending,
-            "Duplicate is usable immediately and retains resumable companions");
-    manager.open(other);
-    ready = settle(manager, false);
-    successful(ready);
-    require(ready.root == other && ready.pendingCompanions == 0,
-            "Opening another project cancels old companion work");
-    auto saved = Project::fromJson(parseJson(child(root, ".core-manager/project.json")));
-    require(saved.find(id)->companionPending && saved.revision == saved.completedRevision,
-            "Companion work is persisted separately from completed user edits");
-    std::cout << "PASS background primary ready in " << primaryMs << " ms; even-slice edit in "
-              << editMs << " ms while companions remain pending\n";
   }
+  String id;
   {
-    Manager reopened;
-    reopened.open(root);
-    auto ready = settle(reopened);
-    successful(ready);
-    require(ready.pendingCompanions == 0 && !ready.backgroundBusy &&
-                !ready.project.find(id)->companionPending &&
-                hashFile(child(root, "bank1/0.0.wav")) == primaryHash &&
-                child(root, "bank1/0.1.wav").existsAsFile() &&
-                card::inspect(child(root, "bank1/0.1.wav")).channels == 1 &&
-                child(root, "bank2/0.1.wav").existsAsFile() &&
-                !child(root, "bank1/1.1.wav").exists(),
-            "Reopening resumes companions at current slots without rewriting primary audio");
-    juce::MemoryBlock info;
-    require(child(root, "bank1/0.1.wav.info").loadFileAsData(info) &&
-                card::decode(info).slices.size() == 8,
-            "Finished companion uses the latest slice edit");
-  }
-  {
-    // A foreign companion destination exercises background failure and retry
-    // while all primary output remains usable.
-    auto foreign = child(duplicate, "bank1/0.1.wav");
-    durableWrite(foreign, "foreign", 7);
     Manager manager;
-    manager.open(duplicate);
-    auto state = settle(manager);
-    require(state.error.isEmpty() && state.companionError.contains("External change") &&
-                !state.busy && !state.backgroundBusy && state.pendingCompanions > 0 &&
-                state.editorWaveform(id) && foreign.loadFileAsString() == "foreign",
-            "Companion failure preserves the usable editor and external files");
-    require(!state.renderStatus(id).pending && !state.renderStatus(id).failed,
-            "A failed companion never marks the completed primary as failed or rendering");
-    manager.edit(id, "Rename during companion failure", [](Sample &s) { s.name = "Still usable"; });
-    state = settle(manager, false);
-    require(state.error.isEmpty() && state.project.find(id)->name == "Still usable" &&
-                state.project.revision == state.project.completedRevision,
-            "Companion failure does not prevent subsequent primary saves");
-    require(foreign.deleteFile(), "Remove companion conflict fixture");
-    manager.retry();
-    successful(settle(manager));
-    require(manager.snapshot().pendingCompanions == 0, "Retry finishes deferred companions");
+    manager.open(root);successful(settle(manager));
+    manager.import({input.getFullPathName(), input.getFullPathName()}, 0);
+    auto ready = settle(manager);successful(ready);
+    require(ready.status == "Ready" && ready.project.samples.size() == 2 && manager.idle(),
+            "Primary completion makes every import ready without companion work");
+    id = ready.project.samples[0].id;
+    for (const auto &sample : ready.project.samples) {
+      require(!child(root, card::path(sample.bank, sample.slot, 1)).exists() &&
+                  ready.completedAudio.at(sample.id).frames > 0 && ready.editorWaveform(sample.id),
+              "Primary-only imports support preview and waveform without companions");
+    }
+  }
+  std::map<String, String> retained;
+  auto manifest = child(root, ".core-manager/project.json");
+  auto legacy = parseJson(manifest);
+  auto fingerprints = legacy["fingerprints"];
+  auto &sample = legacy["samples"].getArray()->getReference(0);
+  put(sample, "companion", ".core-manager/cache/missing/companion.wav");
+  put(sample, "companionPending", true);
+  for (auto path : {"bank1/0.1.wav", "bank1/0.1.wav.info", "bank1/0.3.wav", "bank1/0.15.wav.info"}) {
+    auto file = child(root, path);
+    durableWrite(file, "obsolete", 8);
+    sample["ownedPaths"].getArray()->add(path);
+    put(fingerprints, path, hashFile(file));
+    durableWrite(file, "changed companion", 17); // External changes must not block primary edits.
+    retained[path] = hashFile(file);
+  }
+  sample["ownedPaths"].getArray()->add("bank1/0.5.wav");
+  put(fingerprints, "bank1/0.5.wav", "old-missing-file-hash");
+  legacy["warnings"].getArray()->add("External change: bank1/0.1.wav. Reload/reconcile before saving.");
+  put(legacy, "fingerprints", fingerprints);
+  durableJson(manifest, legacy);
+  auto preserved = [&] {
+    for (const auto &[path, hash] : retained)
+      require(hashFile(child(root, path)) == hash, "Legacy companions are never rewritten, moved or deleted");
+  };
+  {
+    Manager manager;manager.open(root);
+    auto ready = settle(manager);successful(ready);
+    require(ready.project.warnings.isEmpty(), "Missing, malformed and changed companions do not warn");
+    require(!ready.project.json()["samples"][0].hasProperty("companionPending"), "New manifests omit legacy pending jobs");
+    for (const auto &[path, hash] : ready.project.fingerprints) {
+      juce::ignoreUnused(hash);
+      require(!card::isCompanionPath(path), "Companions leave active fingerprint ownership");
+    }
+    manager.even(id, 4);successful(settle(manager));preserved();
+    manager.edit(id, "Change primary channels", [](Sample &s) {s.channels = 1;});
+    successful(settle(manager));preserved();
+    for (bool oneShot : {false, true}) for (bool match : {false, true}) {
+      manager.edit(id, "Playback flags", [=](Sample &s) {s.oneShot=oneShot;s.tempoMatch=match;});
+      successful(settle(manager));preserved();
+    }
+    manager.move({id}, 1);successful(settle(manager));preserved();
+    require(!child(root, "bank2/0.1.wav").exists(), "Moves never copy companions into new slots");
+    manager.undo();successful(settle(manager));preserved();
+    manager.redo();successful(settle(manager));preserved();
+    manager.remove({id});successful(settle(manager));preserved();
+    manager.undo();successful(settle(manager));preserved();
+    auto duplicate = workspace.getChildFile("primary-only-copy");
+    manager.duplicate(duplicate);successful(settle(manager));
+    manager.open(duplicate);successful(settle(manager));
+    for (const auto &[path, hash] : retained)
+      require(hashFile(child(duplicate, path)) == hash, "Whole-project duplication preserves unused files");
+  }
+  {
+    Manager manager;manager.open(root);successful(settle(manager));preserved();
   }
 }
 void sampleCVMappingChecks(const File &workspace) {
@@ -479,12 +423,12 @@ void pendingImportWaveform(const File &workspace, const File &input) {
   require(!even.project.find(id)->spliceVariable &&
               even.project.find(id)->spliceTrigger == 48 && previousInterval != 48,
           "Even slices recalculates the interval and disables variable timing");
-  for (int variant : {0, 1}) {
+  for (int variant : {0}) {
     savedInfo.reset();
     require(child(root, card::path(0, 0, variant) + ".info").loadFileAsData(savedInfo) &&
                 card::decode(savedInfo).spliceTrigger == 48 &&
                 !card::decode(savedInfo).spliceVariable,
-            "Even slices saves the calculated interval to both firmware companions");
+            "Even slices saves the calculated interval to primary firmware metadata");
   }
   require(hashFile(foreign) == waveHash, "Recalculating splice timing preserves WAV bytes");
   manager.undo();
@@ -695,7 +639,7 @@ void managerTests() {
     ~Clean() { root.deleteRecursively(); }
   } clean{workspace};
   historyAvailability(workspace);
-  backgroundCompanions(workspace);
+  primaryOnlyAndLegacyCompanions(workspace);
   sampleCVMappingChecks(workspace);
   midiChannelChecks(workspace);
   startTempoChecks(workspace);
@@ -769,15 +713,14 @@ void managerTests() {
     visual.enable(false);
 
     require(root.getChildFile("bank1/0.0.wav").existsAsFile() &&
-                root.getChildFile("bank1/0.1.wav").existsAsFile(),
-            "Continuous primary and companion output");
+                !root.getChildFile("bank1/0.1.wav").exists(),
+            "Continuous output requires only the primary");
     auto before = hashFile(root.getChildFile("bank1/0.0.wav"));
     auto modified =
         root.getChildFile("bank1/0.0.wav").getLastModificationTime();
     const auto displayName = String::fromUTF8("Amen — edited 鼓");
     std::map<String, std::pair<String, juce::Time>> unchangedOutputs;
-    for (auto path : {"bank1/0.0.wav", "bank1/0.1.wav", "bank1/0.0.wav.info",
-                      "bank1/0.1.wav.info"}) {
+    for (auto path : {"bank1/0.0.wav", "bank1/0.0.wav.info"}) {
       auto file = child(root, path);
       unchangedOutputs[path] = {hashFile(file), file.getLastModificationTime()};
     }
@@ -791,7 +734,7 @@ void managerTests() {
       auto file = child(root, path);
       require(hashFile(file) == expected.first &&
                   file.getLastModificationTime() == expected.second,
-              "Filename-only edit preserves primary/companion WAV and .info "
+              "Filename-only edit preserves primary WAV and .info "
               "bytes and times");
     }
     {
@@ -842,11 +785,11 @@ void managerTests() {
     require(!root.getChildFile("bank1/0.1.wav").exists() &&
                 root.getChildFile("bank1/0.0.wav").getLastModificationTime() ==
                     modified,
-            "Companion exception preserves primary WAV");
+            "Playback flags preserve primary WAV");
     m.undo();
     successful(settle(m));
-    require(root.getChildFile("bank1/0.1.wav").existsAsFile(),
-            "Restore companion from cache");
+    require(!root.getChildFile("bank1/0.1.wav").exists(),
+            "Undo never restores obsolete companion output");
     m.move({id}, 1);
     state = settle(m);
     successful(state);

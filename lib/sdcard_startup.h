@@ -505,12 +505,7 @@ void update_fx(uint8_t fx_num) {
       break;
     case FX_TIMESTRETCH:
       Gate_set_active(audio_gate, !sf->fx_active[FX_TIMESTRETCH]);
-      if (sf->fx_active[FX_TIMESTRETCH]) {
-        sel_variation_next = 1;
-      } else {
-        sel_variation_next = 0;
-      }
-      // fil_current_change = true;
+      // The audio worker derives the effective granular ratio from this flag.
       break;
     default:
       break;
@@ -721,7 +716,7 @@ void sdcard_startup() {
   // manifest do. Probe the initial selection using that same convention.
   // if it does, then we are in audio variant mode
   audio_variant_num=0;
-  for (uint8_t i = 2; i < 16; i++) {
+  for (uint8_t i = 2; i < 16; i += 2) {
     char filename[100];
     format_sample_filename(filename,sel_bank_cur,sel_sample_cur,i);
     FILINFO fno;
@@ -732,7 +727,7 @@ void sdcard_startup() {
     }
   }
   if (audio_variant_num > 0) {
-    audio_variant_num = (audio_variant_num - 1) / 2;
+    audio_variant_num /= 2;
   }
 
   // // print transients
@@ -773,12 +768,10 @@ void sdcard_startup() {
   if(savefile_load_state(false)) {
     sel_bank_cur=sel_bank_next;
     sel_sample_cur=sel_sample_next;
-    if(sel_variation_next>=0 && sel_variation_next<2)
-      sel_variation=sel_variation_next;
   }
   FRESULT fr;
   format_sample_filename(fil_current_name,sel_bank_cur,sel_sample_cur,
-                         sel_variation+audio_variant*2);
+                         audio_variant * 2);
   // Keep room for remaining control/filter startup allocations. Optional
   // reverb is constructed only once those allocations have completed.
   bool details_loaded=false;

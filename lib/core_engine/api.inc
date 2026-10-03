@@ -60,7 +60,7 @@ void core_engine_set_resident_bank(CoreEngine *e,unsigned b) {
         sel_bank_cur=sel_bank_next=b;
         if(sel_sample_next>=banks[b]->num_samples)sel_sample_next=0;
         sel_sample_cur=sel_sample_next;
-        format_sample_filename(fil_current_name,b,sel_sample_cur,sel_variation);
+        format_sample_filename(fil_current_name,b,sel_sample_cur,audio_variant * 2);
         audio_file_open(fil_current_name);fil_current_change=false;
         phases[0]=phases[1]=phase_new=0;phase_change=true;first_loop_ever=true;audio_was_muted=true;
         mute_because_of_playback_type=false;realtime_stretch_reset_from_playback_phase();++host_generation;host_selection_changed=true;

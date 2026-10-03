@@ -7,10 +7,16 @@ labelled **X, Y, Z**, respectively. Hold the modifier button while turning a kno
 | --- | --- | --- |
 | **A + 1 (X)** | Output volume | Turn up to increase volume. |
 | **A + 2 (Y)** | Low-pass filter cutoff | Turn up to open the filter. |
-| **A + 3 (Z)** | Realtime time stretching | About 1×–10×, with finer adjustment at the low end; bypassed below roughly 1.1×. |
+| **A + 3 (Z)** | Realtime time stretching | About 1×–16×, with finer adjustment at the low end; bypassed below roughly 1.1×. |
 | **B + 1 (X)** | Random slice sequence | Low end disables it; middle range selects sequence length; upper end regenerates an 8-step sequence and enables phrase-end retriggering. |
 | **B + 2 (Y)** | Pitch / playback rate | Lower to higher, with a neutral zone around the center. |
 | **B + 3 (Z)** | Tempo | Approximately half to 1½ times the source BPM, limited to 30–300 BPM. |
+
+Time Stretch now uses live grains from the selected normal-speed audio. The
+triggered effect applies 8× stretch; when the continuous control is also active,
+the larger amount wins, up to 16×. Clearing the effect restores the continuous
+setting without changing files or restarting playback. Old companion WAVs are
+unused and can remain on the card.
 
 The A/B remap moves volume from A+3 to A+1, filter from B+2 to A+2,
 realtime stretch from B+3 to A+3, playback rate from A+2 to B+2, and tempo

@@ -4,7 +4,7 @@
 #define BANK_TRANSITION_IMPL_H
 static struct {
     uint8_t bank, sample, previous_bank, previous_sample;
-    uint8_t variation, variant;
+    uint8_t variant;
     bool owned, rollback, previous_valid, silent, exhausted, changed_phase, replay;
     unsigned stage;
     uint32_t started, load_started;
@@ -84,7 +84,7 @@ static void bank_transition_service(void) {
         bank_job.next_phase=phase_new;bank_job.changed_phase=phase_change;
         bank_job.beat=beat_current;bank_job.exhausted=mute_because_of_playback_type;
         bank_job.silent=atomic_load_explicit(&bank_fade_silent,memory_order_acquire);
-        bank_job.variation=sel_variation;bank_job.variant=audio_variant;
+        bank_job.variant=audio_variant;
         do_open_file_ready=false;fil_current_change_force=false;
         bank_job.stage=0;bank_state(BANK_LOADING);return;
     }
@@ -118,7 +118,7 @@ static void bank_transition_service(void) {
             metadata_status.last_error=META_TIMEOUT;bank_fail();return;
         }
         char name[32];
-        format_sample_filename(name,bank,sample,bank_job.variation+bank_job.variant*2);
+        format_sample_filename(name,bank,sample,bank_job.variant*2);
         if(audio_file_open(name)!=FR_OK) {metadata_status.last_error=META_AUDIO;bank_fail();return;}
         // All readers are excluded until file, pointers, selection and phase
         // have been published together by releasing filesystem ownership.
@@ -136,8 +136,7 @@ static void bank_transition_service(void) {
                 banks[bank_job.previous_bank]->sample[bank_job.previous_sample].snd[0]:NULL;
             int32_t phase=0,beat=0;
             if(!bank_job.silent&&old) {
-                phase=round(((double)bank_job.phase[0]*next->size/old->size)*
-                    sel_variation_scale[sel_variation]*sel_variation_scale[sel_variation]);
+                phase=round(((double)bank_job.phase[0]*next->size/old->size));
                 beat=round((double)bank_job.beat*next->slice_num)/old->slice_num;
             }
             phases[0]=phases[1]=phase_new=phase;phase_change=true;

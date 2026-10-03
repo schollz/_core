@@ -23,7 +23,7 @@ void midi_note_on(int note, int velocity) {
   if (note < 0 || note > 127 || velocity <= 0 || velocity > 127 ||
       playback_stopped || do_stop_playback || !audio_media_timer_allowed() ||
       !fil_is_open || fil_current_change || fil_current_change_force ||
-      do_open_file_ready || sel_variation != sel_variation_next) {
+      do_open_file_ready) {
     return;
   }
   uint8_t bank = sel_bank_cur;

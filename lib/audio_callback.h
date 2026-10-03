@@ -52,7 +52,6 @@ const uint8_t cpu_usage_limit_threshold = 150;
 
 bool audio_was_muted = false;
 bool do_open_file_ready = false;
-bool muted_because_of_sel_variation = false;
 bool first_loop_ever = true;
 int32_t reverb_fade = 0;
 int32_t amiga_previous_value[2];
@@ -213,13 +212,6 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
 
     envelope_pitch_val = envelope_pitch_val_new;
 
-    if (muted_because_of_sel_variation) {
-      if (sel_variation == sel_variation_next) {
-        muted_because_of_sel_variation = false;
-        goto BREAKOUT_OF_MUTE;
-      }
-    }
-
     // continue to update the gate
     Gate_update(audio_gate, sf->bpm_tempo);
 
@@ -305,7 +297,6 @@ static void __not_in_flash_func(zeptocore_render_audio)() {
     return;
   }
 
-BREAKOUT_OF_MUTE:
   audio_callback_in_mute = false;
 
   if (playback_restarted) {
@@ -324,12 +315,7 @@ BREAKOUT_OF_MUTE:
   envelope_pitch_val = envelope_pitch_val_new;
 
   if (trigger_button_mute || envelope_pitch_val < ENVELOPE_PITCH_THRESHOLD ||
-      Gate_is_up(audio_gate) || sel_variation != sel_variation_next) {
-    muted_because_of_sel_variation = sel_variation != sel_variation_next;
-    // printf("[audio_callback] muted_because_of_sel_variation: %d\n",
-    //        muted_because_of_sel_variation);
-    // printf("[audio_callback] trigger_button_mute: %d\n",
-    // trigger_button_mute);
+      Gate_is_up(audio_gate)) {
     do_fade_out = true;
   }
 
@@ -342,23 +328,19 @@ BREAKOUT_OF_MUTE:
   if (do_open_file_ready) {
     // printf("[audio_callback] next file: %s\n", banks[audio_next_bank]
     //                               ->sample[audio_next_sample]
-    //                               .snd[sel_variation_next]
     //                               ->name);
     phases[0] = round(
         ((float)phases[0] *
          (float)banks[audio_next_bank]
              ->sample[audio_next_sample]
              .snd[FILEZERO]
-             ->size *
-         sel_variation_scale[sel_variation]) /
-        (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size *
-        sel_variation_scale[sel_variation]);
+             ->size) /
+        (float)banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size);
 
     // printf("[audio_callback] phase[0] -> phase_new: %d*%d/%d -> %d\n",
     // phases[0],
     //        banks[audio_next_bank]
     //            ->sample[audio_next_sample]
-    //            .snd[sel_variation_next]
     //            ->size,
     //        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size,
     //        phase_new);
@@ -384,7 +366,7 @@ BREAKOUT_OF_MUTE:
     char next_path[32];
     format_sample_filename(next_path,audio_next_bank,
         audio_next_sample%banks[audio_next_bank]->num_samples,
-        sel_variation+audio_variant*2);
+        audio_variant * 2);
     allow_file_change=allow_file_change && audio_prepare_ready(next_path);
   }
 #endif
@@ -491,8 +473,7 @@ BREAKOUT_OF_MUTE:
                                                      .snd[FILEZERO]
                                                      ->slice_current];
     const int32_t sample_stop =
-        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size *
-        sel_variation_scale[sel_variation];
+        banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size;
 
     switch (
         banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->play_mode) {
@@ -552,6 +533,7 @@ BREAKOUT_OF_MUTE:
       do_fade_in = false;
       audio_was_muted = false;
     });
+    if (realtime_stretch_is_active()) realtime_stretch_reset_from_playback_phase();
   }
 
   if (audio_was_muted) {
@@ -572,27 +554,13 @@ BREAKOUT_OF_MUTE:
   bool first_loop = true;
 
   if (realtime_stretch_is_active()) {
-    if (clock_restart_block) realtime_stretch_reset_from_playback_phase();
-    if (phase_change) {
-      phases[1] = phases[0];
-      phases[0] = phase_new;
-      CL_CALL(cl_applied(phases[0]));
-      phase_change = false;
-      AR_CALL(if (audio_restart_take(phases[0])) {
-        clock_restart_block = true;
-        do_crossfade = do_fade_in = false;
-        audio_was_muted = false;
-      });
-      realtime_stretch_reset_from_playback_phase();
-    }
-
     if (do_open_file) {
       sel_bank_cur = audio_next_bank;
       sel_sample_cur = audio_next_sample % banks[sel_bank_cur]->num_samples;
 
       t0 = time_us_32();
       format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
-                             sel_variation + audio_variant * 2);
+                             audio_variant * 2);
       audio_file_open(fil_current_name);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
@@ -644,7 +612,7 @@ BREAKOUT_OF_MUTE:
       sel_sample_cur = audio_next_sample % banks[sel_bank_cur]->num_samples;
       t0 = time_us_32();
         format_sample_filename(fil_current_name, sel_bank_cur, sel_sample_cur,
-                               sel_variation + audio_variant * 2);
+                               audio_variant * 2);
         audio_file_open(fil_current_name);
       t1 = time_us_32();
       sd_card_total_time += (t1 - t0);
@@ -808,6 +776,7 @@ BREAKOUT_OF_MUTE:
   }
 
 AUDIO_SOURCE_RENDERED:
+  realtime_stretch_declick(samples, buffer->max_sample_count);
 
 #ifdef INCLUDE_ECTOCORE
   if (mute_soft) {
@@ -1289,13 +1258,12 @@ AUDIO_SOURCE_RENDERED:
     char next_path[32];
     unsigned next_sample=audio_next_sample%banks[audio_next_bank]->num_samples;
     format_sample_filename(next_path,audio_next_bank,next_sample,
-                           sel_variation+audio_variant*2);
+                           audio_variant * 2);
     if(!audio_prepare_ready(next_path))audio_prepare_step(next_path);
     else if(do_open_file_ready) {
       float ratio=(float)banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->size/
                    banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->size;
-      FSIZE_t next_phase=round((float)phases[0]*ratio*
-          sel_variation_scale[sel_variation]*sel_variation_scale[sel_variation]);
+      FSIZE_t next_phase=round((float)phases[0]*ratio);
       FSIZE_t offset=WAV_HEADER+
           (banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->num_channels+1)*
           (banks[audio_next_bank]->sample[next_sample].snd[FILEZERO]->oversampling+1)*44100+
@@ -1315,7 +1283,7 @@ static uint32_t audio_profile_effects(void) {
   return mask;
 }
 static uint32_t audio_profile_source(bool owns) {
-  return (sel_bank_cur<<12)|(metadata_filename_index(sel_bank_cur,sel_sample_cur)<<8)|(sel_variation+audio_variant*2)|
+  return (sel_bank_cur<<12)|(metadata_filename_index(sel_bank_cur,sel_sample_cur)<<8)|(audio_variant * 2)|
       ((owns&&fil_current.cltbl)?1u<<30:0)|(audio_callback_in_mute?1u<<31:0);
 }
 #endif
@@ -1335,7 +1303,7 @@ void __not_in_flash_func(i2s_callback_func)() {
   bool owns_media=audio_media_begin();
   AP_CALL(audio_profile_begin(owns_media&&zeptocore_diag.header[21]>=3,
       audio_profile_source(owns_media),audio_profile_effects(),
-      sf?sf->pitch_val_index:0,realtime_stretch_q8));
+      sf?sf->pitch_val_index:0,realtime_stretch_applied_q8));
   if(owns_media && metadata_ready(sel_bank_cur) && !bank_transition_audio_hold()) {
     zeptocore_render_audio();
 #if AUDIO_EXTRA_OUTPUT_BUFFER
@@ -1395,8 +1363,9 @@ void __not_in_flash_func(i2s_callback_func)() {
                  zeptocore_diag.audio.header.sequence && fil_is_open) {
     uint32_t *c = zd_audio.context;
     c[0] = sel_bank_cur; c[1] = metadata_filename_index(sel_bank_cur,sel_sample_cur);
-    c[2] = sel_variation; c[3] = audio_variant; c[4] = phase_forward;
-    c[5] = realtime_stretch_q8; c[6] = sf->pitch_val_index;
+    c[2] = 0; // Reserved legacy companion selector.
+    c[3] = audio_variant; c[4] = phase_forward;
+    c[5] = realtime_stretch_applied_q8; c[6] = sf->pitch_val_index;
     c[7] = sf->bpm_tempo; c[8] = 0;
     for (unsigned i = 0; i < 16; ++i) c[8] |= sf->fx_active[i] ? 1u << i : 0;
     c[9] = f_size(&fil_current); c[10] = f_size(&fil_current) >> 32;

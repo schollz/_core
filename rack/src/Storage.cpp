@@ -34,17 +34,6 @@ Wav Storage::inspect(const fs::path &p){
     }
     require(fmt&&data&&w.bytes%(w.channels*2)==0,"Missing or unaligned PCM");return w;
 }
-static bool legacyServerHeader(const fs::path &p,const Wav &w){
-    // Older core servers wrote a temporary WAV, then read the whole file as
-    // raw PCM. Verify that extra header before accepting its size discrepancy.
-    if(w.bytes<44)return false;
-    std::ifstream in(p,std::ios::binary);uint8_t h[44]{};in.seekg(std::streamoff(w.offset));
-    return bool(in.read((char*)h,sizeof h))&&!memcmp(h,"RIFF",4)&&uint64_t(u32(h+4))+8==w.bytes
-        &&!memcmp(h+8,"WAVEfmt ",8)&&u32(h+16)==16&&u16(h+20)==1
-        &&u16(h+22)==w.channels&&u32(h+24)==w.rate&&u32(h+28)==w.rate*w.channels*2
-        &&u16(h+32)==w.channels*2&&u16(h+34)==16&&!memcmp(h+36,"data",4)
-        &&uint64_t(u32(h+40))+44==w.bytes;
-}
 std::shared_ptr<Library> Storage::catalogue(const fs::path &root,uint64_t generation){
     require(fs::is_directory(root),"Sample folder is missing");auto l=std::make_shared<Library>();l->root=fs::absolute(root);l->generation=generation;
     unsigned count=0;
@@ -54,22 +43,8 @@ std::shared_ptr<Library> Storage::catalogue(const fs::path &root,uint64_t genera
         try{
             auto e=std::make_unique<Entry>();auto data=bytes(info,8192);char error[128];
             require(core_card_decode(data.data(),data.size(),&e->info,error,sizeof error),error);
-            e->info.sample.slot=s;e->wav[0]=inspect(p);auto &c=e->info.sample;
-            require(e->wav[0].channels==c.channels&&e->wav[0].rate==44100u*c.rate_multiple&&e->wav[0].bytes==uint64_t(c.size)+uint64_t(e->wav[0].rate)*c.channels*2,"WAV and metadata disagree about padding or format");
-            auto companion=path(*l,b,s,1);e->companion=fs::exists(companion);
-            if(e->companion){
-                e->wav[1]=inspect(companion);auto ci=companion;ci+=".info";auto cd=bytes(ci,8192);CoreCardInfo temp;
-                require(core_card_decode(cd.data(),cd.size(),&temp,error,sizeof error),error);
-                uint64_t primarySize=c.size,companionSize=temp.sample.size;
-                if(primarySize>44&&companionSize>44&&legacyServerHeader(p,e->wav[0])&&legacyServerHeader(companion,e->wav[1])){
-                    primarySize-=44;companionSize-=44;
-                }
-                require(e->wav[1].channels==c.channels&&e->wav[1].rate==e->wav[0].rate
-                    &&temp.sample.channels==c.channels&&temp.sample.rate_multiple==c.rate_multiple
-                    &&companionSize==primarySize*8
-                    &&e->wav[1].bytes==uint64_t(temp.sample.size)+uint64_t(e->wav[1].rate)*c.channels*2,"Invalid eight-times companion");
-            }
-            require(e->companion||(c.one_shot&&!c.tempo_match),"Required .1.wav companion missing; wait for sample manager to finish");
+            e->info.sample.slot=s;e->wav=inspect(p);auto &c=e->info.sample;
+            require(e->wav.channels==c.channels&&e->wav.rate==44100u*c.rate_multiple&&e->wav.bytes==uint64_t(c.size)+uint64_t(e->wav.rate)*c.channels*2,"WAV and metadata disagree about padding or format");
             l->banks[b].samples[l->banks[b].count++]=e->info.sample;l->entries[b][s]=std::move(e);++count;
         }catch(const std::exception &e){l->warnings.push_back("Bank "+std::to_string(b+1)+", sample "+std::to_string(s+1)+": "+e.what());}
     }
@@ -96,61 +71,26 @@ std::unique_ptr<Bank> Storage::prepare(std::shared_ptr<Library> l,unsigned index
     if(index>=16||!l->banks[index].count){index=0;while(index<16&&!l->banks[index].count)++index;}
     require(index<16,"Empty library");auto result=std::make_unique<Bank>();result->library=std::move(l);result->index=index;
     for(unsigned s=0;s<16;++s)if(auto &e=result->library->entries[index][s]){
-        auto &v=result->primary[s];v.resize(size_t(e->wav[0].bytes));std::ifstream in(path(*result->library,index,s,0),std::ios::binary);in.seekg(std::streamoff(e->wav[0].offset));
+        auto &v=result->primary[s];v.resize(size_t(e->wav.bytes));std::ifstream in(path(*result->library,index,s,0),std::ios::binary);in.seekg(std::streamoff(e->wav.offset));
         require(bool(in.read((char*)v.data(),std::streamsize(v.size()))),"Primary WAV changed while loading");result->bytes+=v.size();
     }
     return result;
 }
-Storage::Storage():pages(new Page[pageCount]){worker=std::thread([this]{run();});}
+Storage::Storage(){worker=std::thread([this]{run();});}
 Storage::~Storage(){stop=true;worker.join();Bank *p;while(ready.pop(p))delete p;while(retired.pop(p))delete p;}
 void Storage::load(const std::string &root,unsigned bank,bool importSettings){std::lock_guard<std::mutex> lock(mutex);pendingRoot=root;pendingBank=bank;pendingImport=importSettings;++revision;message="Loading sample folder…";}
 std::string Storage::status(){std::lock_guard<std::mutex> lock(mutex);return message;}
-size_t Storage::hash(const Request &r){return size_t((r.generation*2654435761u)^(r.bank*65537u)^(r.slot*257u)^r.page)%pageCount;}
-static bool equal(const Request&a,const Request&b){return a.generation==b.generation&&a.bank==b.bank&&a.slot==b.slot&&a.page==b.page;}
-bool Storage::cached(const Request &r,size_t offset,void *dst,size_t n){
-    auto &p=pages[hash(r)];unsigned readyState=1;
-    if(p.state.compare_exchange_strong(readyState,2,std::memory_order_acquire)){
-        bool ok=equal(p.key,r)&&offset+n<=p.size;
-        if(ok)memcpy(dst,p.data.data()+offset,n);
-        p.state.store(1,std::memory_order_release);if(ok)return true;
-    }
-    requests.push(r);return false;
-}
 bool Storage::read(Bank *b,unsigned bank,unsigned slot,unsigned variant,uint64_t offset,void *out,size_t n){
-    if(!b||bank!=b->index||slot>=16||!b->library->entries[bank][slot]||offset<44)return false;
-    offset-=44;auto &e=*b->library->entries[bank][slot];
-    if(variant==0){auto &data=b->primary[slot];if(offset>data.size()||n>data.size()-offset)return false;memcpy(out,data.data()+offset,n);return true;}
-    if(variant!=1||!e.companion||offset>e.wav[1].bytes||n>e.wav[1].bytes-offset)return false;
-    bool ok=true;auto *dst=static_cast<uint8_t*>(out);Request r{b->library->generation,0,uint8_t(bank),uint8_t(slot)};
-    while(n){r.page=uint32_t(offset/pageBytes);size_t at=offset%pageBytes,take=std::min(n,pageBytes-at);
-        if(!cached(r,at,dst,take)){memset(dst,0,take);ok=false;}offset+=take;dst+=take;n-=take;}
-    auto last=r.page;if((uint64_t(last)+1)*pageBytes<e.wav[1].bytes){r.page=last+1;requests.push(r);}if(last){r.page=last-1;requests.push(r);}
-    if(!ok)misses.fetch_add(1,std::memory_order_relaxed);return ok;
-}
-void Storage::fill(const Request &r,const Library &l){
-    if(r.bank>=16||r.slot>=16)return;auto &entry=l.entries[r.bank][r.slot];if(!entry||!entry->companion)return;
-    auto &p=pages[hash(r)];unsigned state=p.state.load(std::memory_order_acquire);if(state==1&&equal(p.key,r))return;
-    if(state==2||state==3||!p.state.compare_exchange_strong(state,3,std::memory_order_acquire))return;
-    try{
-        uint64_t offset=uint64_t(r.page)*pageBytes;require(offset<entry->wav[1].bytes,"Page outside companion");
-        size_t n=size_t(std::min<uint64_t>(pageBytes,entry->wav[1].bytes-offset));
-        std::ifstream in(path(l,r.bank,r.slot,1),std::ios::binary);in.seekg(std::streamoff(entry->wav[1].offset+offset));
-        require(bool(in.read((char*)p.data.data(),std::streamsize(n))),"Companion changed or disappeared");p.size=n;p.key=r;p.state.store(1,std::memory_order_release);
-    }catch(...){p.state.store(0,std::memory_order_release);}
+    if(!b || bank!=b->index || slot>=16 || variant!=0 ||
+       !b->library->entries[bank][slot] || offset<44)return false;
+    offset-=44;auto &data=b->primary[slot];
+    if(offset>data.size() || n>data.size()-offset)return false;
+    memcpy(out,data.data()+offset,n);return true;
 }
 void Storage::run(){
     uint64_t seen=0,generation=0;std::map<uint64_t,std::weak_ptr<Library>> libraries;
     std::shared_ptr<Library> latest;
     auto publish=[&](std::unique_ptr<Bank> bank){
-        // Warm first/last pages and slice starts before publication.
-        auto &l=*bank->library;for(unsigned s=0;s<16;++s)if(auto &e=l.entries[bank->index][s])if(e->companion){
-            fill({l.generation,0,uint8_t(bank->index),uint8_t(s)},l);
-            fill({l.generation,uint32_t((e->wav[1].bytes-1)/pageBytes),uint8_t(bank->index),uint8_t(s)},l);
-            for(unsigned i=0;i<e->info.sample.slice_count;++i){
-                auto offset=uint64_t(e->info.starts[i])*8+uint64_t(e->wav[1].rate)*e->wav[1].channels;
-                fill({l.generation,uint32_t(offset/pageBytes),uint8_t(bank->index),uint8_t(s)},l);
-            }
-        }
         Bank *raw=bank.release();while(!stop&&!ready.push(raw))std::this_thread::sleep_for(std::chrono::milliseconds(1));if(stop)delete raw;
     };
     while(!stop){
@@ -165,8 +105,6 @@ void Storage::run(){
             int requested=requestedBank.exchange(-1);auto it=libraries.find(activeGeneration.load());
             if(requested>=0&&it!=libraries.end())if(auto l=it->second.lock())publish(prepare(l,unsigned(requested)));
         }catch(const std::exception &e){std::lock_guard<std::mutex> lock(mutex);message=e.what();}
-        Request request;unsigned work=0;
-        while(work++<128&&requests.pop(request)){auto it=libraries.find(request.generation);if(it!=libraries.end())if(auto l=it->second.lock())fill(request,*l);}
         for(auto it=libraries.begin();it!=libraries.end();)if(it->second.expired())it=libraries.erase(it);else ++it;
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }

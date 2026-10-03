@@ -29,7 +29,6 @@ static Sample samples[2] = {{{&sounds[0], NULL}}, {{&sounds[1], NULL}}};
 static SampleList bank = {2, samples};
 static SampleList *banks[16] = {&bank};
 static uint8_t sel_bank_cur, sel_sample_cur;
-static int sel_variation, sel_variation_next;
 static bool playback_stopped, do_stop_playback, button_mute, trigger_button_mute;
 static bool fil_is_open = true, fil_current_change, fil_current_change_force;
 static bool do_open_file_ready, media_allowed = true, usb_midi_present;
@@ -226,9 +225,6 @@ static void test_notes(void)
   media_allowed = false;
   midi_note_on(60, 100);
   media_allowed = true;
-  sel_variation_next = 1;
-  midi_note_on(60, 100);
-  sel_variation_next = 0;
   sel_bank_cur = 16;
   midi_note_on(60, 100);
   sel_bank_cur = 1;
@@ -254,7 +250,7 @@ static void test_notes(void)
   sounds[0].slice_stop = boundaries;
   assert(jumps == before);
   assert(banks[0] == &bank && sel_bank_cur == 0 && sel_sample_cur == 0);
-  assert(sel_variation == 0 && sel_variation_next == 0 && fil_is_open);
+  assert(fil_is_open);
   assert(last_beat >= 0 && last_beat < 16);
 }
 

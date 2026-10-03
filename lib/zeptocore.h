@@ -163,7 +163,6 @@ void __not_in_flash_func(input_handling)()
   }
 
   uint8_t debounce_beat_repeat = 0;
-  uint16_t debounce_sel_variation_next = 0;
   uint8_t sample_selection_index_last = 0;
   uint8_t debounce_sample_selection = 0;
   uint8_t sample_selection_index = 0;
@@ -1164,16 +1163,5 @@ void __not_in_flash_func(input_handling)()
     // check keyboard
     run_keyboard();
 #endif
-
-    // load the new sample if variation changed
-    if (debounce_sel_variation_next > 0)
-    {
-      debounce_sel_variation_next--;
-    }
-    else if (sel_variation_next != sel_variation)
-    {
-      debounce_sel_variation_next = 50;
-      audio_file_change_variation();
-    }
   }
 }

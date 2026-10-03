@@ -23,7 +23,7 @@ public:
 };
 struct Wav {uint64_t offset=0,bytes=0;unsigned rate=0,channels=0;};
 struct Entry {
-    CoreCardInfo info{};std::array<Wav,2> wav;bool companion=false;std::string name;
+    CoreCardInfo info{};Wav wav;std::string name;
 };
 struct Library {
     fs::path root;uint64_t generation=0;
@@ -39,10 +39,8 @@ struct Bank {
     std::array<std::vector<uint8_t>,16> primary;
     uint64_t bytes=0;
 };
-struct Request {uint64_t generation=0;uint32_t page=0;uint8_t bank=0,slot=0;};
 class Storage {
 public:
-    static constexpr size_t pageBytes=65536,pageCount=1024;
     Storage();~Storage();
     Storage(const Storage&)=delete;Storage &operator=(const Storage&)=delete;
     // UI only; engine bank changes use the atomic mailbox below.
@@ -50,7 +48,6 @@ public:
     std::string status();
     std::atomic<int> requestedBank{-1};
     std::atomic<uint64_t> activeGeneration{0};
-    std::atomic<uint64_t> misses{0};
     Queue<Bank*,8> ready;
     Queue<Bank*,32> retired;
     bool read(Bank *,unsigned bank,unsigned slot,unsigned variant,uint64_t offset,void *,size_t);
@@ -59,19 +56,10 @@ public:
     static Wav inspect(const fs::path &);
     static fs::path path(const Library&,unsigned,unsigned,unsigned);
 private:
-    struct Page {
-        // 0 empty, 1 published, 2 audio-reader pin, 3 worker writing.
-        std::atomic<unsigned> state{0};Request key;size_t size=0;
-        std::array<uint8_t,pageBytes> data{};
-    };
-    std::unique_ptr<Page[]> pages;
-    Queue<Request,4096> requests;
     std::thread worker;std::atomic<bool> stop{false};
     std::mutex mutex;std::string message="Choose a sample folder",pendingRoot;
     unsigned pendingBank=0;bool pendingImport=false;uint64_t revision=0;
-    void run();void fill(const Request &,const Library &);
-    bool cached(const Request &,size_t,void *,size_t);
-    static size_t hash(const Request &);
+    void run();
 };
 void applySettings(const Library&,CoreState&);
 }

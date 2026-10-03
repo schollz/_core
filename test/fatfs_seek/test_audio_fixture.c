@@ -50,6 +50,12 @@ int main(void) {
     assert(!seek_audio_fixture_run(3,cid)&&zeptocore_audio_fixture.operation==1);
     assert(!f_open(&file,"bank1/0.3.wav",FA_READ)&&f_size(&file)==sizeof original);
     assert(!f_close(&file));
+    assert(!seek_maps_prepare(&fs,cid,test_sectors,"bank1/0.0.wav"));
+    assert(seek_maps_stats.files==1&&!seek_maps_stats.builds);
+    assert(!f_open(&file,"bank1/0.1.wav",FA_READ));
+    assert(!seek_maps_attach(&file,"bank1/0.1.wav"));
+    assert(!f_read(&file,work,sizeof original,&n)&&n==sizeof original&&!memcmp(work,original,n));
+    assert(!f_close(&file));
     assert(!seek_audio_fixture_run(4,cid)&&zeptocore_audio_fixture.operation==3);
     assert(f_open(&file,"bank1/0.3.wav",FA_READ)==FR_NO_FILE);
     assert(seek_maps_unmount());assert(!f_mount(NULL,"0:",0));
