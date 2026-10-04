@@ -64,6 +64,7 @@ Source commit: {commit}
         'plugin': slug, 'version': version, 'platform': 'win-x64',
         'commit': commit, 'built_at_utc': datetime.now(timezone.utc).isoformat(),
         'workflow_run': os.environ.get('GITHUB_RUN_ID'),
+        'release_tag': os.environ.get('CORE_RELEASE_TAG') or None,
     }
     files = {
         plugin.name: plugin.read_bytes(), source.name: source.read_bytes(),

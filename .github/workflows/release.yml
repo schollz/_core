@@ -1,0 +1,118 @@
+name: Release new version
+run-name: Release v${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New stable version without v: MAJOR.MINOR.PATCH'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-new-version-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Commit version and push release tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.prepare.outputs.version }}
+      release_tag: ${{ steps.prepare.outputs.release_tag }}
+      source_sha: ${{ steps.prepare.outputs.source_sha }}
+    steps:
+      - name: Require a main workflow run
+        env:
+          WORKFLOW_REF: ${{ github.ref }}
+        run: test "$WORKFLOW_REF" = refs/heads/main
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check release automation
+        run: python -m unittest discover -s test/release -v
+      - name: Commit and atomically push main and tag
+        id: prepare
+        env:
+          NEW_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python scripts/prepare_release.py "$NEW_VERSION"
+
+  firmware:
+    name: Build and publish firmware
+    needs: prepare
+    permissions:
+      contents: write
+    uses: ./.github/workflows/build.yml
+    with:
+      release_tag: ${{ needs.prepare.outputs.release_tag }}
+      source_sha: ${{ needs.prepare.outputs.source_sha }}
+
+  sample-manager-windows:
+    name: Release Windows sample manager
+    needs: [prepare, firmware]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-sample-manager-windows.yml
+    with:
+      release_tag: ${{ needs.prepare.outputs.release_tag }}
+      source_sha: ${{ needs.prepare.outputs.source_sha }}
+    secrets: inherit
+
+  rack-windows:
+    name: Release Windows Rack plugin
+    needs: [prepare, firmware]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-rack-windows.yml
+    with:
+      release_tag: ${{ needs.prepare.outputs.release_tag }}
+      source_sha: ${{ needs.prepare.outputs.source_sha }}
+
+  summary:
+    name: Report release and manual packages
+    if: always()
+    needs: [prepare, firmware, sample-manager-windows, rack-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write release summary
+        env:
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+          PREPARE_RESULT: ${{ needs.prepare.result }}
+          FIRMWARE_RESULT: ${{ needs.firmware.result }}
+          MANAGER_RESULT: ${{ needs.sample-manager-windows.result }}
+          RACK_RESULT: ${{ needs.rack-windows.result }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          {
+            echo "Version: $RELEASE_VERSION"
+            echo "Commit: $SOURCE_SHA"
+            echo "Tag: $RELEASE_TAG"
+            echo "Preparation: $PREPARE_RESULT"
+            echo "Firmware: $FIRMWARE_RESULT"
+            echo "Windows sample manager: $MANAGER_RESULT"
+            echo "Windows Rack: $RACK_RESULT"
+            if [[ -n "$RELEASE_TAG" ]]; then
+              echo "Release: https://github.com/$GH_REPO/releases/tag/$RELEASE_TAG"
+              echo
+              echo 'Manual uploads remaining: Apple Silicon, Intel macOS, and Linux for both sample manager and Rack.'
+              echo "Build these with --release-tag $RELEASE_TAG --source-commit $SOURCE_SHA."
+              echo 'Retry firmware with Re-run failed jobs; retry Windows with their Run workflow forms using this tag and SHA.'
+            else
+              echo 'No version commit or release tag was pushed. Run this workflow on main with a new stable version.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

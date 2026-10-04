@@ -20,6 +20,7 @@ import rack_release
 class FakeRunner:
     def __init__(self):
         self.release = {'id': 123, 'tag_name': 'v8.0.4', 'html_url': 'https://example.invalid/v8.0.4'}
+        self.latest = None
         self.commands = []
         self.uploaded = {}
         self.corrupt = False
@@ -33,7 +34,7 @@ class FakeRunner:
         if args[0] == 'git':
             return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
         if args[:2] == ['gh', 'api']:
-            return json.dumps(self.release)
+            return json.dumps((self.latest or self.release) if args[2].endswith('/latest') else self.release)
         if args[:3] == ['gh', 'release', 'upload']:
             self.uploaded = {Path(p).name: Path(p).read_bytes() for p in args[args.index('--') + 2:]}
         elif args[:3] == ['gh', 'release', 'download']:
@@ -139,6 +140,27 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(rack_package.read_plugin(clone)['version'], '2.0.0')
         self.assertEqual(git('-C', str(clone), 'rev-parse', 'HEAD'), selection['source']['commit'])
         self.assertEqual(selection['release']['tag'], 'v8.0.4')
+
+    def test_explicit_upload_uses_named_release_even_if_latest_changes(self):
+        self.selection['source']['ref'] = 'refs/tags/v8.0.4'
+        self.runner.latest = {**self.runner.release, 'id': 999, 'tag_name': 'v8.0.7'}
+        assets = self.make_assets()
+        with patch.object(rack_release, 'verify_tag') as verify:
+            rack_release.publish(self.runner, self.selection, assets)
+        verify.assert_called_once_with(self.runner, rack_release.REPOSITORY_URL, 'v8.0.4', 'a' * 40)
+        upload = next(c for c in self.runner.commands if c[:3] == ['gh', 'release', 'upload'])
+        self.assertEqual(upload[upload.index('--') + 1], 'v8.0.4')
+
+    def test_explicit_selection_requires_matching_tag_and_commit(self):
+        with self.assertRaisesRegex(ValueError, 'together'):
+            rack_release.select_release(self.runner, 'v8.0.4')
+        with patch.object(rack_release, 'verify_tag', side_effect=ValueError('tag mismatch')):
+            with self.assertRaisesRegex(ValueError, 'tag mismatch'):
+                rack_release.select_release(self.runner, 'v8.0.4', 'a' * 40)
+        with patch.object(rack_release, 'verify_tag'):
+            selection = rack_release.select_release(self.runner, 'v8.0.4', 'a' * 40)
+        self.assertEqual(selection['source']['ref'], 'refs/tags/v8.0.4')
+        self.assertEqual(selection['source']['commit'], 'a' * 40)
 
     def test_intel_shell_is_valid_and_pins_the_source(self):
         script = rack_release.remote_build_script('/tmp/core-rack-intel.fixture', self.selection, 3)

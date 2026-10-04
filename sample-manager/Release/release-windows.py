@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 from release_common import (ROOT, ReleaseError, Runner, clone_source, finish_package,
-                            new_run, publish, read_json, require_tools, select_release, write_json)
+                            new_run, publish, read_json, require_tools, select_release, target_arguments, write_json)
 
 
 def export_environment(values):
@@ -25,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('operation', choices=('prepare', 'build', 'package', 'publish'))
     parser.add_argument('--assets', type=Path, help='Downloaded assets for the publish operation')
+    target_arguments(parser)
     args = parser.parse_args()
     runner = Runner()
     output = None
@@ -46,7 +47,7 @@ def main():
             output = new_run(Path(os.environ['RUNNER_TEMP']), 'core-sample-manager-windows')
             export_environment({'CORE_RELEASE_ROOT': output})
             runner.log = output / 'prepare.log'
-            selection = select_release(runner)
+            selection = select_release(runner, args.release_tag, args.source_commit)
             write_json(output / 'selection.json', selection)
             project = clone_source(runner, selection, output / 'source')
             build = project / 'build/windows-x64'

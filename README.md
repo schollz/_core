@@ -11,6 +11,10 @@ For contributors and coding agents, start with the [repository documentation
 index](docs/README.md): repository layout, build and test commands, current
 firmware behavior, and the consolidated seek/audio development notes.
 
+For releases, use **Actions → Release new version** to bump versions, commit, publish
+firmware, and attach Windows packages. See the [release guide](docs/releases.md)
+for manual macOS/Linux uploads and retries.
+
 ## dsp
 
 The digital signal processing for all the *core things was written by Zack, from scratch, in C. This was done partially to have strict control over the sound/utility, but also because the RP2040 is fixed-point based and needed special care in all the DSP. The libraries are written with modularity in mind, so [they can be used in other programs](https://github.com/schollz/fpfx). Here are the DSP header files:
@@ -69,6 +73,26 @@ saved tempo at startup. Normal tempo controls still work afterward. VCV Rack rea
 the same setting and exposes it in its Device settings menu. See the
 [sample manager settings](sample-manager/README.md) and [Rack guide](rack/README.md)
 for details. Hardware requires firmware with Start tempo support.
+
+## VCV Rack modules
+
+The Infinite Digits plugin brings the EZEPTOCORE and Ectocore modules to VCV Rack 2,
+using the same DSP as the hardware. Load samples prepared with the sample manager
+and play them in a Rack patch. See the [Rack guide](rack/README.md) for installation
+and module controls. Requires VCV Rack 2.6.6 or a later compatible Rack 2 release.
+
+Download the ZIP for your system. The plugin keeps its own Rack 2 version; each
+package below is attached to the current firmware release. macOS and Linux
+packages are uploaded manually, so their links may await an upload after a release.
+
+<!-- rack-downloads:start -->
+| Platform | Download |
+| --- | --- |
+| macOS (Apple Silicon) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-mac-arm64.zip) |
+| macOS (Intel) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-mac-x64.zip) |
+| Windows (x64) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-win-x64.zip) |
+| Linux (x86_64) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-lin-x64.zip) |
+<!-- rack-downloads:end -->
 
 ## zeptocore
 

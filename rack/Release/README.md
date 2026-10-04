@@ -1,5 +1,11 @@
 # Native Rack plugin releases
 
+For the version-bump action and builds pinned to its exact commit, see the
+[repository release guide](../../docs/releases.md). These entrypoints accept
+paired `--release-tag` and `--source-commit` arguments to build that source and
+upload to that named release. Without both arguments, the default behavior
+below remains unchanged.
+
 These scripts follow the sample manager's native release layout: Apple Silicon
 builds here, Intel builds over SSH on the Intel Mac, and Linux builds directly on
 Linux x86_64. Windows remains in the manual `release-rack-windows.yml` workflow.

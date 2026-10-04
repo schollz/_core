@@ -12,7 +12,7 @@ from pathlib import Path
 from package import package_build, product_name
 from release_common import (ROOT, SSH, ReleaseError, Runner,
                             clone_source, finish_package, new_run, publish,
-                            require_tools, select_release, source_clone_commands, write_json)
+                            require_tools, select_release, source_clone_commands, target_arguments, write_json)
 
 DEFAULT_REMOTE = 'zns@192.168.0.44'
 DEFAULT_IDENTITY = 'Developer ID Application: Zackary Scholl (KF253X8W3N)'
@@ -81,7 +81,7 @@ def retrieve_intel(runner, host, directory, output, build):
 
 
 def main(platform_name):
-    parser = argparse.ArgumentParser(description='Build _core sample manager from main using the latest release version, and upload to that release.')
+    parser = argparse.ArgumentParser(description='Build and upload _core sample manager; default to main/latest, or pin a release tag and source commit.')
     remote = platform_name == 'macos-x86_64'
     mac = platform_name.startswith('macos')
     if remote:
@@ -89,9 +89,10 @@ def main(platform_name):
         parser.add_argument('--keep-remote', action='store_true', help='Keep the successful remote clone/build')
     parser.add_argument('--jobs', type=int, default=6)
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/releases', help='Parent for a unique run directory')
-    parser.add_argument('--no-upload', action='store_true', help='Build main with the latest release version and sign/package normally, retaining assets locally')
+    parser.add_argument('--no-upload', action='store_true', help='Sign/package the selected source normally, retaining assets locally')
     if mac:
         parser.add_argument('--notary-profile', default=os.environ.get('NOTARY_PROFILE', ''), help='Existing local Keychain profile')
+    target_arguments(parser)
     args = parser.parse_args()
     runner = Runner()
     output = None
@@ -119,7 +120,7 @@ def main(platform_name):
             require_tools('pkg-config', 'dpkg-query', 'ldconfig', 'ldd', 'getconf', 'readelf')
         output = new_run(args.output, platform_name)
         runner.log = output / 'release.log'
-        selection = select_release(runner)
+        selection = select_release(runner, args.release_tag, args.source_commit)
         write_json(output / 'selection.json', selection)
         version = selection['release']['version']
         project = clone_source(runner, selection, output / 'source')

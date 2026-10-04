@@ -1,7 +1,8 @@
 """Release selection, clean source clones, evidence and existing-release uploads.
 
-These helpers come from the invoking checkout. Application source comes from
-main; the latest published release supplies the version and upload destination.
+These helpers come from the invoking checkout. By default, application source
+comes from main and the latest release supplies the version/upload destination.
+Explicit tag/commit inputs pin both source and release instead.
 """
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,6 +23,8 @@ REPOSITORY = 'schollz/_core'
 REPOSITORY_URL = 'https://github.com/' + REPOSITORY + '.git'
 SOURCE_BRANCH = 'main'
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parent / "scripts"))
+from release_target import target_arguments, validate_target, verify_tag
 VERSION = re.compile(r'v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))')
 SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=no', '-o', 'ConnectTimeout=10']
 PRIVATE_ENV = ('APPLE_ID', 'TEAM_ID', 'APPLE_PASSWORD', 'SIGN_IDENTITY',
@@ -92,9 +96,10 @@ def read_json(path):
     return json.loads(path.read_text(encoding='utf-8-sig'))
 
 
-def latest_release(runner):
+def latest_release(runner, tag=""):
     try:
-        release = json.loads(runner.run('gh', 'api', f'repos/{REPOSITORY}/releases/latest'))
+        endpoint = 'tags/' + tag if tag else 'latest'
+        release = json.loads(runner.run('gh', 'api', f'repos/{REPOSITORY}/releases/{endpoint}'))
     except subprocess.CalledProcessError as error:
         raise ReleaseError('Cannot read the latest published release. Confirm a stable release exists '
                            'and gh is authenticated; the API error is in the log.') from error
@@ -121,8 +126,16 @@ def select_source(runner):
     return {'repository': REPOSITORY, 'ref': ref, 'commit': commit}
 
 
-def select_release(runner):
-    return {'release': latest_release(runner), 'source': select_source(runner)}
+def select_release(runner, release_tag='', source_commit=''):
+    validate_target(release_tag, source_commit)
+    if not release_tag:
+        return {'release': latest_release(runner), 'source': select_source(runner)}
+    verify_tag(runner, REPOSITORY_URL, release_tag, source_commit)
+    release = latest_release(runner, release_tag)
+    if release['tag'] != release_tag:
+        raise ReleaseError('Named release does not match the requested tag')
+    return {'release': release, 'source': {'repository': REPOSITORY,
+            'ref': 'refs/tags/' + release_tag, 'commit': source_commit}}
 
 
 def new_run(parent, platform_name):
@@ -134,7 +147,8 @@ def source_clone_commands(selection, destination):
     commit = selection['source']['commit']
     return [
         ['git', 'clone', '--config', 'core.longpaths=true', '--depth', '1', '--no-checkout',
-         '--branch', SOURCE_BRANCH, REPOSITORY_URL, str(destination)],
+         '--branch', selection['source']['ref'].removeprefix('refs/heads/').removeprefix('refs/tags/'),
+         REPOSITORY_URL, str(destination)],
         # main may advance between selection and either the local or Intel clone.
         # Fetch the recorded commit explicitly so both hosts build the same source.
         ['git', '-C', str(destination), 'fetch', '--depth', '1', 'origin', commit],
@@ -158,9 +172,12 @@ def recheck_release(runner, selection):
     release = selection['release']
     if release.get('repository') != REPOSITORY:
         raise ReleaseError('Unexpected repository in release metadata')
-    current = latest_release(runner)
+    pinned = selection['source']['ref'].startswith('refs/tags/')
+    if pinned:
+        verify_tag(runner, REPOSITORY_URL, release['tag'], selection['source']['commit'])
+    current = latest_release(runner, release['tag'] if pinned else '')
     if any(current[key] != release.get(key) for key in ('id', 'tag', 'version')):
-        raise ReleaseError('Latest release changed during the build; upload aborted, artifacts retained')
+        raise ReleaseError(('Selected' if pinned else 'Latest') + ' release changed during the build; upload aborted, artifacts retained')
 
 
 def asset_prefix(version, platform_name):

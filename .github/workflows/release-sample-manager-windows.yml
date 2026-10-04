@@ -1,9 +1,26 @@
 name: Release _core sample manager - Windows
 
-# Build main using the latest published release's version and upload destination,
-# independently of the workflow ref. This does not create releases.
+# Default: build main for the latest published release. Explicit inputs pin both.
+# This workflow does not create releases.
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional explicit published release tag; requires source_sha'
+        type: string
+        default: ''
+      source_sha:
+        description: 'Optional full commit SHA; requires release_tag'
+        type: string
+        default: ''
+  workflow_call:
+    inputs:
+      release_tag:
+        required: true
+        type: string
+      source_sha:
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -14,7 +31,7 @@ concurrency:
 
 jobs:
   windows:
-    name: Build and sign main on Windows x64
+    name: Build and sign Windows x64
     runs-on: windows-2022
     timeout-minutes: 60
     defaults:
@@ -25,15 +42,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.source_sha || github.sha }}
           path: release-tools
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Resolve latest release version and clone main application source
+      - name: Resolve release and clone application source
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python release-tools/sample-manager/Release/release-windows.py prepare
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          if ($env:RELEASE_TAG -or $env:SOURCE_SHA) {
+            python release-tools/scripts/verify_release_target.py "$env:RELEASE_TAG" "$env:SOURCE_SHA" --published
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            python release-tools/sample-manager/Release/release-windows.py prepare --release-tag "$env:RELEASE_TAG" --source-commit "$env:SOURCE_SHA"
+          } else {
+            python release-tools/sample-manager/Release/release-windows.py prepare
+          }
       - name: Build standalone with static MSVC runtime, without application tests
         run: python release-tools/sample-manager/Release/release-windows.py build
       - name: Prepare pinned portable PowerShell for Azure signing
@@ -71,7 +98,8 @@ jobs:
         run: python release-tools/sample-manager/Release/release-windows.py package
       - uses: actions/upload-artifact@v4
         with:
-          name: sample-manager-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          name: sample-manager-windows-${{ github.run_id }}
+          overwrite: true
           path: ${{ env.CORE_RELEASE_ROOT }}/assets/
           if-no-files-found: error
           retention-days: 14
@@ -87,7 +115,7 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Upload to the same latest release
+    name: Upload to the selected release
     needs: windows
     runs-on: ubuntu-latest
     permissions:
@@ -95,6 +123,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.source_sha || github.sha }}
           path: release-tools
           persist-credentials: false
       - uses: actions/setup-python@v5
@@ -102,7 +131,7 @@ jobs:
           python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
-          name: sample-manager-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          name: sample-manager-windows-${{ github.run_id }}
           path: release-assets
       - name: Recheck release, verify package, upload and verify asset digests
         env:

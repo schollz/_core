@@ -1,5 +1,11 @@
 # Standalone application releases
 
+For the version-bump action and builds pinned to its exact commit, see the
+[repository release guide](../../docs/releases.md). These entrypoints accept
+paired `--release-tag` and `--source-commit` arguments to build that source and
+upload to that named release. Without both arguments, the default behavior
+below remains unchanged.
+
 The release entrypoints build **_core sample manager** from a fresh clone of the
 latest `main` commit of `schollz/_core`, using the latest published stable release
 for the application version and upload destination. Windows runs manually in

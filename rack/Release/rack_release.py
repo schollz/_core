@@ -17,6 +17,8 @@ from pathlib import Path
 from rack_package import package, read_plugin, sha
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parent / 'scripts'))
+from release_target import target_arguments, validate_target, verify_tag
 REPOSITORY = 'schollz/_core'
 REPOSITORY_URL = 'https://github.com/' + REPOSITORY + '.git'
 DEFAULT_REMOTE = 'zns@192.168.0.44'
@@ -76,8 +78,9 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n', encoding='utf-8')
 
 
-def latest_release(runner):
-    release = json.loads(runner.run('gh', 'api', f'repos/{REPOSITORY}/releases/latest',
+def latest_release(runner, tag=""):
+    endpoint = 'tags/' + tag if tag else 'latest'
+    release = json.loads(runner.run('gh', 'api', f'repos/{REPOSITORY}/releases/{endpoint}',
         '--jq', '{id, tag_name, html_url, draft, prerelease, immutable}'))
     if (not release.get('id') or not release.get('tag_name') or release.get('draft')
             or release.get('prerelease') or release.get('immutable')):
@@ -86,7 +89,15 @@ def latest_release(runner):
             'tag': release['tag_name'], 'url': release['html_url']}
 
 
-def select_release(runner):
+def select_release(runner, release_tag='', source_commit=''):
+    validate_target(release_tag, source_commit)
+    if release_tag:
+        verify_tag(runner, REPOSITORY_URL, release_tag, source_commit)
+        release = latest_release(runner, release_tag)
+        if release['tag'] != release_tag:
+            raise ValueError('Named release does not match the requested tag')
+        return {'release': release, 'source': {'repository': REPOSITORY,
+                'ref': 'refs/tags/' + release_tag, 'commit': source_commit}}
     release = latest_release(runner)
     ref = 'refs/heads/main'
     output = runner.run('git', 'ls-remote', '--exit-code', '--heads', REPOSITORY_URL, ref)
@@ -100,7 +111,7 @@ def select_release(runner):
 def clone_commands(selection, source):
     commit = selection['source']['commit']
     return [
-        ['git', 'clone', '--depth', '1', '--no-checkout', '--branch', 'main', REPOSITORY_URL, str(source)],
+        ['git', 'clone', '--depth', '1', '--no-checkout', '--branch', selection['source']['ref'].removeprefix('refs/heads/').removeprefix('refs/tags/'), REPOSITORY_URL, str(source)],
         ['git', '-C', str(source), 'fetch', '--depth', '1', 'origin', commit],
         ['git', '-C', str(source), 'checkout', '--detach', commit],
     ]
@@ -144,8 +155,11 @@ def remote_build_script(directory, selection, jobs):
 
 def publish(runner, selection, assets):
     release = selection['release']
-    if latest_release(runner) != release:
-        raise RuntimeError('Latest release changed during the build; upload aborted, artifacts retained')
+    pinned = selection['source']['ref'].startswith('refs/tags/')
+    if pinned:
+        verify_tag(runner, REPOSITORY_URL, release['tag'], selection['source']['commit'])
+    if latest_release(runner, release['tag'] if pinned else '') != release:
+        raise RuntimeError(('Selected' if pinned else 'Latest') + ' release changed during the build; upload aborted, artifacts retained')
     hashes = {asset.name: sha(asset) for asset in assets}
     runner.run('gh', 'release', 'upload', '--repo', REPOSITORY, '--clobber', '--', release['tag'], *assets)
     verified = assets[0].parent.parent / 'published-verify'
@@ -160,7 +174,7 @@ def publish(runner, selection, assets):
 
 
 def main(platform_name, argv=None):
-    parser = argparse.ArgumentParser(description='Build the Rack plugin from fresh main and upload to the latest release.')
+    parser = argparse.ArgumentParser(description='Build and upload Rack; default to main/latest, or pin a release tag and source commit.')
     remote = platform_name == 'mac-x64'
     if remote:
         parser.add_argument('host', nargs='?', default=DEFAULT_REMOTE)
@@ -168,6 +182,7 @@ def main(platform_name, argv=None):
     parser.add_argument('--jobs', type=int, default=6)
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/releases')
     parser.add_argument('--no-upload', action='store_true')
+    target_arguments(parser)
     args = parser.parse_args(argv)
     runner = Runner()
     output = remote_dir = None
@@ -199,7 +214,7 @@ def main(platform_name, argv=None):
         output = Path(tempfile.mkdtemp(prefix=platform_name + '-', dir=args.output.resolve()))
         runner.log = output / 'release.log'
         runner.write('Release output: ' + str(output))
-        selection = select_release(runner)
+        selection = select_release(runner, args.release_tag, args.source_commit)
         write_json(output / 'selection.json', selection)
         source = output / 'source'
         clone_source(runner, selection, source)

@@ -25,6 +25,7 @@ class FixtureRunner(common.Runner):
     def __init__(self, release):
         super().__init__()
         self.release = release
+        self.latest = None
         self.commands = []
         self.uploaded = []
         self.messages = []
@@ -39,6 +40,8 @@ class FixtureRunner(common.Runner):
         if args[0] == 'git':
             return super().run(*args)
         if args[:3] == ['gh', 'api', f'repos/{common.REPOSITORY}/releases/latest']:
+            return json.dumps(self.latest or self.release)
+        if args[:3] == ['gh', 'api', f"repos/{common.REPOSITORY}/releases/tags/{self.release['tag_name']}"]:
             return json.dumps(self.release)
         if args[:3] == ['gh', 'release', 'upload']:
             self.uploaded = list(map(Path, args[4:args.index('--repo')]))
@@ -177,12 +180,51 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(common.ReleaseError, 'main commit does not contain'):
             common.clone_source(self.runner, selection, self.root / 'clone')
 
+    def pinned_selection(self):
+        self.git('-C', str(self.repository), 'tag', 'v8.0.6', self.source_commit)
+        self.release['tag_name'] = 'v8.0.6'
+        return common.select_release(self.runner, 'v8.0.6', self.source_commit)
+
+    def test_explicit_source_and_upload_ignore_newer_main_and_latest_release(self):
+        selection = self.pinned_selection()
+        self.advance_main()
+        self.runner.latest = {**self.release, 'id': 456, 'tag_name': 'v8.0.7'}
+        project = common.clone_source(self.runner, selection, self.root / 'explicit-clone')
+        self.assertEqual(self.git('-C', str(project), 'rev-parse', 'HEAD'), self.source_commit)
+        output = self.package(selection)
+        common.publish(self.runner, output, 'linux-x86_64')
+        self.assertEqual(selection['source']['ref'], 'refs/tags/v8.0.6')
+        self.assertTrue(all(p.name.startswith('_core-sample-manager-8.0.6-') for p in self.runner.uploaded))
+        upload = next(c for c in self.runner.commands if c[:3] == ['gh', 'release', 'upload'])
+        self.assertEqual(upload[3], 'v8.0.6')
+
+    def test_explicit_inputs_require_pair_and_matching_tag(self):
+        with self.assertRaisesRegex(ValueError, 'together'):
+            common.select_release(self.runner, 'v8.0.6')
+        self.git('-C', str(self.repository), 'tag', 'v8.0.6', self.source_commit)
+        with self.assertRaisesRegex(ValueError, 'does not point'):
+            common.select_release(self.runner, 'v8.0.6', 'a' * 40)
+
+    def test_moved_explicit_tag_blocks_publication(self):
+        selection = self.pinned_selection()
+        output = self.package(selection)
+        new = self.advance_main()
+        self.git('-C', str(self.repository), 'tag', '-f', 'v8.0.6', new)
+        with self.assertRaisesRegex(ValueError, 'does not point'):
+            common.publish(self.runner, output, 'linux-x86_64')
+        self.assertFalse(self.runner.uploaded)
+
     def test_native_entrypoints_build_main_with_release_version(self):
         for platform_name in ('macos-arm64', 'macos-x86_64', 'linux-x86_64'):
-            for no_upload in (False, True):
-                with self.subTest(platform=platform_name, no_upload=no_upload), ExitStack() as stack:
+            for no_upload, pinned in ((False, False), (True, False), (False, True)):
+                with self.subTest(platform=platform_name, no_upload=no_upload, pinned=pinned), ExitStack() as stack:
+                    self.release['tag_name'] = 'v8.0.4'
+                    if pinned:
+                        self.git('-C', str(self.repository), 'tag', '-f', 'v8.0.6', self.source_commit)
+                        self.release['tag_name'] = 'v8.0.6'
+                    version = '8.0.6' if pinned else '8.0.4'
                     runner = FixtureRunner(self.release)
-                    output = self.root / (platform_name + ('-local' if no_upload else '-publish'))
+                    output = self.root / (platform_name + ('-local' if no_upload else '-publish') + ('-pinned' if pinned else ''))
                     output.mkdir()
                     package_versions = []
 
@@ -204,19 +246,28 @@ class ReleaseTests(unittest.TestCase):
                     stack.enter_context(patch.object(native_release, 'retrieve_intel', return_value=None))
                     stack.enter_context(patch.object(native_release.platform, 'system', return_value='Linux' if platform_name.startswith('linux') else 'Darwin'))
                     stack.enter_context(patch.object(native_release.platform, 'machine', return_value='arm64' if platform_name == 'macos-arm64' else 'x86_64'))
-                    stack.enter_context(patch.object(sys, 'argv', ['release'] + (['--no-upload'] if no_upload else [])))
+                    arguments = ['--release-tag', 'v' + version, '--source-commit', self.source_commit] if pinned else []
+                    stack.enter_context(patch.object(sys, 'argv', ['release', *arguments] + (['--no-upload'] if no_upload else [])))
                     self.assertEqual(native_release.main(platform_name), 0, runner.messages)
-                    self.assertEqual(package_versions, ['8.0.4'])
+                    self.assertEqual(package_versions, [version])
                     if platform_name == 'macos-x86_64':
-                        self.assertIn('--branch main', runner.remote_script)
+                        self.assertIn('--branch ' + ('v' + version if pinned else 'main'), runner.remote_script)
                         self.assertIn('checkout --detach ' + self.source_commit, runner.remote_script)
-                        self.assertIn('-DCORE_MANAGER_VERSION=8.0.4', runner.remote_script)
+                        self.assertIn('-DCORE_MANAGER_VERSION=' + version, runner.remote_script)
                     else:
-                        self.assertTrue(any('-DCORE_MANAGER_VERSION=8.0.4' in command for command in runner.commands))
+                        self.assertTrue(any('-DCORE_MANAGER_VERSION=' + version in command for command in runner.commands))
                     self.assertEqual(bool(runner.uploaded), not no_upload)
                     self.assertEqual((output / 'assets/complete.json').exists(), not no_upload)
 
     def test_windows_prepare_build_package_and_publish(self):
+        self.windows_cycle()
+
+    def test_windows_explicit_prepare_build_package_and_publish(self):
+        self.pinned_selection()
+        self.windows_cycle(pinned=True)
+
+    def windows_cycle(self, pinned=False):
+        version = '8.0.6' if pinned else '8.0.4'
         output = self.root / 'windows'
         output.mkdir()
         github_env = self.root / 'github-env'
@@ -227,22 +278,25 @@ class ReleaseTests(unittest.TestCase):
             stack.enter_context(patch.object(windows.platform, 'system', return_value='Windows'))
             stack.enter_context(patch.dict(os.environ, {'GITHUB_ENV': str(github_env), 'RUNNER_TEMP': str(self.root),
                                                         'RUNNER_TOOL_CACHE': str(self.root / 'cache')}))
-            with patch.object(sys, 'argv', ['release-windows', 'prepare']):
+            arguments = ['--release-tag', 'v' + version, '--source-commit', self.source_commit] if pinned else []
+            with patch.object(sys, 'argv', ['release-windows', 'prepare', *arguments]):
                 self.assertEqual(windows.main(), 0, self.runner.messages)
             environment = dict(line.split('=', 1) for line in github_env.read_text().splitlines())
-            self.assertEqual(environment['CORE_RELEASE_VERSION'], '8.0.4')
+            self.assertEqual(environment['CORE_RELEASE_VERSION'], version)
             self.advance_main()
+            if pinned:
+                self.runner.latest = {**self.release, 'id': 999, 'tag_name': 'v8.0.7'}
             stack.enter_context(patch.dict(os.environ, environment))
             for operation in ('build', 'package'):
                 with patch.object(sys, 'argv', ['release-windows', operation]):
                     self.assertEqual(windows.main(), 0, self.runner.messages)
             for command in (command for command in self.runner.commands if command[0] == 'powershell'):
-                self.assertEqual(command[command.index('-Version') + 1], '8.0.4')
+                self.assertEqual(command[command.index('-Version') + 1], version)
             with patch.object(sys, 'argv', ['release-windows', 'publish', '--assets', str(output / 'assets')]):
                 self.assertEqual(windows.main(), 0, self.runner.messages)
-            report = common.read_json(output / 'assets/_core-sample-manager-8.0.4-windows-x64-manifest.json')
+            report = common.read_json(output / f'assets/_core-sample-manager-{version}-windows-x64-manifest.json')
             self.assertEqual(report['source']['commit'], self.source_commit)
-            self.assertEqual(report['version'], '8.0.4')
+            self.assertEqual(report['version'], version)
             self.assertEqual(len(self.runner.uploaded), 3)
 
 
