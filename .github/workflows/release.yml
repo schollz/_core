@@ -24,6 +24,7 @@ jobs:
       contents: write
     outputs:
       version: ${{ steps.prepare.outputs.version }}
+      rack_version: ${{ steps.prepare.outputs.rack_version }}
       release_tag: ${{ steps.prepare.outputs.release_tag }}
       source_sha: ${{ steps.prepare.outputs.source_sha }}
     steps:
@@ -90,6 +91,7 @@ jobs:
       - name: Write release summary
         env:
           RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+          RACK_VERSION: ${{ needs.prepare.outputs.rack_version }}
           RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
           PREPARE_RESULT: ${{ needs.prepare.result }}
@@ -100,6 +102,7 @@ jobs:
         run: |
           {
             echo "Version: $RELEASE_VERSION"
+            echo "Rack plugin version: $RACK_VERSION"
             echo "Commit: $SOURCE_SHA"
             echo "Tag: $RELEASE_TAG"
             echo "Preparation: $PREPARE_RESULT"

@@ -37,6 +37,10 @@ class VersionFixture(unittest.TestCase):
             path = self.root / name
             path.write_text(update_version.version_pattern(current).sub('8.0.5', path.read_text()))
         (self.root / 'VERSION').write_text('8.0.5\n')
+        plugin_path = self.root / 'rack/plugin.json'
+        plugin = json.loads(plugin_path.read_text())
+        plugin['version'] = '2.0.0'
+        plugin_path.write_text(json.dumps(plugin, indent=2) + '\n')
         git(self.root, 'add', '.')
         git(self.root, '-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture')
 
@@ -53,6 +57,7 @@ class VersionTests(VersionFixture):
         update_version.update(self.root, '8.0.6')
         update_version.update(self.root, '8.1.0')
         self.assertEqual((self.root / 'VERSION').read_text(), '8.1.0\n')
+        self.assertEqual(json.loads((self.root / 'rack/plugin.json').read_text())['version'], '2.0.2')
         for name in update_version.CURRENT_PATHS:
             text = (self.root / name).read_text()
             self.assertIn('8.1.0', text)
@@ -78,9 +83,10 @@ class VersionTests(VersionFixture):
         self.add('test/rack/test_release.py', 'historical fixture v8.0.5\n')
         self.add('dependency.txt', 'SDK 18.0.5\nprevious release v8.0.4\n')
         self.add('binary.dat', '\0v8.0.5\n')
-        plugin = (self.root / 'rack/plugin.json').read_bytes()
+        plugin = json.loads((self.root / 'rack/plugin.json').read_text())
         update_version.update(self.root, '8.0.6')
-        self.assertEqual((self.root / 'rack/plugin.json').read_bytes(), plugin)
+        plugin['version'] = '2.0.1'
+        self.assertEqual(json.loads((self.root / 'rack/plugin.json').read_text()), plugin)
         self.assertEqual((self.root / 'test/rack/test_release.py').read_text(), 'historical fixture v8.0.5\n')
         self.assertIn('18.0.5', (self.root / 'dependency.txt').read_text())
 
@@ -96,10 +102,26 @@ class VersionTests(VersionFixture):
         update_version.update(self.root, '8.0.6')
         readme = (self.root / 'README.md').read_text()
         for _, platform in update_version.RACK_PLATFORMS:
-            self.assertIn('releases/download/v8.0.6/OtherPlugin-2.3.4-' + platform + '.zip', readme)
+            self.assertIn('releases/download/v8.0.6/OtherPlugin-2.3.5-' + platform + '.zip', readme)
         for platform in ('macos-arm64', 'macos-x86_64', 'windows-x64', 'linux-x86_64'):
             self.assertIn('releases/download/v8.0.6/_core-sample-manager-8.0.6-' + platform, readme)
         self.assertIn('releases/download/v8.0.6/ectocore_v8.0.6.uf2', readme)
+
+    def test_rack_revision_increments_without_rollover_or_major_change(self):
+        self.assertEqual(update_version.next_rack_version('2.0.0'), '2.0.1')
+        self.assertEqual(update_version.next_rack_version('2.7.99'), '2.7.100')
+        for version in ('1.0.0', '3.0.0', '2.00.1', '2.0.01', '2.0.0-beta', '2.0'):
+            with self.subTest(version=version), self.assertRaises(ValueError):
+                update_version.next_rack_version(version)
+
+    def test_rack_bump_keeps_manifest_layout_and_downloads_in_sync(self):
+        path = self.root / 'rack/plugin.json'
+        before = path.read_text()
+        update_version.update(self.root, '8.0.6')
+        self.assertEqual(path.read_text(), before.replace('"version": "2.0.0"', '"version": "2.0.1"'))
+        readme = (self.root / 'README.md').read_text()
+        for _, platform in update_version.RACK_PLATFORMS:
+            self.assertIn('InfiniteDigits-2.0.1-' + platform + '.zip', readme)
 
     def test_missing_table_or_current_reference_fails(self):
         path = self.root / 'README.md'
@@ -126,10 +148,13 @@ class GitReleaseTests(VersionFixture):
     def test_commit_and_tag_identify_same_updated_source(self):
         result = self.prepare()
         self.assertEqual(result['version'], '8.0.6')
+        self.assertEqual(result['rack_version'], '2.0.1')
         self.assertEqual(git(self.remote, 'rev-parse', 'main'), result['source_sha'])
         self.assertEqual(git(self.remote, 'rev-parse', 'v8.0.6'), result['source_sha'])
         self.assertEqual(git(self.root, 'log', '-1', '--format=%s'), 'chore: release v8.0.6')
         self.assertEqual(git(self.remote, 'show', 'main:VERSION'), '8.0.6')
+        plugin = json.loads(git(self.remote, 'show', 'v8.0.6:rack/plugin.json'))
+        self.assertEqual(plugin['version'], '2.0.1')
         self.assertEqual(git(self.root, 'status', '--porcelain'), '')
 
     def test_existing_tag_rejected_without_commit(self):

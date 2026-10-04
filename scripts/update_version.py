@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Update current release references without touching independent versions."""
+"""Update release references and increment the Rack plugin revision."""
 import argparse
 import json
 import re
@@ -28,8 +28,9 @@ RACK_PLATFORMS = (
 )
 
 
-def rack_downloads(root, version):
-    plugin = json.loads((root / 'rack/plugin.json').read_text())
+def rack_downloads(root, version, plugin=None):
+    if plugin is None:
+        plugin = json.loads((root / 'rack/plugin.json').read_text())
     if not re.fullmatch(r'[A-Za-z0-9_-]+', plugin['slug']):
         raise ValueError('Invalid Rack plugin slug')
     if not re.fullmatch(r'2\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.-]+)?', plugin['version']):
@@ -40,6 +41,13 @@ def rack_downloads(root, version):
         url = f'https://github.com/schollz/_core/releases/download/v{version}/{filename}'
         rows.append(f"| {label} | [v{plugin['version']} ZIP]({url}) |")
     return '\n'.join([*rows, RACK_END])
+
+
+def next_rack_version(version):
+    match = re.fullmatch(r'2\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', version)
+    if not match:
+        raise ValueError('Automatic Rack bumps require a stable 2.MINOR.REVISION version')
+    return f'2.{match.group(1)}.{int(match.group(2)) + 1}'
 
 
 def version_pattern(version):
@@ -53,6 +61,15 @@ def planned_updates(root, version):
         raise ValueError('New version must be greater than the current version')
     pattern = version_pattern(old)
     updates = {'VERSION': version + '\n'}
+    plugin_text = (root / 'rack/plugin.json').read_text()
+    plugin = json.loads(plugin_text)
+    rack_version = next_rack_version(plugin['version'])
+    # Preserve the manifest's layout and all other fields.
+    updates['rack/plugin.json'] = re.sub(
+        r'("version"\s*:\s*)"' + re.escape(plugin['version']) + r'"',
+        lambda match: match.group(1) + json.dumps(rack_version), plugin_text, count=1,
+    )
+    plugin['version'] = rack_version
     for path in CURRENT_PATHS:
         text = (root / path).read_text()
         if not pattern.search(text):
@@ -63,7 +80,7 @@ def planned_updates(root, version):
         raise ValueError('README must contain one marked Rack downloads table')
     before, rest = readme.split(RACK_START)
     _, after = rest.split(RACK_END)
-    updates['README.md'] = before + rack_downloads(root, version) + after
+    updates['README.md'] = before + rack_downloads(root, version, plugin) + after
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=root).decode().split('\0')
     missed = []
     for path in tracked:
@@ -101,6 +118,7 @@ def main():
     except (ValueError, OSError, subprocess.CalledProcessError) as error:
         parser.exit(1, str(error) + '\n')
     print(('Would update' if args.check else 'Updated') + ': ' + ', '.join(updates))
+    print('Rack version: ' + json.loads(updates['rack/plugin.json'])['version'])
 
 
 if __name__ == '__main__':

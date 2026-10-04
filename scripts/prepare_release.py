@@ -49,7 +49,8 @@ def prepare(root, version, repository, check_release=release_absent, before_push
         before_push()
     # A non-fast-forward main or an existing tag rejects BOTH refs.
     git(root, 'push', '--atomic', 'origin', 'HEAD:refs/heads/main', 'refs/tags/' + tag)
-    return {'version': version, 'release_tag': tag, 'source_sha': commit}
+    return {'version': version, 'release_tag': tag, 'source_sha': commit,
+            'rack_version': json.loads(updates['rack/plugin.json'])['version']}
 
 
 def main():

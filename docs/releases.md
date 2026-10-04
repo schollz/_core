@@ -9,14 +9,17 @@ gh workflow run release.yml --repo schollz/_core --ref main -f version=NEW_VERSI
 
 The action updates the current version references and download links, commits
 directly to `main`, and atomically pushes that commit and its `vNEW_VERSION` tag.
-It publishes firmware first, then builds and uploads the Windows sample manager
-and Rack plugin in parallel. The run summary records the tag, exact source SHA,
-release link, and each build's result. Copy the tag and SHA for your manual builds.
+It also increments the last component of the Rack plugin version once per new
+release (for example, `2.0.0` becomes `2.0.1`) and updates all four Rack download
+links in that same commit. It publishes firmware first, then builds and uploads
+the Windows sample manager and Rack plugin in parallel. The run summary records
+the tag, exact source SHA, release link, and each build's result. Copy the tag and SHA for your manual builds.
 
 `VERSION` holds the current firmware/sample-manager release version. Versions
 must increase, use three integer components without leading zeros, and keep
-each component at most 255. Rack keeps the independent `2.x` version from its
-plugin manifest. The updater regenerates the README Rack links from that manifest.
+each component at most 255. Rack keeps its own `2.x` compatibility version:
+the updater increments its revision in the plugin manifest without changing
+the major or minor component, then regenerates the README Rack links from it.
 Historical fixtures and independently versioned dependencies remain separate.
 If another tracked file still contains the old current version, the update fails
 and names the file; classify it in the updater before retrying.
@@ -89,6 +92,8 @@ gh workflow run release-rack-windows.yml --repo schollz/_core --ref main -f rele
 The Windows Run workflow forms offer the same optional inputs. Leaving both
 empty retains their standalone defaults. A retry replaces only that platform's
 matching assets; it creates no version commit or tag and never moves a tag.
+Retries and manual package builds reuse the committed Rack version without
+incrementing it again.
 Sample-manager diagnostics and packaged Windows assets remain in workflow
 artifacts for 14 days. Download/upload verification must pass before a job reports
 success. See the [sample-manager release guide](../sample-manager/Release/README.md)
