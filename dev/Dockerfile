@@ -1,7 +1,8 @@
 # docker build --progress=plain -t coretest .
 
 FROM ubuntu:24.10
-ENV PICO_SDK_PATH /pico-sdk
+ENV PICO_SDK_PATH=/workspace/pico-sdk
+ENV PICO_EXTRAS_PATH=/workspace/pico-extras
 
 RUN apt-get update && \
     apt-get install -y \
@@ -37,10 +38,6 @@ RUN wget https://go.dev/dl/go1.21.1.linux-amd64.tar.gz && \
     rm go1.21.1.linux-amd64.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 
-RUN git clone --recurse-submodules https://github.com/raspberrypi/pico-sdk.git /pico-sdk --branch 1.5.1
-
-RUN sed -i 's/OSAL_TIMEOUT_WAIT_FOREVER/OSAL_TIMEOUT_NORMAL/g' /pico-sdk/lib/tinyusb/src/tusb.c
-
 COPY --from=ghcr.io/astral-sh/uv:0.4.17 /uv /bin/uv
 ENV LIBRARY_PATH=/lib:/usr/lib
 RUN uv version
@@ -53,6 +50,7 @@ RUN uv pip install -r requirements.txt
 ENV VIRTUAL_ENV=/workspace/.venv
 ENV PATH="/workspace/.venv/bin:${PATH}"
 
+# Use the Makefile's pinned SDK/extras and the shared CMake TinyUSB patch.
 RUN make zeptocore
 
 RUN echo "H"

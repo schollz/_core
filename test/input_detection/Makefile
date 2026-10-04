@@ -10,7 +10,7 @@ pico-sdk:
 	@if [ ! -d "pico-sdk" ]; then \
 		echo "Cloning pico-sdk..."; \
 		git clone https://github.com/raspberrypi/pico-sdk && \
-		cd pico-sdk && git checkout 2.1.1 && \
+		cd pico-sdk && git checkout 2.3.1 && \
 		git submodule update --init --recursive; \
 	else \
 		echo "pico-sdk already exists"; \
