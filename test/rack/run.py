@@ -16,6 +16,10 @@ for name in ['engine','clock','tempo']:
     subprocess.run([clang,*flags,'-I'+str(root/'lib/core_engine'),str(out/'engine.o'),str(root/'lib/pcg_basic.c'),str(root/f'test/rack/{name}.c'),'-lm','-o',str(out/f'{name}-test')],check=True)
     # The tempo matrix simulates long low-BPM chains, including under ASan.
     subprocess.run([str(out/f'{name}-test')],check=True,timeout=120 if name=='tempo' else 45)
+# Include the generated firmware to observe same-slice phase publications and
+# establish private jump/reverse states without adding a public engine API.
+subprocess.run([clang,*flags,'-I'+str(out),'-I'+str(root/'lib/core_engine'),str(root/'test/rack/variable_splice.c'),str(root/'lib/pcg_basic.c'),'-lm','-o',str(out/'variable-splice-test')],check=True)
+subprocess.run([str(out/'variable-splice-test')],check=True,timeout=45)
 # Exercise the real asynchronous storage worker against generated card exports.
 import tempfile, hashlib
 from fixtures import create

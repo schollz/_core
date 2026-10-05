@@ -18,8 +18,9 @@ static void ecto_emit_trigger(void) {
 #endif
 
 bool __not_in_flash_func(timer_step)() {
+  const bool clock_input_stopped = clock_input_should_stop(time_us_32());
 #ifdef INCLUDE_ECTOCORE
-  const bool clock_output_stopped = clock_input_should_stop(time_us_32());
+  const bool clock_output_stopped = clock_input_stopped;
   if (clock_output_stopped) {
     // Release a high clock even when media/transport checks return early.
     gpio_put(GPIO_CLOCK_OUT, 0);
@@ -29,6 +30,19 @@ bool __not_in_flash_func(timer_step)() {
   if(!audio_media_timer_allowed() || !metadata_ready(sel_bank_cur))return true;
   if (!fil_is_open) {
     return true;
+  }
+  SampleInfo *sample_info =
+      banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO];
+  const bool variable_splicing = sample_info->splice_variable != 0;
+  static unsigned splice_timing_generation;
+  static uint8_t splice_timing_bank = 255, splice_timing_sample = 255;
+  if (splice_timing_generation != metadata_generation() ||
+      splice_timing_bank != sel_bank_cur || splice_timing_sample != sel_sample_cur) {
+    splice_timing_generation = metadata_generation();
+    splice_timing_bank = sel_bank_cur;
+    splice_timing_sample = sel_sample_cur;
+    bpm_timer_counter_last = bpm_timer_counter;
+    variable_splice_reset = VARIABLE_SPLICE_RESET_NONE;
   }
   static unsigned transient_metadata_generation;
   if(transient_metadata_generation!=metadata_generation()) {
@@ -50,6 +64,8 @@ bool __not_in_flash_func(timer_step)() {
     playback_restarted = true;
     bpm_timer_counter = -1;
     bpm_timer_counter_last = bpm_timer_counter;
+    variable_splice_reset = variable_splicing ? VARIABLE_SPLICE_RESET_READY :
+                                               VARIABLE_SPLICE_RESET_NONE;
     beat_total = -1;
     key_jump_debounce = 0;
     dub_step_break = -1;
@@ -409,12 +425,10 @@ bool __not_in_flash_func(timer_step)() {
                      ->sample[sel_sample_cur]
                      .snd[FILEZERO]
                      ->play_mode != PLAY_NORMAL) {
-  } else if (((!banks[sel_bank_cur]
-                    ->sample[sel_sample_cur]
-                    .snd[FILEZERO]
-                    ->one_shot &&
-               !clock_in_do) ||
-              (clock_in_ready && clock_in_do))
+  } else if (((!sample_info->one_shot && !clock_in_do) ||
+              (clock_in_ready && clock_in_do) ||
+              (variable_splicing && (clock_in_do || transport_restarted_this_step)))
+             && (!variable_splicing || !clock_input_stopped)
              // TODO if splice_trigger is 0, but we are sequencing, then need to
              // continue here!
 
@@ -434,84 +448,35 @@ bool __not_in_flash_func(timer_step)() {
       retrig_filter_original = 0;
     }
 
-    if (banks[sel_bank_cur]
-            ->sample[sel_sample_cur]
-            .snd[FILEZERO]
-            ->splice_variable > 0) {
-      // calculate the size of this slice in pulses
-      float num_slices = (float)(banks[sel_bank_cur]
-                                     ->sample[sel_sample_cur]
-                                     .snd[FILEZERO]
-                                     ->slice_stop[banks[sel_bank_cur]
-                                                      ->sample[sel_sample_cur]
-                                                      .snd[FILEZERO]
-                                                      ->slice_current] -
-                                 banks[sel_bank_cur]
-                                     ->sample[sel_sample_cur]
-                                     .snd[FILEZERO]
-                                     ->slice_start[banks[sel_bank_cur]
-                                                       ->sample[sel_sample_cur]
-                                                       .snd[FILEZERO]
-                                                       ->slice_current]);
-      num_slices =
-          round(num_slices /
-                (88200.0 * (banks[sel_bank_cur]
-                                ->sample[sel_sample_cur]
-                                .snd[FILEZERO]
-                                ->num_channels +
-                            1)) *
-                banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->bpm /
-                60.0 * 192.0);
-      do_splice_trigger =
-          (bpm_timer_counter - bpm_timer_counter_last) >= num_slices;
-      if (do_splice_trigger) {
-        // printf("do_splice_trigger: %d %2.0f %d %2.0f\n",
-        //        banks[sel_bank_cur]
-        //            ->sample[sel_sample_cur]
-        //            .snd[FILEZERO]
-        //            ->slice_current,
-        //        num_slices, bpm_timer_counter, (float)bpm_timer_counter_last);
-        bpm_timer_counter_last = bpm_timer_counter;
-      }
-
-      // In variable mode with clock input, check if enough pulses accumulated
-      if (clock_in_do && clock_in_ready) {
-        // Calculate expected pulses for this slice based on num_slices
-        // num_slices is in timer ticks (192 per quarter note)
-        // splice_trigger is pulses per quarter note (typically 24)
-        float expected_pulses = num_slices *
-                                (float)banks[sel_bank_cur]
-                                    ->sample[sel_sample_cur]
-                                    .snd[FILEZERO]
-                                    ->splice_trigger /
-                                192.0f;
-        int32_t pulses_accumulated = clock_in_beat_total - clock_in_beat_last;
-
-        if (pulses_accumulated < (int32_t)roundf(expected_pulses)) {
-          // Not enough pulses accumulated for this slice yet
-          should_skip_clock_pulse = true;
-        } else {
-          // Enough pulses accumulated, allow trigger and reset counter
-          should_skip_clock_pulse = false;
-          clock_in_beat_last = clock_in_beat_total;
-        }
-      }
-    } else {
-      // Not in variable mode, reset the skip flag
-      should_skip_clock_pulse = false;
+    const bool variable_reset = variable_splicing &&
+        (transport_restarted_this_step ||
+         variable_splice_reset == VARIABLE_SPLICE_RESET_READY);
+    if (variable_splicing) {
+      // Incoming edges set tempo; individual slice deadlines can fall anywhere
+      // between them. Consume the edge without selecting a fixed-grid slice.
+      clock_in_ready = false;
+      do_splice_trigger = variable_reset ||
+          (bpm_timer_counter - bpm_timer_counter_last >=
+           variable_splice_ticks(sample_info));
     }
 
     if (sequencerhandler[0].playing) {
       // already done
-    } else if (((clock_in_do && clock_in_ready && !should_skip_clock_pulse) ||
-                do_splice_trigger)) {
+    } else if ((clock_in_do && clock_in_ready) || do_splice_trigger) {
       clock_in_ready = false;
-      should_skip_clock_pulse = false;
       mem_use = false;
       // keep to the beat
       bool should_update_phase = true;
-      if (fil_is_open && debounce_quantize == 0) {
-        if (clock_in_do) {
+      if (variable_splicing &&
+          (key_jump_debounce > 0 || sf->fx_active[FX_SCRATCH])) {
+        // Leave both the logical beat and its deadline alone while a phase
+        // publication is suppressed, rather than skipping slices on retry.
+        if (key_jump_debounce > 0) key_jump_debounce--;
+      } else if (fil_is_open && debounce_quantize == 0) {
+        if (variable_reset) {
+          beat_current = 0;
+          beat_did_activate = true;
+        } else if (clock_in_do && !variable_splicing) {
           uint16_t splice_trigger_val = banks[sel_bank_cur]
                                             ->sample[sel_sample_cur]
                                             .snd[FILEZERO]
@@ -559,12 +524,7 @@ bool __not_in_flash_func(timer_step)() {
                                             ->sample[sel_sample_cur]
                                             .snd[FILEZERO]
                                             ->slice_num;
-        } else if (sf->stay_in_sync &&
-                   // not variable mode
-                   !banks[sel_bank_cur]
-                           ->sample[sel_sample_cur]
-                           .snd[FILEZERO]
-                           ->splice_variable > 0) {
+        } else if (sf->stay_in_sync && !variable_splicing) {
           beat_current = beat_total % banks[sel_bank_cur]
                                           ->sample[sel_sample_cur]
                                           .snd[FILEZERO]
@@ -581,7 +541,7 @@ bool __not_in_flash_func(timer_step)() {
             beat_current = banks[sel_bank_cur]
                                ->sample[sel_sample_cur]
                                .snd[FILEZERO]
-                               ->slice_num;
+                               ->slice_num - (variable_splicing ? 1 : 0);
           } else {
             beat_current += (phase_forward * 2 - 1);
           }
@@ -599,16 +559,7 @@ bool __not_in_flash_func(timer_step)() {
                                          .snd[FILEZERO]
                                          ->slice_num;
                  i++) {
-              uint16_t j = beat_current + i;
-              if (j > banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[FILEZERO]
-                          ->slice_num) {
-                j -= banks[sel_bank_cur]
-                         ->sample[sel_sample_cur]
-                         .snd[FILEZERO]
-                         ->slice_num;
-              }
+              uint16_t j = (beat_current + i) % sample_info->slice_num;
               if (banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
                           .snd[FILEZERO]
@@ -628,16 +579,7 @@ bool __not_in_flash_func(timer_step)() {
                                          .snd[FILEZERO]
                                          ->slice_num;
                  i++) {
-              uint16_t j = beat_current + i;
-              if (j > banks[sel_bank_cur]
-                          ->sample[sel_sample_cur]
-                          .snd[FILEZERO]
-                          ->slice_num) {
-                j -= banks[sel_bank_cur]
-                         ->sample[sel_sample_cur]
-                         .snd[FILEZERO]
-                         ->slice_num;
-              }
+              uint16_t j = (beat_current + i) % sample_info->slice_num;
               if (banks[sel_bank_cur]
                           ->sample[sel_sample_cur]
                           .snd[FILEZERO]
@@ -664,7 +606,8 @@ bool __not_in_flash_func(timer_step)() {
             !sf->fx_active[FX_SCRATCH]) {
           // printf("[main] beat_current: %d, beat_total: %d\n", beat_current,
           //        beat_total);
-          do_update_phase_from_beat_current();
+          if (do_update_phase_from_beat_current() && variable_reset)
+            variable_splice_reset = VARIABLE_SPLICE_RESET_NONE;
         } else {
           if (key_jump_debounce > 0) {
             key_jump_debounce--;
