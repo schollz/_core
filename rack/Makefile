@@ -40,7 +40,10 @@ build/pcg.o: ../lib/pcg_basic.c
 test:
 	$(PYTHON) ../test/rack/run.py
 
-.PHONY: test install
+# Keep the SDK's install recipe, including its native packaging and user path.
+install-vcv: install
+
+.PHONY: test install install-vcv
 endif
 
 .PHONY: $(RELEASE_GOALS)

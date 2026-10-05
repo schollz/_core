@@ -522,7 +522,7 @@ rack-release-linux:
 	$(MAKE) -C rack release-linux
 
 # Package and install the VCV Rack plugin using the SDK's platform-specific path.
-.PHONY: install
-install:
-	$(MAKE) -C rack $(if $(RACK_DIR),RACK_DIR="$(abspath $(RACK_DIR))") install
+.PHONY: install-vcv
+install-vcv:
+	$(MAKE) -C rack $(if $(RACK_DIR),RACK_DIR="$(abspath $(RACK_DIR))") install-vcv
 	@echo "Installed Infinite Digits EZEPTOCORE. Restart VCV Rack to load the plugin."
