@@ -168,7 +168,7 @@ void __not_in_flash_func(input_handling)()
   uint8_t sample_selection_index = 0;
 
   // debug test
-  printStringWithDelay("zv8.0.5");
+  printStringWithDelay("zv8.0.6");
 
   // initialize the resonsant filter
   global_filter_index = 12;
@@ -293,7 +293,7 @@ void __not_in_flash_func(input_handling)()
     {
       if (char_input == 118)
       {
-        send_text_as_sysex("version=v8.0.5");
+        send_text_as_sysex("version=v8.0.6");
       }
     }
 

@@ -61,10 +61,10 @@ Download the best version for your system:
 
 | Platform | Download |
 | --- | --- |
-| macOS (Apple Silicon) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-macos-arm64.zip) |
-| macOS (Intel) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-macos-x86_64.zip) |
-| Windows (x64) | [v8.0.5 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-windows-x64.zip) |
-| Linux (x86_64) | [v8.0.5 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.5/_core-sample-manager-8.0.5-linux-x86_64.tar.gz) |
+| macOS (Apple Silicon) | [v8.0.6 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/_core-sample-manager-8.0.6-macos-arm64.zip) |
+| macOS (Intel) | [v8.0.6 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/_core-sample-manager-8.0.6-macos-x86_64.zip) |
+| Windows (x64) | [v8.0.6 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/_core-sample-manager-8.0.6-windows-x64.zip) |
+| Linux (x86_64) | [v8.0.6 tar.gz](https://github.com/schollz/_core/releases/download/v8.0.6/_core-sample-manager-8.0.6-linux-x86_64.tar.gz) |
 
 
 The managers' **Start tempo** setting lets every hardware model start at a fixed
@@ -88,10 +88,10 @@ packages are uploaded manually, so their links may await an upload after a relea
 <!-- rack-downloads:start -->
 | Platform | Download |
 | --- | --- |
-| macOS (Apple Silicon) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-mac-arm64.zip) |
-| macOS (Intel) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-mac-x64.zip) |
-| Windows (x64) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-win-x64.zip) |
-| Linux (x86_64) | [v2.0.0 ZIP](https://github.com/schollz/_core/releases/download/v8.0.5/InfiniteDigits-2.0.0-lin-x64.zip) |
+| macOS (Apple Silicon) | [v2.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/InfiniteDigits-2.0.1-mac-arm64.zip) |
+| macOS (Intel) | [v2.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/InfiniteDigits-2.0.1-mac-x64.zip) |
+| Windows (x64) | [v2.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/InfiniteDigits-2.0.1-win-x64.zip) |
+| Linux (x86_64) | [v2.0.1 ZIP](https://github.com/schollz/_core/releases/download/v8.0.6/InfiniteDigits-2.0.1-lin-x64.zip) |
 <!-- rack-downloads:end -->
 
 ## zeptocore
@@ -113,7 +113,7 @@ The firmware for the zeptocore is written in C, and instructions for building it
 
 | Normal | Low latency | Visualizer |
 | --- | --- | --- |
-| [v8.0.5 UF2](https://github.com/schollz/_core/releases/download/v8.0.5/zeptocore_v8.0.5.uf2) | [v8.0.5 UF2](https://github.com/schollz/_core/releases/download/v8.0.5/zeptocore_v8.0.5_low_latency.uf2) | [v8.0.5 UF2](https://github.com/schollz/_core/releases/download/v8.0.5/zeptocore_v8.0.5_visualizer.uf2) |
+| [v8.0.6 UF2](https://github.com/schollz/_core/releases/download/v8.0.6/zeptocore_v8.0.6.uf2) | [v8.0.6 UF2](https://github.com/schollz/_core/releases/download/v8.0.6/zeptocore_v8.0.6_low_latency.uf2) | [v8.0.6 UF2](https://github.com/schollz/_core/releases/download/v8.0.6/zeptocore_v8.0.6_visualizer.uf2) |
 
 Normal suits most uses; low latency reduces available FX bandwidth. Choose visualizer firmware to use the visualizer below.
 
@@ -154,12 +154,12 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                            | Low Latency                                                                                                           |
 | ---------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ezeptocore_v8.0.5.uf2)*                | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ezeptocore_v8.0.5_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ezeptocore_v8.0.5_no_overclocking.uf2) | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ezeptocore_v8.0.5_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ezeptocore_v8.0.6.uf2)*                | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ezeptocore_v8.0.6_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ezeptocore_v8.0.6_no_overclocking.uf2) | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ezeptocore_v8.0.6_no_overclocking_low_latency.uf2) |
 
 *default firmware
 
-For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.5 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.5/ezeptocore_v8.0.5_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.6 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.6/ezeptocore_v8.0.6_visualizer.uf2) (normal latency, overclocked).
 
 ### diy
 
@@ -194,10 +194,10 @@ For latency, normal latency will work for most, but choose low if you encounter 
 
 |                  | Normal Latency                                                                                          | Low Latency                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Overclocking     | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ectocore_v8.0.5.uf2)*                | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ectocore_v8.0.5_low_latency.uf2)                 |
-| Non-Overclocking | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ectocore_v8.0.5_no_overclocking.uf2) | [v8.0.5](https://github.com/schollz/_core/releases/download/v8.0.5/ectocore_v8.0.5_no_overclocking_low_latency.uf2) |
+| Overclocking     | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ectocore_v8.0.6.uf2)*                | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ectocore_v8.0.6_low_latency.uf2)                 |
+| Non-Overclocking | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ectocore_v8.0.6_no_overclocking.uf2) | [v8.0.6](https://github.com/schollz/_core/releases/download/v8.0.6/ectocore_v8.0.6_no_overclocking_low_latency.uf2) |
 
-For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.5 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.5/ectocore_v8.0.5_visualizer.uf2) (normal latency, overclocked).
+For the [visualizer](https://shop.infinitedigits.co/guides/sample-manager/#use-the-visualizer), download the [v8.0.6 visualizer UF2](https://github.com/schollz/_core/releases/download/v8.0.6/ectocore_v8.0.6_visualizer.uf2) (normal latency, overclocked).
 
 
 ### diy
