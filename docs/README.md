@@ -79,6 +79,7 @@ Run the relevant native suites after building the generated headers:
 .venv/bin/python test/audio_source/run.py
 .venv/bin/python test/dsp_loops/run.py
 .venv/bin/python test/midi/run.py
+.venv/bin/python test/rack/run.py --sanitize address,undefined
 ```
 
 These runners invoke host `cc`/`c++` with sanitizers. The FatFs runner uses GNU
@@ -194,6 +195,11 @@ generations. Every open must attach a current-mount map because FatFs clears
   controls/fixtures, next-file preparation, and extra output buffering default off.
 - Clock restart correction and wake default on for the Ectocore/Ezeptocore path;
   immediate wake is limited to the 256-frame core-1 worker configuration.
+- Variable splicing uses each selected slice's duration on the 192 PPQN timer,
+  including between external 2 PPQN clock edges. Clock input supplies tempo and
+  restart synchronization; the fixed splice grid does not determine variable
+  slice timing. TAP+MODE preserves its nearest-clock-edge reset behavior. The
+  shared-engine tests cover uneven slices, source formats, resets and clock loss.
 - The same series also fixes the pitch/retrigger source-buffer overflow and
   optimizes delay/filter processing. See the documents below for each change.
 

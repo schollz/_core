@@ -273,7 +273,6 @@ void midi_timing() {
   if (midi_timing_count % (24 * MIDI_RESET_EVERY_BEAT) == 0) {
     // reset
     clock_in_beat_total = -1;
-    clock_in_beat_last = -1;
   }
   if (midi_timing_count % (midi_timing_modulus / MIDI_CLOCK_MULTIPLIER) == 0) {
     // soft sync

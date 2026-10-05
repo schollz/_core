@@ -1586,13 +1586,17 @@ void __not_in_flash_func(input_handling)() {
                 // the next clock is going to be the first beat
                 // reset it to -1, so that when it increments it will be at 0
                 clock_in_beat_total = -1;
-                clock_in_beat_last = -1;
+                if (banks[sel_bank_cur]->sample[sel_sample_cur]
+                        .snd[FILEZERO]->splice_variable)
+                  variable_splice_reset = VARIABLE_SPLICE_RESET_CLOCK;
               } else {
                 // we are in the first half
                 // the next clock is going to be the second beat
                 // reset it to 0, so that when it increments it will be at 1
                 clock_in_beat_total = 0;
-                clock_in_beat_last = 0;
+                if (banks[sel_bank_cur]->sample[sel_sample_cur]
+                        .snd[FILEZERO]->splice_variable)
+                  variable_splice_reset = VARIABLE_SPLICE_RESET_READY;
               }
             } else {
               // reset tempo to the tempo of the current sample

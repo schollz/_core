@@ -229,8 +229,13 @@ bool clock_input_absent_zeptocore = false;
 bool clock_in_ready = false;
 uint8_t clock_in_activator = 0;
 int32_t clock_in_beat_total = 0;
-int32_t clock_in_beat_last = 0;
-bool should_skip_clock_pulse = false;
+// Pattern reset requests are separate from ordinary tempo clock edges.
+enum {
+  VARIABLE_SPLICE_RESET_NONE,
+  VARIABLE_SPLICE_RESET_READY,
+  VARIABLE_SPLICE_RESET_CLOCK
+};
+volatile uint8_t variable_splice_reset = VARIABLE_SPLICE_RESET_NONE;
 volatile uint32_t clock_in_diff_2x = 0;
 volatile uint32_t clock_in_last_time = 0;
 uint32_t clock_in_last_last_time = 0;
@@ -600,8 +605,20 @@ bool do_random_jump = false;
 bool jump_precedence = false;
 uint32_t beat_current_last = 0;
 
-void do_update_phase_from_beat_current() {
-  if (!metadata_ready(sel_bank_cur) || !audio_media_timer_allowed()) return;
+static int64_t variable_splice_ticks(const SampleInfo *sample_info) {
+  unsigned slice = sample_info->slice_current;
+  int64_t bytes = (int64_t)sample_info->slice_stop[slice] -
+                  sample_info->slice_start[slice];
+  // Slice offsets are PCM bytes. Both channel count and source rate contribute
+  // to their duration; the timer supplies 192 ticks per quarter note.
+  double ticks = round(bytes * (double)sample_info->bpm * 192.0 /
+                       (88200.0 * (sample_info->num_channels + 1) *
+                        (sample_info->oversampling + 1) * 60.0));
+  return ticks > 1.0 ? (int64_t)ticks : 1;
+}
+
+bool do_update_phase_from_beat_current() {
+  if (!metadata_ready(sel_bank_cur) || !audio_media_timer_allowed()) return false;
   // printf("[do_update_phase_from_beat_current] beat_current: %d\n",
   //        beat_current);
   // printf_sysex("[global] beat_current: %d\n", beat_current);
@@ -633,6 +650,10 @@ void do_update_phase_from_beat_current() {
   beat_current_show = slice;
   banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->slice_current =
       slice;
+  if (banks[sel_bank_cur]->sample[sel_sample_cur].snd[FILEZERO]->splice_variable) {
+    // Only an actual phase publication starts a new variable slice deadline.
+    bpm_timer_counter_last = bpm_timer_counter;
+  }
   ZV_CALL(zv_trigger(sel_bank_cur, metadata_filename_index(sel_bank_cur,sel_sample_cur), slice));
   if (phase_forward) {
     phase_new = banks[sel_bank_cur]
@@ -665,6 +686,7 @@ void do_update_phase_from_beat_current() {
   //            .snd[FILEZERO]
   //            ->slice_stop[slice]);
   jump_precedence = false;
+  return true;
 }
 
 void key_do_jump_to_slice(int32_t slice, uint8_t sequencer_beat) {

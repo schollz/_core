@@ -12,15 +12,15 @@ void clock_in_do_update() {
     clock_in_last_time = time_us_32();
     clock_in_beat_total++;
     clock_in_ready = true;
+    if (variable_splice_reset == VARIABLE_SPLICE_RESET_CLOCK)
+      variable_splice_reset = VARIABLE_SPLICE_RESET_READY;
   }
   if (playback_stopped) {
     playback_was_stopped_clock = true;
     clock_in_beat_total = 0;
-    clock_in_beat_last = 0;
   } else if (playback_was_stopped_clock) {
     playback_was_stopped_clock = false;
     clock_in_beat_total = 0;
-    clock_in_beat_last = 0;
   }
 }
 
@@ -61,7 +61,12 @@ void clock_handling_start() {
     clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();
     clock_in_beat_total = 0;
-    clock_in_beat_last = 0;
+    // Until the first complete interval arrives, the held tempo must also
+    // provide the clock-loss timeout. A zero timeout would mute the first slice.
+    if (clock_in_diff_2x == 0)
+      clock_in_diff_2x = (uint32_t)round(60000000.0 / sf->bpm_tempo);
+    playback_was_stopped_clock = false;
+    variable_splice_reset = VARIABLE_SPLICE_RESET_NONE;
     clock_in_ready = true;
     do_restart_playback = true;
     timer_step();
