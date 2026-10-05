@@ -40,6 +40,77 @@ static void check_led_brightness(void) {
     core_engine_destroy(a);core_engine_destroy(b);
     puts("engine: held LED brightness updates immediately at 0/25/50/75/100%, restores colors, isolates instances");
 }
+static void check_position_led(void) {
+    CoreEngine *e=create(901);
+    CoreControls controls={.knobs={0,0,0,.5f,0}};
+    core_engine_controls(e,&controls);
+    int16_t pcm[2];CoreDisplay display;
+    // Startup and knob feedback must relinquish the ring promptly.
+    for(unsigned f=0;f<CORE_RATE*2;++f)core_engine_process(e,pcm);
+    unsigned slices=0,matched=0,checked=0;
+    for(unsigned f=0;f<CORE_RATE*3;++f){
+        core_engine_process(e,pcm);
+        if(f%441!=100)continue;
+        // The slice can change between the millisecond LED refreshes.
+        core_engine_display(e,&display);
+        unsigned led=display.slice%16;
+        unsigned cyan=0;
+        for(unsigned i=0;i<16;++i)if(display.rgb[i][0]==0&&display.rgb[i][1]>0&&display.rgb[i][2]>display.rgb[i][1]){cyan|=1u<<i;slices|=1u<<i;}
+        assert(cyan);matched+=(cyan&(1u<<led))!=0;++checked;
+    }
+    assert((slices&(slices-1))!=0);
+    assert(matched*100>checked*95);
+    // A new knob overlay must also release back to position display.
+    controls.knobs[0]=.75f;core_engine_controls(e,&controls);
+    for(unsigned f=0;f<CORE_RATE/4;++f)core_engine_process(e,pcm);
+    core_engine_display(e,&display);
+    unsigned colored=0;for(unsigned i=0;i<16;++i)colored+=display.rgb[i][0]>0;
+    assert(colored>0);
+    for(unsigned f=0;f<CORE_RATE*2;++f)core_engine_process(e,pcm);
+    core_engine_display(e,&display);
+    assert(display.rgb[display.slice%16][0]==0&&display.rgb[display.slice%16][2]>0);
+    core_engine_destroy(e);
+    puts("engine: position LED returns after startup/knob feedback and follows playback slices");
+}
+static void check_tap_break_drive(void) {
+    enum {SATURATE=0,FUZZ=2,TIMESTRETCH=4};
+    CoreEngine *e=create(901);int16_t pcm[2];
+    CoreControls controls={.knobs={.25f,0,0,.5f,0}};
+    core_engine_controls(e,&controls);
+    for(unsigned f=0;f<CORE_RATE;++f)core_engine_process(e,pcm);
+    CoreState state;core_engine_get_state(e,&state);
+    memset(state.runes,0,sizeof state.runes);
+    state.runes[state.rune][TIMESTRETCH]=true;
+    memset(state.effects,0,sizeof state.effects);
+    state.volume=122;assert(core_engine_set_state(e,&state));
+    for(unsigned f=0;f<CORE_RATE/4;++f)core_engine_process(e,pcm);
+    controls.buttons[3]=true;core_engine_controls(e,&controls);
+    for(unsigned f=0;f<CORE_RATE/10;++f)core_engine_process(e,pcm);
+    const float values[]={0,.35f,.65f,.95f,.35f};
+    for(unsigned step=0;step<sizeof values/sizeof *values;++step){
+        controls.knobs[0]=values[step];core_engine_controls(e,&controls);
+        for(unsigned f=0;f<CORE_RATE/4;++f)core_engine_process(e,pcm);
+        core_engine_get_state(e,&state);
+        assert(state.runes[state.rune][TIMESTRETCH]);
+        if(values[step]<=.52f){
+            assert(!state.effects[SATURATE]&&!state.effects[FUZZ]);
+            assert(values[step]==0?state.volume==0:state.volume>0&&state.volume<244);
+        } else {
+            assert(state.volume==244);
+            assert(state.effects[SATURATE]==(values[step]<.75f));
+            assert(state.effects[FUZZ]==(values[step]>.75f));
+        }
+    }
+    unsigned volume=state.volume;
+    controls.buttons[3]=false;core_engine_controls(e,&controls);
+    for(unsigned f=0;f<CORE_RATE/10;++f)core_engine_process(e,pcm);
+    controls.knobs[0]=.8f;core_engine_controls(e,&controls);
+    for(unsigned f=0;f<CORE_RATE/4;++f)core_engine_process(e,pcm);
+    core_engine_get_state(e,&state);
+    assert(state.volume==volume&&!state.effects[SATURATE]&&!state.effects[FUZZ]);
+    core_engine_destroy(e);
+    puts("engine: TAP + BREAK adjusts volume/saturation/fuzz on the time-stretch-only rune; unshifted BREAK preserves drive");
+}
 static void check_start_tempo(void) {
     CoreEngine *a=create(901),*b=create(902);
     CoreState state,after,other;core_engine_get_state(a,&state);core_engine_get_state(b,&other);
@@ -80,6 +151,8 @@ static void check_start_tempo(void) {
 }
 int main(void) {
     check_led_brightness();
+    check_position_led();
+    check_tap_break_drive();
     check_start_tempo();
     CoreEngine *a=create(123),*b=create(123),*other=create(789);
     int16_t x[2],y[2],z[2];unsigned audible=0;

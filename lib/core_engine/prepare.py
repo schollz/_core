@@ -78,6 +78,14 @@ def prepare(out):
     source+=(ROOT/'main.c').read_text().split('#include "lib/includes.h"',1)[1].split('#ifdef INCLUDE_ZEPTOCORE\n#include "lib/zeptocore.h"')[0]
     ecto=expand('ectocore.h')
     ecto=ecto.replace('  WS2812 *ws2812;\n','')
+    # Firmware spins freely while a knob overlay is held (the sleep is only
+    # in the position-display branch). Desktop controls tick once per ms,
+    # so 10,000 iterations would hide playback position for ten seconds.
+    # Keep feedback visible for one second without changing hardware timing.
+    overlay_time = 'const uint16_t debounce_ws2812_set_wheel_time = 10000;'
+    assert ecto.count(overlay_time) == 1
+    ecto=ecto.replace(overlay_time,
+                      'const uint16_t debounce_ws2812_set_wheel_time = 1000;')
     # Hardware connection probes have no place in a virtual jack. Preserve the
     # musical unplug handling while using explicit Rack cable presence.
     a=ecto.index('    // Probe every channel')

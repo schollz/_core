@@ -12,7 +12,7 @@ The plugin compiles the existing firmware's fixed-point renderer, sixteen effect
 
 ## Install and play
 
-When building from source with the prerequisites below, run `make install` from the repository root (or `make install` inside `rack/`). It builds and packages the plugin, creates Rack's platform-specific plugin directory if needed, and copies the `.vcvplugin` there. Restart Rack afterward.
+When building from source with the prerequisites below, run `make install-vcv` from the repository root (or `make install-vcv` inside `rack/`). It builds and packages the plugin, creates Rack's platform-specific plugin directory if needed, and copies the `.vcvplugin` there. Restart Rack afterward.
 
 1. Copy the `.vcvplugin` file for your OS and CPU to your Rack user folder's `plugins-<platform>` directory, then restart Rack. The platform names are `mac-arm64`, `mac-x64`, `win-x64`, and `lin-x64`. Use **Help → Open user folder** to locate it.
 2. Add **Infinite Digits → EZEPTOCORE**.
@@ -93,13 +93,20 @@ From the repository root on Apple Silicon:
 
 ```sh
 python3 rack/scripts/sdk.py mac-arm64
-make install -j4
+make install-vcv -j4 CC=clang CXX=clang++
 python3 rack/scripts/source.py
 ```
 
-`make install` finds the SDK downloaded into `artifacts/rack-sdk/Rack-SDK`, with `artifacts/Rack-SDK` as a fallback. To use another SDK, pass `RACK_DIR=/path/to/Rack-SDK`; a relative path is resolved from the directory where you run Make. To package without installing, use `make -C rack dist`.
+On Linux x64, from the repository root:
 
-The SDK chooses the destination from the build's OS and CPU: `~/Library/Application Support/Rack2/plugins-mac-arm64/` on Apple Silicon, `plugins-mac-x64/` alongside it on Intel Macs, `$XDG_DATA_HOME/Rack2/plugins-lin-x64/` on Linux (default `~/.local/share/Rack2/plugins-lin-x64/`), and `$LOCALAPPDATA/Rack2/plugins-win-x64/` on Windows. For a custom Rack user folder, run `make install RACK_USER_DIR="/absolute/path/to/Rack2"`. No `sudo` is needed.
+```sh
+python3 rack/scripts/sdk.py lin-x64
+make install-vcv -j4
+```
+
+`make install-vcv` finds the SDK downloaded into `artifacts/rack-sdk/Rack-SDK`, with `artifacts/Rack-SDK` as a fallback. To use another SDK, pass `RACK_DIR=/path/to/Rack-SDK`; a relative path is resolved from the directory where you run Make. To package without installing, use `make -C rack dist`.
+
+The SDK chooses the destination from the build's OS and CPU: `~/Library/Application Support/Rack2/plugins-mac-arm64/` on Apple Silicon, `plugins-mac-x64/` alongside it on Intel Macs, `$XDG_DATA_HOME/Rack2/plugins-lin-x64/` on Linux (default `~/.local/share/Rack2/plugins-lin-x64/`), and `$LOCALAPPDATA/Rack2/plugins-win-x64/` on Windows. For a custom Rack user folder, run `make install-vcv RACK_USER_DIR="/absolute/path/to/Rack2"`. No `sudo` is needed.
 
 Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, NumPy (`mingw-w64-x86_64-python-numpy`), Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
 
