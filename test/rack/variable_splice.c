@@ -7,6 +7,7 @@
 #include VARIABLE_ENGINE_SOURCE
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef struct {
     CoreEngine *engine;

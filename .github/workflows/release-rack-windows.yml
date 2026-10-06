@@ -60,8 +60,15 @@ jobs:
         run: python scripts/verify_release_target.py "$RELEASE_TAG" "$SOURCE_SHA" --published
       - name: Download and verify Rack SDK
         run: python rack/scripts/sdk.py win-x64
+      - name: Checkout test runner from the workflow revision
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          path: release-tools
+          sparse-checkout: test/rack
+          persist-credentials: false
       - name: Check engine and storage
-        run: CC=gcc CXX=g++ python test/rack/run.py
+        run: CC=gcc CXX=g++ python release-tools/test/rack/run.py --source-root "$PWD"
       - name: Build plugin and sharing ZIP
         env:
           CORE_RELEASE_TAG: ${{ inputs.release_tag }}
