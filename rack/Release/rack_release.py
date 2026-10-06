@@ -137,15 +137,43 @@ def build_commands(source, platform_name, jobs, python):
     ]
 
 
-def remote_build_script(directory, selection, jobs):
+def prepare_intel_inputs(runner, source):
+    """Prepare portable inputs here; preprocess libc and compile on the Intel Mac."""
+    runner.run(sys.executable, '-c', 'import numpy')
+    sdk = source / 'artifacts/rack-sdk'
+    runner.run(sys.executable, source / 'rack/scripts/sdk.py', 'mac-x64', '--output', sdk)
+    generated = source / 'rack/build/generated'
+    runner.run(sys.executable, source / 'lib/core_engine/prepare.py',
+               '--out', generated, '--source-only')
+    archives = list(sdk.glob('Rack-SDK-*-mac-x64.zip'))
+    if len(archives) != 1:
+        raise RuntimeError('Expected one verified Intel Rack SDK archive')
+    return [archives[0], generated / 'firmware.c']
+
+
+def remote_build_script(directory, selection, jobs, manifest):
     source = Path(directory) / 'source'
-    commands = build_commands(source, 'mac-x64', jobs, 'python3')
+    generated = source / 'rack/build/generated'
+    commands = [
+        ['python3', str(source / 'rack/scripts/sdk.py'), 'mac-x64', '--output', directory],
+        ['mkdir', '-p', str(generated)],
+        ['cp', str(Path(directory) / 'firmware.c'), str(generated / 'firmware.c')],
+        ['python3', str(source / 'lib/core_engine/prepare.py'), '--out', str(generated),
+         '--clang', 'clang', '--generate-only'],
+        # SDK manifest variables override its jq calls. The engine has already
+        # been generated with native headers; Make must not regenerate its tables.
+        ['make', '-C', str(source / 'rack'), 'RACK_DIR=' + str(Path(directory) / 'Rack-SDK'),
+         'PYTHON=python3', 'CLANG=clang', 'CC=clang', 'CXX=clang++',
+         'SLUG=' + manifest['slug'], 'VERSION=' + manifest['version'],
+         '--assume-old=build/generated/engine.c', '-j' + str(jobs), 'dist'],
+        ['python3', str(source / 'rack/scripts/source.py')],
+    ]
     build = 'set -euo pipefail\n' + '\n'.join(shlex.join(command) for command in commands)
     return '\n'.join([
         'export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
         'test "$(uname -s)" = Darwin && test "$(uname -m)" = x86_64',
-        'for tool in git python3 make clang clang++ jq zstd rsync codesign install_name_tool otool; do command -v "$tool" >/dev/null; done',
-        'python3 -c ' + shlex.quote('import sys, platform, numpy; assert sys.version_info >= (3, 10); assert platform.machine() == "x86_64"'),
+        'for tool in git python3 make clang clang++ zstd rsync codesign install_name_tool otool; do command -v "$tool" >/dev/null || { echo "Missing Intel build tool: $tool" >&2; exit 1; }; done',
+        'python3 -c ' + shlex.quote('import sys, platform; assert sys.version_info >= (3, 8), "Intel build requires Python 3.8+"; assert platform.machine() == "x86_64"'),
         *(shlex.join(command) for command in clone_commands(selection, source)),
         'test "$(git -C ' + shlex.quote(str(source)) + ' rev-parse HEAD)" = ' + shlex.quote(selection['source']['commit']),
         'cd ' + shlex.quote(str(source)),
@@ -220,10 +248,13 @@ def main(platform_name, argv=None):
         clone_source(runner, selection, source)
         manifest = read_plugin(source)
         if remote:
+            inputs = prepare_intel_inputs(runner, source)
             remote_dir = runner.ssh(args.host, 'mktemp -d /tmp/core-rack-intel.XXXXXX')
             if not REMOTE_DIRECTORY.fullmatch(remote_dir):
                 raise RuntimeError('Unexpected remote temporary directory')
-            runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs))
+            runner.run('rsync', '-cz', '--no-times', '-e', shlex.join(SSH),
+                       *inputs, f'{args.host}:{remote_dir}/')
+            runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs, manifest))
             dist = output / 'remote-dist'
             dist.mkdir()
             slug, version = manifest['slug'], manifest['version']

@@ -28,9 +28,10 @@ retains the package. Advancing `main` during a build does not change its source.
 ## Prerequisites
 
 Use Python 3.10+, Git, authenticated GitHub CLI (`gh`), and zstd on the machine
-running the script. Build machines also need NumPy for that Python, GNU Make,
-Clang with JSON AST support, jq, and a native C/C++17 compiler. Prerequisites are
-checked; the scripts do not install packages. HTTPS access to GitHub and the
+running the script. NumPy is required on the controller for Intel releases and
+on the build machine for other targets. Build machines also need GNU Make,
+Clang with JSON AST support and a native C/C++17 compiler; local builds need jq.
+Prerequisites are checked; the scripts do not install packages. HTTPS access to GitHub and the
 official VCV SDK download is required.
 
 On macOS, install Xcode command-line tools, jq, zstd and NumPy. The scripts use
@@ -75,15 +76,19 @@ make rack-release-macos11 MACOS_RELEASE_HOST=user@intel-mac
 ```
 
 The Intel host defaults to `zns@192.168.0.44`. It needs noninteractive SSH, native
-x86_64 Python 3.10+ with NumPy, and the macOS build prerequisites above available
-under `/usr/local/bin`, `/opt/homebrew/bin`, or the system paths. The controller
-also needs SSH and rsync. SSH agent forwarding is disabled, and local Apple and
-GitHub credential environment variables are stripped from build/transport
+x86_64 Python 3.8+ (including Xcode's Python 3.8.9 on macOS 11), zstd, rsync,
+and the Xcode build tools above available under `/usr/local/bin`,
+`/opt/homebrew/bin`, or the system paths. NumPy and jq are not required on the
+Intel host. The controller also needs NumPy, SSH and rsync. SSH agent forwarding
+is disabled, and local Apple and GitHub credential environment variables are stripped from build/transport
 subprocesses.
 
 The controller and Intel host independently clone and verify the same pinned
-commit. The Intel host generates its own target-specific DSP sources, builds
-and packages the dylib, and returns only the `.vcvplugin` and source archive.
+commit. The controller downloads and checks the Intel SDK and generates the
+portable firmware translation and lookup tables with NumPy from its fresh
+clone, then transfers those inputs. The Intel host checks the SDK again,
+preprocesses and transforms that translation with its native Clang and system
+headers, builds and packages the dylib, and returns only the `.vcvplugin` and source archive.
 The controller checks the returned x86_64 binary and signature, resources,
 manifest, and source hashes against its own clone before publishing with its
 local `gh` authentication. Remote temporary directories are removed only after

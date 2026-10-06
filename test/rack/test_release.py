@@ -1,5 +1,6 @@
 """Offline release checks; no native builds, SSH connections or live uploads."""
 import hashlib
+import importlib.util
 import io
 import json
 import struct
@@ -15,6 +16,11 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'rack/Release'))
 import rack_package
 import rack_release
+
+spec = importlib.util.spec_from_file_location('engine_prepare',
+    Path(__file__).resolve().parents[2] / 'lib/core_engine/prepare.py')
+engine_prepare = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(engine_prepare)
 
 
 class FakeRunner:
@@ -163,7 +169,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(selection['source']['commit'], 'a' * 40)
 
     def test_intel_shell_is_valid_and_pins_the_source(self):
-        script = rack_release.remote_build_script('/tmp/core-rack-intel.fixture', self.selection, 3)
+        script = rack_release.remote_build_script('/tmp/core-rack-intel.fixture', self.selection, 3,
+                                                  {'slug': 'InfiniteDigits', 'version': '2.0.0'})
         subprocess.run(['bash', '-n'], input=script, text=True, check=True)
         self.assertIn('checkout --detach ' + 'a' * 40, script)
         self.assertIn('mac-x64', script)
@@ -171,6 +178,35 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('caffeinate -i', script)
         self.assertNotIn('gh release', script)
         self.assertNotIn('notarytool', script)
+
+    def test_intel_build_uses_staged_inputs_with_system_python_and_no_numpy_or_jq(self):
+        script = rack_release.remote_build_script('/tmp/core-rack-intel.fixture', self.selection, 3,
+                                                  {'slug': 'InfiniteDigits', 'version': '2.0.0'})
+        self.assertIn('sys.version_info >= (3, 8)', script)
+        self.assertNotIn('numpy', script)
+        self.assertNotIn('jq', script)
+        self.assertIn('SLUG=InfiniteDigits VERSION=2.0.0', script)
+        self.assertIn('--assume-old=build/generated/engine.c', script)
+        self.assertLess(script.index('cp /tmp/core-rack-intel.fixture/firmware.c'),
+                        script.index('--generate-only'))
+        self.assertLess(script.index('--generate-only'), script.index('make -C'))
+
+    def test_generate_only_skips_table_generation_but_uses_native_clang(self):
+        argv = ['prepare.py', '--out', str(self.root), '--clang', 'native-clang', '--generate-only']
+        with patch.object(sys, 'argv', argv), patch.object(engine_prepare, 'prepare') as prepare, \
+                patch.object(engine_prepare, 'generate') as generate:
+            engine_prepare.main()
+        prepare.assert_not_called()
+        generate.assert_called_once_with(self.root, 'native-clang', None)
+
+    def test_source_only_and_default_keep_their_generation_stages(self):
+        for extra in (['--source-only'], []):
+            with self.subTest(extra=extra), patch.object(sys, 'argv', ['prepare.py', '--out', str(self.root), *extra]), \
+                    patch.object(engine_prepare, 'prepare') as prepare, \
+                    patch.object(engine_prepare, 'generate') as generate:
+                engine_prepare.main()
+                prepare.assert_called_once_with(self.root)
+                self.assertEqual(generate.call_count, 0 if extra else 1)
 
     def test_all_build_plans_use_target_sdk_and_no_install_or_runtime_tests(self):
         for target in ('mac-arm64', 'mac-x64', 'lin-x64'):

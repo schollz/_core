@@ -117,10 +117,13 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--out',type=Path,required=True)
     parser.add_argument('--clang',default='clang')
-    parser.add_argument('--source-only',action='store_true')
+    stages=parser.add_mutually_exclusive_group()
+    stages.add_argument('--source-only',action='store_true')
+    stages.add_argument('--generate-only',action='store_true',
+                        help='Transform an existing firmware.c using this host\'s Clang')
     parser.add_argument('--target',default=None)
     args=parser.parse_args()
-    prepare(args.out)
+    if not args.generate_only:prepare(args.out)
     if args.source_only:return
     generate(args.out,args.clang,args.target)
 
@@ -134,7 +137,8 @@ def generate(out,clang,target=None):
                     lambda m:m[1]+'{0}'+(' '*(len(m[2])-3)),cpp)
     # Clang reports byte offsets; Windows newline translation would make those
     # offsets disagree with the preprocessed string that we rewrite below.
-    unit=out/'analysis.c';unit.write_text(analysis, newline='\n')
+    unit=out/'analysis.c'
+    with unit.open('w', newline='\n') as f:f.write(analysis)
     with (out/'ast.json').open('w') as f:
         subprocess.run([clang,*flags,'-Xclang','-ast-dump=json','-fsyntax-only',str(unit)],stdout=f,check=True)
     ast=json.loads((out/'ast.json').read_text())
