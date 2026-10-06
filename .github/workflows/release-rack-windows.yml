@@ -52,6 +52,8 @@ jobs:
       - name: Verify explicit release target
         if: inputs.release_tag != '' || inputs.source_sha != ''
         env:
+          # Validation invokes the runner's GitHub CLI outside the MSYS2 install.
+          MSYS2_PATH_TYPE: inherit
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           SOURCE_SHA: ${{ inputs.source_sha }}
