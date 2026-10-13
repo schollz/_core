@@ -51,13 +51,15 @@ jobs:
             mingw-w64-x86_64-python mingw-w64-x86_64-python-numpy
       - name: Verify explicit release target
         if: inputs.release_tag != '' || inputs.source_sha != ''
+        # MSYS2's minimal PATH excludes the runner's GitHub CLI installation.
+        shell: pwsh
         env:
           # Validation invokes the runner's GitHub CLI outside the MSYS2 install.
           MSYS2_PATH_TYPE: inherit
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
           SOURCE_SHA: ${{ inputs.source_sha }}
-        run: python scripts/verify_release_target.py "$RELEASE_TAG" "$SOURCE_SHA" --published
+        run: python scripts/verify_release_target.py "$env:RELEASE_TAG" "$env:SOURCE_SHA" --published
       - name: Download and verify Rack SDK
         run: python rack/scripts/sdk.py win-x64
       - name: Checkout test runner from the workflow revision
