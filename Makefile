@@ -487,7 +487,8 @@ docs:
 	cd docs && hugo serve -D --bind 0.0.0.0
 
 .venv:
-	uv venv --python 3.14
+	# Pin a stable patch release; bare 3.14 can reuse an installed alpha interpreter.
+	uv venv --python 3.14.8
 	uv pip install --python .venv/bin/python -r requirements.txt
 
 dev/madmom/.venv:

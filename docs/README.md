@@ -58,8 +58,8 @@ share `build/` and `lib/cmake/target_compile_definitions.cmake`; use separate CM
 directories and `CORE_COMPILE_DEFINITIONS` for simultaneous configurations, as
 shown in the [diagnostics build instructions](seek-diagnostics.md#build-and-run).
 
-The Makefile downloads Pico SDK 2.3.1 and Pico Extras `sdk-2.3.1`, creates a Python
-3.14 `.venv` with `uv`, and generates DSP/audio headers when absent. Host tools
+The Makefile downloads Pico SDK 2.3.1 and Pico Extras `sdk-2.3.1`, creates a stable
+Python 3.14 `.venv` with `uv`, and generates DSP/audio headers when absent. Host tools
 include CMake, Make, ARM GCC with newlib, Git, `uv`, `clang-format`, Go, and SoX.
 The [firmware CI workflow](../.github/workflows/build.yml) documents its Linux
 setup, including the TinyUSB patch used by CI. Building firmware does not flash it.
@@ -67,12 +67,22 @@ setup, including the TinyUSB patch used by CI. Building firmware does not flash 
 To set up the Python tools directly:
 
 ```sh
-uv venv .venv -p 3.14 && source .venv/bin/activate && uv pip install -r requirements.txt
+uv self update
+uv venv .venv --python 3.14.8
+uv pip install --python .venv/bin/python -r requirements.txt
+source .venv/bin/activate
 ```
 
 The pinned dependencies also support Python 3.11 for the firmware CI jobs.
-For an existing Python 3.14 environment, activate it and rerun
-`uv pip install -r requirements.txt` to update the packages.
+Use a current `uv` so its download catalog includes stable Python 3.14 builds.
+If `uv` was installed through a package manager, update it through that manager
+instead of `uv self update`. The exact patch version excludes early 3.14 alpha
+builds that a bare `-p 3.14` can reuse; those builds cannot load the current NumPy wheels.
+Check `.venv/bin/python -VV` for the interpreter version. Recreate an environment
+using an alpha, beta, or release candidate with `uv venv .venv --python 3.14.8 --clear`,
+then install the requirements again. Reinstalling packages alone does not replace
+its interpreter. For an existing stable Python 3.14 environment, rerun the install
+command to update the packages.
 
 Make checks existing SDK/extras checkouts against the pinned tags and initialized
 submodules. It reports a mismatch without overwriting local changes. For an older
