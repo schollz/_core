@@ -254,6 +254,8 @@ class ReleaseTests(unittest.TestCase):
                         self.assertIn('--branch ' + ('v' + version if pinned else 'main'), runner.remote_script)
                         self.assertIn('checkout --detach ' + self.source_commit, runner.remote_script)
                         self.assertIn('-DCORE_MANAGER_VERSION=' + version, runner.remote_script)
+                        self.assertIn('http.version=HTTP/1.1', runner.remote_script)
+                        self.assertIn('http.lowSpeedTime=60', runner.remote_script)
                     else:
                         self.assertTrue(any('-DCORE_MANAGER_VERSION=' + version in command for command in runner.commands))
                     self.assertEqual(bool(runner.uploaded), not no_upload)

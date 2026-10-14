@@ -176,6 +176,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('mac-x64', script)
         self.assertIn('CXX=clang++', script)
         self.assertIn('caffeinate -i', script)
+        self.assertIn('http.version=HTTP/1.1', script)
+        self.assertIn('http.lowSpeedTime=60', script)
         self.assertNotIn('gh release', script)
         self.assertNotIn('notarytool', script)
 

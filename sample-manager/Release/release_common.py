@@ -25,8 +25,8 @@ SOURCE_BRANCH = 'main'
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / "scripts"))
 from release_target import target_arguments, validate_target, verify_tag
+from release_transport import ssh_command
 VERSION = re.compile(r'v?((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))')
-SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=no', '-o', 'ConnectTimeout=10']
 PRIVATE_ENV = ('APPLE_ID', 'TEAM_ID', 'APPLE_PASSWORD', 'SIGN_IDENTITY',
                'INSTALLER_SIGN_IDENTITY', 'NOTARY_PROFILE', 'GH_TOKEN', 'GITHUB_TOKEN')
 
@@ -78,7 +78,7 @@ class Runner:
         return output.strip()
 
     def ssh(self, host, script):
-        return self.run(*SSH, host, '/bin/bash -c ' + shlex.quote('set -euo pipefail\n' + script))
+        return self.run(*ssh_command(host, script))
 
 
 def require_tools(*names):

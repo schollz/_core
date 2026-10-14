@@ -19,11 +19,11 @@ from rack_package import package, read_plugin, sha
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / 'scripts'))
 from release_target import target_arguments, validate_target, verify_tag
+from release_transport import intel_git, rsync, ssh_command
 REPOSITORY = 'schollz/_core'
 REPOSITORY_URL = 'https://github.com/' + REPOSITORY + '.git'
 DEFAULT_REMOTE = 'zns@192.168.0.44'
 REMOTE_DIRECTORY = re.compile(r'/tmp/core-rack-intel\.[A-Za-z0-9]+')
-SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ForwardAgent=no', '-o', 'ConnectTimeout=10']
 PRIVATE_ENV = ('APPLE_ID', 'TEAM_ID', 'APPLE_PASSWORD', 'SIGN_IDENTITY',
                'NOTARY_PROFILE', 'GH_TOKEN', 'GITHUB_TOKEN', 'AZURE_CLIENT_SECRET')
 
@@ -65,7 +65,7 @@ class Runner:
         return output
 
     def ssh(self, host, script):
-        return self.run(*SSH, host, '/bin/bash -c ' + shlex.quote('set -euo pipefail\n' + script))
+        return self.run(*ssh_command(host, script))
 
 
 def require_tools(*names):
@@ -174,7 +174,7 @@ def remote_build_script(directory, selection, jobs, manifest):
         'test "$(uname -s)" = Darwin && test "$(uname -m)" = x86_64',
         'for tool in git python3 make clang clang++ zstd rsync codesign install_name_tool otool; do command -v "$tool" >/dev/null || { echo "Missing Intel build tool: $tool" >&2; exit 1; }; done',
         'python3 -c ' + shlex.quote('import sys, platform; assert sys.version_info >= (3, 8), "Intel build requires Python 3.8+"; assert platform.machine() == "x86_64"'),
-        *(shlex.join(command) for command in clone_commands(selection, source)),
+        *(shlex.join(intel_git(command)) for command in clone_commands(selection, source)),
         'test "$(git -C ' + shlex.quote(str(source)) + ' rev-parse HEAD)" = ' + shlex.quote(selection['source']['commit']),
         'cd ' + shlex.quote(str(source)),
         '/usr/bin/caffeinate -i /bin/bash -c ' + shlex.quote(build),
@@ -252,15 +252,13 @@ def main(platform_name, argv=None):
             remote_dir = runner.ssh(args.host, 'mktemp -d /tmp/core-rack-intel.XXXXXX')
             if not REMOTE_DIRECTORY.fullmatch(remote_dir):
                 raise RuntimeError('Unexpected remote temporary directory')
-            runner.run('rsync', '-cz', '--no-times', '-e', shlex.join(SSH),
-                       *inputs, f'{args.host}:{remote_dir}/')
+            rsync(runner, *inputs, f'{args.host}:{remote_dir}/')
             runner.ssh(args.host, remote_build_script(remote_dir, selection, args.jobs, manifest))
             dist = output / 'remote-dist'
             dist.mkdir()
             slug, version = manifest['slug'], manifest['version']
             for name in (f'{slug}-{version}-mac-x64.vcvplugin', f'{slug}-{version}-source.tar.gz'):
-                runner.run('rsync', '-cz', '--no-times', '-e', shlex.join(SSH),
-                           f'{args.host}:{remote_dir}/source/rack/dist/{name}', dist / name)
+                rsync(runner, f'{args.host}:{remote_dir}/source/rack/dist/{name}', dist / name)
         else:
             for command in build_commands(source, platform_name, args.jobs, sys.executable):
                 runner.run(*(['/usr/bin/caffeinate', '-i'] if platform_name.startswith('mac-') else []),

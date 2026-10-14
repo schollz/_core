@@ -10,9 +10,10 @@ import subprocess
 from pathlib import Path
 
 from package import package_build, product_name
-from release_common import (ROOT, SSH, ReleaseError, Runner,
+from release_common import (ROOT, ReleaseError, Runner,
                             clone_source, finish_package, new_run, publish,
                             require_tools, select_release, source_clone_commands, target_arguments, write_json)
+from release_transport import intel_git, rsync
 
 DEFAULT_REMOTE = 'zns@192.168.0.44'
 DEFAULT_IDENTITY = 'Developer ID Application: Zackary Scholl (KF253X8W3N)'
@@ -56,7 +57,7 @@ def remote_build_script(directory, selection, jobs, name):
         'export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin',
         'test "$(uname -s)" = Darwin && test "$(uname -m)" = x86_64',
         'for tool in git cmake ninja xcrun ditto; do command -v "$tool" >/dev/null; done',
-        *(shlex.join(command) for command in source_clone_commands(selection, source)),
+        *(shlex.join(intel_git(command)) for command in source_clone_commands(selection, source)),
         'test "$(git -C ' + quote(str(source)) + ' rev-parse HEAD)" = ' + quote(selection['source']['commit']),
         'test -f ' + quote(str(project / 'CMakeLists.txt')),
         '/usr/bin/caffeinate -i /bin/bash -c ' + quote(build_script),
@@ -69,9 +70,8 @@ def remote_build_script(directory, selection, jobs, name):
 
 
 def retrieve_intel(runner, host, directory, output, build):
-    transport = ['rsync', '-cz', '--no-times', '-e', shlex.join(SSH)]
     for name in ('app.zip', 'CMakeCache.txt', 'JUCE-LICENSE.md'):
-        runner.run(*transport, f'{host}:{directory}/{name}', output / name)
+        rsync(runner, f'{host}:{directory}/{name}', output / name)
     artefacts = build / 'CoreSampleManager_artefacts/Release'
     artefacts.mkdir(parents=True)
     runner.run('ditto', '-x', '-k', output / 'app.zip', artefacts)

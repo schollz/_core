@@ -27,6 +27,13 @@ retains the package. Advancing `main` during a build does not change its source.
 
 ## Prerequisites
 
+Intel SSH sessions send keepalives and keep both Macs awake through cloning,
+building, packaging and transfers. Transfers retain partial files and retry
+network failures up to three times, with a 120-second rsync inactivity timeout.
+They use uncompressed rsync for compatibility with both Macs' built-in versions.
+Remote Git uses HTTP/1.1 and aborts after a minute below 1,000 bytes/second,
+avoiding indefinite clone/fetch stalls in the macOS 11 Xcode Git transport.
+
 Use Python 3.10+, Git, authenticated GitHub CLI (`gh`), and zstd on the machine
 running the script. NumPy is required on the controller for Intel releases and
 on the build machine for other targets. Build machines also need GNU Make,

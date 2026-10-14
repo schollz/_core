@@ -135,6 +135,13 @@ rsync, and network access to GitHub for cloning and the pinned JUCE download.
 SSH and rsync must also be installed on the signing Mac; SSH agent forwarding
 is disabled.
 
+SSH sessions send keepalives and keep both Macs awake through cloning, building,
+packaging and transfers. Transfers retain partial files and retry network
+failures up to three times, with a 120-second rsync inactivity timeout. They use
+uncompressed rsync for compatibility with both Macs' built-in versions.
+Remote Git uses HTTP/1.1 and aborts after a minute below 1,000 bytes/second,
+avoiding indefinite clone/fetch stalls in the macOS 11 Xcode Git transport.
+
 The controller clones the selected `main` commit locally for packaging inputs.
 The Intel Mac creates its own fresh clone in a unique temporary directory and verifies the
 same pinned commit before compiling. Only the app, build metadata and JUCE
