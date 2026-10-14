@@ -59,10 +59,20 @@ directories and `CORE_COMPILE_DEFINITIONS` for simultaneous configurations, as
 shown in the [diagnostics build instructions](seek-diagnostics.md#build-and-run).
 
 The Makefile downloads Pico SDK 2.3.1 and Pico Extras `sdk-2.3.1`, creates a Python
-3.11 `.venv` with `uv`, and generates DSP/audio headers when absent. Host tools
+3.14 `.venv` with `uv`, and generates DSP/audio headers when absent. Host tools
 include CMake, Make, ARM GCC with newlib, Git, `uv`, `clang-format`, Go, and SoX.
 The [firmware CI workflow](../.github/workflows/build.yml) documents its Linux
 setup, including the TinyUSB patch used by CI. Building firmware does not flash it.
+
+To set up the Python tools directly:
+
+```sh
+uv venv .venv -p 3.14 && source .venv/bin/activate && uv pip install -r requirements.txt
+```
+
+The pinned dependencies also support Python 3.11 for the firmware CI jobs.
+For an existing Python 3.14 environment, activate it and rerun
+`uv pip install -r requirements.txt` to update the packages.
 
 Make checks existing SDK/extras checkouts against the pinned tags and initialized
 submodules. It reports a mismatch without overwriting local changes. For an older
