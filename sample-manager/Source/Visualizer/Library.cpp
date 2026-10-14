@@ -83,7 +83,8 @@ void Library::run() {
 LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
                               std::function<bool()> cancelled,
                               std::function<void(const LibraryState &)> progress,
-                              const std::atomic<int> *priority, const LibraryState *previous) {
+                              const std::atomic<int> *priority, const LibraryState *previous,
+                              const std::map<juce::String, juce::String> *fingerprints) {
   LibraryState state;
   state.root = folder.getFullPathName();
   state.loading = true;
@@ -112,7 +113,8 @@ LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
           continue;
         int sample = name.getIntValue();
         if (sample >= 0 && sample < 16)
-          state.samples.push_back({b, sample, file.getRelativePathFrom(root), {}, nullptr});
+          state.samples.push_back(
+              {b, sample, file.getRelativePathFrom(root).replaceCharacter('\\', '/'), {}, nullptr});
       }
     }
     std::sort(state.samples.begin(), state.samples.end(), [](const auto &a, const auto &b) {
@@ -147,9 +149,18 @@ LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
       try {
         const auto audio = root.getChildFile(s.path),
                    info = audio.getSiblingFile(audio.getFileName() + ".info");
-        s.audioStamp = fingerprint(audio);
-        s.infoStamp = fingerprint(info);
-        const auto stamp = s.audioStamp + ":" + s.infoStamp;
+        const auto audioStat = fingerprint(audio), infoStat = fingerprint(info);
+        auto identity = [&](const juce::String &path, const juce::String &stat) {
+          if (fingerprints) {
+            const auto known = fingerprints->find(path);
+            if (known != fingerprints->end() && known->second.length() == 64)
+              return stat + ":" + known->second;
+          }
+          return stat;
+        };
+        s.audioStamp = identity(s.path, audioStat);
+        s.infoStamp = identity(s.path + ".info", infoStat);
+        const auto stamp = audioStat + ":" + infoStat;
         const auto entry = cacheDir.getChildFile(hash(s.path) + ".json");
         juce::var saved;
         juce::String cachedInfo = saved["infoStamp"].toString();

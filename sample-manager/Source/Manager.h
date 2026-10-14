@@ -92,6 +92,7 @@ private:
   void runRecovery();
   void adoptDisk(DiskWork &);
   void changed();
+  void refreshHealth();
   zv::LibraryState libraryState;
   std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
   std::map<String, CompletedAudio> completedAudio;

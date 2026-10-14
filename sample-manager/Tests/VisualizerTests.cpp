@@ -1,3 +1,4 @@
+#include "Common.h"
 #include "Visualizer/Core.h"
 #include "Visualizer/Library.h"
 #include <FixtureData.h>
@@ -320,6 +321,14 @@ void libraryTests() {
   auto changed = zv::Library::prepare(ref, cache);
   expect(changed.prepared == 0 && changed.reused == 1 && changed.samples[0].wave->bpm == 121,
          "changed metadata rebuilt");
+  std::map<juce::String, juce::String> digests{{"bank2/3.0.wav", core::hashFile(audio)}, {"bank2/3.0.wav.info", core::hashFile(info)}};
+  auto identified = zv::Library::prepare(ref, cache, {}, {}, nullptr, nullptr, &digests);
+  expect(identified.samples[0].infoStamp.endsWith(digests.at("bank2/3.0.wav.info")), "metadata cache includes committed byte identity");
+  put32((uint8_t *)files.info.getData() + 4, 122 | (1 << 13) | (1 << 15) | (1 << 16));
+  info.replaceWithData(files.info.getData(), files.info.getSize());
+  digests["bank2/3.0.wav.info"] = core::hashFile(info);
+  auto latest = zv::Library::prepare(ref, cache, {}, {}, nullptr, &identified, &digests);
+  expect(latest.prepared == 0 && latest.samples[0].wave->bpm == 122, "committed metadata changes reuse audio analysis with updated identity");
   juce::MemoryBlock after;
   audio.loadFileAsData(after);
   expect(after == files.wav, "reference unchanged");

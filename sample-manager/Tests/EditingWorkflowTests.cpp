@@ -209,6 +209,19 @@ void affectedFilesAndFailure(Fixture &fixture) {
   success(state);
   require(hashFile(other) == otherHash && state.library.prepared == 0,
           "Unrelated external change is preserved and does not block an affected-slot save");
+  const auto damagedId = state.project.samples[1].id;
+  require(state.project.find(damagedId)->protectedEntry,
+          "Newly detected damage in an already open project enables recovery removal");
+  manager.remove({damagedId});
+  state = settled(manager);
+  success(state);
+  require(!state.project.find(damagedId),
+          "An already open damaged slot can be removed without reconcile");
+  manager.undo();
+  state = settled(manager);
+  success(state);
+  require(state.project.find(damagedId)->protectedEntry && hashFile(other) == otherHash,
+          "Undo restores the exact newly damaged output");
   const auto own = child(folder, card::path(0, 0));
   juce::MemoryBlock original;
   require(own.loadFileAsData(original), "Read original");

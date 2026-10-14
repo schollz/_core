@@ -2,6 +2,7 @@
 #include "Core.h"
 #include <atomic>
 #include <condition_variable>
+#include <map>
 #include <mutex>
 #include <thread>
 
@@ -30,7 +31,8 @@ public:
                               std::function<bool()> cancelled = {},
                               std::function<void(const LibraryState &)> progress = {},
                               const std::atomic<int> *priority = nullptr,
-                              const LibraryState *previous = nullptr);
+                              const LibraryState *previous = nullptr,
+                              const std::map<juce::String, juce::String> *fingerprints = nullptr);
 
 private:
   void run();

@@ -372,6 +372,21 @@ void Manager::startIo(std::function<void(DiskWork &)> task,
   ioWake.notify_one();
   publish(saving ? "Saving…" : "Processing");
 }
+void Manager::refreshHealth() {
+  for (auto &sample : project.samples) {
+    const auto *saved = committed.find(sample.id);
+    if (sample.protectedEntry || !saved || saved->bank != sample.bank || saved->slot != sample.slot)
+      continue;
+    for (const auto &entry : libraryState.samples)
+      if (entry.path == card::path(sample.bank, sample.slot) && entry.bank == sample.bank &&
+          entry.sample == sample.slot && entry.error.isNotEmpty() && entry.error != "Cancelled") {
+        sample.protectedEntry = true;
+        sample.problem = entry.error;
+        project.warnings.addIfNotAlreadyThere("Bank " + String(sample.bank + 1) + " slot " +
+                                              String(sample.slot + 1) + ": " + sample.problem);
+      }
+  }
+}
 void Manager::adoptDisk(DiskWork &job) {
   storage = job.storage;
   project = job.project;
@@ -389,6 +404,7 @@ void Manager::adoptDisk(DiskWork &job) {
   discarded = false;
   markerSequences.clear();
   lastEdit = std::chrono::steady_clock::now();
+  refreshHealth();
   persist();
   publish(dirty ? "Unsaved changes" : "Saved");
 }
@@ -507,6 +523,7 @@ void Manager::startSave() {
           }
         if (project.revision == committed.revision)
           project.warnings = committed.warnings;
+        refreshHealth();
         dirty = project.revision > committed.completedRevision;
         if (!dirty)
           saveRequested = false;
@@ -1048,7 +1065,7 @@ void DiskWork::prepareVisualization(std::function<void(const zv::LibraryState &)
   };
   libraryState = zv::Library::prepare(
       storage->root, zv::Library::defaultCache(), [this] { return stop(); }, report, nullptr,
-      &libraryState);
+      &libraryState, &committed.fingerprints);
   diagnostics::log("VISUALIZER", "Total=" + String(libraryState.total) +
                                      " prepared=" + String(libraryState.prepared) + " reused=" +
                                      String(libraryState.reused) + " error=" + libraryState.error +
@@ -1428,9 +1445,13 @@ void DiskWork::reconcile() {
             old->second != now->second)
           unchanged = false;
       }
-      if (unchanged)
+      if (unchanged) {
+        const auto protectedEntry = sample.protectedEntry;
+        const auto problem = sample.problem;
         sample = *previous;
-      else {
+        sample.protectedEntry = protectedEntry;
+        sample.problem = problem;
+      } else {
         sample.id = previous->id;
         if (sameAudio) {
           sample.name = previous->name;
