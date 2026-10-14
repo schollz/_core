@@ -977,7 +977,7 @@ void DiskWork::open(const File &root) {
   if (local.existsAsFile()) {
     auto checkpoint = parseJson(local);
     if (checkpoint.hasProperty("history") && checkpoint["project"]["id"].toString() == project.id &&
-        (int64_t(checkpoint["project"]["revision"]) >= project.revision ||
+        (juce::int64(checkpoint["project"]["revision"]) >= project.revision ||
          (bool(checkpoint["discardPending"]) &&
           checkpoint["manifestHash"].toString() == manifestHash)))
       history.restore(checkpoint["history"], project.id,

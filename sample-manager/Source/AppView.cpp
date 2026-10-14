@@ -800,8 +800,6 @@ void AppView::updatePresentation() {
   // Only Zeptocore exposes one-shot; hidden presentations retain saved values.
   oneShot.setVisible(presentation == 1);
   waveform.setTransientLanesVisible(showTransients);
-  snapToggle.setVisible(showTransients);
-  snapToggle.setEnabled(showTransients && waveform.lane >= 0);
   const int marker = std::max(1, markerMode.getSelectedId());
   markerMode.clear(juce::dontSendNotification);
   markerMode.addItem("Slices", 1);
@@ -817,12 +815,13 @@ void AppView::updatePresentation() {
           : "Edit slice boundaries: right-click to add, drag to move, and double-click to remove.");
 }
 void AppView::updateMarkerHelp() {
+  snapToggle.setVisible(presentation != 1 && waveform.lane >= 0);
   hint.setText(
-      waveform.lane < 0
+      String::fromUTF8(waveform.lane < 0
           ? "Click: audition · Right-click: add · Double-click: remove\nDrag: move marker · Wheel: "
             "zoom · Shift-wheel / middle-drag: pan."
           : "Click: add transient · Drag: move · Double-click: remove\nSnap to nearby slice starts "
-            "· Option/Alt: bypass · Wheel: zoom · Shift-wheel / middle-drag: pan.",
+            "· Option/Alt: bypass · Wheel: zoom · Shift-wheel / middle-drag: pan."),
       juce::dontSendNotification);
   snapToggle.setEnabled(waveform.lane >= 0 && selected() && !selected()->protectedEntry);
 }
