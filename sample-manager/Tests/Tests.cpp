@@ -19,6 +19,8 @@ void startTempoTests();
 void startupPlaybackTests();
 void firmwareTests();
 void firmwareReleaseTests();
+void defaultSamplesTests();
+void defaultSamplesLiveTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -142,6 +144,14 @@ int runTests(const String &suite) {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    if (suite == "default-samples") {
+      defaultSamplesTests();
+      return 0;
+    }
+    if (suite == "default-samples-live") {
+      defaultSamplesLiveTests();
+      return 0;
+    }
     // Focused suites let worker/recovery regressions run independently of DSP
     // estimation fixtures. The default continues to run the full contract.
     if (suite == "batch-import" || suite == "import-benchmark") {
@@ -561,8 +571,9 @@ int runTests(const String &suite) {
       durableWrite(child(existing.dir, "settings/unrelated.txt"), "keep", 4);
       Storage storage(existing.dir);
       auto adopted = storage.open();
-      check(adopted.settings.size() == 3 && adopted.settings.at("midi_channel") == "1" &&
-                adopted.settings.at("grimoire/rune1/effect1") == "on" &&
+      const card::Settings preserved{{"midi_channel", "1"}, {"start_tempo", "default"},
+                                     {"startup_playback", "play"}, {"grimoire/rune1/effect1", "on"}};
+      check(adopted.settings == preserved &&
                 !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
                 child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
             "Opening existing settings preserves chosen effects and unrelated files");

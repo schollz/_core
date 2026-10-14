@@ -59,6 +59,7 @@ target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp S
 target_sources(CoreSampleManager PRIVATE Source/Firmware.cpp Source/FirmwareReleases.cpp Source/FirmwareView.cpp Tests/FirmwareTests.cpp)
 target_sources(CoreSampleManager PRIVATE Tests/RenderStatusTests.cpp)
 target_sources(CoreSampleManager PRIVATE Tests/BatchImportTests.cpp)
+target_sources(CoreSampleManager PRIVATE Source/DefaultSamples.cpp Tests/DefaultSamplesTests.cpp)
 target_include_directories(CoreSampleManager PRIVATE Source Vendor/amenbreak "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_compile_definitions(CoreSampleManager PRIVATE JUCE_WEB_BROWSER=0
     JUCE_USE_MP3AUDIOFORMAT=1 JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:CoreSampleManager,JUCE_PRODUCT_NAME>"
@@ -86,6 +87,8 @@ else()
     target_sources(CoreSampleManager PRIVATE Source/Visualizer/Platform.cpp)
 endif()
 enable_testing()
+add_test(NAME default_samples COMMAND CoreSampleManager --self-test default-samples)
+set_tests_properties(default_samples PROPERTIES TIMEOUT 90 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 add_test(NAME batch_import COMMAND CoreSampleManager --self-test batch-import)
 set_tests_properties(batch_import PROPERTIES TIMEOUT 120 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 add_test(NAME companion_migration COMMAND CoreSampleManager --self-test companion-migration)
