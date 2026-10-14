@@ -1,5 +1,6 @@
 #include "AppView.h"
 #include <BinaryData.h>
+#include <future>
 namespace core {
 namespace {
 constexpr int railWidth = 72, railRowHeight = 39;
@@ -136,15 +137,16 @@ AppView::AppView() {
     headerRunes[i] = juce::Drawable::createFromImageData(data, size);
   }
   for (auto *c : std::initializer_list<juce::Component *>{
-           &importButton, &undoButton,     &redoButton,    &projectButton,
-           &settingsButton, &visualizerButton, &deviceButton, &more,
-           &presentationBox, &folderLabel, &statusLabel,   &activity,
-           &banks,        &samples,        &divider,       &editor,
-           &empty,        &createProject, &defaultSamples, &cancelDefaults})
+           &importButton,    &saveButton,     &autoSaveToggle,   &undoButton,   &redoButton,
+           &projectButton,   &settingsButton, &visualizerButton, &deviceButton, &more,
+           &presentationBox, &folderLabel,    &statusLabel,      &activity,     &banks,
+           &samples,         &divider,        &editor,           &empty,        &createProject,
+           &defaultSamples,  &cancelDefaults})
     addAndMakeVisible(c);
   int focusOrder = 1;
-  for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
-                       &settingsButton, &visualizerButton, &deviceButton, &more})
+  for (auto *button : std::initializer_list<juce::Component *>{
+           &importButton, &saveButton, &undoButton, &redoButton, &autoSaveToggle, &projectButton,
+           &settingsButton, &visualizerButton, &deviceButton, &more})
     button->setExplicitFocusOrder(focusOrder++);
   projectButton.setTitle("Project");
   activity.setPercentageDisplay(false);
@@ -163,11 +165,12 @@ AppView::AppView() {
   controlsViewport.setScrollBarsShown(true, false);
   controlsViewport.setScrollOnDragMode(juce::Viewport::ScrollOnDragMode::never);
   for (auto *c : std::initializer_list<juce::Component *>{
-           &hint,         &play,       &markerMode,     &sliceCount,
-           &evenButton,   &autoButton, &sourceBpmLabel, &sourceBpm,
-           &channelLabel, &channel,    &playModeLabel,  &playMode,
-           &tempo,        &oneShot,    &removeButton,   &mergeButton,
-           &up,           &down,       &moveBank,       &advancedButton})
+           &hint,          &play,         &markerMode, &snapToggle,
+           &sliceCount,    &evenButton,   &autoButton, &sourceBpmLabel,
+           &sourceBpm,     &channelLabel, &channel,    &playModeLabel,
+           &playMode,      &tempo,        &oneShot,    &removeButton,
+           &mergeButton,   &up,           &down,       &moveBank,
+           &advancedButton})
     controls.addAndMakeVisible(c);
   controls.addChildComponent(advancedControls);
   for (auto *c : std::initializer_list<juce::Component *>{
@@ -223,11 +226,36 @@ AppView::AppView() {
   defaultSamples.onClick = [this] { defaultSamplesMenu(); };
   cancelDefaults.onClick = [this] { cancelDefaultSamples(); };
   importButton.onClick = [this] { chooseImport(); };
+  autoSaveToggle.setToggleState(!preferences.hasProperty("autoSave") ||
+                                    bool(preferences["autoSave"]),
+                                juce::dontSendNotification);
+  snapToggle.setToggleState(!preferences.hasProperty("snapToSlices") ||
+                                bool(preferences["snapToSlices"]),
+                            juce::dontSendNotification);
+  manager.setAutoSave(autoSaveToggle.getToggleState());
+  waveform.setSnapToSlices(snapToggle.getToggleState());
+  autoSaveToggle.setTooltip("Save after a one-second editing pause. Turn off to save manually; "
+                            "local crash recovery continues.");
+  saveButton.setTooltip("Save pending edits to the project and card. Cmd/Ctrl+S.");
+  snapToggle.setTooltip(
+      "Snap transient markers to slice starts within 10 pixels. Hold Option/Alt to bypass.");
+  autoSaveToggle.onClick = [this] {
+    manager.setAutoSave(autoSaveToggle.getToggleState());
+    savePreferences();
+  };
+  snapToggle.onClick = [this] {
+    waveform.setSnapToSlices(snapToggle.getToggleState());
+    savePreferences();
+  };
+  saveButton.onClick = [this] {
+    editControls();
+    manager.saveNow();
+  };
   settingsButton.onClick = [this] { showSettings(); };
   more.onClick = [this] { moreMenu(); };
   undoButton.onClick = [this] { manager.undo(); };
   redoButton.onClick = [this] { manager.redo(); };
-  removeButton.onClick = [this] { manager.remove(selectedIds()); };
+  removeButton.onClick = [this] { requestRemove(); };
   mergeButton.onClick = [this] { manager.merge(selectedIds(), bank); };
   up.onClick = [this] { manager.move(selectedIds(), bank, -1); };
   down.onClick = [this] { manager.move(selectedIds(), bank, 1); };
@@ -310,7 +338,10 @@ AppView::AppView() {
   updatePresentation();
   markerMode.onChange = [this] {
     waveform.lane = markerMode.getSelectedId() - 2;
+    snapToggle.setEnabled(waveform.lane >= 0 && selected() && !selected()->protectedEntry);
     waveform.repaint();
+    updateMarkerHelp();
+    resized();
   };
   detector.addItemList({"hfc", "energy", "complex", "phase", "wphase",
                         "specdiff", "kl", "mkl", "specflux"},
@@ -353,8 +384,10 @@ AppView::AppView() {
           sample->id, "Variable splice timing",
           [enabled = variable.getToggleState()](Sample &s) { s.spliceVariable = enabled; });
   };
-  waveform.onEdit = [this](const Sample &updated) {
-    manager.editMarkers(updated.id, updated.slices, updated.transients);
+  waveform.onEdit = [this](const Sample &updated, int lane, uint64_t sequence) {
+    manager.editMarkerLane(updated.id, lane, updated.slices,
+                           lane >= 0 ? updated.transients[size_t(lane)] : std::vector<double>{},
+                           sequence);
   };
   waveform.onAudition = [this](double a, double b) { audition(a, b); };
   bankRows.count = [] { return 16; };
@@ -691,15 +724,20 @@ void AppView::updateEditor() {
   createProject.setVisible(state.root == File());
   defaultSamples.setVisible(state.root == File());
   defaultSamples.setEnabled(!defaultsPending && !defaultsOpening);
-  createProject.setEnabled(!state.busy);
-  importButton.setEnabled(state.available && !defaultsOpening);
-  undoButton.setEnabled(state.available && state.canUndo && !defaultsOpening);
-  redoButton.setEnabled(state.available && state.canRedo && !defaultsOpening);
-  settingsButton.setEnabled(state.available && !defaultsOpening);
+  createProject.setEnabled(!state.exclusiveOperation);
+  importButton.setEnabled(state.available && !defaultsOpening && !state.exclusiveOperation);
+  undoButton.setEnabled(state.available && state.canUndo && !defaultsOpening &&
+                        !state.exclusiveOperation);
+  redoButton.setEnabled(state.available && state.canRedo && !defaultsOpening &&
+                        !state.exclusiveOperation);
+  settingsButton.setEnabled(state.available && !defaultsOpening && !state.exclusiveOperation);
   more.setEnabled(!defaultsOpening);
   banks.setEnabled(!defaultsOpening);
   samples.setEnabled(!defaultsOpening);
   activity.setVisible(state.busy && state.error.isEmpty());
+  saveButton.setEnabled(state.available && state.hasUnsavedChanges && !state.exclusiveOperation);
+  autoSaveToggle.setEnabled(!state.exclusiveOperation);
+
   if (s) {
     bool editingText = name.hasKeyboardFocus(true) || sourceBpm.hasKeyboardFocus(true) ||
                        renderBpm.hasKeyboardFocus(true);
@@ -721,8 +759,23 @@ void AppView::updateEditor() {
                         juce::dontSendNotification);
     sourceLabel.setTooltip(s->protectedEntry ? s->problem : renderStatus.tooltip());
     play.setTooltip(renderStatus.previewTooltip());
-    waveform.set(s, state.editorWaveform(s->id));
-    editor.setEnabled(!s->protectedEntry && state.available && !defaultsOpening);
+    const auto ack = state.markerSequences.find(s->id);
+    waveform.set(s, state.editorWaveform(s->id),
+                 ack == state.markerSequences.end() ? 0 : ack->second);
+    editor.setEnabled(state.available && !defaultsOpening && !state.exclusiveOperation);
+    const bool editable = !s->protectedEntry;
+    name.setEnabled(editable);
+    waveform.setEnabled(editable);
+    for (auto *control : controls.getChildren())
+      control->setEnabled(editable);
+    removeButton.setEnabled(true);
+    removeButton.setButtonText(s->protectedEntry || s->nameUnsafe ? String::fromUTF8("Remove…")
+                                                                  : String("Remove"));
+    snapToggle.setEnabled(editable && waveform.lane >= 0);
+    if (!editable)
+      sourceLabel.setText("Bank " + String(s->bank + 1) + " slot " + String(s->slot + 1) + ": " +
+                              s->problem + ". Remove this slot to retain its files in recovery.",
+                          juce::dontSendNotification);
   } else {
     controlsId.clear();
     waveform.set(nullptr, {});
@@ -747,6 +800,8 @@ void AppView::updatePresentation() {
   // Only Zeptocore exposes one-shot; hidden presentations retain saved values.
   oneShot.setVisible(presentation == 1);
   waveform.setTransientLanesVisible(showTransients);
+  snapToggle.setVisible(showTransients);
+  snapToggle.setEnabled(showTransients && waveform.lane >= 0);
   const int marker = std::max(1, markerMode.getSelectedId());
   markerMode.clear(juce::dontSendNotification);
   markerMode.addItem("Slices", 1);
@@ -754,11 +809,22 @@ void AppView::updatePresentation() {
     markerMode.addItemList({"Kick transients", "Snare transients", "Other transients"}, 2);
   markerMode.setSelectedId(showTransients ? marker : 1, juce::dontSendNotification);
   waveform.lane = markerMode.getSelectedId() - 2;
+  updateMarkerHelp();
   markerMode.setTooltip(
       showTransients
           ? "Choose Slices, Kick, Snare or Other to edit that lane. For transient markers, "
             "click to add, drag to move, and double-click to remove."
           : "Edit slice boundaries: right-click to add, drag to move, and double-click to remove.");
+}
+void AppView::updateMarkerHelp() {
+  hint.setText(
+      waveform.lane < 0
+          ? "Click: audition · Right-click: add · Double-click: remove\nDrag: move marker · Wheel: "
+            "zoom · Shift-wheel / middle-drag: pan."
+          : "Click: add transient · Drag: move · Double-click: remove\nSnap to nearby slice starts "
+            "· Option/Alt: bypass · Wheel: zoom · Shift-wheel / middle-drag: pan.",
+      juce::dontSendNotification);
+  snapToggle.setEnabled(waveform.lane >= 0 && selected() && !selected()->protectedEntry);
 }
 void AppView::editControls() {
   if (updating || defaultsOpening)
@@ -805,6 +871,7 @@ void AppView::audition(double a, double b) {
   });
 }
 void AppView::timerCallback() {
+  pollTransitions();
   pollDefaultSamples();
   const bool analysing = online.busy() || onlineCompletionPending;
   const String onlineText = analysing ? "Cancel online analysis" : "Analyze drums online";
@@ -880,18 +947,22 @@ void AppView::chooseNewProject() {
         const auto destination = f.getResult();
         if (!safe || destination == File())
           return;
-        safe->safely([&] {
-          require(!destination.exists() && !destination.isSymbolicLink(),
-                  "That destination already exists. Choose a new project folder name.");
-          // A single, exclusive mkdir also rejects a destination created after
-          // the existence check. Never adopt or overwrite it as a new project.
-          std::error_code error;
-          const bool created = std::filesystem::create_directory(
-              std::filesystem::u8path(destination.getFullPathName().toStdString()), error);
-          require(created && !error,
-                  "Cannot create project folder: " +
-                      (error ? String(error.message()) : String("destination already exists")));
-          safe->manager.open(destination);
+        safe->guardUnsaved([safe, destination] {
+          if (!safe)
+            return;
+          safe->safely([&] {
+            require(!destination.exists() && !destination.isSymbolicLink(),
+                    "That destination already exists. Choose a new project folder name.");
+            // A single, exclusive mkdir also rejects a destination created after
+            // the existence check. Never adopt or overwrite it as a new project.
+            std::error_code error;
+            const bool created = std::filesystem::create_directory(
+                std::filesystem::u8path(destination.getFullPathName().toStdString()), error);
+            require(created && !error,
+                    "Cannot create project folder: " +
+                        (error ? String(error.message()) : String("destination already exists")));
+            safe->manager.open(destination);
+          });
         });
       });
 }
@@ -903,8 +974,13 @@ void AppView::chooseFolder() {
   chooser->launchAsync(juce::FileBrowserComponent::openMode |
                            juce::FileBrowserComponent::canSelectDirectories,
                        [safe](const juce::FileChooser &f) {
-                         if (safe && f.getResult().isDirectory())
-                           safe->manager.open(f.getResult());
+                         if (safe && f.getResult().isDirectory()) {
+                           const auto folder = f.getResult();
+                           safe->guardUnsaved([safe, folder] {
+                             if (safe)
+                               safe->manager.open(folder);
+                           });
+                         }
                        });
 }
 void AppView::chooseImport() {
@@ -940,7 +1016,8 @@ void AppView::filesDropped(const juce::StringArray &files, int, int) {
     return;
   if (files.size() == 1 && File(files[0]).isDirectory()) {
     cancelDefaultSamples();
-    manager.open(File(files[0]));
+    const File folder(files[0]);
+    guardUnsaved([this, folder] { manager.open(folder); });
   } else
     manager.import(files, bank);
 }
@@ -985,6 +1062,7 @@ void AppView::cancelDefaultSamples() {
   defaultSamples.setEnabled(!defaultsOpening);
 }
 void AppView::pollDefaultSamples() {
+  pollTransitions();
   if (defaultsOpening) {
     const auto current = manager.snapshot();
     if (!current.busy && manager.idle()) {
@@ -1014,25 +1092,31 @@ void AppView::pollDefaultSamples() {
   // Text fields commit on focus loss; flush them before checking save readiness.
   editControls();
   const auto current = manager.snapshot();
-  if (current.busy || !manager.idle() || online.busy() || onlineCompletionPending) {
-    defaultsMessage = "Default samples installed. Waiting for current edits and analysis to finish...";
+  if (online.busy() || onlineCompletionPending || current.exclusiveOperation)
     return;
-  }
-  if (current.primaryUpdateFailed || current.project.revision != current.project.completedRevision) {
+  if (current.autoSave && current.busy)
+    return;
+  if (current.primaryUpdateFailed) {
     const auto folder = defaultProject;
     cancelDefaultSamples();
-    localError = "Finish or reconcile pending changes before opening default samples. "
-                 "Project saved at " + folder.getFullPathName();
+    localError =
+        "Finish or reconcile pending changes before opening default samples. Project saved at " +
+        folder.getFullPathName();
     return;
   }
   preview.stop();
   localError.clear();
   defaultsPending = false;
-  defaultsOpening = true;
+  defaultsOpening = false;
   cancelDefaults.setVisible(false);
   settingsWindow.reset();
   updateEditor();
-  manager.open(defaultProject);
+  const auto folder = defaultProject;
+  guardUnsaved([this, folder] {
+    defaultsOpening = true;
+    updateEditor();
+    manager.open(folder);
+  });
 }
 void AppView::projectMenu() {
   enum { create = 1, openFolder, revealFolder, duplicateProject, firstDefault = 10, firstRecent = 100 };
@@ -1040,7 +1124,8 @@ void AppView::projectMenu() {
   const auto recentPaths = recents;
   juce::PopupMenu menu;
   menu.setLookAndFeel(&look);
-  menu.addItem(create, String::fromUTF8("Create project…"), !menuState.busy && !defaultsOpening);
+  menu.addItem(create, String::fromUTF8("Create project…"),
+               !menuState.exclusiveOperation && !defaultsOpening);
   menu.addItem(openFolder, String::fromUTF8("Open folder…"), !defaultsOpening);
   juce::PopupMenu defaultCollections;
   defaultCollections.setLookAndFeel(&look);
@@ -1059,7 +1144,7 @@ void AppView::projectMenu() {
   menu.addSeparator();
   menu.addItem(revealFolder, "Reveal folder", menuState.root.isDirectory());
   menu.addItem(duplicateProject, String::fromUTF8("Duplicate project…"),
-               menuState.available && !menuState.busy);
+               menuState.available && !menuState.exclusiveOperation);
   auto safe = juce::Component::SafePointer<AppView>(this);
   menu.showMenuAsync(
       juce::PopupMenu::Options().withTargetComponent(&projectButton),
@@ -1067,7 +1152,7 @@ void AppView::projectMenu() {
         if (!safe || n == 0)
           return;
         const auto current = safe->manager.snapshot();
-        if (n == create && !current.busy && !safe->defaultsOpening) {
+        if (n == create && !current.exclusiveOperation && !safe->defaultsOpening) {
           diagnostics::log("UI", "Project > Create project");
           safe->chooseNewProject();
         } else if (n == openFolder && !safe->defaultsOpening) {
@@ -1077,9 +1162,14 @@ void AppView::projectMenu() {
           diagnostics::log("UI", "Project > Reveal folder");
           root.revealToUser();
         } else if (n == duplicateProject && current.root == root && current.available &&
-                   !current.busy) {
+                   !current.exclusiveOperation) {
           diagnostics::log("UI", "Project > Duplicate project");
-          safe->chooseDuplicate();
+          safe->guardUnsaved(
+              [safe] {
+                if (safe)
+                  safe->chooseDuplicate();
+              },
+              false);
         } else if (n >= firstDefault && n < firstDefault + int(defaultSamplesCatalog().size())) {
           safe->chooseDefaultSamples(n - firstDefault);
         } else if (n >= firstRecent && n - firstRecent < recentPaths.size()) {
@@ -1087,7 +1177,10 @@ void AppView::projectMenu() {
           if (folder.isDirectory() && !safe->defaultsOpening) {
             diagnostics::log("UI", "Project > Recent " + folder.getFullPathName());
             safe->cancelDefaultSamples();
-            safe->manager.open(folder);
+            safe->guardUnsaved([safe, folder] {
+              if (safe)
+                safe->manager.open(folder);
+            });
           }
         }
       });
@@ -1098,6 +1191,7 @@ void AppView::moreMenu() {
   menu.addItem(1, "Retry pending save");
   menu.addItem(2, "Reload / reconcile completed card");
   menu.addItem(3, "Clear this bank");
+  menu.addItem(5, "Reveal recovery files", state.available);
   menu.addSeparator();
   menu.addItem(4, juce::String::fromUTF8(
                       "Clean unused originals and recovery history…"));
@@ -1106,6 +1200,8 @@ void AppView::moreMenu() {
       juce::PopupMenu::Options().withTargetComponent(&more), [safe](int n) {
         if (!safe)
           return;
+        if (n == 5)
+          child(safe->state.root, ".core-manager/recovery").revealToUser();
         if (n == 1)
           safe->manager.retry();
         if (n == 2)
@@ -1134,7 +1230,12 @@ void AppView::moreMenu() {
                   .withButton("Cancel"),
               [safe](int result) {
                 if (safe && result == 1)
-                  safe->manager.cleanup();
+                  safe->guardUnsaved(
+                      [safe] {
+                        if (safe)
+                          safe->manager.cleanup();
+                      },
+                      false);
               });
       });
 }
@@ -1142,12 +1243,121 @@ void AppView::showSettings() {
   settingsWindow = std::make_unique<AuxiliaryWindow>(
       "Device settings", new SettingsView(manager, look, presentation));
 }
+void AppView::pollTransitions() {
+  if (pendingGuard && pendingGuard())
+    pendingGuard = {};
+  if (pendingTransition) {
+    const auto current = manager.snapshot();
+    if (!current.busy && (!current.recoveryPending || current.error.isNotEmpty())) {
+      if (transitionNeedsGuard) {
+        auto action = std::move(pendingTransition);
+        pendingTransition = {};
+        transitionNeedsGuard = false;
+        action();
+      } else if (current.hasUnsavedChanges && !transitionDiscarding && current.error.isEmpty())
+        manager.saveNow();
+      else if (current.hasUnsavedChanges || current.error.isNotEmpty())
+        pendingTransition = {};
+      else {
+        auto action = std::move(pendingTransition);
+        pendingTransition = {};
+        action();
+      }
+    }
+  }
+}
+void AppView::requestRemove() {
+  const auto ids = selectedIds();
+  String damaged;
+  for (const auto &id : ids)
+    if (const auto *sample = state.project.find(id);
+        sample && (sample->protectedEntry || sample->nameUnsafe))
+      damaged +=
+          "Bank " + String(sample->bank + 1) + " slot " + String(sample->slot + 1) + ": " +
+          (sample->problem.isEmpty() ? String("Unusable filename metadata") : sample->problem) +
+          "\n";
+  if (damaged.isEmpty()) {
+    manager.remove(ids);
+    return;
+  }
+  auto safe = juce::Component::SafePointer<AppView>(this);
+  auto done = [safe, ids](int result) {
+    if (safe && result == 1)
+      safe->manager.remove(ids);
+  };
+  if (damagedPrompt)
+    damagedPrompt(done);
+  else
+    juce::AlertWindow::showAsync(
+        juce::MessageBoxOptions()
+            .withTitle("Remove damaged samples?")
+            .withMessage(damaged + "\nThe selected slots will be cleared when saved. Their files "
+                                   "will be kept in recovery, and Undo can restore them.")
+            .withButton("Remove")
+            .withButton("Cancel"),
+        done);
+}
+void AppView::requestClose(std::function<void()> done) { guardUnsaved(std::move(done)); }
+void AppView::guardUnsaved(std::function<void()> action, bool allowDiscard) {
+  if (pendingTransition || pendingGuard)
+    return;
+  editControls();
+  auto safe = juce::Component::SafePointer<AppView>(this);
+  auto promise = std::make_shared<std::promise<ManagerState>>();
+  auto result = promise->get_future().share();
+  manager.afterEdits([promise](ManagerState current) { promise->set_value(std::move(current)); });
+  pendingGuard = [safe, result, action, allowDiscard] {
+    if (!safe)
+      return true;
+    if (result.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+      return false;
+    auto current = result.get();
+    if (!current.hasUnsavedChanges) {
+      if (current.busy) {
+        safe->transitionNeedsGuard = true;
+        safe->pendingTransition = [safe, action, allowDiscard] {
+          if (safe)
+            safe->guardUnsaved(action, allowDiscard);
+        };
+      } else
+        action();
+      return true;
+    }
+    auto done = [safe, action, allowDiscard](int choice) {
+      if (!safe)
+        return;
+      if (choice == 1 || (allowDiscard && choice == 2)) {
+        safe->pendingTransition = action;
+        safe->transitionNeedsGuard = false;
+        safe->transitionDiscarding = choice == 2;
+        if (safe->transitionDiscarding)
+          safe->manager.discardPending();
+        else
+          safe->manager.saveNow();
+      }
+    };
+    if (safe->unsavedPrompt)
+      safe->unsavedPrompt(allowDiscard, done);
+    else {
+      auto options = juce::MessageBoxOptions()
+                         .withTitle("Unsaved changes")
+                         .withMessage("Save your pending changes to the project before continuing?")
+                         .withButton("Save");
+      if (allowDiscard)
+        options = options.withButton("Discard");
+      juce::AlertWindow::showAsync(options.withButton("Cancel"), done);
+    }
+    return true;
+  };
+}
 void AppView::savePreferences() {
   try {
     preferences = parseJson(preferencesFile());
   } catch (...) {
   }
   put(preferences, "presentation", presentation);
+  put(preferences, "autoSave", autoSaveToggle.getToggleState());
+  put(preferences, "snapToSlices", snapToggle.getToggleState());
   if (state.root != File())
     put(preferences, "lastProject", state.root.getFullPathName());
   juce::Array<var> folders;
@@ -1163,6 +1373,11 @@ bool AppView::keyPressed(const juce::KeyPress &key) {
   if (defaultsOpening)
     return false;
   if (key.getModifiers().isCommandDown()) {
+    if (key.getKeyCode() == 'S') {
+      editControls();
+      manager.saveNow();
+      return true;
+    }
     if (key.getKeyCode() == 'Z') {
       if (key.getModifiers().isShiftDown())
         manager.redo();
@@ -1184,7 +1399,7 @@ bool AppView::keyPressed(const juce::KeyPress &key) {
     return true;
   }
   if (key == juce::KeyPress::deleteKey || key == juce::KeyPress::backspaceKey) {
-    manager.remove(selectedIds());
+    requestRemove();
     return true;
   }
   return false;
@@ -1289,6 +1504,8 @@ int AppView::layoutControls(int width) {
   play.setBounds(transport.removeFromLeft(playWidth));
   transport.removeFromLeft(8);
   markerMode.setBounds(transport);
+  if (snapToggle.isVisible())
+    snapToggle.setBounds(tools.next(154, 29));
   const int evenWidth = evenButton.preferredWidth(29);
   auto slicing = tools.next(40 + 8 + evenWidth + 8 + autoButton.preferredWidth(29), 29);
   sliceCount.setBounds(slicing.removeFromLeft(40));
@@ -1363,9 +1580,10 @@ void AppView::resized() {
   presentationBox.setBounds(frame.header.getRight() - 210,
                              frame.header.getY() + 20, 186, 28);
   constexpr int buttonHeight = 30, buttonGap = 7, groupGap = 18;
-  const std::initializer_list<IconButton *> primary{&importButton, &undoButton, &redoButton};
-  const std::initializer_list<IconButton *> tools{&settingsButton, &visualizerButton,
-                                                &deviceButton, &more};
+  const std::initializer_list<IconButton *> primary{&importButton, &saveButton, &undoButton,
+                                                    &redoButton};
+  const std::initializer_list<IconButton *> tools{&settingsButton, &visualizerButton, &deviceButton,
+                                                  &more};
   auto groupWidth = [&](const std::initializer_list<IconButton *> &buttons) {
     int width = -buttonGap;
     for (auto *button : buttons)
@@ -1381,10 +1599,11 @@ void AppView::resized() {
   };
   int toolbarY = frame.content.getY() + 3;
   placeGroup(primary, frame.content.getX(), toolbarY);
+  autoSaveToggle.setBounds(redoButton.getRight() + buttonGap, toolbarY, 96, buttonHeight);
   const int projectWidth = projectButton.preferredWidth(buttonHeight);
   const int secondaryWidth = projectWidth + groupGap + groupWidth(tools);
   int secondaryX = frame.content.getRight() - secondaryWidth;
-  if (groupWidth(primary) + groupGap + secondaryWidth > frame.content.getWidth()) {
+  if (groupWidth(primary) + 103 + groupGap + secondaryWidth > frame.content.getWidth()) {
     // The secondary group moves together; editing history always stays beside Import.
     toolbarY += buttonHeight + 8;
     secondaryX = frame.content.getX();

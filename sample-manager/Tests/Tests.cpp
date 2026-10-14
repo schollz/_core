@@ -8,6 +8,8 @@
 int runVisualizerTests();
 namespace core {
 void audioTests();
+void editingWorkflowTests();
+void saveBenchmark();
 void importTests();
 void batchImportTests(bool benchmark);
 void tempoTests();
@@ -144,6 +146,8 @@ int runTests(const String &suite) {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    if (suite == "save-benchmark") { saveBenchmark(); return 0; }
+    if (suite == "editing-workflows") { editingWorkflowTests(); return 0; }
     if (suite == "default-samples") {
       defaultSamplesTests();
       return 0;
@@ -190,7 +194,7 @@ int runTests(const String &suite) {
         check(hashFile(primary) == before, "Repair preserves primary WAV bytes");
       }
       {
-        Manager manager;
+        Manager manager{std::chrono::milliseconds(20)};
         manager.open(t.dir);
         for (int n = 0; n < 2000; ++n) {
           auto state = manager.snapshot();
@@ -616,7 +620,7 @@ int runTests(const String &suite) {
       }
     }
     {
-      Manager manager;
+      Manager manager{std::chrono::milliseconds(20)};
       Look look;
       for (int theme = 0; theme < 3; ++theme) {
         look.presentation(theme);

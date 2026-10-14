@@ -3,6 +3,9 @@
 #include <chrono>
 #include <iostream>
 #include <numeric>
+#if JUCE_MAC
+#include <sys/socket.h>
+#endif
 
 namespace core {
 void defaultSamplesViewTests();
@@ -58,6 +61,10 @@ private:
       std::unique_ptr<juce::StreamingSocket> client(listener.waitForNextConnection());
       if (!client)
         continue;
+#if JUCE_MAC
+      const int suppressSigpipe = 1;
+      setsockopt(client->getRawSocketHandle(), SOL_SOCKET, SO_NOSIGPIPE, &suppressSigpipe, sizeof(suppressSigpipe));
+#endif
       String request;
       while (!stopped && !request.contains("\r\n\r\n")) {
         if (client->waitUntilReady(true, 10) != 1)
@@ -135,7 +142,7 @@ struct Fixture {
         out->writeShort(short(std::sin(n * .03) * 10000));
     }
     {
-      Manager manager;
+      Manager manager{std::chrono::milliseconds(20)};
       manager.open(project);
       settle(manager);
       manager.import({input.getFullPathName()}, 0);
@@ -259,10 +266,10 @@ void defaultSamplesTests() {
             child(first.project, "user-edits.txt").loadFileAsString() == "keep me",
         "earlier edits retained and recovery isolated");
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(second.project);
     const auto ready = settle(manager);
-    check(ready.status == "Ready" && ready.project.samples[0].name == fresh.samples[0].name &&
+    check(ready.status == "Saved" && ready.project.samples[0].name == fresh.samples[0].name &&
               ready.project.warnings.isEmpty(),
           "installed copy opens ready without old recovery");
   }
@@ -394,7 +401,7 @@ void defaultSamplesViewTests() {
       if (app.manager.snapshot().generation != app.state.generation)
         app.changeListenerCallback(nullptr);
       app.pollDefaultSamples();
-      return !app.defaultsPending && !app.defaultsOpening;
+      return !app.defaultsPending && !app.defaultsOpening && !app.pendingGuard && !app.pendingTransition;
     });
     app.changeListenerCallback(nullptr);
     app.timerCallback();
@@ -421,7 +428,7 @@ void defaultSamplesViewTests() {
   app.onlineCompletionPending = false;
   complete();
   auto ready = settle(app.manager);
-  check(ready.root != fixture.project && ready.status == "Ready" &&
+  check(ready.root != fixture.project && ready.status == "Saved" &&
             app.presentation == presentation && app.selectedId == ready.project.samples[0].id &&
             app.recents[0] == ready.root.getFullPathName(),
         "automatic open uses normal selection and recents without changing presentation");
@@ -445,7 +452,7 @@ void defaultSamplesViewTests() {
   app.beginDefaultSamples(fixture.entry, fixture.downloads, fixture.cache);
   app.filesDropped({fixture.project.getFullPathName()}, 0, 0);
   waitFor([&] { return !app.defaults.snapshot().active(); });
-  settle(app.manager);
+  waitFor([&] { app.pollTransitions(); return app.manager.snapshot().root == fixture.project && !app.manager.snapshot().busy; });
   app.pollDefaultSamples();
   check(app.manager.snapshot().root == fixture.project && !app.defaultsPending,
         "explicit project open cancels pending automatic switch");
@@ -491,11 +498,11 @@ void defaultSamplesLiveTests() {
             std::cout << app.defaults.snapshot().message << std::endl;
             last = std::chrono::steady_clock::now();
           }
-          return !app.defaultsPending && !app.defaultsOpening;
+          return !app.defaultsPending && !app.defaultsOpening && !app.pendingGuard && !app.pendingTransition;
         },
         1800);
     auto ready = settle(app.manager);
-    check(app.localError.isEmpty() && ready.status == "Ready" && ready.project.warnings.isEmpty() &&
+    check(app.localError.isEmpty() && ready.status == "Saved" && ready.project.warnings.isEmpty() &&
               int(ready.project.samples.size()) ==
                   std::accumulate(entry.bankSizes.begin(), entry.bankSizes.end(), 0),
           "public collection opens Ready: " + app.localError);
@@ -515,7 +522,7 @@ void defaultSamplesLiveTests() {
     waitFor(
         [&] {
           app.pollDefaultSamples();
-          return !app.defaultsPending && !app.defaultsOpening;
+          return !app.defaultsPending && !app.defaultsOpening && !app.pendingGuard && !app.pendingTransition;
         },
         1800);
     ready = settle(app.manager);

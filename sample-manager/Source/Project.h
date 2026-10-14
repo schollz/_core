@@ -9,17 +9,18 @@ enum class SpliceTimingCalculation { initialImport, evenSlices };
 struct Sample {
   String id = uuid(), name, originalFilename, source, sourceHash, originalArchive,
          origin = "imported", problem;
-  int bank = 0, slot = 0, channels = 1, rate = 44100, playMode = 0,
-      spliceTrigger = 96;
+  int bank = 0, slot = 0, channels = 1, rate = 44100, playMode = 0, spliceTrigger = 96;
   double sourceBpm = 120, renderBpm = 0, sourceDuration = 0;
-  bool preservePitch = false, tempoMatch = true, oneShot = false,
-       spliceVariable = false, protectedEntry = false;
+  bool preservePitch = false, tempoMatch = true, oneShot = false, spliceVariable = false,
+       protectedEntry = false, namePending = false, nameUnsafe = false;
   int64_t revision = 1, completedRevision = 0;
   String rendered, renderKey;
   std::vector<Marker> slices{{0, 1, 0}};         // original normalized timeline
   std::vector<Marker> renderAnchors{{0, 1, 0}};  // immutable source key frames
   std::array<std::vector<double>, 3> transients; // original source seconds
   std::vector<String> ownedPaths;
+  // Exact damaged bytes retained for undo; keys are canonical card paths.
+  std::map<String, String> recoveryFiles, recoveryHashes;
   double ratio() const { return renderBpm > 0 ? sourceBpm / renderBpm : 1.; }
   void updateSpliceTrigger(SpliceTimingCalculation);
   var json() const;
@@ -51,12 +52,12 @@ public:
     future.clear();
   }
   var json(const String &projectId) const;
-  void restore(const var &, const String &projectId,
-               const card::Settings &missingSettings = {});
+  void retainSaved(int64_t revision);
+  void restore(const var &, const String &projectId, const card::Settings &missingSettings = {});
 
 private:
   struct Entry {
-    Project project;
+    std::shared_ptr<const Project> project;
     String label;
   };
   std::vector<Entry> past, future;

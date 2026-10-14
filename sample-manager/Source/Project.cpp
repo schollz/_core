@@ -2,8 +2,8 @@
 #include <cmath>
 namespace core {
 void Sample::updateSpliceTrigger(SpliceTimingCalculation calculation) {
-  require(std::isfinite(sourceDuration) && sourceDuration > 0 &&
-              std::isfinite(sourceBpm) && sourceBpm > 0 && !slices.empty(),
+  require(std::isfinite(sourceDuration) && sourceDuration > 0 && std::isfinite(sourceBpm) &&
+              sourceBpm > 0 && !slices.empty(),
           "Cannot calculate splice timing without duration, BPM and slices");
   // Use the unpadded, normal-speed source timeline. Render BPM changes the
   // duration inversely, so it does not change the number of beats in the loop.
@@ -47,6 +47,10 @@ var Sample::json() const {
   put(o, "oneShot", oneShot);
   put(o, "spliceVariable", spliceVariable);
   put(o, "protected", protectedEntry);
+  if (namePending)
+    put(o, "namePending", true);
+  if (nameUnsafe)
+    put(o, "nameUnsafe", true);
   put(o, "revision", juce::int64(revision));
   put(o, "completedRevision", juce::int64(completedRevision));
   put(o, "rendered", rendered);
@@ -78,6 +82,15 @@ var Sample::json() const {
   put(o, "renderAnchors", anchors);
   put(o, "transients", lanes);
   put(o, "ownedPaths", paths);
+  if (!recoveryFiles.empty()) {
+    var files = object(), hashes = object();
+    for (const auto &[path, backup] : recoveryFiles)
+      put(files, path, backup);
+    for (const auto &[path, hash] : recoveryHashes)
+      put(hashes, path, hash);
+    put(o, "recoveryFiles", files);
+    put(o, "recoveryHashes", hashes);
+  }
   return o;
 }
 Sample Sample::fromJson(const var &o) {
@@ -105,6 +118,8 @@ Sample Sample::fromJson(const var &o) {
   s.oneShot = bool(o["oneShot"]);
   s.spliceVariable = bool(o["spliceVariable"]);
   s.protectedEntry = bool(o["protected"]);
+  s.namePending = bool(o["namePending"]);
+  s.nameUnsafe = bool(o["nameUnsafe"]);
   s.revision = juce::int64(o["revision"]);
   s.completedRevision = juce::int64(o["completedRevision"]);
   s.rendered = o["rendered"].toString();
@@ -112,8 +127,7 @@ Sample Sample::fromJson(const var &o) {
   s.slices.clear();
   if (auto *a = o["slices"].getArray())
     for (auto &m : *a)
-      s.slices.push_back(
-          {double(m["start"]), double(m["stop"]), int(m["type"])});
+      s.slices.push_back({double(m["start"]), double(m["stop"]), int(m["type"])});
   s.renderAnchors = s.slices;
   if (auto *a = o["renderAnchors"].getArray()) {
     s.renderAnchors.clear();
@@ -131,6 +145,12 @@ Sample Sample::fromJson(const var &o) {
     for (auto &p : *a)
       if (!card::isCompanionPath(p.toString()))
         s.ownedPaths.push_back(p.toString());
+  if (auto *files = o["recoveryFiles"].getDynamicObject())
+    for (const auto &p : files->getProperties())
+      s.recoveryFiles[p.name.toString()] = p.value.toString();
+  if (auto *hashes = o["recoveryHashes"].getDynamicObject())
+    for (const auto &p : hashes->getProperties())
+      s.recoveryHashes[p.name.toString()] = p.value.toString();
   return s;
 }
 var Project::json() const {
@@ -179,7 +199,8 @@ Project Project::fromJson(const var &o) {
   for (int i = p.warnings.size(); --i >= 0;) {
     auto warning = p.warnings[i];
     if (warning.startsWith("External change: ") &&
-        card::isCompanionPath(warning.substring(17).upToFirstOccurrenceOf(". Reload/reconcile", false, false)))
+        card::isCompanionPath(
+            warning.substring(17).upToFirstOccurrenceOf(". Reload/reconcile", false, false)))
       p.warnings.remove(i);
   }
   p.validate();
@@ -237,60 +258,72 @@ void Project::validate() const {
   std::set<String> ids;
   std::set<int> slots;
   for (const auto &s : samples) {
-    require(s.id.isNotEmpty() && ids.insert(s.id).second,
-            "Duplicate sample ID");
+    require(s.id.isNotEmpty() && ids.insert(s.id).second, "Duplicate sample ID");
     require(s.bank >= 0 && s.bank < 16 && s.slot >= 0 && s.slot < 16 &&
                 slots.insert(s.bank * 16 + s.slot).second,
             "Duplicate or invalid slot");
+    for (const auto &[path, backup] : s.recoveryFiles) {
+      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json";
+      for (int variant = 0; variant <= 8; variant += 2)
+        canonical |= path == card::path(s.bank, s.slot, variant) ||
+                     path == card::path(s.bank, s.slot, variant) + ".info";
+      require(canonical && backup.startsWith(".core-manager/recovery/removed-") &&
+                  !backup.contains("..") && !backup.containsChar('\\') &&
+                  s.recoveryHashes.count(path) && s.recoveryHashes.at(path).length() == 64,
+              "Invalid damaged-slot recovery reference");
+    }
+    for (const auto &[path, hash] : s.recoveryHashes) {
+      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json";
+      for (int variant = 0; variant <= 8; variant += 2)
+        canonical |= path == card::path(s.bank, s.slot, variant) ||
+                     path == card::path(s.bank, s.slot, variant) + ".info";
+      require(canonical &&
+                  (hash == "missing" || (hash.length() == 64 && s.recoveryFiles.count(path))),
+              "Invalid damaged-slot recovery fingerprint");
+    }
     if (s.protectedEntry)
       continue;
-    require(s.source.startsWith(".core-manager/sources/") &&
-                s.sourceHash.length() == 64,
+    require(s.source.startsWith(".core-manager/sources/") && s.sourceHash.length() == 64,
             "Invalid immutable source path");
-    require(s.channels >= 1 && s.channels <= 2 &&
-                (s.rate == 44100 || s.rate == 88200),
+    require(s.channels >= 1 && s.channels <= 2 && (s.rate == 44100 || s.rate == 88200),
             "Invalid audio format");
-    require(
-        std::isfinite(s.sourceBpm) && s.sourceBpm >= 30 && s.sourceBpm <= 300 &&
-            std::isfinite(s.renderBpm) &&
-            (s.renderBpm == 0 || (s.renderBpm >= 30 && s.renderBpm <= 300)),
-        juce::String::fromUTF8("BPM must be 30–300, or unset for Render BPM"));
-    require(std::isfinite(s.sourceDuration) && s.sourceDuration > 0,
-            "Empty audio");
+    require(std::isfinite(s.sourceBpm) && s.sourceBpm >= 30 && s.sourceBpm <= 300 &&
+                std::isfinite(s.renderBpm) &&
+                (s.renderBpm == 0 || (s.renderBpm >= 30 && s.renderBpm <= 300)),
+            juce::String::fromUTF8("BPM must be 30–300, or unset for Render BPM"));
+    require(std::isfinite(s.sourceDuration) && s.sourceDuration > 0, "Empty audio");
     require(!s.slices.empty(), "A sample needs at least one slice");
     for (auto m : s.slices)
-      require(std::isfinite(m.start) && std::isfinite(m.stop) && m.start >= 0 &&
-                  m.start < m.stop && m.stop <= 1 && m.type >= 0 &&
-                  m.type <= 127,
+      require(std::isfinite(m.start) && std::isfinite(m.stop) && m.start >= 0 && m.start < m.stop &&
+                  m.stop <= 1 && m.type >= 0 && m.type <= 127,
               "Invalid slice");
     require(!s.renderAnchors.empty(), "Missing source render anchors");
     for (auto m : s.renderAnchors)
-      require(std::isfinite(m.start) && std::isfinite(m.stop) && m.start >= 0 &&
-                  m.start < m.stop && m.stop <= 1,
+      require(std::isfinite(m.start) && std::isfinite(m.stop) && m.start >= 0 && m.start < m.stop &&
+                  m.stop <= 1,
               "Invalid source render anchor");
     for (const auto &lane : s.transients)
       for (auto t : lane)
-        require(std::isfinite(t) && t >= 0 && t <= s.sourceDuration,
-                "Transient is outside source");
+        require(std::isfinite(t) && t >= 0 && t <= s.sourceDuration, "Transient is outside source");
   }
 }
 void History::accept(const Project &p, const String &label) {
-  past.push_back({p, label});
+  past.push_back({std::make_shared<const Project>(p), label});
   future.clear();
 }
 bool History::undo(Project &p) {
   if (past.empty())
     return false;
-  future.push_back({p, past.back().label});
-  p = past.back().project;
+  future.push_back({std::make_shared<const Project>(p), past.back().label});
+  p = *past.back().project;
   past.pop_back();
   return true;
 }
 bool History::redo(Project &p) {
   if (future.empty())
     return false;
-  past.push_back({p, future.back().label});
-  p = future.back().project;
+  past.push_back({std::make_shared<const Project>(p), future.back().label});
+  p = *future.back().project;
   future.pop_back();
   return true;
 }
@@ -301,7 +334,7 @@ var History::json(const String &projectId) const {
   auto add = [](const std::vector<Entry> &items, juce::Array<var> &target) {
     for (const auto &item : items) {
       var v = object();
-      put(v, "project", item.project.json());
+      put(v, "project", item.project->json());
       put(v, "label", item.label);
       target.add(v);
     }
@@ -325,23 +358,33 @@ void History::restore(const var &o, const String &projectId,
         // baseline, rather than reverting to its default on an unrelated undo.
         for (const auto &[key, value] : missingSettings)
           project.settings.emplace(key, value);
-        target.push_back({std::move(project), v["label"].toString()});
+        target.push_back(
+            {std::make_shared<const Project>(std::move(project)), v["label"].toString()});
       }
   };
   read(o["past"], past);
   read(o["future"], future);
 }
+void History::retainSaved(int64_t revision) {
+  auto retain = [revision](auto &entries) {
+    entries.erase(std::remove_if(entries.begin(), entries.end(),
+                                 [revision](const auto &entry) {
+                                   return entry.project->revision >= revision;
+                                 }),
+                  entries.end());
+  };
+  retain(past);
+  retain(future);
+}
 String audioKey(const Sample &s) {
   // Source BPM alone and slice edits are metadata. Anchors are captured when
   // the immutable source is created, so identical keys always produce identical
   // audio.
-  auto key = "render-v2:" + s.sourceHash + ":" + String(s.rate) + ":" +
-             String(s.channels) + ":" + String(s.ratio(), 12) + ":" +
-             String(int(s.ratio() == 1. || s.preservePitch));
+  auto key = "render-v2:" + s.sourceHash + ":" + String(s.rate) + ":" + String(s.channels) + ":" +
+             String(s.ratio(), 12) + ":" + String(int(s.ratio() == 1. || s.preservePitch));
   for (auto m : s.renderAnchors)
     key += ":" + String(m.start, 12) + ":" + String(m.stop, 12);
-  return juce::SHA256(key.toRawUTF8(), size_t(key.getNumBytesAsUTF8()))
-      .toHexString();
+  return juce::SHA256(key.toRawUTF8(), size_t(key.getNumBytesAsUTF8())).toHexString();
 }
 card::Info sampleInfo(const Sample &s, uint64_t frames) {
   require(frames > 0 && frames <= uint64_t(INT32_MAX) / (s.channels * 2),
@@ -358,8 +401,7 @@ card::Info sampleInfo(const Sample &s, uint64_t frames) {
   i.spliceVariable = s.spliceVariable;
   for (auto m : s.slices)
     i.slices.push_back({uint32_t(std::llround(m.start * i.size)) / 4 * 4,
-                        uint32_t(std::llround(m.stop * i.size)) / 4 * 4,
-                        int8_t(m.type)});
+                        uint32_t(std::llround(m.stop * i.size)) / 4 * 4, int8_t(m.type)});
   for (size_t l = 0; l < 3; ++l)
     for (auto t : s.transients[l]) {
       // Firmware transients use the normal-speed 44.1 kHz timeline.

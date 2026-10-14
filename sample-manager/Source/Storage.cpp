@@ -30,23 +30,19 @@ void renameFile(const File &a, const File &b) {
           "Cannot replace destination");
 #else
   std::error_code ec;
-  std::filesystem::rename(
-      std::filesystem::u8path(a.getFullPathName().toStdString()),
-      std::filesystem::u8path(b.getFullPathName().toStdString()), ec);
-  require(!ec, "Cannot replace " + b.getFullPathName() + ": " +
-                   String(ec.message()));
+  std::filesystem::rename(std::filesystem::u8path(a.getFullPathName().toStdString()),
+                          std::filesystem::u8path(b.getFullPathName().toStdString()), ec);
+  require(!ec, "Cannot replace " + b.getFullPathName() + ": " + String(ec.message()));
 #endif
   syncDirectory(b.getParentDirectory());
   if (a.getParentDirectory() != b.getParentDirectory())
     syncDirectory(a.getParentDirectory());
 }
 void removeFile(const File &f) {
-  require(!f.exists() || f.deleteFile(),
-          "Cannot remove " + f.getFullPathName());
+  require(!f.exists() || f.deleteFile(), "Cannot remove " + f.getFullPathName());
   syncDirectory(f.getParentDirectory());
 }
-void copyChecked(const File &from, const File &to,
-                 const std::function<bool()> &cancel = {}) {
+void copyChecked(const File &from, const File &to, const std::function<bool()> &cancel = {}) {
   ensureDirectory(to.getParentDirectory());
   auto in = from.createInputStream();
   auto out = to.createOutputStream();
@@ -63,8 +59,7 @@ void copyChecked(const File &from, const File &to,
   }
   require(in->getStatus().wasOk() && copied == from.getSize(), "Incomplete copy");
   out->flush();
-  require(out->getStatus().wasOk(),
-          "Copy failed: " + out->getStatus().getErrorMessage());
+  require(out->getStatus().wasOk(), "Copy failed: " + out->getStatus().getErrorMessage());
   require(hashFile(from, cancel) == hashFile(to, cancel), "Copy verification failed");
   syncDirectory(to.getParentDirectory());
 }
@@ -77,7 +72,7 @@ void rollback(const File &root, const File &dir, const var &j) {
     auto backup = dir.getChildFile("backup/" + String(n));
     // Only restore files that are still our replacement. Preserve external
     // edits.
-    auto current = fingerprint(dest);
+    auto current = bool(e["raw"]) && dest.existsAsFile() ? hashFile(dest) : fingerprint(dest);
     if (current == e["before"].toString())
       continue;
     require(current == e["after"].toString(),
@@ -87,8 +82,7 @@ void rollback(const File &root, const File &dir, const var &j) {
     // Backup copies are complete before the first replacement. Restoring is
     // repeatable.
     if (bool(e["existed"])) {
-      require(backup.existsAsFile() &&
-                  hashFile(backup) == e["before"].toString(),
+      require(backup.existsAsFile() && hashFile(backup) == e["before"].toString(),
               "Recovery backup missing or damaged");
       auto temp = dest.getSiblingFile(dest.getFileName() + ".core-restore");
       copyChecked(backup, temp);
@@ -102,8 +96,8 @@ void rollback(const File &root, const File &dir, const var &j) {
 }
 } // namespace
 void durableWrite(const File &target, const void *bytes, size_t size) {
-  diagnostics::log("STORAGE", "Write " + target.getFullPathName() +
-                                  " bytes=" + String(juce::int64(size)));
+  diagnostics::log("STORAGE",
+                   "Write " + target.getFullPathName() + " bytes=" + String(juce::int64(size)));
   ensureDirectory(target.getParentDirectory());
   auto temp = target.getSiblingFile(target.getFileName() + ".tmp-" + uuid());
   {
@@ -132,14 +126,12 @@ ProjectLock::ProjectLock(const File &root) {
   require(folder.createDirectory().wasOk(), "Project folder is read-only");
   auto file = child(root, ".core-manager/writer.lock");
 #if JUCE_WINDOWS
-  handle = CreateFileW(file.getFullPathName().toWideCharPointer(),
-                       GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS,
-                       FILE_ATTRIBUTE_NORMAL, nullptr);
+  handle = CreateFileW(file.getFullPathName().toWideCharPointer(), GENERIC_READ | GENERIC_WRITE, 0,
+                       nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   require(handle != INVALID_HANDLE_VALUE,
           "This project already has a writer, or cannot be written");
 #else
-  descriptor =
-      ::open(file.getFullPathName().toRawUTF8(), O_CREAT | O_RDWR, 0600);
+  descriptor = ::open(file.getFullPathName().toRawUTF8(), O_CREAT | O_RDWR, 0600);
   require(descriptor >= 0, "Cannot open project lock");
   if (::flock(descriptor, LOCK_EX | LOCK_NB) != 0) {
     ::close(descriptor);
@@ -159,11 +151,9 @@ ProjectLock::~ProjectLock() {
   }
 #endif
 }
-void Transaction::commit(const std::vector<Replacement> &requested,
-                         const Project &completed) {
-  diagnostics::Scope trace("STORAGE", "Commit revision=" +
-      String(juce::int64(completed.revision)) + " replacements=" +
-      String(int(requested.size())));
+void Transaction::commit(const std::vector<Replacement> &requested, const Project &completed) {
+  diagnostics::Scope trace("STORAGE", "Commit revision=" + String(juce::int64(completed.revision)) +
+                                          " replacements=" + String(int(requested.size())));
   completed.validate();
   auto dir = child(root, ".core-manager/transactions/" + uuid());
   ensureDirectory(dir);
@@ -182,13 +172,16 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     auto &r = items[n];
     require(unique.insert(r.path).second, "Duplicate transaction destination");
     auto dest = child(root, r.path);
-    require(fingerprint(dest, shouldCancel) == r.expected,
+    require((r.rawFingerprint && dest.existsAsFile()
+                 ? hashFile(dest, shouldCancel)
+                 : fingerprint(dest, shouldCancel)) == r.expected,
             "External change detected: " + r.path + ". Reload/reconcile before saving.");
     var e = object();
     put(e, "path", r.path);
     put(e, "existed", dest.existsAsFile());
     put(e, "before", r.expected);
     put(e, "remove", r.staged == File());
+    put(e, "raw", r.rawFingerprint);
     auto after = r.staged == File() ? String("missing") : hashFile(r.staged, shouldCancel);
     require(r.contentHash.isEmpty() || after == r.contentHash,
             "Staged file changed while preparing save: " + r.path);
@@ -215,7 +208,9 @@ void Transaction::commit(const std::vector<Replacement> &requested,
       cancelled(shouldCancel);
       auto dest = child(root, items[n].path);
       diagnostics::log("STORAGE", "Commit file " + items[n].path);
-      require(fingerprint(dest, shouldCancel) == items[n].expected,
+      require((items[n].rawFingerprint && dest.existsAsFile()
+                   ? hashFile(dest, shouldCancel)
+                   : fingerprint(dest, shouldCancel)) == items[n].expected,
               "External change detected during save: " + items[n].path);
       auto staged = dir.getChildFile("new/" + String(int(n)));
       if (staged.existsAsFile()) {
@@ -234,8 +229,7 @@ void Transaction::commit(const std::vector<Replacement> &requested,
     throw;
   }
   auto history = child(root, ".core-manager/recovery/" + dir.getFileName());
-  require(history.getParentDirectory().createDirectory().wasOk(),
-          "Cannot create recovery folder");
+  require(history.getParentDirectory().createDirectory().wasOk(), "Cannot create recovery folder");
   renameFile(dir, history);
 }
 void Transaction::recover(const File &root) {
@@ -248,8 +242,7 @@ void Transaction::recover(const File &root) {
       continue;
     auto j = parseJson(file);
     auto state = j["state"].toString();
-    require(state == "prepared" || state == "complete" ||
-                state == "rolled-back",
+    require(state == "prepared" || state == "complete" || state == "rolled-back",
             "Unknown transaction state");
     if (state == "prepared")
       rollback(root, dir, j);
@@ -261,14 +254,12 @@ void Transaction::recover(const File &root) {
 }
 Storage::Storage(File f) : root(std::move(f)), lock(root) {
   for (const auto *name : {"sources", "cache", "transactions", "recovery"})
-    require(
-        child(root, String(".core-manager/") + name).createDirectory().wasOk(),
-        "Cannot prepare project storage");
+    require(child(root, String(".core-manager/") + name).createDirectory().wasOk(),
+            "Cannot prepare project storage");
 }
 String Storage::importSource(const File &input, String &hash) {
   hash = hashFile(input);
-  auto relative =
-      ".core-manager/sources/" + hash + input.getFileExtension().toLowerCase();
+  auto relative = ".core-manager/sources/" + hash + input.getFileExtension().toLowerCase();
   auto dest = child(root, relative);
   if (!dest.existsAsFile()) {
     auto temp = dest.getSiblingFile(dest.getFileName() + ".import-" + uuid());
@@ -278,6 +269,37 @@ String Storage::importSource(const File &input, String &hash) {
   } else
     require(hashFile(dest) == hash, "Immutable source has been modified");
   return relative;
+}
+void Storage::archiveDamaged(Sample &sample) {
+  require(sample.protectedEntry || sample.nameUnsafe, "Only damaged entries require raw recovery");
+  const auto directory = ".core-manager/recovery/removed-" + uuid();
+  std::vector<String> paths;
+  for (int variant = 0; variant <= 8; variant += 2)
+    for (const auto &suffix : juce::StringArray{"", ".info"}) {
+      const auto path = card::path(sample.bank, sample.slot, variant) + suffix;
+      if (child(root, path).existsAsFile())
+        paths.push_back(path);
+    }
+  const auto name = names::path(sample.bank, sample.slot);
+  if (child(root, name).existsAsFile())
+    paths.push_back(name);
+  sample.recoveryFiles.clear();
+  sample.recoveryHashes.clear();
+  for (int variant = 0; variant <= 8; variant += 2)
+    for (const auto &suffix : juce::StringArray{"", ".info"})
+      sample.recoveryHashes[card::path(sample.bank, sample.slot, variant) + suffix] = "missing";
+  sample.recoveryHashes[name] = "missing";
+  for (size_t n = 0; n < paths.size(); ++n) {
+    const auto &path = paths[n];
+    const auto backup = directory + "/" + String(int(n));
+    const auto hash = hashFile(child(root, path));
+    copyChecked(child(root, path), child(root, backup));
+    require(hashFile(child(root, backup)) == hash, "Damaged sample changed while backing up");
+    sample.recoveryFiles[path] = backup;
+    sample.recoveryHashes[path] = hash;
+  }
+  sample.ownedPaths = paths;
+  durableJson(child(root, directory + "/sample.json"), sample.json());
 }
 void Storage::savePending(const Project &p) {
   p.validate();
@@ -301,9 +323,7 @@ Project Storage::open(std::function<void(double)> progress) {
   auto file = child(root, ".core-manager/project.json");
   Project p = file.existsAsFile()
                   ? Project::fromJson(parseJson(file))
-                  : adopt(true, [&](double fraction) {
-                      report(0.05 + 0.45 * fraction);
-                    });
+                  : adopt(true, [&](double fraction) { report(0.05 + 0.45 * fraction); });
   report(0.50);
   auto pending = child(root, ".core-manager/pending.json");
   if (pending.existsAsFile()) {
@@ -311,9 +331,15 @@ Project Storage::open(std::function<void(double)> progress) {
     if (next.id == p.id && next.revision > p.completedRevision)
       p = std::move(next);
   }
+  auto baseline = Project::fromJson(parseJson(file));
   auto local = stateRoot().getChildFile("recovery/" + p.id + ".json");
   if (local.existsAsFile()) {
-    auto next = Project::fromJson(parseJson(local));
+    auto checkpoint = parseJson(local);
+    auto next =
+        Project::fromJson(checkpoint.hasProperty("project") ? checkpoint["project"] : checkpoint);
+    if (next.id == p.id && bool(checkpoint["discardPending"]) &&
+        checkpoint["manifestHash"].toString() == fingerprint(file))
+      p = baseline;
     if (next.id == p.id && next.revision > p.revision) {
       p = std::move(next);
       p.warnings.add("Recovered pending edits from the local recovery copy.");
@@ -344,8 +370,7 @@ Project Storage::open(std::function<void(double)> progress) {
       p.fingerprints["startup_playback"] = fingerprint(child(root, "startup_playback"));
   }
   report(0.55);
-  std::vector<std::pair<String, String>> checks(p.fingerprints.begin(),
-                                                p.fingerprints.end());
+  std::vector<std::pair<String, String>> checks(p.fingerprints.begin(), p.fingerprints.end());
   std::vector<String> hashes(checks.size());
   {
     diagnostics::Scope checksTrace("STORAGE", "Verify file fingerprints");
@@ -355,9 +380,7 @@ Project Storage::open(std::function<void(double)> progress) {
           const auto &path = checks[index].first;
           hashes[index] = fingerprint(child(root, path));
         },
-        [&](size_t completed) {
-          report(0.55 + 0.40 * double(completed) / double(checks.size()));
-        });
+        [&](size_t completed) { report(0.55 + 0.40 * double(completed) / double(checks.size())); });
   }
   for (size_t index = 0; index < checks.size(); ++index) {
     const auto &[path, expected] = checks[index];
@@ -366,6 +389,24 @@ Project Storage::open(std::function<void(double)> progress) {
                                       ". Reload/reconcile before saving.");
   }
   report(0.95);
+  // Native projects can also become damaged after their original adoption.
+  // Preserve their immutable original and occupy the slot until explicit removal.
+  for (auto &sample : p.samples) {
+    if (sample.protectedEntry || sample.completedRevision == 0)
+      continue;
+    try {
+      const auto wav = child(root, card::path(sample.bank, sample.slot));
+      juce::MemoryBlock bytes;
+      require(child(root, card::path(sample.bank, sample.slot) + ".info").loadFileAsData(bytes),
+              "Missing .info");
+      card::validatePair(card::inspect(wav), card::decode(bytes));
+    } catch (const std::exception &e) {
+      sample.protectedEntry = true;
+      sample.problem = e.what();
+      p.warnings.addIfNotAlreadyThere("Bank " + String(sample.bank + 1) + " slot " +
+                                      String(sample.slot + 1) + ": " + sample.problem);
+    }
+  }
   // Older manifests protected the entire sample for companion-only failures.
   // Recover only when the primary owned files still match their fingerprints;
   // external changes continue through the normal reconciliation workflow.
@@ -377,8 +418,7 @@ Project Storage::open(std::function<void(double)> progress) {
     bool unchanged = true;
     for (const auto &path : s.ownedPaths) {
       auto expected = p.fingerprints.find(path);
-      if (expected == p.fingerprints.end() ||
-          fingerprint(child(root, path)) != expected->second)
+      if (expected == p.fingerprints.end() || fingerprint(child(root, path)) != expected->second)
         unchanged = false;
     }
     if (!unchanged)
@@ -389,8 +429,8 @@ Project Storage::open(std::function<void(double)> progress) {
       require(child(root, primary + ".info").loadFileAsData(bytes), "Missing .info");
       card::validatePair(card::inspect(child(root, primary)), card::decode(bytes));
       s.protectedEntry = false;
-      p.warnings.removeString("Bank " + String(s.bank + 1) + " slot " +
-                              String(s.slot + 1) + ": " + s.problem);
+      p.warnings.removeString("Bank " + String(s.bank + 1) + " slot " + String(s.slot + 1) + ": " +
+                              s.problem);
       s.problem.clear();
     } catch (const std::exception &) {
       // A damaged primary still needs explicit recovery.
@@ -401,42 +441,40 @@ Project Storage::open(std::function<void(double)> progress) {
   size_t checked = 0;
   for (const auto &s : p.samples) {
     if (!s.protectedEntry)
-      require(child(root, s.source).existsAsFile(),
-              "Missing original: " + s.name);
+      require(child(root, s.source).existsAsFile(), "Missing original: " + s.name);
     report(0.95 + 0.05 * double(++checked) / double(p.samples.size()));
   }
   report(1.);
   queueNameBackfill(p);
-  diagnostics::log("STORAGE",
-                   "Loaded samples=" + String(int(p.samples.size())) +
-                       " warnings=" + p.warnings.joinIntoString(" | "));
+  diagnostics::log("STORAGE", "Loaded samples=" + String(int(p.samples.size())) +
+                                  " warnings=" + p.warnings.joinIntoString(" | "));
   return p;
 }
 void Storage::queueNameBackfill(Project &p) {
   bool needsSave = false;
-  for (const auto &s : p.samples) {
+  for (auto &s : p.samples) {
     auto primary = p.fingerprints.find(card::path(s.bank, s.slot));
-    auto metadata = names::read(
-        root, s.bank, s.slot,
-        primary == p.fingerprints.end() ? String() : primary->second);
+    auto metadata = names::read(root, s.bank, s.slot,
+                                primary == p.fingerprints.end() ? String() : primary->second);
+    s.nameUnsafe = metadata.status == names::Metadata::invalid;
     if (metadata.status == names::Metadata::invalid)
       p.warnings.addIfNotAlreadyThere(metadata.warning);
     if (!s.protectedEntry &&
         (metadata.status == names::Metadata::missing ||
          (metadata.status == names::Metadata::valid &&
-          (metadata.name != s.name ||
-           metadata.originalFilename != s.originalFilename ||
-           std::find(s.ownedPaths.begin(), s.ownedPaths.end(),
-                     names::path(s.bank, s.slot)) == s.ownedPaths.end()))))
+          (metadata.name != s.name || metadata.originalFilename != s.originalFilename ||
+           std::find(s.ownedPaths.begin(), s.ownedPaths.end(), names::path(s.bank, s.slot)) ==
+               s.ownedPaths.end())))) {
       needsSave = true;
+      s.namePending = true;
+    }
   }
   // A normal pending save writes the names with the completed audio. Keep the
   // sample revisions unchanged so backfill alone cannot rewrite WAV or .info.
   if (needsSave && p.revision == p.completedRevision)
     ++p.revision;
 }
-Project Storage::adopt(bool writeManifest,
-                       std::function<void(double)> progress) {
+Project Storage::adopt(bool writeManifest, std::function<void(double)> progress) {
   diagnostics::Scope trace("STORAGE", "Adopt card " + root.getFullPathName());
   Project p;
   p.settings = card::readSettings(root, p.warnings);
@@ -463,10 +501,7 @@ Project Storage::adopt(bool writeManifest,
   {
     diagnostics::Scope checksTrace("STORAGE", "Hash adopted card files");
     parallelFor(
-        paths.size(),
-        [&](size_t index) {
-          hashes[index] = hashFile(child(root, paths[index]));
-        },
+        paths.size(), [&](size_t index) { hashes[index] = hashFile(child(root, paths[index])); },
         [&](size_t completed) {
           if (progress)
             progress(0.45 * double(completed) / double(paths.size()));
@@ -479,8 +514,7 @@ Project Storage::adopt(bool writeManifest,
       if (progress)
         progress(0.45 + 0.55 * double(b * 16 + slot) / 256.);
       auto relative = card::path(b, slot);
-      bool occupied =
-          present.count(relative) || present.count(relative + ".info");
+      bool occupied = present.count(relative) || present.count(relative + ".info");
       for (int variant = 2; variant <= 8 && !occupied; variant += 2)
         occupied = present.count(card::path(b, slot, variant)) ||
                    present.count(card::path(b, slot, variant) + ".info");
@@ -488,8 +522,7 @@ Project Storage::adopt(bool writeManifest,
         continue;
       auto wav = child(root, relative);
       auto info = child(root, relative + ".info");
-      diagnostics::log("STORAGE", "Adopt bank=" + String(b + 1) +
-                                      " slot=" + String(slot + 1));
+      diagnostics::log("STORAGE", "Adopt bank=" + String(b + 1) + " slot=" + String(slot + 1));
       Sample s;
       s.bank = b;
       s.slot = slot;
@@ -504,8 +537,7 @@ Project Storage::adopt(bool writeManifest,
       auto namePath = names::path(b, slot);
       auto primaryHash = p.fingerprints.find(relative);
       auto metadata = names::read(
-          root, b, slot,
-          primaryHash == p.fingerprints.end() ? String() : primaryHash->second);
+          root, b, slot, primaryHash == p.fingerprints.end() ? String() : primaryHash->second);
       if (metadata.status == names::Metadata::valid) {
         s.originalFilename = metadata.originalFilename;
         if (metadata.name.isNotEmpty())
@@ -514,8 +546,10 @@ Project Storage::adopt(bool writeManifest,
           s.name = metadata.originalFilename;
         s.ownedPaths.push_back(namePath);
         p.fingerprints[namePath] = metadata.fingerprint;
-      } else if (metadata.status == names::Metadata::invalid)
+      } else if (metadata.status == names::Metadata::invalid) {
+        s.nameUnsafe = true;
         p.warnings.add(metadata.warning);
+      }
       try {
         juce::MemoryBlock bytes;
         require(info.loadFileAsData(bytes), "Missing .info");
@@ -533,24 +567,19 @@ Project Storage::adopt(bool writeManifest,
         s.sourceDuration = double(i.size) / (i.rate * i.channels * 2);
         s.slices.clear();
         for (auto m : i.slices)
-          s.slices.push_back(
-              {double(m.start) / i.size, double(m.stop) / i.size, m.type});
+          s.slices.push_back({double(m.start) / i.size, double(m.stop) / i.size, m.type});
         s.renderAnchors = s.slices;
         for (size_t lane = 0; lane < 3; ++lane)
           for (auto t : i.transients[lane])
             s.transients[lane].push_back(double(t) / 44100.);
-        auto recovered =
-            child(root, ".core-manager/cache/recovered-" + s.id + ".wav");
+        auto recovered = child(root, ".core-manager/cache/recovered-" + s.id + ".wav");
         {
           auto in = wav.createInputStream();
           auto out = recovered.createOutputStream();
           require(in && out, "Cannot recover card audio");
-          card::writeHeader(*out, i.size / (i.channels * 2), i.rate,
-                            i.channels);
-          in->setPosition(juce::int64(w.dataOffset +
-                                      uint64_t(i.rate / 2) * i.channels * 2));
-          require(out->writeFromInputStream(*in, i.size) == i.size,
-                  "Truncated recovered audio");
+          card::writeHeader(*out, i.size / (i.channels * 2), i.rate, i.channels);
+          in->setPosition(juce::int64(w.dataOffset + uint64_t(i.rate / 2) * i.channels * 2));
+          require(out->writeFromInputStream(*in, i.size) == i.size, "Truncated recovered audio");
           out->flush();
           require(out->getStatus().wasOk(), "Cannot write recovered audio");
         }
@@ -563,8 +592,7 @@ Project Storage::adopt(bool writeManifest,
       } catch (const std::exception &e) {
         s.protectedEntry = true;
         s.problem = e.what();
-        p.warnings.add("Bank " + String(b + 1) + " slot " + String(slot + 1) +
-                       ": " + s.problem);
+        p.warnings.add("Bank " + String(b + 1) + " slot " + String(slot + 1) + ": " + s.problem);
       }
       p.samples.push_back(std::move(s));
     }
@@ -584,10 +612,8 @@ Project Storage::adopt(bool writeManifest,
   if (writeManifest) {
     const auto settingsFolder = child(root, "settings");
     if (p.samples.empty() && present.empty() && !settingsFolder.existsAsFile() &&
-        !child(root, "sample_cv_mapping").exists() &&
-        !child(root, "midi_channel").exists() &&
-        !child(root, "start_tempo").exists() &&
-        !child(root, "startup_playback").exists() &&
+        !child(root, "sample_cv_mapping").exists() && !child(root, "midi_channel").exists() &&
+        !child(root, "start_tempo").exists() && !child(root, "startup_playback").exists() &&
         settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
       diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
       p.settings = card::defaultSettings();
@@ -601,7 +627,8 @@ Project Storage::adopt(bool writeManifest,
           replacements.push_back({path, marker, "missing", emptyHash});
       }
       for (const auto &[path, content] : card::textSettingsContents(p.settings)) {
-        auto textFile = child(root, ".core-manager/cache/" + path.fromLastOccurrenceOf("/", false, false));
+        auto textFile =
+            child(root, ".core-manager/cache/" + path.fromLastOccurrenceOf("/", false, false));
         durableWrite(textFile, content.toRawUTF8(), size_t(content.getNumBytesAsUTF8()));
         const auto textHash = hashFile(textFile);
         p.fingerprints[path] = textHash;
@@ -624,8 +651,7 @@ void Storage::duplicateTo(const File &destination) {
   require(!destination.exists() ||
               destination.findChildFiles(File::findFilesAndDirectories, false).isEmpty(),
           "Duplicate destination must be empty");
-  require(destination.createDirectory().wasOk(),
-          "Cannot create duplicate folder");
+  require(destination.createDirectory().wasOk(), "Cannot create duplicate folder");
   require(destination.getChildFile(".core-manager").createDirectory().wasOk(),
           "Cannot initialize duplicate project storage");
   for (const auto &f : root.findChildFiles(File::findFiles, true)) {
@@ -666,15 +692,22 @@ void Storage::cleanup(const Project &p, bool history) {
   if (!history)
     return; // Undo and recovery may reference older originals: retain them
             // together.
-  require(child(root, ".core-manager/recovery").deleteRecursively(),
-          "Cannot clear recovery history");
+  std::set<String> retained;
+  for (const auto &sample : p.samples)
+    for (const auto &[path, backup] : sample.recoveryFiles) {
+      juce::ignoreUnused(path);
+      retained.insert(child(root, backup).getParentDirectory().getFullPathName());
+    }
+  for (const auto &directory :
+       child(root, ".core-manager/recovery").findChildFiles(File::findDirectories, false))
+    if (!retained.count(directory.getFullPathName()))
+      require(directory.deleteRecursively(), "Cannot clear unused recovery history");
   std::set<String> used;
   for (const auto &s : p.samples) {
     used.insert(s.source);
     used.insert(s.originalArchive);
   }
-  for (const auto &f : child(root, ".core-manager/sources")
-                           .findChildFiles(File::findFiles, false))
+  for (const auto &f : child(root, ".core-manager/sources").findChildFiles(File::findFiles, false))
     if (!used.count(f.getRelativePathFrom(root).replaceCharacter('\\', '/')))
       removeFile(f);
 }

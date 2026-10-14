@@ -54,7 +54,7 @@ int diskFullTest(const File &root) {
       for (int n = 0; n < 4410; ++n)
         out->writeShort(short(std::sin(n * .1) * 10000));
     }
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     require(settle(manager).error.isEmpty(), "Open disk-full fixture");
     manager.import({input.getFullPathName()}, 0);
@@ -84,10 +84,12 @@ int diskFullTest(const File &root) {
                     before.project.completedRevision &&
                 failed.project.find(id)->spliceTrigger == 120,
             "Disk-full retains completed hardware and pending edit");
+    for (int n = 0; n < 300 && manager.snapshot().recoveryPending; ++n) juce::Thread::sleep(10);
+    require(!manager.snapshot().recoveryPending, "Local checkpoint completes independently of ENOSPC");
     auto pending = parseJson(
         local.getChildFile("recovery/" + before.project.id + ".json"));
     require(
-        Project::fromJson(pending).find(id)->spliceTrigger == 120,
+        Project::fromJson(pending.hasProperty("project") ? pending["project"] : pending).find(id)->spliceTrigger == 120,
         "Pending edit survives in local recovery while project disk is full");
     require(filler.deleteFile(), "Release disposable test volume space");
     manager.retry();
@@ -99,7 +101,7 @@ int diskFullTest(const File &root) {
                 hashFile(wav) == wavHash && hashFile(info) != infoHash,
             "Retry completes pending metadata without rewriting audio");
     std::cout << "PASS real ENOSPC, unchanged completed output, local pending "
-                 "recovery, retry to Ready\n";
+                 "recovery, retry to Saved\n";
     return 0;
   } catch (const std::exception &e) {
     std::cerr << "FAIL disk-full: " << e.what() << std::endl;

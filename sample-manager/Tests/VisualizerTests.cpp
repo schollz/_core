@@ -318,7 +318,7 @@ void libraryTests() {
         121 | (1 << 13) | (1 << 15) | (1 << 16));
   info.replaceWithData(files.info.getData(), files.info.getSize());
   auto changed = zv::Library::prepare(ref, cache);
-  expect(changed.prepared == 1 && changed.samples[0].wave->bpm == 121,
+  expect(changed.prepared == 0 && changed.reused == 1 && changed.samples[0].wave->bpm == 121,
          "changed metadata rebuilt");
   juce::MemoryBlock after;
   audio.loadFileAsData(after);

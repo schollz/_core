@@ -10,6 +10,7 @@ struct Sample {
   int bank = 0, sample = 0;
   juce::String path, error;
   std::shared_ptr<const Wave> wave;
+  juce::String audioStamp, infoStamp;
 };
 struct LibraryState {
   std::vector<Sample> samples;
@@ -25,11 +26,11 @@ public:
   void prioritise(int bank, int sample) { priority.store(bank * 16 + sample); }
   LibraryState snapshot() const;
   static juce::File defaultCache();
-  static LibraryState
-  prepare(const juce::File &root, const juce::File &cache,
-          std::function<bool()> cancelled = {},
-          std::function<void(const LibraryState &)> progress = {},
-          const std::atomic<int> *priority = nullptr);
+  static LibraryState prepare(const juce::File &root, const juce::File &cache,
+                              std::function<bool()> cancelled = {},
+                              std::function<void(const LibraryState &)> progress = {},
+                              const std::atomic<int> *priority = nullptr,
+                              const LibraryState *previous = nullptr);
 
 private:
   void run();

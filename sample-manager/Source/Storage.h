@@ -22,7 +22,8 @@ struct Replacement {
   String path;
   File staged;
   String expected;
-  String contentHash; // optional planned hash of staged bytes
+  String contentHash;          // optional planned hash of staged bytes
+  bool rawFingerprint = false; // explicit recovery of malformed name sidecars
 }; // empty staged = removal
 class Transaction {
 public:
@@ -45,9 +46,9 @@ public:
   void savePending(const Project &);
   void duplicateTo(const File &destination);
   void cleanup(const Project &, bool recoveryHistory);
-  Project adopt(bool writeManifest = true,
-                std::function<void(double)> progress = {});
+  Project adopt(bool writeManifest = true, std::function<void(double)> progress = {});
   void queueNameBackfill(Project &);
+  void archiveDamaged(Sample &);
 
 private:
   ProjectLock lock;

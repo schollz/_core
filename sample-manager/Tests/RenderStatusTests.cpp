@@ -58,7 +58,7 @@ void renderStatusTests() {
   String id, otherId;
   std::vector<std::pair<String, ManagerState>> screenshots;
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     settle(manager);
     manager.import({input.getFullPathName(), input.getFullPathName()}, 0);
@@ -66,7 +66,7 @@ void renderStatusTests() {
     id = ready.project.samples[0].id;
     otherId = ready.project.samples[1].id;
     checkCompleted(ready, id, 8.);
-    require(ready.status == "Ready" && !ready.renderStatus(id).pending &&
+    require(ready.status == "Saved" && !ready.renderStatus(id).pending &&
                 !child(root, "bank1/0.1.wav").exists(),
             "Primary completion is final; no companion work is scheduled");
     for (bool preserve : {false, true}) {
@@ -152,7 +152,7 @@ void renderStatusTests() {
     checkCompleted(settle(manager), id, 6.4);
   }
   {
-    Manager reopened;
+    Manager reopened{std::chrono::milliseconds(20)};
     reopened.open(root);
     auto ready = settle(reopened);
     checkCompleted(ready, id, 6.4);

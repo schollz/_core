@@ -46,7 +46,7 @@ void batchImportTests(bool benchmark) {
   }
   auto projectRoot = root.getChildFile("project");
   require(projectRoot.createDirectory().wasOk(), "Create batch project");
-  Manager manager;
+  Manager manager{std::chrono::milliseconds(20)};
   manager.open(projectRoot);
   waitForBatch(manager);
   const auto started = juce::Time::getMillisecondCounterHiRes();

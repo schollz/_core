@@ -55,6 +55,14 @@ public:
     window =
         std::make_unique<Window>(command.contains("--drag-drop-acceptance"));
   }
+  void systemRequestedQuit() override {
+    if (window)
+      if (auto *view = dynamic_cast<core::AppView *>(window->getContentComponent())) {
+        view->requestClose([this] { quit(); });
+        return;
+      }
+    quit();
+  }
   void shutdown() override {
     core::diagnostics::log("APP", "Shutdown requested");
     midiTest.reset();

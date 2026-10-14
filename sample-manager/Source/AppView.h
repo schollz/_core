@@ -23,10 +23,12 @@ public:
   }
   void filesDropped(const juce::StringArray &, int, int) override;
   bool pending() const { return manager.snapshot().busy; }
+  void requestClose(std::function<void()>);
 
 private:
   friend void firmwareViewTests();
   friend void renderStatusTests();
+  friend void editingWorkflowViewTests();
   friend void defaultSamplesViewTests();
   friend void defaultSamplesLiveTests();
   class Divider final : public juce::StretchableLayoutResizerBar,
@@ -106,11 +108,15 @@ private:
   void selectBank(int);
   void updateEditor();
   void updatePresentation();
+  void updateMarkerHelp();
   int layoutControls(int width);
   void editControls();
   void audition(double start = 0, double stop = 1);
   void showSettings();
   void savePreferences();
+  void guardUnsaved(std::function<void()>, bool allowDiscard = true);
+  void requestRemove();
+  void pollTransitions();
   void safely(const std::function<void()> &);
   std::vector<String> selectedIds() const;
   const Sample *selected() const;
@@ -133,6 +139,11 @@ private:
   std::array<String, 16> lastSelectedInBank;
   String lastDiagnosticStatus, lastDiagnosticLayout;
   bool updating = false;
+  std::function<void()> pendingTransition;
+  std::function<bool()> pendingGuard;
+  std::function<void(bool, std::function<void(int)>)> unsavedPrompt;
+  std::function<void(std::function<void(int)>)> damagedPrompt;
+  bool transitionDiscarding = false, transitionNeedsGuard = false;
   Rows bankRows, sampleRows;
   juce::ListBox banks{"Banks", &bankRows}, samples{"Samples", &sampleRows};
   juce::Component editor, controls, advancedControls;
@@ -143,8 +154,8 @@ private:
   Divider divider{&layout, 1, true};
   IconButton projectButton{String::fromUTF8("Project ▾"), "folder-open"},
       importButton{"Import", "file-plus"}, settingsButton{"Settings", "settings-2"},
-      deviceButton{"Device", "usb"}, visualizerButton{"Visualizer", "audio-lines"},
-      more{"More", "ellipsis", true};
+      saveButton{"Save", "save"}, deviceButton{"Device", "usb"},
+      visualizerButton{"Visualizer", "audio-lines"}, more{"More", "ellipsis", true};
   juce::ComboBox presentationBox, channel, playMode, markerMode, detector,
       moveBank;
   IconButton play{"Play / Stop", "play"}, evenButton{"Even slices", "columns-3"},
@@ -156,8 +167,9 @@ private:
       defaultSamples{String::fromUTF8("Default samples…"), "download"},
       cancelDefaults{"Cancel", "x"};
   juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, name;
-  juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"},
-      oneShot{"One-shot"}, variable{"Variable splice timing"};
+  juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"}, oneShot{"One-shot"},
+      variable{"Variable splice timing"};
+  juce::ToggleButton autoSaveToggle{"Autosave"}, snapToggle{"Snap to slices"};
   juce::Label folderLabel, statusLabel, sourceLabel, sourceBpmLabel, renderBpmLabel, channelLabel,
       playModeLabel, hint, tempoProcessingLabel, sliceTimingLabel, autoSliceLabel, detectorLabel,
       spacingLabel, onlineAnalysisLabel;

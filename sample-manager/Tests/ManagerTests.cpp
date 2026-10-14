@@ -27,7 +27,7 @@ void historyAvailability(const File &workspace) {
     require(state.canUndo == undo && state.canRedo == redo, message);
   };
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     require(!manager.snapshot().canUndo && !manager.snapshot().canRedo,
             "No project starts without undo or redo");
     manager.open(root);
@@ -48,7 +48,7 @@ void historyAvailability(const File &workspace) {
     check(manager, true, true, "Past and future history can both be available");
   }
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     check(manager, true, true, "Reopening restores both history availability flags");
     manager.redo();
@@ -59,7 +59,7 @@ void historyAvailability(const File &workspace) {
     check(manager, false, false, "Cleaning recovery history clears both flags");
   }
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     check(manager, false, false, "Cleared history stays unavailable after reopening");
     manager.settings({{"sample_cv_mapping", "bank"}});
@@ -84,11 +84,11 @@ void primaryOnlyAndLegacyCompanions(const File &workspace) {
   }
   String id;
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);successful(settle(manager));
     manager.import({input.getFullPathName(), input.getFullPathName()}, 0);
     auto ready = settle(manager);successful(ready);
-    require(ready.status == "Ready" && ready.project.samples.size() == 2 && manager.idle(),
+    require(ready.status == "Saved" && ready.project.samples.size() == 2 && manager.idle(),
             "Primary completion makes every import ready without companion work");
     id = ready.project.samples[0].id;
     for (const auto &sample : ready.project.samples) {
@@ -122,7 +122,7 @@ void primaryOnlyAndLegacyCompanions(const File &workspace) {
       require(hashFile(child(root, path)) == hash, "Legacy companions are never rewritten, moved or deleted");
   };
   {
-    Manager manager;manager.open(root);
+    Manager manager{std::chrono::milliseconds(20)};manager.open(root);
     auto ready = settle(manager);successful(ready);
     require(ready.project.warnings.isEmpty(), "Missing, malformed and changed companions do not warn");
     require(!ready.project.json()["samples"][0].hasProperty("companionPending"), "New manifests omit legacy pending jobs");
@@ -150,7 +150,7 @@ void primaryOnlyAndLegacyCompanions(const File &workspace) {
       require(hashFile(child(duplicate, path)) == hash, "Whole-project duplication preserves unused files");
   }
   {
-    Manager manager;manager.open(root);successful(settle(manager));preserved();
+    Manager manager{std::chrono::milliseconds(20)};manager.open(root);successful(settle(manager));preserved();
   }
 }
 void sampleCVMappingChecks(const File &workspace) {
@@ -158,7 +158,7 @@ void sampleCVMappingChecks(const File &workspace) {
   require(root.createDirectory().wasOk(), "Sample CV fixture folder");
   const auto mapping = child(root, card::sampleCVMappingPath);
   {
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     successful(settle(manager));
     require(mapping.loadFileAsString() == "bank\n", "Default mapping is written exactly");
@@ -208,7 +208,7 @@ void sampleCVMappingChecks(const File &workspace) {
     }
   }
   {
-    Manager reopened;
+    Manager reopened{std::chrono::milliseconds(20)};
     reopened.open(root);
     auto state = settle(reopened);
     successful(state);
@@ -233,7 +233,7 @@ void sampleCVMappingChecks(const File &workspace) {
     durableJson(child(legacyRoot, ".core-manager/project.json"), legacy.json());
   }
   {
-    Manager legacy;
+    Manager legacy{std::chrono::milliseconds(20)};
     legacy.open(legacyRoot);
     successful(settle(legacy));
     legacy.settings({{"sample_cv_mapping", "1voct"}});
@@ -249,7 +249,7 @@ void startupPlaybackChecks(const File &workspace) {
   require(root.createDirectory().wasOk(), "Startup playback fixture");
   auto file = child(root, card::startupPlaybackPath);
   {
-    Manager manager; manager.open(root); successful(settle(manager));
+    Manager manager{std::chrono::milliseconds(20)}; manager.open(root); successful(settle(manager));
     require(file.loadFileAsString() == "play\n", "Initial startup plays immediately");
     manager.settings({{"startup_playback", "wait"}}); successful(settle(manager));
     require(file.loadFileAsString() == "wait\n", "Save waiting startup");
@@ -285,7 +285,7 @@ void startupPlaybackChecks(const File &workspace) {
     require(child(copy, card::startupPlaybackPath).loadFileAsString() == "wait\n", "Duplicate preserves startup mode");
   }
   {
-    Manager reopened; reopened.open(root); successful(settle(reopened));
+    Manager reopened{std::chrono::milliseconds(20)}; reopened.open(root); successful(settle(reopened));
     require(reopened.snapshot().project.settings.at("startup_playback") == "wait", "Reopen startup mode");
     durableWrite(file, "play\n", 5); reopened.settings({{"startup_playback", "play"}});
     require(settle(reopened).error.contains("External change") && file.loadFileAsString() == "play\n", "Protect external startup edits");
@@ -301,7 +301,7 @@ void startupPlaybackChecks(const File &workspace) {
     durableWrite(child(oldRoot, card::startupPlaybackPath), "wait\n", 5);
   }
   {
-    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    Manager legacy{std::chrono::milliseconds(20)}; legacy.open(oldRoot); successful(settle(legacy));
     require(legacy.snapshot().project.settings.at("startup_playback") == "wait", "Legacy manifest adopts card mode");
     legacy.undo(); successful(settle(legacy));
     require(child(oldRoot, card::startupPlaybackPath).loadFileAsString() == "wait\n", "Legacy history retains newly adopted setting");
@@ -315,7 +315,7 @@ void startTempoChecks(const File &workspace) {
   require(root.createDirectory().wasOk(), "Start tempo fixture");
   auto file = child(root, card::startTempoPath);
   {
-    Manager manager; manager.open(root); successful(settle(manager));
+    Manager manager{std::chrono::milliseconds(20)}; manager.open(root); successful(settle(manager));
     require(file.loadFileAsString() == "default\n", "Initial startup tempo disabled");
     manager.settings({{"start_tempo", "130"}}); successful(settle(manager));
     require(file.loadFileAsString() == "130\n", "Save startup tempo");
@@ -351,7 +351,7 @@ void startTempoChecks(const File &workspace) {
     require(child(copy, card::startTempoPath).loadFileAsString() == "145\n", "Duplicate preserves startup tempo");
   }
   {
-    Manager reopened; reopened.open(root); successful(settle(reopened));
+    Manager reopened{std::chrono::milliseconds(20)}; reopened.open(root); successful(settle(reopened));
     require(reopened.snapshot().project.settings.at("start_tempo") == "145", "Reopen startup tempo");
     durableWrite(file, "160\n", 4); reopened.settings({{"start_tempo", "170"}});
     require(settle(reopened).error.contains("External change") && file.loadFileAsString() == "160\n", "Protect external tempo edits");
@@ -365,7 +365,7 @@ void startTempoChecks(const File &workspace) {
     durableWrite(child(oldRoot, card::startTempoPath), "150\n", 4);
   }
   {
-    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    Manager legacy{std::chrono::milliseconds(20)}; legacy.open(oldRoot); successful(settle(legacy));
     require(legacy.snapshot().project.settings.at("start_tempo") == "150", "Legacy manifest adopts card tempo");
     legacy.settings({{"start_tempo", "130"}}); successful(settle(legacy));
     legacy.undo(); successful(settle(legacy));
@@ -377,7 +377,7 @@ void midiChannelChecks(const File &workspace) {
   require(root.createDirectory().wasOk(), "MIDI settings folder");
   auto setting = child(root, card::midiChannelPath);
   {
-    Manager manager; manager.open(root); successful(settle(manager));
+    Manager manager{std::chrono::milliseconds(20)}; manager.open(root); successful(settle(manager));
     require(setting.loadFileAsString() == "1\n", "Initial MIDI setting");
     manager.settings({{"midi_channel", "10"}}); successful(settle(manager));
     require(setting.loadFileAsString() == "10\n", "Save MIDI channel 10");
@@ -403,7 +403,7 @@ void midiChannelChecks(const File &workspace) {
     require(child(copy, card::midiChannelPath).loadFileAsString() == "16\n", "Duplicate preserves MIDI setting");
   }
   {
-    Manager reopened; reopened.open(root); successful(settle(reopened));
+    Manager reopened{std::chrono::milliseconds(20)}; reopened.open(root); successful(settle(reopened));
     require(reopened.snapshot().project.settings.at("midi_channel") == "16", "Reopen MIDI setting");
     durableWrite(setting, "2\n", 2); reopened.settings({{"midi_channel", "3"}});
     require(settle(reopened).error.contains("External change") && setting.loadFileAsString() == "2\n", "External MIDI edits are protected");
@@ -416,7 +416,7 @@ void midiChannelChecks(const File &workspace) {
     durableJson(child(oldRoot, ".core-manager/project.json"), legacy.json());
   }
   {
-    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    Manager legacy{std::chrono::milliseconds(20)}; legacy.open(oldRoot); successful(settle(legacy));
     legacy.settings({{"midi_channel", "10"}}); successful(settle(legacy));
     legacy.undo(); successful(settle(legacy));
     require(child(oldRoot, card::midiChannelPath).loadFileAsString() == "1\n", "Older project undo restores channel 1");
@@ -448,7 +448,7 @@ void pendingImportWaveform(const File &workspace, const File &input) {
   // pending import. Its editor must still have a waveform after reopening.
   auto foreign = child(root, "bank1/0.0.wav");
   durableWrite(foreign, "foreign", 7);
-  Manager manager;
+  Manager manager{std::chrono::milliseconds(20)};
   manager.open(root);
   auto pending = settle(manager);
   const auto *sample = pending.project.find(id);
@@ -587,7 +587,7 @@ void transientRecoveryCase(const File &workspace) {
     require(Project::fromJson(invalid.json()).warnings.contains(oldWarning),
             "Real overflow warnings survive project reload");
   }
-  Manager manager;
+  Manager manager{std::chrono::milliseconds(20)};
   manager.open(root);
   auto state = settle(manager);
   successful(state);
@@ -635,7 +635,7 @@ void nameRecoveryCases(const File &workspace) {
     auto waveHash = hashFile(wave), infoHash = hashFile(info);
     auto waveTime = wave.getLastModificationTime(),
          infoTime = info.getLastModificationTime();
-    Manager manager;
+    Manager manager{std::chrono::milliseconds(20)};
     manager.open(root);
     auto state = settle(manager);
     successful(state);
@@ -676,8 +676,11 @@ void nameRecoveryCases(const File &workspace) {
     } else {
       manager.remove({id});
       successful(settle(manager));
+      require(!sidecar.exists(), "Confirmed removal archives an unusable numbered sidecar");
+      manager.undo();
+      successful(settle(manager));
       require(sidecar.loadFileAsString() == contents,
-              "Deletion preserves unowned sidecar");
+              "Undo restores exact unusable sidecar bytes from recovery");
     }
   }
 }
@@ -728,7 +731,7 @@ void managerTests() {
       out->writeShort(short(std::sin(n * .1) * 10000));
   }
   {
-    Manager m;
+    Manager m{std::chrono::milliseconds(20)};
     m.open(root);
     auto opened = settle(m);
     successful(opened);
@@ -1007,7 +1010,7 @@ void managerTests() {
     m.edit(id, "Close with pending edit", [](Sample &s) { s.sourceBpm = 166; });
   }
   {
-    Manager reopened;
+    Manager reopened{std::chrono::milliseconds(20)};
     reopened.open(root);
     auto state = settle(reopened);
     successful(state);

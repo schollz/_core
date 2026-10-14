@@ -1,4 +1,5 @@
 #include "Library.h"
+#include "../CardFormat.h"
 #include "../Common.h"
 #include <filesystem>
 #include <juce_cryptography/juce_cryptography.h>
@@ -32,9 +33,7 @@ juce::String fingerprint(const juce::File &f) {
 #endif
 }
 } // namespace
-juce::File Library::defaultCache() {
-  return core::stateRoot().getChildFile("visualizer/waves");
-}
+juce::File Library::defaultCache() { return core::stateRoot().getChildFile("visualizer/waves"); }
 Library::Library() : worker([this] { run(); }) {}
 Library::~Library() {
   stopping = true;
@@ -81,11 +80,10 @@ void Library::run() {
     handled = token;
   }
 }
-LibraryState
-Library::prepare(const juce::File &folder, const juce::File &cache,
-                 std::function<bool()> cancelled,
-                 std::function<void(const LibraryState &)> progress,
-                 const std::atomic<int> *priority) {
+LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
+                              std::function<bool()> cancelled,
+                              std::function<void(const LibraryState &)> progress,
+                              const std::atomic<int> *priority, const LibraryState *previous) {
   LibraryState state;
   state.root = folder.getFullPathName();
   state.loading = true;
@@ -99,8 +97,7 @@ Library::prepare(const juce::File &folder, const juce::File &cache,
       throw std::runtime_error("Reference folder is missing. Choose the folder "
                                "containing bank1-bank16.");
     std::error_code ec;
-    auto canonical =
-        std::filesystem::canonical(folder.getFullPathName().toStdString(), ec);
+    auto canonical = std::filesystem::canonical(folder.getFullPathName().toStdString(), ec);
     if (ec)
       throw std::runtime_error("Cannot read the reference folder");
     const juce::File root(juce::String(canonical.string()));
@@ -109,23 +106,18 @@ Library::prepare(const juce::File &folder, const juce::File &cache,
       const auto dir = root.getChildFile("bank" + juce::String(b + 1));
       if (!dir.isDirectory())
         continue;
-      for (const auto &file :
-           dir.findChildFiles(juce::File::findFiles, false, "*.0.wav")) {
+      for (const auto &file : dir.findChildFiles(juce::File::findFiles, false, "*.0.wav")) {
         auto name = file.getFileName().upToFirstOccurrenceOf(".", false, false);
-        if (name.isEmpty() || !name.containsOnly("0123456789") ||
-            name.length() > 9)
+        if (name.isEmpty() || !name.containsOnly("0123456789") || name.length() > 9)
           continue;
         int sample = name.getIntValue();
         if (sample >= 0 && sample < 16)
-          state.samples.push_back(
-              {b, sample, file.getRelativePathFrom(root), {}, nullptr});
+          state.samples.push_back({b, sample, file.getRelativePathFrom(root), {}, nullptr});
       }
     }
-    std::sort(state.samples.begin(), state.samples.end(),
-              [](const auto &a, const auto &b) {
-                return std::tie(a.bank, a.sample, a.path) <
-                       std::tie(b.bank, b.sample, b.path);
-              });
+    std::sort(state.samples.begin(), state.samples.end(), [](const auto &a, const auto &b) {
+      return std::tie(a.bank, a.sample, a.path) < std::tie(b.bank, b.sample, b.path);
+    });
     state.total = (int)state.samples.size();
     report();
     std::vector<size_t> pending;
@@ -134,8 +126,7 @@ Library::prepare(const juce::File &folder, const juce::File &cache,
     const auto cacheDir = cache.getChildFile(hash(state.root));
     const bool writable = cacheDir.createDirectory().wasOk();
     if (!writable)
-      state.warning =
-          "Cache unavailable; analysis will be repeated next launch.";
+      state.warning = "Cache unavailable; analysis will be repeated next launch.";
     while (!pending.empty() && !stop()) {
       size_t q = 0;
       if (priority) {
@@ -156,11 +147,25 @@ Library::prepare(const juce::File &folder, const juce::File &cache,
       try {
         const auto audio = root.getChildFile(s.path),
                    info = audio.getSiblingFile(audio.getFileName() + ".info");
-        const auto stamp = fingerprint(audio) + ":" + fingerprint(info);
+        s.audioStamp = fingerprint(audio);
+        s.infoStamp = fingerprint(info);
+        const auto stamp = s.audioStamp + ":" + s.infoStamp;
         const auto entry = cacheDir.getChildFile(hash(s.path) + ".json");
-        auto saved = juce::JSON::parse(entry);
-        if ((int)saved["version"] == 1 && saved["stamp"].toString() == stamp &&
-            saved["path"].toString() == s.path) {
+        juce::var saved;
+        juce::String cachedInfo = saved["infoStamp"].toString();
+        if (previous && previous->root == state.root)
+          for (const auto &old : previous->samples)
+            if (old.path == s.path && old.wave && old.audioStamp == s.audioStamp) {
+              s.wave = old.wave;
+              cachedInfo = old.infoStamp;
+              break;
+            }
+        if (!s.wave) {
+          saved = juce::JSON::parse(entry);
+          cachedInfo = saved["infoStamp"].toString();
+        }
+        if (!s.wave && (int)saved["version"] == 2 &&
+            saved["audioStamp"].toString() == s.audioStamp && saved["path"].toString() == s.path) {
           const auto text = saved["data"].toString();
           if (saved["hash"].toString() == hash(text))
             try {
@@ -170,32 +175,47 @@ Library::prepare(const juce::File &folder, const juce::File &cache,
           if (s.wave && (s.wave->bank != s.bank || s.wave->sample != s.sample))
             s.wave.reset();
         }
+        const bool writeCache = !s.wave || cachedInfo != s.infoStamp;
         if (s.wave) {
+          if (cachedInfo != s.infoStamp) {
+            juce::MemoryBlock bytes;
+            core::require(info.loadFileAsData(bytes), "Cannot read .info file");
+            const auto metadata = core::card::decode(bytes);
+            core::card::validatePair(core::card::inspect(audio), metadata);
+            auto updated = std::make_shared<Wave>(*s.wave);
+            updated->bpm = metadata.bpm;
+            updated->playMode = metadata.playMode;
+            updated->tempoMatch = metadata.tempoMatch;
+            updated->slices.clear();
+            for (const auto &slice : metadata.slices)
+              updated->slices.push_back(
+                  {double(slice.start) / (metadata.rate * metadata.channels * 2),
+                   double(slice.stop) / (metadata.rate * metadata.channels * 2)});
+            s.wave = updated;
+          }
           ++state.reused;
         } else {
           juce::MemoryBlock metadata;
           if (!info.loadFileAsData(metadata))
             throw std::runtime_error("Cannot read WAV or .info file");
-          s.wave = std::make_shared<Wave>(
-              analyse(audio, metadata, s.bank, s.sample, cancelled));
+          s.wave = std::make_shared<Wave>(analyse(audio, metadata, s.bank, s.sample, cancelled));
           if (stamp != fingerprint(audio) + ":" + fingerprint(info))
-            throw std::runtime_error(
-                "Sample changed during analysis; rescan the folder");
+            throw std::runtime_error("Sample changed during analysis; rescan the folder");
           ++state.prepared;
-          if (writable && !stop()) {
-            const auto text = juce::JSON::toString(waveToJson(*s.wave), true);
-            auto *o = new juce::DynamicObject;
-            o->setProperty("version", 1);
-            o->setProperty("path", s.path);
-            o->setProperty("stamp", stamp);
-            o->setProperty("data", text);
-            o->setProperty("hash", hash(text));
-            juce::TemporaryFile temporary(entry);
-            if (!temporary.getFile().replaceWithText(
-                    juce::JSON::toString(juce::var(o), true)) ||
-                !temporary.overwriteTargetFileWithTemporary())
-              state.warning = "Could not save analysis cache.";
-          }
+        }
+        if (writable && writeCache && !stop()) {
+          const auto text = juce::JSON::toString(waveToJson(*s.wave), true);
+          auto *o = new juce::DynamicObject;
+          o->setProperty("version", 2);
+          o->setProperty("path", s.path);
+          o->setProperty("audioStamp", s.audioStamp);
+          o->setProperty("infoStamp", s.infoStamp);
+          o->setProperty("data", text);
+          o->setProperty("hash", hash(text));
+          juce::TemporaryFile temporary(entry);
+          if (!temporary.getFile().replaceWithText(juce::JSON::toString(juce::var(o), true)) ||
+              !temporary.overwriteTargetFileWithTemporary())
+            state.warning = "Could not save analysis cache.";
         }
       } catch (const std::exception &e) {
         s.wave.reset();
