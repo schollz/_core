@@ -140,7 +140,7 @@ AppView::AppView() {
            &settingsButton, &visualizerButton, &deviceButton, &more,
            &presentationBox, &folderLabel, &statusLabel,   &activity,
            &banks,        &samples,        &divider,       &editor,
-           &empty,        &createProject})
+           &empty,        &createProject, &defaultSamples, &cancelDefaults})
     addAndMakeVisible(c);
   int focusOrder = 1;
   for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
@@ -150,6 +150,10 @@ AppView::AppView() {
   activity.setPercentageDisplay(false);
   activity.setStyle(juce::ProgressBar::Style::linear);
   activity.setVisible(false);
+  cancelDefaults.setVisible(false);
+  defaultSamples.setTooltip("Download Ezeptocore or Ectocore defaults into a new editable project "
+                            "in Downloads.");
+  cancelDefaults.setTooltip("Cancel default sample installation and keep the current project.");
   for (auto *c :
        std::initializer_list<juce::Component *>{&waveform, &name, &sourceLabel, &controlsViewport})
     editor.addAndMakeVisible(c);
@@ -216,6 +220,8 @@ AppView::AppView() {
   projectButton.onClick = [this] { projectMenu(); };
   empty.onClick = [this] { chooseFolder(); };
   createProject.onClick = [this] { chooseNewProject(); };
+  defaultSamples.onClick = [this] { defaultSamplesMenu(); };
+  cancelDefaults.onClick = [this] { cancelDefaultSamples(); };
   importButton.onClick = [this] { chooseImport(); };
   settingsButton.onClick = [this] { showSettings(); };
   more.onClick = [this] { moreMenu(); };
@@ -251,6 +257,8 @@ AppView::AppView() {
       online.cancel();
       return;
     }
+    if (onlineCompletionPending)
+      return;
     auto *s = selected();
     if (!s)
       return;
@@ -264,12 +272,14 @@ AppView::AppView() {
                                                    String error) {
                      if (!safe)
                        return;
+                     safe->onlineCompletionPending = false;
                      if (error.isNotEmpty())
                        safe->localError = error;
                      else
                        safe->manager.applyAnalysis(projectId, id, revision,
                                                    std::move(lanes));
                    });
+      onlineCompletionPending = true;
     });
   };
   onlineButton.setTooltip(
@@ -502,7 +512,8 @@ AppView::AppView() {
   for (auto *button : {&importButton, &undoButton, &redoButton, &projectButton,
                        &settingsButton, &visualizerButton, &deviceButton, &more,
                        &play, &evenButton, &autoButton, &onlineButton, &removeButton,
-                       &mergeButton, &up, &down, &empty, &createProject}) {
+                       &mergeButton, &up, &down, &empty, &createProject,
+                       &defaultSamples, &cancelDefaults}) {
     auto action = button->onClick;
     button->onClick = [button, action] {
       diagnostics::log("UI", "Click " + button->getButtonText());
@@ -518,6 +529,7 @@ AppView::AppView() {
 AppView::~AppView() {
   diagnostics::Scope trace("UI", "Destroy main view");
   stopTimer();
+  defaults.cancel();
   manager.removeChangeListener(this);
   visualizerWindow.reset();
   visualizer.reset();
@@ -677,11 +689,16 @@ void AppView::updateEditor() {
   editor.setVisible(s != nullptr);
   empty.setVisible(state.root == File());
   createProject.setVisible(state.root == File());
+  defaultSamples.setVisible(state.root == File());
+  defaultSamples.setEnabled(!defaultsPending && !defaultsOpening);
   createProject.setEnabled(!state.busy);
-  importButton.setEnabled(state.available);
-  undoButton.setEnabled(state.available && state.canUndo);
-  redoButton.setEnabled(state.available && state.canRedo);
-  settingsButton.setEnabled(state.available);
+  importButton.setEnabled(state.available && !defaultsOpening);
+  undoButton.setEnabled(state.available && state.canUndo && !defaultsOpening);
+  redoButton.setEnabled(state.available && state.canRedo && !defaultsOpening);
+  settingsButton.setEnabled(state.available && !defaultsOpening);
+  more.setEnabled(!defaultsOpening);
+  banks.setEnabled(!defaultsOpening);
+  samples.setEnabled(!defaultsOpening);
   activity.setVisible(state.busy && state.error.isEmpty());
   if (s) {
     bool editingText = name.hasKeyboardFocus(true) || sourceBpm.hasKeyboardFocus(true) ||
@@ -705,7 +722,7 @@ void AppView::updateEditor() {
     sourceLabel.setTooltip(s->protectedEntry ? s->problem : renderStatus.tooltip());
     play.setTooltip(renderStatus.previewTooltip());
     waveform.set(s, state.editorWaveform(s->id));
-    editor.setEnabled(!s->protectedEntry && state.available);
+    editor.setEnabled(!s->protectedEntry && state.available && !defaultsOpening);
   } else {
     controlsId.clear();
     waveform.set(nullptr, {});
@@ -744,7 +761,7 @@ void AppView::updatePresentation() {
           : "Edit slice boundaries: right-click to add, drag to move, and double-click to remove.");
 }
 void AppView::editControls() {
-  if (updating)
+  if (updating || defaultsOpening)
     return;
   const auto *current = state.project.find(controlsId);
   if (!current || current->protectedEntry)
@@ -788,7 +805,8 @@ void AppView::audition(double a, double b) {
   });
 }
 void AppView::timerCallback() {
-  const bool analysing = online.busy();
+  pollDefaultSamples();
+  const bool analysing = online.busy() || onlineCompletionPending;
   const String onlineText = analysing ? "Cancel online analysis" : "Analyze drums online";
   if (onlineButton.getButtonText() != onlineText) {
     onlineButton.setButtonText(onlineText);
@@ -808,11 +826,32 @@ void AppView::timerCallback() {
   String message = localError.isNotEmpty()    ? localError
                    : state.error.isNotEmpty() ? state.error
                                               : state.status;
+  if (defaultsPending)
+    message = defaultsMessage;
+  else if (defaultsOpening)
+    message = "Opening default samples... " + manager.snapshot().status;
+  const auto install = defaults.snapshot();
+  defaultSamples.setEnabled(!defaultsPending && !defaultsOpening && !install.active());
+  const bool showingProgress = defaultsPending || defaultsOpening ||
+                               (state.busy && state.error.isEmpty());
+  const bool progressLayoutChanged = cancelDefaults.isVisible() != defaultsPending ||
+                                     activity.isVisible() != showingProgress;
+  cancelDefaults.setVisible(defaultsPending);
+  activity.setVisible(showingProgress);
+  activityProgress = -1.;
+  if (defaultsPending && install.status == DefaultSamplesInstaller::Status::downloading &&
+      install.total > 0)
+    activityProgress = double(install.received) / double(install.total);
+  else if (defaultsPending && install.status == DefaultSamplesInstaller::Status::extracting &&
+           install.totalFiles > 0)
+    activityProgress = double(install.files) / install.totalFiles;
   if (state.error.isEmpty() && !state.project.warnings.isEmpty())
     message += juce::String::fromUTF8(" · ") +
                state.project.warnings.joinIntoString(juce::String::fromUTF8(" · "));
   statusLabel.setText(message, juce::dontSendNotification);
   statusLabel.setTooltip(message);
+  if (progressLayoutChanged)
+    resized();
   const auto activityInk = presentation == 1 ? juce::Colour(0xff211d2d) : juce::Colours::white;
   activity.setColour(juce::ProgressBar::backgroundColourId, activityInk.withAlpha(.15f));
   activity.setColour(juce::ProgressBar::foregroundColourId, activityInk.withAlpha(.85f));
@@ -828,6 +867,7 @@ void AppView::timerCallback() {
                                                  : juce::Colours::white));
 }
 void AppView::chooseNewProject() {
+  cancelDefaultSamples();
   auto parent = state.root == File() ? File::getSpecialLocation(File::userDocumentsDirectory)
                                      : state.root.getParentDirectory();
   chooser = std::make_unique<juce::FileChooser>("Create project folder",
@@ -856,6 +896,7 @@ void AppView::chooseNewProject() {
       });
 }
 void AppView::chooseFolder() {
+  cancelDefaultSamples();
   chooser = std::make_unique<juce::FileChooser>("Open a portable sample folder",
                                                 state.root);
   auto safe = juce::Component::SafePointer<AppView>(this);
@@ -895,23 +936,123 @@ void AppView::chooseDuplicate() {
                        });
 }
 void AppView::filesDropped(const juce::StringArray &files, int, int) {
-  if (files.size() == 1 && File(files[0]).isDirectory())
+  if (defaultsOpening)
+    return;
+  if (files.size() == 1 && File(files[0]).isDirectory()) {
+    cancelDefaultSamples();
     manager.open(File(files[0]));
-  else
+  } else
     manager.import(files, bank);
 }
+void AppView::defaultSamplesMenu() {
+  juce::PopupMenu menu;
+  menu.setLookAndFeel(&look);
+  for (int i = 0; i < int(defaultSamplesCatalog().size()); ++i)
+    menu.addItem(i + 1, defaultSamplesCatalog()[size_t(i)].name,
+                 !defaultsPending && !defaultsOpening && !defaults.snapshot().active());
+  auto safe = juce::Component::SafePointer<AppView>(this);
+  menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&defaultSamples),
+                     [safe](int choice) {
+                       if (safe && choice > 0)
+                         safe->chooseDefaultSamples(choice - 1);
+                     });
+}
+void AppView::chooseDefaultSamples(int index) {
+  safely([&] {
+    require(index >= 0 && index < int(defaultSamplesCatalog().size()),
+            "Unknown default sample collection");
+    beginDefaultSamples(defaultSamplesCatalog()[size_t(index)], firmwareDownloadsDirectory(),
+                        stateRoot().getChildFile("default-samples"));
+  });
+}
+void AppView::beginDefaultSamples(DefaultSamplesEntry entry, File downloads, File cache) {
+  require(!defaultsPending && !defaultsOpening, "Default samples are already being installed");
+  defaults.start(std::move(entry), downloads, cache);
+  localError.clear();
+  defaultsPending = true;
+  defaultProject = File();
+  defaultsMessage = defaults.snapshot().message;
+  defaultSamples.setEnabled(false);
+}
+void AppView::cancelDefaultSamples() {
+  if (!defaultsPending)
+    return;
+  defaults.cancel();
+  defaultsPending = false;
+  defaultProject = File();
+  defaultsMessage.clear();
+  cancelDefaults.setVisible(false);
+  defaultSamples.setEnabled(!defaultsOpening);
+}
+void AppView::pollDefaultSamples() {
+  if (defaultsOpening) {
+    const auto current = manager.snapshot();
+    if (!current.busy && manager.idle()) {
+      defaultsOpening = false;
+      defaultSamples.setEnabled(true);
+      if (current.root != defaultProject || current.error.isNotEmpty())
+        localError = "Could not open default samples. Project saved at " +
+                     defaultProject.getFullPathName() + ". " + current.error;
+      defaultProject = File();
+      updateEditor();
+    }
+    return;
+  }
+  if (!defaultsPending)
+    return;
+  const auto install = defaults.snapshot();
+  defaultsMessage = install.message;
+  if (install.active())
+    return;
+  if (install.status != DefaultSamplesInstaller::Status::succeeded) {
+    cancelDefaultSamples();
+    if (install.status == DefaultSamplesInstaller::Status::failed)
+      localError = install.message;
+    return;
+  }
+  defaultProject = install.project;
+  // Text fields commit on focus loss; flush them before checking save readiness.
+  editControls();
+  const auto current = manager.snapshot();
+  if (current.busy || !manager.idle() || online.busy() || onlineCompletionPending) {
+    defaultsMessage = "Default samples installed. Waiting for current edits and analysis to finish...";
+    return;
+  }
+  if (current.primaryUpdateFailed || current.project.revision != current.project.completedRevision) {
+    const auto folder = defaultProject;
+    cancelDefaultSamples();
+    localError = "Finish or reconcile pending changes before opening default samples. "
+                 "Project saved at " + folder.getFullPathName();
+    return;
+  }
+  preview.stop();
+  localError.clear();
+  defaultsPending = false;
+  defaultsOpening = true;
+  cancelDefaults.setVisible(false);
+  settingsWindow.reset();
+  updateEditor();
+  manager.open(defaultProject);
+}
 void AppView::projectMenu() {
-  enum { create = 1, openFolder, revealFolder, duplicateProject, firstRecent = 100 };
+  enum { create = 1, openFolder, revealFolder, duplicateProject, firstDefault = 10, firstRecent = 100 };
   const auto menuState = manager.snapshot();
   const auto recentPaths = recents;
   juce::PopupMenu menu;
   menu.setLookAndFeel(&look);
-  menu.addItem(create, String::fromUTF8("Create project…"), !menuState.busy);
-  menu.addItem(openFolder, String::fromUTF8("Open folder…"));
+  menu.addItem(create, String::fromUTF8("Create project…"), !menuState.busy && !defaultsOpening);
+  menu.addItem(openFolder, String::fromUTF8("Open folder…"), !defaultsOpening);
+  juce::PopupMenu defaultCollections;
+  defaultCollections.setLookAndFeel(&look);
+  for (int i = 0; i < int(defaultSamplesCatalog().size()); ++i)
+    defaultCollections.addItem(firstDefault + i, defaultSamplesCatalog()[size_t(i)].name,
+                              !defaultsPending && !defaultsOpening && !defaults.snapshot().active());
+  menu.addSubMenu("Default samples", defaultCollections);
   juce::PopupMenu recentProjects;
   recentProjects.setLookAndFeel(&look);
   for (int n = 0; n < recentPaths.size(); ++n)
-    recentProjects.addItem(firstRecent + n, recentPaths[n], File(recentPaths[n]).isDirectory());
+    recentProjects.addItem(firstRecent + n, recentPaths[n],
+                           File(recentPaths[n]).isDirectory() && !defaultsOpening);
   if (recentPaths.isEmpty())
     recentProjects.addItem(firstRecent, "No recent projects", false);
   menu.addSubMenu("Recent projects", recentProjects);
@@ -926,10 +1067,10 @@ void AppView::projectMenu() {
         if (!safe || n == 0)
           return;
         const auto current = safe->manager.snapshot();
-        if (n == create && !current.busy) {
+        if (n == create && !current.busy && !safe->defaultsOpening) {
           diagnostics::log("UI", "Project > Create project");
           safe->chooseNewProject();
-        } else if (n == openFolder) {
+        } else if (n == openFolder && !safe->defaultsOpening) {
           diagnostics::log("UI", "Project > Open folder");
           safe->chooseFolder();
         } else if (n == revealFolder && current.root == root && root.isDirectory()) {
@@ -939,10 +1080,13 @@ void AppView::projectMenu() {
                    !current.busy) {
           diagnostics::log("UI", "Project > Duplicate project");
           safe->chooseDuplicate();
+        } else if (n >= firstDefault && n < firstDefault + int(defaultSamplesCatalog().size())) {
+          safe->chooseDefaultSamples(n - firstDefault);
         } else if (n >= firstRecent && n - firstRecent < recentPaths.size()) {
           const File folder(recentPaths[n - firstRecent]);
-          if (folder.isDirectory()) {
+          if (folder.isDirectory() && !safe->defaultsOpening) {
             diagnostics::log("UI", "Project > Recent " + folder.getFullPathName());
+            safe->cancelDefaultSamples();
             safe->manager.open(folder);
           }
         }
@@ -1016,6 +1160,8 @@ void AppView::savePreferences() {
   }
 }
 bool AppView::keyPressed(const juce::KeyPress &key) {
+  if (defaultsOpening)
+    return false;
   if (key.getModifiers().isCommandDown()) {
     if (key.getKeyCode() == 'Z') {
       if (key.getModifiers().isShiftDown())
@@ -1248,6 +1394,11 @@ void AppView::resized() {
   const int metadataY = toolbarY + 39;
   folderLabel.setBounds(frame.content.getX(), metadataY - 2, frame.content.getWidth(), 27);
   auto statusBounds = frame.footer.reduced(16, 4);
+  if (cancelDefaults.isVisible()) {
+    const int width = cancelDefaults.preferredWidth(28);
+    cancelDefaults.setBounds(statusBounds.removeFromRight(width).withSizeKeepingCentre(width, 28));
+    statusBounds.removeFromRight(12);
+  }
   if (activity.isVisible()) {
     auto activityBounds = statusBounds.removeFromRight(100);
     activity.setBounds(activityBounds.withSizeKeepingCentre(100, 8));
@@ -1264,9 +1415,10 @@ void AppView::resized() {
                             columnsArea.getWidth(), columnsArea.getHeight(), false, true);
   } else
     editor.setBounds(columnsArea);
-  createProject.setBounds(frame.content.getCentreX() - 145, frame.content.getCentreY() - 50, 290,
+  createProject.setBounds(frame.content.getCentreX() - 145, frame.content.getCentreY() - 77, 290,
                           44);
   empty.setBounds(frame.content.getCentreX() - 145, createProject.getBottom() + 10, 290, 44);
+  defaultSamples.setBounds(frame.content.getCentreX() - 145, empty.getBottom() + 10, 290, 44);
   auto w = editor.getWidth();
   name.setBounds(18, 0, w - 36, 31);
   const auto durationFont = look.getLabelFont(sourceLabel);

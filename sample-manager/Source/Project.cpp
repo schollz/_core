@@ -312,15 +312,21 @@ var History::json(const String &projectId) const {
   put(o, "future", b);
   return o;
 }
-void History::restore(const var &o, const String &projectId) {
+void History::restore(const var &o, const String &projectId,
+                      const card::Settings &missingSettings) {
   clear();
   if (o["projectId"].toString() != projectId)
     return;
-  auto read = [](const var &a, std::vector<Entry> &target) {
+  auto read = [&](const var &a, std::vector<Entry> &target) {
     if (auto *array = a.getArray())
-      for (const auto &v : *array)
-        target.push_back(
-            {Project::fromJson(v["project"]), v["label"].toString()});
+      for (const auto &v : *array) {
+        auto project = Project::fromJson(v["project"]);
+        // A setting introduced after this history was saved inherits the card
+        // baseline, rather than reverting to its default on an unrelated undo.
+        for (const auto &[key, value] : missingSettings)
+          project.settings.emplace(key, value);
+        target.push_back({std::move(project), v["label"].toString()});
+      }
   };
   read(o["past"], past);
   read(o["future"], future);

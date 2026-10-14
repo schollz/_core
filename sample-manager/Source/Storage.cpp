@@ -335,6 +335,14 @@ Project Storage::open(std::function<void(double)> progress) {
     if (child(root, "start_tempo").exists())
       p.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
   }
+  if (p.settings.find("startup_playback") == p.settings.end()) {
+    const auto settings = card::readSettings(root, p.warnings);
+    const auto found = settings.find("startup_playback");
+    p.settings["startup_playback"] = found == settings.end() ? String("play") : found->second;
+    p.fingerprints[card::startupPlaybackPath] = fingerprint(child(root, card::startupPlaybackPath));
+    if (child(root, "startup_playback").exists())
+      p.fingerprints["startup_playback"] = fingerprint(child(root, "startup_playback"));
+  }
   report(0.55);
   std::vector<std::pair<String, String>> checks(p.fingerprints.begin(),
                                                 p.fingerprints.end());
@@ -570,6 +578,8 @@ Project Storage::adopt(bool writeManifest,
     p.fingerprints["sample_cv_mapping"] = fingerprint(child(root, "sample_cv_mapping"));
   if (child(root, "start_tempo").exists())
     p.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
+  if (child(root, "startup_playback").exists())
+    p.fingerprints["startup_playback"] = fingerprint(child(root, "startup_playback"));
   p.validate();
   if (writeManifest) {
     const auto settingsFolder = child(root, "settings");
@@ -577,6 +587,7 @@ Project Storage::adopt(bool writeManifest,
         !child(root, "sample_cv_mapping").exists() &&
         !child(root, "midi_channel").exists() &&
         !child(root, "start_tempo").exists() &&
+        !child(root, "startup_playback").exists() &&
         settingsFolder.findChildFiles(File::findFiles, true).isEmpty()) {
       diagnostics::Scope defaultsTrace("STORAGE", "Initialize default settings");
       p.settings = card::defaultSettings();

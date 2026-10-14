@@ -32,6 +32,12 @@
 5. **Trig Out.** Sends transient triggers (Kick, Snare, Transient, Random) as defined by the Mode Button.
 6. **Clock Out.** Outputs the internal clock for syncing other devices. Can be set to **Trig** (50 ms pulse) or **Gate** (½ eighth-note length).
 
+To power up silently, choose **Startup playback → Wait for clock or button** in
+the sample manager's Settings, copy the updated settings onto the card, and
+restart with supporting firmware. The sample is ready to play on the first clock
+pulse or normal button start; clock and trigger outputs stay idle until then.
+**Play immediately (default)** retains the existing power-up behavior.
+
 # Ectocore Youtube Video Transcriptions
 
 ## Ectocore - 10 min tutorial

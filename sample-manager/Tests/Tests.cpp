@@ -16,8 +16,11 @@ void managerTests();
 void renderStatusTests();
 void midiSettingsTests();
 void startTempoTests();
+void startupPlaybackTests();
 void firmwareTests();
 void firmwareReleaseTests();
+void defaultSamplesTests();
+void defaultSamplesLiveTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -95,6 +98,25 @@ void spliceTimingChecks() {
   rejects([&] { oneShot.updateSpliceTrigger(SpliceTimingCalculation::evenSlices); },
           "An empty slice list cannot calculate an interval");
 }
+void startupPlaybackContractChecks() {
+  check(card::startupPlaybackContents({}) == "play\n", "Startup defaults to immediate playback");
+  check(card::settingsFiles({{"startup_playback", "wait"}}).empty(), "Startup playback has no markers");
+  rejects([] { card::startupPlaybackContents({{"startup_playback", "invalid"}}); }, "Reject invalid startup mode");
+  Temp folder;
+  juce::StringArray warnings;
+  auto read = [&] { warnings.clear(); return card::readSettings(folder.dir, warnings); };
+  textFile(child(folder.dir, "startup_playback"), "wait\n");
+  check(read().at("startup_playback") == "wait", "Adopt root startup mode");
+  const auto file = child(folder.dir, card::startupPlaybackPath);
+  for (auto value : {"play", "wait"}) {
+    textFile(file, String(value) + "\r\n");
+    check(read().at("startup_playback") == value && warnings.isEmpty(), "Settings startup overrides root");
+  }
+  for (auto value : {"", "Wait", " wait", "waitx", "play\nwait", "xxxxxxxxxxxxxxxxx"}) {
+    textFile(file, value);
+    check(read().at("startup_playback") == "play" && !warnings.isEmpty(), "Invalid startup mode warns and defaults to play");
+  }
+}
 void startTempoContractChecks() {
   check(card::startTempoContents({}) == "default\n", "Start tempo defaults to no override");
   for (auto value : {"default", "30", "130", "300"})
@@ -122,6 +144,14 @@ int runTests(const String &suite) {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    if (suite == "default-samples") {
+      defaultSamplesTests();
+      return 0;
+    }
+    if (suite == "default-samples-live") {
+      defaultSamplesLiveTests();
+      return 0;
+    }
     // Focused suites let worker/recovery regressions run independently of DSP
     // estimation fixtures. The default continues to run the full contract.
     if (suite == "batch-import" || suite == "import-benchmark") {
@@ -181,6 +211,11 @@ int runTests(const String &suite) {
       check(broken.samples[0].protectedEntry, "Damaged primary remains protected");
       return 0;
     }
+    if (suite == "startup-playback") {
+      startupPlaybackContractChecks();
+      startupPlaybackTests();
+      return 0;
+    }
     if (suite == "start-tempo") {
       startTempoContractChecks();
       startTempoTests();
@@ -215,6 +250,7 @@ int runTests(const String &suite) {
     }
     require(suite.isEmpty(), "Unknown self-test suite: " + suite);
     startTempoContractChecks();
+    startupPlaybackContractChecks();
     spliceTimingChecks();
     firmwareTests();
     {
@@ -535,8 +571,9 @@ int runTests(const String &suite) {
       durableWrite(child(existing.dir, "settings/unrelated.txt"), "keep", 4);
       Storage storage(existing.dir);
       auto adopted = storage.open();
-      check(adopted.settings.size() == 3 && adopted.settings.at("midi_channel") == "1" &&
-                adopted.settings.at("grimoire/rune1/effect1") == "on" &&
+      const card::Settings preserved{{"midi_channel", "1"}, {"start_tempo", "default"},
+                                     {"startup_playback", "play"}, {"grimoire/rune1/effect1", "on"}};
+      check(adopted.settings == preserved &&
                 !child(existing.dir, "settings/grimoire/rune1/effect5-on").exists() &&
                 child(existing.dir, "settings/unrelated.txt").loadFileAsString() == "keep",
             "Opening existing settings preserves chosen effects and unrelated files");

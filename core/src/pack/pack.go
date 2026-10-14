@@ -17,6 +17,7 @@ import (
 var Storage = "zips"
 
 type Data struct {
+	SettingsStartupPlayback   string   `json:"settingsStartupPlayback"`
 	SettingsStartTempo        string   `json:"settingsStartTempo"`
 	SettingsMIDIChannel       string   `json:"settingsMidiChannel"`
 	Oversampling              string   `json:"oversampling"`
@@ -143,6 +144,13 @@ func Zip(pathToStorage string, payload []byte, settingsOnly bool) (zipFilename s
 	}
 	// if data.Resampling == "linear" {
 	if err = os.WriteFile(path.Join(settingsFolder, "start_tempo"), []byte(tempoContents), 0666); err != nil {
+		return
+	}
+	startupPlayback := "play"
+	if data.SettingsStartupPlayback == "wait" {
+		startupPlayback = "wait"
+	}
+	if err = os.WriteFile(path.Join(settingsFolder, "startup_playback"), []byte(startupPlayback+"\n"), 0666); err != nil {
 		return
 	}
 	// 	os.Create(path.Join(settingsFolder, "resampling_quadratic-off"))

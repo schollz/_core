@@ -28,8 +28,26 @@ static void check_start_tempo(const fs::path &source) {
     fs::remove(root/"settings/start_tempo");check(130,false);
     std::cout<<"storage: startup tempo imports, default, bounds, precedence and invalid-file warnings passed\n";
 }
+static void check_startup_playback(const fs::path &source) {
+    auto root=fs::temp_directory_path()/("rack-startup-playback-storage-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    fs::create_directories(root/"settings");
+    struct Cleanup {fs::path root;~Cleanup(){fs::remove_all(root);}} cleanup{root};
+    fs::copy(source/"bank1",root/"bank1",fs::copy_options::recursive);
+    auto check=[&](bool wait,bool warning){auto l=Storage::catalogue(root,43);CoreState state{};state.stopped=false;applySettings(*l,state);assert(state.startup_wait==wait&&!state.stopped);assert(l->warnings.empty()!=warning);};
+    check(false,false);
+    {std::ofstream(root/"startup_playback")<<"wait\n";}check(true,false);
+    for(auto value:{"play","wait"}) {
+        {std::ofstream(root/"settings/startup_playback")<<value<<"\r\n";}
+        check(std::string(value)=="wait",false);
+    }
+    for(auto value:{"","Wait"," wait","waitx","play\nwait","xxxxxxxxxxxxxxxxx"}) {
+        {std::ofstream(root/"settings/startup_playback")<<value;}check(false,true);
+    }
+    fs::remove(root/"settings/startup_playback");check(true,false);
+    std::cout<<"storage: startup playback defaults, precedence, warnings and transport preservation passed\n";
+}
 int main(int argc,char **argv){
-    assert(argc==2);check_start_tempo(fs::absolute(argv[1]));
+    assert(argc==2);check_start_tempo(fs::absolute(argv[1]));check_startup_playback(fs::absolute(argv[1]));
     {std::ifstream in(fs::path(argv[1])/"bank1/15.0.wav.info",std::ios::binary);std::vector<uint8_t> bytes((std::istreambuf_iterator<char>(in)),{});CoreCardInfo info;char error[128];
         assert(core_card_decode(bytes.data(),bytes.size(),&info,error,sizeof error));
         for(size_t n=0;n<bytes.size();++n)assert(!core_card_decode(bytes.data(),n,&info,error,sizeof error));

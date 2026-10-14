@@ -1,4 +1,5 @@
 #pragma once
+#include "DefaultSamples.h"
 #include "DeviceView.h"
 #include "IconButton.h"
 #include "OnlineAnalysis.h"
@@ -26,6 +27,8 @@ public:
 private:
   friend void firmwareViewTests();
   friend void renderStatusTests();
+  friend void defaultSamplesViewTests();
+  friend void defaultSamplesLiveTests();
   class Divider final : public juce::StretchableLayoutResizerBar,
                         public juce::SettableTooltipClient {
   public:
@@ -91,6 +94,11 @@ private:
   void chooseImport();
   void chooseDuplicate();
   void projectMenu();
+  void defaultSamplesMenu();
+  void chooseDefaultSamples(int);
+  void beginDefaultSamples(DefaultSamplesEntry, File downloads, File cache);
+  void cancelDefaultSamples();
+  void pollDefaultSamples();
   void moreMenu();
   void toggleVisualizer();
   void detachVisualizer();
@@ -107,7 +115,12 @@ private:
   std::vector<String> selectedIds() const;
   const Sample *selected() const;
   Manager manager;
+  DefaultSamplesInstaller defaults;
+  bool defaultsPending = false, defaultsOpening = false;
+  File defaultProject;
+  String defaultsMessage;
   OnlineAnalysis online;
+  bool onlineCompletionPending = false;
   Preview preview;
   Look look;
   Device device;
@@ -139,7 +152,9 @@ private:
       removeButton{"Remove", "trash"}, mergeButton{"Merge", "merge"},
       up{"Move up", "arrow-up", true}, down{"Move down", "arrow-down", true},
       undoButton{"Undo", "undo-2", true}, redoButton{"Redo", "redo-2", true},
-      createProject{"Create project", "folder-plus"}, empty{"Open a project folder", "folder-open"};
+      createProject{"Create project", "folder-plus"}, empty{"Open a project folder", "folder-open"},
+      defaultSamples{String::fromUTF8("Default samples…"), "download"},
+      cancelDefaults{"Cancel", "x"};
   juce::TextEditor sourceBpm, renderBpm, sliceCount, spacing, name;
   juce::ToggleButton preserve{"Preserve pitch"}, tempo{"Tempo matching"},
       oneShot{"One-shot"}, variable{"Variable splice timing"};

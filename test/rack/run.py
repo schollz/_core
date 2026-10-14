@@ -14,7 +14,7 @@ if a.sanitize:flags+=['-fsanitize='+a.sanitize,'-fno-sanitize-recover=all','-fno
 subprocess.run([clang,*flags,'-I'+str(root/'lib'),str(root/'test/rack/clock_input.c'),'-lm','-o',str(out/'clock-input-test')],check=True)
 subprocess.run([str(out/'clock-input-test')],check=True,timeout=45)
 subprocess.run([clang,*flags,'-c',str(out/'engine.c'),'-o',str(out/'engine.o')],check=True)
-for name in ['engine','clock','tempo']:
+for name in ['engine','clock','tempo','startup_playback']:
     subprocess.run([clang,*flags,'-I'+str(root/'lib/core_engine'),str(out/'engine.o'),str(root/'lib/pcg_basic.c'),str(root/f'test/rack/{name}.c'),'-lm','-o',str(out/f'{name}-test')],check=True)
     # The tempo matrix simulates long low-BPM chains, including under ASan.
     subprocess.run([str(out/f'{name}-test')],check=True,timeout=120 if name=='tempo' else 45)

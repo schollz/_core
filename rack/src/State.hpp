@@ -17,7 +17,7 @@ namespace ecto {
  X(version) X(tempo) X(start_tempo) X(volume) X(bank) X(slot) X(rune) X(division) X(trigger_mode) X(pitch) \
  X(brightness) X(amen_behavior) X(sample_mapping) X(reset_input) X(amiga) X(saturation) \
  X(smear) X(jitter) X(chaos) X(jump_probability) X(retrigger_probability) X(filter_index) X(filter_type) X(sequence_length)
-#define CORE_STATE_BOOLS(X) X(stopped) X(muted) X(stay_in_sync) X(clock_stop) X(clock_trigger) X(clock_slice)
+#define CORE_STATE_BOOLS(X) X(startup_wait) X(stopped) X(muted) X(stay_in_sync) X(clock_stop) X(clock_trigger) X(clock_slice)
 inline json_t *stateJson(const CoreState &s) {
     auto *j=json_object();
 #define NUMBER(f) json_object_set_new(j,#f,json_integer(s.f));

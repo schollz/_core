@@ -1,6 +1,7 @@
 // Copyright 2026 Zack Scholl. SPDX-License-Identifier: GPL-3.0-only
 #include "Storage.hpp"
 #include "../../lib/start_tempo.h"
+#include "../../lib/startup_playback.h"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -64,6 +65,13 @@ std::shared_ptr<Library> Storage::catalogue(const fs::path &root,uint64_t genera
         catch(const std::exception&){bpm=0;l->warnings.push_back("Invalid start tempo; using Default (no override).");}
         l->settings["start_tempo"]=bpm?std::to_string(bpm):"default";
     }
+    auto startup=settings/"startup_playback";if(!fs::exists(startup))startup=l->root/"startup_playback";
+    if(fs::exists(startup)){
+        bool wait=false;
+        try{auto d=bytes(startup,16);require(startup_playback_parse(reinterpret_cast<const char*>(d.data()),d.size(),&wait),"Invalid startup playback");}
+        catch(const std::exception&){wait=false;l->warnings.push_back("Invalid startup playback; using Play immediately.");}
+        l->settings["startup_playback"]=wait?"wait":"play";
+    }
     for(unsigned r=0;r<7;++r)l->runePresent[r]=fs::is_directory(settings/"grimoire"/("rune"+std::to_string(r+1)));
     parseSettings(*l,l->preparedSettings);return l;
 }
@@ -112,6 +120,7 @@ void Storage::run(){
 static void parseSettings(const Library &l,CoreState &s){
     auto get=[&](const char *key,const char *fallback){auto i=l.settings.find(key);return i==l.settings.end()||i->second.empty()?std::string(fallback):i->second;};
     auto tempo=get("start_tempo","default");start_tempo_parse(tempo.data(),tempo.size(),&s.start_tempo);
+    s.startup_wait=get("startup_playback","play")=="wait";
     s.clock_stop=get("clock_stop_sync","off")=="on";s.clock_trigger=get("clock_output_trig","off")=="on";s.clock_slice=get("clock_behavior_sync_slice","off")=="on";
     s.bipolar[0]=get("amen_cv","bipolar")=="bipolar";s.bipolar[1]=get("break_cv","bipolar")=="bipolar";s.bipolar[2]=get("sample_cv","bipolar")=="bipolar";
     auto amen=get("amen_behavior","jump");s.amen_behavior=amen=="repeat"?1:amen=="split"?2:0;
@@ -122,6 +131,7 @@ static void parseSettings(const Library &l,CoreState &s){
 void applySettings(const Library &l,CoreState &s){
     const auto &v=l.preparedSettings;
     s.start_tempo=v.start_tempo;
+    s.startup_wait=v.startup_wait;
     s.clock_stop=v.clock_stop;s.clock_trigger=v.clock_trigger;s.clock_slice=v.clock_slice;
     memcpy(s.bipolar,v.bipolar,sizeof s.bipolar);s.amen_behavior=v.amen_behavior;s.sample_mapping=v.sample_mapping;
     s.reset_input=v.reset_input;s.brightness=v.brightness;

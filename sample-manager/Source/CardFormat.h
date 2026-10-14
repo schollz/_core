@@ -48,5 +48,7 @@ inline constexpr auto midiChannelPath = "settings/midi_channel";
 String midiChannelContents(const Settings &);
 inline constexpr auto startTempoPath = "settings/start_tempo";
 String startTempoContents(const Settings &);
+inline constexpr auto startupPlaybackPath = "settings/startup_playback";
+String startupPlaybackContents(const Settings &);
 std::map<String, String> textSettingsContents(const Settings &);
 } // namespace core::card

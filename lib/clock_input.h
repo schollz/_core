@@ -64,7 +64,13 @@ int32_t ClockInput_timeSinceLast(ClockInput *ci) {
 void ClockInput_update_raw(ClockInput *ci, uint8_t clock_pin) {
   if (clock_pin == 1 && ci->last_state == 0) {
     uint32_t now_time = time_us_32();
-    if (now_time > ci->last_time) {
+    if (now_time > ci->last_time
+#ifdef INCLUDE_ECTOCORE
+        // A fresh desktop engine can receive its first pulse at time zero.
+        // No interval is needed to deliver that startup edge.
+        || ci->last_diff == 0
+#endif
+    ) {
       uint32_t time_diff = now_time - ci->last_time;
       // printf("[clock_input] time diff: %d\n", time_diff);
       if (time_diff < 2 * ci->last_diff && time_diff > 1000) {

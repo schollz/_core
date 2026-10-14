@@ -331,6 +331,7 @@ const socketMessageListener = (e) => {
             app.settingsSampleCV = savedState.settingsSampleCV;
         }
         app.settingsStartTempo = validStartTempo(savedState.settingsStartTempo) ? savedState.settingsStartTempo : "default";
+        app.settingsStartupPlayback = savedState.settingsStartupPlayback === "wait" ? "wait" : "play";
         app.startTempoBpm = app.settingsStartTempo === "default" ? "130" : app.settingsStartTempo;
         app.startTempoError = "";
         app.settingsMidiChannel = /^(?:[1-9]|1[0-6])$/.test(savedState.settingsMidiChannel || "") ? String(savedState.settingsMidiChannel) : "1";
@@ -539,6 +540,7 @@ app = new Vue({
         settingsSampleCVMapping: "bank",
         settingsMidiChannel: "1",
         settingsStartTempo: "default",
+        settingsStartupPlayback: "play",
         startTempoBpm: "130",
         startTempoError: "",
         settingsOverrideWithReset: "none",
@@ -604,6 +606,7 @@ app = new Vue({
         settingsSampleCVMapping: 'saveState',
         settingsMidiChannel: 'saveState',
         settingsStartTempo: 'saveState',
+        settingsStartupPlayback: 'saveState',
         settingsOverrideWithReset: 'saveState',
         settingsGrimoireEffects: 'saveState',
         settingsKnobXSample: 'saveState',
@@ -1047,6 +1050,7 @@ app = new Vue({
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsMidiChannel: app.settingsMidiChannel,
                 settingsStartTempo: app.settingsStartTempo,
+                settingsStartupPlayback: app.settingsStartupPlayback,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
@@ -1472,6 +1476,7 @@ app = new Vue({
                 settingsSampleCVMapping: app.settingsSampleCVMapping,
                 settingsMidiChannel: app.settingsMidiChannel,
                 settingsStartTempo: app.settingsStartTempo,
+                settingsStartupPlayback: app.settingsStartupPlayback,
                 settingsOverrideWithReset: app.settingsOverrideWithReset,
                 settingsGrimoireEffects: app.settingsGrimoireEffects,
                 settingsKnobXSample: app.settingsKnobXSample,
