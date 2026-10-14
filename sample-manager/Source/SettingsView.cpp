@@ -28,6 +28,7 @@ String settingHelp(const card::Setting &setting) {
   static const std::map<String, String> help{
       {"midi_channel", "Listen for notes and CCs on this MIDI channel. Requires firmware with configurable MIDI receive channel support. Copy the settings to the card and restart Zeptocore to apply."},
       {"brightness", "Set the hardware LED brightness from 0 to 100."},
+      {"startup_playback", "Play immediately keeps the current power-up behavior. Wait for clock or button loads the sample silently, with clock and trigger outputs idle, until the normal start gesture or a clock pulse. Requires supporting firmware. Restart with this card to apply."},
       {"clock_stop_sync",
        "Stop playback when the external clock stops, and resume when it returns."},
       {"clock_output_trig", "Send short trigger pulses from the clock output instead of gates."},
@@ -155,11 +156,14 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     label->setTooltip(settingHelp(d));
     addAndMakeVisible(label);
     auto *combo = controls.add(new juce::ComboBox);
+    combo->setComponentID(d.key);
     combo->setTooltip(settingHelp(d));
     int n = 1;
     for (const auto &v : d.values)
       combo->addItem(d.key == "sample_cv_mapping"
                          ? (v == "1voct" ? "1 V/oct" : "Bank divisions")
+                         : d.key == "startup_playback"
+                         ? (v == "wait" ? "Wait for clock or button" : "Play immediately (default)")
                          : v,
                      n++);
     auto found = values.find(d.key);
@@ -214,7 +218,7 @@ SettingsView::SettingsView(Manager &m, Look &l, int p)
     addAndMakeVisible(button);
   }
   refreshEffects();
-  setSize(780, p == 1 ? 522 : 752);
+  setSize(780, p == 1 ? 522 : 814);
 }
 void SettingsView::commitStartTempo() {
   String value = "default";

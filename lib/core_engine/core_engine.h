@@ -33,6 +33,7 @@ typedef struct {
     uint32_t version;
     uint16_t tempo, volume;
     uint16_t start_tempo; // 0: existing startup behavior; otherwise 30-300 BPM
+    bool startup_wait; // Applies at startup only; default false.
     uint8_t bank, slot, rune, division, trigger_mode, pitch;
     bool stopped, muted, stay_in_sync;
     bool effects[16];
@@ -71,6 +72,7 @@ bool core_engine_set_state(CoreEngine *, const CoreState *);
 bool core_engine_update_settings(CoreEngine *, const CoreState *);
 // Apply once at host startup, after restoring state/settings, before rendering.
 void core_engine_apply_start_tempo(CoreEngine *);
+void core_engine_apply_startup_playback(CoreEngine *);
 void core_engine_clear_holds(CoreEngine *);
 #ifdef __cplusplus
 }

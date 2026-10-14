@@ -1,5 +1,62 @@
 # _core sample manager 0.1.0 validation
 
+## Startup playback: executed October 13, 2026
+
+Ezeptocore and Ectocore now offer Startup playback in the desktop and web
+managers and VCV Rack. Play immediately remains the default. Wait for clock or
+button loads media while stopped and silent, with idle clock/trigger outputs.
+The setting uses the replaceable `settings/startup_playback` text file (`play`
+or `wait` plus newline). Rack patches persist an additive `startup_wait` field;
+waiting overrides saved playing state on patch open and survives reboot.
+Ordinary settings edits, folder reload/import, and sample/bank changes do not
+reapply the startup hold. Zeptocore does not expose or apply the option.
+
+Linux Release builds pass for the desktop manager and Rack plugin. The focused
+desktop startup_playback, start_tempo, midi_settings, render_status, and
+firmware_catalog CTests pass, as does `--self-test manager` (audio, manager,
+render-status, and recovery). Settings snapshots were checked in all three
+presentations, including complete window bounds and Zeptocore visibility.
+Startup tests cover save, undo/redo, reopening, duplication, external edits,
+legacy manifest adoption, and migration of older undo history.
+
+Firmware settings/boot tests pass with UBSan. They exercise malformed/missing
+files, root/settings precedence, IO failures, and the production boot media
+release boundary. Web state/payload tests and the Go pack/server suites pass;
+the server suite requires the generated documentation landing page, regenerated
+locally with Hugo for this run. Both export types overwrite waiting with play.
+
+The UBSan shared-engine suite passes startup silence, button/first-clock start,
+clock stop/continue, trigger/gate and tempo/slice outputs, three-module chains,
+settings imports, and existing tempo/variable-slice regressions. Actual Rack
+module tests pass waiting/patch restore/reboot at 32, 44.1, 48, 96, and 192 kHz,
+including exact-zero stereo output after reboot and patch reload into a playing
+module. Startup reacquires clock timing, clears cached engine audio, and flushes
+the converter's channel histories without reallocating on the audio thread.
+The first edge also starts a newly rebooted engine at time zero. Existing module
+audio/clock/patch tests pass at 32–192 kHz. MIDI tests pass using `CC=clang`, and
+the clock-restart/seek diagnostics suite passes.
+
+Standard 441-frame and low-latency 256-frame Ectocore/Ezeptocore firmware builds
+pass, along with the Zeptocore 256-frame compatibility build. Physical hardware
+power-up, clock input, and button acceptance still require a hardware session;
+no hardware was flashed during this validation.
+
+Focused reproduction:
+
+```sh
+python3 test/startup_playback/run.py
+python3 test/start_tempo/run.py
+python3 test/rack/run.py --sanitize undefined
+python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
+cd core && go test ./src/pack ./src/server
+```
+
+```sh
+xvfb-run -a ctest --test-dir sample-manager/build/linux-x86_64 \
+  -R '^(startup_playback|start_tempo|midi_settings|render_status|firmware_catalog)$' \
+  --output-on-failure
+```
+
 ## Original and rendered durations: executed September 30, 2026
 
 The subtitle now distinguishes original, target, completed, and failed-update durations for the selected sample. Completed durations use cached frame counts and sample rates from the unpadded preview headers. The worker refreshes this metadata when primary output commits and on project open; UI updates do not read audio files. Preview resolves the sample in the completed project, including during Undo/Redo. Primary completion can be displayed during waveform preparation without declaring the manager idle before that foreground work finishes.

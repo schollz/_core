@@ -121,9 +121,98 @@ static void check_start_tempo(const char *folder) {
     core_engine_get_state(m.engine,&s);assert(s.tempo==130&&s.start_tempo==130);
     std::cout<<"module: fixed startup, patch reopen, legacy patch, folder reload/import and headless reboot passed\n";
 }
+static void check_startup_playback(const char *folder,float rate) {
+    auto root=ecto::fs::temp_directory_path()/("rack-startup-playback-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    ecto::fs::create_directories(root/"settings");
+    struct Cleanup {ecto::fs::path path;~Cleanup(){ecto::fs::remove_all(path);}} cleanup{root};
+    ecto::fs::copy(ecto::fs::path(folder)/"bank1",root/"bank1",ecto::fs::copy_options::recursive);
+    {std::ofstream(root/"settings/startup_playback")<<"wait\n";}
+    auto advance=[&](Ectocore &m,bool silent) {
+        unsigned sound=0;
+        for(int64_t i=0;i<int64_t(rate/2);++i) {
+            m.process({rate,1.f/rate,i});
+            if(silent)for(int output:{Ectocore::LEFT,Ectocore::RIGHT,Ectocore::CLOCK_OUT,Ectocore::TRIGGER}) {
+                if(m.outputs[output].getVoltage()!=0.f) {
+                    CoreState state;core_engine_get_state(m.engine,&state);
+                    std::cerr<<"startup silence failed: rate="<<rate<<" frame="<<i<<" output="<<output<<" voltage="<<m.outputs[output].getVoltage()<<" stopped="<<state.stopped<<" muted="<<state.muted<<" wait="<<state.startup_wait<<"\n";
+                }
+                assert(m.outputs[output].getVoltage()==0.f);
+            }
+            sound+=std::abs(m.outputs[Ectocore::LEFT].getVoltage())>1e-6f;
+        }
+        if(!silent&&!sound) {
+            CoreState state;core_engine_get_state(m.engine,&state);
+            std::cerr<<"startup start failed: rate="<<rate<<" stopped="<<state.stopped<<" muted="<<state.muted<<" wait="<<state.startup_wait<<"\n";
+        }
+        if(!silent)assert(sound);
+    };
+    Ectocore m;load(m,root.string().c_str(),rate);advance(m,true);
+    CoreState s;core_engine_get_state(m.engine,&s);assert(s.startup_wait&&s.stopped&&s.muted);
+    // First accepted input clock releases the boot hold through Rack's actual
+    // process boundary and sample-rate converter.
+    m.inputs[Ectocore::CLOCK_IN].setChannels(1);m.inputs[Ectocore::CLOCK_IN].setVoltage(10.f);
+    m.process({rate,1.f/rate,0});core_engine_get_state(m.engine,&s);assert(!s.stopped&&!s.muted);
+    m.inputs[Ectocore::CLOCK_IN].setVoltage(0.f);advance(m,false);
+    auto *json=m.dataToJson();
+    assert(json_is_true(json_object_get(json_object_get(json,"state"),"startup_wait")));
+    // Patch reload into an already playing module must discard cached PCM and
+    // converter history before producing its next output frame.
+    auto previousGeneration=m.active->library->generation;
+    m.dataFromJson(json);
+    for(unsigned i=0;i<10000&&m.active->library->generation==previousGeneration;++i) {
+        m.process({rate,1.f/rate,int64_t(i)});
+        assert(m.outputs[Ectocore::LEFT].getVoltage()==0.f&&m.outputs[Ectocore::RIGHT].getVoltage()==0.f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    assert(m.active->library->generation!=previousGeneration);advance(m,true);
+    m.inputs[Ectocore::CLOCK_IN].setVoltage(10.f);m.process({rate,1.f/rate,0});
+    m.inputs[Ectocore::CLOCK_IN].setVoltage(0.f);advance(m,false);
+    {
+        Ectocore restored;restored.onSampleRateChange({rate,1.f/rate});restored.dataFromJson(json);
+        core_engine_get_state(restored.engine,&s);assert(s.startup_wait&&s.stopped&&s.muted);
+        for(unsigned i=0;i<10000&&!restored.active;++i){restored.process({rate,1.f/rate,int64_t(i)});std::this_thread::sleep_for(std::chrono::milliseconds(1));}
+        assert(restored.active);advance(restored,true);
+        restored.params[Ectocore::TAP].setValue(1.f);
+        advance(restored,false);restored.params[Ectocore::TAP].setValue(0.f);
+        core_engine_get_state(restored.engine,&s);assert(!s.stopped&&!s.muted);
+    }
+    // Saved transport remains authoritative for old patches without the field.
+    json_object_del(json_object_get(json,"state"),"startup_wait");
+    {
+        Ectocore legacy;legacy.onSampleRateChange({rate,1.f/rate});legacy.dataFromJson(json);
+        core_engine_get_state(legacy.engine,&s);assert(!s.startup_wait&&!s.stopped);
+        for(unsigned i=0;i<10000&&!legacy.active;++i){legacy.process({rate,1.f/rate,int64_t(i)});std::this_thread::sleep_for(std::chrono::milliseconds(1));}
+        assert(legacy.active);advance(legacy,false);
+    }
+    json_object_set_new(json_object_get(json,"state"),"startup_wait",json_string("wait"));
+    CoreState invalid=m.initial;assert(!ecto::stateFromJson(json_object_get(json,"state"),invalid));json_decref(json);
+    // Reload/import/choosing a different folder only update the preference.
+    auto reload=[&](const std::string &path,bool choose) {
+        auto generation=m.active->library->generation;
+        if(choose)m.choose(path);else m.storage.load(path,m.selectedBank.load(),true);
+        for(unsigned i=0;i<10000&&m.active->library->generation==generation;++i){m.process({rate,1.f/rate,int64_t(i)});std::this_thread::sleep_for(std::chrono::milliseconds(1));}
+        assert(m.active->library->generation!=generation);
+        core_engine_get_state(m.engine,&s);assert(!s.stopped&&!s.muted);
+    };
+    reload(root.string(),false);advance(m,false);
+    reload(folder,true);core_engine_get_state(m.engine,&s);assert(!s.startup_wait);
+    reload(root.string(),true);core_engine_get_state(m.engine,&s);assert(s.startup_wait);
+    // Preserve a per-module edit over reboot even when the folder differs.
+    s.startup_wait=false;m.edits.push({s});m.process({rate,1.f/rate,0});
+    auto reboot=[&] {
+        auto *previous=m.engine;m.resetRequested=true;
+        for(unsigned i=0;i<1000&&m.engine==previous;++i){m.process({rate,1.f/rate,int64_t(i)});std::this_thread::sleep_for(std::chrono::milliseconds(1));}
+        assert(m.engine!=previous);core_engine_get_state(m.engine,&s);
+    };
+    reboot();assert(!s.startup_wait);advance(m,false);
+    s.startup_wait=true;m.edits.push({s});m.process({rate,1.f/rate,0});
+    core_engine_get_state(m.engine,&s);assert(!s.stopped);reboot();assert(s.startup_wait&&s.stopped&&s.muted);advance(m,true);
+    std::cout<<"module: "<<rate<<" Hz startup wait, first clock/button start, patch reopen, legacy patch, imports and reboot passed\n";
+}
 int main(int argc,char **argv){
     assert(argc==2);rack::Context context;rack::contextSet(&context);context.engine=new rack::engine::Engine;
     check_start_tempo(argv[1]);
+    for(float rate:{32000.f,44100.f,48000.f,96000.f,192000.f})check_startup_playback(argv[1],rate);
     for(float rate:{32000.f,44100.f,48000.f,96000.f,192000.f}){
         Ectocore m;assert(m.ezeptocore);load(m,argv[1],rate);double energy=0;unsigned audible=0,longestSilence=0,silence=0;
         for(int64_t i=0;i<int64_t(rate*2);++i){m.process({rate,1.f/rate,i});float v=m.outputs[Ectocore::LEFT].getVoltage();assert(std::isfinite(v)&&std::abs(v)<5.1f);if(i>rate){energy+=v*v;audible+=std::abs(v)>1e-6f;silence=std::abs(v)<1e-6f?silence+1:0;longestSilence=std::max(silence,longestSilence);}}

@@ -116,6 +116,22 @@ Ezeptocore and Zeptocore display a header rune from the website's seven symbols,
 
 **Settings** includes brightness, clock behavior, CV behavior/polarity, reset override, product-specific knob/MASH options, and the seven-by-sixteen effect matrix in website order. Changing an exclusive marker replaces its on/off alternatives together.
 
+**Startup playback**, available for Ezeptocore and Ectocore in both managers,
+defaults to **Play immediately (default)**. Choose **Wait for clock or button**
+to power up with the sample loaded, audio silent, and clock/trigger outputs idle.
+The normal start gesture or first incoming clock pulse starts playback. Once
+started, the existing incoming-clock stop/continue setting controls clock loss.
+Changing samples, banks, or presets does not reapply the startup setting.
+Restart the device with the updated card to apply it; supporting firmware is
+required, and older firmware ignores it. Zeptocore keeps its existing behavior.
+
+Both managers write `settings/startup_playback` containing `play` or `wait`,
+followed by a newline. Full and settings-only web exports include the file,
+including when switching back to Play immediately. A root-level file is also
+accepted; the settings-directory file takes precedence. Missing or invalid
+values use immediate playback. The desktop manager retains the choice through
+undo/redo, reopening, duplication, and presentation changes.
+
 **Start tempo** appears in all three presentations and in the web managers. Leave it
 at **Default (no override)** to keep the existing startup behavior, including a
 saved preset's tempo. Choose **Fixed BPM** and enter a whole number from 30 to 300

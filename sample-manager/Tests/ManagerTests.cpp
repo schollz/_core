@@ -244,6 +244,72 @@ void sampleCVMappingChecks(const File &workspace) {
             "Undo in an older project restores the default without a schema migration");
   }
 }
+void startupPlaybackChecks(const File &workspace) {
+  auto root = workspace.getChildFile("startup-playback");
+  require(root.createDirectory().wasOk(), "Startup playback fixture");
+  auto file = child(root, card::startupPlaybackPath);
+  {
+    Manager manager; manager.open(root); successful(settle(manager));
+    require(file.loadFileAsString() == "play\n", "Initial startup plays immediately");
+    manager.settings({{"startup_playback", "wait"}}); successful(settle(manager));
+    require(file.loadFileAsString() == "wait\n", "Save waiting startup");
+    manager.undo(); successful(settle(manager));
+    require(file.loadFileAsString() == "play\n", "Undo waiting startup");
+    manager.redo(); successful(settle(manager));
+    Look look;
+    for (int p = 0; p < 3; ++p) {
+      look.presentation(p); SettingsView view(manager, look, p);
+      auto *mode = dynamic_cast<juce::ComboBox *>(view.findChildWithID("startup_playback"));
+      require((mode != nullptr) == (p != 1), "Startup setting visible only on Ezeptocore/Ectocore");
+      for (auto *component : view.getChildren())
+        require(view.getLocalBounds().contains(component->getBounds()), "Startup settings controls fit the window");
+      const auto preview = juce::SystemStats::getEnvironmentVariable("CORE_SETTINGS_PREVIEW_DIR", "");
+      if (File::isAbsolutePath(preview)) {
+        File folder(preview); require(folder.createDirectory().wasOk(), "Settings preview folder");
+        auto out = folder.getChildFile("startup-" + String(p) + ".png").createOutputStream();
+        auto shot = view.createComponentSnapshot(view.getLocalBounds());
+        require(out && out->setPosition(0) && out->truncate().wasOk() &&
+                    juce::PNGImageFormat().writeImageToStream(shot, *out), "Startup settings preview");
+      }
+      if (mode) {
+        require(mode->getSelectedId() == 2, "UI restores waiting mode");
+        mode->setSelectedId(1, juce::sendNotificationSync); successful(settle(manager));
+        require(file.loadFileAsString() == "play\n", "UI clears waiting mode");
+        mode->setSelectedId(2, juce::sendNotificationSync); successful(settle(manager));
+      } else {
+        manager.settings({{"clock_output_trig", "on"}}); successful(settle(manager));
+        require(file.loadFileAsString() == "wait\n", "Hidden presentation preserves startup mode");
+      }
+    }
+    auto copy = workspace.getChildFile("startup-copy"); manager.duplicate(copy); successful(settle(manager));
+    require(child(copy, card::startupPlaybackPath).loadFileAsString() == "wait\n", "Duplicate preserves startup mode");
+  }
+  {
+    Manager reopened; reopened.open(root); successful(settle(reopened));
+    require(reopened.snapshot().project.settings.at("startup_playback") == "wait", "Reopen startup mode");
+    durableWrite(file, "play\n", 5); reopened.settings({{"startup_playback", "play"}});
+    require(settle(reopened).error.contains("External change") && file.loadFileAsString() == "play\n", "Protect external startup edits");
+  }
+  auto oldRoot = workspace.getChildFile("startup-legacy");
+  require(oldRoot.createDirectory().wasOk(), "Legacy startup fixture");
+  {
+    Storage storage(oldRoot); auto legacy = storage.open();
+    legacy.settings.erase("startup_playback"); legacy.fingerprints.erase(card::startupPlaybackPath);
+    History history; history.accept(legacy, "Legacy edit");
+    durableJson(child(oldRoot, ".core-manager/history.json"), history.json(legacy.id));
+    durableJson(child(oldRoot, ".core-manager/project.json"), legacy.json());
+    durableWrite(child(oldRoot, card::startupPlaybackPath), "wait\n", 5);
+  }
+  {
+    Manager legacy; legacy.open(oldRoot); successful(settle(legacy));
+    require(legacy.snapshot().project.settings.at("startup_playback") == "wait", "Legacy manifest adopts card mode");
+    legacy.undo(); successful(settle(legacy));
+    require(child(oldRoot, card::startupPlaybackPath).loadFileAsString() == "wait\n", "Legacy history retains newly adopted setting");
+    legacy.settings({{"startup_playback", "play"}}); successful(settle(legacy));
+    legacy.undo(); successful(settle(legacy));
+    require(child(oldRoot, card::startupPlaybackPath).loadFileAsString() == "wait\n", "Legacy undo restores adopted startup mode");
+  }
+}
 void startTempoChecks(const File &workspace) {
   auto root = workspace.getChildFile("start-tempo");
   require(root.createDirectory().wasOk(), "Start tempo fixture");
@@ -616,6 +682,13 @@ void nameRecoveryCases(const File &workspace) {
   }
 }
 } // namespace
+void startupPlaybackTests() {
+  auto workspace = File::getSpecialLocation(File::tempDirectory).getChildFile("core-startup-playback-" + uuid());
+  require(workspace.createDirectory().wasOk(), "Startup playback test folder");
+  struct Clean { File root; ~Clean() { root.deleteRecursively(); } } clean{workspace};
+  startupPlaybackChecks(workspace);
+  std::cout << "PASS startup playback persistence, UI, undo, legacy adoption and conflicts\n";
+}
 void startTempoTests() {
   auto workspace = File::getSpecialLocation(File::tempDirectory).getChildFile("core-start-tempo-" + uuid());
   require(workspace.createDirectory().wasOk(), "Start tempo test folder");
@@ -644,6 +717,7 @@ void managerTests() {
   midiChannelChecks(workspace);
   startTempoChecks(workspace);
   // Keep independent project fixtures outside the project being duplicated.
+  startupPlaybackChecks(workspace);
   auto root = workspace.getChildFile("project");
   require(root.createDirectory().wasOk(), "Main manager fixture folder");
   auto audioFile = root.getChildFile("input.wav");

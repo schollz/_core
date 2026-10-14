@@ -234,11 +234,20 @@ void Manager::open(const File &root) {
       if (child(root, "start_tempo").exists())
         committed.fingerprints["start_tempo"] = fingerprint(child(root, "start_tempo"));
     }
+    if (committed.settings.find("startup_playback") == committed.settings.end()) {
+      const auto settings = card::readSettings(root, project.warnings);
+      const auto found = settings.find("startup_playback");
+      committed.settings["startup_playback"] = found == settings.end() ? String("play") : found->second;
+      committed.fingerprints[card::startupPlaybackPath] = fingerprint(child(root, card::startupPlaybackPath));
+      if (child(root, "startup_playback").exists())
+        committed.fingerprints["startup_playback"] = fingerprint(child(root, "startup_playback"));
+    }
     manifestHash = fingerprint(child(root, ".core-manager/project.json"));
     history.clear();
     auto undoFile = child(root, ".core-manager/history.json");
     if (undoFile.existsAsFile())
-      history.restore(parseJson(undoFile), project.id);
+      history.restore(parseJson(undoFile), project.id,
+                      {{"startup_playback", committed.settings.at("startup_playback")}});
     dirty = project.revision > project.completedRevision;
     failed = false;
     prepareImportWaveforms();

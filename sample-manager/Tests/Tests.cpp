@@ -16,6 +16,7 @@ void managerTests();
 void renderStatusTests();
 void midiSettingsTests();
 void startTempoTests();
+void startupPlaybackTests();
 void firmwareTests();
 void firmwareReleaseTests();
 namespace {
@@ -94,6 +95,25 @@ void spliceTimingChecks() {
   oneShot.slices.clear();
   rejects([&] { oneShot.updateSpliceTrigger(SpliceTimingCalculation::evenSlices); },
           "An empty slice list cannot calculate an interval");
+}
+void startupPlaybackContractChecks() {
+  check(card::startupPlaybackContents({}) == "play\n", "Startup defaults to immediate playback");
+  check(card::settingsFiles({{"startup_playback", "wait"}}).empty(), "Startup playback has no markers");
+  rejects([] { card::startupPlaybackContents({{"startup_playback", "invalid"}}); }, "Reject invalid startup mode");
+  Temp folder;
+  juce::StringArray warnings;
+  auto read = [&] { warnings.clear(); return card::readSettings(folder.dir, warnings); };
+  textFile(child(folder.dir, "startup_playback"), "wait\n");
+  check(read().at("startup_playback") == "wait", "Adopt root startup mode");
+  const auto file = child(folder.dir, card::startupPlaybackPath);
+  for (auto value : {"play", "wait"}) {
+    textFile(file, String(value) + "\r\n");
+    check(read().at("startup_playback") == value && warnings.isEmpty(), "Settings startup overrides root");
+  }
+  for (auto value : {"", "Wait", " wait", "waitx", "play\nwait", "xxxxxxxxxxxxxxxxx"}) {
+    textFile(file, value);
+    check(read().at("startup_playback") == "play" && !warnings.isEmpty(), "Invalid startup mode warns and defaults to play");
+  }
 }
 void startTempoContractChecks() {
   check(card::startTempoContents({}) == "default\n", "Start tempo defaults to no override");
@@ -181,6 +201,11 @@ int runTests(const String &suite) {
       check(broken.samples[0].protectedEntry, "Damaged primary remains protected");
       return 0;
     }
+    if (suite == "startup-playback") {
+      startupPlaybackContractChecks();
+      startupPlaybackTests();
+      return 0;
+    }
     if (suite == "start-tempo") {
       startTempoContractChecks();
       startTempoTests();
@@ -215,6 +240,7 @@ int runTests(const String &suite) {
     }
     require(suite.isEmpty(), "Unknown self-test suite: " + suite);
     startTempoContractChecks();
+    startupPlaybackContractChecks();
     spliceTimingChecks();
     firmwareTests();
     {

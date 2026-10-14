@@ -51,7 +51,8 @@ public:
     future.clear();
   }
   var json(const String &projectId) const;
-  void restore(const var &, const String &projectId);
+  void restore(const var &, const String &projectId,
+               const card::Settings &missingSettings = {});
 
 private:
   struct Entry {

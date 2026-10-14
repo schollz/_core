@@ -76,3 +76,22 @@ for (const legacy of [{}, {settingsStartTempo:'invalid'}]) {
     assert.equal(second.app.startTempoBpm, '130');
 }
 console.log('Web start tempo: persistence, validation and both download payloads passed');
+
+assert.equal(first.app.settingsStartupPlayback, 'play');
+first.app.settingsStartupPlayback = 'wait';
+const startupSaved = JSON.parse(first.messages.at(-1).state);
+assert.equal(startupSaved.settingsStartupPlayback, 'wait');
+second.context.receiveState({ data: JSON.stringify({ action: 'getstate', state: JSON.stringify(startupSaved) }) });
+assert.equal(second.app.settingsStartupPlayback, 'wait');
+for (const mode of ['wait', 'play']) {
+    second.app.settingsStartupPlayback = mode;
+    for (const settingsOnly of [false, true]) {
+        second.app.submitForm(settingsOnly);
+        assert.equal(second.downloads.at(-1).body.settingsStartupPlayback, mode);
+    }
+}
+for (const legacy of [{}, { settingsStartupPlayback: 'invalid' }]) {
+    second.context.receiveState({ data: JSON.stringify({ action: 'getstate', state: JSON.stringify(legacy) }) });
+    assert.equal(second.app.settingsStartupPlayback, 'play');
+}
+console.log('Web startup playback: defaults, persistence and both download payloads passed');

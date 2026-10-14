@@ -309,6 +309,14 @@
                 <span v-if="settingsMashMode">momentary</span><span v-else>toggle</span>
             </p>
             [[ else ]]
+            <p>
+                <label for="settingsStartupPlayback">Startup playback</label>
+                <select id="settingsStartupPlayback" v-model="settingsStartupPlayback"
+                    title="Wait for clock or button loads the sample silently, with clock and trigger outputs idle, until the normal start gesture or a clock pulse. Requires supporting firmware; restart with the updated card to apply.">
+                    <option value="play">Play immediately (default)</option>
+                    <option value="wait">Wait for clock or button</option>
+                </select>
+            </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em; align-items: start;">
                 <p id="pSettingsClockStop" style="margin: 0.25em 0;">
                     <label for="settingsClockStop" style="display: block; margin-bottom: 0.25em;"

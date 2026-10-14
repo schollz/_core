@@ -1,5 +1,6 @@
 #include "../../lib/midi_channel.h"
 #include "../../lib/start_tempo.h"
+#include "../../lib/startup_playback.h"
 #include "CardFormat.h"
 #include <cstring>
 #include <limits>
@@ -224,6 +225,7 @@ const std::vector<Setting> &settingDefinitions() {
           "13", "14", "15"},
          "8"},
         {"start_tempo", "Start tempo", {"default"}, "default"},
+        {"startup_playback", "Startup playback", {"play", "wait"}, "play", true},
         {"clock_stop_sync", "Clock stop", {"on", "off"}, "on"},
         {"clock_output_trig", "Clock output trigger", {"on", "off"}, "off"},
         {"clock_behavior_sync_slice",
@@ -295,7 +297,7 @@ Settings defaultSettings() {
 std::map<String, bool> settingsFiles(const Settings &settings) {
   std::map<String, bool> files;
   for (const auto &d : settingDefinitions()) {
-    if (d.key == "sample_cv_mapping" || d.key == "midi_channel" || d.key == "start_tempo")
+    if (d.key == "sample_cv_mapping" || d.key == "midi_channel" || d.key == "start_tempo" || d.key == "startup_playback")
       continue;
     auto found = settings.find(d.key);
     if (found == settings.end())
@@ -338,10 +340,17 @@ String startTempoContents(const Settings &settings) {
               value == (bpm ? String(bpm) : String("default")), "Invalid start tempo");
   return value + "\n";
 }
+String startupPlaybackContents(const Settings &settings) {
+  const auto found = settings.find("startup_playback");
+  const auto value = found == settings.end() ? String("play") : found->second;
+  require(value == "play" || value == "wait", "Invalid startup playback");
+  return value + "\n";
+}
 std::map<String, String> textSettingsContents(const Settings &settings) {
   return {{sampleCVMappingPath, sampleCVMappingContents(settings)},
           {midiChannelPath, midiChannelContents(settings)},
-          {startTempoPath, startTempoContents(settings)}};
+          {startTempoPath, startTempoContents(settings)},
+          {startupPlaybackPath, startupPlaybackContents(settings)}};
 }
 Settings readSettings(const File &root, juce::StringArray &warnings) {
   Settings values;
@@ -359,7 +368,7 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
       values[key] = chosen;
   };
   for (const auto &d : settingDefinitions())
-    if (d.key != "sample_cv_mapping" && d.key != "midi_channel" && d.key != "start_tempo")
+    if (d.key != "sample_cv_mapping" && d.key != "midi_channel" && d.key != "start_tempo" && d.key != "startup_playback")
       read(d.key, d.values);
   // Match firmware precedence: settings/ overrides the root-directory file.
   auto mapping = child(root, sampleCVMappingPath);
@@ -406,6 +415,19 @@ Settings readSettings(const File &root, juce::StringArray &warnings) {
     const bool valid = readable && start_tempo_parse(bytes, size_t(size), &bpm);
     values["start_tempo"] = valid && bpm ? String(bpm) : String("default");
     if (!valid) warnings.add("Invalid start tempo; using Default (no override).");
+  }
+  auto startupFile = child(root, startupPlaybackPath);
+  if (!startupFile.exists()) startupFile = child(root, "startup_playback");
+  if (startupFile.exists()) {
+    auto input = startupFile.createInputStream();
+    char bytes[16]{};
+    const auto size = input ? input->getTotalLength() : -1;
+    const bool readable = size >= 0 && size <= 16 &&
+                          input->read(bytes, int(size)) == size && input->getStatus().wasOk();
+    bool wait = false;
+    const bool valid = readable && startup_playback_parse(bytes, size_t(size), &wait);
+    values["startup_playback"] = valid && wait ? "wait" : "play";
+    if (!valid) warnings.add("Invalid startup playback; using Play immediately.");
   }
   for (int b = 1; b <= 7; ++b)
     for (int e = 1; e <= 16; ++e)

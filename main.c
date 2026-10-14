@@ -11,6 +11,23 @@ int32_t phase_sample_old = 0;
 // timer
 
 #ifdef INCLUDE_ECTOCORE
+void startup_playback_apply(void) {
+  if (!global_startup_wait) return;
+  do_restart_playback = false;
+  do_stop_playback = false;
+  playback_stopped = true;
+  playback_restarted = false;
+  button_mute = true;
+  trigger_button_mute = false;
+  // Boot is already stopped, rather than a user Stop transition. In particular,
+  // do not save the bank/sample to flash on the first timer tick.
+  repeating_timer_callback_playback_stopped = true;
+  gpio_put(GPIO_CLOCK_OUT, 0);
+  gpio_put(GPIO_TRIG_OUT, 0);
+  clock_output_trig_time = 0;
+  ecto_trig_out_last = 0;
+}
+
 static void ecto_emit_trigger(void) {
   ecto_trig_out_last = to_ms_since_boot(get_absolute_time());
   gpio_put(GPIO_TRIG_OUT, 1);

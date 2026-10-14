@@ -1,5 +1,8 @@
 #include "start_tempo_settings.h"
 #ifdef INCLUDE_ECTOCORE
+#include "startup_playback_settings.h"
+#endif
+#ifdef INCLUDE_ECTOCORE
 #include "sample_cv_settings.h"
 #endif
 
@@ -114,6 +117,7 @@ void load_settings(const char *dir_name) {
   midi_receive_channel = midi_channel_load(dir_name, midi_receive_channel);
 #endif
 #ifdef INCLUDE_ECTOCORE
+  global_startup_wait = startup_playback_load(dir_name, global_startup_wait);
   global_sample_cv_mapping =
       sample_cv_load_mapping(dir_name, global_sample_cv_mapping);
 #endif
@@ -830,6 +834,10 @@ void sdcard_startup() {
   }
 #endif
 
+#ifdef INCLUDE_ECTOCORE
+  // Establish silence before the audio core leaves the boot media guard.
+  startup_playback_apply();
+#endif
   audio_media_release();
   time_of_initialization = time_us_64();
   ZD_CALL(zd_metric_record(&zd_control.metrics[ZD_STARTUP],

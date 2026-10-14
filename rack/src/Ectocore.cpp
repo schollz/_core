@@ -78,14 +78,35 @@ struct Ectocore : engine::Module {
         Module::onSampleRateChange(e);resampler.setRates(CORE_RATE,int(e.sampleRate));outCount=outRead=outWrite=0;corePhase=0;
     }
     void onReset(const ResetEvent &e) override {Module::onReset(e);latch=0;resetRequested=true;}
+    void applyStartupPlayback() {
+        core_engine_apply_startup_playback(engine);
+        CoreState state;core_engine_get_state(engine,&state);
+        if(state.startup_wait) {
+            outCount=outRead=outWrite=0;corePhase=0;
+            // Reboot/patch restore can retain the converter's old audio tail.
+            // Flush every channel's FIR history with silence: reset_mem alone
+            // does not clear all channel storage in every bundled Speex build.
+            // This bounded startup operation performs no allocations.
+            if(resampler.st) {
+                speex_resampler_reset_mem(resampler.st);
+                resampleInput={};
+                const int latency=speex_resampler_get_input_latency(resampler.st);
+                for(int i=0;i<=2*latency;++i) {
+                    int inFrames=1,outFrames=64;
+                    resampler.process(&resampleInput,&inFrames,resampleOutput,&outFrames);
+                }
+                speex_resampler_reset_mem(resampler.st);
+            }
+        }
+    }
     void process(const ProcessArgs &args) override {
         if(auto *fresh=preparedEngine.exchange(nullptr)){
             CoreState previous;core_engine_get_state(engine,&previous);
             auto *old=engine;engine=fresh;retiredEngine.store(old);latch=0;resetRequested=false;
             for(int p=MODE;p<=TAP;++p)params[p].setValue(0);
             if(active){core_engine_set_catalogue(engine,active->library->banks.data(),read,this);core_engine_set_resident_bank(engine,active->index);CoreState s;core_engine_get_state(engine,&s);ecto::applySettings(*active->library,s);core_engine_update_settings(engine,&s);}
-            CoreState reboot;core_engine_get_state(engine,&reboot);reboot.start_tempo=previous.start_tempo;
-            core_engine_update_settings(engine,&reboot);core_engine_apply_start_tempo(engine);
+            CoreState reboot;core_engine_get_state(engine,&reboot);reboot.start_tempo=previous.start_tempo;reboot.startup_wait=previous.startup_wait;
+            core_engine_update_settings(engine,&reboot);core_engine_apply_start_tempo(engine);applyStartupPlayback();
             outCount=outRead=outWrite=0;
         }
         ecto::Bank *bank;
@@ -93,6 +114,7 @@ struct Ectocore : engine::Module {
             if(active&&bank->library->generation<active->library->generation)storage.retired.push(bank);
             else {
                 bool same=active&&active->library->generation==bank->library->generation;
+                bool playbackStartup=!active||restorePending;
                 bool startup=!active||active->library->root!=bank->library->root||restorePending;
                 if(active)storage.retired.push(active);
                 active=bank;storage.activeGeneration=bank->library->generation;
@@ -101,6 +123,7 @@ struct Ectocore : engine::Module {
                 core_engine_set_resident_bank(engine,bank->index);
                 if(!same&&(!hasPatchSettings||bank->library->importSettings)){auto s=initial;ecto::applySettings(*bank->library,s);core_engine_update_settings(engine,&s);hasPatchSettings=true;}
                 if(startup)core_engine_apply_start_tempo(engine);
+                if(playbackStartup)applyStartupPlayback();
                 requestedBank=-1;
             }
         }
@@ -148,6 +171,8 @@ struct Ectocore : engine::Module {
         restorePending=ecto::stateFromJson(json_object_get(j,"state"),restoreState);hasPatchSettings=restorePending;
         if(restorePending)restoreState.tempo=start_tempo_resolve(restoreState.start_tempo,restoreState.tempo);
         if(restorePending&&!core_engine_set_state(engine,&restoreState))restorePending=hasPatchSettings=false;
+        if(restorePending)applyStartupPlayback();
+        outCount=outRead=outWrite=0;
         auto *path=json_string_value(json_object_get(j,"folder"));if(path){
             {std::lock_guard<std::mutex> lock(pathMutex);folder=path;}
             storage.load(path,restorePending?restoreState.bank:0);
@@ -393,6 +418,10 @@ struct EctocoreWidget : app::ModuleWidget {
         menu->addChild(createMenuItem("Reboot module","",[m]{m->resetRequested=true;}));
         menu->addChild(createMenuLabel("Bank "+std::to_string(m->selectedBank+1)+" · Sample "+std::to_string(m->selectedSlot+1)));
         menu->addChild(createSubmenuItem("Device settings","",[m](ui::Menu *sub){
+            sub->addChild(createSubmenuItem("Startup playback",m->uiState.startup_wait?"Wait":"Play immediately",[m](ui::Menu *mnu){
+                for(bool wait:{false,true})mnu->addChild(createCheckMenuItem(wait?"Wait for clock or button":"Play immediately (default)","",[m,wait]{return m->uiState.startup_wait==wait;},[m,wait]{auto s=m->uiState;s.startup_wait=wait;if(m->edits.push({s}))m->uiState=s;}));
+                mnu->addChild(createMenuLabel("Applies on patch open or reboot."));
+            }));
             sub->addChild(createSubmenuItem("Start tempo",m->uiState.start_tempo?std::to_string(m->uiState.start_tempo)+" BPM":"Default",[m](ui::Menu *mnu){
                 mnu->addChild(createCheckMenuItem("Default (no override)","",[m]{return m->uiState.start_tempo==0;},[m]{auto s=m->uiState;s.start_tempo=0;if(m->edits.push({s}))m->uiState=s;}));
                 mnu->addChild(createMenuLabel("Fixed BPM (30–300): enter to save"));

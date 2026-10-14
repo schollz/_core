@@ -5,6 +5,8 @@
 
 #ifdef INCLUDE_ECTOCORE
 #include "sample_cv.h"
+bool global_startup_wait = false;
+void startup_playback_apply(void);
 #endif
 
 bool repeating_timer_callback(struct repeating_timer *t);

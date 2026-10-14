@@ -50,13 +50,17 @@ void clock_handling_start() {
     bool restart_from_stop = false;
     // Stop phase publication before arming the explicit restart below.
     cancel_repeating_timer(&timer);
-    AR_CALL(restart_from_stop = playback_stopped ||
+#ifdef INCLUDE_ECTOCORE
+    restart_from_stop = playback_stopped ||
         (clock_start_stop_sync && audio_callback_in_mute && !button_mute);
-      if (restart_from_stop) {
-        audio_restart_arm();
-        button_mute = false;
-        trigger_button_mute = false;
-      });
+    if (restart_from_stop) {
+      AR_CALL(audio_restart_arm());
+      // Transport restart must unmute even without the optional renderer wake
+      // optimization (including the shared desktop engine).
+      button_mute = false;
+      trigger_button_mute = false;
+    }
+#endif
     clock_in_do = true;
     clock_in_last_last_time = clock_in_last_time;
     clock_in_last_time = time_us_32();

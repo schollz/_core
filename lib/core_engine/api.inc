@@ -125,6 +125,7 @@ void core_engine_get_state(CoreEngine *e,CoreState *v) {
     CoreEngine *old=core_enter(e);memset(v,0,sizeof *v);v->version=1;
     v->tempo=sf->bpm_tempo;v->volume=sf->vol;v->pitch=sf->pitch_val_index;
     v->start_tempo=global_start_tempo;
+    v->startup_wait=global_startup_wait;
     v->bank=sel_bank_cur;v->slot=metadata_filename_index(sel_bank_cur,sel_sample_cur);
     v->rune=grimoire_rune;v->division=ectocore_clock_selected_division;v->trigger_mode=ectocore_trigger_mode;
     v->stopped=playback_stopped;v->muted=button_mute;v->stay_in_sync=sf->stay_in_sync;
@@ -147,6 +148,7 @@ bool core_engine_set_state(CoreEngine *e,const CoreState *v) {
        v->reset_input< -1||v->reset_input>3||v->sequence_length>64||v->filter_index>resonantfilter_fc_max||v->amiga>37||v->saturation>100||v->smear>100||v->jitter>100||v->chaos>100||v->jump_probability>100||v->retrigger_probability>100)return false;
     CoreEngine *old=core_enter(e);sf->bpm_tempo=v->tempo;sf->vol=v->volume>VOLUME_STEPS?VOLUME_STEPS:v->volume;sf->pitch_val_index=v->pitch;
     global_start_tempo=v->start_tempo;
+    global_startup_wait=v->startup_wait;
     sel_bank_next=v->bank;int ordinal=metadata_ordinal(v->bank,v->slot);sel_sample_next=ordinal<0?0:ordinal;
     if(total_number_samples){fil_current_change=true;if(host_resident!=v->bank)host_requested=v->bank;}
     grimoire_rune=v->rune;ectocore_clock_selected_division=v->division;ectocore_trigger_mode=v->trigger_mode;
@@ -174,6 +176,7 @@ bool core_engine_update_settings(CoreEngine *e,const CoreState *v) {
     if(v->amen_behavior>2||v->sample_mapping>1||v->reset_input< -1||v->reset_input>3)return false;
     CoreEngine *old=core_enter(e);
     global_start_tempo=v->start_tempo;
+    global_startup_wait=v->startup_wait;
     global_brightness=v->brightness>100?100:v->brightness;
     global_amen_cv_behavior=v->amen_behavior;global_sample_cv_mapping=v->sample_mapping;
     global_amen_cv_bipolar=v->bipolar[0];global_break_cv_bipolar=v->bipolar[1];global_sample_cv_bipolar=v->bipolar[2];
@@ -185,5 +188,29 @@ void core_engine_apply_start_tempo(CoreEngine *e) {
     CoreEngine *old=core_enter(e);
     sf->bpm_tempo=start_tempo_resolve(global_start_tempo,sf->bpm_tempo);
     update_repeating_timer_to_bpm(sf->bpm_tempo);
+    core_leave(old);
+}
+void core_engine_apply_startup_playback(CoreEngine *e) {
+    CoreEngine *old=core_enter(e);
+    startup_playback_apply();
+    if(global_startup_wait) {
+        // Patch restore can reuse an engine with an acquired clock interval.
+        // Reacquire it as a fresh startup, so the next edge uses the start
+        // callback even when the saved transport gap is short.
+        clock_in_do=false;clock_in_ready=false;clock_in_diff_2x=0;
+        clock_in_beat_total=0;playback_was_stopped_clock=false;
+        clock_in_activator=0;
+        if(clockinput) {
+            clockinput->last_state=false;
+            clockinput->last_time=0;
+            clockinput->last_diff=clockinput->candidate_diff=0;
+        }
+        // A host can restore a patch into an existing engine. Discard any
+        // previously rendered audio rather than draining it after startup.
+        host_pcm_pos=CORE_BLOCK;
+        memset(host_pcm,0,sizeof host_pcm);
+        memset(host_last_pcm,0,sizeof host_last_pcm);
+        host_was_missing=false;
+    }
     core_leave(old);
 }
