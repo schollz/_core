@@ -9,10 +9,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: macos-14, arch: mac-arm64}
-          - {os: macos-15-intel, arch: mac-x64}
-          - {os: ubuntu-22.04, arch: lin-x64}
+          - {os: macos-14, arch: mac-arm64, cc: clang, cxx: clang++}
+          - {os: macos-15-intel, arch: mac-x64, cc: clang, cxx: clang++}
+          - {os: ubuntu-22.04, arch: lin-x64, cc: gcc, cxx: g++}
     runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -27,19 +30,28 @@ jobs:
             sudo apt-get install -y clang g++ make jq zstd libx11-6 libgl1 libasound2 libjack-jackd2-0 libpulse0
           fi
       - run: python3 rack/scripts/sdk.py ${{ matrix.arch }}
+      - name: Root integration and release checks
+        run: |
+          python3 rack/scripts/manifest.py --check
+          python3 -m unittest discover -s test/rack -p 'test_*.py' -v
+          python3 -m unittest discover -s test/release -v
       - name: Engine and storage checks
         run: python3 test/rack/run.py --sanitize address,undefined
       - name: Build and integration checks
         run: |
-          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" -j4
+          export RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK"
+          make clean
+          make cleandep
+          make dep
+          make -j4 dist
           python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
-          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" dist
           python3 rack/scripts/source.py
+          python3 test/rack/source_archive.py --sdk "$RACK_DIR" --arch ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: InfiniteDigits-${{ matrix.arch }}
           path: |
-            rack/dist/*.vcvplugin
+            dist/*.vcvplugin
             rack/dist/*-source.tar.gz
           if-no-files-found: error
   windows:
@@ -53,22 +65,31 @@ jobs:
           msystem: MINGW64
           update: true
           install: >-
-            make jq zstd
+            make jq zstd git
             mingw-w64-x86_64-gcc mingw-w64-x86_64-clang
             mingw-w64-x86_64-python mingw-w64-x86_64-python-numpy
       - run: python rack/scripts/sdk.py win-x64
+      - name: Root integration and release checks
+        run: |
+          python rack/scripts/manifest.py --check
+          python -m unittest discover -s test/rack -p 'test_*.py' -v
+          python -m unittest discover -s test/release -v
       - name: Engine, storage, and plugin
         run: |
           CC=gcc CXX=g++ python test/rack/run.py
-          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++ -j4
+          export RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++
+          make clean
+          make cleandep
+          make dep
           # The Windows SDK supplies an import library, not the Rack runtime DLL.
           # Runtime listening/GUI checks require an installed Rack application.
-          make -C rack RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK" PYTHON=python CC=gcc CXX=g++ dist
+          make -j4 dist
           python rack/scripts/source.py
+          python test/rack/source_archive.py --sdk "$RACK_DIR" --arch win-x64
       - uses: actions/upload-artifact@v4
         with:
           name: InfiniteDigits-win-x64
           path: |
-            rack/dist/*.vcvplugin
+            dist/*.vcvplugin
             rack/dist/*-source.tar.gz
           if-no-files-found: error

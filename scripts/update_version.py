@@ -69,6 +69,8 @@ def planned_updates(root, version):
         r'("version"\s*:\s*)"' + re.escape(plugin['version']) + r'"',
         lambda match: match.group(1) + json.dumps(rack_version), plugin_text, count=1,
     )
+    # VCV reads the root file directly, including from historical Git commits.
+    updates['plugin.json'] = updates['rack/plugin.json']
     plugin['version'] = rack_version
     for path in CURRENT_PATHS:
         text = (root / path).read_text()

@@ -21,6 +21,13 @@ endif
 
 include $(RACK_DIR)/plugin.mk
 
+# Order-only checks also cover direct binary targets without forcing relinks.
+.PHONY: check-manifest
+check-manifest:
+	$(PYTHON) scripts/manifest.py --check
+
+all $(TARGET) $(OBJECTS): | check-manifest
+
 build/generated/engine.c: $(wildcard ../lib/*.h) ../lib/crossfade4.py ../lib/fuzz.py ../lib/resonantfilter.py ../lib/core_engine/prepare.py $(wildcard ../lib/core_engine/*.h) $(wildcard ../lib/core_engine/*.inc) ../main.c
 	$(PYTHON) ../lib/core_engine/prepare.py --out build/generated --clang $(CLANG) $(if $(ENGINE_TARGET),--target $(ENGINE_TARGET))
 

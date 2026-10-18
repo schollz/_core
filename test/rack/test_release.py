@@ -234,8 +234,10 @@ class ReleaseTests(unittest.TestCase):
         project.mkdir()
         manifest = {'slug': 'InfiniteDigits', 'version': '2.0.0',
                     'name': 'Infinite Digits', 'manualUrl': 'https://example.invalid/manual'}
-        files = {'rack/plugin.json': json.dumps(manifest).encode()}
-        for name in ('rack/Makefile', 'lib/core_engine/prepare.py', 'lib/crossfade4.py',
+        files = {'rack/plugin.json': json.dumps(manifest).encode(),
+                 'plugin.json': json.dumps(manifest).encode()}
+        for name in ('Makefile', 'rack/library.mk', 'rack/scripts/manifest.py',
+                     'rack/Makefile', 'lib/core_engine/prepare.py', 'lib/crossfade4.py',
                      'lib/fuzz.py', 'lib/resonantfilter.py', 'main.c', 'rack/README.md',
                      'rack/LICENSE.txt', 'rack/THIRD_PARTY.md', 'rack/res/panel.svg', 'rack/licenses/notice.txt'):
             files[name] = (name + '\n').encode()
@@ -278,6 +280,33 @@ class ReleaseTests(unittest.TestCase):
         (self.root / 'main.c').write_text('changed source')
         with self.assertRaisesRegex(ValueError, 'Source archive mismatch'):
             rack_package.verify_source(self.root, source, 'InfiniteDigits', '2.0.0')
+
+    def test_source_requires_root_build_inputs_and_matching_manifests(self):
+        for change in ('missing', 'different'):
+            with self.subTest(change=change):
+                # Each case uses its own fixture directory.
+                previous = self.root
+                self.root = previous / change
+                self.root.mkdir()
+                _, source, _ = self.package_fixture('mac-x64')
+                with tarfile.open(source) as archive:
+                    files = {member.name: archive.extractfile(member).read()
+                             for member in archive.getmembers()}
+                prefix = 'InfiniteDigits-2.0.0-source/'
+                hashes = json.loads(files[prefix + 'SOURCE_SHA256.json'])
+                if change == 'missing':
+                    del hashes['plugin.json']
+                    del files[prefix + 'plugin.json']
+                else:
+                    data = b'{"slug":"DifferentPlugin","version":"2.0.0"}'
+                    files[prefix + 'plugin.json'] = data
+                    hashes['plugin.json'] = hashlib.sha256(data).hexdigest()
+                    (self.root / 'plugin.json').write_bytes(data)
+                files[prefix + 'SOURCE_SHA256.json'] = json.dumps(hashes).encode()
+                source.write_bytes(tar_bytes(files))
+                with self.assertRaisesRegex(ValueError, 'required build inputs|manifests differ'):
+                    rack_package.verify_source(self.root, source, 'InfiniteDigits', '2.0.0')
+                self.root = previous
 
     def test_resource_mismatch_aborts_packaging(self):
         dist, _, files = self.package_fixture('lin-x64')

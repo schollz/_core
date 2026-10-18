@@ -25,6 +25,12 @@ neither tags nor releases. Immediately before upload they require the selected
 release to remain latest, stable, and mutable; a change stops publication and
 retains the package. Advancing `main` during a build does not change its source.
 
+The version updater also updates the tracked root `plugin.json` used by the VCV
+Library. For manual metadata edits, change `rack/plugin.json` and run
+`python3 rack/scripts/manifest.py --sync` before committing. Builds and source
+packaging check that both copies match; source ZIPs include the root build entry
+point as well as the existing `rack/` build.
+
 ## Prerequisites
 
 Intel SSH sessions send keepalives and keep both Macs awake through cloning,

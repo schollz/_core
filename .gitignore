@@ -107,10 +107,13 @@ test/**/__pycache__/
 /ectocore_visualizer.uf2
 
 # VCV Rack native builds and local SDKs
+/dist/
 /rack/build/
+/rack/dep/
 /rack/dist/
 /rack/plugin.dylib
 /rack/plugin.so
 /rack/plugin.dll
 /rack/Release/__pycache__/
+/rack/scripts/__pycache__/
 /lib/core_engine/__pycache__/

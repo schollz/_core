@@ -27,7 +27,7 @@ class VersionFixture(unittest.TestCase):
         git(self.root, 'init', '--initial-branch=main')
         git(self.root, 'config', 'user.name', 'Release Test')
         git(self.root, 'config', 'user.email', 'test@example.invalid')
-        for name in (*update_version.CURRENT_PATHS, 'VERSION', 'rack/plugin.json'):
+        for name in (*update_version.CURRENT_PATHS, 'VERSION', 'rack/plugin.json', 'plugin.json'):
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes((ROOT / name).read_bytes())
@@ -41,6 +41,7 @@ class VersionFixture(unittest.TestCase):
         plugin = json.loads(plugin_path.read_text())
         plugin['version'] = '2.0.0'
         plugin_path.write_text(json.dumps(plugin, indent=2) + '\n')
+        (self.root / 'plugin.json').write_bytes(plugin_path.read_bytes())
         git(self.root, 'add', '.')
         git(self.root, '-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture')
 
@@ -58,6 +59,8 @@ class VersionTests(VersionFixture):
         update_version.update(self.root, '8.1.0')
         self.assertEqual((self.root / 'VERSION').read_text(), '8.1.0\n')
         self.assertEqual(json.loads((self.root / 'rack/plugin.json').read_text())['version'], '2.0.2')
+        self.assertEqual((self.root / 'plugin.json').read_bytes(),
+                         (self.root / 'rack/plugin.json').read_bytes())
         for name in update_version.CURRENT_PATHS:
             text = (self.root / name).read_text()
             self.assertIn('8.1.0', text)
@@ -91,7 +94,8 @@ class VersionTests(VersionFixture):
         self.assertIn('18.0.5', (self.root / 'dependency.txt').read_text())
 
     def test_preview_changes_nothing(self):
-        update_version.update(self.root, '8.0.6', check=True)
+        updates = update_version.update(self.root, '8.0.6', check=True)
+        self.assertEqual(updates['plugin.json'], updates['rack/plugin.json'])
         self.assertEqual(git(self.root, 'status', '--porcelain'), '')
 
     def test_rack_links_use_manifest_and_new_release_tag(self):
@@ -119,6 +123,7 @@ class VersionTests(VersionFixture):
         before = path.read_text()
         update_version.update(self.root, '8.0.6')
         self.assertEqual(path.read_text(), before.replace('"version": "2.0.0"', '"version": "2.0.1"'))
+        self.assertEqual((self.root / 'plugin.json').read_bytes(), path.read_bytes())
         readme = (self.root / 'README.md').read_text()
         for _, platform in update_version.RACK_PLATFORMS:
             self.assertIn('InfiniteDigits-2.0.1-' + platform + '.zip', readme)
@@ -155,6 +160,7 @@ class GitReleaseTests(VersionFixture):
         self.assertEqual(git(self.remote, 'show', 'main:VERSION'), '8.0.6')
         plugin = json.loads(git(self.remote, 'show', 'v8.0.6:rack/plugin.json'))
         self.assertEqual(plugin['version'], '2.0.1')
+        self.assertEqual(json.loads(git(self.remote, 'show', 'v8.0.6:plugin.json')), plugin)
         self.assertEqual(git(self.root, 'status', '--porcelain'), '')
 
     def test_existing_tag_rejected_without_commit(self):

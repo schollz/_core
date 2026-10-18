@@ -10,12 +10,13 @@ import struct
 import subprocess
 import tarfile
 import zipfile
+from manifest import check
 
 
 def main():
     root = Path(__file__).resolve().parents[2]
     dist = root / 'rack/dist'
-    manifest = json.loads((root / 'rack/plugin.json').read_text())
+    manifest = check(root)
     slug, version = manifest['slug'], manifest['version']
     name = f'{slug}-{version}-win-x64'
     plugin = dist / (name + '.vcvplugin')
@@ -37,6 +38,14 @@ def main():
     with tarfile.open(source) as archive:
         prefix = f'{slug}-{version}-source/'
         hashes = json.load(archive.extractfile(prefix + 'SOURCE_SHA256.json'))
+        required = {'plugin.json', 'Makefile', 'rack/plugin.json', 'rack/Makefile',
+                    'rack/library.mk', 'rack/scripts/manifest.py', 'lib/core_engine/prepare.py',
+                    'lib/crossfade4.py', 'lib/fuzz.py', 'lib/resonantfilter.py', 'main.c'}
+        if not required.issubset(hashes):
+            raise ValueError('Source archive lacks required build inputs')
+        if (archive.extractfile(prefix + 'plugin.json').read()
+                != archive.extractfile(prefix + 'rack/plugin.json').read()):
+            raise ValueError('Source archive manifests differ')
         for path, expected in hashes.items():
             archived = archive.extractfile(prefix + path).read()
             if hashlib.sha256(archived).hexdigest() != expected or hashlib.sha256((root / path).read_bytes()).hexdigest() != expected:

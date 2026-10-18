@@ -1,4 +1,8 @@
 # Makefile
+# VCV's builder supplies RACK_DIR and invokes the repository root.
+.DEFAULT_GOAL := $(if $(strip $(RACK_DIR)),all,dobuild)
+include rack/library.mk
+
 export PICO_EXTRAS_PATH=$(CURDIR)/pico-extras
 PICO_SDK_VERSION := 2.3.1
 PICO_EXTRAS_VERSION := sdk-2.3.1
@@ -372,6 +376,7 @@ bass: .venv
 # Keep SDKs, toolchains, virtual environments, captured data, and checked-in
 # generated sources (such as sinewaves2.h and transfer_saturate2.h).
 .PHONY: clean
+ifeq ($(RACK_LIBRARY_CLEAN),)
 clean:
 	rm -rf build build-*/ test/*/build lib/test/*/build
 	rm -rf visualizer/dist visualizer/.cache sample-manager/build/
@@ -390,6 +395,7 @@ clean:
 	rm -f core/core core_server core_windows.exe core_linux_amd64 \
 		core_macos_aarch64 core_macos_amd64 core_macos_amd642 \
 		ectocore_windows.exe ectocore_linux_amd64 ectocore_macos_aarch64 ectocore_macos_amd64
+endif
 
 debug:
 	sudo minicom -b 115200 -o -D /dev/ttyACM0

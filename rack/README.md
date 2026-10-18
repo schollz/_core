@@ -118,13 +118,38 @@ python3 rack/scripts/sdk.py lin-x64
 make install-vcv -j4
 ```
 
-`make install-vcv` finds the SDK downloaded into `artifacts/rack-sdk/Rack-SDK`, with `artifacts/Rack-SDK` as a fallback. To use another SDK, pass `RACK_DIR=/path/to/Rack-SDK`; a relative path is resolved from the directory where you run Make. To package without installing, use `make -C rack dist`.
+`make install-vcv` finds the SDK downloaded into `artifacts/rack-sdk/Rack-SDK`, with `artifacts/Rack-SDK` as a fallback. To use another SDK, pass `RACK_DIR=/path/to/Rack-SDK`; a relative path is resolved from the directory where you run Make. To package without installing, use `make dist` from the repository root or `make -C rack dist`. The root command also copies the `.vcvplugin` into root `dist/` for VCV Library collection; both commands retain the package in `rack/dist/` for the existing release tools.
+
+### VCV Library builds
+
+The full repository is the plugin source directory because Rack uses shared firmware sources. The repository root exposes the standard Rack build targets. For example, with the native SDK and prerequisites installed:
+
+```sh
+export RACK_DIR=/absolute/path/to/Rack-SDK
+make clean
+make cleandep
+make dep
+make -j4 dist
+```
+
+`RACK_DIR` can also be passed on each Make command line. With it set, bare `make` builds Rack and `make clean` cleans Rack artifacts, including root `dist/`. Without it, bare `make` retains the firmware default and standalone `make clean` retains the firmware cleanup. Explicit Rack targets (`all`, `dep`, `cleandep`, `dist`, `cleandist`, `install`) use the existing SDK discovery when `RACK_DIR` is omitted; requesting `clean` together with a Rack target also selects Rack cleanup. Explicit firmware targets keep their behavior. Compiler overrides and parallel jobs propagate to the Rack build.
+
+`rack/plugin.json` remains the authoritative manifest. The root `plugin.json` is a tracked regular copy so VCV can read metadata from both a checkout and a historical Git commit. After editing the authoritative manifest, run:
+
+```sh
+python3 rack/scripts/manifest.py --sync
+python3 rack/scripts/manifest.py --check
+```
+
+Builds and source packaging reject missing or different manifests. The release version updater changes both copies together. This root integration uses the existing native build prerequisites; compatibility with VCV's Linux-hosted cross-compilers is separate work.
+
+### Native packages and checks
 
 The SDK chooses the destination from the build's OS and CPU: `~/Library/Application Support/Rack2/plugins-mac-arm64/` on Apple Silicon, `plugins-mac-x64/` alongside it on Intel Macs, `$XDG_DATA_HOME/Rack2/plugins-lin-x64/` on Linux (default `~/.local/share/Rack2/plugins-lin-x64/`), and `$LOCALAPPDATA/Rack2/plugins-win-x64/` on Windows. For a custom Rack user folder, run `make install-vcv RACK_USER_DIR="/absolute/path/to/Rack2"`. No `sudo` is needed.
 
 Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, NumPy (`mingw-w64-x86_64-python-numpy`), Make, jq, zstd, and mingw-w64 toolchain packages. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
 
-Rack CI runs only on demand, not on pushes or pull requests. Start it from GitHub **Actions → Build Rack plugin → Run workflow**, or run `gh workflow run build-rack.yml --ref main`.
+Rack CI runs only on demand, not on pushes or pull requests. Start it from GitHub **Actions → Build Rack plugin → Run workflow**, or run `gh workflow run build-rack.yml --ref main`. Each native platform checks manifest consistency, root target forwarding, and release handling, then builds through the root entry point. It verifies the collected package and rebuilds the matching source archive in a temporary directory. The source-archive check uses Python 3.12 or later.
 
 To publish the Windows package, use **Actions → Release Rack plugin - Windows → Run workflow**, or run `gh workflow run release-rack-windows.yml --ref main`. This separate workflow also runs only on demand. It checks out `main`, runs the engine/storage tests, builds Windows x64, and uploads a ZIP plus its SHA-256 checksum to the latest published GitHub release at upload time. The ZIP contains the `.vcvplugin`, matching source, installation instructions, and build metadata. The plugin version comes from `rack/plugin.json`, independently of the release tag; reruns replace only the matching Windows ZIP and checksum assets. The workflow downloads the published assets again and verifies them before reporting success.
 
@@ -141,11 +166,15 @@ The engine runs at 44,100 frames/sec with the original 441-frame renderer. The h
 Run:
 
 ```sh
+python3 -m unittest discover -s test/rack -p 'test_*.py' -v
+python3 -m unittest discover -s test/release -v
 python3 test/rack/run.py
 python3 test/rack/run.py --sanitize undefined
 python3 test/rack/run.py --sanitize address,undefined
 python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
 ```
+
+After a root `make dist` and `python3 rack/scripts/source.py`, check the package and rebuild its source archive with `python3 test/rack/source_archive.py --sdk artifacts/rack-sdk/Rack-SDK --arch mac-arm64`, substituting your native architecture.
 
 The standalone suite exercises all sixteen effect paths with CV/buttons/clock input, deterministic interleaving and parallel processing of independent engines, thread migration, state validation, settings updates, truncated metadata, sparse slots across all sixteen banks, mono 88.2 kHz samples, missing-folder recovery, primary-only tempo-matched samples, ignored malformed companions, and resident PCM reads against file bytes. It checks source-folder hashes before and after loading. The Rack integration suite checks audible finite output at 32/44.1/48/96/192 kHz, skin and state serialization, and headless reboot. Existing DSP, audio-source and sample-CV regression suites remain applicable.
 

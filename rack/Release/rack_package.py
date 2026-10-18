@@ -40,10 +40,14 @@ def verify_source(root, source, slug, version):
     prefix = f'{slug}-{version}-source/'
     with tarfile.open(source) as archive:
         hashes = json.load(archive.extractfile(prefix + 'SOURCE_SHA256.json'))
-        required = {'rack/plugin.json', 'rack/Makefile', 'lib/core_engine/prepare.py',
+        required = {'plugin.json', 'Makefile', 'rack/plugin.json', 'rack/Makefile',
+                    'rack/library.mk', 'rack/scripts/manifest.py', 'lib/core_engine/prepare.py',
                     'lib/crossfade4.py', 'lib/fuzz.py', 'lib/resonantfilter.py', 'main.c'}
         if not required.issubset(hashes):
             raise ValueError('Source archive lacks required build inputs')
+        if (archive.extractfile(prefix + 'plugin.json').read()
+                != archive.extractfile(prefix + 'rack/plugin.json').read()):
+            raise ValueError('Source archive manifests differ')
         for path, expected in hashes.items():
             relative = PurePosixPath(path)
             if relative.is_absolute() or '..' in relative.parts:
