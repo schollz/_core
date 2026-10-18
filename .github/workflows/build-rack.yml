@@ -58,6 +58,9 @@ jobs:
           if-no-files-found: error
   windows:
     runs-on: windows-latest
+    env:
+      # Shared firmware and documentation are UTF-8, regardless of Windows locale.
+      PYTHONUTF8: '1'
     defaults:
       run: {shell: 'msys2 {0}'}
     steps:
