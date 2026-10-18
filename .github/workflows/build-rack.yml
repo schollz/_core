@@ -44,7 +44,9 @@ jobs:
           make cleandep
           make dep
           make -j4 dist
-          python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
+          # The headless harness constructs Rack's internal Engine. Clang
+          # permits this with a warning; GCC rejects the SDK's PRIVATE marker.
+          CXX=clang++ python3 test/rack/module.py --sdk artifacts/rack-sdk/Rack-SDK
           python3 rack/scripts/source.py
           python3 test/rack/source_archive.py --sdk "$RACK_DIR" --arch ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
@@ -69,11 +71,13 @@ jobs:
             mingw-w64-x86_64-gcc mingw-w64-x86_64-clang
             mingw-w64-x86_64-python mingw-w64-x86_64-python-numpy
       - run: python rack/scripts/sdk.py win-x64
-      - name: Root integration and release checks
+      - name: Root integration and version checks
         run: |
           python rack/scripts/manifest.py --check
-          python -m unittest discover -s test/rack -p 'test_*.py' -v
-          python -m unittest discover -s test/release -v
+          python -m unittest discover -s test/rack -p 'test_library.py' -v
+          # Native release orchestration tests exercise Unix shells and file
+          # URLs. The Unix jobs run those; Windows checks version updates here.
+          python -m unittest discover -s test/release -p 'test_release.py' -k VersionTests -v
       - name: Engine, storage, and plugin
         run: |
           CC=gcc CXX=g++ python test/rack/run.py
