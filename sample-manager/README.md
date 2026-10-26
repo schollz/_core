@@ -41,6 +41,14 @@ These packaging commands create local artifacts under `sample-manager/dist/` wit
 
 Opening a folder displays **Opening folder...x%** as card adoption, file checks, and waveform preparation complete. Progress follows completed work in those stages; it is not an estimate of elapsed time.
 
+Opening a project also prepares compact `.0.wav.wfm` companions for Zeptocore
+screen firmware. These contain a low-resolution waveform derived from the same
+completed audio used by the integrated visualizer. Missing or stale companions
+are prepared automatically, including with Autosave off; pending audio edits
+remain pending. Saves update the companion together with rendered audio and
+metadata. Older firmware ignores these files. A waveform warning leaves audio
+usable. See [screen firmware and file format](../docs/zeptocore-screen.md).
+
 Choose **Project → Default samples → Ezeptocore** or **Ectocore** to download and open the complete default banks. The empty project screen also offers **Default samples…** with both choices. Ezeptocore contains 96 samples in six banks; Ectocore contains 86 samples in nine banks. Both choices are available in every presentation and leave your presentation and device selection unchanged.
 
 Each selection creates a fresh editable project in your Downloads folder, named `Ezeptocore Default Samples` or `Ectocore Default Samples`, with a numbered suffix if that folder already exists. Previous projects and their edits are retained. The manager verifies the ZIP against its pinned SHA-256, caches it in the application's `default-samples` state directory, and checks the cache again before reuse. A verified cache works offline. Downloading happens only after selecting a collection; progress and Cancel appear in the footer. Opening or creating another project cancels the pending automatic switch.

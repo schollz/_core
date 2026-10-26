@@ -102,6 +102,8 @@ drum_separation_model.zip
 test/**/__pycache__/
 
 /zeptocore_visualizer.uf2
+/zeptocore-screen.uf2
+/zeptocore-screen-test.uf2
 /zeptocore_nooverclock_visualizer.uf2
 /ezeptocore_visualizer.uf2
 /ectocore_visualizer.uf2

@@ -41,6 +41,7 @@ bool is_arcade_box = false;
 #include "clock_latency.h"
 #include "audio_restart.h"
 #include "visualizer_telemetry.h"
+#include "zeptocore_screen.h"
 #include "seek_timing_witness.h"
 #include "audio_media_owner.h"
 #include "audio_seek_map.h"

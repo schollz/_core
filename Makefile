@@ -32,7 +32,7 @@ endif
 VISUALIZER_SUFFIX := $(if $(filter ON,$(ZEPTOCORE_VISUALIZER)),_visualizer,)
 CORE_COMPILE_DEFINITIONS ?= $(CURDIR)/lib/cmake/target_compile_definitions.cmake
 CORE_NO_OVERCLOCK ?= OFF
-CORE_CMAKE_OPTIONS = -DZEPTOCORE_VISUALIZER=$(ZEPTOCORE_VISUALIZER) -DCORE_COMPILE_DEFINITIONS="$(CORE_COMPILE_DEFINITIONS)" -DCORE_NO_OVERCLOCK=$(CORE_NO_OVERCLOCK)
+CORE_CMAKE_OPTIONS = -DZEPTOCORE_SCREEN=OFF -DZEPTOCORE_VISUALIZER=$(ZEPTOCORE_VISUALIZER) -DCORE_COMPILE_DEFINITIONS="$(CORE_COMPILE_DEFINITIONS)" -DCORE_NO_OVERCLOCK=$(CORE_NO_OVERCLOCK)
 PICOTOOL ?= picotool
 UPLOAD_UF2 ?= build/_core.uf2
 PICOTOOL_LOAD_FLAGS ?= --family rp2040 -f -x -v
@@ -102,6 +102,17 @@ ezeptocore-visualizer ectocore-visualizer:
 	$(MAKE) upload-built UPLOAD_UF2=$(@:-visualizer=)_visualizer.uf2
 
 .PHONY: zeptocore zeptocore_128 zeptocore_256 zeptocore_nooverclock
+.PHONY: zeptocore-screen zeptocore-screen-test
+zeptocore-screen: pico-sdk
+	cmake -S . -B build-zeptocore-screen-firmware -DPICO_SDK_PATH="$(PICO_SDK_PATH)" -DPICO_EXTRAS_PATH="$(PICO_EXTRAS_PATH)" -DCORE_COMPILE_DEFINITIONS="$(CURDIR)/lib/cmake/zeptocore_compile_definitions.cmake" -DZEPTOCORE_SCREEN=ON -DZEPTOCORE_VISUALIZER=$(ZEPTOCORE_VISUALIZER) -DCORE_NO_OVERCLOCK=$(CORE_NO_OVERCLOCK) -DCMAKE_BUILD_TYPE=Release
+	cmake --build build-zeptocore-screen-firmware --parallel $(NPROCS)
+	cp build-zeptocore-screen-firmware/_core.uf2 zeptocore-screen.uf2
+
+zeptocore-screen-test: pico-sdk
+	cmake -S test/zeptocore-screen -B build-zeptocore-screen -DPICO_SDK_PATH="$(PICO_SDK_PATH)" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+	cmake --build build-zeptocore-screen --parallel $(NPROCS)
+	cp build-zeptocore-screen/zeptocore-screen.uf2 zeptocore-screen-test.uf2
+
 zeptocore zeptocore_128 zeptocore_256: pico-sdk pico-extras lib/fuzz.h lib/transfer_saturate2.h lib/sinewaves2.h lib/crossfade4_441.h lib/resonantfilter_data.h lib/cuedsounds.h build
 	cp "$(CORE_COMPILE_DEFINITIONS)" lib/cmake/target_compile_definitions.cmake
 	cp build/_core.uf2 zeptocore$(VISUALIZER_SUFFIX).uf2

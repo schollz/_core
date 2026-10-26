@@ -2,12 +2,13 @@
 // filesystem owner then acknowledges the last callback before arrays change.
 #ifndef BANK_TRANSITION_IMPL_H
 #define BANK_TRANSITION_IMPL_H
+#include "zeptocore_screen.h"
 static struct {
     uint8_t bank, sample, previous_bank, previous_sample;
     uint8_t variant;
     bool owned, rollback, previous_valid, silent, exhausted, changed_phase, replay;
     unsigned stage;
-    uint32_t started, load_started;
+    uint32_t started, load_started, waveform_started;
     int32_t phase[2], next_phase, beat;
 } bank_job;
 static void bank_state(unsigned state) {
@@ -89,10 +90,22 @@ static void bank_transition_service(void) {
         bank_job.stage=0;bank_state(BANK_LOADING);return;
     }
     if(state==BANK_CANCEL) {
+        ZS_CALL(screen_waveforms_cancel());
         metadata_load_cancel();bank_job.stage=1;bank_state(BANK_LOADING);return;
     }
     if(state==BANK_LOADING||state==BANK_ROLLBACK) {
         unsigned bank=bank_job.rollback?bank_job.previous_bank:bank_job.bank;
+        if(bank_job.stage==3) {
+            bool complete=true;
+            ZS_CALL({
+                uint32_t deadline=bank_job.waveform_started+250000u;
+                uint32_t bank_deadline=bank_job.load_started+1900000u;
+                if((int32_t)(deadline-bank_deadline)>0)deadline=bank_deadline;
+                complete=screen_waveforms_step(time_us_32(),deadline);
+            });
+            if(complete) {bank_job.stage=0;bank_state(BANK_COMMITTING);}
+            return;
+        }
         if(bank_job.stage==0) {
             // Rollback may need to close a partial metadata file first.
             if(bank_job.rollback)metadata_load_cancel();
@@ -102,13 +115,23 @@ static void bank_transition_service(void) {
             bank_job.stage=1;return;
         }
         if(bank_job.stage==1) {
+            ZS_CALL(screen_waveforms_cancel());
             bank_job.load_started=time_us_32();
             if(!metadata_load_begin(bank,bank_job.load_started)) {bank_fail();return;}
             bank_job.stage=2;return;
         }
         int result=metadata_load_step(time_us_32());
         if(result<0) {bank_fail();return;}
-        if(result>0) {bank_job.stage=0;bank_state(BANK_COMMITTING);}
+        if(result>0) {
+#if ZEPTOCORE_SCREEN
+            unsigned sample=bank_job.rollback?bank_job.previous_sample:bank_job.sample;
+            screen_waveforms_begin(bank,metadata_filename_index(bank,sample),time_us_32());
+            bank_job.waveform_started=time_us_32();
+            bank_job.stage=3;
+#else
+            bank_job.stage=0;bank_state(BANK_COMMITTING);
+#endif
+        }
         return;
     }
     if(state==BANK_COMMITTING) {

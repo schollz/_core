@@ -26,6 +26,7 @@ static struct Parser {
     bool bad;
 } parser;
 static uint8_t scratch[512];
+uint8_t *metadata_foreground_workspace(void) { return scratch; }
 static FIL file;
 static bool opened;
 static struct {

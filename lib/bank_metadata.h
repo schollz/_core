@@ -43,4 +43,8 @@ bool metadata_load_begin(unsigned bank, uint32_t now);
 int metadata_load_step(uint32_t now);
 void metadata_load_cancel(void); // one close at most; discards staged views
 void metadata_publish(void);     // no IO; publish only a complete bank
+// Core-0 foreground temporary workspace (512 bytes). Metadata steps consume
+// their input before returning. No user may retain contents across a call or
+// give this memory to asynchronous DMA; the screen copies its stripe first.
+uint8_t *metadata_foreground_workspace(void);
 #endif

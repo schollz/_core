@@ -84,7 +84,8 @@ LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
                               std::function<bool()> cancelled,
                               std::function<void(const LibraryState &)> progress,
                               const std::atomic<int> *priority, const LibraryState *previous,
-                              const std::map<juce::String, juce::String> *fingerprints) {
+                              const std::map<juce::String, juce::String> *fingerprints,
+                              const std::map<juce::String, PreparedWave> *prepared) {
   LibraryState state;
   state.root = folder.getFullPathName();
   state.loading = true;
@@ -164,7 +165,19 @@ LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
         const auto entry = cacheDir.getChildFile(hash(s.path) + ".json");
         juce::var saved;
         juce::String cachedInfo = saved["infoStamp"].toString();
-        if (previous && previous->root == state.root)
+        bool injected = false;
+        if (prepared && fingerprints) {
+          auto ready = prepared->find(s.path);
+          auto a = fingerprints->find(s.path), i = fingerprints->find(s.path + ".info");
+          if (ready != prepared->end() && a != fingerprints->end() &&
+              i != fingerprints->end() && ready->second.audioHash == a->second &&
+              ready->second.infoHash == i->second && ready->second.wave) {
+            s.wave = ready->second.wave;
+            cachedInfo = s.infoStamp;
+            injected = true;
+          }
+        }
+        if (!s.wave && previous && previous->root == state.root)
           for (const auto &old : previous->samples)
             if (old.path == s.path && old.wave && old.audioStamp == s.audioStamp) {
               s.wave = old.wave;
@@ -186,7 +199,7 @@ LibraryState Library::prepare(const juce::File &folder, const juce::File &cache,
           if (s.wave && (s.wave->bank != s.bank || s.wave->sample != s.sample))
             s.wave.reset();
         }
-        const bool writeCache = !s.wave || cachedInfo != s.infoStamp;
+        const bool writeCache = injected || !s.wave || cachedInfo != s.infoStamp;
         if (s.wave) {
           if (cachedInfo != s.infoStamp) {
             juce::MemoryBlock bytes;

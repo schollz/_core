@@ -19,6 +19,10 @@ struct LibraryState {
   int completed = 0, total = 0, reused = 0, prepared = 0;
   bool loading = false;
 };
+struct PreparedWave {
+  juce::String audioHash, infoHash;
+  std::shared_ptr<const Wave> wave;
+};
 class Library {
 public:
   Library();
@@ -32,7 +36,8 @@ public:
                               std::function<void(const LibraryState &)> progress = {},
                               const std::atomic<int> *priority = nullptr,
                               const LibraryState *previous = nullptr,
-                              const std::map<juce::String, juce::String> *fingerprints = nullptr);
+                              const std::map<juce::String, juce::String> *fingerprints = nullptr,
+                              const std::map<juce::String, PreparedWave> *prepared = nullptr);
 
 private:
   void run();

@@ -54,7 +54,7 @@ juce_add_binary_data(CoreImportFixtures HEADER_NAME ImportData.h NAMESPACE Impor
 juce_add_binary_data(CoreTempoFixtures HEADER_NAME TempoData.h NAMESPACE TempoData SOURCES
     Tests/fixtures/tempo/135-clean.wav Tests/fixtures/tempo/135-comp.wav Tests/fixtures/tempo/135-vintage.wav)
 target_link_libraries(CoreSampleManager PRIVATE CoreFixtures CoreImportFixtures CoreTempoFixtures)
-target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/Tempo.cpp Source/IconButton.cpp
+target_sources(CoreSampleManager PRIVATE Source/Main.cpp Source/CardFormat.cpp Source/Project.cpp Source/NameMetadata.cpp Source/ScreenWaveforms.cpp Source/Tempo.cpp Source/IconButton.cpp
     Source/Storage.cpp Source/AudioProcessing.cpp Source/Manager.cpp Source/Preview.cpp Source/Theme.cpp Source/WaveformEditor.cpp Source/SettingsView.cpp Source/AppView.cpp Source/Device.cpp Source/DeviceView.cpp Source/Uf2.cpp Source/OnlineAnalysis.cpp Source/Visualizer/Core.cpp Source/Visualizer/Library.cpp Source/Visualizer/Midi.cpp Source/Visualizer/Session.cpp Source/Visualizer/VisualizerView.cpp Tests/VisualizerTests.cpp Tests/Tests.cpp Tests/ImportTests.cpp Tests/AudioTests.cpp Tests/TempoTests.cpp Tests/RecoveryTests.cpp Tests/ManagerTests.cpp Tests/MidiTests.cpp ${onset_sources})
 target_sources(CoreSampleManager PRIVATE Source/Firmware.cpp Source/FirmwareReleases.cpp Source/FirmwareView.cpp Tests/FirmwareTests.cpp)
 target_sources(CoreSampleManager PRIVATE Tests/RenderStatusTests.cpp Tests/EditingWorkflowTests.cpp Tests/SaveBenchmark.cpp)
@@ -87,6 +87,9 @@ else()
     target_sources(CoreSampleManager PRIVATE Source/Visualizer/Platform.cpp)
 endif()
 enable_testing()
+target_sources(CoreSampleManager PRIVATE Tests/ScreenWaveformTests.cpp)
+add_test(NAME screen_waveforms COMMAND CoreSampleManager --self-test screen-waveforms)
+set_tests_properties(screen_waveforms PROPERTIES TIMEOUT 120 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 add_test(NAME editing_workflows COMMAND CoreSampleManager --self-test editing-workflows)
 set_tests_properties(editing_workflows PROPERTIES TIMEOUT 120 FAIL_REGULAR_EXPRESSION "JUCE Assertion failure")
 add_test(NAME default_samples COMMAND CoreSampleManager --self-test default-samples)

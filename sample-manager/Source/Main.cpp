@@ -1,5 +1,7 @@
 #include "../Tests/NativeDragFixture.h"
 #include "AppView.h"
+#include "ScreenWaveforms.h"
+#include <iostream>
 namespace core {
 int runTests(const String &suite);
 void crashTransaction(const juce::File &);
@@ -26,6 +28,55 @@ public:
       core::diagnostics::log("APP", "Executable=" + juce::File::getSpecialLocation(
           juce::File::currentExecutableFile).getFullPathName() +
           " state_root=" + core::stateRoot().getFullPathName() + " arguments=" + command);
+    }
+    if (command.startsWith("--prepare-screen-waveforms ")) {
+      try {
+        auto path = command.fromFirstOccurrenceOf(" ", false, false).unquoted();
+        core::Manager manager;
+        manager.setAutoSave(false);
+        manager.open(juce::File(path));
+        juce::String previous;
+        const auto deadline = juce::Time::getMillisecondCounterHiRes() + 1800000.;
+        do {
+          auto state = manager.snapshot();
+          if (state.status != previous) {
+            std::cout << state.status << std::endl;
+            previous = state.status;
+          }
+          if (juce::Time::getMillisecondCounterHiRes() >= deadline)
+            throw std::runtime_error("Screen preparation timed out");
+          juce::Thread::sleep(20);
+        } while (!manager.idle());
+        const auto state = manager.snapshot();
+        core::require(state.error.isEmpty() && state.available, state.error);
+        unsigned ready = 0, expected = 0;
+        for (const auto &sample : state.completedProject.samples) {
+          if (sample.protectedEntry) continue;
+          ++expected;
+          const auto file = core::child(state.root, core::screenwaves::path(sample.bank,sample.slot));
+          juce::MemoryBlock wave, info;
+          const auto audioPath = core::card::path(sample.bank,sample.slot);
+          const auto audioHash = state.completedProject.fingerprints.find(audioPath);
+          if (file.loadFileAsData(wave) &&
+              core::child(state.root,audioPath+".info").loadFileAsData(info) &&
+              audioHash != state.completedProject.fingerprints.end()) {
+            const auto meta = core::card::decode(info);
+            const auto *p = static_cast<const uint8_t *>(wave.getData());
+            bool valid = sw_valid(p,wave.getSize(),meta.size,meta.rate,meta.channels,
+                sw_info_hash(static_cast<const uint8_t *>(info.getData()),info.getSize()));
+            for (int n=0; valid && n<32; ++n)
+              valid = p[24+n] == uint8_t(audioHash->second.substring(n*2,n*2+2).getHexValue32());
+            if (valid) ++ready;
+          }
+        }
+        std::cout << "Screen waveforms ready: " << ready << "/" << expected << std::endl;
+        core::require(ready == expected, "Some screen waveforms could not be prepared");
+      } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        setApplicationReturnValue(1);
+      }
+      quit();
+      return;
     }
     if (command.startsWith("--crash-transaction ")) {
       auto path = command.fromFirstOccurrenceOf(" ", false, false).unquoted();

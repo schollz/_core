@@ -1,5 +1,6 @@
 #include "Storage.h"
 #include "NameMetadata.h"
+#include "ScreenWaveforms.h"
 #include "Parallel.h"
 #if JUCE_WINDOWS
 #include <windows.h>
@@ -289,6 +290,9 @@ void Storage::archiveDamaged(Sample &sample) {
     for (const auto &suffix : juce::StringArray{"", ".info"})
       sample.recoveryHashes[card::path(sample.bank, sample.slot, variant) + suffix] = "missing";
   sample.recoveryHashes[name] = "missing";
+  const auto wave = screenwaves::path(sample.bank, sample.slot);
+  sample.recoveryHashes[wave] = "missing";
+  if (child(root, wave).existsAsFile()) paths.push_back(wave);
   for (size_t n = 0; n < paths.size(); ++n) {
     const auto &path = paths[n];
     const auto backup = directory + "/" + String(int(n));
@@ -384,7 +388,7 @@ Project Storage::open(std::function<void(double)> progress) {
   }
   for (size_t index = 0; index < checks.size(); ++index) {
     const auto &[path, expected] = checks[index];
-    if (hashes[index] != expected)
+    if (hashes[index] != expected && !path.endsWith(".0.wav.wfm"))
       p.warnings.addIfNotAlreadyThere("External change: " + path +
                                       ". Reload/reconcile before saving.");
   }
@@ -535,6 +539,11 @@ Project Storage::adopt(bool writeManifest, std::function<void(double)> progress)
             s.ownedPaths.push_back(path);
         }
       auto namePath = names::path(b, slot);
+      const auto wavePath = screenwaves::path(b, slot);
+      if (present.count(wavePath)) {
+        s.ownedPaths.push_back(wavePath);
+        p.fingerprints[wavePath] = fingerprint(child(root, wavePath));
+      }
       auto primaryHash = p.fingerprints.find(relative);
       auto metadata = names::read(
           root, b, slot, primaryHash == p.fingerprints.end() ? String() : primaryHash->second);

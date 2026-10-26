@@ -791,7 +791,9 @@ void sdcard_startup() {
 #endif
       ZD_CALL(zd_service(ZD_CONTROL));
     } while(result==0);
-    if(result>0) {metadata_publish();details_loaded=true;}
+    if(result>0) {
+      metadata_publish();details_loaded=true;
+    }
     else metadata_load_cancel();
   }
 
@@ -869,6 +871,8 @@ static void metadata_optional_reverb(void) {
     update_reverb();
   }
   free(headroom);
+  ZS_CALL(screen_boot_startup(metadata_ready(sel_bank_cur)?sel_bank_cur:16,
+                            metadata_filename_index(sel_bank_cur,sel_sample_cur)));
   metadata_status.minimum_free_heap=getFreeHeap();
   audio_media_boot_complete();
 }

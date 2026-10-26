@@ -1,6 +1,7 @@
 // Copyright 2023-2025 Zack Scholl, GPLv3.0
 #include "audio_profile.h"
 #include "audio_restart.h"
+#include "zeptocore_screen.h"
 #if AUDIO_RESTART_WAKE_ENABLED
 #include "audio_restart_queue.h"
 // Owned only by the audio worker; the clock core communicates through the
@@ -1298,6 +1299,24 @@ static unsigned audio_queued_blocks(void) {
   return count;
 }
 #endif
+#if ZEPTOCORE_SCREEN
+static __attribute__((noinline)) void screen_audio_publish_playback(bool owns_media) {
+    bool valid = owns_media && metadata_ready(sel_bank_cur) && !bank_transition_busy() &&
+        fil_is_open && !fil_current_change && !fil_current_change_force && !do_open_file_ready &&
+        metadata_selection_valid(sel_bank_cur, sel_sample_cur);
+    SampleInfo *sound = valid ? banks[sel_bank_cur]->sample[sel_sample_cur].snd[0] : NULL;
+    screen_snapshot snapshot = {
+      .generation = metadata_generation(), .bank = sel_bank_cur,
+      .slot = metadata_filename_index(sel_bank_cur, sel_sample_cur),
+      .phase = valid && phases[0] > 0 ? (uint32_t)phases[0] : 0,
+      .size = sound ? sound->size : 0, .bpm = owns_media && sf ? sf->bpm_tempo : 0,
+      .slice = sound ? sound->slice_current : 0,
+      .flags = (valid ? ZS_VALID : 0) | (phase_forward ? ZS_FORWARD : 0) |
+          ((playback_stopped || do_stop_playback) ? ZS_STOPPED : 0) |
+          ((button_mute || trigger_button_mute) ? ZS_MUTED : 0)};
+    screen_publish(&snapshot);
+}
+#endif
 void __not_in_flash_func(i2s_callback_func)() {
   ZD_CALL(zd_audio_begin());
   bool owns_media=audio_media_begin();
@@ -1328,6 +1347,7 @@ void __not_in_flash_func(i2s_callback_func)() {
     } else ZD_CALL(zd_audio_counter(ZD_NO_BUFFER));
   }
   AP_CALL(audio_profile_end(audio_profile_source(owns_media),audio_profile_effects()));
+  ZS_CALL(screen_audio_publish_playback(owns_media));
   ZV_CALL({
     uint32_t trigger = zv_trigger_read();
     uint8_t bank = sel_bank_cur, sample = sel_sample_cur;

@@ -861,7 +861,7 @@ int main() {
   // before enabling the card detect interrupt:
   sd_init_driver();
 
-#ifdef INCLUDE_ZEPTOCORE
+#if defined(INCLUDE_ZEPTOCORE) && defined(INCLUDE_KNOBS)
   // initialize adcs
   adc_init();
   adc_gpio_init(26);

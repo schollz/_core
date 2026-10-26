@@ -33,10 +33,20 @@ void __not_in_flash_func(zd_application_control_snapshot)(void) {
     x[31]=audio_media_stats.wait_max_us;
 }
 #endif
+#if ZEPTOCORE_SCREEN
+static __attribute__((noinline)) void screen_quiet_media_poll(void) {
+    if(screen_waveforms_pending() && playback_stopped && audio_callback_in_mute &&
+       audio_media_try_quiet()) {
+        if(playback_stopped)screen_waveforms_step(time_us_32(),time_us_32()+250000u);
+        audio_media_release();
+    }
+}
+#endif
 static void audio_media_poll(void) {
     bank_transition_service();
     if(bank_transition_busy())return;
     audio_media_recovery_poll();
+    ZS_CALL(screen_quiet_media_poll());
     if(seek_maps_stats.pending&&playback_stopped&&audio_callback_in_mute&&
        audio_media_try_quiet()) {
         // Recheck transport after the boundary acknowledgement. These jobs

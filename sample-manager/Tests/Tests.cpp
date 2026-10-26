@@ -23,6 +23,7 @@ void firmwareTests();
 void firmwareReleaseTests();
 void defaultSamplesTests();
 void defaultSamplesLiveTests();
+void screenWaveformTests();
 namespace {
 int checks = 0;
 void check(bool ok, const char *what) {
@@ -146,6 +147,7 @@ int runTests(const String &suite) {
   Temp privateState;
   stateRootOverride = privateState.dir;
   try {
+    if (suite == "screen-waveforms") { screenWaveformTests(); return 0; }
     if (suite == "save-benchmark") { saveBenchmark(); return 0; }
     if (suite == "editing-workflows") { editingWorkflowTests(); return 0; }
     if (suite == "default-samples") {

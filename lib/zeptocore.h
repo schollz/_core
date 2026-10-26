@@ -149,6 +149,7 @@ void __not_in_flash_func(input_handling)()
                                    clock_handling_down, clock_handling_start);
   }
 
+#ifdef INCLUDE_KNOBS
   FilterExp *adcs[3];
   int adc_last[3] = {0, 0, 0};
   int adc_debounce[3] = {0, 0, 0};
@@ -161,6 +162,9 @@ void __not_in_flash_func(input_handling)()
   {
     adcs[i] = FilterExp_create(10);
   }
+#else
+  uint16_t adc_startup = 300;
+#endif
 
   uint8_t debounce_beat_repeat = 0;
   uint8_t sample_selection_index_last = 0;
@@ -221,6 +225,7 @@ void __not_in_flash_func(input_handling)()
   while (1)
   {
     audio_media_poll();
+    ZS_CALL(screen_service(time_us_32()));
     metadata_deferred_presets();
     ZD_CALL(zd_service(ZD_CONTROL));
 #ifdef INCLUDE_MIDI
@@ -302,15 +307,19 @@ void __not_in_flash_func(input_handling)()
     if (button_handler(bm))
     {
       // reset knob debouncers
+#ifdef INCLUDE_KNOBS
       adc_threshold = 10000;
       for (uint8_t i = 0; i < 3; i++)
       {
         adc_debounce[i] = 0;
       }
+#endif
     }
     else
     {
+#ifdef INCLUDE_KNOBS
       adc_threshold = adc_threshold_const;
+#endif
     }
 #endif
 
@@ -426,7 +435,9 @@ void __not_in_flash_func(input_handling)()
                         random_integer_in_range(0, 15));
     }
 
+#ifdef INCLUDE_KNOBS
     adc_select_input(2);
+#endif
 
     // check if a single button is held
     // for purposes of changing the fx params

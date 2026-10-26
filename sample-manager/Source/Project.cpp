@@ -263,7 +263,8 @@ void Project::validate() const {
                 slots.insert(s.bank * 16 + s.slot).second,
             "Duplicate or invalid slot");
     for (const auto &[path, backup] : s.recoveryFiles) {
-      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json";
+      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json" ||
+                       path == card::path(s.bank, s.slot) + ".wfm";
       for (int variant = 0; variant <= 8; variant += 2)
         canonical |= path == card::path(s.bank, s.slot, variant) ||
                      path == card::path(s.bank, s.slot, variant) + ".info";
@@ -273,7 +274,8 @@ void Project::validate() const {
               "Invalid damaged-slot recovery reference");
     }
     for (const auto &[path, hash] : s.recoveryHashes) {
-      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json";
+      bool canonical = path == "bank" + String(s.bank + 1) + "/" + String(s.slot) + ".name.json" ||
+                       path == card::path(s.bank, s.slot) + ".wfm";
       for (int variant = 0; variant <= 8; variant += 2)
         canonical |= path == card::path(s.bank, s.slot, variant) ||
                      path == card::path(s.bank, s.slot, variant) + ".info";

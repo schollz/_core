@@ -1,5 +1,6 @@
 #include "Manager.h"
 #include "NameMetadata.h"
+#include "ScreenWaveforms.h"
 #include "Parallel.h"
 namespace core {
 namespace {
@@ -35,6 +36,7 @@ struct DiskWork {
   AudioProcessing audio;
   std::vector<Sample> added;
   zv::LibraryState libraryState;
+  std::map<String, zv::PreparedWave> preparedWaves;
   std::map<String, std::shared_ptr<const zv::Wave>> sourceWaveforms;
   std::map<String, CompletedAudio> completedAudio;
   std::function<bool()> stop;
@@ -46,6 +48,7 @@ struct DiskWork {
   void prepareImportWaveforms();
   void prepareCompletedAudio();
   void prepareVisualization(std::function<void(const zv::LibraryState &)> = {});
+  void prepareScreenWaveforms();
 };
 String SampleRenderStatus::text() const {
   const auto separator = String::fromUTF8(" · ");
@@ -1065,7 +1068,8 @@ void DiskWork::prepareVisualization(std::function<void(const zv::LibraryState &)
   };
   libraryState = zv::Library::prepare(
       storage->root, zv::Library::defaultCache(), [this] { return stop(); }, report, nullptr,
-      &libraryState, &committed.fingerprints);
+      &libraryState, &committed.fingerprints, &preparedWaves);
+  preparedWaves.clear();
   diagnostics::log("VISUALIZER", "Total=" + String(libraryState.total) +
                                      " prepared=" + String(libraryState.prepared) + " reused=" +
                                      String(libraryState.reused) + " error=" + libraryState.error +
@@ -1084,6 +1088,67 @@ void DiskWork::prepareVisualization(std::function<void(const zv::LibraryState &)
   put(saved, "samples", samples);
   auto cache = stateRoot().getChildFile("visualizer/last-project.json");
   durableJson(cache, saved);
+  prepareScreenWaveforms();
+}
+void DiskWork::prepareScreenWaveforms() {
+  // Derivatives of committed audio only, even with autosave off or recovered
+  // pending edits. No sample revision or undo entry changes for this backfill.
+  try {
+    auto completed = committed;
+    std::vector<Replacement> replacements;
+    for (auto &s : completed.samples) {
+      cancelled(stop);
+      if (s.protectedEntry) continue;
+      const auto audioPath = card::path(s.bank, s.slot);
+      auto a = committed.fingerprints.find(audioPath);
+      auto i = committed.fingerprints.find(audioPath + ".info");
+      if (a == committed.fingerprints.end() || i == committed.fingerprints.end()) continue;
+      // An external audio/metadata edit must be reconciled, never certified.
+      require(fingerprint(child(storage->root, audioPath), stop) == a->second &&
+                  fingerprint(child(storage->root, audioPath + ".info"), stop) == i->second,
+              "Audio changed while preparing screen waveforms; reload/reconcile");
+      std::shared_ptr<const zv::Wave> wave;
+      for (const auto &entry : libraryState.samples)
+        if (entry.bank == s.bank && entry.sample == s.slot) wave = entry.wave;
+      if (!wave) continue;
+      juce::MemoryBlock info;
+      require(child(storage->root, audioPath + ".info").loadFileAsData(info), "Missing .info");
+      auto bytes = screenwaves::encode(*wave, info, a->second);
+      auto relative = screenwaves::path(s.bank, s.slot);
+      const auto before = fingerprint(child(storage->root, relative), stop);
+      const auto after = juce::SHA256(bytes).toHexString();
+      if (before != after) {
+        publish("Preparing screen waveforms");
+        auto staged = child(storage->root, ".core-manager/cache/screen-" + s.id + ".wfm");
+        durableWrite(staged, bytes.getData(), bytes.getSize());
+        replacements.push_back({relative, staged, before, after});
+      }
+      completed.fingerprints[relative] = after;
+      if (std::find(s.ownedPaths.begin(), s.ownedPaths.end(), relative) == s.ownedPaths.end())
+        s.ownedPaths.push_back(relative);
+    }
+    if (replacements.empty() &&
+        juce::JSON::toString(completed.json()) == juce::JSON::toString(committed.json())) return;
+    require(fingerprint(child(storage->root, ".core-manager/project.json")) == manifestHash,
+            "Project changed while preparing screen waveforms");
+    Transaction tx(storage->root);
+    tx.shouldCancel = stop;
+    tx.commit(replacements, completed);
+    committed = completed;
+    manifestHash = fingerprint(child(storage->root, ".core-manager/project.json"));
+    project.fingerprints = committed.fingerprints;
+    for (auto &s : project.samples)
+      if (const auto *saved = committed.find(s.id))
+        if (s.bank == saved->bank && s.slot == saved->slot) s.ownedPaths = saved->ownedPaths;
+    storage->savePending(project);
+  } catch (const std::exception &e) {
+    if (stop()) throw;
+    const auto warning = "Screen waveforms unavailable: " + String(e.what());
+    committed.warnings.addIfNotAlreadyThere(warning);
+    project.warnings.addIfNotAlreadyThere(warning);
+    libraryState.warning = warning;
+    diagnostics::log("SCREEN", warning);
+  }
 }
 void DiskWork::save() {
   diagnostics::Scope trace("MANAGER", "Save revision=" + String(juce::int64(project.revision)));
@@ -1144,6 +1209,7 @@ void DiskWork::save() {
         for (const auto &suffix : juce::StringArray{"", ".info"})
           affectedPaths.insert(card::path(sample.bank, sample.slot, variant) + suffix);
       affectedPaths.insert(names::path(sample.bank, sample.slot));
+      affectedPaths.insert(screenwaves::path(sample.bank, sample.slot));
     }
   const auto previousMarkers = card::settingsFiles(committed.settings);
   const auto nextMarkers = card::settingsFiles(project.settings);
@@ -1286,7 +1352,7 @@ void DiskWork::save() {
       s.rendered = previous->rendered;
       s.renderKey = previous->renderKey;
       for (const auto &path : previous->ownedPaths) {
-        if (path.endsWith(".name.json"))
+        if (path.endsWith(".name.json") || path.endsWith(".wfm"))
           continue; // Regenerate from this sample and its completed primary WAV.
         auto filename = path.fromLastOccurrenceOf(
             "/", false,
@@ -1335,6 +1401,41 @@ void DiskWork::save() {
       nameExpected[namePath] = existingName.status == names::Metadata::valid
                                    ? existingName.fingerprint
                                    : String("missing");
+    }
+    // Prepare the same analysed audio used by the JUCE visualizer before the
+    // transaction publishes new WAV bytes. Failed derivatives remove old owned
+    // .wfm files while leaving the primary save usable.
+    try {
+      const auto &primaryFile = desired.at(primaryPath);
+      juce::MemoryBlock info;
+      require(desired.at(primaryPath + ".info").loadFileAsData(info), "Missing staged .info");
+      const auto audioHash = checkedHash(primaryFile);
+      std::shared_ptr<const zv::Wave> wave;
+      if (previous && primaryHash != committed.fingerprints.end() && primaryHash->second == audioHash)
+        for (const auto &entry : libraryState.samples)
+          if (entry.bank == previous->bank && entry.sample == previous->slot && entry.wave)
+            wave = entry.wave;
+      if (!wave)
+        wave = std::make_shared<zv::Wave>(zv::analyse(primaryFile, info, s.bank, s.slot, cancel));
+      else {
+        auto updated = std::make_shared<zv::Wave>(*wave);
+        auto meta = card::decode(info);
+        updated->bank = s.bank; updated->sample = s.slot;
+        updated->bpm = meta.bpm; updated->playMode = meta.playMode;
+        updated->tempoMatch = meta.tempoMatch; updated->slices.clear();
+        for (const auto &slice : meta.slices)
+          updated->slices.push_back({double(slice.start) / (meta.rate * meta.channels * 2),
+                                    double(slice.stop) / (meta.rate * meta.channels * 2)});
+        wave = updated;
+      }
+      auto bytes = screenwaves::encode(*wave, info, audioHash);
+      const auto staged = child(root, ".core-manager/cache/screen-" + s.id + ".wfm");
+      durableWrite(staged, bytes.getData(), bytes.getSize());
+      desired[screenwaves::path(s.bank, s.slot)] = staged;
+      preparedWaves[primaryPath] = {audioHash, juce::SHA256(info).toHexString(), wave};
+    } catch (const std::exception &e) {
+      if (stop()) throw;
+      completed.warnings.addIfNotAlreadyThere("Screen waveform unavailable: " + s.name + ": " + String(e.what()));
     }
     s.namePending = false;
     s.ownedPaths.clear();
