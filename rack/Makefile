@@ -15,11 +15,19 @@ OBJECTS += build/core-engine.o build/card-format.o build/pcg.o
 DISTRIBUTABLES += res README.md LICENSE.txt THIRD_PARTY.md licenses
 EXTRA_CXXFLAGS += -std=c++17
 EXTRA_FLAGS += -fwrapv -ffp-contract=off -fno-unsafe-math-optimizations
-ifeq ($(shell uname -s),Darwin)
-EXTRA_FLAGS += -mmacosx-version-min=11.0
-endif
 
 include $(RACK_DIR)/plugin.mk
+
+# std::filesystem requires Catalina on Intel; Apple Silicon starts at Big Sur.
+# Use the SDK's target architecture, including when VCV builds on a Linux host.
+# EXTRA_FLAGS is expanded in compile/link recipes after the SDK's 10.9 default.
+ifdef ARCH_MAC
+ifdef ARCH_ARM64
+EXTRA_FLAGS += -mmacosx-version-min=11.0
+else
+EXTRA_FLAGS += -mmacosx-version-min=10.15
+endif
+endif
 
 # Order-only checks also cover direct binary targets without forcing relinks.
 .PHONY: check-manifest

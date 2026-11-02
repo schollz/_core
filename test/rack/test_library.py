@@ -160,6 +160,50 @@ if goal == 'dist':
         self.assertEqual(self.calls()[-1][0], 'dep')
         self.assertEqual(Path(self.calls()[-1][1]).resolve(), self.sdk)
 
+    def test_deployment_minimum_follows_sdk_target(self):
+        if os.name != 'nt':
+            # Reproduce VCV's Linux build host even when testing on a Mac.
+            bin_dir = self.root / 'bin'
+            bin_dir.mkdir()
+            uname = bin_dir / 'uname'
+            uname.write_text('#!/bin/sh\necho Linux\n')
+            uname.chmod(0o755)
+            self.env['PATH'] = str(bin_dir) + os.pathsep + self.env['PATH']
+        # Model the SDK's recursive flag expansion and its older Mac default.
+        # ARCH_* describes the target, independent of the machine running Make.
+        with (self.sdk / 'plugin.mk').open('a') as sdk:
+            sdk.write('''
+ifdef ARCH_MAC
+FLAGS += -mmacosx-version-min=10.9
+endif
+FLAGS += $(EXTRA_FLAGS)
+CFLAGS += $(FLAGS)
+CXXFLAGS += $(FLAGS) $(EXTRA_CXXFLAGS)
+.PHONY: flags
+flags:
+\t@echo "CFLAGS: $(CFLAGS)"
+\t@echo "CXXFLAGS: $(CXXFLAGS)"
+''')
+        for arch, definitions, minimum in (
+                ('mac-x64', ['ARCH_MAC=1', 'ARCH_X64=1'], '10.15'),
+                ('mac-arm64', ['ARCH_MAC=1', 'ARCH_ARM64=1'], '11.0'),
+                ('lin-x64', ['ARCH_LIN=1', 'ARCH_X64=1'], None),
+                ('win-x64', ['ARCH_WIN=1', 'ARCH_X64=1'], None)):
+            with self.subTest(arch=arch):
+                output = self.make('flags', 'RACK_DIR=../sdk', *definitions,
+                                   cwd=self.root / 'rack')
+                flags = [line.split(': ', 1)[1] for line in output.splitlines()
+                         if line.startswith(('CFLAGS: ', 'CXXFLAGS: '))]
+                self.assertEqual(len(flags), 2, output)
+                for line in flags:
+                    minimums = [flag for flag in line.split()
+                                if flag.startswith('-mmacosx-version-min=')]
+                    if minimum is None:
+                        self.assertEqual(minimums, [], output)
+                    else:
+                        self.assertEqual(minimums[-1],
+                                         f'-mmacosx-version-min={minimum}', output)
+
     def test_default_sdk_discovery_and_root_install(self):
         sdk = self.root / 'artifacts/rack-sdk/Rack-SDK'
         sdk.parent.mkdir(parents=True)

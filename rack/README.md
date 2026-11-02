@@ -101,6 +101,8 @@ The sample folder is external: move it with your patch, then use **Choose sample
 
 Build from this repository or the matching source archive. Required tools: Python 3.10 or later with NumPy, Clang with JSON AST support, a C/C++17 compiler, GNU Make, jq, and zstd. The build generates its DSP tables from the shared firmware scripts; no prior hardware build is needed. macOS also needs the Xcode command-line tools; Linux/Windows builds use the corresponding Rack SDK and native toolchain. Generation must run for the target OS, since the generated translation unit contains that platform's C library declarations.
 
+Mac Intel packages target macOS 10.15 (Catalina), the first release supporting the storage reader's C++17 filesystem APIs. Apple Silicon packages target macOS 11.0 (Big Sur). These minimums follow the SDK's target architecture for both native and Linux-hosted builds.
+
 The generated C engine is compiled with the same Clang used for preprocessing (`CLANG=clang` by default). `CC` and `CXX` select the other C and C++ compilers and may use GCC on Linux/Windows.
 
 From the repository root on Apple Silicon:
