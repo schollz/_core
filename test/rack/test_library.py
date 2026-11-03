@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -63,7 +64,7 @@ if goal == 'dist':
 ''')
         self.env = dict(os.environ)
         for key in ('RACK_DIR', 'MAKEFLAGS', 'MFLAGS', 'MAKEOVERRIDES', 'CC', 'CXX',
-                    'PYTHON', 'FAIL_GOAL'):
+                    'CLANG', 'CROSS_COMPILE', 'ENGINE_TARGET', 'PYTHON', 'FAIL_GOAL'):
             self.env.pop(key, None)
 
     def make(self, *args, env=None, cwd=None, success=True):
@@ -203,6 +204,55 @@ flags:
                     else:
                         self.assertEqual(minimums[-1],
                                          f'-mmacosx-version-min={minimum}', output)
+
+    def test_engine_compiler_selection_for_generation_and_compilation(self):
+        # VCV exports an osxcross CC wrapper without setting CROSS_COMPILE.
+        # It supplies both the target and the SDK headers to Clang. Check the
+        # actual recipes, including the independent generated-engine compile.
+        for name in ('lib/crossfade4.py', 'lib/fuzz.py', 'lib/resonantfilter.py',
+                     'lib/core_engine/prepare.py', 'main.c'):
+            self.sentinel(name)
+        with (self.sdk / 'plugin.mk').open('a') as sdk:
+            sdk.write('CFLAGS += -fno-gnu-unique $(EXTRA_FLAGS)\n')
+        cases = (
+            ('mac-arm64', ['ARCH_MAC=1', 'ARCH_ARM64=1'],
+             {'CC': 'arm64-apple-darwin21.4-clang'},
+             'arm64-apple-darwin21.4-clang'),
+            ('mac-x64', ['ARCH_MAC=1', 'ARCH_X64=1'],
+             {'CC': 'x86_64-apple-darwin21.4-clang'},
+             'x86_64-apple-darwin21.4-clang'),
+            ('mac-native', ['ARCH_MAC=1', 'ARCH_ARM64=1'],
+             {'CC': 'cc'}, 'cc'),
+            ('linux-gcc', ['ARCH_LIN=1', 'ARCH_X64=1'],
+             {'CC': 'gcc'}, 'clang'),
+            ('windows-gcc', ['ARCH_WIN=1', 'ARCH_X64=1'],
+             {'CC': 'gcc'}, 'clang'),
+            ('explicit-clang', ['ARCH_MAC=1', 'ARCH_ARM64=1', 'CLANG=custom-clang'],
+             {'CC': 'arm64-apple-darwin21.4-clang'}, 'custom-clang'),
+            ('environment-clang', ['ARCH_MAC=1', 'ARCH_ARM64=1'],
+             {'CC': 'arm64-apple-darwin21.4-clang', 'CLANG': 'custom-clang'},
+             'custom-clang'),
+            ('explicit-target', ['ARCH_MAC=1', 'ARCH_X64=1',
+                                 'CROSS_COMPILE=x86_64-apple-darwin'],
+             {'CC': 'clang'}, 'clang'),
+        )
+        for name, definitions, environment, compiler in cases:
+            with self.subTest(name=name):
+                output = self.make('-n', '-B', 'build/core-engine.o',
+                                   'RACK_DIR=../sdk', *definitions,
+                                   cwd=self.root / 'rack', env=environment)
+                generate = next(shlex.split(line) for line in output.splitlines()
+                                if 'prepare.py --out' in line)
+                compile = next(shlex.split(line) for line in output.splitlines()
+                               if ' -c build/generated/engine.c ' in line)
+                self.assertEqual(generate[generate.index('--clang') + 1], compiler)
+                self.assertEqual(compile[0], compiler)
+                self.assertNotIn('-fno-gnu-unique', compile)
+                if name == 'explicit-target':
+                    self.assertEqual(generate[generate.index('--target') + 1],
+                                     'x86_64-apple-darwin')
+                else:
+                    self.assertNotIn('--target', generate)
 
     def test_default_sdk_discovery_and_root_install(self):
         sdk = self.root / 'artifacts/rack-sdk/Rack-SDK'

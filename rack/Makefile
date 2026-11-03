@@ -8,7 +8,6 @@ RELEASE_GOALS := release-macosarm release-macos11 release-linux
 ifneq ($(strip $(filter-out $(RELEASE_GOALS),$(or $(MAKECMDGOALS),all))),)
 # Prefer the download helper's location; retain the original local SDK layout.
 RACK_DIR ?= $(if $(wildcard ../artifacts/rack-sdk/Rack-SDK/plugin.mk),../artifacts/rack-sdk/Rack-SDK,../artifacts/Rack-SDK)
-CLANG ?= clang
 ENGINE_TARGET ?= $(CROSS_COMPILE)
 SOURCES += $(wildcard src/*.cpp)
 OBJECTS += build/core-engine.o build/card-format.o build/pcg.o
@@ -17,6 +16,11 @@ EXTRA_CXXFLAGS += -std=c++17
 EXTRA_FLAGS += -fwrapv -ffp-contract=off -fno-unsafe-math-optimizations
 
 include $(RACK_DIR)/plugin.mk
+
+# VCV exports an osxcross Clang wrapper as CC without CROSS_COMPILE. Use it
+# for both generation and compilation so target libc headers and CPU agree.
+# Linux/Windows may use GCC for CC, but the generated unit requires Clang.
+CLANG ?= $(if $(ARCH_MAC),$(CC),clang)
 
 # std::filesystem requires Catalina on Intel; Apple Silicon starts at Big Sur.
 # Use the SDK's target architecture, including when VCV builds on a Linux host.

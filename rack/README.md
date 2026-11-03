@@ -103,7 +103,7 @@ Build from this repository or the matching source archive. Required tools: Pytho
 
 Mac Intel packages target macOS 10.15 (Catalina), the first release supporting the storage reader's C++17 filesystem APIs. Apple Silicon packages target macOS 11.0 (Big Sur). These minimums follow the SDK's target architecture for both native and Linux-hosted builds.
 
-The generated C engine is compiled with the same Clang used for preprocessing (`CLANG=clang` by default). `CC` and `CXX` select the other C and C++ compilers and may use GCC on Linux/Windows.
+The generated C engine is compiled with the same Clang used for preprocessing. On macOS targets, `CLANG` defaults to `CC`, including the osxcross wrapper exported by VCV's Linux build toolchain. That wrapper selects both the target CPU and macOS SDK headers even when `CROSS_COMPILE` is unset. On Linux/Windows targets, `CLANG` defaults to `clang`, while `CC` and `CXX` may use GCC. An explicit `CLANG` override takes precedence on every platform.
 
 From the repository root on Apple Silicon:
 
