@@ -8,7 +8,6 @@ RELEASE_GOALS := release-macosarm release-macos11 release-linux
 ifneq ($(strip $(filter-out $(RELEASE_GOALS),$(or $(MAKECMDGOALS),all))),)
 # Prefer the download helper's location; retain the original local SDK layout.
 RACK_DIR ?= $(if $(wildcard ../artifacts/rack-sdk/Rack-SDK/plugin.mk),../artifacts/rack-sdk/Rack-SDK,../artifacts/Rack-SDK)
-ENGINE_TARGET ?= $(CROSS_COMPILE)
 SOURCES += $(wildcard src/*.cpp)
 OBJECTS += build/core-engine.o build/card-format.o build/pcg.o
 DISTRIBUTABLES += res README.md LICENSE.txt THIRD_PARTY.md licenses
@@ -21,6 +20,13 @@ include $(RACK_DIR)/plugin.mk
 # for both generation and compilation so target libc headers and CPU agree.
 # Linux/Windows may use GCC for CC, but the generated unit requires Clang.
 CLANG ?= $(if $(ARCH_MAC),$(CC),clang)
+
+# VCV's Windows cross toolchain exports CC but not CROSS_COMPILE. MACHINE is
+# resolved by the SDK from CC -dumpmachine. Both preprocessing and compilation
+# must select MinGW, including its libc headers rather than the build host's.
+ENGINE_TARGET ?= $(or $(CROSS_COMPILE),$(if $(ARCH_WIN),$(MACHINE)))
+ENGINE_SYSROOT ?= $(if $(ARCH_WIN),$(shell $(CC) -print-sysroot))
+ENGINE_CLANG_FLAGS = $(if $(ENGINE_TARGET),--target=$(ENGINE_TARGET)) $(if $(ENGINE_SYSROOT),--sysroot="$(ENGINE_SYSROOT)")
 
 # std::filesystem requires Catalina on Intel; Apple Silicon starts at Big Sur.
 # Use the SDK's target architecture, including when VCV builds on a Linux host.
@@ -41,12 +47,12 @@ check-manifest:
 all $(TARGET) $(OBJECTS): | check-manifest
 
 build/generated/engine.c: $(wildcard ../lib/*.h) ../lib/crossfade4.py ../lib/fuzz.py ../lib/resonantfilter.py ../lib/core_engine/prepare.py $(wildcard ../lib/core_engine/*.h) $(wildcard ../lib/core_engine/*.inc) ../main.c
-	$(PYTHON) ../lib/core_engine/prepare.py --out build/generated --clang $(CLANG) $(if $(ENGINE_TARGET),--target $(ENGINE_TARGET))
+	$(PYTHON) ../lib/core_engine/prepare.py --out build/generated --clang $(CLANG) $(if $(ENGINE_TARGET),--target $(ENGINE_TARGET)) $(if $(ENGINE_SYSROOT),--sysroot "$(ENGINE_SYSROOT)")
 
 build/core-engine.o: build/generated/engine.c
 	# The generated unit contains Clang's preprocessed libc and atomic builtins.
 	# -fno-gnu-unique is a GCC-only flag added by the Linux Rack SDK.
-	$(CLANG) $(filter-out -fno-gnu-unique,$(CFLAGS)) -std=c11 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Wno-format -c $< -o $@
+	$(CLANG) $(filter-out -fno-gnu-unique,$(CFLAGS)) $(ENGINE_CLANG_FLAGS) -std=c11 -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Wno-format -c $< -o $@
 
 build/card-format.o: ../lib/core_engine/card_format.c ../lib/core_engine/card_format.h
 	mkdir -p build

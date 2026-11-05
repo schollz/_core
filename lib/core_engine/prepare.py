@@ -122,15 +122,17 @@ def main():
     stages.add_argument('--generate-only',action='store_true',
                         help='Transform an existing firmware.c using this host\'s Clang')
     parser.add_argument('--target',default=None)
+    parser.add_argument('--sysroot',default=None)
     args=parser.parse_args()
     if not args.generate_only:prepare(args.out)
     if args.source_only:return
-    generate(args.out,args.clang,args.target)
+    generate(args.out,args.clang,args.target,args.sysroot)
 
-def generate(out,clang,target=None):
+def generate(out,clang,target=None,sysroot=None):
     flags=['-std=c11','-Wno-everything','-Werror=implicit-function-declaration',
            '-I'+str(LIB/'core_engine'),'-I'+str(LIB)]
     if target:flags.append('--target='+target)
+    if sysroot:flags.append('--sysroot='+sysroot)
     cpp=subprocess.check_output([clang,*flags,'-E','-P',str(out/'firmware.c')],text=True)
     # Large immutable lookup tables need not be expanded into 100k AST nodes.
     analysis=re.sub(r'(const\s+\w+\s+\w+\[\d+\]\s*=\s*)(\{[^{}]{4000,}\})',

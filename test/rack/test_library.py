@@ -64,7 +64,8 @@ if goal == 'dist':
 ''')
         self.env = dict(os.environ)
         for key in ('RACK_DIR', 'MAKEFLAGS', 'MFLAGS', 'MAKEOVERRIDES', 'CC', 'CXX',
-                    'CLANG', 'CROSS_COMPILE', 'ENGINE_TARGET', 'PYTHON', 'FAIL_GOAL'):
+                    'CLANG', 'CROSS_COMPILE', 'ENGINE_TARGET', 'ENGINE_SYSROOT',
+                    'PYTHON', 'FAIL_GOAL'):
             self.env.pop(key, None)
 
     def make(self, *args, env=None, cwd=None, success=True):
@@ -213,7 +214,8 @@ flags:
                      'lib/core_engine/prepare.py', 'main.c'):
             self.sentinel(name)
         with (self.sdk / 'plugin.mk').open('a') as sdk:
-            sdk.write('CFLAGS += -fno-gnu-unique $(EXTRA_FLAGS)\n')
+            sdk.write('CFLAGS += -fno-gnu-unique $(EXTRA_FLAGS)\n'
+                      'MACHINE ?= $(if $(ARCH_WIN),x86_64-w64-mingw32)\n')
         cases = (
             ('mac-arm64', ['ARCH_MAC=1', 'ARCH_ARM64=1'],
              {'CC': 'arm64-apple-darwin21.4-clang'},
@@ -239,7 +241,7 @@ flags:
         for name, definitions, environment, compiler in cases:
             with self.subTest(name=name):
                 output = self.make('-n', '-B', 'build/core-engine.o',
-                                   'RACK_DIR=../sdk', *definitions,
+                                   'RACK_DIR=../sdk', 'ENGINE_SYSROOT=', *definitions,
                                    cwd=self.root / 'rack', env=environment)
                 generate = next(shlex.split(line) for line in output.splitlines()
                                 if 'prepare.py --out' in line)
@@ -251,8 +253,49 @@ flags:
                 if name == 'explicit-target':
                     self.assertEqual(generate[generate.index('--target') + 1],
                                      'x86_64-apple-darwin')
+                    self.assertIn('--target=x86_64-apple-darwin', compile)
+                elif name == 'windows-gcc':
+                    self.assertEqual(generate[generate.index('--target') + 1],
+                                     'x86_64-w64-mingw32')
+                    self.assertIn('--target=x86_64-w64-mingw32', compile)
                 else:
                     self.assertNotIn('--target', generate)
+
+    def test_windows_engine_uses_exported_gcc_target_and_sysroot(self):
+        for name in ('lib/crossfade4.py', 'lib/fuzz.py', 'lib/resonantfilter.py',
+                     'lib/core_engine/prepare.py', 'main.c'):
+            self.sentinel(name)
+        # Reproduce VCV's exported CC with no CROSS_COMPILE. The SDK queries
+        # CC for MACHINE; the engine must use that target in both recipes.
+        with (self.sdk / 'plugin.mk').open('a') as sdk:
+            sdk.write('MACHINE := $(shell $(CC) -dumpmachine)\n')
+        (self.root / 'rack/cross-gcc.py').write_text('''
+import sys
+print('x86_64-w64-mingw32' if sys.argv[1] == '-dumpmachine'
+      else '/vcv toolchain/mingw/sysroot')
+''')
+        for overrides, target, sysroot in (
+                ([], 'x86_64-w64-mingw32', '/vcv toolchain/mingw/sysroot'),
+                (['ENGINE_TARGET=x86_64-w64-windows-gnu', 'ENGINE_SYSROOT=/custom'],
+                 'x86_64-w64-windows-gnu', '/custom'),
+                (['ENGINE_SYSROOT='], 'x86_64-w64-mingw32', None)):
+            with self.subTest(overrides=overrides):
+                output = self.make('-n', '-B', 'build/core-engine.o',
+                                   'RACK_DIR=../sdk', 'ARCH_WIN=1', *overrides,
+                                   env={'CC': 'python cross-gcc.py'},
+                                   cwd=self.root / 'rack')
+                generate = next(shlex.split(line) for line in output.splitlines()
+                                if 'prepare.py --out' in line)
+                compile = next(shlex.split(line) for line in output.splitlines()
+                               if ' -c build/generated/engine.c ' in line)
+                self.assertEqual(generate[generate.index('--target') + 1], target)
+                self.assertIn('--target=' + target, compile)
+                if sysroot:
+                    self.assertEqual(generate[generate.index('--sysroot') + 1], sysroot)
+                    self.assertIn('--sysroot=' + sysroot, compile)
+                else:
+                    self.assertNotIn('--sysroot', generate)
+                    self.assertFalse(any(arg.startswith('--sysroot=') for arg in compile))
 
     def test_default_sdk_discovery_and_root_install(self):
         sdk = self.root / 'artifacts/rack-sdk/Rack-SDK'
