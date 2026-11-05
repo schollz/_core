@@ -169,12 +169,15 @@ jobs:
       - name: Install required packages
         shell: msys2 {0}
         run: |
-          pacman -S --noconfirm mingw-w64-x86_64-rtmidi mingw-w64-x86_64-toolchain
+          pacman -S --needed --noconfirm mingw-w64-x86_64-toolchain
+
+      - name: Add MSYS2 compiler to PATH
+        shell: msys2 {0}
+        run: cygpath -w /mingw64/bin >> "$GITHUB_PATH"
 
       - name: Set up environment variables for Go
         shell: pwsh
         run: |
-          $env:Path += ";C:\msys64\mingw64\bin"
           echo "CGO_ENABLED=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "CC=x86_64-w64-mingw32-gcc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "CGO_LDFLAGS=-static" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

@@ -1,7 +1,7 @@
 # Makefile
 # VCV's builder supplies RACK_DIR and invokes the repository root.
 .DEFAULT_GOAL := $(if $(strip $(RACK_DIR)),all,dobuild)
-include rack/library.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))rack/library.mk
 
 export PICO_EXTRAS_PATH=$(CURDIR)/pico-extras
 PICO_SDK_VERSION := 2.3.1
