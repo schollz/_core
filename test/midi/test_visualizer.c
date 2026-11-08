@@ -47,8 +47,9 @@ int main(void) {
   zv_service(0, true, sink);
   assert(bytes[0] == 0xf0 && bytes[length - 1] == 0xf7 && packets <= 16);
   const char expected[] = "view=2,1,2,3,4,170,1,0,0,1,32769";
-  assert(length == sizeof expected + 1);
-  assert(memcmp(bytes + 1, expected, sizeof expected - 1) == 0);
+  // The manufacturer ID leads by default; hosts that predate it get plain text.
+  assert(length == sizeof expected + 2 && bytes[1] == 0x7d);
+  assert(memcmp(bytes + 2, expected, sizeof expected - 1) == 0);
   clear(); s.trigger++; zv_publish(&s);
   zv_service(16666, true, sink); assert(packets == 0);
   allowance = 2; zv_service(16667, true, sink); assert(zv_tx_pending() && packets == 2);
@@ -63,6 +64,10 @@ int main(void) {
   zv_command(0x80, 9, 5, 0, 400000); allowance = 1;
   zv_service(400000, true, sink); assert(zv_tx_pending());
   allowance = 0; zv_service(450000, true, sink); assert(!zv_tx_pending());
+  zv_sysex_id(false); zv_command(0x80, 9, 5, 0, 500000);
+  clear(); zv_service(500000, true, sink);
+  assert(bytes[0] == 0xf0 && memcmp(bytes + 1, "view=2,", 7) == 0 && bytes[length - 1] == 0xf7);
+  zv_sysex_id(true);
   s.valid = false; s.stopped = true; s.muted = true; zv_publish(&s);
   zv_snapshot read; assert(zv_read(&read) && !read.valid && read.stopped && read.muted);
   zv_trigger(1, 2, 3); uint32_t first = zv_trigger_read();

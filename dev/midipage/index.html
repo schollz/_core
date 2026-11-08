@@ -166,9 +166,11 @@
                 window.inputMidiDevice.onmidimessage = (midiMessage) => {
                     // check if sysex
                     if (midiMessage.data[0] == 0xf0) {
-                        // convert the sysex to string 
+                        // convert the sysex to string, skipping the
+                        // manufacturer ID 7D when there is one
                         var sysex = "";
-                        for (var i = 1; i < midiMessage.data.length - 1; i++) {
+                        var first = midiMessage.data[1] == 0x7d ? 2 : 1;
+                        for (var i = first; i < midiMessage.data.length - 1; i++) {
                             sysex += String.fromCharCode(midiMessage.data[i]);
                         }
                         // see if it starts with version=

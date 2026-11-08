@@ -5,12 +5,14 @@ import { MidiConnection } from '../src/midi';
 import type { Playback, Waveform } from '../src/types';
 
 const sysex = (text: string) => Uint8Array.from([0xf0, ...Array.from(text).map(c => c.charCodeAt(0)), 0xf7]);
+const idSysex = (text: string) => Uint8Array.from([0xf0, 0x7d, ...Array.from(text).map(c => c.charCodeAt(0)), 0xf7]);
 const state: Playback = { bank: 0, sample: 0, slice: 0, trigger: 1, bpm: 120, forward: true, stopped: false, muted: false, valid: true };
 const wave: Waveform = { bank: 0, sample: 0, bpm: 120, tempoMatch: true, playMode: 1, sampleRate: 44100, channels: 1, duration: 2, slices: [{ start: 0, stop: 1 }, { start: 1, stop: 2 }], peaks: [] };
 
 test('strictly decodes versioned snapshots and legacy status, ignores clock and malformed frames', () => {
   expect(decodeMessage(sysex('view=1,0,0,0,1,120,1,0,0,1'))).toEqual({ kind: 'view', state });
   expect(decodeMessage(sysex('info=1,2,170,180,0,1,0'))).toMatchObject({ kind: 'info', state: { bank: 1, sample: 2, stopped: true } });
+  expect(decodeMessage(idSysex('view=1,0,0,0,1,120,1,0,0,1'))).toEqual({ kind: 'view', state });
   for (const text of ['view=2,0,0,0,1,120,1,0,0,1', 'view=1,16,0,0,1,120,1,0,0,1', 'view=1,0,0,-1,1,120,1,0,0,1', 'view=1,0,0,0,1,120,3,0,0,1', 'view=1,0', 'view=1,0,0,0,1.5,120,1,0,0,1']) expect(decodeMessage(sysex(text))).toBeNull();
   expect(decodeMessage([0xf8])).toBeNull(); expect(decodeMessage([0xf0, 0xff, 0xf7])).toBeNull();
   expect(isFresh(0, 1499)).toBe(true); expect(isFresh(0, 1500)).toBe(false); expect(isFresh(undefined, 0)).toBe(false);
@@ -49,7 +51,7 @@ test('connects, renews telemetry, falls back for old firmware and reconnects wit
   expect(connection.state.connection).toBe('connected');
   expect(output.send.mock.calls.map((c: unknown[]) => c[0])).toEqual([CoreMidiManagement.frame('hello')]);
   now += 500; await vi.advanceTimersByTimeAsync(500);
-  expect(output.send).toHaveBeenLastCalledWith(CoreMidiManagement.frame('hello'));
+  expect(output.send).toHaveBeenLastCalledWith(CoreMidiManagement.frame('hello', false));
   now += 500; await vi.advanceTimersByTimeAsync(500);
   expect(output.send).toHaveBeenLastCalledWith([0xb0, 1, 0]);
   input.onmidimessage({ data: sysex('version=v8.0.4'), timeStamp: now });
@@ -64,7 +66,7 @@ test('connects, renews telemetry, falls back for old firmware and reconnects wit
   expect(connection.state.connection).toBe('disconnected'); expect(input.onmidimessage).toBeNull();
   input.state = output.state = 'connected'; access.onstatechange!(); await Promise.resolve(); await Promise.resolve();
   expect(connection.state.connection).toBe('connected');
-  input.onmidimessage({ data: sysex('core_caps=1'), timeStamp: now });
+  input.onmidimessage({ data: idSysex('core_caps=1'), timeStamp: now });
   output.send.mockClear(); now += 500; await vi.advanceTimersByTimeAsync(500);
   expect(output.send.mock.calls.map((c: unknown[]) => c[0])).toEqual([CoreMidiManagement.frame('view'), CoreMidiManagement.frame('info')]);
   connection.dispose(); output.send.mockClear(); await vi.advanceTimersByTimeAsync(1000);

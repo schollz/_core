@@ -13,7 +13,8 @@ std::optional<Message> decode(const uint8_t *bytes, size_t length) {
       bytes[length - 1] != 0xf7)
     return {};
   std::string text;
-  for (size_t i = 1; i + 1 < length; ++i) {
+  // text follows the manufacturer ID 7D, when there is one
+  for (size_t i = bytes[1] == 0x7d ? 2 : 1; i + 1 < length; ++i) {
     if (bytes[i] < 32 || bytes[i] > 126)
       return {};
     text += static_cast<char>(bytes[i]);

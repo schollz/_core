@@ -12,6 +12,7 @@ static _Atomic uint32_t trigger_word;
 static uint16_t trigger_serial; // core 0, protected against its timer IRQ
 static _Atomic uint32_t revision, published_state, published_trigger;
 static bool subscribed, sent_once, requested;
+static bool with_id = true;
 static uint32_t renewed_at, sent_at, pending_at;
 static zv_snapshot last_sent;
 static uint8_t pending[64];
@@ -101,6 +102,7 @@ bool zv_command(uint8_t status, uint8_t channel, uint8_t note,
   return true;
 }
 bool zv_tx_pending(void) { return pending_size != 0; }
+void zv_sysex_id(bool on) { with_id = on; }
 static bool same(const zv_snapshot *a, const zv_snapshot *b) {
   return pack(a) == pack(b) && a->trigger == b->trigger && a->effects == b->effects;
 }
@@ -125,14 +127,16 @@ void zv_service(uint32_t now, bool connected, bool (*write_packet)(const uint8_t
     if (sent_once && !requested && same(&snapshot, &last_sent) && (uint32_t)(now - sent_at) < 250000) return;
     // Version 2 adds the effect bitmask. Transmission remains bounded to
     // 16 USB packets per service call; longer frames resume next time.
+    unsigned start = with_id ? 2 : 1;
     pending[0] = 0xf0;
-    int n = snprintf((char *)pending + 1, sizeof pending - 2,
+    if (with_id) pending[1] = 0x7d;
+    int n = snprintf((char *)pending + start, sizeof pending - start - 1,
         "view=2,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", snapshot.bank,
         snapshot.sample, snapshot.slice, snapshot.trigger, snapshot.bpm,
         snapshot.forward, snapshot.stopped, snapshot.muted, snapshot.valid, snapshot.effects);
-    if (n < 0 || (unsigned)n >= sizeof pending - 2) return;
-    pending[n + 1] = 0xf7;
-    pending_size = n + 2;
+    if (n < 0 || (unsigned)n >= sizeof pending - start - 1) return;
+    pending[n + start] = 0xf7;
+    pending_size = n + start + 1;
     pending_offset = 0;
     pending_at = now;
     last_sent = snapshot;
