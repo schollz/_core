@@ -1,0 +1,145 @@
+name: Test Rack toolchain
+# Manual build check only. Cross-compiles the plugin with VCV's
+# rack-plugin-toolchain for Windows x64 and both macOS architectures.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rack-toolchain-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            id: win
+            toolchain-target: toolchain-win
+            sdk-targets: rack-sdk-win-x64
+            plugin-target: plugin-build-win-x64
+            arches: win-x64
+          - name: macOS x64 and arm64
+            id: mac
+            toolchain-target: toolchain-mac
+            sdk-targets: rack-sdk-mac-x64 rack-sdk-mac-arm64
+            plugin-target: plugin-build-mac
+            arches: mac-x64 mac-arm64
+    env:
+      TOOLCHAIN_DIR: /home/runner/rack-plugin-toolchain
+      TOOLCHAIN_ID: ${{ matrix.id }}
+      TOOLCHAIN_TARGET: ${{ matrix.toolchain-target }}
+      SDK_TARGETS: ${{ matrix.sdk-targets }}
+      PLUGIN_TARGET: ${{ matrix.plugin-target }}
+      PACKAGE_ARCHES: ${{ matrix.arches }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - name: Free disk space
+        run: |
+          set -euo pipefail
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /opt/ghc \
+            /usr/local/share/boost \
+            /usr/share/swift \
+            /opt/hostedtoolcache \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/miniconda \
+            /usr/local/graalvm || true
+          df -h /
+      - name: Fetch VCV plugin toolchain
+        id: toolchain
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch v2 \
+            https://github.com/VCVRack/rack-plugin-toolchain.git \
+            "$TOOLCHAIN_DIR"
+          sha="$(git -C "$TOOLCHAIN_DIR" rev-parse HEAD)"
+          echo "Using rack-plugin-toolchain $sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Restore toolchain cache
+        id: toolchain-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /home/runner/rack-plugin-toolchain/local
+            /home/runner/rack-plugin-toolchain/Rack-SDK-*
+          key: vcv-toolchain-${{ matrix.id }}-${{ steps.toolchain.outputs.sha }}
+      - name: Build toolchain
+        if: steps.toolchain-cache.outputs.cache-hit != 'true'
+        working-directory: /home/runner/rack-plugin-toolchain
+        run: |
+          set -euo pipefail
+          echo 'APT::Get::Assume-Yes "true";' | sudo tee /etc/apt/apt.conf.d/99-ci-assume-yes >/dev/null
+          sudo apt-get update
+          sudo make dep-ubuntu
+          if [ "$TOOLCHAIN_ID" = mac ]; then
+            # The toolchain Makefile requires this exact SDK filename (macOS 12.3,
+            # darwin 21.4). The tarball is the osxcross package published for that
+            # version; this repo already uses the same publisher for MacOSX11.3.
+            curl -fL --retry 5 --retry-all-errors -o MacOSX12.3.sdk.tar.xz \
+              https://github.com/joseluisq/macosx-sdks/releases/download/12.3/MacOSX12.3.sdk.tar.xz
+            echo '3abd261ceb483c44295a6623fdffe5d44fc4ac2c872526576ec5ab5ad0f6e26c  MacOSX12.3.sdk.tar.xz' | sha256sum -c
+          fi
+          JOBS="$(nproc)" make "$TOOLCHAIN_TARGET"
+          # shellcheck disable=SC2086
+          make $SDK_TARGETS
+          df -h /
+      - name: Save toolchain cache
+        if: steps.toolchain-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /home/runner/rack-plugin-toolchain/local
+            /home/runner/rack-plugin-toolchain/Rack-SDK-*
+          key: vcv-toolchain-${{ matrix.id }}-${{ steps.toolchain.outputs.sha }}
+      - name: Install plugin build tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-numpy clang jq zstd rsync make
+          python3 -c 'import numpy'
+      - name: Build plugin
+        working-directory: /home/runner/rack-plugin-toolchain
+        run: |
+          set -euo pipefail
+          make -j"$(nproc)" "$PLUGIN_TARGET" PLUGIN_DIR="$GITHUB_WORKSPACE"
+      - name: Check packages
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, zipfile
+          from pathlib import Path
+          manifest = json.loads(Path("plugin.json").read_text())
+          root = Path(os.environ["TOOLCHAIN_DIR"]) / "plugin-build"
+          arches = os.environ["PACKAGE_ARCHES"].split()
+          expected = [f"{manifest['slug']}-{manifest['version']}-{arch}.vcvplugin" for arch in arches]
+          found = sorted(path.name for path in root.glob("*.vcvplugin"))
+          print("found:", *found)
+          if found != sorted(expected):
+              sys.exit(f"expected {expected}")
+          for name in expected:
+              path = root / name
+              if path.stat().st_size < 1000:
+                  sys.exit(f"{name} is too small")
+              with zipfile.ZipFile(path) as archive:
+                  bad = archive.testzip()
+                  if bad:
+                      sys.exit(f"{name} is corrupt at {bad}")
+                  names = archive.namelist()
+                  if not any(member.endswith((".dll", ".dylib")) for member in names):
+                      sys.exit(f"{name} contains no plugin binary")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-${{ matrix.id }}
+          path: /home/runner/rack-plugin-toolchain/plugin-build/*.vcvplugin
+          if-no-files-found: error

@@ -145,7 +145,7 @@ python3 rack/scripts/manifest.py --sync
 python3 rack/scripts/manifest.py --check
 ```
 
-Builds and source packaging reject missing or different manifests. The release version updater changes both copies together. This root integration uses the existing native build prerequisites; compatibility with VCV's Linux-hosted cross-compilers is separate work.
+Builds and source packaging reject missing or different manifests. The release version updater changes both copies together. This root integration uses the existing native build prerequisites. Linux-hosted cross-compilation is covered by the manual VCV toolchain workflow.
 
 ### Native packages and checks
 
@@ -154,6 +154,8 @@ The SDK chooses the destination from the build's OS and CPU: `~/Library/Applicat
 Substitute `mac-x64`, `lin-x64`, or `win-x64` for your native platform. For Windows use the MSYS2 MINGW64 shell with GCC, Clang, Python, NumPy (`mingw-w64-x86_64-python-numpy`), Make, jq, zstd, and mingw-w64 toolchain packages. Run `export PYTHONUTF8=1` in that shell so Python reads the shared firmware and documentation as UTF-8 regardless of the Windows locale. CI builds each platform in `.github/workflows/build-rack.yml` and uploads artifacts; it does not publish a release. Use `CC=clang CXX=clang++` on macOS. Mac Intel can also be built on Apple Silicon with its SDK and `CROSS_COMPILE=x86_64-apple-darwin` after a clean rebuild.
 
 Rack CI runs only on demand, not on pushes or pull requests. Start it from GitHub **Actions → Build Rack plugin → Run workflow**, or run `gh workflow run build-rack.yml --ref main`. Each native platform checks manifest consistency, root target forwarding, and release handling, then builds through the root entry point. It verifies the collected package and rebuilds the matching source archive in a temporary directory. The source-archive check uses Python 3.12 or later.
+
+The VCV toolchain check is also manual. Start it from GitHub **Actions → Test Rack toolchain → Run workflow**, or run `gh workflow run build-rack-toolchain.yml --ref main`. It cross-compiles Windows x64 and both macOS architectures with [rack-plugin-toolchain](https://github.com/VCVRack/rack-plugin-toolchain) and checks that each `.vcvplugin` package is produced.
 
 To publish the Windows package, use **Actions → Release Rack plugin - Windows → Run workflow**, or run `gh workflow run release-rack-windows.yml --ref main`. This separate workflow also runs only on demand. It checks out `main`, runs the engine/storage tests, builds Windows x64, and uploads a ZIP plus its SHA-256 checksum to the latest published GitHub release at upload time. The ZIP contains the `.vcvplugin`, matching source, installation instructions, and build metadata. The plugin version comes from `rack/plugin.json`, independently of the release tag; reruns replace only the matching Windows ZIP and checksum assets. The workflow downloads the published assets again and verifies them before reporting success.
 
