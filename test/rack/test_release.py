@@ -199,7 +199,7 @@ class ReleaseTests(unittest.TestCase):
                 patch.object(engine_prepare, 'generate') as generate:
             engine_prepare.main()
         prepare.assert_not_called()
-        generate.assert_called_once_with(self.root, 'native-clang', None)
+        generate.assert_called_once_with(self.root, 'native-clang', None, None)
 
     def test_source_only_and_default_keep_their_generation_stages(self):
         for extra in (['--source-only'], []):

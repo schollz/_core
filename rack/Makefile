@@ -25,7 +25,16 @@ CLANG ?= $(if $(ARCH_MAC),$(CC),clang)
 # resolved by the SDK from CC -dumpmachine. Both preprocessing and compilation
 # must select MinGW, including its libc headers rather than the build host's.
 ENGINE_TARGET ?= $(or $(CROSS_COMPILE),$(if $(ARCH_WIN),$(MACHINE)))
-ENGINE_SYSROOT ?= $(if $(ARCH_WIN),$(shell $(CC) -print-sysroot))
+# crosstool-ng's GCC sysroot contains mingw -> usr/<target>, rather than
+# include/ at its root. Clang's MinGW driver needs that inner runtime root.
+# Native MSYS2 GCC reports no sysroot; leave Clang's discovery intact there.
+ENGINE_SYSROOT ?= $(if $(ARCH_WIN),$(shell \
+	gcc_sysroot="$$($(CC) -print-sysroot)"; \
+	if test -n "$$gcc_sysroot" && test -f "$$gcc_sysroot/mingw/include/_mingw.h"; then \
+		printf '%s' "$$gcc_sysroot/mingw"; \
+	else \
+		printf '%s' "$$gcc_sysroot"; \
+	fi))
 ENGINE_CLANG_FLAGS = $(if $(ENGINE_TARGET),--target=$(ENGINE_TARGET)) $(if $(ENGINE_SYSROOT),--sysroot="$(ENGINE_SYSROOT)")
 
 # std::filesystem requires Catalina on Intel; Apple Silicon starts at Big Sur.

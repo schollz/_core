@@ -56,6 +56,43 @@ jobs:
             dist/*.vcvplugin
             rack/dist/*-source.tar.gz
           if-no-files-found: error
+  windows-cross:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Windows cross-build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang g++-mingw-w64-x86-64-posix python3-numpy make jq zstd
+      - run: python3 rack/scripts/sdk.py win-x64
+      - name: Build with the crosstool-ng runtime directory layout
+        run: |
+          # Debian provides real MinGW headers/libs. Arrange them as VCV's
+          # crosstool-ng sysroot does, so Clang cannot rely on Debian paths.
+          export MINGW_TEST_SYSROOT="$RUNNER_TEMP/mingw-cross/sysroot"
+          mkdir -p "$MINGW_TEST_SYSROOT/usr"
+          ln -s /usr/x86_64-w64-mingw32 "$MINGW_TEST_SYSROOT/usr/x86_64-w64-mingw32"
+          ln -s usr/x86_64-w64-mingw32 "$MINGW_TEST_SYSROOT/mingw"
+          cat > "$RUNNER_TEMP/mingw-cross/gcc" <<'EOF'
+          #!/bin/sh
+          if test "$1" = -print-sysroot; then
+            printf '%s\n' "$MINGW_TEST_SYSROOT"
+          else
+            exec x86_64-w64-mingw32-gcc-posix "$@"
+          fi
+          EOF
+          chmod +x "$RUNNER_TEMP/mingw-cross/gcc"
+          export CC="$RUNNER_TEMP/mingw-cross/gcc" CXX=x86_64-w64-mingw32-g++-posix STRIP=x86_64-w64-mingw32-strip
+          export RACK_DIR="$PWD/artifacts/rack-sdk/Rack-SDK"
+          make clean
+          make cleandep
+          make dep
+          make -j4 dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: InfiniteDigits-win-x64-cross
+          path: dist/*.vcvplugin
+          if-no-files-found: error
   windows:
     runs-on: windows-latest
     env:

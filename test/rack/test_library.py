@@ -270,19 +270,36 @@ flags:
         with (self.sdk / 'plugin.mk').open('a') as sdk:
             sdk.write('MACHINE := $(shell $(CC) -dumpmachine)\n')
         (self.root / 'rack/cross-gcc.py').write_text('''
-import sys
+import os, sys
 print('x86_64-w64-mingw32' if sys.argv[1] == '-dumpmachine'
-      else '/vcv toolchain/mingw/sysroot')
+      else os.environ['TEST_GCC_SYSROOT'])
 ''')
-        for overrides, target, sysroot in (
-                ([], 'x86_64-w64-mingw32', '/vcv toolchain/mingw/sysroot'),
-                (['ENGINE_TARGET=x86_64-w64-windows-gnu', 'ENGINE_SYSROOT=/custom'],
+        # Real crosstool-ng layout, including spaces and the runtime symlink.
+        # Clang cannot find string.h from GCC's outer sysroot: it needs the
+        # directory containing include/, used identically by both recipes.
+        gcc_sysroot = self.root / 'vcv toolchain/sysroot'
+        runtime = gcc_sysroot / 'usr/x86_64-w64-mingw32'
+        (runtime / 'include').mkdir(parents=True)
+        (runtime / 'include/_mingw.h').write_text('/* runtime marker */')
+        if os.name == 'nt':
+            # Directory symlinks require privileges on some Windows runners.
+            shutil.copytree(runtime, gcc_sysroot / 'mingw')
+        else:
+            (gcc_sysroot / 'mingw').symlink_to('usr/x86_64-w64-mingw32')
+        python = 'python' if os.name == 'nt' else shlex.quote(sys.executable)
+        for reported, overrides, target, sysroot in (
+                (gcc_sysroot.as_posix(), [], 'x86_64-w64-mingw32', (gcc_sysroot / 'mingw').as_posix()),
+                ('/flat/sysroot', [], 'x86_64-w64-mingw32', '/flat/sysroot'),
+                ('', [], 'x86_64-w64-mingw32', None),
+                (gcc_sysroot.as_posix(),
+                 ['ENGINE_TARGET=x86_64-w64-windows-gnu', 'ENGINE_SYSROOT=/custom'],
                  'x86_64-w64-windows-gnu', '/custom'),
-                (['ENGINE_SYSROOT='], 'x86_64-w64-mingw32', None)):
-            with self.subTest(overrides=overrides):
+                (gcc_sysroot.as_posix(), ['ENGINE_SYSROOT='], 'x86_64-w64-mingw32', None)):
+            with self.subTest(reported=reported, overrides=overrides):
                 output = self.make('-n', '-B', 'build/core-engine.o',
                                    'RACK_DIR=../sdk', 'ARCH_WIN=1', *overrides,
-                                   env={'CC': 'python cross-gcc.py'},
+                                   env={'CC': python + ' cross-gcc.py',
+                                        'TEST_GCC_SYSROOT': reported},
                                    cwd=self.root / 'rack')
                 generate = next(shlex.split(line) for line in output.splitlines()
                                 if 'prepare.py --out' in line)
