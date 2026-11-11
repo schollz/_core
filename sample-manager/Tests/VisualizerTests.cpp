@@ -71,8 +71,10 @@ Files fixture(int channels = 2, int rate = 44100, bool tone = false) {
   put32(info + 23, size);
   return f;
 }
-std::optional<zv::Message> sysex(const juce::String &text) {
+std::optional<zv::Message> sysex(const juce::String &text, bool id = false) {
   std::vector<uint8_t> data{0xf0};
+  if (id)
+    data.push_back(0x7d);
   for (auto c : text.toStdString())
     data.push_back((uint8_t)c);
   data.push_back(0xf7);
@@ -98,6 +100,8 @@ void protocolTests() {
   expect(sysex("view=1,0,0,0,1,120,1,0,0,1").has_value(), "v1 decode");
   auto v2 = sysex("view=2,15,15,254,65535,511,0,1,1,1,65535");
   expect(v2 && v2->playback.effects == 65535, "v2 effects");
+  auto withId = sysex("view=2,15,15,254,65535,511,0,1,1,1,65535", true);
+  expect(withId && withId->playback.effects == 65535, "manufacturer ID decode");
   for (auto text :
        {"view=2,0,0,0,1,120,1,0,0,1", "view=1,16,0,0,1,120,1,0,0,1",
         "view=1,0,0,-1,1,120,1,0,0,1", "view=1,0,0,0,4294967296,120,1,0,0,1",

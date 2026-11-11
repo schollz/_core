@@ -5,16 +5,31 @@
 #include "visualizer_telemetry.h"
 #include "midi_receive.h"
 
+// SysEx text follows the manufacturer ID 7D (non-commercial use). Hosts that
+// predate the ID read text straight after F0, so replies mirror the form of
+// the latest request; text nobody asked for carries the ID.
+#define SYSEX_ID 0x7D
+static bool sysex_send_id = true;
+
+static void sysex_set_id(bool on)
+{
+  sysex_send_id = on;
+  ZV_CALL(zv_sysex_id(on));
+}
+
 uint32_t send_buffer_as_sysex(char *buffer, uint32_t bufsize)
 {
-  uint8_t sysex_data[bufsize + 2]; // +2 for SysEx start and end bytes
+  uint32_t start = sysex_send_id ? 2 : 1;
+  uint8_t sysex_data[bufsize + start + 1]; // +start for F0 (and ID), +1 for F7
 
   sysex_data[0] = 0xF0; // Start of SysEx
+  if (sysex_send_id)
+    sysex_data[1] = SYSEX_ID; // Manufacturer ID
   for (uint32_t i = 0; i < bufsize; i++)
   {
-    sysex_data[i + 1] = buffer[i]; // Copy buffer into SysEx data
+    sysex_data[i + start] = buffer[i]; // Copy buffer into SysEx data
   }
-  sysex_data[bufsize + 1] = 0xF7; // End of SysEx
+  sysex_data[bufsize + start] = 0xF7; // End of SysEx
 
   return tud_midi_n_stream_write(0, 0, sysex_data, sizeof(sysex_data));
 }
@@ -22,14 +37,17 @@ uint32_t send_buffer_as_sysex(char *buffer, uint32_t bufsize)
 uint32_t send_text_as_sysex(const char *text)
 {
   uint32_t text_length = strlen(text); // Get the length of the text
-  uint8_t sysex_data[text_length + 2]; // +2 for SysEx start and end bytes
+  uint32_t start = sysex_send_id ? 2 : 1;
+  uint8_t sysex_data[text_length + start + 1]; // +start for F0 (and ID), +1 for F7
 
   sysex_data[0] = 0xF0; // Start of SysEx
+  if (sysex_send_id)
+    sysex_data[1] = SYSEX_ID; // Manufacturer ID
   for (uint32_t i = 0; i < text_length; i++)
   {
-    sysex_data[i + 1] = text[i]; // Copy text into SysEx data
+    sysex_data[i + start] = text[i]; // Copy text into SysEx data
   }
-  sysex_data[text_length + 1] = 0xF7; // End of SysEx
+  sysex_data[text_length + start] = 0xF7; // End of SysEx
 
   // Call the stream write function with the SysEx message
   return tud_midi_n_stream_write(0, 0, sysex_data, sizeof(sysex_data));
@@ -137,10 +155,12 @@ typedef void (*midi_comm_callback)(uint8_t, uint8_t, uint8_t, uint8_t);
 static char midi_command_buffer[64];
 static uint8_t midi_command_length;
 static bool midi_command_active;
+static bool midi_command_id;
 
 static void midi_command_reset(void)
 {
   midi_command_active = false;
+  midi_command_id = false;
   midi_command_length = 0;
 }
 
@@ -151,6 +171,8 @@ static void midi_command_execute(midi_comm_callback callback)
   if (strncmp(midi_command_buffer, prefix, strlen(prefix)) != 0)
     return;
   const char *operation = midi_command_buffer + strlen(prefix);
+  // answer in the form the host used
+  sysex_set_id(midi_command_id);
   if (strcmp(operation, "hello") == 0)
   {
     send_text_as_sysex("core_caps=1");
@@ -219,6 +241,11 @@ static void midi_command_packet(uint8_t cin, const uint8_t *bytes,
       if (midi_command_active)
         midi_command_execute(callback);
       midi_command_reset();
+    }
+    else if (midi_command_active && midi_command_length == 0 &&
+             !midi_command_id && b == SYSEX_ID)
+    {
+      midi_command_id = true;
     }
     else if (midi_command_active)
     {
@@ -329,6 +356,11 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
   {
     uint8_t channel = midi_buffer[0] & 0xf;
 #ifndef INCLUDE_ZEPTOCORE
+    if (channel == 0 && midi_buffer[1] < 2)
+    {
+      // control change requests predate the SysEx ID
+      sysex_set_id(false);
+    }
     if (channel == 0 && midi_buffer[1] == 0)
     {
       send_text_as_sysex("command=reset");
@@ -385,6 +417,11 @@ void midi_comm_task(midi_comm_callback callback, callback_int_int midi_note_on,
     // Extract the note number and velocity
     uint8_t note = midi_buffer[1];
     uint8_t velocity = midi_buffer[2];
+    if (status == 0x80 && channel == 9 && velocity == 0)
+    {
+      // so do note requests
+      sysex_set_id(false);
+    }
     if (callback != NULL)
     {
       callback(status, channel, note, velocity);

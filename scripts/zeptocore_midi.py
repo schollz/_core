@@ -25,12 +25,16 @@ def wait_available(port, timeout=10):
         time.sleep(.1)
 
 
-def management_frame(operation):
-    return bytes([0xf0]) + ('core_cmd=1,' + operation).encode('ascii') + bytes([0xf7])
+def management_frame(operation, id=True):
+    # SysEx text follows the manufacturer ID 7D (non-commercial use)
+    return bytes([0xf0] + ([0x7d] if id else [])) + ('core_cmd=1,' + operation).encode('ascii') + bytes([0xf7])
 
 
 def negotiate_management(send, receive, now=time.monotonic):
-    """Read-only discovery; receive(timeout) returns complete MIDI frames."""
+    """Read-only discovery; receive(timeout) returns complete MIDI frames.
+
+    Returns 'sysex', 'sysex-plain' (firmware that predates the manufacturer
+    ID) or 'legacy'."""
     started = now()
     send(management_frame('hello'))
     stage = 0
@@ -39,13 +43,15 @@ def negotiate_management(send, receive, now=time.monotonic):
         elapsed = now() - started
         if stage == 0 and elapsed >= .5:
             stage = 1
-            send(management_frame('hello'))
+            send(management_frame('hello', id=False))
         if stage == 1 and elapsed >= 1:
             stage = 2
             send(bytes([0xb0, 1, 0]))
         for frame in receive(.05):
-            if frame == b'\xf0core_caps=1\xf7':
+            if frame == b'\xf0\x7dcore_caps=1\xf7':
                 return 'sysex'
+            if frame == b'\xf0core_caps=1\xf7':
+                return 'sysex-plain'
             if stage >= 2 and frame.startswith(b'\xf0version=') and frame.endswith(b'\xf7') and len(frame) > 10:
                 legacy = True
         # Process all available replies first so modern acknowledgment wins.
@@ -98,7 +104,7 @@ def reset_management(port):
         # Allow the read endpoint to open before sending the first probe.
         time.sleep(.05)
         protocol = negotiate_management(send, receive)
-        send(management_frame('bootloader') if protocol == 'sysex' else bytes([0xb0, 0, 0]))
+        send(management_frame('bootloader', id=protocol == 'sysex') if protocol != 'legacy' else bytes([0xb0, 0, 0]))
     finally:
         listener.terminate()
         try:

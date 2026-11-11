@@ -314,8 +314,10 @@ This repository adds opt-in reporting to Zeptocore and Ectocore/Ezeptocore build
 Older MIDI-enabled firmware still supplies bank/sample status but the page
 explicitly displays **SLICE TRACKING UNAVAILABLE**.
 
-The page first negotiates management using `core_cmd=1,hello` text SysEx,
-retrying at 500 ms. `core_caps=1` selects the modern protocol. After 1 second
+The page first negotiates management using `core_cmd=1,hello` text SysEx after
+the manufacturer ID `7D`, retrying without the ID at 500 ms for firmware that
+predates it. `core_caps=1` selects the modern protocol, and later commands use
+the form (ID or not) the reply came in. Received SysEx may carry the ID or not. After 1 second
 without acknowledgment it probes with `[0xB0, 1, 0]`; only a `version=` reply
 selects legacy mode. No response by 2 seconds reports management unavailable.
 Reconnect resets negotiation. A modern acknowledgment takes precedence.

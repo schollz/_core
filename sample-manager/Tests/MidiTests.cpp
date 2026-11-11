@@ -49,13 +49,19 @@ private:
   }
   void handleIncomingMidiMessage(juce::MidiInput *, const juce::MidiMessage &m) override {
     const auto *b = m.getRawData();
-    auto reply = [this](const juce::String &text) {
+    // Current firmware answers in the form of the request (manufacturer ID 7D or not).
+    bool id = false;
+    auto reply = [this, &id](const juce::String &text) {
+      const auto body = (id ? juce::String("}") : juce::String()) + text; // '}' is 0x7d
       tx->sendMessageNow(
-          juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+          juce::MidiMessage::createSysExMessage(body.toRawUTF8(), body.getNumBytesAsUTF8()));
     };
     if (m.isSysEx()) {
-      auto text = juce::String::fromUTF8(reinterpret_cast<const char *>(m.getSysExData()),
-                                         m.getSysExDataSize());
+      id = m.getSysExDataSize() > 0 && m.getSysExData()[0] == 0x7d;
+      if (id)
+        ++idFrames;
+      auto text = juce::String::fromUTF8(reinterpret_cast<const char *>(m.getSysExData()) + (id ? 1 : 0),
+                                         m.getSysExDataSize() - (id ? 1 : 0));
       if (text == "core_cmd=1,hello") {
         ++hellos;
         if (!legacyFirmware)
@@ -106,7 +112,7 @@ private:
         }
         link->command(1);
         link->command(0);
-        const juce::String body = "view=2,0,0,1,65535,120,1,0,0,1,17";
+        const juce::String body = "}view=2,0,0,1,65535,120,1,0,0,1,17"; // with the ID
         tx->sendMessageNow(
             juce::MidiMessage::createSysExMessage(body.toRawUTF8(), (int)body.getNumBytesAsUTF8()));
         break;
@@ -114,6 +120,7 @@ private:
       case 2: {
         check(versions == 1 && resets == 1 && unexpectedLegacy == 0,
               "modern management uses SysEx only");
+        check(idFrames >= 4, "modern management carries the manufacturer ID");
         check(link->state.playback && link->state.playback->trigger == 65535 &&
                   link->state.playback->effects == 17,
               "complete native SysEx reception");
@@ -201,7 +208,7 @@ private:
   }
   std::function<void(int)> finished;
   juce::String name;
-  std::atomic<int> leases{0}, legacy{0}, hellos{0}, versions{0}, resets{0}, unexpectedLegacy{0};
+  std::atomic<int> leases{0}, legacy{0}, hellos{0}, versions{0}, resets{0}, unexpectedLegacy{0}, idFrames{0};
   std::atomic<bool> legacyFirmware{false};
   int stage = 0, before = 0, fallback = 0, attempts = 0;
   juce::MidiDeviceListConnection notifications;

@@ -45,7 +45,8 @@ New Zeptocore firmware no longer interprets channel-10 Note Off as commands or
 channel-1 CC 0/1 as bootloader/version requests. Older tools using those messages
 need updating; releasing a musical note on channel 10 is now safe.
 
-Management uses `F0`, ASCII `core_cmd=1,<operation>[,<argument>]`, then `F7`.
+Management uses `F0`, the manufacturer ID `7D` (non-commercial use), ASCII
+`core_cmd=1,<operation>[,<argument>]`, then `F7`.
 Supported operations are `hello`, `version`, `bootloader`, `info`, `slices`,
 `view`, and `key,<0–127>`. `hello` replies with ASCII `core_caps=1` inside SysEx.
 The other responses keep the existing `version=`, `info=`, `slices=` and `view=`
@@ -55,7 +56,16 @@ the selected receive channel. The firmware collects at most 63 text bytes in a
 64-byte buffer, accepts complete valid frames only, and keeps realtime messages
 independent of frame assembly.
 
-Updated clients send `hello`, retry after 500 ms, then send the old read-only
+Firmware before the manufacturer ID read text straight after `F0`, so the ID is
+optional in both directions. The firmware answers in the form of the latest
+request: with `7D` when the command had it, without when it didn't or when the
+request was a legacy control change or note. Text sent without a request, such
+as `printf` output, carries `7D` until a request says otherwise. Hosts strip a
+leading `7D` from everything they receive.
+
+Updated clients send `hello` with the ID, retry without it after 500 ms (for
+firmware that predates the ID; later commands use the form the reply came in),
+then send the old read-only
 version query after 1 second without acknowledgment. Only a version reply enables
 legacy commands. After 2 seconds without a response they report management as
 unavailable; reconnect to retry. A modern acknowledgment takes precedence.

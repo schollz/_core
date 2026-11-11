@@ -53,6 +53,7 @@ static unsigned starts, stops, continues, clocks, note_ons, note_offs, ccs, rese
 static unsigned generic_count;
 static uint8_t generic_event[4], cc_event[3];
 static char sysex[128];
+static bool sysex_id;
 static unsigned stream_writes;
 static bool mounted = true;
 static bool tud_mounted(void) { return mounted; }
@@ -64,9 +65,12 @@ static uint32_t tud_midi_n_stream_write(uint8_t itf, uint8_t cable,
   ++stream_writes;
   if (count > 1 && data[0] == 0xf0)
   {
-    assert(count - 2 < sizeof sysex);
-    memcpy(sysex, data + 1, count - 2);
-    sysex[count - 2] = 0;
+    // text follows the manufacturer ID, when there is one
+    sysex_id = data[1] == 0x7d;
+    uint32_t start = sysex_id ? 2 : 1;
+    assert(count - start - 1 < sizeof sysex);
+    memcpy(sysex, data + start, count - start - 1);
+    sysex[count - start - 1] = 0;
   }
   return count;
 }
@@ -458,6 +462,51 @@ static bool realtime_sink(const uint8_t packet[4])
   return true;
 }
 #endif
+static void test_sysex_id(void)
+{
+  // Text nobody asked for carries the manufacturer ID.
+  printf_sysex("boot=%d", 1);
+  assert(sysex_id && strcmp(sysex, "boot=1") == 0);
+#ifdef INCLUDE_ZEPTOCORE
+  // Replies mirror the request, so hosts that predate the ID understand them.
+  command("core_cmd=1,hello");
+  drain();
+  assert(!sysex_id && strcmp(sysex, "core_caps=1") == 0);
+  command("\x7d" "core_cmd=1,version");
+  drain();
+  assert(sysex_id && strcmp(sysex, "version=v8.1.0") == 0);
+  midi_receive_channel = 10;
+  unsigned count = generic_count;
+  command("\x7d" "core_cmd=1,key,49");
+  drain();
+  assert(generic_count == count + 1 && generic_event[2] == 49);
+  midi_receive_channel = 1;
+  // Only a leading ID counts, and other frames don't change the form.
+  unsigned writes = stream_writes;
+  command("\x7d\x7d" "core_cmd=1,hello");
+  command("other_cmd=1,hello");
+  drain();
+  assert(stream_writes == writes && sysex_send_id);
+  command("core_cmd=1,\x7d" "hello");
+  drain();
+  assert(stream_writes == writes);
+#else
+  // Control change and note requests predate the ID.
+  queue(0x0b, 0xb0, 1, 0);
+  drain();
+  assert(!sysex_id && strcmp(sysex, "version=v8.1.0") == 0);
+  sysex_set_id(true);
+  queue(0x08, 0x89, 4, 0);
+  drain();
+  assert(!sysex_send_id);
+  sysex_set_id(true);
+  queue(0x08, 0x89, 49, 1); // a key press isn't a request
+  drain();
+  assert(sysex_send_id);
+#endif
+  sysex_set_id(true);
+}
+
 static void test_clock_output(void)
 {
   unsigned before = stream_writes;
@@ -477,6 +526,7 @@ int main(void)
   assert(MIDI_NOTE_KEY == EXPECT_NOTE_KEY);
   assert(ZV_ENABLED == ZEPTOCORE_VISUALIZER);
   ZV_CALL(visualizer_only_probe());
+  assert(sysex_send_id); // SysEx carries the manufacturer ID until a request says otherwise
   test_notes();
   test_usb();
 #ifdef INCLUDE_ZEPTOCORE
@@ -484,6 +534,8 @@ int main(void)
   test_commands();
 #endif
   test_clock_output();
+  sysex_set_id(true);
+  test_sysex_id();
   printf("MIDI tests passed (MIDI_NOTE_KEY=%d)\n", MIDI_NOTE_KEY);
   return 0;
 }

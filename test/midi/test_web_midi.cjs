@@ -20,14 +20,16 @@ const context = vm.createContext({
 context.window = context;
 vm.runInContext(fs.readFileSync(path.join(root,'core/src/server/static/core-midi.js'),'utf8'),context);
 vm.runInContext(fs.readFileSync(path.join(root,'core/src/server/static/app.js'),'utf8'),context);
-const text = data => Buffer.from(data.slice(1,-1)).toString();
-const reply = value => input.onmidimessage({data:[0xf0,...Buffer.from(value),0xf7]});
+const text = data => Buffer.from(data.slice(data[1]===0x7d?2:1,-1)).toString();
+const reply = value => input.onmidimessage({data:[0xf0,0x7d,...Buffer.from(value),0xf7]});
+const replyPlain = value => input.onmidimessage({data:[0xf0,...Buffer.from(value),0xf7]});
 (async()=>{
     context.listMidiPorts(); await new Promise(resolve=>setImmediate(resolve));
     assert.equal(sent.length,1); assert.equal(text(sent[0]),'core_cmd=1,hello'); assert.equal(timers.size,1);
+    assert.equal(sent[0][1],0x7d);
     access.onstatechange(); assert.equal(sent.length,1);
     context.midiResetDevice(); assert.equal(sent.length,1); // held until negotiated
-    reply('core_caps=1'); assert.equal(text(sent.at(-1)),'core_cmd=1,version');
+    reply('core_caps=1'); assert.equal(text(sent.at(-1)),'core_cmd=1,version'); assert.equal(sent.at(-1)[1],0x7d);
     reply('version=v-next'); assert.equal(context.app.deviceVersion,'v-next');
     context.midiResetDevice(); assert.equal(text(sent.at(-1)),'core_cmd=1,bootloader');
     output.state='disconnected';access.onstatechange();
@@ -35,9 +37,10 @@ const reply = value => input.onmidimessage({data:[0xf0,...Buffer.from(value),0xf
     output.state='connected';access.onstatechange();assert.equal(timers.size,1);
     assert.equal(text(sent.at(-1)),'core_cmd=1,hello');
     now=500;for(const fn of timers.values())fn();assert.equal(text(sent.at(-1)),'core_cmd=1,hello');
+    assert.notEqual(sent.at(-1)[1],0x7d); // the retry is plain for older firmware
     now=1000;for(const fn of timers.values())fn();assert.deepEqual(Array.from(sent.at(-1)),[0xb0,1,0]);
     const before=sent.length;context.midiResetDevice();assert.equal(sent.length,before);
-    reply('version=v-old');context.midiResetDevice();assert.deepEqual(Array.from(sent.at(-1)),[0xb0,0,0]);
+    replyPlain('version=v-old');context.midiResetDevice();assert.deepEqual(Array.from(sent.at(-1)),[0xb0,0,0]);
     assert.equal(timers.size,1);
     console.log('Web manager connects once, negotiates, routes controls and clears state on output disconnect');
 })().catch(error=>{console.error(error);process.exitCode=1;});

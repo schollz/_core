@@ -83,11 +83,8 @@ function setupMidiInputListener() {
             if (keyboardManagement) keyboardManagement.receive(midiMessage.data);
             // check if sysex
             if (midiMessage.data[0] == 0xf0) {
-                // convert the sysex to string 
-                var sysex = "";
-                for (var i = 1; i < midiMessage.data.length - 1; i++) {
-                    sysex += String.fromCharCode(midiMessage.data[i]);
-                }
+                // convert the sysex to string, without the manufacturer ID
+                var sysex = CoreMidiManagement.text(midiMessage.data) ?? "";
                 // see if it starts with version=
                 if (sysex.startsWith("version=")) {
                     app.deviceVersion = sysex.split("=")[1];

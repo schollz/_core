@@ -4,7 +4,9 @@ declare global {
     constructor(send: (data: number[]) => void, ready?: (mode: string) => void,
                 error?: (message: string) => void, now?: () => number);
     mode: 'sysex' | 'legacy' | null;
-    static frame(operation: string): number[];
+    id: boolean;
+    static frame(operation: string, id?: boolean): number[];
+    static text(data: Uint8Array | number[]): string | null;
     reset(): void;
     start(): void;
     tick(): void;

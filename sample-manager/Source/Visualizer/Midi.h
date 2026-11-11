@@ -30,9 +30,12 @@ private:
   void timerCallback() override;
   void close();
   void sendManagement(const juce::String &operation, const uint8_t *legacy);
-  void sendHello();
+  void sendHello(bool id);
+  void sendSysEx(const juce::String &text, bool id);
   enum class Protocol { unknown, sysex, legacy };
   Protocol protocol = Protocol::unknown;
+  // SysEx carries the manufacturer ID 7D unless the device answered without it
+  bool sysexId = true;
   double probingAt = 0;
   int probeStage = 0;
   struct Packet {

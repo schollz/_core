@@ -46,6 +46,8 @@ bool zv_read(zv_snapshot *snapshot);
 bool zv_command(uint8_t status, uint8_t channel, uint8_t note,
                 uint8_t velocity, uint32_t now);
 bool zv_tx_pending(void);
+// Whether view frames carry the SysEx manufacturer ID, see midi_comm.h.
+void zv_sysex_id(bool on);
 // Foreground USB packets, retained across backpressure; at most 16 per call.
 void zv_service(uint32_t now, bool connected, bool (*write_packet)(const uint8_t[4]));
 #endif

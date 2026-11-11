@@ -39,6 +39,7 @@ void MidiLink::close() {
   overflow = false;
   state = {};
   protocol = Protocol::unknown;
+  sysexId = true;
   probeStage = 0;
 }
 void MidiLink::refresh() {
@@ -70,7 +71,7 @@ void MidiLink::refresh() {
   input->start();
   polled = -1e9;
   probingAt = nowMs();
-  sendHello();
+  sendHello(true);
 }
 void MidiLink::handleIncomingMidiMessage(juce::MidiInput *,
                                          const juce::MidiMessage &message) {
@@ -115,10 +116,13 @@ void MidiLink::timerCallback() {
       tail = (tail + 1) % queue.size();
     }
     if (packet.data[0] == 0xf0 && packet.size > 2 && packet.data[packet.size - 1] == 0xf7) {
+      // text follows the manufacturer ID, when there is one
+      const bool id = packet.data[1] == 0x7d;
+      const size_t start = id ? 2 : 1;
       auto text = juce::String::fromUTF8(
-          reinterpret_cast<const char *>(packet.data.data() + 1), int(packet.size - 2));
+          reinterpret_cast<const char *>(packet.data.data() + start), int(packet.size - start - 1));
       log.add(text);
-      if (text == "core_caps=1") { protocol = Protocol::sysex; error.clear(); }
+      if (text == "core_caps=1") { protocol = Protocol::sysex; sysexId = id; error.clear(); }
       else if (probeStage >= 2 && text.startsWith("version=") && text.length() > 8 &&
                protocol != Protocol::sysex) { protocol = Protocol::legacy; error.clear(); }
     } else
@@ -130,7 +134,8 @@ void MidiLink::timerCallback() {
   }
   if (connected() && protocol == Protocol::unknown) {
     const auto elapsed = now - probingAt;
-    if (probeStage == 0 && elapsed >= 500) { probeStage = 1; sendHello(); }
+    // firmware that predates the ID only answers the plain retry
+    if (probeStage == 0 && elapsed >= 500) { probeStage = 1; sendHello(false); }
     if (probeStage == 1 && elapsed >= 1000) {
       probeStage = 2;
       output->sendMessageNow(juce::MidiMessage::controllerEvent(1, 1, 0));
@@ -147,17 +152,20 @@ void MidiLink::timerCallback() {
     polled = now;
   }
 }
-void MidiLink::sendHello() {
-  const juce::String text = "core_cmd=1,hello";
-  output->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
+void MidiLink::sendSysEx(const juce::String &text, bool id) {
+  juce::MemoryBlock data;
+  if (id)
+    data.append("\x7d", 1);
+  data.append(text.toRawUTF8(), text.getNumBytesAsUTF8());
+  output->sendMessageNow(juce::MidiMessage::createSysExMessage(data.getData(), int(data.getSize())));
 }
+void MidiLink::sendHello(bool id) { sendSysEx("core_cmd=1,hello", id); }
 void MidiLink::sendManagement(const juce::String &operation, const uint8_t *legacy) {
   if (protocol == Protocol::unknown)
     throw std::runtime_error("Device management is not ready. Wait for protocol detection or reconnect.");
-  if (protocol == Protocol::sysex) {
-    const auto text = "core_cmd=1," + operation;
-    output->sendMessageNow(juce::MidiMessage::createSysExMessage(text.toRawUTF8(), text.getNumBytesAsUTF8()));
-  } else output->sendMessageNow(juce::MidiMessage(legacy, 3));
+  if (protocol == Protocol::sysex)
+    sendSysEx("core_cmd=1," + operation, sysexId);
+  else output->sendMessageNow(juce::MidiMessage(legacy, 3));
 }
 
 void MidiLink::command(int command) {

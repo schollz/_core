@@ -44,7 +44,12 @@ func parseSysExToString(sysex []byte) (string, error) {
 	if len(sysex) < 3 || sysex[0] != 0xF0 || sysex[len(sysex)-1] != 0xF7 {
 		return "", fmt.Errorf("invalid SysEx message")
 	}
-	messageBytes := sysex[1 : len(sysex)-1]
+	// text follows the manufacturer ID 7D, when there is one
+	start := 1
+	if sysex[1] == 0x7D {
+		start = 2
+	}
+	messageBytes := sysex[start : len(sysex)-1]
 	message := string(messageBytes)
 	return message, nil
 }

@@ -10,7 +10,8 @@ export function decodeMessage(bytes: ArrayLike<number>): Message | null {
       bytes[1] >= 0 && bytes[1] < 16 && bytes[2] > 0 && bytes[2] <= 127)
     return { kind: 'button', button: bytes[1] + 1 };
   if (bytes.length < 3 || bytes.length > 128 || bytes[0] !== 0xf0 || bytes[bytes.length - 1] !== 0xf7) return null;
-  const body = Array.from(bytes).slice(1, -1);
+  // Text follows the manufacturer ID 7D, when there is one.
+  const body = Array.from(bytes).slice(bytes[1] === 0x7d ? 2 : 1, -1);
   if (body.some(b => b < 32 || b > 126)) return null;
   const text = String.fromCharCode(...body);
   const split = text.indexOf('=');
